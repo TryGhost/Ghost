@@ -7,10 +7,12 @@ var _           = require('lodash'),
     serverUtils = require('../../utils'),
     errors      = require('../../errors'),
     settings    = require('../../api/settings'),
+    uuid        = require('node-uuid'),
 
     excludedTables = ['accesstokens', 'refreshtokens', 'clients'],
     exporter,
-    exportFileName;
+    exportFileName,
+    ensureNewUUID;
 
 exportFileName = function () {
     var datetime = (new Date()).toJSON().substring(0, 10),
@@ -49,7 +51,12 @@ exporter = function () {
             };
 
             _.each(tables, function (name, i) {
-                exportData.data[name] = tableData[i];
+                if (name === 'posts') {
+                    var checkedUUIDdata = ensureNewUUID(tableData[i]);
+                    exportData.data[name] = checkedUUIDdata;
+                } else {
+                    exportData.data[name] = tableData[i];
+                }
             });
 
             return when.resolve(exportData);
@@ -57,6 +64,18 @@ exporter = function () {
             errors.logAndThrowError(err, 'Error exporting data', '');
         });
     });
+};
+
+// If the post has an old UUID format (eg '52825818238f7'), we'll create a new 
+// UUID using uuid.v4() and the creation timestamp as basis.
+// This is necessary to make the data consumable for the Ghost importer >0.5
+ensureNewUUID = function (data) {
+    _.each(data, function (name, i) {
+        if (data[i].uuid && data[i].uuid.length === 13) {
+            data[i].uuid = uuid.v4({ msecs: data[i].created_at });
+        }
+    });
+    return data;
 };
 
 module.exports = exporter;
