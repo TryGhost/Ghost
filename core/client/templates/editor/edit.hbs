@@ -10,8 +10,8 @@
         </section>
     </header>
 
-    <section class="entry-markdown active">
-        <header class="floatingheader">
+    <section {{bind-attr class=":entry-markdown isPreview::active"}}>
+        <header {{action "togglePreview" false}} class="floatingheader">
             <small>Markdown</small>
             <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
         </header>
@@ -20,8 +20,8 @@
         </section>
     </section>
 
-    <section class="entry-preview">
-        <header class="floatingheader" id="entry-preview-header">
+    <section {{bind-attr class=":entry-preview isPreview:active"}}>
+        <header {{action "togglePreview" true}} class="floatingheader">
             <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words scratch}}</span></small>
         </header>
         <section class="entry-preview-content">
