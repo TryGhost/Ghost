@@ -28,18 +28,6 @@ init = function init() {
     if (device.mobile() || (device.tablet() && device.ios())) {
         $('body').addClass('touch-editor');
 
-        // make editor tabs touch-to-toggle in portrait mode
-        $('#entry-markdown-header').on('tap', function () {
-            $('.entry-markdown').addClass('active');
-            $('.entry-preview').removeClass('active');
-        });
-
-        $('#entry-preview-header').on('tap', function () {
-            $('.entry-markdown').removeClass('active');
-            $('.entry-preview').addClass('active');
-        });
-
-
         Ember.touchEditor = true;
         //initialize FastClick to remove touch delays
         Ember.run.scheduleOnce('afterRender', null, function () {
