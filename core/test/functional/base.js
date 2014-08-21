@@ -427,11 +427,20 @@ CasperTest.Routines = (function () {
     // This will need switching over to ember once settings general is working properly.
     function togglePermalinks(state) {
         casper.thenOpenAndWaitForPageLoad('settings.general', function then() {
+            // convert from off/on API, to values used to
+            // select the correct button.
+            if (state === 'off') {
+                state = '/:slug/';
+            } else if (state === 'on') {
+                state = '/:year/:month/:day/:slug/';
+            }
+
             var currentState = this.evaluate(function () {
-                return document.querySelector('#permalinks') && document.querySelector('#permalinks').checked ? 'on' : 'off';
+                return document.querySelector('#permalinks') && document.querySelector('#permalinks').value;
             });
+
             if (currentState !== state) {
-                casper.thenClick('#permalinks');
+                casper.sendKeys('#permalinks', state, { reset: true })
                 casper.thenClick('.btn-blue');
 
                 casper.captureScreenshot('saving.png');
