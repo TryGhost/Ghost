@@ -5,6 +5,8 @@
 var ghost = require('./core'),
     errors = require('./core/server/errors');
 
-ghost().otherwise(function (err) {
+ghost().then(function (app) {
+    app.start();
+}).catch(function (err) {
     errors.logErrorAndExit(err, err.context, err.help);
 });
