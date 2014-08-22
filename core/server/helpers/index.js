@@ -408,13 +408,6 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
-        classes.push('archive-template');
-    } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
-        classes.push('home-template');
-    } else if (post) {
-        classes.push('post-template');
-    }
 
     if (this.tag !== undefined) {
         classes.push('tag-template');
@@ -426,12 +419,27 @@ coreHelpers.body_class = function (options) {
         classes.push('author-' + this.author.slug);
     }
 
-    if (tags) {
-        classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
+    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
+        classes.push('paged');
+        // To be removed from pages by #2597 when we're ready to deprecate this
+        classes.push('archive-template');
+
+    } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
+        classes.push('home-template');
+    } else if (post) {
+        // To be removed from pages by #2597 when we're ready to deprecate this
+        // i.e. this should be if (post && !page) { ... }
+        classes.push('post-template');
     }
 
     if (page) {
+        classes.push('page-template');
+        // To be removed by #2597 when we're ready to deprecate this
         classes.push('page');
+    }
+
+    if (tags) {
+        classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
     }
 
     return api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
@@ -439,13 +447,12 @@ coreHelpers.body_class = function (options) {
             paths = config.paths.availableThemes[activeTheme.value],
             view;
 
-        if (post) {
+        if (post && page) {
             view = template.getThemeViewForPost(paths, post).split('-');
 
-            // If this is a page and we have a custom page template
-            // then we need to modify the class name we inject
-            // e.g. 'page-contact' is outputted as 'page-template-contact'
             if (view[0] === 'page' && view.length > 1) {
+                classes.push(view.join('-'));
+                // To be removed by #2597 when we're ready to deprecate this
                 view.splice(1, 0, 'template');
                 classes.push(view.join('-'));
             }
