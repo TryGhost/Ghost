@@ -7,6 +7,7 @@ var testUtils   = require('../utils/index'),
     assert      = require('assert'),
     _           = require('lodash'),
     rewire      = require('rewire'),
+    validator   = require('validator'),
 
     // Stuff we are testing
     config          = rewire('../../server/config'),
@@ -654,15 +655,11 @@ describe('Import', function () {
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
-                response.length.should.equal(4);
+                response.length.should.equal(2);
                 response[0].type.should.equal('ValidationError');
-                response[0].message.should.eql('Value in [tags.uuid] cannot be blank.');
+                response[0].message.should.eql('Value in [tags.name] cannot be blank.');
                 response[1].type.should.equal('ValidationError');
-                response[1].message.should.eql('Validation (isUUID) failed for uuid');
-                response[2].type.should.equal('ValidationError');
-                response[2].message.should.eql('Value in [tags.name] cannot be blank.');
-                response[3].type.should.equal('ValidationError');
-                response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
+                response[1].message.should.eql('Value in [tags.slug] cannot be blank.');
                 done();
             }).catch(done);
         });
@@ -679,10 +676,34 @@ describe('Import', function () {
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
-                response.length.should.equal(6);
+                response.length.should.equal(5, response);
                 done();
             }).catch(done);
         });
+
+        it('correctly sanitizes incorrect UUIDs', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-wrongUUID').then(function (exported) {
+                exportData = exported;
+
+                exportData.data.posts.length.should.be.above(0);
+
+                return importer('003', exportData);
+            }).then(function () {
+                // Grab the data from tables
+                return knex('posts').select();
+            }).then(function (importedData) {
+                should.exist(importedData);
+
+                assert.equal(validator.isUUID(importedData[0].uuid), true, 'Old Ghost UUID NOT fixed');
+                assert.equal(validator.isUUID(importedData[1].uuid), true, 'Empty UUID NOT fixed');
+                assert.equal(validator.isUUID(importedData[2].uuid), true, 'Missing UUID NOT fixed');
+                assert.equal(validator.isUUID(importedData[3].uuid), true, 'Malformed UUID NOT fixed');
+                done();
+            }).catch(done);
+        });
+
     });
 });
 

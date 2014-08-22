@@ -2,8 +2,12 @@ var when            = require('when'),
     _               = require('lodash'),
     validation      = require('../validation'),
     errors          = require('../../errors'),
+    uuid            = require('node-uuid'),
+    validator       = require('validator'),
+    tables          = require('../schema').tables,
     validate,
     handleErrors,
+    sanitize,
     cleanError;
 
 cleanError = function cleanError(error) {
@@ -60,6 +64,24 @@ handleErrors = function handleErrors(errorList) {
     return when.reject(processedErrors);
 };
 
+sanitize = function sanitize(data) {
+
+    // Check for correct UUID and fix if neccessary
+    _.each(_.keys(data.data), function (tableName) {
+        _.each(data.data[tableName], function (importValues) {
+
+            var uuidMissing = (!importValues.uuid && tables[tableName].uuid) ? true : false,
+                uuidMalformed = (importValues.uuid && !validator.isUUID(importValues.uuid)) ? true : false;
+
+            if (uuidMissing || uuidMalformed) {
+                importValues.uuid = uuid.v4();
+            }
+        });
+    });
+
+    return data;
+};
+
 validate = function validate(data) {
     var validateOps = [];
 
@@ -88,6 +110,8 @@ validate = function validate(data) {
 
 module.exports = function (version, data) {
     var importer;
+
+    data = sanitize(data);
 
     return validate(data).then(function () {
         try {
