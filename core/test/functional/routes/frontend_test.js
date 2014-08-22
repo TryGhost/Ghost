@@ -13,7 +13,7 @@ var request    = require('supertest'),
 
     testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
-    httpServer,
+    ghostServer,
 
     cacheRules = {
         'public': 'public, max-age=0',
@@ -41,9 +41,9 @@ describe('Frontend Routing', function () {
     before(function (done) {
         var app = express();
 
-        ghost({app: app}).then(function (_httpServer) {
+        ghost({app: app}).then(function (_ghostServer) {
             // Setup the request object with the ghost express app
-            httpServer = _httpServer;
+            ghostServer = _ghostServer;
             request = request(app);
             testUtils.clearData().then(function () {
                 // we initialise data, but not a user. No user should be required for navigating the frontend
@@ -58,7 +58,7 @@ describe('Frontend Routing', function () {
     });
 
     after(function () {
-        httpServer.close();
+        ghostServer.stop();
     });
 
     describe('Home', function () {

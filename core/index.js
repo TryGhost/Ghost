@@ -8,7 +8,7 @@ var when      = require('when'),
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-function startGhost(options) {
+function makeGhost(options) {
     var deferred = when.defer();
 
     options = options || {};
@@ -31,4 +31,4 @@ function startGhost(options) {
     return deferred.promise;
 }
 
-module.exports = startGhost;
+module.exports = makeGhost;
