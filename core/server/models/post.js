@@ -4,6 +4,7 @@ var _              = require('lodash'),
     when           = require('when'),
     errors         = require('../errors'),
     Showdown       = require('showdown'),
+    cheerio        = require('cheerio'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
     Tag            = require('./tag').Tag,
@@ -11,10 +12,13 @@ var _              = require('lodash'),
     User           = require('./user').User,
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
-
     Post,
     Posts;
-
+function getPostImg(html){
+    var $       = cheerio.load(html),
+        bgImg   = $("img[alt='bg']");
+    return bgImg.length > 0 ? $(bgImg[0]).attr("src"):null;
+}
 Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
@@ -67,7 +71,11 @@ Post = ghostBookshelf.Model.extend({
         // disabling sanitization until we can implement a better version
         //this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
-
+        /* liuxing */
+        var post_type = this.get('post_type') == null ? 0 : this.get('post_type'); //default post type
+        this.set('post_type',post_type);
+        this.set('image',getPostImg(this.get('html')));
+        /* liuxing */
         if ((this.hasChanged('status') || !this.get('published_at')) && this.get('status') === 'published') {
             if (!this.get('published_at')) {
                 this.set('published_at', new Date());
@@ -80,7 +88,7 @@ Post = ghostBookshelf.Model.extend({
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || 'postSlugInit',
                     {status: 'all', transacting: options.transacting})
                 .then(function (slug) {
                     self.set({slug: slug});
@@ -168,6 +176,9 @@ Post = ghostBookshelf.Model.extend({
     // Relations
     author_id: function () {
         return this.belongsTo('User', 'author_id');
+    },
+    post_type: function () {
+        return this.belongsTo('PostType', 'post_type');
     },
 
     created_by: function () {
@@ -279,6 +290,12 @@ Post = ghostBookshelf.Model.extend({
      */
     findPage: function (options) {
         options = options || {};
+        //add by liuxing
+        var post_type;
+        if(options.post_type > -1) {
+            post_type = options.post_type;
+        }
+        //end by liuxing
 
         var postCollection = Posts.forge(),
             tagInstance = options.tag !== undefined ? Tag.forge({slug: options.tag}) : false,
@@ -310,7 +327,11 @@ Post = ghostBookshelf.Model.extend({
             }
             options.where.page = options.staticPages;
         }
-
+        /* add by liuxing  如果有类型查询，则加入 where 条件*/
+        if(post_type > -1){
+            options.where.post_type = post_type;
+        }
+        /* end add  by liuxing */
         // Unless `all` is passed as an option, filter on
         // the status provided.
         if (options.status !== 'all') {

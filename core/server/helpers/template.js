@@ -1,7 +1,18 @@
 var templates     = {},
     hbs           = require('express-hbs'),
-    errors        = require('../errors');
+    api           = require('../api'),
+    errors        = require('../errors'),
+    _             = require('lodash'),
+    typeLinks = [];
 
+//初始化所有的 文章类型 和对应的url
+api.postType.browse().then(function(result){
+    if(result.postTypes){
+        _.forEach(result.postTypes,function(item){
+            typeLinks[item.id] = item.slug;
+        });
+    }
+});
 // ## Template utils
 
 // Execute a template helper
@@ -33,15 +44,15 @@ templates.execute = function (name, context) {
 templates.getThemeViewForPost = function (themePaths, post) {
     var customPageView = 'page-' + post.slug,
         view = 'post';
-
     if (post.page) {
         if (themePaths.hasOwnProperty(customPageView + '.hbs')) {
             view = customPageView;
         } else if (themePaths.hasOwnProperty('page.hbs')) {
             view = 'page';
         }
+    }else if(post.post_type > -1){
+        return 'post-' + typeLinks[post.post_type];
     }
-
     return view;
 };
 

@@ -202,7 +202,7 @@ authentication = {
             // Handles the additional values set by the setup screen.
             if (!_.isEmpty(setupUser.blogTitle)) {
                 userSettings.push({key: 'title', value: setupUser.blogTitle});
-                userSettings.push({key: 'description', value: 'Thoughts, stories and ideas.'});
+                userSettings.push({key: 'description', value: '我的地盘，我做主！'});
             }
             setupUser = user.toJSON();
             return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});

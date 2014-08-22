@@ -333,10 +333,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
                 // If this is the first time through, add the hyphen
                 if (slugTryCount === 2) {
-                    slugToFind += '-';
+                    slugToFind += 1;
                 } else {
                     // Otherwise, trim the number off the end
                     trimSpace = -(String(slugTryCount - 1).length);
+                    slugToFind += '';
                     slugToFind = slugToFind.slice(0, trimSpace);
                 }
 
@@ -359,8 +360,23 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (!slug) {
             slug = baseName;
         }
-        // Test for duplicate slugs.
-        return checkIfSlugExists(slug);
+        //core/built/scripts/views.js  updateSlugPlaceholder：
+        /* add by liuxing  默认url 是根据title 值生成，改成 10000起的数字*/
+        if(slug == 'postSlugInit'.toLowerCase()){
+
+            return Model.findOne({limits:1}).then(function (found) {
+                if(found && found.attributes){
+                    return found.attributes.id+10000;
+                }else{
+                    return 10000;
+                }
+            }).then(function(slug){
+                return checkIfSlugExists(slug);
+            });
+        }else{
+            return checkIfSlugExists(slug);
+        }
+        /* add by liuxing */
     }
 
 });

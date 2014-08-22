@@ -5,19 +5,19 @@ var NewUserValidator = Ember.Object.extend({
 
         if (!validator.isLength(data.name, 1)) {
             validationErrors.push({
-                message: 'Please enter a name.'
+                message: '请输入名字。'
             });
         }
 
         if (!validator.isEmail(data.email)) {
             validationErrors.push({
-                message: 'Invalid Email.'
+                message: '无效的邮箱地址。'
             });
         }
 
         if (!validator.isLength(data.password, 8)) {
             validationErrors.push({
-                message: 'Password must be at least 8 characters long.'
+                message: '密码长度至少是8个字符。'
             });
         }
 

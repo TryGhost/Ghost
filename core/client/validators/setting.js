@@ -7,23 +7,23 @@ var SettingValidator = Ember.Object.create({
             postsPerPage = model.get('postsPerPage');
 
         if (!validator.isLength(title, 0, 150)) {
-            validationErrors.push({ message: 'Title is too long' });
+            validationErrors.push({ message: '标题太长' });
         }
 
         if (!validator.isLength(description, 0, 200)) {
-            validationErrors.push({ message: 'Description is too long' });
+            validationErrors.push({ message: '描述太长' });
         }
 
         if (!validator.isEmail(email) || !validator.isLength(email, 0, 254)) {
-            validationErrors.push({ message: 'Please supply a valid email address' });
+            validationErrors.push({ message: '请提供一个有效的邮箱地址' });
         }
 
         if (!validator.isInt(postsPerPage) || postsPerPage > 1000) {
-            validationErrors.push({ message: 'Please use a number less than 1000' });
+            validationErrors.push({ message: '请输入小于1000的数字' });
         }
 
         if (!validator.isInt(postsPerPage) || postsPerPage < 0) {
-            validationErrors.push({ message: 'Please use a number greater than 0' });
+            validationErrors.push({ message: '请输入大于0的数字' });
         }
 
         return validationErrors;

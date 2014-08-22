@@ -1,11 +1,11 @@
 <header class="settings-content-header">
-    <h2 class="title">General</h2>
+    <h2 class="title">基本设置</h2>
 
     <div class="settings-header-inner">
-	{{#link-to 'settings' class='button-back button'}}Back{{/link-to}}
+	{{#link-to 'settings' class='button-back button'}}返回{{/link-to}}
 
         <section class="page-actions">
-            <button type="button" class="button-save" {{action "save"}}>Save</button>
+            <button type="button" class="button-save" {{action "save"}}>保存</button>
         </section>
     </div>
 </header>
@@ -15,62 +15,62 @@
         <fieldset>
 
             <div class="form-group">
-                <label for="blog-title">Blog Title</label>
+                <label for="blog-title">博客标题</label>
                 {{input id="blog-title" name="general[title]" type="text" value=title}}
-                <p>The name of your blog</p>
+                <p>博客的名字</p>
             </div>
 
             <div class="form-group description-container">
-                <label for="blog-description">Blog Description</label>
+                <label for="blog-description">博客描述</label>
                 {{textarea id="blog-description" name="general[description]" value=description}}
                 <p>
-                    Describe what your blog is about
+					描述一下你的博客
                     {{gh-count-characters description}}
                 </p>
 
             </div>
         </fieldset>
             <div class="form-group">
-                <label for="blog-logo">Blog Logo</label>
+                <label for="blog-logo">博客 Logo</label>
                 {{#if logo}}
                     <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
                 {{else}}
-                    <button type="button" class="button-add js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
+                    <button type="button" class="button-add js-modal-logo" {{action "openModal" "upload" this "logo"}}>上传图片</button>
                 {{/if}}
-                <p>Display a sexy logo for your publication</p>
+                <p>为你的站点设置一个logo</p>
             </div>
 
             <div class="form-group">
-                <label for="blog-cover">Blog Cover</label>
+                <label for="blog-cover">博客封面</label>
                 {{#if cover}}
                     <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
                 {{else}}
-                    <button type="button" class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
+                    <button type="button" class="button-add js-modal-cover" {{action "openModal" "upload" this "cover"}}>上传图片</button>
                 {{/if}}
-                <p>Display a cover image on your site</p>
+                <p>为博客设置一个封面大图</p>
             </div>
         <fieldset>
             <div class="form-group">
-                <label for="email-address">Email Address</label>
+                <label for="email-address">邮箱地址</label>
                 {{input id="email-address" name="general[email-address]" type="email" value=email autocapitalize="off" autocorrect="off"}}
-                <p>Address to use for admin notifications</p>
+                <p>邮件用来接收重要的通知</p>
             </div>
 
             <div class="form-group">
-                <label for="postsPerPage">Posts per page</label>
+                <label for="postsPerPage">每页显示的文章数量</label>
                 {{input id="postsPerPage" name="general[postsPerPage]" type="number" value=postsPerPage}}
-                <p>How many posts should be displayed on each page</p>
+                <p>每页显示多少篇文章呢</p>
             </div>
 
             <div class="form-group for-checkbox">
-                <label for="permalinks">Dated Permalinks</label>
+                <label for="permalinks">带日期的永久链接</label>
                 {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
                 <label class="checkbox" for="permalinks"></label>
-                <p>Include the date in your post URLs</p>
+                <p>将日期包含进 URL</p>
             </div>
 
             <div class="form-group for-select">
-                <label for="activeTheme">Theme</label>
+                <label for="activeTheme">主题</label>
                 <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
                    {{view Ember.Select
                        id="activeTheme"
@@ -81,7 +81,7 @@
                        value=activeTheme
                        selection=selectedTheme}}
                </span>
-                <p>Select a theme for your blog</p>
+                <p>为了你的博客选择一个主题</p>
             </div>
 
         </fieldset>

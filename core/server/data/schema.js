@@ -10,7 +10,7 @@ var db = {
             featured: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[0, 1, false, true]]}},
             page: {type: 'bool', nullable: false, defaultTo: false, validations: {'isIn': [[0, 1, false, true]]}},
             status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'draft'},
-            language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
+            language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'zh_CN'},
             meta_title: {type: 'string', maxlength: 150, nullable: true},
             meta_description: {type: 'string', maxlength: 200, nullable: true},
             author_id: {type: 'integer', nullable: false},
@@ -19,7 +19,9 @@ var db = {
             updated_at: {type: 'dateTime', nullable: true},
             updated_by: {type: 'integer', nullable: true},
             published_at: {type: 'dateTime', nullable: true},
-            published_by: {type: 'integer', nullable: true}
+            published_by: {type: 'integer', nullable: true},
+            //add by liuxing
+            post_type: {type: 'integer', nullable: true}
         },
         users: {
             id: {type: 'increments', nullable: false, primary: true},
@@ -35,7 +37,7 @@ var db = {
             location: {type: 'text', maxlength: 65535, nullable: true},
             accessibility: {type: 'text', maxlength: 65535, nullable: true},
             status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'active'},
-            language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'en_US'},
+            language: {type: 'string', maxlength: 6, nullable: false, defaultTo: 'zh_CN'},
             meta_title: {type: 'string', maxlength: 150, nullable: true},
             meta_description: {type: 'string', maxlength: 200, nullable: true},
             last_login: {type: 'dateTime', nullable: true},
@@ -180,6 +182,13 @@ var db = {
             user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
             client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
             expires: {type: 'bigInteger', nullable: false}
+        },
+        post_type: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', nullable: true},
+            name: {type: 'string', nullable: false, unique: true},
+            slug: {type: 'string', nullable: false, unique: true},
+            desc: {type: 'string', nullable: true}
         }
     };
 

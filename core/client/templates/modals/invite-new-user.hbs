@@ -1,15 +1,15 @@
 {{#gh-modal-dialog action="closeModal" showClose=true type="action" animation="fade"
-    title="Invite a New User" confirm=confirm class="invite-new-user"}}
+    title="邀请一个新用户" confirm=confirm class="invite-new-user"}}
 
         <fieldset>
             <div class="form-group">
-                <label for="new-user-email">Email Address</label>
-                {{input action="confirmAccept" class="email" id="new-user-email" type="email" placeholder="Email Address" name="email" autofocus="autofocus"
+                <label for="new-user-email">邮件地址</label>
+                {{input action="confirmAccept" class="email" id="new-user-email" type="email" placeholder="邮箱地址" name="email" autofocus="autofocus"
                 autocapitalize="off" autocorrect="off" value=email}}
             </div>
 
             <div class="form-group for-select">
-                <label for="new-user-role">Role</label>
+                <label for="new-user-role">角色</label>
                 {{gh-role-selector
                     initialValue=authorRole
                     onChange="setRole"

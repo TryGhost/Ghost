@@ -133,9 +133,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     // used on window.onbeforeunload
     unloadDirtyMessage: function () {
         return '==============================\n\n' +
-            'Hey there! It looks like you\'re in the middle of writing' +
-            ' something and you haven\'t saved all of your content.' +
-            '\n\nSave before you go!\n\n' +
+            '嘿，伙计！好像你正在写的文章还没有结束吧，' +
+            ' 是不是考虑保存一下这些内容？' +
+            '\n\n以免丢失劳动成果！\n\n' +
             '==============================';
     },
 
@@ -145,12 +145,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         errors: {
             post: {
                 published: {
-                    'published': 'Update failed.',
-                    'draft': 'Saving failed.'
+                    'published': '更新失败。',
+                    'draft': '保存失败。'
                 },
                 draft: {
-                    'published': 'Publish failed.',
-                    'draft': 'Saving failed.'
+                    'published': '发布失败。',
+                    'draft': '保存失败。'
                 }
 
             }
@@ -159,12 +159,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         success: {
             post: {
                 published: {
-                    'published': 'Updated.',
-                    'draft': 'Saved.'
+                    'published': '已更新。',
+                    'draft': '已保存。'
                 },
                 draft: {
-                    'published': 'Published!',
-                    'draft': 'Saved.'
+                    'published': '已发布。',
+                    'draft': '已保存。'
                 }
             }
         }

@@ -3,7 +3,7 @@
 		<tbody>
 			<tr class="post-setting">
 				<td class="post-setting-label">
-					<label for="url">URL</label>
+					<label for="url">链接</label>
 				</td>
 				<td class="post-setting-field">
 					{{gh-blur-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" action="updateSlug" placeholder=slugPlaceholder selectOnClick="true" stopEnterKeyDownPropagation="true"}}
@@ -11,7 +11,7 @@
 			</tr>
 			<tr class="post-setting">
 				<td class="post-setting-label">
-					<label for="pub-date">Pub Date</label>
+					<label for="pub-date">发布日期</label>
 				</td>
 				<td class="post-setting-field">
 					{{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
@@ -19,7 +19,7 @@
 			</tr>
 			<tr class="post-setting">
 				<td class="post-setting-label">
-			<label for="post-setting-author">Author</label>
+			<label for="post-setting-author">作者</label>
 		</td>
 		<td class="post-setting-field">
 			<span class="gh-select">
@@ -32,9 +32,26 @@
 			</span>
 		</td>
 		</tr>
+      <tr class="post-setting">
+          <td class="post-setting-label">
+              <label for="post-setting-type">文章类别</label>
+          </td>
+          <td class="post-setting-type">
+	          <span class="gh-select">
+		          {{view Ember.Select
+		          name="post-setting-type"
+		          content=types
+		          optionValuePath="content.id"
+		          optionLabelPath="content.name"
+		          selection=selectedType}}
+	          </span>
+          </td>
+      </tr>
+
+
 		<tr class="post-setting">
 		<td class="post-setting-label">
-					<label class="label" for="static-page">Static Page</label>
+					<label class="label" for="static-page">静态页面</label>
 				</td>
 				<td class="post-setting-item">
 					{{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
@@ -44,4 +61,4 @@
 		</tbody>
 	</table>
 </form>
-<button type="button" class="delete" {{action "openModal" "delete-post" this}}>Delete This Post</button>
+<button type="button" class="delete" {{action "openModal" "delete-post" this}}>删除这篇文章</button>

@@ -396,7 +396,7 @@ User = ghostBookshelf.Model.extend({
 
                 if (data.roles.length > 1) {
                     return when.reject(
-                        new errors.ValidationError('Only one role per user is supported at the moment.')
+                        new errors.ValidationError('当前只支持每个用户一个角色.')
                     );
                 }
 
@@ -409,7 +409,7 @@ User = ghostBookshelf.Model.extend({
                 }).then(function (roleToAssign) {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
                         return when.reject(
-                            new errors.ValidationError('This method does not support assigning the owner role')
+                            new errors.ValidationError('当前不支持分配所有者权限')
                         );
                     } else {
                         // assign all other roles
@@ -448,7 +448,7 @@ User = ghostBookshelf.Model.extend({
 
             // check for too many roles
             if (roles.length > 1) {
-                return when.reject(new errors.ValidationError('Only one role per user is supported at the moment.'));
+                return when.reject(new errors.ValidationError('当前只支持每个用户一个角色。'));
             }
             // remove roles from the object
             delete data.roles;
@@ -600,20 +600,20 @@ User = ghostBookshelf.Model.extend({
             s;
         return this.getByEmail(object.email).then(function (user) {
             if (!user) {
-                return when.reject(new errors.NotFoundError('There is no user with that email address.'));
+                return when.reject(new errors.NotFoundError('这个 email 下面没有任何用户.'));
             }
             if (user.get('status') === 'invited' || user.get('status') === 'invited-pending' ||
                     user.get('status') === 'inactive'
                 ) {
-                return when.reject(new Error('The user with that email address is inactive.'));
+                return when.reject(new Error('这个email下面的用户没有被激活.'));
             }
             if (user.get('status') !== 'locked') {
                 return nodefn.call(bcrypt.compare, object.password, user.get('password')).then(function (matched) {
                     if (!matched) {
                         return when(self.setWarning(user, {validate: false})).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
-                            return when.reject(new errors.UnauthorizedError('Your password is incorrect.<br>' +
-                                remaining + ' attempt' + s + ' remaining!'));
+                            return when.reject(new errors.UnauthorizedError('您的密码不正确.<br>' +
+                                remaining + ' 尝试'  + ' 剩余!'));
 
                             // Use comma structure, not .catch, because we don't want to catch incorrect passwords
                         }, function (error) {
@@ -622,10 +622,10 @@ User = ghostBookshelf.Model.extend({
                             // cause a login error because of it. The user validation is not important here.
                             errors.logError(
                                 error,
-                                'Error thrown from user update during login',
-                                'Visit and save your profile after logging in to check for problems.'
+                                '用户登录期间更新错误抛出，',
+                                '登录后访问并保存您的配置文件来检查问题'
                             );
-                            return when.reject(new errors.UnauthorizedError('Your password is incorrect.'));
+                            return when.reject(new errors.UnauthorizedError('你输入的密码不正确.'));
                         });
                     }
 
@@ -635,20 +635,19 @@ User = ghostBookshelf.Model.extend({
                             // cause a login error because of it. The user validation is not important here.
                             errors.logError(
                                 error,
-                                'Error thrown from user update during login',
-                                'Visit and save your profile after logging in to check for problems.'
+                                '从用户登录期间更新错误抛出',
+                                '登录后访问并保存您的配置文件来检查问题.'
                             );
                             return user;
                         });
                 }, errors.logAndThrowError);
             }
-            return when.reject(new errors.NoPermissionError('Your account is locked due to too many ' +
-                'login attempts. Please reset your password to log in again by clicking ' +
-                'the "Forgotten password?" link!'));
+            return when.reject(new errors.NoPermissionError('你的账号已经被锁住了，因为太多的登录尝试，请重置你的密码后再次登录，请点击 忘记密码? 链接'
+            ));
 
         }, function (error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
-                return when.reject(new errors.NotFoundError('There is no user with that email address.'));
+                return when.reject(new errors.NotFoundError('这个email没有对应到任何用户，用户名不存在.'));
             }
 
             return when.reject(error);
@@ -665,7 +664,7 @@ User = ghostBookshelf.Model.extend({
             user = null;
 
         if (newPassword !== ne2Password) {
-            return when.reject(new Error('Your new passwords do not match'));
+            return when.reject(new Error('你的密码不匹配'));
         }
 
         return validatePasswordLength(newPassword).then(function () {
@@ -675,7 +674,7 @@ User = ghostBookshelf.Model.extend({
             return nodefn.call(bcrypt.compare, oldPassword, user.get('password'));
         }).then(function (matched) {
             if (!matched) {
-                return when.reject(new Error('Your password is incorrect'));
+                return when.reject(new Error('你的密码不正确'));
             }
             return nodefn.call(bcrypt.genSalt);
         }).then(function (salt) {
@@ -689,7 +688,7 @@ User = ghostBookshelf.Model.extend({
     generateResetToken: function (email, expires, dbHash) {
         return this.getByEmail(email).then(function (foundUser) {
             if (!foundUser) {
-                return when.reject(new errors.NotFoundError('There is no user with that email address.'));
+                return when.reject(new errors.NotFoundError('这个email没有对应到任何用户，用户名不存在.'));
             }
 
             var hash = crypto.createHash('sha256'),
@@ -810,7 +809,7 @@ User = ghostBookshelf.Model.extend({
             // check if user has the owner role
             var currentRoles = ctxUser.toJSON().roles;
             if (!_.contains(currentRoles, ownerRole.id)) {
-                return when.reject(new errors.NoPermissionError('Only owners are able to transfer the owner role.'));
+                return when.reject(new errors.NoPermissionError('只有所有者能转让所有权.'));
             }
             contextUser = ctxUser;
             return User.findOne({id: object.id});
@@ -818,7 +817,7 @@ User = ghostBookshelf.Model.extend({
 
             var currentRoles = user.toJSON().roles;
             if (!_.contains(currentRoles, adminRole.id)) {
-                return when.reject(new errors.ValidationError('Only administrators can be assigned the owner role.'));
+                return when.reject(new errors.ValidationError('只有管理员能指定所有权.'));
             }
 
             assignUser = user;

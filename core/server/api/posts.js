@@ -8,7 +8,7 @@ var when            = require('when'),
     utils           = require('./utils'),
 
     docName         = 'posts',
-    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'],
+    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields','post_type'],
     posts;
 
 // ## Helpers
@@ -57,7 +57,6 @@ posts = {
         if (options.include) {
             options.include = prepareInclude(options.include);
         }
-
         return dataProvider.Post.findPage(options);
     },
 

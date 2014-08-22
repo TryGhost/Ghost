@@ -72,7 +72,8 @@ populate = function () {
         Post = models.Post,
         Tag = models.Tag,
         Role = models.Role,
-        Client = models.Client;
+        Client = models.Client,
+        PostType = models.PostType;
 
     logInfo('Populating fixtures');
 
@@ -90,6 +91,9 @@ populate = function () {
 
     _.each(fixtures.clients, function (client) {
         ops.push(Client.add(client, options));
+    });
+    _.each(fixtures.post_types,function(type){
+        ops.push(PostType.add(type,options));
     });
 
     // add the tag to the post

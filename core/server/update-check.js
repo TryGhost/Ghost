@@ -187,9 +187,10 @@ function updateCheck() {
                 deferred.resolve();
             } else {
                 // We need to do a check
-                return updateCheckRequest()
-                    .then(updateCheckResponse)
-                    .otherwise(updateCheckError);
+//                return updateCheckRequest()
+//                    .then(updateCheckResponse)
+//                    .otherwise(updateCheckError);
+                return deferred.resolve();
             }
         }).otherwise(updateCheckError)
             .then(deferred.resolve);

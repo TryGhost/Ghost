@@ -8,13 +8,13 @@ var ResetValidator = Ember.Object.create({
 
         if (!validator.equals(p1, p2)) {
             validationErrors.push({
-                message: 'The two new passwords don\'t match.'
+                message: '新输入的两个密码不一致。'
             });
         }
 
         if (!validator.isLength(p1, 8)) {
             validationErrors.push({
-                message: 'The password is not long enough.'
+                message: '密码长度至少是8个字符。'
             });
         }
         return validationErrors;

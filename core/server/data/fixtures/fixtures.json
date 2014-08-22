@@ -8,19 +8,34 @@
     ],
     "posts": [
         {
-            "title":            "Welcome to Ghost",
+            "title":            "欢迎使用 Ghost 博客系统中文版",
             "slug":             "welcome-to-ghost",
-            "markdown":         "You're live! Nice. We've put together a little post to introduce you to the Ghost editor and get you started. You can manage your content by signing in to the admin area at `<your blog URL>/ghost/`. When you arrive, you can select this post from a list on the left and see a preview of it on the right. Click the little pencil icon at the top of the preview to edit this post and read the next section!\n\n## Getting Started\n\nGhost uses something called Markdown for writing. Essentially, it's a shorthand way to manage your post formatting as you write!\n\nWriting in Markdown is really easy. In the left hand panel of Ghost, you simply write as you normally would. Where appropriate, you can use *shortcuts* to **style** your content. For example, a list:\n\n* Item number one\n* Item number two\n    * A nested item\n* A final item\n\nor with numbers!\n\n1. Remember to buy some milk\n2. Drink the milk\n3. Tweet that I remembered to buy the milk, and drank it\n\n### Links\n\nWant to link to a source? No problem. If you paste in url, like http://ghost.org - it'll automatically be linked up. But if you want to customise your anchor text, you can do that too! Here's a link to [the Ghost website](http://ghost.org). Neat.\n\n### What about Images?\n\nImages work too! Already know the URL of the image you want to include in your article? Simply paste it in like this to make it show up:\n\n![The Ghost Logo](https://ghost.org/images/ghost.png)\n\nNot sure which image you want to use yet? That's ok too. Leave yourself a descriptive placeholder and keep writing. Come back later and drag and drop the image in to upload:\n\n![A bowl of bananas]\n\n\n### Quoting\n\nSometimes a link isn't enough, you want to quote someone on what they've said. It was probably very wisdomous. Is wisdomous a word? Find out in a future release when we introduce spellcheck! For now - it's definitely a word.\n\n> Wisdomous - it's definitely a word.\n\n### Working with Code\n\nGot a streak of geek? We've got you covered there, too. You can write inline `<code>` blocks really easily with back ticks. Want to show off something more comprehensive? 4 spaces of indentation gets you there.\n\n    .awesome-thing {\n        display: block;\n        width: 100%;\n    }\n\n### Ready for a Break? \n\nThrow 3 or more dashes down on any new line and you've got yourself a fancy new divider. Aw yeah.\n\n---\n\n### Advanced Usage\n\nThere's one fantastic secret about Markdown. If you want, you can  write plain old HTML and it'll still work! Very flexible.\n\n<input type=\"text\" placeholder=\"I'm an input field!\" />\n\nThat should be enough to get you started. Have fun - and let us know what you think :)",
+            "markdown":         "Yeah，博客上线了！这篇文章的目的是向你介绍 Ghost 编辑器并帮你快速上手。通过 `<your blog URL>/ghost/` 链接就可以登录系统后台管理你的博客内容了。当你进入后台，你就能看到左侧文章列表处列出的这篇文章，右侧就是这篇文章的预览效果。点击预览栏右上角的铅笔图标就能进入内容编辑页面。 \r\n\r\n## 快速入门\r\n\r\nGhost 使用 Markdown 语法书写内容。简单来说，Markdown 就是一种简化的书写格式！\r\n\r\n用 Markdown 语法写作是很容易的。在编辑界面的左侧就是你写作的地方。在你认为需要的时候，可以使用以下这些语法来格式化你的内容。例如下面这个无序列表：\r\n\r\n* Item number one\r\n* Item number two\r\n    * A nested item\r\n* A final item\r\n\r\n还可以是有序列表：\r\n\r\n1. Remember to buy some milk\r\n2. Drink the milk\r\n3. Tweet that I remembered to buy the milk, and drank it\r\n\r\n### 链接\r\n\r\n如果要链接其它页面，可以直接把页面的 URL 粘贴过来，例如 http://www.ghostchina.com - 会被自动识别为链接。但是，如果你想自定义链接文本，可以像这样： [Ghost 中文网](http://www.ghostchina.com)。很简单吧！\r\n\r\n### 图片\r\n\r\n插入图片也没问题！前提是你事先知道图片的 URL，然后像下面这样：\r\n\r\n![The Ghost Logo](http://static.ghostchina.com/image/3/fe/34a9831916be9db1381ecb320491e.png)\r\n\r\n如果图片在本地的硬盘里怎么办？也很简单！像下面这样书写就能为图片预留一个位置，然后你可以继续写作，回头再通过拖拽的方式把图片上传到服务器上。\r\n\r\n![一张图片]\r\n\r\n\r\n### 引用\r\n\r\n有些时候我们需要引用别人说的话，可以这样：\r\n\r\n> Wisdomous - it's definitely a word.\r\n\r\n### 代码\r\n\r\n或许你是个码农，需要贴一些代码到文章里，可以通过两个引号（Tab 键上面的那个键）加入行内代码 `<code>`。如果需要加入大段的代码，可以在代码前加 4 个空格缩进，这就是 Markdown 的语法。\r\n\r\n    .awesome-thing {\r\n        display: block;\r\n        width: 100%;\r\n    }\r\n\r\n### 分割线\r\n\r\n在任一新行输入 3 个或更多的短横线（减号）就是一条分隔线了。\r\n\r\n---\r\n\r\n### 高级用法\r\n\r\nMarkdown 还有一个特别用法，就是在你需要的时候可以直接书写 HTML 代码。\r\n\r\n<input type=\"text\" placeholder=\"这是个输入框！\" />\r\n\r\n只要掌握了上面的这些介绍，你就已经入门了！继续写作吧！",
             "image":            null,
             "featured":         false,
             "page":             false,
             "status":           "published",
-            "language":         "en_US",
+            "language":         "zh_CN",
             "meta_title":       null,
             "meta_description": null
         }
     ],
+    "post_types": [
+        {
+            "id":            1,
+            "uuid":          null,
+            "name":          "文章",
+            "slug":          "articles"
 
+        },
+        {
+            "id":            2,
+            "uuid":          null,
+            "name":          "视频",
+            "slug":          "videos"
+
+        }
+    ],
     "tags": [
         {
             "name":             "Getting Started",
@@ -35,19 +50,19 @@
     "roles": [
         {
             "name":             "Administrator",
-            "description":      "Administrators"
+            "description":      "管理员"
         },
         {
             "name":             "Editor",
-            "description":      "Editors"
+            "description":      "编辑"
         },
         {
             "name":             "Author",
-            "description":      "Authors"
+            "description":      "作者"
         },
         {
             "name":             "Owner",
-            "description":      "Blog Owner"
+            "description":      "博客所有者"
         }
     ],
 

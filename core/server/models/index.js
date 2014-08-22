@@ -17,6 +17,7 @@ models = {
     Client: require('./client').Client,
     Accesstoken: require('./accesstoken').Accesstoken,
     Refreshtoken: require('./refreshtoken').Refreshtoken,
+    PostType: require('./postType').PostType,
 
     init: function () {
         return true;

@@ -62,6 +62,58 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             .extend(Ember.PromiseProxyMixin)
             .create(deferred);
     }.property(),
+    //begin add by liuxing
+    selectedType: null,
+    postTypes: null,
+    initializeSelectedType: Ember.observer('model', function () {
+        var self = this;
+        return this.store.find('postType').then(function(types){
+            return types.filter(function(type){
+                if(type.get('id') == self.get('model').get('post_type')){
+                    self.set('selectedType', type);
+                    return type;
+                }
+            });
+        });
+    }).on('init'),
+
+    changeType: function () {
+        var type = this.get('post_type'),
+            selectedType = this.get('selectedType'),
+            model = this.get('model'),
+            self = this;
+        //return if nothing changed
+        if (selectedType.get('id') === type) {
+            return;
+        }
+        model.set('post_type', selectedType.get('id'));
+
+        //if this is a new post (never been saved before), don't try to save it
+        if (this.get('isNew')) {
+            return;
+        }
+
+        model.save(this.get('saveOptions')).catch(function (errors) {
+            self.showErrors(errors);
+            self.set('selectedType', type);
+            model.rollback();
+        });
+    }.observes('selectedType'),
+    types: function () {
+        var self = this;
+        //Loaded asynchronously, so must use promise proxies.
+        var deferred = {};
+
+        deferred.promise = this.store.find('postType').then(function (types) {
+            self.set('postTypes',types);
+            return types;
+        });
+
+        return Ember.ArrayProxy
+            .extend(Ember.PromiseProxyMixin)
+            .create(deferred);
+    }.property(),
+    //end add by liuxing
     //Changes in the PSM are too minor to warrant NProgress firing
     saveOptions: {disableNProgress: true},
     /**
@@ -88,7 +140,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     //Requests slug from title
     generateSlugPlaceholder: function () {
         var self = this,
-            title = this.get('titleScratch');
+            //title = this.get('titleScratch');
+            title = 'postSlugInit';
 
         this.get('slugGenerator').generateSlug(title).then(function (slug) {
             self.set('slugPlaceholder', slug);
@@ -194,7 +247,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
                 return self.get('model').save(self.get('saveOptions'));
             }).then(function () {
-                self.showSuccess('Permalink successfully changed to <strong>' +
+                self.showSuccess('文章永久地址已经被成功修改为 <strong>' +
                     self.get('slug') + '</strong>.');
             }).catch(function (errors) {
                 self.showErrors(errors);
@@ -223,11 +276,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             // Validate new Published date
             if (!newPublishedAt.isValid()) {
-                errMessage = 'Published Date must be a valid date with format: ' +
+                errMessage = '发布日期必须是如下格式的有效日期：' +
                     'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
             }
             if (newPublishedAt.diff(new Date(), 'h') > 0) {
-                errMessage = 'Published Date cannot currently be in the future.';
+                errMessage = '发布日期不能是未来时间。';
             }
 
             //If errors, notify and exit.
