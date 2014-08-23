@@ -5,44 +5,90 @@
 
 var path          = require('path'),
     Promise       = require('bluebird'),
+    fs            = require('fs'),
     url           = require('url'),
     _             = require('lodash'),
     knex          = require('knex'),
+    validator     = require('validator'),
     requireTree   = require('../require-tree').readAll,
+    errors        = require('../errors'),
     theme         = require('./theme'),
     configUrl     = require('./url'),
-    ghostConfig   = {},
     appRoot       = path.resolve(__dirname, '../../../'),
     corePath      = path.resolve(appRoot, 'core/'),
     testingEnvs   = ['testing', 'testing-mysql', 'testing-pg'],
     defaultConfig = {},
     knexInstance;
 
-// Are we using sockets? Custom socket or the default?
-function getSocket() {
-    if (ghostConfig.server.hasOwnProperty('socket')) {
-        return _.isString(ghostConfig.server.socket) ? ghostConfig.server.socket : path.join(ghostConfig.paths.contentPath, process.env.NODE_ENV + '.socket');
+
+function ConfigManager(config) {
+    /**
+     * Our internal true representation of our current config object.
+     * @private
+     * @type {Object}
+     */
+    this._config = {};
+
+    // Allow other modules to be externally accessible.
+    this.theme = theme;
+    this.urlFor = configUrl.urlFor;
+    this.urlForPost = configUrl.urlForPost;
+
+    // If we're given an initial config object then we can set it.
+    if (config && _.isObject(config)) {
+        this.set(config);
     }
-    return false;
 }
 
-function updateConfig(config) {
+// Are we using sockets? Custom socket or the default?
+ConfigManager.prototype.getSocket = function () {
+    if (this._config.server.hasOwnProperty('socket')) {
+        return _.isString(this._config.server.socket) ?
+            this._config.server.socket :
+            path.join(this._config.paths.contentPath, process.env.NODE_ENV + '.socket');
+    }
+    return false;
+};
+
+ConfigManager.prototype.init = function (rawConfig) {
+    var self = this;
+
+    // Cache the config.js object's environment
+    // object so we can later refer to it.
+    // Note: this is not the entirety of config.js,
+    // just the object appropriate for this NODE_ENV
+    self.set(rawConfig);
+
+    return Promise.all([requireTree(self._config.paths.themePath), requireTree(self._config.paths.appPath)]).then(function (paths) {
+        self._config.paths.availableThemes = paths[0];
+        self._config.paths.availableApps = paths[1];
+        return self._config;
+    });
+};
+
+/**
+ * Allows you to set the config object.
+ * @param {Object} config Only accepts an object at the moment.
+ */
+ConfigManager.prototype.set = function (config) {
     var localPath = '',
         contentPath,
         subdir;
 
-    // Merge passed in config object onto
-    // the cached ghostConfig object
-    _.merge(ghostConfig, config);
+    // Merge passed in config object onto our existing config object.
+    // We're using merge here as it doesn't assign `undefined` properties
+    // onto our cached config object.  This allows us to only update our
+    // local copy with properties that have been explicitly set.
+    _.merge(this._config, config);
 
     // Protect against accessing a non-existant object.
     // This ensures there's always at least a paths object
     // because it's referenced in multiple places.
-    ghostConfig.paths = ghostConfig.paths || {};
+    this._config.paths = this._config.paths || {};
 
     // Parse local path location
-    if (ghostConfig.url) {
-        localPath = url.parse(ghostConfig.url).path;
+    if (this._config.url) {
+        localPath = url.parse(this._config.url).path;
         // Remove trailing slash
         if (localPath !== '/') {
             localPath = localPath.replace(/\/$/, '');
@@ -53,20 +99,20 @@ function updateConfig(config) {
 
     // Allow contentPath to be over-written by passed in config object
     // Otherwise default to default content path location
-    contentPath = ghostConfig.paths.contentPath || path.resolve(appRoot, 'content');
+    contentPath = this._config.paths.contentPath || path.resolve(appRoot, 'content');
 
-    if (!knexInstance && ghostConfig.database && ghostConfig.database.client) {
-        knexInstance = knex(ghostConfig.database);
+    if (!knexInstance && this._config.database && this._config.database.client) {
+        knexInstance = knex(this._config.database);
     }
 
-    _.merge(ghostConfig, {
+    _.merge(this._config, {
         database: {
             knex: knexInstance
         },
         paths: {
             'appRoot':          appRoot,
             'subdir':           subdir,
-            'config':           ghostConfig.paths.config || path.join(appRoot, 'config.js'),
+            'config':           this._config.paths.config || path.join(appRoot, 'config.js'),
             'configExample':    path.join(appRoot, 'config.example.js'),
             'corePath':         corePath,
 
@@ -82,8 +128,8 @@ function updateConfig(config) {
             'lang':             path.join(corePath, '/shared/lang/'),
             'debugPath':        subdir + '/ghost/debug/',
 
-            'availableThemes':  ghostConfig.paths.availableThemes || {},
-            'availableApps':    ghostConfig.paths.availableApps || {},
+            'availableThemes':  this._config.paths.availableThemes || {},
+            'availableApps':    this._config.paths.availableApps || {},
             'builtScriptPath':  path.join(corePath, 'built/scripts/')
         }
     });
@@ -91,33 +137,161 @@ function updateConfig(config) {
     // Also pass config object to
     // configUrl object to maintain
     // clean depedency tree
-    configUrl.setConfig(ghostConfig);
-}
+    configUrl.setConfig(this._config);
 
-function initConfig(rawConfig) {
-    // Cache the config.js object's environment
-    // object so we can later refer to it.
-    // Note: this is not the entirety of config.js,
-    // just the object appropriate for this NODE_ENV
-    updateConfig(rawConfig);
+    // For now we're going to copy the current state of this._config
+    // so it's directly accessible on the instance.
+    // @TODO: perhaps not do this?  Put access of the config object behind
+    // a function?
+    _.extend(this, this._config);
+};
 
-    return Promise.all([requireTree(ghostConfig.paths.themePath), requireTree(ghostConfig.paths.appPath)]).then(function (paths) {
-        ghostConfig.paths.availableThemes = paths[0];
-        ghostConfig.paths.availableApps = paths[1];
-        return ghostConfig;
+/**
+ * Allows you to read the config object.
+ * @return {Object} The config object.
+ */
+ConfigManager.prototype.get = function () {
+    return this._config;
+};
+
+ConfigManager.prototype.load = function (configFilePath) {
+    var self = this;
+
+    self._config.paths.config = process.env.GHOST_CONFIG || configFilePath || self._config.paths.config;
+
+    /* Check for config file and copy from config.example.js
+        if one doesn't exist. After that, start the server. */
+    return new Promise(function (resolve, reject) {
+        fs.exists(self._config.paths.config, function (exists) {
+            var pendingConfig;
+
+            if (!exists) {
+                pendingConfig = self.writeFile();
+            }
+
+            Promise.resolve(pendingConfig).then(function () {
+                return self.validate();
+            }).then(function (rawConfig) {
+                resolve(self.init(rawConfig));
+            }).catch(reject);
+        });
     });
-}
+};
+
+/* Check for config file and copy from config.example.js
+    if one doesn't exist. After that, start the server. */
+ConfigManager.prototype.writeFile = function () {
+    var configPath = this._config.paths.config,
+        configExamplePath = this._config.paths.configExample;
+
+    return new Promise(function (resolve, reject) {
+        fs.exists(configExamplePath, function checkTemplate(templateExists) {
+            var read,
+                write,
+                error;
+
+            if (!templateExists) {
+                error = new Error('Could not locate a configuration file.');
+                error.context = appRoot;
+                error.help = 'Please check your deployment for config.js or config.example.js.';
+
+                return reject(error);
+            }
+
+            // Copy config.example.js => config.js
+            read = fs.createReadStream(configExamplePath);
+            read.on('error', function (err) {
+                errors.logError(new Error('Could not open config.example.js for read.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
+
+                reject(err);
+            });
+
+            write = fs.createWriteStream(configPath);
+            write.on('error', function (err) {
+                errors.logError(new Error('Could not open config.js for write.'), appRoot, 'Please check your deployment for config.js or config.example.js.');
+
+                reject(err);
+            });
+
+            write.on('finish', resolve);
+
+            read.pipe(write);
+        });
+    });
+};
+
+/**
+ * Read config.js file from file system using node's require
+ * @param  {String} envVal Which environment we're in.
+ * @return {Object}        The config object.
+ */
+ConfigManager.prototype.readFile = function (envVal) {
+    return require(this._config.paths.config)[envVal];
+};
+
+/**
+ * Validates the config object has everything we want and in the form we want.
+ * @return {Promise.<Object>} Returns a promise that resolves to the config object.
+ */
+ConfigManager.prototype.validate = function () {
+    var envVal = process.env.NODE_ENV || undefined,
+        hasHostAndPort,
+        hasSocket,
+        config,
+        parsedUrl;
+
+    try {
+        config = this.readFile(envVal);
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
+
+    // Check if we don't even have a config
+    if (!config) {
+        errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), 'NODE_ENV=' + envVal,
+            'Ensure your config.js has a section for the current NODE_ENV value and is formatted properly.');
+
+        return Promise.reject(new Error('Unable to load config for NODE_ENV=' + envVal));
+    }
+
+    // Check that our url is valid
+    if (!validator.isURL(config.url, { protocols: ['http', 'https'], require_protocol: true })) {
+        errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
+
+        return Promise.reject(new Error('invalid site url'));
+    }
+
+    parsedUrl = url.parse(config.url || 'invalid', false, true);
+
+    if (/\/ghost(\/|$)/.test(parsedUrl.pathname)) {
+        errors.logError(new Error('Your site url in config.js cannot contain a subdirectory called ghost.'), config.url, 'Please rename the subdirectory before restarting');
+
+        return Promise.reject(new Error('ghost subdirectory not allowed'));
+    }
+
+    // Check that we have database values
+    if (!config.database || !config.database.client) {
+        errors.logError(new Error('Your database configuration in config.js is invalid.'), JSON.stringify(config.database), 'Please make sure this is a valid Bookshelf database configuration');
+
+        return Promise.reject(new Error('invalid database configuration'));
+    }
+
+    hasHostAndPort = config.server && !!config.server.host && !!config.server.port;
+    hasSocket = config.server && !!config.server.socket;
+
+    // Check for valid server host and port values
+    if (!config.server || !(hasHostAndPort || hasSocket)) {
+        errors.logError(new Error('Your server values (socket, or host and port) in config.js are invalid.'), JSON.stringify(config.server), 'Please provide them before restarting.');
+
+        return Promise.reject(new Error('invalid server configuration'));
+    }
+
+    return Promise.resolve(config);
+};
 
 if (testingEnvs.indexOf(process.env.NODE_ENV) > -1) {
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 }
 
-// Init config
-updateConfig(defaultConfig);
-
-module.exports = ghostConfig;
-module.exports.init = initConfig;
-module.exports.theme = theme;
-module.exports.getSocket = getSocket;
-module.exports.urlFor = configUrl.urlFor;
-module.exports.urlForPost = configUrl.urlForPost;
+module.exports = new ConfigManager(defaultConfig);
