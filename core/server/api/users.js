@@ -1,6 +1,6 @@
 // # Users API
 // RESTful API for the User resource
-var when            = require('when'),
+var Promise         = require('bluebird'),
     _               = require('lodash'),
     dataProvider    = require('../models'),
     settings        = require('./settings'),
@@ -26,7 +26,7 @@ function prepareInclude(include) {
 sendInviteEmail = function sendInviteEmail(user) {
     var emailData;
 
-    return when.join(
+    return Promise.join(
         users.read({'id': user.created_by}),
         settings.read({'key': 'title'}),
         settings.read({context: {internal: true}, key: 'dbHash'})
@@ -114,7 +114,7 @@ users = {
                 return { users: [result.toJSON()] };
             }
 
-            return when.reject(new errors.NotFoundError('User not found.'));
+            return Promise.reject(new errors.NotFoundError('User not found.'));
         });
     },
 
@@ -143,7 +143,7 @@ users = {
                             return { users: [result.toJSON()]};
                         }
 
-                        return when.reject(new errors.NotFoundError('User not found.'));
+                        return Promise.reject(new errors.NotFoundError('User not found.'));
                     });
             };
 
@@ -160,7 +160,7 @@ users = {
 
                         if (roleId !== contextRoleId &&
                                 parseInt(options.id, 10) === parseInt(options.context.user, 10)) {
-                            return when.reject(new errors.NoPermissionError('You cannot change your own role.'));
+                            return Promise.reject(new errors.NoPermissionError('You cannot change your own role.'));
                         } else if (roleId !== contextRoleId) {
                             return dataProvider.User.findOne({role: 'Owner'}).then(function (result) {
                                 if (parseInt(result.id, 10) !== parseInt(options.id, 10)) {
@@ -168,7 +168,7 @@ users = {
                                         return editOperation();
                                     });
                                 } else {
-                                    return when.reject(new errors.NoPermissionError('There has to be one owner.'));
+                                    return Promise.reject(new errors.NoPermissionError('There has to be one owner.'));
                                 }
                             });
                         }
@@ -208,7 +208,7 @@ users = {
                     newUser.password = globalUtils.uid(50);
                     newUser.status = 'invited';
                 } else {
-                    return when.reject(new errors.BadRequestError('No email provided.'));
+                    return Promise.reject(new errors.BadRequestError('No email provided.'));
                 }
 
                 return dataProvider.User.getByEmail(
@@ -221,7 +221,7 @@ users = {
                         if (foundUser.get('status') === 'invited' || foundUser.get('status') === 'invited-pending') {
                             return foundUser;
                         } else {
-                            return when.reject(new errors.BadRequestError('User is already registered.'));
+                            return Promise.reject(new errors.BadRequestError('User is already registered.'));
                         }
                     }
                 }).then(function (invitedUser) {
@@ -237,7 +237,7 @@ users = {
                         });
                     }
                 }).then(function () {
-                    return when.resolve({users: [user]});
+                    return Promise.resolve({users: [user]});
                 }).catch(function (error) {
                     if (error && error.type === 'EmailError') {
                         error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
@@ -250,7 +250,7 @@ users = {
                             });
                         });
                     }
-                    return when.reject(error);
+                    return Promise.reject(error);
                 });
             };
 
@@ -262,7 +262,7 @@ users = {
                     // Make sure user is allowed to add a user with this role
                     return dataProvider.Role.findOne({id: roleId}).then(function (role) {
                         if (role.get('name') === 'Owner') {
-                            return when.reject(new errors.NoPermissionError('Not allowed to create an owner user.'));
+                            return Promise.reject(new errors.NoPermissionError('Not allowed to create an owner user.'));
                         }
 
                         return canThis(options.context).assign.role(role);
@@ -300,7 +300,7 @@ users = {
                 }).then(function () {
                     return result;
                 }, function (error) {
-                    return when.reject(new errors.InternalServerError(error));
+                    return Promise.reject(new errors.InternalServerError(error));
                 });
             }, function (error) {
                 return errors.handleAPIError(error);
@@ -327,9 +327,9 @@ users = {
             ne2Password = checkedPasswordReset.password[0].ne2Password;
 
             return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, options).then(function () {
-                return when.resolve({password: [{message: 'Password changed successfully.'}]});
+                return Promise.resolve({password: [{message: 'Password changed successfully.'}]});
             }).catch(function (error) {
-                return when.reject(new errors.ValidationError(error.message));
+                return Promise.reject(new errors.ValidationError(error.message));
             });
         });
     },
@@ -343,9 +343,9 @@ users = {
         }).then(function () {
             return utils.checkObject(object, 'owner').then(function (checkedOwnerTransfer) {
                 return dataProvider.User.transferOwnership(checkedOwnerTransfer.owner[0], options).then(function (updatedUsers) {
-                    return when.resolve({ users: updatedUsers });
+                    return Promise.resolve({ users: updatedUsers });
                 }).catch(function (error) {
-                    return when.reject(new errors.ValidationError(error.message));
+                    return Promise.reject(new errors.ValidationError(error.message));
                 });
             });
         }).catch(function (error) {

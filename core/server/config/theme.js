@@ -1,7 +1,7 @@
 // Holds all theme configuration information
 // that as mostly used by templates and handlebar helpers.
 
-var when        = require('when'),
+var Promise = require('bluebird'),
 
 // Variables
     themeConfig = {};
@@ -18,7 +18,7 @@ function theme() {
 // tries to access the config() object before it is created.
 function update(settings, configUrl) {
     // TODO: Pass the context into this method instead of hard coding internal: true?
-    return when.all([
+    return Promise.all([
         settings.read('title'),
         settings.read('description'),
         settings.read('logo'),
@@ -30,7 +30,6 @@ function update(settings, configUrl) {
         themeConfig.description = globals[1].settings[0].value;
         themeConfig.logo = globals[2].settings[0] ? globals[2].settings[0].value : '';
         themeConfig.cover = globals[3].settings[0] ? globals[3].settings[0].value : '';
-        return;
     });
 }
 

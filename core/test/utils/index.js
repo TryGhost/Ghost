@@ -1,6 +1,5 @@
-var when          = require('when'),
-    sequence      = require('when/sequence'),
-    nodefn        = require('when/node'),
+var Promise       = require('bluebird'),
+    sequence      = require('../../server/utils/sequence'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
@@ -32,7 +31,7 @@ var when          = require('when'),
 fixtures = {
     insertPosts: function insertPosts() {
         var knex = config.database.knex;
-        return when(knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
+        return Promise.resolve(knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
             return knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
             return knex('posts_tags').insert(DataGenerator.forKnex.posts_tags);
@@ -49,7 +48,7 @@ fixtures = {
 
         max = max || 50;
         // insert users of different roles
-        return when(fixtures.createUsersWithRoles()).then(function (results) {
+        return Promise.resolve(fixtures.createUsersWithRoles()).then(function (results) {
             // create the tags
             return knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function (results) {
@@ -72,7 +71,7 @@ fixtures = {
                 };
             }));
         }).then(function () {
-            return when.all([
+            return Promise.all([
                 // PostgreSQL can return results in any order
                 knex('posts').orderBy('id', 'asc').select('id'),
                 knex('tags').select('id')
@@ -84,7 +83,7 @@ fixtures = {
                 i;
 
             if (max > posts.length) {
-                throw new Error('Trying to add more posts_tags than the number of posts.');
+                throw new Error('Trying to add more posts_tags than the number of posts. ' + max + ' ' + posts.length);
             }
 
             for (i = 0; i < max; i += 1) {
@@ -133,7 +132,7 @@ fixtures = {
 
         var knex = config.database.knex;
 
-        return when.all([
+        return Promise.all([
             // PostgreSQL can return results in any order
             knex('posts').orderBy('id', 'asc').select('id'),
             knex('tags').select('id', 'name')
@@ -268,16 +267,17 @@ fixtures = {
     },
 
     loadExportFixture: function loadExportFixture(filename) {
-        var filepath = path.resolve(__dirname + '/fixtures/' + filename + '.json');
+        var filepath = path.resolve(__dirname + '/fixtures/' + filename + '.json'),
+            readFile = Promise.promisify(fs.readFile);
 
-        return nodefn.call(fs.readFile, filepath).then(function (fileContents) {
+        return readFile(filepath).then(function (fileContents) {
             var data;
 
             // Parse the json data
             try {
                 data = JSON.parse(fileContents);
             } catch (e) {
-                return when.reject(new Error('Failed to parse the file'));
+                return new Error('Failed to parse the file');
             }
 
             return data;
@@ -451,7 +451,6 @@ setup = function setup() {
 // TODO make this do the DB init as well
 doAuth = function doAuth() {
     var options = arguments,
-        deferred = when.defer(),
         request = arguments[0],
         user = DataGenerator.forModel.users[0],
         fixtureOps;
@@ -466,19 +465,19 @@ doAuth = function doAuth() {
 
     fixtureOps = getFixtureOps(options);
 
-    sequence(fixtureOps).then(function () {
-        request.post('/ghost/api/v0.1/authentication/token/')
-            .send({ grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
-            .end(function (err, res) {
-                if (err) {
-                    deferred.reject(err);
-                }
+    return new Promise(function (resolve, reject) {
+        return sequence(fixtureOps).then(function () {
+            request.post('/ghost/api/v0.1/authentication/token/')
+                .send({ grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+                .end(function (err, res) {
+                    if (err) {
+                        return reject(err);
+                    }
 
-                deferred.resolve(res.body.access_token);
-            });
+                    resolve(res.body.access_token);
+                });
+        });
     });
-
-    return deferred.promise;
 };
 
 teardown = function teardown(done) {

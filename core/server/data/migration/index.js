@@ -1,11 +1,9 @@
 var _               = require('lodash'),
-    when            = require('when'),
+    Promise         = require('bluebird'),
+    sequence        = require('../../utils/sequence'),
     path            = require('path'),
     fs              = require('fs'),
-    nodefn          = require('when/node'),
     errors          = require('../../errors'),
-    sequence        = require('when/sequence'),
-
     commands        = require('./commands'),
     versioning      = require('../versioning'),
     models          = require('../../models'),
@@ -47,7 +45,7 @@ backupDatabase = function backupDatabase() {
         return dataExport.fileName().then(function (fileName) {
             fileName = path.resolve(config.paths.contentPath + '/data/' + fileName);
 
-            return nodefn.call(fs.writeFile, fileName, JSON.stringify(exportedData)).then(function () {
+            return Promise.promisify(fs.writeFile)(fileName, JSON.stringify(exportedData)).then(function () {
                 logInfo('Database backup written to: ' + fileName);
             });
         });
@@ -80,7 +78,7 @@ init = function (tablesOnly) {
         if (databaseVersion === defaultVersion) {
             // 1. The database exists and is up-to-date
             logInfo('Up to date at version ' + databaseVersion);
-            return when.resolve();
+            return;
         }
 
         if (databaseVersion > defaultVersion) {
@@ -155,7 +153,7 @@ migrateUp = function (fromVersion, toVersion) {
     }).then(function () {
         migrateOps = migrateOps.concat(commands.getDeleteCommands(oldTables, schemaTables));
         migrateOps = migrateOps.concat(commands.getAddCommands(oldTables, schemaTables));
-        return when.all(
+        return Promise.all(
             _.map(oldTables, function (table) {
                 return utils.getIndexes(table).then(function (indexes) {
                     modifyUniCommands = modifyUniCommands.concat(commands.modifyUniqueCommands(table, indexes));
@@ -163,7 +161,7 @@ migrateUp = function (fromVersion, toVersion) {
             })
         );
     }).then(function () {
-        return when.all(
+        return Promise.all(
             _.map(oldTables, function (table) {
                 return utils.getColumns(table).then(function (columns) {
                     migrateOps = migrateOps.concat(commands.addColumnCommands(table, columns));
@@ -177,9 +175,9 @@ migrateUp = function (fromVersion, toVersion) {
         // execute the commands in sequence
         if (!_.isEmpty(migrateOps)) {
             logInfo('Running migrations');
+
             return sequence(migrateOps);
         }
-        return;
     }).then(function () {
         return fixtures.update(fromVersion, toVersion);
     }).then(function () {

@@ -2,8 +2,7 @@ var downsize        = require('downsize'),
     hbs             = require('express-hbs'),
     moment          = require('moment'),
     _               = require('lodash'),
-    when            = require('when'),
-
+    Promise         = require('bluebird'),
     api             = require('../api'),
     config          = require('../config'),
     errors          = require('../errors'),
@@ -147,15 +146,15 @@ coreHelpers.url = function (options) {
     }
 
     if (schema.isTag(this)) {
-        return when(config.urlFor('tag', {tag: this}, absolute));
+        return Promise.resolve(config.urlFor('tag', {tag: this}, absolute));
     }
 
     if (schema.isUser(this)) {
-        return when(config.urlFor('author', {author: this}, absolute));
+        return Promise.resolve(config.urlFor('author', {author: this}, absolute));
     }
 
 
-    return when(config.urlFor(this, absolute));
+    return Promise.resolve(config.urlFor(this, absolute));
 };
 
 // ### Asset helper
@@ -786,9 +785,9 @@ function registerAsyncHelper(hbs, name, fn) {
     hbs.registerAsyncHelper(name, function (options, cb) {
         // Wrap the function passed in with a when.resolve so it can
         // return either a promise or a value
-        when.resolve(fn.call(this, options)).then(function (result) {
+        Promise.resolve(fn.call(this, options)).then(function (result) {
             cb(result);
-        }).otherwise(function (err) {
+        }).catch(function (err) {
             errors.logAndThrowError(err, 'registerAsyncThemeHelper: ' + name);
         });
     });

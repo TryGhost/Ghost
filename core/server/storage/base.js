@@ -1,6 +1,6 @@
 var moment  = require('moment'),
     path    = require('path'),
-    when    = require('when'),
+    Promise = require('bluebird'),
     baseStore;
 
 // TODO: would probably be better to put these on the prototype and have proper constructors etc
@@ -34,18 +34,18 @@ baseStore = {
                     self.generateUnique(store, dir, name, ext, i, done);
                 });
             } else {
-                done.resolve(filename);
+                done(filename);
             }
         });
     },
     'getUniqueFileName': function (store, image, targetDir) {
-        var done = when.defer(),
-            ext = path.extname(image.name),
-            name = path.basename(image.name, ext).replace(/[\W]/gi, '-');
+        var ext = path.extname(image.name),
+            name = path.basename(image.name, ext).replace(/[\W]/gi, '-'),
+            self = this;
 
-        this.generateUnique(store, targetDir, name, ext, 0, done);
-
-        return done.promise;
+        return new Promise(function (resolve) {
+            self.generateUnique(store, targetDir, name, ext, 0, resolve);
+        });
     }
 };
 

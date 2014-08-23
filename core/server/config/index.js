@@ -4,7 +4,7 @@
 // All other files that need to reference config.js should use this file.
 
 var path          = require('path'),
-    when          = require('when'),
+    Promise       = require('bluebird'),
     url           = require('url'),
     _             = require('lodash'),
     knex          = require('knex'),
@@ -101,7 +101,7 @@ function initConfig(rawConfig) {
     // just the object appropriate for this NODE_ENV
     updateConfig(rawConfig);
 
-    return when.all([requireTree(ghostConfig.paths.themePath), requireTree(ghostConfig.paths.appPath)]).then(function (paths) {
+    return Promise.all([requireTree(ghostConfig.paths.themePath), requireTree(ghostConfig.paths.appPath)]).then(function (paths) {
         ghostConfig.paths.availableThemes = paths[0];
         ghostConfig.paths.availableApps = paths[1];
         return ghostConfig;
