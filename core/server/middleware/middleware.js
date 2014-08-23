@@ -43,7 +43,7 @@ var middleware = {
 
         // SubPath is the url path starting after any default subdirectories
         // it is stripped of anything after the two levels `/ghost/.*?/` as the reset link has an argument
-        path = req.path.substring(config.paths.subdir.length);
+        path = req.path;
         /*jslint regexp:true, unparam:true*/
         subPath = path.replace(/^(\/.*?\/.*?\/)(.*)?/, function (match, a) {
             return a;
