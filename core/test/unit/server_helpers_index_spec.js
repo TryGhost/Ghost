@@ -1144,7 +1144,7 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.meta_title);
         });
 
-        it('can return blog title', function (done) {
+        it('returns correct title for homepage', function (done) {
             helpers.meta_title.call({relativeUrl: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 String(rendered).should.equal('Ghost');
@@ -1153,37 +1153,66 @@ describe('Core Helpers', function () {
             }).catch(done);
         });
 
-        it('can return title of a post', function (done) {
+        it('returns correct title for paginated page', function (done) {
+            helpers.meta_title.call({relativeUrl: '/page/2/'}).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Ghost - Page 2');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns correct title for a post', function (done) {
             var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_title.call(post).then(function (rendered) {
                 should.exist(rendered);
                 String(rendered).should.equal('Post Title');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
-        it('can return title for a tag page', function (done) {
+        it('returns correct title for a tag page', function (done) {
             var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
             helpers.meta_title.call(tag).then(function (rendered) {
                 should.exist(rendered);
                 String(rendered).should.equal('Rasper Red - Ghost');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
-        it('can return title for an author page', function (done) {
+        it('returns correct title for a paginated tag page', function (done) {
+            var tag = {relativeUrl: '/tag/rasper-red/page/2/', tag: {name: 'Rasper Red'}};
+            helpers.meta_title.call(tag).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Rasper Red - Page 2 - Ghost');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns correct title for an author page', function (done) {
             var author = {relativeUrl: '/author/donald', author: {name: 'Donald Duck'}};
             helpers.meta_title.call(author).then(function (rendered) {
                 should.exist(rendered);
                 String(rendered).should.equal('Donald Duck - Ghost');
 
                 done();
-            }).then(null, done);
+            }).catch(done);
         });
 
-	it('can return escaped title of a post', function (done) {
+        it('returns correct title for a paginated author page', function (done) {
+            var author = {relativeUrl: '/author/donald/page/2/', author: {name: 'Donald Duck'}};
+            helpers.meta_title.call(author).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Donald Duck - Page 2 - Ghost');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns correctly escaped title of a post', function (done) {
             var post = {relativeUrl: '/nice-escaped-post', post: {title: 'Post Title "</>'}};
             helpers.meta_title.call(post).then(function (rendered) {
                 should.exist(rendered);
@@ -1193,15 +1222,6 @@ describe('Core Helpers', function () {
             }).catch(done);
         });
 
-        it('can return tag name', function (done) {
-            var post = {relativeUrl: '/tag/foo', tag: {name: 'foo'}};
-            helpers.meta_title.call(post).then(function (rendered) {
-                should.exist(rendered);
-                String(rendered).should.equal('foo - Ghost');
-
-                done();
-            }).catch(done);
-        });
     });
 
     describe('meta_description helper', function () {
@@ -1210,7 +1230,7 @@ describe('Core Helpers', function () {
             should.exist(handlebars.helpers.meta_description);
         });
 
-        it('can return blog description', function (done) {
+        it('returns correct blog description', function (done) {
             helpers.meta_description.call({relativeUrl: '/'}).then(function (rendered) {
                 should.exist(rendered);
                 String(rendered).should.equal('Just a blogging platform.');
@@ -1219,7 +1239,56 @@ describe('Core Helpers', function () {
             }).catch(done);
         });
 
-        it('can return empty description on post', function (done) {
+        it('returns empty description on paginated page', function (done) {
+            helpers.meta_description.call({relativeUrl: '/page/2/'}).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns empty description for a tag page', function (done) {
+            var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
+            helpers.meta_description.call(tag).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns empty description for a paginated tag page', function (done) {
+            var tag = {relativeUrl: '/tag/rasper-red/page/2/', tag: {name: 'Rasper Red'}};
+            helpers.meta_description.call(tag).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns correct description for an author page', function (done) {
+            var author = {relativeUrl: '/author/donald', author: {bio: 'I am a Duck.'}};
+            helpers.meta_description.call(author).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('I am a Duck.');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns empty description for a paginated author page', function (done) {
+            var author = {relativeUrl: '/author/donald/page/2/', author: {name: 'Donald Duck'}};
+            helpers.meta_description.call(author).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns empty description on post', function (done) {
             var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
             helpers.meta_description.call(post).then(function (rendered) {
                 should.exist(rendered);
