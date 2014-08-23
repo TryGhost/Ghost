@@ -62,7 +62,7 @@ describe('Admin Routing', function () {
             }).then(function () {
                 done();
             }).catch(done);
-        }).otherwise(function (e) {
+        }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
         });
@@ -332,7 +332,7 @@ describe('Admin Routing', function () {
 
 //                         });
 //                 }).catch(done);
-//         }).otherwise(function (e) {
+//         }).catch(function (e) {
 //             console.log('Ghost Error: ', e);
 //             console.log(e.stack);
 //         });

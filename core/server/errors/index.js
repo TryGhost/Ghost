@@ -3,7 +3,7 @@ var _                          = require('lodash'),
     colors                     = require('colors'),
     config                     = require('../config'),
     path                       = require('path'),
-    when                       = require('when'),
+    Promise                    = require('bluebird'),
     hbs                        = require('express-hbs'),
     NotFoundError              = require('./notfounderror'),
     BadRequestError            = require('./badrequesterror'),
@@ -47,7 +47,7 @@ errors = {
     // ## Reject Error
     // Used to pass through promise errors when we want to handle them at a later time
     rejectError: function (err) {
-        return when.reject(err);
+        return Promise.reject(err);
     },
 
     logInfo: function (component, info) {

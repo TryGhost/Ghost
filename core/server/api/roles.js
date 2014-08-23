@@ -1,6 +1,6 @@
 // # Roles API
 // RESTful API for the Role resource
-var when            = require('when'),
+var Promise         = require('bluebird'),
     _               = require('lodash'),
     canThis         = require('../permissions').canThis,
     dataProvider    = require('../models'),
@@ -45,12 +45,12 @@ roles = {
                                 return null;
                             }
                             return role;
-                        }, function () {
+                        }).catch(function () {
                             return null;
                         }));
                     });
 
-                    return when.all(permissionMap).then(function (resolved) {
+                    return Promise.all(permissionMap).then(function (resolved) {
                         return { roles: _.filter(resolved, function (role) {
                             return role !== null;
                         }) };

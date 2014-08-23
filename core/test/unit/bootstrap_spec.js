@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
-    when           = require('when'),
+    Promise        = require('bluebird'),
     path           = require('path'),
     fs             = require('fs'),
     _              = require('lodash'),
@@ -62,13 +62,10 @@ describe('Bootstrap', function () {
 
     it('creates the config file if one does not exist', function (done) {
 
-        var deferred = when.defer(),
             // trick bootstrap into thinking that the config file doesn't exist yet
-            existsStub  = sandbox.stub(fs, 'exists', function (file, cb) { return cb(false); }),
+        var existsStub = sandbox.stub(fs, 'exists', function (file, cb) { return cb(false); }),
             // create a method which will return a pre-resolved promise
-            resolvedPromise = sandbox.stub().returns(deferred.promise);
-
-        deferred.resolve();
+            resolvedPromise = sandbox.stub().returns(Promise.resolve());
 
         // ensure that the file creation is a stub, the tests shouldn't really create a file
         bootstrap.__set__('writeConfigFile',  resolvedPromise);

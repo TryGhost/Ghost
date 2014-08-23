@@ -6,7 +6,7 @@ var crypto      = require('crypto'),
     fs          = require('fs'),
     uuid        = require('node-uuid'),
     _           = require('lodash'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
 
     api         = require('./api'),
     config      = require('./config'),
@@ -23,13 +23,6 @@ var crypto      = require('crypto'),
 
 // Variables
     dbHash;
-
-// If we're in development mode, require "when/console/monitor"
-// for help in seeing swallowed promise errors, and log any
-// stderr messages from bluebird promises.
-if (process.env.NODE_ENV === 'development') {
-    require('when/monitor/console');
-}
 
 function doFirstRun() {
     var firstRunMessage = [
@@ -80,30 +73,29 @@ function builtFilesExist() {
             helpers.scriptFiles.production : helpers.scriptFiles.development;
 
     function checkExist(fileName) {
-        var deferred = when.defer(),
-            errorMessage = "Javascript files have not been built.",
+        var errorMessage = "Javascript files have not been built.",
             errorHelp = "\nPlease read the getting started instructions at:" +
                         "\nhttps://github.com/TryGhost/Ghost#getting-started-guide-for-developers";
 
-        fs.exists(fileName, function (exists) {
-            if (exists) {
-                deferred.resolve(true);
-            } else {
-                var err = new Error(errorMessage);
+        return new Promise(function (resolve, reject) {
+            fs.exists(fileName, function (exists) {
+                if (exists) {
+                    resolve(true);
+                } else {
+                    var err = new Error(errorMessage);
 
-                err.help = errorHelp;
-                deferred.reject(err);
-            }
+                    err.help = errorHelp;
+                    reject(err);
+                }
+            });
         });
-
-        return deferred.promise;
     }
 
     fileNames.forEach(function (fileName) {
         deferreds.push(checkExist(location + fileName));
     });
 
-    return when.all(deferreds);
+    return Promise.all(deferreds);
 }
 
 // This is run after every initialization is done, right before starting server.
@@ -174,7 +166,7 @@ function init(server) {
         // into this method due to circular dependencies.
         return config.theme.update(api.settings, config.url);
     }).then(function () {
-        return when.join(
+        return Promise.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
             // Initialize mail
@@ -218,7 +210,6 @@ function init(server) {
         _.each(config.paths.availableThemes._messages.warns, function (warn) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
-
 
         return new GhostServer(server);
     });

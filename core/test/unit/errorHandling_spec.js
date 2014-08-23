@@ -1,7 +1,7 @@
 /*globals describe, after, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var should     = require('should'),
-    when       = require('when'),
+    Promise    = require('bluebird'),
     sinon      = require('sinon'),
     express    = require('express'),
     rewire     = require('rewire'),
@@ -181,9 +181,7 @@ describe('Error handling', function () {
         });
 
         it('logs promise errors and redirects', function (done) {
-            var def = when.defer(),
-                prom = def.promise,
-                req = null,
+            var req = null,
                 res = {
                     redirect: function () {
                         return;
@@ -192,11 +190,11 @@ describe('Error handling', function () {
                 redirectStub = sinon.stub(res, 'redirect');
 
             // give environment a value that will console log
-            prom.then(function () {
+            Promise.reject().then(function () {
                 throw new Error('Ran success handler');
             }, errors.logErrorWithRedirect('test1', null, null, '/testurl', req, res));
 
-            prom.otherwise(function () {
+            Promise.reject().catch(function () {
                 logStub.calledWith('\nERROR:'.red, 'test1'.red).should.equal(true);
                 logStub.restore();
 
@@ -205,7 +203,6 @@ describe('Error handling', function () {
 
                 done();
             });
-            def.reject();
         });
     });
 

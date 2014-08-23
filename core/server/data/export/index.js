@@ -1,6 +1,5 @@
 var _           = require('lodash'),
-    when        = require('when'),
-
+    Promise     = require('bluebird'),
     versioning  = require('../versioning'),
     config      = require('../../config'),
     utils       = require('../utils'),
@@ -28,7 +27,7 @@ exportFileName = function () {
 };
 
 exporter = function () {
-    return when.join(versioning.getDatabaseVersion(), utils.getTables()).then(function (results) {
+    return Promise.join(versioning.getDatabaseVersion(), utils.getTables()).then(function (results) {
         var version = results[0],
             tables = results[1],
             selectOps = _.map(tables, function (name) {
@@ -37,7 +36,7 @@ exporter = function () {
                 }
             });
 
-        return when.all(selectOps).then(function (tableData) {
+        return Promise.all(selectOps).then(function (tableData) {
             var exportData = {
                 meta: {
                     exported_on: new Date().getTime(),
@@ -52,7 +51,7 @@ exporter = function () {
                 exportData.data[name] = tableData[i];
             });
 
-            return when.resolve(exportData);
+            return exportData;
         }).catch(function (err) {
             errors.logAndThrowError(err, 'Error exporting data', '');
         });

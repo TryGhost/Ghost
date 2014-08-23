@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var should  = require('should'),
     sinon   = require('sinon'),
-    when    = require('when'),
+    Promise = require('bluebird'),
     _       = require('lodash'),
 
     // Stuff we are testing
@@ -85,7 +85,7 @@ describe('Filters', function () {
     it('executes filters that return a promise', function (done) {
         var filterName = 'testprioritypromise',
             testFilterHandler1 = sinon.spy(function (args) {
-                return when.promise(function (resolve) {
+                return new Promise(function (resolve) {
                     process.nextTick(function () {
                         args.filter1 = true;
 
@@ -99,7 +99,7 @@ describe('Filters', function () {
                 return args;
             }),
             testFilterHandler3 = sinon.spy(function (args) {
-                return when.promise(function (resolve) {
+                return new Promise(function (resolve) {
                     process.nextTick(function () {
                         args.filter3 = true;
 

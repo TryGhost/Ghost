@@ -130,7 +130,7 @@ function updateActiveTheme(req, res, next) {
             }
         }
         next();
-    }).otherwise(function (err) {
+    }).catch(function (err) {
         // Trying to start up without the active theme present, setup a simple hbs instance
         // and render an error page straight away.
         expressServer.engine('hbs', hbs.express3());
@@ -147,7 +147,7 @@ function redirectToSetup(req, res, next) {
             return res.redirect(config.paths.subdir + '/ghost/setup/');
         }
         next();
-    }).otherwise(function (err) {
+    }).catch(function (err) {
         return next(new Error(err));
     });
 }

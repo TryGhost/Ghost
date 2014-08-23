@@ -1,5 +1,4 @@
 var _             = require('lodash'),
-    when          = require('when'),
     api           = require('../api'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
@@ -9,7 +8,7 @@ adminControllers = {
     // Route: index
     // Path: /ghost/
     // Method: GET
-    'index': function (req, res) {
+    index: function (req, res) {
         /*jslint unparam:true*/
 
         function renderIndex() {
@@ -20,7 +19,7 @@ adminControllers = {
             return updateCheck.showUpdateNotification();
         }).then(function (updateVersion) {
             if (!updateVersion) {
-                return when.resolve();
+                return;
             }
 
             var notification = {

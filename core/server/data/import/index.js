@@ -1,4 +1,4 @@
-var when            = require('when'),
+var Promise         = require('bluebird'),
     _               = require('lodash'),
     validation      = require('../validation'),
     errors          = require('../../errors'),
@@ -43,7 +43,7 @@ handleErrors = function handleErrors(errorList) {
     var processedErrors = [];
 
     if (!_.isArray(errorList)) {
-        return when.reject(errorList);
+        return Promise.reject(errorList);
     }
 
     _.each(errorList, function (error) {
@@ -57,7 +57,7 @@ handleErrors = function handleErrors(errorList) {
         }
     });
 
-    return when.reject(processedErrors);
+    return Promise.reject(processedErrors);
 };
 
 validate = function validate(data) {
@@ -69,20 +69,18 @@ validate = function validate(data) {
         });
     });
 
-    return when.settle(validateOps).then(function (descriptors) {
+    return Promise.settle(validateOps).then(function (descriptors) {
         var errorList = [];
 
         _.each(descriptors, function (d) {
-            if (d.state === 'rejected') {
-                errorList = errorList.concat(d.reason);
+            if (d.isRejected()) {
+                errorList = errorList.concat(d.reason());
             }
         });
 
         if (!_.isEmpty(errorList)) {
-            return when.reject(errorList);
+            return Promise.reject(errorList);
         }
-
-        return when.resolve();
     });
 };
 
@@ -97,7 +95,7 @@ module.exports = function (version, data) {
         }
 
         if (!importer) {
-            return when.reject('No importer found');
+            return Promise.reject('No importer found');
         }
 
         return importer.importData(data);

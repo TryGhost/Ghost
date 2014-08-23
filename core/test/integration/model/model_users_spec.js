@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var testUtils   = require('../../utils'),
     should      = require('should'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     sinon       = require('sinon'),
     uuid        = require('node-uuid'),
     _           = require('lodash'),
@@ -33,7 +33,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return when.resolve(userData);
+                return Promise.resolve(userData);
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
@@ -50,7 +50,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[2];
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return when.resolve(userData);
+                return Promise.resolve(userData);
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
@@ -66,7 +66,7 @@ describe('User Model', function run() {
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
-                return when.resolve(userData);
+                return Promise.resolve(userData);
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
@@ -83,7 +83,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return when.resolve(userData);
+                return Promise.resolve(userData);
             });
 
             UserModel.add(userData, context).then(function (createdUser) {
@@ -271,7 +271,7 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return when.resolve(userData);
+                return Promise.resolve(userData);
             });
 
             RoleModel.findOne().then(function (role) {

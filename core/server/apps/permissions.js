@@ -1,6 +1,6 @@
 
 var fs = require('fs'),
-    when = require('when'),
+    Promise = require('bluebird'),
     path = require('path'),
     parsePackageJson = require('../require-tree').parsePackageJson;
 
@@ -10,44 +10,35 @@ function AppPermissions(appPath) {
 }
 
 AppPermissions.prototype.read = function () {
-    var self = this,
-        def = when.defer();
+    var self = this;
 
-    this.checkPackageContentsExists()
-        .then(function (exists) {
+    return this.checkPackageContentsExists().then(function (exists) {
             if (!exists) {
                 // If no package.json, return default permissions
-                return def.resolve(AppPermissions.DefaultPermissions);
+                return Promise.resolve(AppPermissions.DefaultPermissions);
             }
 
             // Read and parse the package.json
-            self.getPackageContents()
-                .then(function (parsed) {
+            return self.getPackageContents().then(function (parsed) {
                     // If no permissions in the package.json then return the default permissions.
                     if (!(parsed.ghost && parsed.ghost.permissions)) {
-                        return def.resolve(AppPermissions.DefaultPermissions);
+                        return Promise.resolve(AppPermissions.DefaultPermissions);
                     }
 
                     // TODO: Validation on permissions object?
 
-                    def.resolve(parsed.ghost.permissions);
-                })
-                .otherwise(def.reject);
-        })
-        .otherwise(def.reject);
-
-    return def.promise;
+                    return Promise.resolve(parsed.ghost.permissions);
+                });
+        });
 };
 
 AppPermissions.prototype.checkPackageContentsExists = function () {
     // Mostly just broken out for stubbing in unit tests
-    var def = when.defer();
-
-    fs.exists(this.packagePath, function (exists) {
-        def.resolve(exists);
+    return new Promise(function (resolve) {
+        fs.exists(this.packagePath, function (exists) {
+            resolve(exists);
+        });
     });
-
-    return def.promise;
 };
 
 // Get the contents of the package.json in the appPath root
@@ -60,7 +51,7 @@ AppPermissions.prototype.getPackageContents = function () {
     return parsePackageJson(this.packagePath, messages)
         .then(function (parsed) {
             if (!parsed) {
-                return when.reject(new Error(messages.errors[0].message));
+                return Promise.reject(new Error(messages.errors[0].message));
             }
 
             return parsed;

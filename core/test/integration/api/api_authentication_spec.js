@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var testUtils   = require('../../utils'),
     should      = require('should'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     rewire      = require('rewire'),
 
     // Stuff we are testing
@@ -43,7 +43,7 @@ describe('Authentication API', function () {
                 send = mail.__get__('mail.send');
 
                 mail.__set__('mail.send', function () {
-                    return when.resolve();
+                    return Promise.resolve();
                 });
 
                 AuthAPI.setup({ setup: [setupData] }).then(function (result) {

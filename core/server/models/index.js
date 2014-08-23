@@ -1,5 +1,5 @@
-var _             = require('lodash'),
-    when          = require('when'),
+var _       = require('lodash'),
+    Promise = require('bluebird'),
     requireTree   = require('../require-tree'),
     models;
 
@@ -48,12 +48,12 @@ models = {
         var self = this;
 
         return self.Post.findAll().then(function (posts) {
-            return when.all(_.map(posts.toJSON(), function (post) {
+            return Promise.all(_.map(posts.toJSON(), function (post) {
                 return self.Post.destroy({id: post.id});
             }));
         }).then(function () {
             return self.Tag.findAll().then(function (tags) {
-                return when.all(_.map(tags.toJSON(), function (tag) {
+                return Promise.all(_.map(tags.toJSON(), function (tag) {
                     return self.Tag.destroy({id: tag.id});
                 }));
             });

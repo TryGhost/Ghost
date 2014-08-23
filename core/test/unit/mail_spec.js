@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var should          = require('should'),
     sinon           = require('sinon'),
-    when            = require('when'),
+    Promise         = require('bluebird'),
     _               = require('lodash'),
     rewire          = require('rewire'),
 
@@ -61,7 +61,7 @@ describe('Mail', function () {
         });
 
         sandbox.stub(mailer, 'detectSendmail', function () {
-            return when.resolve(fakeSendmail);
+            return Promise.resolve(fakeSendmail);
         });
     });
 
@@ -119,7 +119,7 @@ describe('Mail', function () {
     it('should disable transport if config is empty & sendmail not found', function (done) {
         overrideConfig({mail: {}});
         mailer.detectSendmail.restore();
-        sandbox.stub(mailer, 'detectSendmail', when.reject);
+        sandbox.stub(mailer, 'detectSendmail', Promise.reject);
         mailer.init().then(function () {
             should.not.exist(mailer.transport);
             done();
@@ -141,7 +141,7 @@ describe('Mail', function () {
 
     it('should fail to send messages when no transport is set', function (done) {
         mailer.detectSendmail.restore();
-        sandbox.stub(mailer, 'detectSendmail', when.reject);
+        sandbox.stub(mailer, 'detectSendmail', Promise.reject);
         mailer.init().then(function () {
             mailer.send().then(function () {
                 should.fail();
@@ -154,15 +154,15 @@ describe('Mail', function () {
     });
 
     it('should fail to send messages when given insufficient data', function (done) {
-        when.settle([
+        Promise.settle([
             mailer.send(),
             mailer.send({}),
             mailer.send({ subject: '123' }),
             mailer.send({ subject: '', html: '123' })
         ]).then(function (descriptors) {
             descriptors.forEach(function (d) {
-                d.state.should.equal('rejected');
-                d.reason.should.be.an.instanceOf(Error);
+                d.isRejected().should.be.true;
+                d.reason().should.be.an.instanceOf(Error);
             });
             done();
         }).catch(done);

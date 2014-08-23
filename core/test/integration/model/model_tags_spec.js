@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var testUtils   = require('../../utils'),
     should      = require('should'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     _           = require('lodash'),
 
     // Stuff we are testing
@@ -44,7 +44,7 @@ describe('Tag Model', function () {
                 newTag = testUtils.DataGenerator.forModel.tags[0],
                 createdPostID;
 
-            when.all([
+            Promise.all([
                 PostModel.add(newPost, context),
                 TagModel.add(newTag, context)
             ]).then(function (models) {
@@ -71,7 +71,7 @@ describe('Tag Model', function () {
                 createdTagID,
                 createdPostID;
 
-            when.all([
+            Promise.all([
                 PostModel.add(newPost, context),
                 TagModel.add(newTag, context)
             ]).then(function (models) {
@@ -106,7 +106,7 @@ describe('Tag Model', function () {
                 var tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}, context); });
                 createOperations = createOperations.concat(tagModels);
 
-                return when.all(createOperations).then(function (models) {
+                return Promise.all(createOperations).then(function (models) {
                     var postModel = models[0],
                         attachOperations;
 
@@ -115,7 +115,7 @@ describe('Tag Model', function () {
                         attachOperations.push(postModel.tags().attach(models[i]));
                     }
 
-                    return when.all(attachOperations).then(function () {
+                    return Promise.all(attachOperations).then(function () {
                         return postModel;
                     });
                 }).then(function (postModel) {

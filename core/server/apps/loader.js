@@ -1,7 +1,7 @@
 
 var path = require('path'),
     _    = require('lodash'),
-    when = require('when'),
+    Promise = require('bluebird'),
     AppProxy = require('./proxy'),
     config = require('../config'),
     AppSandbox = require('./sandbox'),
@@ -64,9 +64,9 @@ loader = {
                 // Load app permissions
                 var perms = new AppPermissions(appPath);
 
-                return perms.read().otherwise(function (err) {
+                return perms.read().catch(function (err) {
                     // Provide a helpful error about which app
-                    return when.reject(new Error("Error loading app named " + name + "; problem reading permissions: " + err.message));
+                    return Promise.reject(new Error("Error loading app named " + name + "; problem reading permissions: " + err.message));
                 });
             })
             .then(function (appPerms) {
@@ -76,15 +76,13 @@ loader = {
 
                 // Check for an install() method on the app.
                 if (!_.isFunction(app.install)) {
-                    return when.reject(new Error("Error loading app named " + name + "; no install() method defined."));
+                    return Promise.reject(new Error("Error loading app named " + name + "; no install() method defined."));
                 }
 
                 // Run the app.install() method
                 // Wrapping the install() with a when because it's possible
                 // to not return a promise from it.
-                return when(app.install(appProxy)).then(function () {
-                    return when.resolve(app);
-                });
+                return Promise.resolve(app.install(appProxy)).return(app);
             });
     },
 
@@ -99,14 +97,12 @@ loader = {
 
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
-                return when.reject(new Error("Error loading app named " + name + "; no activate() method defined."));
+                return Promise.reject(new Error("Error loading app named " + name + "; no activate() method defined."));
             }
 
             // Wrapping the activate() with a when because it's possible
             // to not return a promise from it.
-            return when(app.activate(appProxy)).then(function () {
-                return when.resolve(app);
-            });
+            return Promise.resolve(app.activate(appProxy)).return(app);
         });
     }
 };
