@@ -1,4 +1,6 @@
-var ghostBookshelf = require('./base'),
+var when            = require('when'),
+    ghostBookshelf  = require('./base'),
+    errors          = require('../errors'),
 
     Basetoken;
 
@@ -31,11 +33,32 @@ Basetoken = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'destroyAll');
         return ghostBookshelf.Collection.forge([], {model: this})
             .query('where', 'expires', '<', Date.now())
-            .fetch()
+            .fetch(options)
             .then(function (collection) {
                 collection.invokeThen('destroy', options);
             });
+    },
+    /**
+     * ### destroyByUser
+     * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
+     */
+    destroyByUser: function (options) {
+        var userId = options.id;
+
+        options = this.filterOptions(options, 'destroyByUser');
+
+        if (userId) {
+            return ghostBookshelf.Collection.forge([], {model: this})
+                .query('where', 'user_id', '=', userId)
+                .fetch(options)
+                .then(function (collection) {
+                    collection.invokeThen('destroy', options);
+                });
+        }
+
+        return when.reject(new errors.NotFoundError('No user found'));
     }
+
 });
 
 module.exports = Basetoken;

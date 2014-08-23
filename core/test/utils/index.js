@@ -232,6 +232,16 @@ fixtures = {
         });
     },
 
+    // Creates a client, and access and refresh tokens for user 3 (author)
+    createTokensForUser: function createTokensForUser() {
+        var knex = config.database.knex;
+        return knex('clients').insert(DataGenerator.forKnex.clients).then(function () {
+            return knex('accesstokens').insert(DataGenerator.forKnex.createToken({user_id: 3}));
+        }).then(function () {
+            return knex('refreshtokens').insert(DataGenerator.forKnex.createToken({user_id: 3}));
+        });
+    },
+
     createInvitedUsers: function createInvitedUser() {
         var knex = config.database.knex,
             // grab 3 more users
@@ -361,6 +371,7 @@ toDoList = {
     },
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
     'users': function createExtraUsers() { return fixtures.createExtraUsers(); },
+    'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
     'owner': function insertOwnerUser() { return fixtures.insertOwnerUser(); },
     'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
     'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },

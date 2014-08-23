@@ -290,7 +290,12 @@ users = {
             return users.read(_.merge(options, { status: 'all'})).then(function (result) {
                 return dataProvider.Base.transaction(function (t) {
                     options.transacting = t;
-                    dataProvider.Post.destroyByAuthor(options).then(function () {
+
+                    when.join(
+                        dataProvider.Accesstoken.destroyByUser(options),
+                        dataProvider.Refreshtoken.destroyByUser(options),
+                        dataProvider.Post.destroyByAuthor(options)
+                    ).then(function () {
                         return dataProvider.User.destroy(options);
                     }).then(function () {
                         t.commit();

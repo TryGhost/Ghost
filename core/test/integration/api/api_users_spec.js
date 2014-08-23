@@ -20,7 +20,7 @@ describe('Users API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
 
-    beforeEach(testUtils.setup('users:roles', 'users', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
+    beforeEach(testUtils.setup('users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
     afterEach(testUtils.teardown);
 
     it('dateTime fields are returned as Date objects', function (done) {
@@ -85,7 +85,6 @@ describe('Users API', function () {
            }).catch(done);
         });
 
-        
         it('Can browse invited/invited-pending (admin)', function (done) {
             testUtils.fixtures.createInvitedUsers().then(function () {
                 UserAPI.browse(_.extend(testUtils.context.admin, { status: 'invited' })).then(function (response) {
