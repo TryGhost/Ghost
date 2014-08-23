@@ -114,7 +114,13 @@ describe('Admin Routing', function () {
                 .expect(302)
                 .end(doEndNoAuth(done));
         });
-        // there are more of these... but we get the point
+
+        it('should redirect /GHOST/ to /ghost/', function (done) {
+            request.get('/GHOST/')
+                .expect('Location', '/ghost/')
+                .expect(301)
+                .end(doEndNoAuth(done));
+        });
     });
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy

@@ -88,7 +88,14 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should respond with html', function (done) {
+        it('should redirect uppercase', function (done) {
+            request.get('/Welcome-To-Ghost/')
+                .expect('Location', '/welcome-to-ghost/')
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should respond with html for valid url', function (done) {
             request.get('/welcome-to-ghost/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', cacheRules['public'])
