@@ -1,7 +1,7 @@
 var _              = require('lodash'),
     errors         = require('../errors'),
     ghostBookshelf = require('./base'),
-    when           = require('when'),
+    Promise        = require('bluebird'),
 
     Role,
     Roles;
@@ -73,9 +73,10 @@ Role = ghostBookshelf.Model.extend({
         }
 
         if (hasUserPermission && hasAppPermission) {
-            return when.resolve();
+            return Promise.resolve();
         }
-        return when.reject();
+
+        return Promise.reject();
     }
 });
 

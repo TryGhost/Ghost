@@ -3,7 +3,7 @@
 var testUtils   = require('../utils/index'),
     should      = require('should'),
     sinon       = require('sinon'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     _           = require('lodash'),
 
     // Stuff we are testing
@@ -25,7 +25,7 @@ describe('Exporter', function () {
     it('exports data', function (done) {
         // Stub migrations to return 000 as the current database version
         var versioningStub = sandbox.stub(versioning, 'getDatabaseVersion', function () {
-            return when.resolve('003');
+            return Promise.resolve('003');
         });
 
         exporter().then(function (exportData) {

@@ -5,7 +5,7 @@
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
 var _              = require('lodash'),
-    when           = require('when'),
+    Promise        = require('bluebird'),
     config         = require('../config'),
     // Include Endpoints
     db             = require('./db'),
@@ -90,7 +90,7 @@ cacheInvalidationHeader = function (req, result) {
         }
     }
 
-    return when(cacheInvalidate);
+    return Promise.resolve(cacheInvalidate);
 };
 
 /**
@@ -122,7 +122,7 @@ locationHeader = function (req, result) {
         }
     }
 
-    return when(location);
+    return Promise.resolve(location);
 };
 
 /**
@@ -219,7 +219,7 @@ addHeaders = function (apiMethod, req, res, result) {
         ops.push(contentDisposition);
     }
 
-    return when.all(ops);
+    return Promise.all(ops);
 };
 
 /**

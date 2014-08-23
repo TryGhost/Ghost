@@ -1,5 +1,5 @@
 var _       = require('lodash'),
-    when    = require('when'),
+    Promise = require('bluebird'),
     config  = require('../../config'),
     schema  = require('../schema').tables,
     clients = require('./clients'),
@@ -87,7 +87,7 @@ function getTables() {
         return clients[client].getTables();
     }
 
-    return when.reject('No support for database client ' + client);
+    return Promise.reject('No support for database client ' + client);
 }
 
 function getIndexes(table) {
@@ -98,7 +98,7 @@ function getIndexes(table) {
         return clients[client].getIndexes(table);
     }
 
-    return when.reject('No support for database client ' + client);
+    return Promise.reject('No support for database client ' + client);
 }
 
 function getColumns(table) {
@@ -109,7 +109,7 @@ function getColumns(table) {
         return clients[client].getColumns(table);
     }
 
-    return when.reject('No support for database client ' + client);
+    return Promise.reject('No support for database client ' + client);
 }
 
 function checkTables() {

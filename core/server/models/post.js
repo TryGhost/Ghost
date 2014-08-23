@@ -1,7 +1,7 @@
 // # Post Model
 var _              = require('lodash'),
     uuid           = require('node-uuid'),
-    when           = require('when'),
+    Promise        = require('bluebird'),
     errors         = require('../errors'),
     Showdown       = require('showdown'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
@@ -123,7 +123,7 @@ Post = ghostBookshelf.Model.extend({
             tagOps.push(post.tags().detach(null, _.omit(options, 'query')));
 
             if (_.isEmpty(self.myTags)) {
-                return when.all(tagOps);
+                return Promise.all(tagOps);
             }
 
             return ghostBookshelf.collection('Tags').forge().query('whereIn', 'name', _.pluck(self.myTags, 'name')).fetch(options).then(function (existingTags) {
@@ -157,7 +157,7 @@ Post = ghostBookshelf.Model.extend({
                     tagOps.push(post.tags().attach(tag.id, _.omit(options, 'query')));
                 });
 
-                return when.all(tagOps);
+                return Promise.all(tagOps);
             });
         });
     },
@@ -341,7 +341,7 @@ Post = ghostBookshelf.Model.extend({
             return false;
         }
 
-        return when.join(fetchTagQuery(), fetchAuthorQuery())
+        return Promise.join(fetchTagQuery(), fetchAuthorQuery())
 
             // Set the limit & offset for the query, fetching
             // with the opts (to specify any eager relations, etc.)
@@ -536,16 +536,16 @@ Post = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'destroyByAuthor');
         if (authorId) {
             return postCollection.query('where', 'author_id', '=', authorId).fetch(options).then(function (results) {
-                return when.map(results.models, function (post) {
+                return Promise.map(results.models, function (post) {
                     return post.related('tags').detach(null, options).then(function () {
                         return post.destroy(options);
                     });
                 });
             }, function (error) {
-                return when.reject(new errors.InternalServerError(error.message || error));
+                return Promise.reject(new errors.InternalServerError(error.message || error));
             });
         }
-        return when.reject(new errors.NotFoundError('No user found'));
+        return Promise.reject(new errors.NotFoundError('No user found'));
     },
 
 
@@ -574,10 +574,10 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (hasUserPermission && hasAppPermission) {
-            return when.resolve();
+            return Promise.resolve();
         }
 
-        return when.reject();
+        return Promise.reject();
     }
 });
 

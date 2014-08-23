@@ -1,6 +1,6 @@
 // # Posts API
 // RESTful API for the Post resource
-var when            = require('when'),
+var Promise         = require('bluebird'),
     _               = require('lodash'),
     dataProvider    = require('../models'),
     canThis         = require('../permissions').canThis,
@@ -88,8 +88,7 @@ posts = {
                 return { posts: [ result.toJSON() ]};
             }
 
-            return when.reject(new errors.NotFoundError('Post not found.'));
-
+            return Promise.reject(new errors.NotFoundError('Post not found.'));
         });
     },
 
@@ -122,10 +121,10 @@ posts = {
                     return { posts: [ post ]};
                 }
 
-                return when.reject(new errors.NotFoundError('Post not found.'));
+                return Promise.reject(new errors.NotFoundError('Post not found.'));
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to edit this post.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit posts.'));
         });
     },
 
@@ -158,7 +157,7 @@ posts = {
                 return { posts: [ post ]};
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to add posts.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to add posts.'));
         });
     },
 
@@ -188,7 +187,7 @@ posts = {
                 });
             });
         }, function () {
-            return when.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
         });
     }
 

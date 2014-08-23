@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
-    when           = require('when'),
+    Promise        = require('bluebird'),
     _              = require('lodash'),
     rewire         = require('rewire'),
     moment         = require('moment'),
@@ -30,7 +30,7 @@ describe('Core Helpers', function () {
         helpers = rewire('../../server/helpers');
         sandbox = sinon.sandbox.create();
         apiStub = sandbox.stub(api.settings, 'read', function () {
-            return when({
+            return Promise.resolve({
                 settings: [{value: 'casper'}]
             });
         });
@@ -393,7 +393,7 @@ describe('Core Helpers', function () {
         });
 
         it('can render class string for context', function (done) {
-            when.all([
+            Promise.all([
                 helpers.body_class.call({relativeUrl: '/'}),
                 helpers.body_class.call({relativeUrl: '/a-post-title', post: {}}),
                 helpers.body_class.call({relativeUrl: '/page/4'}),
@@ -762,7 +762,7 @@ describe('Core Helpers', function () {
         beforeEach(function () {
             apiStub.restore();
             apiStub = sandbox.stub(api.settings, 'read', function () {
-                return when({ settings: [{ value: '/:slug/' }] });
+                return Promise.resolve({ settings: [{ value: '/:slug/' }] });
             });
         });
 

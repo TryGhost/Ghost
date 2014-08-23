@@ -3,7 +3,7 @@
 var testUtils   = require('../utils/index'),
     should      = require('should'),
     sinon       = require('sinon'),
-    when        = require('when'),
+    Promise     = require('bluebird'),
     assert      = require('assert'),
     _           = require('lodash'),
     rewire      = require('rewire'),
@@ -48,7 +48,7 @@ describe('Import', function () {
 
         it('resolves 000', function (done) {
             var importStub = sandbox.stub(Importer000, 'importData', function () {
-                    return when.resolve();
+                    return Promise.resolve();
                 }),
                 fakeData = { test: true };
 
@@ -63,7 +63,7 @@ describe('Import', function () {
 
         it('resolves 001', function (done) {
             var importStub = sandbox.stub(Importer001, 'importData', function () {
-                    return when.resolve();
+                    return Promise.resolve();
                 }),
                 fakeData = { test: true };
 
@@ -78,7 +78,7 @@ describe('Import', function () {
 
         it('resolves 002', function (done) {
             var importStub = sandbox.stub(Importer002, 'importData', function () {
-                    return when.resolve();
+                    return Promise.resolve();
                 }),
                 fakeData = { test: true };
 
@@ -93,7 +93,7 @@ describe('Import', function () {
 
         it('resolves 003', function (done) {
             var importStub = sandbox.stub(Importer003, 'importData', function () {
-                    return when.resolve();
+                    return Promise.resolve();
                 }),
                 fakeData = { test: true };
 
@@ -118,7 +118,7 @@ describe('Import', function () {
         it('imports data from 000', function (done) {
             var exportData,
                 versioningStub = sandbox.stub(versioning, 'getDatabaseVersion', function () {
-                    return when.resolve('000');
+                    return Promise.resolve('000');
                 });
 
             testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
@@ -127,7 +127,7 @@ describe('Import', function () {
                 return importer('000', exportData);
             }).then(function () {
                 // Grab the data from tables
-                return when.all([
+                return Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -186,7 +186,7 @@ describe('Import', function () {
                 return importer('001', exportData);
             }).then(function () {
                 // Grab the data from tables
-                return when.all([
+                return Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -261,7 +261,7 @@ describe('Import', function () {
                 error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
                 error[0].type.should.eql('ValidationError');
 
-                when.all([
+                Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -310,7 +310,7 @@ describe('Import', function () {
                 error[0].message.should.eql('Value in [settings.key] cannot be blank.');
                 error[0].type.should.eql('ValidationError');
 
-                when.all([
+                Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -367,7 +367,7 @@ describe('Import', function () {
                 return importer('002', exportData);
             }).then(function () {
                 // Grab the data from tables
-                return when.all([
+                return Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -443,7 +443,7 @@ describe('Import', function () {
                 error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
                 error[0].type.should.eql('ValidationError');
 
-                when.all([
+                Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -489,7 +489,7 @@ describe('Import', function () {
                 error[0].message.should.eql('Value in [settings.key] cannot be blank.');
                 error[0].type.should.eql('ValidationError');
 
-                when.all([
+                Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -537,7 +537,7 @@ describe('Import', function () {
                 return importer('003', exportData);
             }).then(function () {
                 // Grab the data from tables
-                return when.all([
+                return Promise.all([
                     knex('users').select(),
                     knex('posts').select(),
                     knex('settings').select(),
@@ -704,7 +704,7 @@ describe('Import (new test structure)', function () {
             after(testUtils.teardown);
 
             it('gets the right data', function (done) {
-                var fetchImported = when.join(
+                var fetchImported = Promise.join(
                     knex('posts').select(),
                     knex('settings').select(),
                     knex('tags').select()
@@ -755,7 +755,7 @@ describe('Import (new test structure)', function () {
             });
 
             it('imports users with correct roles and status', function (done) {
-                var fetchImported = when.join(
+                var fetchImported = Promise.join(
                     knex('users').select(),
                     knex('roles_users').select()
                 );
@@ -829,7 +829,7 @@ describe('Import (new test structure)', function () {
             });
 
             it('imports posts & tags with correct authors, owners etc', function (done) {
-                var fetchImported = when.join(
+                var fetchImported = Promise.join(
                     knex('users').select(),
                     knex('posts').select(),
                     knex('tags').select()
@@ -931,7 +931,7 @@ describe('Import (new test structure)', function () {
                     after(testUtils.teardown);
 
                     it('gets the right data', function (done) {
-                        var fetchImported = when.join(
+                        var fetchImported = Promise.join(
                             knex('posts').select(),
                             knex('settings').select(),
                             knex('tags').select()
@@ -982,7 +982,7 @@ describe('Import (new test structure)', function () {
                     });
 
                     it('imports users with correct roles and status', function (done) {
-                        var fetchImported = when.join(
+                        var fetchImported = Promise.join(
                             knex('users').select(),
                             knex('roles_users').select()
                         );
@@ -1056,7 +1056,7 @@ describe('Import (new test structure)', function () {
                     });
 
                     it('imports posts & tags with correct authors, owners etc', function (done) {
-                        var fetchImported = when.join(
+                        var fetchImported = Promise.join(
                             knex('users').select(),
                             knex('posts').select(),
                             knex('tags').select()
@@ -1159,7 +1159,7 @@ describe('Import (new test structure)', function () {
             after(testUtils.teardown);
 
             it('gets the right data', function (done) {
-                var fetchImported = when.join(
+                var fetchImported = Promise.join(
                     knex('posts').select(),
                     knex('settings').select(),
                     knex('tags').select()
@@ -1221,7 +1221,7 @@ describe('Import (new test structure)', function () {
             });
 
             it('imports users with correct roles and status', function (done) {
-                var fetchImported = when.join(
+                var fetchImported = Promise.join(
                     knex('users').select(),
                     knex('roles_users').select()
                 );
@@ -1290,7 +1290,7 @@ describe('Import (new test structure)', function () {
             });
 
             it('imports posts & tags with correct authors, owners etc', function (done) {
-                var fetchImported = when.join(
+                var fetchImported = Promise.join(
                     knex('users').select(),
                     knex('posts').select(),
                     knex('tags').select()

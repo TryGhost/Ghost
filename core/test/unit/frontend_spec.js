@@ -4,7 +4,7 @@ var assert   = require('assert'),
     moment   = require('moment'),
     should   = require('should'),
     sinon    = require('sinon'),
-    when     = require('when'),
+    Promise  = require('bluebird'),
     rewire   = require('rewire'),
     _        = require('lodash'),
 
@@ -53,11 +53,11 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return when({posts: {}, meta: {pagination: { pages: 3}}});
+                return Promise.resolve({posts: {}, meta: {pagination: { pages: 3}}});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('postsPerPage').returns(when({
+            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
                     'key': 'postsPerPage',
                     'value': 5
@@ -156,7 +156,7 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'browse', function () {
-                return when({
+                return Promise.resolve({
                     posts: [],
                     meta: {
                         pagination: {
@@ -169,14 +169,14 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(when({
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
                     'key': 'activeTheme',
                     'value': 'casper'
                 }]
             }));
 
-            apiSettingsStub.withArgs('postsPerPage').returns(when({
+            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
                     'key': 'postsPerPage',
                     'value': '10'
@@ -306,7 +306,7 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'browse', function () {
-                return when({
+                return Promise.resolve({
                     posts: mockPosts,
                     meta: {
                         pagination: {
@@ -322,14 +322,14 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(when({
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
                     'key': 'activeTheme',
                     'value': 'casper'
                 }]
             }));
 
-            apiSettingsStub.withArgs('postsPerPage').returns(when({
+            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
                     'key': 'postsPerPage',
                     'value': '10'
@@ -355,7 +355,7 @@ describe('Frontend Controller', function () {
         describe('custom tag template', function () {
 
             beforeEach(function () {
-                apiSettingsStub.withArgs('permalinks').returns(when({
+                apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                     settings: [{
                         key: 'permalinks',
                         value: '/tag/:slug/'
@@ -392,11 +392,11 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return when({posts: {}, meta: {pagination: { pages: 3}}});
+                return Promise.resolve({posts: {}, meta: {pagination: { pages: 3}}});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('postsPerPage').returns(when({
+            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
                     'key': 'postsPerPage',
                     'value': 5
@@ -542,14 +542,14 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read', function (args) {
-                return when(_.find(mockPosts, function(mock) {
+                return Promise.resolve(_.find(mockPosts, function(mock) {
                     return mock.posts[0].slug === args.slug;
                 }));
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(when({
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
                     'key': 'activeTheme',
                     'value': 'casper'
@@ -577,7 +577,7 @@ describe('Frontend Controller', function () {
 
             describe('custom page templates', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(when({
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                         settings: [{
                             value: '/:slug/'
                         }]
@@ -602,7 +602,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to slug', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(when({
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                         settings: [{
                             value: '/:slug/'
                         }]
@@ -674,7 +674,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to date', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(when({
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                         settings: [{
                             value: '/:year/:month/:day/:slug/'
                         }]
@@ -747,7 +747,7 @@ describe('Frontend Controller', function () {
         describe('post', function () {
             describe('permalink set to slug', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(when({
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                         settings: [{
                             value: '/:slug'
                         }]
@@ -821,7 +821,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to date', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(when({
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                         settings: [{
                             value: '/:year/:month/:day/:slug'
                         }]
@@ -912,7 +912,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to custom format', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(when({
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                         settings: [{
                             value: '/:year/:slug'
                         }]
@@ -1035,25 +1035,25 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return when({posts: {}, meta: {pagination: { pages: 3}}});
+                return Promise.resolve({posts: {}, meta: {pagination: { pages: 3}}});
             });
 
-            apiUsersStub = sandbox.stub(api.users, 'read').returns(when({}));
+            apiUsersStub = sandbox.stub(api.users, 'read').returns(Promise.resolve({}));
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('title').returns(when({
+            apiSettingsStub.withArgs('title').returns(Promise.resolve({
                 settings: [{
                     'key': 'title',
                     'value': 'Test'
                 }]
             }));
-            apiSettingsStub.withArgs('description').returns(when({
+            apiSettingsStub.withArgs('description').returns(Promise.resolve({
                 settings: [{
                     'key': 'description',
                     'value': 'Some Text'
                 }]
             }));
-            apiSettingsStub.withArgs('permalinks').returns(when({
+            apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                 settings: [{
                     'key': 'permalinks',
                     'value': '/:slug/'
