@@ -1021,10 +1021,9 @@ describe('Frontend Controller', function () {
     describe('rss redirects', function () {
         var res,
             apiUsersStub,
-            configUpdate  = config.__get__('updateConfig'),
             overwriteConfig = function (newConfig) {
                 var existingConfig = frontend.__get__('config');
-                configUpdate(_.extend(existingConfig, newConfig));
+                config.set(_.extend(existingConfig, newConfig));
             };
 
         beforeEach(function () {

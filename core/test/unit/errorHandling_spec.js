@@ -5,10 +5,12 @@ var should     = require('should'),
     sinon      = require('sinon'),
     express    = require('express'),
     rewire     = require('rewire'),
+    _          = require('lodash'),
 
     // Stuff we are testing
 
     colors     = require('colors'),
+    config     = rewire('../../server/config'),
     errors     = rewire('../../server/errors'),
     // storing current environment
     currentEnv = process.env.NODE_ENV;
@@ -211,8 +213,8 @@ describe('Error handling', function () {
             originalConfig;
 
         before(function () {
-            originalConfig = errors.__get__('config');
-            errors.__set__('config', {
+            originalConfig = _.cloneDeep(config._config);
+            errors.__set__('getConfigModule', sinon.stub().returns(_.merge({}, originalConfig, {
                 'paths': {
                     'themePath': '/content/themes',
                     'availableThemes': {
@@ -228,7 +230,7 @@ describe('Error handling', function () {
                         }
                     }
                 }
-            });
+            })));
             errors.updateActiveTheme('casper');
         });
 
@@ -238,10 +240,6 @@ describe('Error handling', function () {
 
         afterEach(function () {
             sandbox.restore();
-        });
-
-        after(function () {
-            errors.__set__('config', originalConfig);
         });
 
         it('Renders end-of-middleware 404 errors correctly', function (done) {
