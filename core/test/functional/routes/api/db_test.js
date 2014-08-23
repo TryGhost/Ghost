@@ -4,10 +4,7 @@ var supertest     = require('supertest'),
     express       = require('express'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
-
     ghost         = require('../../../../../core'),
-
-    ghostServer,
     request;
 
 
@@ -19,10 +16,8 @@ describe('DB API', function () {
 
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost({app: app}).then(function (_ghostServer) {
-            ghostServer = _ghostServer;
+        ghost({app: app}).then(function () {
             request = supertest.agent(app);
-
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
@@ -36,9 +31,8 @@ describe('DB API', function () {
 
     after(function (done) {
         testUtils.clearData().then(function () {
-            ghostServer.stop();
             done();
-        });
+        }).catch(done);
     });
 
     it('attaches the Content-Disposition header on export', function (done) {
