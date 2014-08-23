@@ -543,21 +543,31 @@ coreHelpers.ghost_foot = function (options) {
 coreHelpers.meta_title = function (options) {
     /*jshint unused:false*/
     var title = '',
-        blog;
+        blog,
+        page,
+        pageString = '';
 
     if (_.isString(this.relativeUrl)) {
         blog = config.theme();
-        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
+
+        page = this.relativeUrl.match(/\/page\/(\d+)/);
+
+        if (page) {
+            pageString = ' - Page ' + page[1];
+        }
+
+        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
             title = blog.title;
+        } else if (this.author) {
+            title = this.author.name + pageString + ' - ' + blog.title;
+        } else if (this.tag) {
+            title = this.tag.name + pageString + ' - ' + blog.title;
         } else if (this.post) {
             title = this.post.title;
-        } else if (this.tag) {
-            title = this.tag.name + ' - ' + blog.title;
-        } else if (this.author) {
-            title = this.author.name + ' - ' + blog.title;
+        } else {
+            title = blog.title + pageString;
         }
     }
-
     return filters.doFilter('meta_title', title).then(function (title) {
         title = title || '';
         return title.trim();
@@ -570,10 +580,12 @@ coreHelpers.meta_description = function (options) {
         blog;
 
     if (_.isString(this.relativeUrl)) {
-        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '' || this.relativeUrl.match(/\/page/)) {
-            blog = config.theme();
+        blog = config.theme();
+        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
             description = blog.description;
-        } else {
+        } else if (this.author) {
+            description = /\/page\//.test(this.relativeUrl) ? '' : this.author.bio;
+        } else if (this.tag || this.post || /\/page\//.test(this.relativeUrl)) {
             description = '';
         }
     }
