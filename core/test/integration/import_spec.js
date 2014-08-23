@@ -10,7 +10,6 @@ var testUtils   = require('../utils/index'),
 
     // Stuff we are testing
     config          = rewire('../../server/config'),
-    configUpdate    = config.__get__('updateConfig'),
     defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
     migration       = rewire('../../server/data/migration'),
     versioning      = require('../../server/data/versioning'),
@@ -42,7 +41,7 @@ describe('Import', function () {
             var newConfig = _.extend(config, defaultConfig);
 
             migration.__get__('config', newConfig);
-            configUpdate(newConfig);
+            config.set(newConfig);
             knex = config.database.knex;
         });
 
