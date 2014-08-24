@@ -4,7 +4,7 @@ var SettingsView = Ember.View.extend({
     // used by SettingsContentBaseView and on resize to mobile from desktop
     showSettingsContent: function () {
         if (mobileQuery.matches) {
-            $('.settings-sidebar').animate({right: '100%', left: '-110%', 'margin-right': '15px'}, 300);
+            $('.settings-menu').animate({right: '100%', left: '-110%', 'margin-right': '15px'}, 300);
             $('.settings-content').animate({right: '0', left: '0', 'margin-left': '0'}, 300);
             $('.settings-header-inner').css('display', 'block');
         }
@@ -13,13 +13,13 @@ var SettingsView = Ember.View.extend({
     showSettingsMenu: function () {
         if (mobileQuery.matches) {
             $('.settings-header-inner').css('display', 'none');
-            $('.settings-sidebar').animate({right: '0', left: '0', 'margin-right': '0'}, 300);
+            $('.settings-menu').animate({right: '0', left: '0', 'margin-right': '0'}, 300);
             $('.settings-content').animate({right: '-100%', left: '100%', 'margin-left': '15'}, 300);
         }
     },
     showAll: function () {
         //Remove any styles applied by jQuery#animate
-        $('.settings-sidebar, .settings-content').removeAttr('style');
+        $('.settings-menu, .settings-content').removeAttr('style');
     },
 
     mobileInteractions: function () {
