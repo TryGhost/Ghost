@@ -7,7 +7,6 @@ var testUtils     = require('../../../utils'),
 
     ghost         = require('../../../../../core'),
 
-    ghostServer,
     request;
 
 describe('Notifications API', function () {
@@ -18,8 +17,7 @@ describe('Notifications API', function () {
 
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost({app: app}).then(function (_ghostServer) {
-            ghostServer = _ghostServer;
+        ghost({app: app}).then(function () {
             request = supertest.agent(app);
 
         }).then(function () {
@@ -33,8 +31,10 @@ describe('Notifications API', function () {
         });
     });
 
-    after(function () {
-        ghostServer.stop();
+    after(function (done) {
+        testUtils.clearData().then(function () {
+            done();
+        }).catch(done);
     });
 
     describe('Add', function () {
