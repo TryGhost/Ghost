@@ -14,7 +14,7 @@
                 <label for="pub-date">Pub Date</label>
             </td>
             <td class="post-setting-field">
-                {{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
+                {{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" stopEnterKeyDownPropagation="true"}}
             </td>
         </tr>
         {{#unless session.user.isAuthor}}

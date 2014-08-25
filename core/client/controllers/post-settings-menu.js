@@ -65,17 +65,16 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     //Changes in the PSM are too minor to warrant NProgress firing
     saveOptions: {disableNProgress: true},
     /**
-     * The placeholder is the published date of the post,
+     * The value is the published date of the post,
      * or the current date if the pubdate has not been set.
      */
-    publishedAtPlaceholder: Ember.computed('publishedAtValue', function () {
+    publishedAtValue: Ember.computed('published_at', function () {
         var pubDate = this.get('published_at');
         if (pubDate) {
             return formatDate(pubDate);
         }
         return formatDate(moment());
     }),
-    publishedAtValue: boundOneWay('published_at', formatDate),
 
     slugValue: boundOneWay('slug'),
     //Lazy load the slug generator for slugPlaceholder
