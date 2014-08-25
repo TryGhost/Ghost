@@ -26,6 +26,8 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
+    - name: 'العربية'
+      key: 'ar'
 
 port:         4478
 
