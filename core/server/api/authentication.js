@@ -148,6 +148,37 @@ authentication = {
         });
     },
 
+    /**
+     * ### Check for invitation
+     * @param {email} email to check for
+     * @returns {Promise(User}} Newly created user
+     */
+    isInvitation: function (options) {
+
+        if (!options.email) {
+            return Promise.reject(new errors.NoPermissionError('The server did not receive a valid email'));
+        }
+
+        return authentication.isSetup().then(function (result) {
+            var setup = result.setup[0].status;
+
+            if (!setup) {
+                return Promise.reject(new errors.NoPermissionError('Setup must be completed before making this request.'));
+            }
+
+            if (options.email) {
+                return dataProvider.User.findOne({email: options.email, status: 'invited'}).then(function (response) {
+                    if (response) {
+                        return {invitation: [{valid: true}]};
+                    } else {
+                        return {invitation: [{valid: false}]};
+                    }
+                });
+            }
+
+        });
+    },
+
     isSetup: function () {
         return dataProvider.User.query(function (qb) {
                 qb.whereIn('status', ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked']);

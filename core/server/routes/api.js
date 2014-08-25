@@ -69,6 +69,7 @@ apiRoutes = function (middleware) {
     );
     router.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
     router.post('/authentication/invitation', api.http(api.authentication.acceptInvitation));
+    router.get('/authentication/invitation', api.http(api.authentication.isInvitation));
     router.post('/authentication/setup', api.http(api.authentication.setup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',

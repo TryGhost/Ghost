@@ -1,3 +1,4 @@
+import ajax from 'ghost/utils/ajax';
 import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
@@ -10,7 +11,8 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
         }
     },
     setupController: function (controller, params) {
-        var tokenText,
+        var self = this,
+            tokenText,
             email,
             re = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
         if (re.test(params.token)) {
@@ -23,6 +25,23 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
                 this.transitionTo('signin');
                 this.notifications.showError('Invalid token.', {delayed: true});
             }
+
+            ajax({
+                url: this.get('ghostPaths.url').api('authentication', 'invitation'),
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    email: email
+                }
+            }).then(function (response) {
+                if (response && response.invitation && response.invitation[0].vald === false) {
+                    self.transitionTo('signin');
+                    self.notifications.showError('The invitation does not exist or is no longer valid.', {delayed: true});
+                }
+            }).catch(function (error) {
+                self.notifications.showAPIError(error);
+            });
+
         } else {
             this.transitionTo('signin');
             this.notifications.showError('Invalid token.', {delayed: true});
