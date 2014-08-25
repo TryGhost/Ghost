@@ -1,16 +1,4 @@
 var SettingsGeneralController = Ember.ObjectController.extend({
-    isDatedPermalinks: Ember.computed('permalinks', function (key, value) {
-        // setter
-        if (arguments.length > 1) {
-            this.set('permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
-        }
-
-        // getter
-        var slugForm = this.get('permalinks');
-
-        return slugForm !== '/:slug/';
-    }),
-
     themes: Ember.computed(function () {
         return this.get('availableThemes').reduce(function (themes, t) {
             var theme = {};
@@ -43,6 +31,25 @@ var SettingsGeneralController = Ember.ObjectController.extend({
             if (this.get('postsPerPage') < 1 || this.get('postsPerPage') > 1000 || isNaN(this.get('postsPerPage'))) {
                 this.set('postsPerPage', 5);
             }
+        },
+
+        checkPermalinks: function () {
+            var permalinks = this.get('permalinks');
+            if (! permalinks) {
+                permalinks = '/:slug/';
+            }
+
+            // ensure leading slash
+            if (! /^\//.test(permalinks)) {
+                permalinks = '/' + permalinks;
+            }
+
+            // ensure trailing slash
+            if (! /\/$/.test(permalinks)) {
+                permalinks = permalinks + '/';
+            }
+
+            this.set('permalinks', permalinks);
         }
     }
 });

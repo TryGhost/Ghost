@@ -57,8 +57,7 @@
         "permalinks": {
             "defaultValue": "/:slug/",
             "validations": {
-                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "matches": "(:id|:slug|:year|:month|:day)",
+                "matches": "^(\/([a-z-0-9_-]+|:id|:slug|:year|:month|:day))+\/$",
                 "notContains": "/ghost/"
             }
         }

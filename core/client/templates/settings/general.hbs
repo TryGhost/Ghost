@@ -60,13 +60,10 @@
                 <p>How many posts should be displayed on each page</p>
             </div>
 
-            <div class="form-group for-checkbox">
-                <label for="permalinks">Dated Permalinks</label>
-                <label class="checkbox" for="permalinks">
-                    {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
-                    <span class="input-toggle-component"></span>
-                    <p>Include the date in your post URLs</p>
-                </label>
+            <div class="form-group">
+                <label for="permalinks">Permalink format</label>
+                {{input id="permalinks" name="general[permalinks]" focus-out="checkPermalinks" value=permalinks type="text"}}
+                <p>Customize permalinks. :id, :slug, :year, :month, and :day will be replaced with the post's values</p>
             </div>
 
             <div class="form-group for-select">
