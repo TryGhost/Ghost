@@ -2,32 +2,22 @@
 layout: themes
 meta_title: How to Make Ghost Themes - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Ghost Themes
+heading: Theme Documentation
+subheading: The complete guide to creating custom themes for Ghost
 chapter: themes
 ---
 
 {% raw %}
 
-## Switching Theme <a id="switching-theme"></a>
+## About Ghost themes
 
-Ghost themes live in <code class="path">content/themes/</code>
+Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
 
-If you want to use a different theme to the default Casper theme, check out the custom themes on our [marketplace gallery](http://marketplace.ghost.org/). Download the theme package of your choice, extract it and place it in <code class="path">content/themes</code> alongside Casper.
+Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
 
-If you want to make your own, we recommend copying and renaming the casper directory & editing the templates to look and work how you want.
+We really hope you'll enjoy our approach to theming.
 
-To switch to your newly added theme:
-
-1.  Restart Ghost. At the moment, Ghost won't notice that you've added a new folder to <code class="path">content/themes</code> so you'll need to restart it
-2.  Login to your Ghost admin, and navigate to <code class="path">/ghost/settings/general/</code>
-3.  Select your Theme name in the 'Theme' options dropdown
-4.  Click 'Save'
-5.  Visit the frontend of your blog and marvel at the new theme
-
-<p class="note">**Note:** If you're on the Ghost Hosted Service, rather than a self-install, to switch theme you'll need to go to your <a href="https://ghost.org/blogs/">blog management</a> page and click on "edit" beside the name of your blog.</p>
-
-
-##  What is Handlebars? <a id="what-is-handlebars"></a>
+##  What is Handlebars?
 
 [Handlebars](http://handlebarsjs.com/) is the templating language used by Ghost.
 
@@ -37,15 +27,9 @@ If you're looking to get started writing your own theme, you'll probably want to
 
 Ghost also makes use of an additional library called `express-hbs` which adds some [additional features](https://github.com/barc/express-hbs#syntax) to handlebars which Ghost makes heavy use of, such as [layouts](#default-layout) and [partials](#partials).
 
-## About Ghost themes <a id="about"></a>
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
-
-We really hope you'll enjoy our approach to theming.
-
-## The File Structure of a Ghost Theme <a id="file-structure"></a>
+## The File Structure of a Ghost Theme
 
 The recommended file structure is:
 
@@ -60,7 +44,7 @@ The recommended file structure is:
 ├── default.hbs
 ├── index.hbs [required]
 └── post.hbs [required]
-└── package.json [will be required from 0.6]
+└── package.json [will be required]
 ```
 
 For the time being there is no requirement that <code class="path">default.hbs</code> or any folders exist. It is recommended that you keep your assets inside of an <code class="path">assets</code> folder, and make use of the [`{{asset}}` helper](#asset-helper) for serving css, js, image, font and other asset files.
@@ -87,6 +71,10 @@ This is the template for the homepage, and extends <code class="path">default.hb
 
 In Casper (the current default theme), the homepage has a large header which uses `@blog` global settings to output the blog logo, title and description. This is followed by using the `{{#foreach}}` helper to output a list of the latest posts.
 
+### home.hbs
+
+You can optionally provide a special template for the homepage. This template will only be used to render `/`, and not the subsequent pages like `/page/2/`.
+
 ### post.hbs
 
 This is the template for a single post, which also extends <code class="path">default.hbs</code>.
@@ -106,6 +94,10 @@ If you want to have a custom template for a specific page you can do so by creat
 You can optionally provide a tag template for the tag listing pages. If your theme doesn't have a <code class="path">tag.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for tag pages.
 
 Tag pages have access to both a tag object, a list of posts and pagination properties.
+
+### author.hbs
+
+You can optionally provide an author template for the author listing pages. If your theme doesn't have an <code class="path">author.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for author pages.
 
 ### error.hbs
 
@@ -185,19 +177,18 @@ Each of these properties can be output using the standard handlebars expression,
 When inside the context of a single post, the following author data is available:
 
 *   `{{author.name}}` – the name of the author
-*   `{{author.email}}` – the author's email address
 *   `{{author.bio}}` – the author's bio
 *   `{{author.website}}` – the author's website
 *   `{{author.image}}` – the author's profile image
 *   `{{author.cover}}` – the author's cover image
 
-You can use just`{{author}}` to output the author's name.
+You can use just`{{author}}` to output the author's name with a link to their author page.
 
 This can also be done by using a block expression:
 
 ```
 {{#author}}
-    <a href="mailto:{{email}}">Email {{name}}</a>
+    <a href="{{url}}">{{name}}</a>
 {{/author}}
 ```
 
@@ -300,11 +291,25 @@ The following example shows you how to pass in a column argument so that you can
 ### <code>has</code> <a id="has-helper"></a>
 
 *   Helper type: block
-*   Options: `tag` (comma separated list)
+*   Options: `tag` (comma separated list), `author` (comma separated list)
 
 `{{has}}` intends to allow theme developers to ask questions about the current context and provide more flexibility for creating different post layouts in Ghost.
 
-Currently, the `{{has}}` helper only allows you to determine whether a tag is present on a post:
+Currently, the `{{has}}` helper only allows you to ask questions about a post's author or tags:
+
+
+To determine if a post has a particular author:
+
+```
+{{#post}}
+    {{#has author="Joe Bloggs"}}
+        ...do something if the author is Joe Bloggs...
+    {{/has}}
+{{/post}}
+```
+
+To determine if a post has a particular tag:
+
 
 ```
 {{#post}}
@@ -411,29 +416,19 @@ If you don't want your list of tags to be automatically linked to their tag page
 ### <code>date</code> <a id="date-helper"></a>
 
 *   Helper type: output
-*   Options: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
+*   Options: `empty` (string), `singular` (string), `plural` (string)
 
-`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
-
-```
-// outputs something like 'July 11, 2014'
-{{date published_at format="MMMM DD, YYYY"}}
-```
-
-Or you can pass it a date and the timeago flag:
+`{{plural}}` is a formatting helper for outputting strings which change depending on whether a number is singular or plural.
 
 ```
-// outputs something like '5 mins ago'
-{{date published_at timeago="true"}}
+{{plural pagination.total empty='No posts' singular='% post' plural='% posts'}}
 ```
 
-If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+The most common usecase for the plural helper is outputting information about how many posts there are in total in a collection. For example, themes have access to `pagination.total` on the homepage, a tag page or an author page.
 
-If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+----
 
-If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
-
-`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
+### <code>plural</code> <a id="plural-helper"></a>
 
 ----
 
