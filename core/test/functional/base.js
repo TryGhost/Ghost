@@ -127,6 +127,8 @@ casper.writeContentToCodeMirror = function (content) {
             self.sendKeys('.CodeMirror-wrap textarea', casper.page.event.key.Enter, {keepFocus: true});
         });
 
+        casper.captureScreenshot('CodeMirror-Text.png');
+
         return this;
     }, function onTimeout() {
         casper.test.fail('CodeMirror was not found.');
@@ -276,7 +278,7 @@ casper.captureScreenshot = function (filename, debugOnly) {
 casper.test.on('fail', function captureFailure() {
     casper.captureScreenshot(casper.test.filename || 'casper_test_fail.png', false);
     casper.then(function () {
-       // console.log(casper.getHTML());
+        console.log(casper.getHTML());
         casper.exit(1);
     });
 });
