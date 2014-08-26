@@ -3,7 +3,11 @@
 // --------------------------------------------------
 
 #container {
-    @include position(absolute, 0px 0px 0px 0px);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     overflow: hidden;
 }
 
@@ -13,16 +17,20 @@
 
 // The <main> content wrapper
 .viewport {
-    @include position(absolute, 0px 0px 0px 0px);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     overflow: hidden;
     z-index: 500; // Above the .global-nav when collapsed
 
     @media (max-width: 900px) {
-        @include transition(transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1));
+        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     }
 
     &.global-nav-expanded {
-        @include transform(translate3d(260px, 0px, 0px));
+        transform: translate3d(260px, 0px, 0px);
     }
 }
 
@@ -89,7 +97,11 @@
 // like the header is position:fixed.
 
 .page-content {
-    @include position(absolute, 60px 0px 0px 0px);
+    position: absolute;
+    top: 60px;
+    right: 0;
+    bottom: 0;
+    left: 0;
     background: #fff;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;

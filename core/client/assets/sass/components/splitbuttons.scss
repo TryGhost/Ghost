@@ -6,14 +6,14 @@
     position: relative;
     display: inline-block;
     vertical-align: middle;
-    
+
     .btn {
         position: relative;
         float: left;
-        
+
         // Prevent double border between buttons
         + .btn { margin-left: -1px; }
-        
+
         // Make sure the hovered element is always on
         // top so overlap from .btn + btn. invisible
         &:hover,
@@ -23,12 +23,13 @@
           z-index: 2;
         }
     }
-    
+
     // Flatten out the right side
     .btn:first-child {
       margin-left: 0;
       &:not(:last-child):not(.dropdown-toggle) {
-        @include border-right-radius(0);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
       }
     }
 
@@ -36,7 +37,8 @@
     .dropdown-toggle {
         padding-left: 12px;
         padding-right: 12px;
-        @include border-left-radius(0);
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
 
         &.btn-sm {
             padding-left: 10px;
@@ -46,7 +48,7 @@
             padding-left: 16px;
             padding-right: 16px;
         }
-    
+
 
         // This is the additional dropdown arrow, to the right of the button.
         .options {
@@ -55,46 +57,46 @@
 
             @include icon($i-chevron-down, 9px) {
                 margin-top: -3px;
-                @include transition(margin-top 0.3s ease);
+                transition: margin-top 0.3s ease;
                 /* Transition of transform properties are split out due to a
                     defect in the vendor prefixing of transform transitions.
                     See: http://github.com/thoughtbot/bourbon/pull/86 */
-                @include transition-property(transform);
-                @include transition-duration(0.3);
-                @include transition-timing-function(ease);
+                transition-property: transform;
+                transition-duration: 0.3;
+                transition-timing-function: ease;
             }
 
         }
 
         // Keep the arrow spun when the associated menu is open
         &.active .options:before {
-            @include transform(rotate(-360deg));
+            transform: rotate(-360deg);
         }
 
         &.up.active .options:before {
             margin-top:-4px;
-            @include transform(rotate(540deg));
+            transform: rotate(540deg);
         }
 
         // Spin the arrow on hover and while menu is open
         &:hover .options:before,
         &:focus .options:before {
             will-change: transform;
-            @include transform(rotate(-360deg));
+            transform: rotate(-360deg);
         }
 
         // If it has a class of "up" spin it an extra 180degress to point up
         &.up:hover .options:before,
         &.up:focus .options:before {
             margin-top:-4px;
-            @include transform(rotate(540deg));
-            @include transition-property(transform);
-            @include transition-duration(0.6);
-            @include transition-timing-function(ease);
+            transform: rotate(540deg);
+            transition-property: transform;
+            transition-duration: 0.6;
+            transition-timing-function: ease;
         }
 
     }
-    
+
 }
 
 %splitbtn {
@@ -105,7 +107,8 @@
 
     button {
         font-size: 11px; // hack to restore font size
-        @include border-right-radius(0);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
     // This is the additional dropdown arrow, to the right of the button.
@@ -132,25 +135,25 @@
             right: 50%;
             margin-top: -3px;
             margin-right: -5px;
-            @include transition(margin-top 0.3s ease);
+            transition: margin-top 0.3s ease;
             /* Transition of transform properties are split out due to a
                 defect in the vendor prefixing of transform transitions.
                 See: http://github.com/thoughtbot/bourbon/pull/86 */
-            @include transition-property(transform);
-            @include transition-duration(0.3);
-            @include transition-timing-function(ease);
+            transition-property: transform;
+            transition-duration: 0.3;
+            transition-timing-function: ease;
         };
 
-        @include transition(background-color 0.3s linear);
+        transition: background-color 0.3s linear;
 
         // Keep the arrow spun when the associated menu is open
         &.active:before {
-            @include transform(rotate(360deg));
+            transform: rotate(360deg);
         }
 
         &.up.active:before {
             margin-top:-4px;
-            @include transform(rotate(540deg));
+            transform: rotate(540deg);
         }
 
         // Spin the arrow on hover and while menu is open
@@ -161,7 +164,7 @@
             background: #f8f8f8;
             @include icon($i-chevron-down) {
                 will-change: transform;
-                @include transform(rotate(360deg));
+                transform: rotate(360deg);
             };
         }
 
@@ -170,10 +173,10 @@
         &.up:focus {
             @include icon($i-chevron-down) {
                 margin-top:-4px;
-                @include transform(rotate(540deg));
-                @include transition-property(transform);
-                @include transition-duration(0.6);
-                @include transition-timing-function(ease);
+                transform: rotate(540deg);
+                transition-property: transform;
+                transition-duration: 0.6;
+                transition-timing-function: ease;
             };
         }
     }
@@ -236,7 +239,7 @@
     }
 }
 
-// Alternative style with more visual attention, 
+// Alternative style with more visual attention,
 // but no extra semantic meaning
 .splitbutton-alt {
     @extend %splitbtn;

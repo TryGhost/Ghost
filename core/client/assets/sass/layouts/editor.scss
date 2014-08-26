@@ -394,18 +394,18 @@ body.zen {
         opacity: 0;
         height: 0;
         overflow: hidden;
-        @include transition(all 0.5s ease-out);
+        transition: all 0.5s ease-out;
     }
 
     .page-content {
         top: 0;
-        @include transition(all 0.5s ease-out);
+        transition: all 0.5s ease-out;
     }
 
     .entry-markdown,
     .entry-preview {
         bottom: 0;
-        @include transition(all 0.5s ease-out);
+        transition: all 0.5s ease-out;
     }
 
 }
@@ -426,7 +426,7 @@ body.zen {
     right: 0;
     z-index: 900;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
-    @include transform(translateZ(0));
+    transform: translateZ(0);
 
     @media (max-width: 1000px) {
         font-weight: normal;
@@ -502,7 +502,7 @@ body.zen {
         right: 220px;
         width: 20px;
         height: 26px;
-        @include linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
+        background: linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
         z-index: 9999;
         pointer-events: none;
 
@@ -525,7 +525,7 @@ body.zen {
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         white-space: nowrap;
-        @include transition(width 0.2s linear);
+        transition: width 0.2s linear;
 
         @media (max-width: 400px) {
             display: block;
@@ -539,7 +539,7 @@ body.zen {
         float: left;
         @include icon($i-tag);
         padding: 1px 8px 0 8px;
-        @include transition;
+        transition: all 0.15s ease-out 0s;
 
         &:hover {
             cursor: pointer;
@@ -581,7 +581,7 @@ body.zen {
             margin-left: 4px;
             vertical-align: 10%;
             text-shadow: rgba(255,255,255,0.15) 0 1px 0;
-            @include transition;
+            transition: all 0.15s ease-out 0s;
         }
         display: inline;
         margin-right: 2px;
@@ -680,7 +680,7 @@ body.zen {
     display: inline-block;
     padding: 0 10px;
     color: $midgrey;
-    @include transition;
+    transition: all 0.15s ease-out 0s;
     position: relative;
     top: 1px;
 

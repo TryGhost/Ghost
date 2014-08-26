@@ -48,7 +48,20 @@ form {
 .input-icon[class*='icon-'] {
     position: relative;
     display: block;
-    #{$all-text-inputs} {
+    input[type="email"],
+    input[type="number"],
+    input[type="password"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="text"],
+    input[type="url"],
+    input[type="color"],
+    input[type="date"],
+    input[type="datetime"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="time"],
+    input[type="week"] {
         padding-left: 3.2rem;
     }
     .gh-select {
@@ -61,8 +74,6 @@ form {
         top: 50%;
         left: 1.1rem;
         font-size: 1.3rem;
-        -webkit-transform: translateY(-52%);
-        -ms-transform: translateY(-52%);
         transform: translateY(-52%);
         z-index: 100;
     }
@@ -88,7 +99,11 @@ form {
     }
 
     input {
-        @include position(absolute, 0 0 0 -9999px);
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: -9999px;
     }
 
     .input-toggle-component {
@@ -132,7 +147,20 @@ legend {
 
 
 // Input, textarea & select
-#{$all-text-inputs},
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="url"],
+input[type="color"],
+input[type="date"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
 textarea,
 .gh-select,
 select {
@@ -146,7 +174,7 @@ select {
     font-weight: normal;
     color: $darkgrey;
 
-    @include transition(border-color 0.15s linear);
+    transition: border-color 0.15s linear;
 
     &:focus {
         border-color: $brown;
@@ -188,9 +216,9 @@ input[type="number"] {
     }
     label {
         .input-toggle-component {
-            @include transition(background 0.15s ease-in-out, border-color 0.15s ease-in-out);
+            transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
             &:before {
-                @include transition(opacity 0.15s ease-in-out);
+                transition: opacity 0.15s ease-in-out;
                 content: '';
                 position: absolute;
                 width: 10px;
@@ -200,7 +228,7 @@ input[type="number"] {
                 border: 2px solid #fff;
                 border-top: none;
                 border-right: none;
-                @include transform(rotate(-45deg));
+                transform: rotate(-45deg);
                 opacity: 0;
             }
         }
@@ -232,9 +260,9 @@ input[type="number"] {
     }
     label {
         .input-toggle-component {
-            @include transition(background 0.15s ease-in-out, border-color 0.15s ease-in-out);
+            transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
             &:before {
-                @include transition(opacity 0.15s ease-in-out);
+                transition: opacity 0.15s ease-in-out;
                 content: '';
                 position: absolute;
                 width: 8px;
@@ -279,7 +307,9 @@ input[type="number"] {
     border-width: 0;
 
     @include icon-after($i-chevron-down, 0.85em, $midbrown) {
-        @include position(absolute, 50% 0.8em null null);
+        position: absolute;
+        top: 50%;
+        right: 0.8em;
         margin-top: -0.5em;
         pointer-events: none;
     };

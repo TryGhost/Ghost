@@ -6,6 +6,14 @@
     margin: 1.6em 0;
 }
 
+@mixin clearfix {
+  &:after {
+    content:"";
+    display:table;
+    clear:both;
+  }
+}
+
 // User select
 // For selecting text on the page
 
@@ -91,4 +99,51 @@
   margin-left:  ($gutter / -2);
   margin-right: ($gutter / -2);
   @include clearfix();
+}
+
+//==== Simple SCSS mixin to create CSS triangles
+//==== Example: @include css-triangle (10px, #fff, "up");
+@mixin triangle ($size: 20px, $color: #000, $direction: "down") {
+    $size: $size / 2;
+    width: 0;
+    height: 0;
+
+    @if $direction == "down" {
+        border-left: $size solid #{setTriangleColor($direction, "left", $color)};
+        border-right: $size solid #{setTriangleColor($direction, "right", $color)};
+        border-top: $size solid #{setTriangleColor($direction, "top", $color)};
+    }
+
+    @if $direction == "up" {
+        border-left: $size solid #{setTriangleColor($direction, "left", $color)};
+        border-right: $size solid #{setTriangleColor($direction, "right", $color)};
+        border-bottom: $size solid #{setTriangleColor($direction, "bottom", $color)};
+    }
+
+    @if $direction == "left" {
+        border-right: $size solid #{setTriangleColor($direction, "right", $color)};
+        border-top: $size solid #{setTriangleColor($direction, "top", $color)};
+        border-bottom: $size solid #{setTriangleColor($direction, "bottom", $color)};
+    }
+
+    @if $direction == "right" {
+        border-left: $size solid #{setTriangleColor($direction, "left", $color)};
+        border-bottom: $size solid #{setTriangleColor($direction, "bottom", $color)};
+        border-top: $size solid #{setTriangleColor($direction, "top", $color)};
+    }
+
+}
+
+//Utility function to return the relevant colour depending on what type of arrow it is
+@function setTriangleColor($direction, $side, $color) {
+
+    @if $direction == "left" and $side == "right"
+    or  $direction == "right" and $side == "left"
+    or $direction == "down" and $side == "top"
+    or $direction == "up" and $side == "bottom" {
+        @return $color
+    } @else {
+        @return "transparent";
+    }
+
 }

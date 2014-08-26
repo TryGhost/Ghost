@@ -62,7 +62,7 @@
         border: none;
         color: #fff;
         background: lighten($darkgrey, 10%);
-        @include transition(background 0.25s ease);
+        transition: background 0.25s ease;
 
         &:focus {
             border:none;
