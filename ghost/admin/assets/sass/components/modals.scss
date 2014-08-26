@@ -12,14 +12,14 @@
     overflow-x: auto;
     overflow-y: scroll;
     z-index: 1040;
-    @include transition(all 0.15s linear 0s);
-    @include transform(translateZ(0));
+    transition: all 0.15s linear 0s;
+    transform: translateZ(0);
 }
 
 .fade {
     opacity: 0;
-    @include transition(opacity 0.2s linear 0s);
-    @include transform(translateZ(0));
+    transition: opacity 0.2s linear 0s;
+    transform: translateZ(0);
 
     &.in {
         opacity: 1;
@@ -97,7 +97,7 @@
         z-index: 9999;
 
         @include icon($i-close, 1.4rem, $midgrey) {
-            @include transition(color 0.3s linear);
+            transition: color 0.3s linear;
         };
         &:hover:before {
             color: $grey;

@@ -24,7 +24,7 @@
 
 // TODO: What is this? Docs plz.
 .js-bb-notification {
-    @include transform(translateZ(0));
+    transform: translateZ(0);
 }
 
 //
@@ -51,7 +51,7 @@
     background: $blue;
     position: relative;
     box-shadow: $shadow;
-    @include transform(translateZ(0));
+    transform: translateZ(0);
 
     @media (max-width: 400px) {
         margin-bottom: 1px;
@@ -99,14 +99,14 @@
     background: $green;
 
     &.notification-passive {
-        @include animation(fade-out 1s linear);
-        @include animation-delay(3s);
-        @include animation-iteration-count(1);
-        @include animation-fill-mode(forwards);
+        animation: fade-out 1s linear;
+        animation-delay: 3s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
     }
 
     &.notification-passive:hover {
-        @include animation(fade-in-snap 0.2s linear);
+        animation: fade-in-snap 0.2s linear;
     }
 }
 

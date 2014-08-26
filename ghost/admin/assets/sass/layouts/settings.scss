@@ -82,7 +82,7 @@
                 z-index: 300;
                 border-top: #edece4 1px solid;
                 box-shadow: #fff 1px 0 0, #edece4 0 1px 0;
-                @include transition;
+                transition: all 0.15s ease-out 0s;
 
                 a {
                     color: $darkgrey;

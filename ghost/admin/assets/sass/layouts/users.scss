@@ -26,9 +26,9 @@
     }
 
     @media (min-width: 501px) {
-        @include display(flex);
-        @include justify-content(start);
-        @include align-items(center);
+        display: flex;
+        justify-content: start;
+        align-items: center;
         padding: 0 15px;
     }
 
@@ -89,8 +89,8 @@ a.object-list-item {
 
 .object-list-item-body {
 
-    @include flex(1);
-    @include align-items(stretch);
+    flex: 1;
+    align-items: stretch;
 
     padding-left: 15px;
     line-height: 1;

@@ -3,7 +3,6 @@
 // --------------------------------------------------
 
 .image-uploader {
-    @include box-sizing(border-box);
     @include baseline;
     position: relative;
     overflow:hidden;
@@ -30,7 +29,7 @@
         @include icon($i-image, 60px, darken($lightbrown, 3%)) {
             display: inline-block;
             vertical-align: initial;
-            @include transition(transform 1s ease);
+            transition: transform 1s ease;
         }
     }
 
@@ -80,8 +79,8 @@
             right: 0;
             margin: 0;
             opacity: 0;
-            @include transform-origin(right);
-            @include transform( scale(14));
+            transform-origin: right;
+            transform: scale(14);
             font-size: 23px;
             direction: ltr;
             cursor: pointer;
@@ -93,7 +92,6 @@
 
         &.url{
             font: -webkit-small-control;
-            box-sizing: border-box;
             width: 276px;
             vertical-align: middle;
             padding: 9px 7px;
@@ -103,8 +101,7 @@
             background: #fff;
             border: #e3e1d5 1px solid;
             border-radius: 4px;
-            -webkit-transition: all 0.15s ease-in-out;
-            -moz-transition: all 0.15s ease-in-out;
+            transition: all 0.15s ease-in-out;
         }
     }
 
@@ -113,7 +110,7 @@
         margin: -19px 0 44px 0;
         display: block;
         overflow: hidden;
-        @include linear-gradient(to bottom, #f5f5f5, #f9f9f9);
+        background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
         border-radius: 12px;
         box-shadow: (rgba(0,0,0,0.1) 0 1px 2px inset);
     }
@@ -151,7 +148,6 @@
 // TODO: Find a better name for this.
 
 .pre-image-uploader {
-    @include box-sizing(border-box);
     @include baseline;
     position: relative;
     overflow: hidden;
