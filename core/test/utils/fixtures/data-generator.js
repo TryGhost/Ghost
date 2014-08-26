@@ -1,5 +1,6 @@
-var _ = require('lodash'),
-    uuid = require('node-uuid'),
+var _             = require('lodash'),
+    uuid          = require('node-uuid'),
+    globalUtils   = require('../../../server/utils'),
     DataGenerator = {};
 
 DataGenerator.Content = {
@@ -232,7 +233,8 @@ DataGenerator.forKnex = (function () {
         app_fields,
         roles,
         users,
-        roles_users;
+        roles_users,
+        clients;
 
     function createBasic(overrides) {
         return _.defaults(overrides, {
@@ -327,6 +329,14 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createToken(overrides) {
+        return _.defaults(overrides, {
+            token: uuid.v4(),
+            client_id: 1,
+            expires:Date.now() + globalUtils.ONE_DAY_MS
+        });
+    }
+
     posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -349,14 +359,18 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.roles[0]),
         createBasic(DataGenerator.Content.roles[1]),
         createBasic(DataGenerator.Content.roles[2]),
-        createBasic(DataGenerator.Content.roles[3]),
+        createBasic(DataGenerator.Content.roles[3])
     ];
 
     users = [
         createUser(DataGenerator.Content.users[0]),
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
-        createUser(DataGenerator.Content.users[3]),
+        createUser(DataGenerator.Content.users[3])
+    ];
+
+    clients = [
+        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available'})
     ];
 
     roles_users = [
@@ -399,6 +413,7 @@ DataGenerator.forKnex = (function () {
         createApp: createBasic,
         createAppField: createAppField,
         createAppSetting: createAppSetting,
+        createToken: createToken,
 
         posts: posts,
         tags: tags,
@@ -407,7 +422,8 @@ DataGenerator.forKnex = (function () {
         app_fields: app_fields,
         roles: roles,
         users: users,
-        roles_users: roles_users
+        roles_users: roles_users,
+        clients: clients
     };
 
 }());
