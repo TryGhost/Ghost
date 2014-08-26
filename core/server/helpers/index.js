@@ -9,6 +9,7 @@ var downsize        = require('downsize'),
     filters         = require('../filters'),
     template        = require('./template'),
     schema          = require('../data/schema').checks,
+    downzero        = require('../utils/downzero'),
 
     assetTemplate   = _.template('<%= source %>?v=<%= version %>'),
     linkTemplate    = _.template('<a href="<%= url %>"><%= text %></a>'),
@@ -290,6 +291,14 @@ coreHelpers.content = function (options) {
     });
 
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
+        
+        // Legacy function: {{content words="0"}} should return leading tags.
+        if (truncateOptions.hasOwnProperty('words') && truncateOptions.words === 0) {
+            return new hbs.handlebars.SafeString(
+                downzero(this.html)
+            );
+        }
+
         // Due to weirdness in downsize the 'words' option
         // must be passed as a string. refer to #1796
         // TODO: when downsize fixes this quirk remove this hack.
