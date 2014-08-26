@@ -299,7 +299,7 @@ CasperTest.begin('User settings screen resets all whitespace slug to original va
         }, false);
     });
 
-    casper.thenClick('.content.settings-user');
+    casper.thenClick('body');
 
     casper.then(function checkSlugInputValue() {
         casper.wait(250);
@@ -323,7 +323,7 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
         }, false);
     });
 
-    casper.thenClick('.content.settings-user');
+    casper.thenClick('body');
 
     casper.waitForResource(/\/slugs\/user\//, function testGoodResponse(resource) {
         test.assert(400 > resource.status);
@@ -408,11 +408,11 @@ CasperTest.begin('Ensure user bio field length validation', 3, function suite(te
        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
    });
 
-   casper.waitForSelector('.settings-content .settings-user', function then() {
+   casper.then(function setBioToInvalid() {
        this.fillSelectors('form.user-profile', {
            '#user-bio': new Array(202).join('a')
        });
-   }, casper.failOnTimeout(test, 'waitForSelector .settings-content .settings-user timed out'));
+   });
 
    casper.thenClick('.page-actions .btn-blue');
 
@@ -427,11 +427,11 @@ CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
    });
 
-   casper.waitForSelector('.settings-content .settings-user', function then() {
+    casper.then(function setWebsiteToInvalid() {
        this.fillSelectors('form.user-profile', {
            '#user-website': 'notaurl'
        });
-   }, casper.failOnTimeout(test, 'waitForSelector .settings-content .settings-user timed out'));
+   });
 
    casper.thenClick('.page-actions .btn-blue');
 
@@ -446,11 +446,11 @@ CasperTest.begin('Ensure user location field length validation', 3, function sui
        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
    });
 
-   casper.waitForSelector('.settings-content .settings-user', function then() {
+   casper.then(function setLocationToInvalid() {
        this.fillSelectors('form.user-profile', {
            '#user-location': new Array(1002).join('a')
        });
-   }, casper.failOnTimeout(test, 'waitForSelector .settings-content .settings-user timed out'));
+   });
 
    casper.thenClick('.page-actions .btn-blue');
 
