@@ -144,7 +144,7 @@ Post = ghostBookshelf.Model.extend({
                         createdTag = createdTag.toJSON();
                         // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
                         // (https://github.com/tgriesser/bookshelf/issues/294)
-                        return post.tags().attach(createdTag.id, createdTag.name, _.omit(options, 'query'));
+                        return post.tags().attach(createdTag.id, _.omit(options, 'query'));
                     });
 
                     tagOps.push(createAndAttachOperation);
