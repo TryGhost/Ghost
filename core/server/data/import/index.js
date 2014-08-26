@@ -30,10 +30,12 @@ cleanError = function cleanError(error) {
             offendingProperty = temp.length === 2 ? temp[1] : error.model;
             temp = offendingProperty.split('.');
             value = temp.length === 2 ? error.data[temp[1]] : 'unknown';
+        } else if (error.raw.detail) {
+            value = error.raw.detail;
+            offendingProperty = error.model;
         }
         message = 'Duplicate entry found. Multiple values of "' + value + '" found for ' + offendingProperty + '.';
     }
-
 
     offendingProperty = offendingProperty || error.model;
     value = value || 'unknown';

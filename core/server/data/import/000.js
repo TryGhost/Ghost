@@ -93,10 +93,9 @@ Importer000.prototype.doUserImport = function (t, tableData, users, errors) {
 
 Importer000.prototype.doImport = function (data) {
     var self = this,
-        ops = [],
-        errors = [],
         tableData = data.data,
         imported = {},
+        errors = [],
         users = {},
         owner = {};
 
@@ -108,6 +107,8 @@ Importer000.prototype.doImport = function (data) {
 
             // Step 1: Attempt to handle adding new users
             self.doUserImport(t, tableData, users, errors).then(function (result) {
+                var importResults = [];
+
                 imported.users = result;
 
                 _.each(imported.users, function (user) {
@@ -126,33 +127,28 @@ Importer000.prototype.doImport = function (data) {
                     tableData = utils.preProcessPostTags(tableData);
                 }
 
-                // Import things in the right order:
-                if (tableData.tags && tableData.tags.length) {
-                    utils.importTags(ops, tableData.tags, t);
-                }
+                // Import things in the right order
 
-                if (tableData.posts && tableData.posts.length) {
-                    utils.importPosts(ops, tableData.posts, t);
-                }
+                return utils.importTags(tableData.tags, t).then(function (results) {
+                    if (results) {
+                        importResults = importResults.concat(results);
+                    }
 
-                if (tableData.settings && tableData.settings.length) {
-                    utils.importSettings(ops, tableData.settings, t);
-                }
+                    return utils.importPosts(tableData.posts, t);
+                }).then(function (results) {
+                    if (results) {
+                        importResults = importResults.concat(results);
+                    }
 
-                /** do nothing with these tables, the data shouldn't have changed from the fixtures
-                 *   permissions
-                 *   roles
-                 *   permissions_roles
-                 *   permissions_users
-                 */
-
-                // Write changes to DB, if successful commit, otherwise rollback
-                Promise.settle(ops).then(function (descriptors) {
-                    var errors = [];
-
-                    descriptors.forEach(function (d) {
-                        if (d.isRejected()) {
-                            errors = errors.concat(d.reason());
+                    return utils.importSettings(tableData.settings, t);
+                }).then(function (results) {
+                    if (results) {
+                        importResults = importResults.concat(results);
+                    }
+                }).then(function () {
+                    importResults.forEach(function (p) {
+                        if (p.isRejected()) {
+                            errors = errors.concat(p.reason());
                         }
                     });
 
@@ -162,6 +158,13 @@ Importer000.prototype.doImport = function (data) {
                         t.rollback(errors);
                     }
                 });
+
+                /** do nothing with these tables, the data shouldn't have changed from the fixtures
+                 *   permissions
+                 *   roles
+                 *   permissions_roles
+                 *   permissions_users
+                 */
             });
         }).then(function () {
             //TODO: could return statistics of imported items
