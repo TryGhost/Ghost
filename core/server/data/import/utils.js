@@ -149,7 +149,13 @@ utils = {
         return tableData;
     },
 
-    importTags: function importTags(ops, tableData, transaction) {
+    importTags: function importTags(tableData, transaction) {
+        if (!tableData) {
+            return Promise.resolve();
+        }
+
+        var ops = [];
+
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (tag) {
              // Validate minimum tag fields
@@ -160,7 +166,6 @@ utils = {
             ops.push(models.Tag.findOne({name: tag.name}, {transacting: transaction}).then(function (_tag) {
                 if (!_tag) {
                     return models.Tag.add(tag, _.extend(internal, {transacting: transaction}))
-                        // add pass-through error handling so that bluebird doesn't think we've dropped it
                         .catch(function (error) {
                             return Promise.reject({raw: error, model: 'tag', data: tag});
                         });
@@ -169,21 +174,46 @@ utils = {
                 return _tag;
             }));
         });
+
+        return Promise.settle(ops);
     },
 
-    importPosts: function importPosts(ops, tableData, transaction) {
+    importPosts: function importPosts(tableData, transaction) {
+        if (!tableData) {
+            return Promise.resolve();
+        }
+
+        var ops = [];
+
         tableData = stripProperties(['id'], tableData);
+
         _.each(tableData, function (post) {
              // Validate minimum post fields
             if (areEmpty(post, 'title', 'slug', 'markdown')) {
                 return;
             }
-            ops.push(models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
-                // add pass-through error handling so that bluebird doesn't think we've dropped it
-                .catch(function (error) {
-                    return Promise.reject({raw: error, model: 'post', data: post});
-                }));
+
+            ops.push(function () {
+                return models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
+                    .catch(function (error) {
+                        return Promise.reject({raw: error, model: 'post', data: post});
+                    });
+            });
         });
+
+        return Promise.reduce(ops, function (results, op) {
+            return op().then(function (result) {
+                results.push(result);
+
+                return results;
+            }).catch(function (error) {
+                if (error) {
+                    results.push(error);
+                }
+
+                return results;
+            });
+        }, []).settle();
     },
 
     importUsers: function importUsers(tableData, existingUsers, transaction) {
@@ -206,7 +236,6 @@ utils = {
             user.status = 'locked';
 
             ops.push(models.User.add(user, _.extend(internal, {transacting: transaction}))
-                // add pass-through error handling so that bluebird doesn't think we've dropped it
                 .catch(function (error) {
                     return Promise.reject({raw: error, model: 'user', data: user});
                 }));
@@ -215,11 +244,16 @@ utils = {
         return ops;
     },
 
-    importSettings: function importSettings(ops, tableData, transaction) {
+    importSettings: function importSettings(tableData, transaction) {
+        if (!tableData) {
+            return Promise.resolve();
+        }
+
         // for settings we need to update individual settings, and insert any missing ones
         // settings we MUST NOT update are 'core' and 'theme' settings
         // as all of these will cause side effects which don't make sense for an import
-        var blackList = ['core', 'theme'];
+        var blackList = ['core', 'theme'],
+            ops = [];
 
         tableData = stripProperties(['id'], tableData);
         tableData = _.filter(tableData, function (data) {
@@ -232,21 +266,27 @@ utils = {
         });
 
         ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction}))
-             // add pass-through error handling so that bluebird doesn't think we've dropped it
              .catch(function (error) {
                 return Promise.reject({raw: error, model: 'setting', data: tableData});
             }));
+
+        return Promise.settle(ops);
     },
 
     /** For later **/
-    importApps: function importApps(ops, tableData, transaction) {
+    importApps: function importApps(tableData, transaction) {
+        if (!tableData) {
+            return Promise.resolve();
+        }
+
+        var ops = [];
+
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (app) {
             // Avoid duplicates
             ops.push(models.App.findOne({name: app.name}, {transacting: transaction}).then(function (_app) {
                 if (!_app) {
                     return models.App.add(app, _.extend(internal, {transacting: transaction}))
-                        // add pass-through error handling so that bluebird doesn't think we've dropped it
                         .catch(function (error) {
                             return Promise.reject({raw: error, model: 'app', data: app});
                         });
@@ -255,6 +295,8 @@ utils = {
                 return _app;
             }));
         });
+
+        return Promise.settle(ops);
     }
 };
 
