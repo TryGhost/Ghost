@@ -154,9 +154,16 @@ function redirectToSetup(req, res, next) {
 
 // Detect uppercase in req.path
 function uncapitalise(req, res, next) {
-    if (/[A-Z]/.test(req.path)) {
+    var pathToTest = req.path,
+        isSignupOrReset = req.path.match(/(\/ghost\/(signup|reset)\/)/i);
+
+    if (isSignupOrReset) {
+        pathToTest = isSignupOrReset[1];
+    }
+
+    if (/[A-Z]/.test(pathToTest)) {
         res.set('Cache-Control', 'public, max-age=' + utils.ONE_YEAR_S);
-        res.redirect(301, req.url.replace(req.path, req.path.toLowerCase()));
+        res.redirect(301, req.url.replace(pathToTest, pathToTest.toLowerCase()));
     } else {
         next();
     }
