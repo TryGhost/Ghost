@@ -10,6 +10,12 @@ config = {
     // When running Ghost in the wild, use the production environment
     // Configure your URL and mail settings here
     production: {
+        // The website owner's name
+        owner: "Ghost Owner",
+
+        // The website owner's email
+        email: "ghost_owner@ghostmail.com",
+
         url: 'http://my-ghost-blog.com',
         mail: {},
         database: {
@@ -29,6 +35,12 @@ config = {
 
     // ### Development **(default)**
     development: {
+        // The website owner's name
+        owner: "Ghost Owner",
+
+        // The website owner's email
+        email: "ghost_owner@ghostmail.com",
+
         // The url to use when providing links to the site, E.g. in RSS and email.
         // Change this to your Ghost blogs published URL.
         url: 'http://localhost:2368',
