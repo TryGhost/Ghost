@@ -775,6 +775,28 @@ coreHelpers.plural = function (context, options) {
     }
 };
 
+// ### Site Owner helper
+//
+// *Usage example:*
+// `{{site_owner}}`
+//
+// Returns the owner of the site.
+coreHelpers.site_owner = function (context, block) {
+    /*jshint unused:false*/
+    return config.owner;
+};
+
+// ### Site Email helper
+//
+// *Usage example:*
+// `{{site_email}}`
+//
+// Returns the email ID of the site.
+coreHelpers.site_email = function (context, block) {
+    /*jshint unused:false*/
+    return config.email;
+};
+
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
         return undefined;
@@ -859,6 +881,10 @@ registerHelpers = function (adminHbs, assetHash) {
     registerThemeHelper('tags', coreHelpers.tags);
 
     registerThemeHelper('plural', coreHelpers.plural);
+
+    registerThemeHelper('site_owner', coreHelpers.site_owner);
+
+    registerThemeHelper('site_email', coreHelpers.site_email);
 
     registerAsyncThemeHelper('body_class', coreHelpers.body_class);
 
