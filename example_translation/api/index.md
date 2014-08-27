@@ -1,4 +1,5 @@
 ---
+lang: example_translation
 layout: api
 meta_title: The Ghost JSON API - Ghost Docs
 meta_description: A guide to the Ghost JSON API

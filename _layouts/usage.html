@@ -1,11 +1,17 @@
 ---
 layout: default
+nav_items:
+    - configuration
+    - settings
+    - managing
+    - writing
+    - faq
 ---
  
 <div class="container">
     <div class="row">
 
-        {% include subnav/usage.html %}
+        {% include subnav.html %}
 
         <section id="content" class="col-lg-9">
             {{ content }}

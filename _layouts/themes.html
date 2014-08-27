@@ -1,23 +1,38 @@
 ---
 layout: default
+nav_items:
+    - handlebars
+    - structure
+    - helpers
+    - troubleshooting
 ---
 
 <div class="container">
     <div class="row">
-        <aside id="sidebar" class="col-lg-3">
-            <nav class="bs-sidebar">
-                <ul class="nav bs-sidenav">
-                    <li class="active"><a href="#about">About Ghost themes</a></li>
-                    <li><a href="#what-is-handlebars">What is Handlebars?</a></li>
-                    <li><a href="#file-structure">File Structure</a></li>
-                    <li><a href="#create-your-own">Create your own</a></li>
-                    <li><a href="#helpers">Built-in Helpers</a></li>
-                    <li><a href="#troubleshooting">Troubleshooting Themes</a></li>
-                </ul>
-            </nav>
-        </aside>
+
+        {% if page.lang == nil or page.lang == "example_translation" %}
+            {% include subnav.html %}
+        {% else %}
+            <aside id="sidebar" class="col-lg-3">
+                <nav class="bs-sidebar">
+                    <ul class="nav bs-sidenav">
+                        <li class="active"><a href="#about">About Ghost themes</a></li>
+                        <li><a href="#what-is-handlebars">What is Handlebars?</a></li>
+                        <li><a href="#file-structure">File Structure</a></li>
+                        <li><a href="#create-your-own">Create your own</a></li>
+                        <li><a href="#helpers">Built-in Helpers</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting Themes</a></li>
+                    </ul>
+                </nav>
+            </aside>
+        {% endif %}
+
         <section id="content" class="col-lg-9">
             {{ content }}
+
+            {% if page.next_section or page.prev_section %}
+            {% include pagination.html %}
+            {% endif %}
         </section>
     </div>
 </div>

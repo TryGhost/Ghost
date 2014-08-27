@@ -1,9 +1,17 @@
 ---
 layout: default
+nav_items:
+    - mac
+    - windows
+    - linux
+    - deploy
+    - upgrading
+    - troubleshooting
 ---
 <div class="container">
     <div class="row">
-        {% include subnav/installation.html %}
+
+        {% include subnav.html %}
 
         <section id="content" class="col-lg-9">
             {{ content }}
