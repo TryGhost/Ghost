@@ -7,7 +7,6 @@ var fs              = require('fs-extra'),
     rewire          = require('rewire'),
     _               = require('lodash'),
     config          = rewire('../../server/config'),
-    configUpdate    = config.__get__('updateConfig'),
     localfilesystem = rewire('../../server/storage/localfilesystem');
 
 // To stop jshint complaining
@@ -19,7 +18,7 @@ describe('Local File System Storage', function () {
         overrideConfig = function (newConfig) {
             var existingConfig = localfilesystem.__get__('config'),
                 updatedConfig = _.extend(existingConfig, newConfig);
-            configUpdate(updatedConfig);
+            config.set(updatedConfig);
             localfilesystem.__set__('config', updatedConfig);
         };
 

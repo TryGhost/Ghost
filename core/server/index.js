@@ -129,23 +129,22 @@ function initNotifications() {
 // Sets up the express server instance.
 // Instantiates the ghost singleton, helpers, routes, middleware, and apps.
 // Finally it returns an instance of GhostServer
-function init(server) {
-    // create a hash for cache busting assets
-    var assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
-
-    // If no express instance is passed in
-    // then create our own
-    if (!server) {
-        server = express();
-    }
+function init(options) {
+    // Get reference to an express app instance.
+    var server = options.app ? options.app : express(),
+        // create a hash for cache busting assets
+        assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
     // ### Initialisation
     // The server and its dependencies require a populated config
     // It returns a promise that is resolved when the application
     // has finished starting up.
 
-    // Make sure javascript files have been built via grunt concat
-    return builtFilesExist().then(function () {
+    // Load our config.js file from the local file system.
+    return config.load(options.config).then(function () {
+        // Make sure javascript files have been built via grunt concat
+        return builtFilesExist();
+    }).then(function () {
         // Initialise the models
         return models.init();
     }).then(function () {

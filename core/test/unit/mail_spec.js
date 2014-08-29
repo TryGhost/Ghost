@@ -39,10 +39,9 @@ SENDMAIL = {
 describe('Mail', function () {
     var overrideConfig = function (newConfig) {
         var config = rewire('../../server/config'),
-            configUpdate = config.__get__('updateConfig'),
             existingConfig = mailer.__get__('config');
 
-        configUpdate(_.extend(existingConfig, newConfig));
+        config.set(_.extend(existingConfig, newConfig));
     };
 
     beforeEach(function () {

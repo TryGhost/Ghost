@@ -12,8 +12,7 @@ var should         = require('should'),
     // Stuff we are testing
     handlebars     = hbs.handlebars,
     helpers        = rewire('../../server/helpers'),
-    config         = rewire('../../server/config'),
-    configUpdate   = config.__get__('updateConfig');
+    config         = rewire('../../server/config');
 
 describe('Core Helpers', function () {
 
@@ -21,7 +20,7 @@ describe('Core Helpers', function () {
         apiStub,
         overrideConfig = function (newConfig) {
             var existingConfig = helpers.__get__('config');
-            configUpdate(_.extend(existingConfig, newConfig));
+            config.set(_.extend(existingConfig, newConfig));
         };
 
     beforeEach(function (done) {
@@ -496,7 +495,7 @@ describe('Core Helpers', function () {
         var configUrl = config.url;
 
         afterEach(function () {
-            configUpdate({url: configUrl});
+            config.set({url: configUrl});
         });
 
         it('has loaded ghost_head helper', function () {
@@ -504,7 +503,7 @@ describe('Core Helpers', function () {
         });
 
         it('returns meta tag string', function (done) {
-            configUpdate({url: 'http://testurl.com/'});
+            config.set({url: 'http://testurl.com/'});
             helpers.ghost_head.call({version: '0.3.0'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
@@ -516,7 +515,7 @@ describe('Core Helpers', function () {
         });
 
         it('returns meta tag string even if version is invalid', function (done) {
-            configUpdate({url: 'http://testurl.com/'});
+            config.set({url: 'http://testurl.com/'});
             helpers.ghost_head.call({version: '0.9'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.9" />\n' +
@@ -528,7 +527,7 @@ describe('Core Helpers', function () {
         });
 
         it('returns correct rss url with subdirectory', function (done) {
-            configUpdate({url: 'http://testurl.com/blog/'});
+            config.set({url: 'http://testurl.com/blog/'});
             helpers.ghost_head.call({version: '0.3.0'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
@@ -540,7 +539,7 @@ describe('Core Helpers', function () {
         });
 
         it('returns canonical URL', function (done) {
-            configUpdate({url: 'http://testurl.com'});
+            config.set({url: 'http://testurl.com'});
             helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/about/'}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
@@ -552,7 +551,7 @@ describe('Core Helpers', function () {
         });
 
         it('returns next & prev URL correctly for middle page', function (done) {
-            configUpdate({url: 'http://testurl.com'});
+            config.set({url: 'http://testurl.com'});
             helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/page/3/', pagination: {next: '4', prev: '2'}}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
@@ -565,7 +564,7 @@ describe('Core Helpers', function () {
         });
 
         it('returns next & prev URL correctly for second page', function (done) {
-            configUpdate({url: 'http://testurl.com'});
+            config.set({url: 'http://testurl.com'});
             helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/page/2/', pagination: {next: '3', prev: '1'}}).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<meta name="generator" content="Ghost 0.3" />\n' +
@@ -767,7 +766,7 @@ describe('Core Helpers', function () {
         });
 
         afterEach(function () {
-            configUpdate({url: configUrl});
+            config.set({url: configUrl});
         });
 
         it('has loaded url helper', function () {
@@ -785,7 +784,7 @@ describe('Core Helpers', function () {
         });
 
         it('should output an absolute URL if the option is present', function (done) {
-            configUpdate({ url: 'http://testurl.com/' });
+            config.set({ url: 'http://testurl.com/' });
 
             helpers.url.call(
                 {html: 'content', markdown: 'ff', title: 'title', slug: 'slug', created_at: new Date(0)},
@@ -1711,7 +1710,7 @@ describe('Core Helpers', function () {
             configUrl = config.url;
 
         afterEach(function () {
-            configUpdate({url: configUrl});
+            config.set({url: configUrl});
         });
 
 
@@ -1722,7 +1721,7 @@ describe('Core Helpers', function () {
         });
 
         it('should output the path to admin with subdirectory', function () {
-            configUpdate({url: 'http://testurl.com/blog/'});
+            config.set({url: 'http://testurl.com/blog/'});
             rendered = helpers.admin_url();
             should.exist(rendered);
             rendered.should.equal('/blog/ghost');
@@ -1730,21 +1729,21 @@ describe('Core Helpers', function () {
 
         it('should output absolute path if absolute is set', function () {
             // no trailing slash
-            configUpdate({url: 'http://testurl.com'});
+            config.set({url: 'http://testurl.com'});
 
             rendered = helpers.admin_url({'hash': {absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/ghost');
 
             // test trailing slash
-            configUpdate({url: 'http://testurl.com/'});
+            config.set({url: 'http://testurl.com/'});
             rendered = helpers.admin_url({'hash': {absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/ghost');
         });
 
         it('should output absolute path with subdirectory', function () {
-            configUpdate({url: 'http://testurl.com/blog'});
+            config.set({url: 'http://testurl.com/blog'});
             rendered = helpers.admin_url({'hash': {absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/blog/ghost');
@@ -1757,27 +1756,27 @@ describe('Core Helpers', function () {
         });
 
         it('should output the absolute path to frontend if both are set', function () {
-            configUpdate({url: 'http://testurl.com'});
+            config.set({url: 'http://testurl.com'});
 
             rendered = helpers.admin_url({'hash': {frontend: true, absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/');
 
-            configUpdate({url: 'http://testurl.com/'});
+            config.set({url: 'http://testurl.com/'});
             rendered = helpers.admin_url({'hash': {frontend: true, absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/');
         });
 
         it('should output the path to frontend with subdirectory', function () {
-            configUpdate({url: 'http://testurl.com/blog/'});
+            config.set({url: 'http://testurl.com/blog/'});
             rendered = helpers.admin_url({'hash': {frontend: true}});
             should.exist(rendered);
             rendered.should.equal('/blog/');
         });
 
         it('should output the absolute path to frontend with subdirectory', function () {
-            configUpdate({url: 'http://testurl.com/blog/'});
+            config.set({url: 'http://testurl.com/blog/'});
             rendered = helpers.admin_url({'hash': {frontend: true, absolute: true}});
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/blog/');
@@ -1862,7 +1861,7 @@ describe('Core Helpers', function () {
         var configUrl = config.url;
 
         afterEach(function () {
-            configUpdate({url: configUrl});
+            config.set({url: configUrl});
         });
 
         it('is loaded', function () {
