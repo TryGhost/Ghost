@@ -637,9 +637,9 @@ var path           = require('path'),
         // Ghost requires a `config.js` file to specify the database settings etc. Ghost comes with an example file:
         // `config.example.js` which is copied and renamed to `config.js` by the bootstrap process
         grunt.registerTask('ensureConfig', function () {
-            var bootstrap = require('./core/bootstrap'),
+            var config = require('./core/server/config'),
                 done = this.async();
-            bootstrap().then(function () {
+            config.load().then(function () {
                 done();
             }).catch(function (err) {
                 grunt.fail.fatal(err.stack);
