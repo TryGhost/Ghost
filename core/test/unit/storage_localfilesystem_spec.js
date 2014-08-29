@@ -7,7 +7,8 @@ var fs              = require('fs-extra'),
     rewire          = require('rewire'),
     _               = require('lodash'),
     config          = rewire('../../server/config'),
-    localfilesystem = rewire('../../server/storage/localfilesystem');
+    LocalFileStore  = rewire('../../server/storage/localfilesystem'),
+    localfilesystem;
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -16,10 +17,10 @@ describe('Local File System Storage', function () {
 
     var image,
         overrideConfig = function (newConfig) {
-            var existingConfig = localfilesystem.__get__('config'),
+            var existingConfig = LocalFileStore.__get__('config'),
                 updatedConfig = _.extend(existingConfig, newConfig);
             config.set(updatedConfig);
-            localfilesystem.__set__('config', updatedConfig);
+            LocalFileStore.__set__('config', updatedConfig);
         };
 
     beforeEach(function () {
@@ -38,6 +39,8 @@ describe('Local File System Storage', function () {
 
         // Sat Sep 07 2013 21:24
         this.clock = sinon.useFakeTimers(new Date(2013, 8, 7, 21, 24).getTime());
+
+        localfilesystem = new LocalFileStore();
     });
 
     afterEach(function () {
