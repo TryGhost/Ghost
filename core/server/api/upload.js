@@ -29,7 +29,7 @@ upload = {
      * @returns {Promise} Success
      */
     add: function (options) {
-        var store = storage.get_storage(),
+        var store = storage.getStorage(),
             type,
             ext,
             filepath;
