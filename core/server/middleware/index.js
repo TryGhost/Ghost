@@ -155,10 +155,16 @@ function redirectToSetup(req, res, next) {
 // Detect uppercase in req.path
 function uncapitalise(req, res, next) {
     var pathToTest = req.path,
-        isSignupOrReset = req.path.match(/(\/ghost\/(signup|reset)\/)/i);
+        isSignupOrReset = req.path.match(/(\/ghost\/(signup|reset)\/)/i),
+        isAPI = req.path.match(/(\/ghost\/api\/v0[\d\.]+\/.*?\/)/i);
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];
+    }
+    
+    // Do not lowercase anything after /api/v0.1/ to protect :key/:slug
+    if (isAPI) {
+        pathToTest = isAPI[1];
     }
 
     if (/[A-Z]/.test(pathToTest)) {
