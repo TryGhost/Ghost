@@ -1,0 +1,237 @@
+//
+// Users
+// --------------------------------------------------
+// Slug: /ghost/settings/users/
+// --------------------------------------------------
+// TODO: Rename everything. This is a layout, rather
+// than a re-usable component.
+
+.invited-users {
+    margin-bottom: 34px;
+}
+
+.object-list-title {
+    font-size: 13px;
+    font-weight: normal;
+    color: $midbrown;
+    margin-bottom: 14px;
+} // .object-list-title
+
+.object-list-item {
+
+    @media (max-width: 500px) {
+        display: block;
+        padding: 15px 0;
+        @include clearfix;
+    }
+
+    @media (min-width: 501px) {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        padding: 0 15px;
+    }
+
+    border-top: 1px solid $lightbrown;
+    min-height: 68px;
+
+} // .object-list-item
+
+a.object-list-item {
+    text-decoration: none;
+    &:hover {
+        background: lighten($lightbrown, 5%);
+    }
+    &:last-of-type:hover {
+        box-shadow: inset 0px -1px 0px $lightbrown;
+    }
+}
+
+.object-list-item-icon {
+    width: 35px;
+    height: 35px;
+    display: block;
+    border-radius: 100%;
+    background: $lightbrown;
+    font-size: 0px;
+    color: transparent;
+    overflow: hidden;
+    position: relative;
+    &:before {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        margin-top: -7px;
+        text-align: center;
+        color: $brown;
+        font-size: 14px;
+    }
+} // .object-list-item-icon
+
+.object-list-item-figure {
+    width: 35px;
+    height: 35px;
+    display: block;
+    border: 1px solid #979797;
+    border-radius: 100%;
+    background-size: cover;
+    background-position: center center;
+} // .object-list-item-figure
+
+.object-list-item-icon,
+.object-list-item-figure {
+    @media (max-width: 500px) {
+        float: left;
+        margin-right: 15px;
+    }
+}
+
+.object-list-item-body {
+
+    flex: 1;
+    align-items: stretch;
+
+    padding-left: 15px;
+    line-height: 1;
+
+    @media (max-width: 500px) {
+        margin-top: 3px;
+    }
+
+    .name {
+        display: inline-block;
+        font-size: 15px;
+        font-weight: 400;
+        color: $darkgrey;
+    }
+    .description {
+        display: inline-block;
+        font-size: 12px;
+        color: $midbrown;
+        white-space: nowrap;
+        margin-top: 3px;
+    }
+
+} // .object-list-item-body
+
+.object-list-item-aside {
+    @media (max-width: 500px) {
+        float: left;
+        width: 100%;
+        margin-top: 15px;
+    }
+    .object-list-action:not(:first-of-type) {
+        margin-left: 20px;
+        @media (min-width: 501px) {
+            margin-left: 50px;
+        }
+    }
+    .role-label {
+        float: left;
+        margin-top: -1px;
+    }
+    .role-label + .role-label {
+        margin-left: 5px;
+    }
+} // .object-list-item-aside
+
+.object-list-action {
+    font-size: 11px;
+    text-transform: uppercase;
+    text-decoration: underline;
+    &:hover {
+
+    }
+} // .object-list-action
+
+
+//
+// Role Labels
+// --------------------------------------------------
+
+.role-label {
+    display: inline-block;
+    padding: 6px 8px;
+    color: rgba(0,0,0,0.5);
+    font-size: 9px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+    background: #eee;
+
+    &.owner {
+        color: rgba(255,255,255,0.8);
+        background: $darkgrey;
+    }
+
+    &.administrator {
+        color: rgba(255,255,255,0.8);
+        background: $red;
+    }
+
+    &.editor {
+        color: rgba(255,255,255,0.8);
+        background: $blue;
+    }
+
+}
+
+//
+// User Actions
+// --------------------------------------------------
+
+.user-actions-menu {
+    left: auto;
+    right: 0;
+    top: calc(100% + 17px);
+}
+
+
+//
+// Invite User Modal
+// --------------------------------------------------
+
+.invite-new-user {
+    .modal-body {
+        @include clearfix;
+        fieldset {
+            margin: 1em 0 0 0;
+        }
+    }
+    .form-group {
+
+        margin-bottom: 0;
+        padding: 0;
+
+        label {
+            position: static;
+            display: block;
+            text-align: left;
+        }
+
+        &:nth-of-type(1) {
+            float: left;
+            width: 60%;
+        }
+        &:nth-of-type(2) {
+            float: left;
+            width: 35%;
+            margin-left: 5%;
+        }
+
+        input {
+            width: 100%;
+        }
+
+    } // .form-group
+
+    .button-add {
+        width: 100%;
+        padding: 0.85rem 1.9rem;
+        font-size: 14px;
+        line-height: 16px;
+    }
+
+} // .invite-new-user

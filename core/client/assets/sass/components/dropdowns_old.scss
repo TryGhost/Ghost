@@ -1,0 +1,176 @@
+//
+// Dropdown Styles
+// --------------------------------------------------
+
+// Wrapper
+// Does nothing yet...
+.dropdown {}
+
+// List
+.dropdown-menu {
+    position: relative;
+    display: inline-block;
+    min-width: 160px;
+    padding: 0.5rem 0;
+    margin: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    background: #fff;
+    border: #B0BEC4 1px solid;
+    box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
+    border-radius: 2px;
+
+    // Item Resets - This means we can use any element
+    li {
+        list-style: none;
+    }
+
+    &:before {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-color: #fff transparent;
+        display: block;
+        width: 0;
+    } // :before
+
+    &:after {
+        content: '';
+        position: absolute;
+        width: ($dropdown_triangle * 1.5);
+        height: ($dropdown_triangle * 1.5);
+        background: #B0BEC4;
+        transform: rotate(45deg);
+        z-index: -1;
+    } // :after
+
+} // .dropdown-menu
+
+
+.dropdown-triangle-top {
+    &:before {
+        border-width: 0 $dropdown_triangle $dropdown_triangle $dropdown_triangle;
+        top: -$dropdown_triangle;
+    }
+    &:after {
+        top: -($dropdown_triangle - 1);
+    }
+}
+.dropdown-triangle-bottom {
+    &:before {
+        border-width: $dropdown_triangle $dropdown_triangle 0 $dropdown_triangle;
+        bottom: -$dropdown_triangle;
+    }
+    &:after {
+        bottom: -($dropdown_triangle - 1);
+    }
+}
+.dropdown-triangle-center {
+    &:before {
+        left: 50%;
+        margin-left: -$dropdown_triangle;
+    }
+    &:after {
+        left: 50%;
+        margin-left: -($dropdown_triangle * 1.5 / 2);
+    }
+}
+// TODO: Make the values here use the $dropdown_triangle var
+.dropdown-triangle-left {
+    &:before {
+        left: 10px;
+    }
+    &:after {
+        left: 12px;
+    }
+}
+.dropdown-triangle-right {
+    &:before {
+        left: auto;
+        right: 10px;
+    }
+    &:after {
+        left: auto;
+        right: 12px;
+    }
+}
+
+.dropdown-top {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-center;
+    @extend .dropdown-triangle-top;
+}
+.dropdown-top-left {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-top;
+    @extend .dropdown-triangle-left;
+}
+.dropdown-top-right {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-top;
+    @extend .dropdown-triangle-right;
+}
+.dropdown-bottom {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-center;
+    @extend .dropdown-triangle-bottom;
+}
+.dropdown-bottom-left {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-bottom;
+    @extend .dropdown-triangle-left;
+}
+.dropdown-bottom-right {
+    @extend .dropdown-menu;
+    @extend .dropdown-triangle-bottom;
+    @extend .dropdown-triangle-right;
+}
+
+// List Item
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.8rem 2rem;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: #000;
+
+    &:not(.divider):hover,
+    &:not(.divider):focus {
+        color: #fff;
+        background: $blue;
+    }
+} // .dropdown-item
+
+// Divider
+.dropdown-menu .divider {
+    display: block;
+    padding: 0;
+    margin: 0.9rem 0;
+    height: 1px;
+    width: 100%;
+    position: relative;
+    background: #D0DADE;
+    overflow: hidden;
+} // .dropdown-menu .divider
+
+// Icons
+.dropdown-with-icons {
+    .dropdown-item:not(.divider) {
+        padding: 0.6rem 3rem;
+        &[class*='icon-'] {
+            position: relative;
+            &:before {
+                position: absolute;
+                top: 50%;
+                left: 1rem;
+                font-size: 1.2rem;
+                line-height: 1;
+                margin-top: -0.6rem;
+            }
+        } // &[class*='icon-']
+    } // .dropdown-item
+} // .dropdown-with-icons
