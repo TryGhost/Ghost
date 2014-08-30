@@ -69,11 +69,11 @@ var path           = require('path'),
                     files: ['core/client/**/*.js'],
                     tasks: ['clean:tmp', 'transpile', 'concat_sourcemap:dev']
                 },
-                'ghost-ui': {
+                sass: {
                     files: [
-                        'bower_components/ghost-ui/dist/css/*.css'
+                        'core/client/assets/sass/**/*.scss'
                     ],
-                    tasks: ['copy:dev']
+                    tasks: ['css']
                 },
                 livereload: {
                     files: [
@@ -142,6 +142,7 @@ var path           = require('path'),
                     files: {
                         src: [
                             'core/client/**/*.js',
+                            '!core/client/docs/js/*.js',
                             '!core/client/assets/vendor/**/*.js',
                             '!core/client/tpl/**/*.js'
                         ]
@@ -230,16 +231,7 @@ var path           = require('path'),
                         stdin: false
                     }
                 },
-                // #### Update Ghost-UI
-                // Used as part of `grunt init`. See the section on [Building Assets](#building%20assets) for more
-                // information.
-                ghost_ui: {
-                    command: path.resolve(cwd  + '/node_modules/.bin/bower update ghost-ui --allow-root'),
-                    options: {
-                        stdout: true,
-                        stdin: false
-                    }
-                },
+
                 // #### Generate coverage report
                 // See the `grunt test-coverage` task in the section on [Testing](#testing) for more information.
                 coverage: {
@@ -250,6 +242,36 @@ var path           = require('path'),
                     }
                 }
             },
+
+            // ### grunt-sass
+            // compile sass to css
+            sass: {
+                compress: {
+                    options: {
+                        style: 'compressed',
+                        sourceMap: true
+                    },
+                    files: {
+                        'core/client/assets/css/<%= pkg.name %>.min.css': 'core/client/assets/sass/screen.scss',
+                        'core/client/docs/dist/css/<%= pkg.name %>.min.css': 'core/client/assets/sass/screen.scss'
+                    }
+                }
+            },
+
+            // ### grunt-autoprefixer
+            // Autoprefix all the things, for the last 2 versions of major browsers
+            autoprefixer: {
+                options: {
+                    silent: true, // suppress logging
+                    map: true, // Use and update the sourcemap
+                    browsers: ["last 2 versions", "> 1%", "Explorer 10"]
+                },
+                single_file: {
+                    src: 'core/client/assets/css/<%= pkg.name %>.min.css',
+                    dest: 'core/client/assets/css/<%= pkg.name %>.min.css'
+                }
+            },
+
 
             // ### grunt-ember-templates
             // Compiles handlebar templates for ember
@@ -346,6 +368,12 @@ var path           = require('path'),
                 release: {
                     src: ['<%= paths.releaseBuild %>/**']
                 },
+                css: {
+                    src: [
+                        'core/client/assets/css/**',
+                        'core/client/docs/dist/css/**'
+                    ]
+                },
                 test: {
                     src: ['content/data/ghost-test.db']
                 },
@@ -364,11 +392,6 @@ var path           = require('path'),
                         dest: 'core/built/public/',
                         expand: true
                     }, {
-                        cwd: 'bower_components/ghost-ui/dist/',
-                        src: ['**'],
-                        dest: 'core/client/assets/',
-                        expand: true
-                    }, {
                         src: 'core/client/config-dev.js',
                         dest: 'core/client/config.js'
                     }]
@@ -380,11 +403,6 @@ var path           = require('path'),
                         dest: 'core/built/public/',
                         expand: true
                     }, {
-                        cwd: 'bower_components/ghost-ui/dist/',
-                        src: ['**'],
-                        dest: 'core/client/assets/',
-                        expand: true
-                    }, {
                         src: 'core/client/config-prod.js',
                         dest: 'core/client/config.js'
                     }]
@@ -394,11 +412,6 @@ var path           = require('path'),
                         cwd: 'bower_components/jquery/dist/',
                         src: 'jquery.js',
                         dest: 'core/built/public/',
-                        expand: true
-                    }, {
-                        cwd: 'bower_components/ghost-ui/dist/',
-                        src: ['**'],
-                        dest: 'core/client/assets/',
                         expand: true
                     }, {
                         src: 'core/client/config-prod.js',
@@ -846,6 +859,11 @@ var path           = require('path'),
         grunt.registerTask('emberBuildProd', 'Build Ember JS & templates for production',
             ['clean:tmp', 'emberTemplates:prod', 'transpile', 'concat_sourcemap:prod']);
 
+        // ### CSS Build *(Utility Task)*
+        // Build the CSS files from the SCSS files
+        grunt.registerTask('css', 'Build Client CSS',
+            ['sass', 'autoprefixer']);
+
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
         //
@@ -858,7 +876,7 @@ var path           = require('path'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['shell:bower', 'shell:ghost_ui', 'update_submodules', 'default']);
+            ['shell:bower', 'update_submodules', 'default']);
 
         // ### Production assets
         // `grunt prod` - will build the minified assets used in production.
@@ -873,7 +891,7 @@ var path           = require('path'),
         // Compiles concatenates javascript files for the admin UI into a handful of files instead
         // of many files, and makes sure the bower dependencies are in the right place.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['concat:dev', 'copy:dev', 'emberBuildDev']);
+            ['concat:dev', 'copy:dev', 'css', 'emberBuildDev']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing

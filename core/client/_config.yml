@@ -10,21 +10,6 @@ source:             docs
 destination:        _gh_pages
 host:               0.0.0.0
 port:               9001
-baseurl:            /
+baseurl:
 url:                http://localhost:9001
 encoding:           UTF-8
-
-# Custom vars
-current_version:    2.0.0
-repo:               https://github.com/TryGhost/Ghost-UI
-
-download:
-    source:         https://github.com/TryGhost/ghost-ui/releases/
-    dist:           https://github.com/TryGhost/ghost-ui/releases/
-
-blog:               http://dev.ghost.org
-expo:               http://dev.ghost.org
-
-cdn:
-    css:            //ghost.org/ghost-ui/0.1.0/css/ghost-ui.min.css
-    js:             //ghost.org/ghost-ui/0.1.0/js/ghost-ui.min.js
