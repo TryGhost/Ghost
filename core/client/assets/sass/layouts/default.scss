@@ -1,0 +1,112 @@
+//
+// Global Container
+// --------------------------------------------------
+
+#container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+//
+// Main Layout
+// --------------------------------------------------
+
+// The <main> content wrapper
+.viewport {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 500; // Above the .global-nav when collapsed
+
+    @media (max-width: 900px) {
+        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    }
+
+    &.global-nav-expanded {
+        transform: translate3d(260px, 0px, 0px);
+    }
+}
+
+//
+// The header bar - visible below 900px
+// --------------------------------------------------
+
+.page-header {
+    position: relative;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    color: #fff;
+    background: $darkgrey;
+    overflow: hidden;
+
+    @media (min-width: 900px) {
+        height: 60px;
+        line-height: 60px;
+    }
+
+}
+
+// Centered page heading
+.page-title {
+    display: block;
+    height: 44px;
+    line-height: 44px;
+    margin: 0;
+    padding: 0 15%;
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: normal;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    @media (min-width: 900px) {
+        height: 60px;
+        line-height: 60px;
+    }
+}
+
+// The burger to expand .global-nav menu
+.menu-button {
+    @include icon($i-menu, 18px) { line-height: 44px; }
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    color: #fff;
+}
+
+
+//
+// The panel which wraps the main content area
+// --------------------------------------------------
+// We can't use position:fixed on .page-header because it would
+// break the mobile menu. So we create an overflow-auto content
+// area which scrolls just underneath the header, making it look
+// like the header is position:fixed.
+
+.page-content {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #fff;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    @media (max-width: 900px) {
+        top: 44px;
+    }
+}

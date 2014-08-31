@@ -30,6 +30,10 @@ core/built/scripts/ghost.js
 core/built/**/*.map
 core/client/**
 !core/client/assets/**
+core/client/assets/sass/**
+core/client/assets/css/**
+!core/client/assets/css/ghost.min.css
+core/client/docs/**
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml
