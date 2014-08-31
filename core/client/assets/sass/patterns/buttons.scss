@@ -6,7 +6,7 @@
 // Base styles
 // --------------------------------------------------
 
-.btn {
+%button {
     display: inline-block;
     margin-bottom: 0; // For input.btn
     padding: 9px 14px;
@@ -54,6 +54,9 @@
         opacity: 0.65;
         box-shadow: none;
     }
+}
+.btn {
+    @extend %button;
 }
 
 
