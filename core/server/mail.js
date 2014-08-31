@@ -1,5 +1,4 @@
-var cp         = require('child_process'),
-    _          = require('lodash'),
+var _          = require('lodash'),
     Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
     config     = require('./config');
@@ -19,36 +18,10 @@ GhostMailer.prototype.init = function () {
         return Promise.resolve();
     }
 
-    // Attempt to detect and fallback to `sendmail`
-    return this.detectSendmail().then(function (binpath) {
-        self.transport = nodemailer.createTransport('sendmail', {
-            path: binpath
-        });
-        self.state.usingSendmail = true;
-    }).catch(function () {
-        self.state.emailDisabled = true;
-        self.transport = null;
-    });
-};
+    self.transport = nodemailer.createTransport('direct');
+    self.state.usingDirect = true;
 
-GhostMailer.prototype.isWindows = function () {
-    return process.platform === 'win32';
-};
-
-GhostMailer.prototype.detectSendmail = function () {
-    if (this.isWindows()) {
-        return Promise.reject();
-    }
-
-    return new Promise(function (resolve, reject) {
-        cp.exec('which sendmail', function (err, stdout) {
-            if (err && !/bin\/sendmail/.test(stdout)) {
-                return reject();
-            }
-
-            resolve(stdout.toString().replace(/(\n|\r|\r\n)$/, ''));
-        });
-    });
+    return Promise.resolve();
 };
 
 GhostMailer.prototype.createTransport = function () {
@@ -95,7 +68,35 @@ GhostMailer.prototype.send = function (message) {
         to: to,
         generateTextFromHTML: true
     });
-    return sendMail(message);
+
+    return new Promise(function (resolve, reject) {
+        sendMail(message, function (error, response) {
+            if (error) {
+                return reject(new Error(error));
+            }
+
+            if (self.transport.transportType !== 'DIRECT') {
+                return resolve(response);
+            }
+
+            response.statusHandler.once("failed", function (data) {
+                var reason = 'Email Error: Failed sending email';
+                if (data.error.errno === "ENOTFOUND") {
+                    reason += ': there is no mail server at this address: ' + data.domain;
+                }
+                reason += '.';
+                return reject(new Error(reason));
+            });
+
+            response.statusHandler.once("requeue", function (data) {
+                return reject(new Error("Email Error: message was not sent, requeued. Probably will not be sent. :( \nMore info: " + data.error.message));
+            });
+
+            response.statusHandler.once("sent", function () {
+                return resolve("Message was accepted by the mail server. Make sure to check inbox and spam folders. :)");
+            });
+        });
+    });
 };
 
 module.exports = new GhostMailer();
