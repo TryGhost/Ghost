@@ -1,0 +1,173 @@
+//
+// About Ghost
+// --------------------------------------------------
+// Slug: /ghost/settings/about
+
+.settings-about {
+
+    .ghost_logo {
+        @include icon($i-ghost, 1.28rem, $midgrey) {
+            position: relative;
+            top: -6px;
+        };
+        @include icon-after($i-ghost-logo, 2.5rem, $darkgrey);
+    }
+
+    p {
+        color: $midgrey;
+    }
+
+}
+
+
+//
+// App Details
+// --------------------------------------------------
+
+.about-ghost-intro {
+    h1 {
+        margin-top: -6px;
+        margin-bottom: -21px;
+
+        .version {
+            font-weight: 300;
+            font-size: 1.3rem;
+            position: relative;
+            top: -3px;
+        }
+    }
+
+    @media (max-width: 550px) {
+        padding-top: 40px;
+    }
+
+}
+
+.about-environment-help {
+    margin-top: 35px;
+}
+
+.about-environment {
+    p {
+        margin: 0;
+        line-height: 1.7;
+    }
+}
+
+.about-help {
+    padding-top: 6px;
+
+    @media (max-width: 500px) {
+        padding-top: 16px;
+    }
+
+    .btn-alt {
+        width: 100%;
+        display: block;
+        font-size: 0.85rem;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        min-height: 32px;
+
+        &:nth-child(1) {
+            margin-bottom: 11px;
+        }
+
+    }
+    
+} // .about-help
+
+@media (min-width: 501px) {
+    .about-environment-help {
+        max-width: 430px;
+    }
+    .about-environment {
+        float: left;
+        width: calc(100% - 196px);
+    }
+    .about-help {
+        float: right;
+        width: 176px;
+    }
+}
+
+
+//
+// Contributors
+// --------------------------------------------------
+
+.top-contributors {
+    padding-left: 0;
+    max-width: 650px;
+
+    li {
+        float: left;
+        list-style: none;
+        width: 10%;
+
+        a {
+            display: block;
+
+            @media (min-width: 601px) {
+                margin-right: 9px;
+                margin-bottom: 9px;
+            }
+            @media (max-width: 600px) {
+                margin-right: 6px;
+                margin-bottom: 6px;
+            }
+
+            img {
+                width: 100%;
+                display: block;
+                border-radius: 100%;
+            }
+
+        }
+
+    } // li
+
+} // .top-contributors
+
+
+//
+// Credits & Copyright
+// --------------------------------------------------
+
+.about-credits {
+    margin-top: 48px;
+
+    h1 {
+        font-size: 1.85rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.about-contributors-info {
+    margin-right: -0.9rem;
+    font-size: 1.2rem;
+    max-width: 620px;
+}
+
+.about-get-involved {
+    margin-top: -0.1rem;
+    font-size: 0.9rem;
+}
+
+.about-copyright {
+    margin-top: 4.9rem;
+
+    a {
+        &:link,
+        &:visited {
+            color: inherit;
+        }
+        &:hover,
+        &:focus,
+        &:active {
+            text-decoration: none;
+            color: $blue;
+        }
+    }
+
+} // .about-copyright

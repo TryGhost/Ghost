@@ -1,0 +1,842 @@
+//
+// Editor
+// --------------------------------------------------
+// Slug: /ghost/editor/
+// --------------------------------------------------
+
+ // The main post title
+.entry-container .entry-title {
+    height: 60px;
+    padding: 0 20px;
+    position: relative;
+
+    input {
+        width: 100%;
+        height: 60px;
+        border: 0;
+        margin: 0;
+        padding: 0;
+        font-size: 3.6rem;
+        font-weight: bold;
+        letter-spacing: -1px;
+        background: transparent;
+
+        &:focus {
+            outline: 0;
+        }
+    }
+} // .entry-title
+
+.editor {
+
+    .notifications {
+        @media (min-width: 401px) {
+            bottom: 40px;
+        }
+    }
+
+    .entry-container {
+        position: relative;
+        height: 100%;
+    }
+
+    // The two content panel wrappers, positioned left/right
+    .entry-markdown { left: 0; }
+    .entry-preview { right: 0; border-left: $lightbrown 1px solid; }
+
+    // The visual styles for both panels
+    .entry-markdown,
+    .entry-preview {
+        width: 50%;
+        padding: 15px;
+        position: absolute;
+        bottom: 40px; // height of the publish bar
+        top: 60px; // height of the post title + margin
+        border-top: $lightbrown 1px solid;
+        background: #fff;
+
+        // Convert all content areas to small boxes
+        @media (max-width: 1000px) {
+            top: 100px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            border: none;
+            z-index: 100;
+            min-height: 380px;
+            .markdown, .entry-preview-content {
+                height: 50px;
+                overflow: hidden;
+            }
+        }
+
+        .floatingheader {
+
+            // Turn headers into tabs which act as links
+            // both headers set to grey/inactive colour
+            @media (max-width: 1000px) {
+                cursor: pointer;
+                width: 50%;
+                color: #fff;
+                font-weight: normal;
+                background: $brown;
+                position: absolute;
+                top: -40px;
+                left: 0;
+                box-shadow: rgba(0,0,0,0.1) 0 -2px 3px inset;
+
+                a {
+                    color: #fff;
+                }
+            }
+
+            a {
+                color: $brown;
+            }
+
+            .entry-word-count {
+                float: right;
+                position: relative;
+                top: 2px;
+            }
+
+        }
+
+        @media (max-width: 1000px) {
+            &:not(.active) {
+                .markdown-help {
+                    &:hover:before {
+                        color: #fff;
+                    }
+                }
+            }
+        }
+
+        // Give the tab with the .active class the highest z-index
+        &.active {
+            z-index: 200;
+        }
+
+        // Restore the normal height of the .active tab (inactive tab stays small, hidden behind)
+        &.active .markdown,
+        &.active .entry-preview-content {
+            height: auto;
+            overflow: auto;
+        }
+
+        // Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
+        &.active header {
+            @media (max-width: 1000px) {
+                border-top: $lightbrown 1px solid;
+                cursor: auto;
+                color: $brown;
+                background: #fff;
+                box-shadow: none;
+                a {
+                    color: $brown;
+                }
+            }
+        }
+
+        // Hide markdown icon + wordcount when we hit mobile
+        @media (max-width: 400px) {
+            .markdown-help,
+            .entry-word-count {
+                display: none;
+            }
+        }
+
+    } // .entry-markdown, .entry-preview
+
+    .entry-markdown-content {
+
+        textarea {
+            border: 0;
+            width: 100%;
+            min-height: auto;
+            height: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 10px 20px 50px 20px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            -webkit-overflow-scrolling: touch;
+
+            @media (max-width: 600px) {
+                padding: 10px;
+            }
+            @media (min-width: 601px) and (max-width: 1000px) {
+                padding: 15px;
+            }
+            @media (min-width: 1001px) {
+                top: 40px;
+            }
+            @media (max-height: 560px) {
+                height: calc(100% - 40px);
+            }
+
+            &:focus {
+                outline: 0;
+            }
+        }
+
+    } // .entry-markdown-content
+
+    .CodeMirror {
+        height: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        font-family: $font-family-mono;
+        font-size: 1.4em;
+        line-height: 1.3em;
+        color: lighten($darkgrey, 10%);
+
+        .CodeMirror-focused,
+        .CodeMirror-selected {
+            color: $darkgrey;
+            background: lighten($blue, 20%);
+            text-shadow: none;
+        }
+
+        ::selection {
+            color: $darkgrey;
+            background: lighten($blue, 20%);
+            text-shadow: none;
+        }
+    }
+
+    .CodeMirror-lines {
+        padding: 65px 0 40px 0; /* Vertical padding around content */
+        @media (max-width: 1000px) {padding-top: 25px;}
+        @media (max-width: 400px) {padding: 15px 0;}
+    }
+    .CodeMirror pre {
+        padding: 0 40px; /* Horizontal padding of content */
+        @media (max-width: 400px) {padding: 0 15px;}
+    }
+
+    .cm-header {
+        color: #000;
+        font-size: 1.4em;
+        line-height: 1.4em;
+        font-weight: bold;
+    }
+
+    .cm-variable-2,
+    .cm-variable-3,
+    .cm-keyword {
+        color: lighten($darkgrey, 10%);
+    }
+
+    .cm-string,
+    .cm-strong,
+    .cm-link,
+    .cm-comment,
+    .cm-quote,
+    .cm-number,
+    .cm-atom,
+    .cm-tag {
+        color: #000;
+        font-weight: bold;
+    }
+
+    .entry-preview {
+        // Align the tab of entry-preview on the right
+        .floatingheader {
+            @media (max-width: 1000px) {
+                right: 0;
+                left: auto;
+                border-right: none;
+            }
+        }
+    }
+
+    .entry-preview-content {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 60px 40px 40px 40px;
+        overflow: auto;
+        word-break: break-word;
+        hyphens: auto;
+        @include user-select(none);
+        cursor: default;
+
+        // Tweak padding for smaller screens
+        @media (max-width: 1000px) {
+            padding-top: 20px;
+        }
+        @media (max-width: 400px) {
+            padding: 15px;
+        }
+    }
+
+    // Special case, when scrolling, add shadows to content headers.
+    .scrolling {
+
+        .floatingheader {
+            @media (max-width: 1000px) {
+                box-shadow: none;
+            }
+
+            &::before,
+            &::after {
+                @media (max-width: 1000px) {
+                    display: none;
+                }
+            }
+        }
+        .CodeMirror-scroll,
+        .entry-preview-content {
+            @media (max-width: 1000px) {
+                box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
+            }
+        }
+    } // .scrolling
+
+} // .editor
+
+.markdown-help {
+    position: relative;
+    top: -5px;
+    right: -5px;
+    @include icon($i-question, '', lighten($brown, 15%));
+    float: right;
+    padding: 5px;
+
+    &:hover {
+        @include icon($i-question, '', $brown);
+    }
+}
+
+
+//
+// Post Preview
+// --------------------------------------------------
+
+// The styles for the actual content inside the preview
+// TODO: These should just be defaults, overridden by editor.hbs in theme dir
+.entry-preview-content,
+.content-preview-content {
+    font-size: 1.4em;
+    line-height: 1.5em;
+
+    a {
+        color: $blue;
+        text-decoration: underline;
+    }
+
+    .btn {
+        text-decoration: none;
+        color: $grey;
+    }
+    .img-placeholder {
+        border: 5px dashed $grey;
+        height: 100px;
+        position: relative;
+        span {
+            display: block;
+            height: 30px;
+            position: absolute;
+            margin-top: -15px;
+            top: 50%;
+            width: 100%;
+            text-align: center;
+        }
+    }
+    a {
+        &.image-edit {
+            width: 16px;
+            height: 16px;
+        }
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+    }
+
+}
+
+// Placeholder objects for <script> & <iframe>
+.js-embed-placeholder,
+.iframe-embed-placeholder {
+    background: #f9f9f9;
+    border: none;
+    padding: 100px 20px;
+    font-family: $font-family;
+    font-weight: bold;
+    font-size: 1.6rem;
+    text-align: center;
+}
+
+
+//
+// Zen Mode
+// --------------------------------------------------
+
+body.zen {
+    background: lighten($lightbrown, 3%);
+    .usermenu {
+        display: none;
+    }
+    .global-nav,
+    .page-header,
+    #publish-bar {
+        opacity: 0;
+        height: 0;
+        overflow: hidden;
+        transition: all 0.5s ease-out;
+    }
+
+    .page-content {
+        top: 0;
+        transition: all 0.5s ease-out;
+    }
+
+    .entry-markdown,
+    .entry-preview {
+        bottom: 0;
+        transition: all 0.5s ease-out;
+    }
+
+}
+
+
+//
+// Publish Bar
+// --------------------------------------------------
+
+#publish-bar {
+    height: 40px;
+    padding: 0;
+    color: $midgrey;
+    background: darken($darkgrey, 4%);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+    transform: translateZ(0);
+
+    @media (max-width: 1000px) {
+        font-weight: normal;
+    }
+
+    .post-settings {
+        &:hover,
+        &.active {
+            color: $lightgrey;
+        }
+    }
+
+    .post-settings-menu {
+        position: absolute;
+        bottom: 41px;
+        right: -3px;
+    }
+
+    .splitbtn {
+        margin-top: 5px;
+
+        .btn {
+            border-top: rgba(255,255,255,0.3) 1px solid;
+        }
+    }
+
+}
+
+.extended-tags { // When the tag bar is exapanded
+    position: static;
+    min-height: 100%;
+
+    #entry-tags {
+        &:after {
+            right: 10px;
+        }
+    }
+    .tags {
+        width: 281px;
+    }
+
+    .tag-label,
+    .tag-label.touch {
+        color: #fff;
+    }
+
+    .tag-input {
+        width: 100%;
+        margin-top: 5px;
+        padding-top: 5px;
+        padding-left: 10px;
+        border-top: 1px solid $darkgrey;
+
+    }
+    .right {
+        display: none;
+    }
+}
+
+#entry-tags {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-transform: none;
+    padding: 10px 0 0 0;
+
+    &:after {
+        content: "";
+        position: fixed;
+        top: 10px;
+        right: 220px;
+        width: 20px;
+        height: 26px;
+        background: linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
+        z-index: 9999;
+        pointer-events: none;
+
+        @media (max-width: 400px) {
+            right: 200px;
+        }
+    }
+
+    .tags {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        width: auto;
+        max-width: 80%;
+        max-width: calc(100% - 250px);
+        height: 22px;
+        padding-left: 5px;
+        padding-bottom: 20px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        transition: width 0.2s linear;
+
+        @media (max-width: 400px) {
+            display: block;
+            max-width: calc(100% - 230px);
+            padding-bottom: 0;
+        }
+    }
+
+    .tag-label {
+        display: block;
+        float: left;
+        @include icon($i-tag);
+        padding: 1px 8px 0 8px;
+        transition: all 0.15s ease-out 0s;
+
+        &:hover {
+            cursor: pointer;
+            color: $lightgrey;
+        }
+
+        &.touch {
+            color: inherit;
+        }
+    }
+
+    input[type="text"].tag-input {
+        display: inline-block;
+        vertical-align: top;
+        color: $lightgrey;
+        font-weight: 300;
+        background: transparent;
+        border: none;
+
+        width: 150px;
+        margin-top: -8px;
+        line-height: 1;
+        padding: 9px;
+
+        @media (max-width: 400px) {
+            position: absolute;
+            top: 11px;
+            right: 170px;
+            width: 20px;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .tag {
+        @include icon-after($i-x, 8px, $darkgrey) {
+            margin-left: 4px;
+            vertical-align: 10%;
+            text-shadow: rgba(255,255,255,0.15) 0 1px 0;
+            transition: all 0.15s ease-out 0s;
+        }
+        display: inline;
+        margin-right: 2px;
+        padding: 0 5px;
+        color: $lightgrey;
+        white-space: nowrap;
+        background: lighten($grey, 15%);
+        border-radius: $rounded;
+        box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, #000 0 1px 3px;
+
+        @include user-select(none);
+
+        &:hover {
+            cursor: pointer;
+            @include icon-after($i-x, 8px, $lightgrey) {
+                margin-left: 4px;
+                vertical-align: 10%;
+                text-shadow: none;
+            }
+
+        }
+    }
+}
+
+.suggestions {
+    //@extend .dropdown-menu;
+    bottom: 100%;
+
+    li.selected{
+        background: $blue;
+        box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, rgba(0,0,0,0.5) 0 1px 5px;
+    }
+
+    li a {
+        padding-left: 25px;
+    }
+
+    mark{
+        background: none;
+        color: white;
+        font-weight: bold;
+    }
+
+}
+
+#entry-controls {
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    z-index: 9000;
+
+    &.unsaved {
+        .post-settings-menu {
+            padding-bottom: 0;
+
+            .post-setting:nth-child(3) td {
+                border-bottom: none;
+            }
+
+            .delete {
+                display: none;
+            }
+        }
+    }
+
+}
+
+#entry-actions {
+    margin-right: 6px;
+    position: relative;
+    .dropdown {
+        position: absolute;
+        bottom: 49px;
+        right: 0;
+        .dropdown-menu {
+            top: auto;
+            left: auto;
+            right: 100%;
+            bottom: 100%;
+        }
+    }
+}
+
+#entry-actions-menu {
+    position: absolute;
+    bottom: 50px;
+    right: -5px;
+}
+
+//
+// Post Settings Menu
+// --------------------------------------------------
+
+.post-settings {
+    @include icon($i-settings, 14px);
+    display: inline-block;
+    padding: 0 10px;
+    color: $midgrey;
+    transition: all 0.15s ease-out 0s;
+    position: relative;
+    top: 1px;
+
+    &:hover,
+    &.active {
+        color: $darkgrey;
+    }
+} // .post-settings
+
+.post-settings-menu {
+
+    .dropdown-menu {
+        top: auto;
+        bottom: 100%;
+        left: auto;
+        right: 100%;
+    }
+
+    /*
+    padding-top: 0;
+    text-transform: none;
+
+    table {
+        margin: 0;
+    }
+
+    td {
+        padding: 0;
+        border-top: none;
+        border-bottom: lighten($grey, 5%) 1px solid;
+    }
+
+    .post-setting-label {
+        padding: 8px 10px 8px 15px;
+        border-right: lighten($grey, 5%) 1px solid;
+        text-align: right;
+    }
+
+    label {
+        position: static;
+        width: auto;
+        font-weight: normal;
+        color: $midgrey;
+        white-space: nowrap;
+    }
+
+    input {
+        width: 200px;
+        margin: 0;
+
+        @media (max-width: 550px) {
+            width: 200px;
+        }
+
+        &[type="text"] {
+            border: none;
+            padding: 8px 0 8px 10px;
+            color: $lightgrey;
+            border-radius: 0;
+            background: transparent;
+
+            &:focus {
+                background: $grey;
+                border: none;
+            }
+        }
+    } // input
+
+    .post-setting-item {
+        padding: 5px 0 0 10px;
+        &.no-padding {
+            padding: 0;
+        }
+    }
+
+    .gh-select {
+        height: 36px;
+        &:after {
+            color: $lightgrey;
+            margin-top: -(0.85em / 2);
+        }
+        select {
+            border: 0;
+            background: transparent;
+            border-radius: 0;
+            color: $lightgrey;
+            height: 36px;
+            &:focus {
+                background: $grey;
+            }
+        }
+        @media (max-width: 550px) {
+            &,
+            select {
+                height: 41px;
+            }
+        }
+    }
+
+    .checkbox {
+        position: relative;
+        margin-top: 0;
+        top: 0; // Resets a global `form label` style
+        border: 0;
+        &:after {
+            border-color: lighten($grey, 10%);
+            background: $grey;
+        }
+    } // .checkbox
+
+    // Colour the checkbox border correctly for a dark background
+    input[type='checkbox'] {
+        &:focus {
+            & + .checkbox {
+                &:after {
+                    border-color: lighten($grey, 10%);
+                }
+            }
+        }
+    } // input[type='checkbox']
+
+    // .select-wrapper {
+    //     width: calc(100% - 10px);
+    // }
+
+    .delete {
+        display: block;
+        padding: 10px 15px;
+        width: 100%;
+        text-align: left;
+        @include icon($i-trash) {
+            position: relative;
+            top: -1px;
+            margin-right: 10px
+        };
+
+        &:hover {
+            background: $red;
+            color: #fff;
+        }
+    } // .delete
+
+    */
+
+} // .post-settings-menu
+
+
+//
+// Markdown Help Modal
+// --------------------------------------------------
+// TODO: This is shit.
+
+.markdown-help-container{
+    padding-bottom: 20px;
+}
+
+.modal-markdown-help-table {
+    margin-top: 0;
+}

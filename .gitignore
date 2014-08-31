@@ -41,10 +41,6 @@ Session.vim
 .dist
 .tmp
 
-
-/core/client/assets/css
-!/core/client/assets/css/ember-hacks.css
-/core/client/assets/fonts
 /core/server/data/export/exported*
 /docs
 /_site
@@ -67,6 +63,8 @@ config.js
 
 # Built asset files
 /core/built
+/core/client/assets/css
+/core/client/docs/dist/css
 
 # Coverage reports
 coverage.html
