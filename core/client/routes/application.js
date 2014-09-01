@@ -25,6 +25,10 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             this._super();
         },
 
+        toggleGlobalMobileNav: function () {
+            this.toggleProperty('controller.showGlobalMobileNav');
+        },
+
         closePopups: function () {
             this.get('popover').closePopovers();
             this.get('notifications').closeAll();
