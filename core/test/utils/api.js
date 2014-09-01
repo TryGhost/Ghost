@@ -6,6 +6,7 @@ var url             = require('url'),
     port            = config.server.port,
     schema          = 'http://',
     expectedProperties = {
+        configuration: ['key', 'value'],
         posts: ['posts', 'meta'],
         users: ['users', 'meta'],
         roles: ['roles'],

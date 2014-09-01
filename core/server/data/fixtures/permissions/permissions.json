@@ -1,5 +1,15 @@
 {
     "permissions": {
+        "configuration": [
+            {
+                "name": "Browse configuration",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read configuration",
+                "action_type": "read"
+            }
+        ],
         "db": [
             {
                 "name": "Export database",
@@ -143,6 +153,7 @@
     },
     "permissions_roles": {
         "Administrator": {
+            "configuration": "all",
             "db": "all",
             "mail": "all",
             "notification": "all",
@@ -155,6 +166,7 @@
             "role": "all"
         },
         "Editor": {
+            "configuration": "all",
             "post": "all",
             "setting": ["browse", "read"],
             "slug": "all",
@@ -164,6 +176,7 @@
             "role": "all"
         },
         "Author": {
+            "configuration": "all",
             "post": ["browse", "read", "add"],
             "setting": ["browse", "read"],
             "slug": "all",

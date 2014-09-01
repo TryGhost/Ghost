@@ -8,6 +8,7 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     config         = require('../config'),
     // Include Endpoints
+    configuration  = require('./configuration'),
     db             = require('./db'),
     mail           = require('./mail'),
     notifications  = require('./notifications'),
@@ -278,6 +279,7 @@ module.exports = {
     init: init,
     http: http,
     // API Endpoints
+    configuration: configuration,
     db: db,
     mail: mail,
     notifications: notifications,
