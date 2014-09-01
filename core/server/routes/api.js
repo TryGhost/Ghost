@@ -81,6 +81,7 @@ apiRoutes = function (middleware) {
         middleware.authenticateClient,
         middleware.generateAccessToken
     );
+    router.post('/authentication/revoke', api.http(api.authentication.revoke));
 
     // ## Uploads
     router.post('/uploads', middleware.busboy, api.http(api.uploads.add));
