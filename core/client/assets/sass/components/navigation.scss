@@ -205,7 +205,7 @@ body.right-outlet-expanded & {
             display: block;
         }
 
-        &.global-nav-expanded {
+        body.global-nav-expanded & {
             transform: translate3d(0, 0px, 0px);
         }
     }
@@ -257,13 +257,13 @@ body.right-outlet-expanded & {
         bottom: 0;
         left: 0;
         height: auto;
-        padding: 15px;
+        padding: 0;
         border-bottom: none;
         border-top: $darkgrey 1px solid;
         transition: color 0.5s, background 0.5s;
 
         .nav-label {
-            padding: 0;
+            padding: 15px;
             height: auto;
         }
 
@@ -301,5 +301,28 @@ body.right-outlet-expanded & {
             }
         }
 
+        .dropdown .dropdown-menu {
+            top: auto;
+            right: auto;
+            bottom: calc(100% + 80px);
+            left: 10px;
+        }
+
+
     }//.user-menu
+
+    body.global-nav-expanded & {
+
+        .nav-cover {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 600;
+            transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+            transform: translate3d(260px, 0px, 0px); // Not off the screen, to give a parallax effect
+        }//.nav-cover
+    }//body.global-nav-expanded
+
 }
