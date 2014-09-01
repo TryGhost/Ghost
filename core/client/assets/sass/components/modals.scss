@@ -37,7 +37,7 @@
     z-index: 1030;
 }
 
-.modal {
+%modal {
     left: 50%;
     right: auto;
     width: 450px;
@@ -70,7 +70,7 @@
 }
 
 .modal-action {
-    @extend .modal;
+    @extend %modal;
     padding: 60px 0 30px;
 
     @media (max-width: 800px) {
@@ -123,7 +123,7 @@
 .modal-footer {
     margin-top: 20px;
     .reject-button-class {
-        @extend .button;
+        @extend .btn;
     }
 }
 
