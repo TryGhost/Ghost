@@ -156,7 +156,7 @@ function redirectToSetup(req, res, next) {
 function uncapitalise(req, res, next) {
     var pathToTest = req.path,
         isSignupOrReset = req.path.match(/(\/ghost\/(signup|reset)\/)/i),
-        isAPI = req.path.match(/(\/ghost\/api\/v0[\d\.]+\/.*?\/)/i);
+        isAPI = req.path.match(/(\/ghost\/api\/v[\d\.]+\/.*?\/)/i);
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];
