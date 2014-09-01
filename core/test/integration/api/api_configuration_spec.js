@@ -31,8 +31,6 @@ describe('Configuration API', function () {
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
 
-    beforeEach(testUtils.setup('users','users:roles', 'perms:user', 'perms:role', 'perms:configuration', 'perms:init'));
-
     should.exist(ConfigurationAPI);
 
     it('can browse config', function (done) {
