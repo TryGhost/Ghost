@@ -8,6 +8,10 @@ apiRoutes = function (middleware) {
     // alias delete with del
     router.del = router.delete;
 
+    // ## Configuration
+    router.get('/configuration', api.http(api.configuration.browse));
+    router.get('/configuration/:key', api.http(api.configuration.read));
+
     // ## Posts
     router.get('/posts', api.http(api.posts.browse));
     router.post('/posts', api.http(api.posts.add));
