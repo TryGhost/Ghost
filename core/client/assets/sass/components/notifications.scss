@@ -31,7 +31,7 @@
 // Base Notification
 // --------------------------------------------------
 
-.notification {
+%notification {
     @include icon($i-notification) {
         position: absolute;
         top: 0;
@@ -94,7 +94,7 @@
 // --------------------------------------------------
 
 .notification-success {
-    @extend .notification;
+    @extend %notification;
     @include icon($i-success);
     background: $green;
 
@@ -111,20 +111,20 @@
 }
 
 .notification-error {
-    @extend .notification;
+    @extend %notification;
     @include icon($i-error);
     background: $red;
 }
 
 
 .notification-warn {
-    @extend .notification;
+    @extend %notification;
     @include icon($i-info);
     background: $orange;
 }
 
 .notification-info {
-    @extend .notification;
+    @extend %notification;
     @include icon($i-info);
     background: $blue;
 }
