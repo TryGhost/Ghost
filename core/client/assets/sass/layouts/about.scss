@@ -5,15 +5,25 @@
 
 .settings-about {
 
+    h1 {
+        letter-spacing: 0;
+    }
+
     .ghost_logo {
-        @include icon($i-ghost, 1.28rem, $midgrey) {
+        position: relative;
+        left: 3px;
+        @include icon($i-ghost, 1.7rem, $midgrey) {
             position: relative;
             top: -6px;
         };
-        @include icon-after($i-ghost-logo, 2.5rem, $darkgrey);
+        @include icon-after($i-ghost-logo, 3.2rem, $darkgrey) {
+            position: relative;
+            left: -5px;
+        };
     }
 
-    p {
+    h1 + p {
+        margin-top: 1px;
         color: $midgrey;
     }
 
@@ -31,9 +41,11 @@
 
         .version {
             font-weight: 300;
-            font-size: 1.3rem;
+            font-size: 1.8rem;
             position: relative;
             top: -3px;
+            left: -9px;
+            color: $blue;
         }
     }
 
@@ -48,33 +60,54 @@
 }
 
 .about-environment {
-    p {
+    dl {
+        @include clearfix;
+        color: $midgrey;
+        margin: 2px 0 0 0;
+        line-height: 1.6;
+    }
+    dt, dd {
+        width: auto;
+        float: left;
+        display: inline-block;
         margin: 0;
-        line-height: 1.7;
+    }
+    dt {
+        margin-right: 5px;
+    }
+    .about-environment-detail {
+        text-transform: capitalize;
     }
 }
 
 .about-help {
-    padding-top: 6px;
+    padding-top: 8px;
 
     @media (max-width: 500px) {
         padding-top: 16px;
     }
 
-    .btn-alt {
+    .btn {
         width: 100%;
         display: block;
-        font-size: 0.85rem;
-        padding-top: 8px;
-        padding-bottom: 8px;
+        font-size: 0.9rem;
+        padding-top: 9px;
+        padding-bottom: 9px;
         min-height: 32px;
+
+        background: #A1ADB3;
+        color: #fff;
+
+        &:hover {
+            background: darken(#A1ADB3, 10%);
+        }
 
         &:nth-child(1) {
             margin-bottom: 11px;
         }
 
     }
-    
+
 } // .about-help
 
 @media (min-width: 501px) {
@@ -83,11 +116,11 @@
     }
     .about-environment {
         float: left;
-        width: calc(100% - 196px);
+        width: calc(100% - 190px);
     }
     .about-help {
         float: right;
-        width: 176px;
+        width: 170px;
     }
 }
 
@@ -98,7 +131,7 @@
 
 .top-contributors {
     padding-left: 0;
-    max-width: 650px;
+    max-width: 660px;
 
     li {
         float: left;
@@ -123,6 +156,39 @@
                 border-radius: 100%;
             }
 
+            position: relative;
+            &:before {
+                opacity: 0;
+                content: attr(title);
+                position: absolute;
+                top: -27px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: $darkgrey;
+                color: #fff;
+                padding: 2px 6px 3px;
+                border-radius: $rounded;
+                transition: opacity 0.15s ease-in-out;
+                font-size: 1rem;
+                pointer-events: none;
+            }
+            &:after {
+                opacity: 0;
+                content: '';
+                position: absolute;
+                top: -6px;
+                left: 50%;
+                transform: translateX(-50%);
+                transition: opacity 0.15s ease-in-out;
+                @include triangle(8px, $darkgrey, "down");
+            }
+            &:hover {
+                &:before,
+                &:after {
+                    opacity: 1;
+                }
+            }
+
         }
 
     } // li
@@ -135,27 +201,32 @@
 // --------------------------------------------------
 
 .about-credits {
-    margin-top: 48px;
+    margin-top: 45px;
 
     h1 {
-        font-size: 1.85rem;
-        margin-bottom: 2rem;
+        font-size: 2.4rem;
+        margin-bottom: 24px;
     }
 }
 
 .about-contributors-info {
-    margin-right: -0.9rem;
-    font-size: 1.2rem;
+    margin-top: -12px;
+    margin-bottom: 22px;
+    font-size: 1.6rem;
     max-width: 620px;
 }
 
 .about-get-involved {
-    margin-top: -0.1rem;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
+    width: 100%;
+    display: inline-block;
+    max-width: 290px;
+    text-transform: uppercase;
+    text-align: center;
 }
 
 .about-copyright {
-    margin-top: 4.9rem;
+    margin-top: 62px;
 
     a {
         &:link,
