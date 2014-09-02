@@ -11,6 +11,10 @@ var PostContentView = Ember.View.extend({
         }));
     },
 
+    contentObserver: function () {
+        this.$().closest('.content-preview').scrollTop(0);
+    }.observes('controller.content'),
+
     willDestroyElement: function () {
         var el = this.$();
         el.off('scroll');
