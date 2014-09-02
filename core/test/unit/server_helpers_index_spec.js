@@ -960,48 +960,6 @@ describe('Core Helpers', function () {
         });
     });
 
-    describe('Page Url Helper: DEPRECATED', function () {
-        it('has loaded pageUrl helper', function () {
-            should.exist(handlebars.helpers.pageUrl);
-        });
-
-        it('can return a valid url', function () {
-            helpers.pageUrl(1).should.equal('/');
-            helpers.pageUrl(2).should.equal('/page/2/');
-            helpers.pageUrl(50).should.equal('/page/50/');
-        });
-
-        it('can return a valid url with subdirectory', function () {
-            _.extend(helpers.__get__('config'), {
-                paths: {'subdir': '/blog'}
-            });
-            helpers.pageUrl(1).should.equal('/blog/');
-            helpers.pageUrl(2).should.equal('/blog/page/2/');
-            helpers.pageUrl(50).should.equal('/blog/page/50/');
-        });
-
-        it('can return a valid url for tag pages', function () {
-            var tagContext = {
-                tagSlug: 'pumpkin'
-            };
-            helpers.pageUrl.call(tagContext, 1).should.equal('/tag/pumpkin/');
-            helpers.pageUrl.call(tagContext, 2).should.equal('/tag/pumpkin/page/2/');
-            helpers.pageUrl.call(tagContext, 50).should.equal('/tag/pumpkin/page/50/');
-        });
-
-        it('can return a valid url for tag pages with subdirectory', function () {
-            _.extend(helpers.__get__('config'), {
-                paths: {'subdir': '/blog'}
-            });
-            var tagContext = {
-                tagSlug: 'pumpkin'
-            };
-            helpers.pageUrl.call(tagContext, 1).should.equal('/blog/tag/pumpkin/');
-            helpers.pageUrl.call(tagContext, 2).should.equal('/blog/tag/pumpkin/page/2/');
-            helpers.pageUrl.call(tagContext, 50).should.equal('/blog/tag/pumpkin/page/50/');
-        });
-    });
-
     describe('Pagination helper', function () {
         var paginationRegex = /class="pagination"/,
             newerRegex = /class="newer-posts"/,
