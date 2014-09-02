@@ -1,4 +1,4 @@
-var mobileQuery = matchMedia('(max-width: 800px)'),
+var mobileQuery = matchMedia('(max-width: 900px)'),
 
     responsiveAction = function responsiveAction(event, mediaCondition, cb) {
         if (!window.matchMedia(mediaCondition).matches) {
