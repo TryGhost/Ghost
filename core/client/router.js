@@ -33,6 +33,7 @@ Router.map(function () {
         this.resource('settings.users', { path: '/users' }, function () {
             this.route('user', { path: '/:slug' });
         });
+        this.route('about');
     });
     this.route('debug');
     //Redirect legacy content to posts
