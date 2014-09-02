@@ -23,7 +23,7 @@ var SettingsUserController = Ember.ObjectController.extend({
         if (Ember.isBlank(cover)) {
             cover = this.get('coverDefault');
         }
-        return cover;
+        return 'background-image: url(' + cover + ')';
     }),
 
     coverTitle: Ember.computed('user.name', function () {
