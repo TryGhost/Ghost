@@ -3,11 +3,7 @@
 // --------------------------------------------------
 
 // Wrapper
-.post-settings-menu {
-    background: $lightestgrey;
-    width: 100%;
-    max-width: 350px;
-}
+.post-settings-menu {}
 
 // Header
 .post-settings-header {
@@ -26,7 +22,8 @@
         }
     }
 }
-.subview .post-settings-header {
+
+.post-settings-header.subview {
     h4 {
         text-align: center;
     }
