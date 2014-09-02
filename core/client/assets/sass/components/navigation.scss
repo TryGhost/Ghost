@@ -12,10 +12,15 @@
     left: 0;
     z-index: 800;
     background: $darkgrey;
+    transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
 
     i:before {
         display: inline-block;
         width: 16px;
+    }
+
+    &.right-outlet-expanded {
+        transform: translate3d(-350px, 0px, 0px);
     }
 
     .thing,
@@ -175,7 +180,7 @@
         -webkit-overflow-scrolling: touch;
 
         transform: translate3d(-60px, 0px, 0px); // Not off the screen, to give a parallax effect
-        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
 
         .thing, .thing2 {
             display: block;
