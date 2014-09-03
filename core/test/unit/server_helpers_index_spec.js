@@ -483,11 +483,11 @@ describe('Core Helpers', function () {
 
                 rendered[0].string.should.equal('home-template');
                 rendered[1].string.should.equal('post-template');
-                rendered[2].string.should.equal('archive-template');
+                rendered[2].string.should.equal('paged archive-template');
                 rendered[3].string.should.equal('tag-template tag-foo');
-                rendered[4].string.should.equal('archive-template tag-template tag-foo');
+                rendered[4].string.should.equal('tag-template tag-foo paged archive-template');
                 rendered[5].string.should.equal('author-template author-bar');
-                rendered[6].string.should.equal('archive-template author-template author-bar');
+                rendered[6].string.should.equal('author-template author-bar paged archive-template');
 
                 done();
             }).catch(done);
@@ -501,7 +501,7 @@ describe('Core Helpers', function () {
                 }
             }).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('home-template page');
+                rendered.string.should.equal('home-template page-template page');
 
                 done();
             }).catch(done);
@@ -517,7 +517,7 @@ describe('Core Helpers', function () {
                 }
             }).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.equal('post-template page page-template-about');
+                rendered.string.should.equal('post-template page-template page page-about page-template-about');
 
                 done();
             }).catch(done);
