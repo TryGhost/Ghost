@@ -39,8 +39,8 @@ fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts(max) {
+        /*jshint unused:false*/
         var knex = config.database.knex,
-            tags,
             author,
             authors,
             i, j, k = postsInserted,
@@ -48,10 +48,10 @@ fixtures = {
 
         max = max || 50;
         // insert users of different roles
-        return Promise.resolve(fixtures.createUsersWithRoles()).then(function (results) {
+        return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
             // create the tags
             return knex('tags').insert(DataGenerator.forKnex.tags);
-        }).then(function (results) {
+        }).then(function () {
             return knex('users').select('id');
         }).then(function (results) {
             authors = _.pluck(results, 'id');
@@ -59,7 +59,8 @@ fixtures = {
             // Let's insert posts with random authors
             for (i = 0; i < max; i += 1) {
                 author = authors[i % authors.length];
-                posts.push(DataGenerator.forKnex.createGenericPost(k++, null, null, author));
+                posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, author));
+                k = k + 1;
             }
 
             // Keep track so we can run this function again safely
@@ -109,11 +110,13 @@ fixtures = {
 
         for (i = 0; i < 2; i += 1) {
             lang = i % 2 ? 'en' : 'fr';
-            posts.push(DataGenerator.forKnex.createGenericPost(k++, null, lang));
+            posts.push(DataGenerator.forKnex.createGenericPost(k, null, lang));
+            k = k + 1;
 
             for (j = 0; j < max; j += 1) {
                 status = j % 2 ? 'draft' : 'published';
-                posts.push(DataGenerator.forKnex.createGenericPost(k++, status, lang));
+                posts.push(DataGenerator.forKnex.createGenericPost(k, status, lang));
+                k = k + 1;
             }
         }
 
@@ -224,9 +227,9 @@ fixtures = {
 
         return knex('users').insert(extraUsers).then(function () {
             return knex('roles_users').insert([
-                    { user_id: 5, role_id: 1},
-                    { user_id: 6, role_id: 2},
-                    { user_id: 7, role_id: 3}
+                { user_id: 5, role_id: 1},
+                { user_id: 6, role_id: 2},
+                { user_id: 7, role_id: 3}
             ]);
         });
     },
@@ -256,9 +259,9 @@ fixtures = {
 
         return knex('users').insert(extraUsers).then(function () {
             return knex('roles_users').insert([
-                    { user_id: 8, role_id: 1},
-                    { user_id: 9, role_id: 2},
-                    { user_id: 10, role_id: 3}
+                { user_id: 8, role_id: 1},
+                { user_id: 9, role_id: 2},
+                { user_id: 10, role_id: 3}
             ]);
         });
     },

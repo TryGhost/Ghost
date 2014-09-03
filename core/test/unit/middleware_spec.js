@@ -3,8 +3,6 @@
 var assert          = require('assert'),
     should          = require('should'),
     sinon           = require('sinon'),
-    _               = require('lodash'),
-    api             = require('../../server/api'),
     middleware      = require('../../server/middleware').middleware;
 
 describe('Middleware', function () {

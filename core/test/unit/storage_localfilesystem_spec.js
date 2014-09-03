@@ -131,8 +131,8 @@ describe('Local File System Storage', function () {
     });
 
     describe('when a custom content path is used', function () {
-        var origContentPath = config.paths.contentPath;
-        var origImagesPath = config.paths.imagesPath;
+        var origContentPath = config.paths.contentPath,
+            origImagesPath = config.paths.imagesPath;
 
         beforeEach(function () {
             config.paths.contentPath = config.paths.appRoot + '/var/ghostcms';

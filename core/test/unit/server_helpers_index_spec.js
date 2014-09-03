@@ -326,53 +326,52 @@ describe('Core Helpers', function () {
 
     describe('Plural Helper', function () {
 
-       it('has loaded plural helper', function () {
-           should.exist(handlebars.helpers.plural);
-       });
+        it('has loaded plural helper', function () {
+            should.exist(handlebars.helpers.plural);
+        });
 
-       it('will show no-value string', function () {
-           var expected = 'No Posts',
-               rendered = helpers.plural.call({}, 0, {
-                   'hash': {
-                       'empty': 'No Posts',
-                       'singular': '% Post',
-                       'plural': '% Posts'
-                   }
-               });
+        it('will show no-value string', function () {
+            var expected = 'No Posts',
+                rendered = helpers.plural.call({}, 0, {
+                    'hash': {
+                        'empty': 'No Posts',
+                        'singular': '% Post',
+                        'plural': '% Posts'
+                    }
+                });
 
-           should.exist(rendered);
-           rendered.string.should.equal(expected);
-       });
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+        });
 
-       it('will show singular string', function () {
-           var expected = '1 Post',
-               rendered = helpers.plural.call({}, 1, {
-                   'hash': {
-                       'empty': 'No Posts',
-                       'singular': '% Post',
-                       'plural': '% Posts'
-                   }
-               });
+        it('will show singular string', function () {
+            var expected = '1 Post',
+                rendered = helpers.plural.call({}, 1, {
+                    'hash': {
+                        'empty': 'No Posts',
+                        'singular': '% Post',
+                        'plural': '% Posts'
+                    }
+                });
 
-           should.exist(rendered);
-           rendered.string.should.equal(expected);
-       });
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+        });
 
-       it('will show plural string', function () {
-           var expected = '2 Posts',
-               rendered = helpers.plural.call({}, 2, {
-                   'hash': {
-                       'empty': 'No Posts',
-                       'singular': '% Post',
-                       'plural': '% Posts'
-                   }
-               });
+        it('will show plural string', function () {
+            var expected = '2 Posts',
+                rendered = helpers.plural.call({}, 2, {
+                    'hash': {
+                        'empty': 'No Posts',
+                        'singular': '% Post',
+                        'plural': '% Posts'
+                    }
+                });
 
-           should.exist(rendered);
-           rendered.string.should.equal(expected);
-       });
-
-   });
+            should.exist(rendered);
+            rendered.string.should.equal(expected);
+        });
+    });
 
 
     describe('Excerpt Helper', function () {
@@ -845,7 +844,11 @@ describe('Core Helpers', function () {
 
         it('should return the slug with a prefix slash if the context is a post', function (done) {
             helpers.url.call({
-                html: 'content', markdown: 'ff', title: 'title', slug: 'slug', created_at: new Date(0)
+                html: 'content',
+                markdown: 'ff',
+                title: 'title',
+                slug: 'slug',
+                created_at: new Date(0)
             }).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('/slug/');
@@ -868,7 +871,10 @@ describe('Core Helpers', function () {
 
         it('should return the slug with a prefixed /tag/ if the context is a tag', function (done) {
             helpers.url.call({
-                name: 'the tag', slug: 'the-tag', description: null, parent: null
+                name: 'the tag',
+                slug: 'the-tag',
+                description: null,
+                parent: null
             }).then(function (rendered) {
                 should.exist(rendered);
                 rendered.should.equal('/tag/the-tag/');
@@ -1025,7 +1031,8 @@ describe('Core Helpers', function () {
 
         it('can render single page with no pagination necessary', function () {
             var rendered = helpers.pagination.call({
-                pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1}, tag: {slug: 'slug'}
+                pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
+                tag: {slug: 'slug'}
             });
             should.exist(rendered);
             // strip out carriage returns and compare.
@@ -1373,11 +1380,11 @@ describe('Core Helpers', function () {
         var rendered,
             configOriginal;
 
-        before(function() {
+        before(function () {
             configOriginal = helpers.__get__('config');
         });
 
-        after(function() {
+        after(function () {
             helpers.__set__('config', configOriginal);
         });
 
@@ -1708,11 +1715,11 @@ describe('Core Helpers', function () {
         var rendered,
             configOriginal;
 
-        before(function() {
+        before(function () {
             configOriginal = helpers.__get__('config');
         });
 
-        after(function() {
+        after(function () {
             helpers.__set__('config', configOriginal);
         });
 

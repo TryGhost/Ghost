@@ -1,9 +1,7 @@
-/*globals describe, before, beforeEach, afterEach, it */
+/*globals describe, before, afterEach, it */
 /*jshint expr:true*/
 var testUtils         = require('../../utils'),
     should            = require('should'),
-    sinon             = require('sinon'),
-
     
     rewire            = require('rewire'),
     _                 = require('lodash'),
@@ -34,8 +32,7 @@ describe('Configuration API', function () {
     should.exist(ConfigurationAPI);
 
     it('can browse config', function (done) {
-        var existingConfig = ConfigurationAPI.__get__('config'),
-            updatedConfig = _.extend(config, newConfig);
+        var updatedConfig = _.extend(config, newConfig);
         config.set(updatedConfig);
         ConfigurationAPI.__set__('config', updatedConfig);
         
@@ -52,8 +49,7 @@ describe('Configuration API', function () {
     });
 
     it('can read config', function (done) {
-        var existingConfig = ConfigurationAPI.__get__('config'),
-            updatedConfig = _.extend(config, newConfig);
+        var updatedConfig = _.extend(config, newConfig);
         config.set(updatedConfig);
         ConfigurationAPI.__set__('config', updatedConfig);
         
