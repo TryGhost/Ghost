@@ -1,7 +1,7 @@
 // # App Test
 // Tests that the general layout & functionality of global admin components is correct
 
-/*globals CasperTest, casper */
+/*globals CasperTest, casper, newUser */
 
 CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {

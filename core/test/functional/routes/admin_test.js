@@ -8,11 +8,9 @@
 var request    = require('supertest'),
     express    = require('express'),
     should     = require('should'),
-    moment     = require('moment'),
 
     testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
-    agent      = request.agent,
 
     cacheRules = {
         'public': 'public, max-age=0',
@@ -120,7 +118,7 @@ describe('Admin Routing', function () {
     });
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
-    describe('Require HTTPS - no redirect', function() {
+    describe('Require HTTPS - no redirect', function () {
         var forkedGhost, request;
         before(function (done) {
             var configTestHttps = testUtils.fork.config();
@@ -128,7 +126,7 @@ describe('Admin Routing', function () {
             configTestHttps.urlSSL = 'https://localhost/';
 
             testUtils.fork.ghost(configTestHttps, 'testhttps')
-                .then(function(child) {
+                .then(function (child) {
                     forkedGhost = child;
                     request = require('supertest');
                     request = request(configTestHttps.url.replace(/\/$/, ''));
@@ -142,13 +140,13 @@ describe('Admin Routing', function () {
             }
         });
 
-        it('should block admin access over non-HTTPS', function(done) {
+        it('should block admin access over non-HTTPS', function (done) {
             request.get('/ghost/')
                 .expect(403)
                 .end(done);
         });
 
-        it('should allow admin access over HTTPS', function(done) {
+        it('should allow admin access over HTTPS', function (done) {
             request.get('/ghost/setup/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
@@ -156,7 +154,7 @@ describe('Admin Routing', function () {
         });
     });
 
-    describe('Require HTTPS - redirect', function() {
+    describe('Require HTTPS - redirect', function () {
         var forkedGhost, request;
         before(function (done) {
             var configTestHttps = testUtils.fork.config();
@@ -164,7 +162,7 @@ describe('Admin Routing', function () {
             configTestHttps.urlSSL = 'https://localhost/';
 
             testUtils.fork.ghost(configTestHttps, 'testhttps')
-                .then(function(child) {
+                .then(function (child) {
                     forkedGhost = child;
                     request = require('supertest');
                     request = request(configTestHttps.url.replace(/\/$/, ''));
@@ -178,14 +176,14 @@ describe('Admin Routing', function () {
             }
         });
 
-        it('should redirect admin access over non-HTTPS', function(done) {
+        it('should redirect admin access over non-HTTPS', function (done) {
             request.get('/ghost/')
                 .expect('Location', /^https:\/\/localhost\/ghost\//)
                 .expect(301)
                 .end(done);
         });
 
-        it('should allow admin access over HTTPS', function(done) {
+        it('should allow admin access over HTTPS', function (done) {
             request.get('/ghost/setup/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
@@ -195,11 +193,11 @@ describe('Admin Routing', function () {
 
     describe('Ghost Admin Setup', function () {
         it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
-             request.get('/ghost/')
-                 .expect('Location', /ghost\/setup/)
-                 .expect('Cache-Control', cacheRules['private'])
-                 .expect(302)
-                 .end(doEnd(done));
+            request.get('/ghost/')
+                .expect('Location', /ghost\/setup/)
+                .expect('Cache-Control', cacheRules['private'])
+                .expect(302)
+                .end(doEnd(done));
         });
 
         it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
@@ -309,7 +307,7 @@ describe('Admin Routing', function () {
 //                             }
 
 
-//                             process.nextTick(function() {
+//                             process.nextTick(function () {
 //                                 request.post('/ghost/signin/')
 //                                     .send({email: user.email, password: user.password})
 //                                     .expect(200)

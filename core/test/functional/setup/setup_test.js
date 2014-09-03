@@ -1,7 +1,7 @@
 // # Setup Test
 // Test that setup works correctly
 
-/*global CasperTest, casper, email */
+/*global CasperTest, casper, email, user, password */
 
 CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('setup', function then() {
@@ -42,7 +42,7 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-     casper.waitForOpaque('.login-box', function then() {
+    casper.waitForOpaque('.login-box', function then() {
         this.fillAndSave('#login', user);
     });
 
