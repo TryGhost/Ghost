@@ -45,7 +45,7 @@
     text-transform: uppercase;
     color: $brown;
     //Transparent gradient to make bg fade out as it goes out the top.
-    background: linear-gradient(top, white 0%, white 25%, rgba(255,255,255,0.9) 100%);
+    background: linear-gradient(to bottom, white 0%, white 25%, rgba(255,255,255,0.9) 100%);
 
     // button,
     .button {
