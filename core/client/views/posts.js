@@ -8,7 +8,7 @@ var PostsView = Ember.View.extend({
     mobileInteractions: function () {
         Ember.run.scheduleOnce('afterRender', this, function () {
             var self = this;
-
+            //@TODO Kill all the jqueries.
             $(window).resize(function () {
                 if (!mobileQuery.matches) {
                     self.send('resetContentPreview');
@@ -17,14 +17,14 @@ var PostsView = Ember.View.extend({
 
             // ### Show content preview when swiping left on content list
             $('.manage').on('click', '.content-list ol li', function (event) {
-                responsiveAction(event, '(max-width: 800px)', function () {
+                responsiveAction(event, '(max-width: 900px)', function () {
                     self.send('showContentPreview');
                 });
             });
 
             // ### Hide content preview
-            $('.manage').on('click', '.content-preview .btn .btn-default', function (event) {
-                responsiveAction(event, '(max-width: 800px)', function () {
+            $('.manage').on('click', '.content-preview .btn.btn-back', function (event) {
+                responsiveAction(event, '(max-width: 900px)', function () {
                     self.send('hideContentPreview');
                 });
             });
