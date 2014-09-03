@@ -168,7 +168,8 @@ function updateCheck() {
     // 1. updateCheck is defined as false in config.js
     // 2. we've already done a check this session
     // 3. we're not in production or development mode
-    if (config.updateCheck === false || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
+    //TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
+    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
         // No update check
         return Promise.resolve();
     } else {

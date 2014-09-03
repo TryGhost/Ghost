@@ -290,6 +290,43 @@ ConfigManager.prototype.validate = function () {
     return Promise.resolve(config);
 };
 
+/**
+ * Helper method for checking the state of a particular privacy flag
+ * @param privacyFlag The flag to check
+ * @returns {boolean}
+ */
+ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
+    if (!this.privacy) {
+        return false;
+    }
+
+    if (this.privacy.useTinfoil === true) {
+        return true;
+    }
+
+    return this.privacy[privacyFlag] === false;
+};
+
+/**
+ * Check if any of the currently set config items are deprecated, and issues a warning.
+ */
+ConfigManager.prototype.checkDeprecated = function () {
+    var deprecatedItems = ['updateCheck'],
+        self = this;
+
+    _.each(deprecatedItems, function (item) {
+        if (self.hasOwnProperty(item)) {
+            var errorText = 'The configuration property [' + item.toString().bold + '] has been deprecated.',
+                explinationText =  'This will be removed in a future version, please update your config.js file.',
+                helpText = 'Please check http://support.ghost.org/config for the most up-to-date example.';
+
+            errors.logWarn(errorText, explinationText, helpText);
+        }
+
+    });
+};
+
+
 if (testingEnvs.indexOf(process.env.NODE_ENV) > -1) {
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 }

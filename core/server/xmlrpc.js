@@ -17,7 +17,7 @@ function ping(post) {
         title = post.title;
 
     // Only ping when in production and not a page
-    if (process.env.NODE_ENV !== 'production' || post.page) {
+    if (process.env.NODE_ENV !== 'production' || post.page || config.isPrivacyDisabled('useRpcPing')) {
         return;
     }
 
