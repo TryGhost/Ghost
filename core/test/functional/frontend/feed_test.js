@@ -47,8 +47,8 @@ CasperTest.begin('Ensures dated permalinks works with RSS', 2, function suite(te
     casper.thenOpen(url + 'rss/', function (response) {
         var content = this.getHTML(),
             today = new Date(),
-            dd = ("0" + today.getDate()).slice(-2),
-            mm = ("0" + (today.getMonth() + 1)).slice(-2),
+            dd = ('0' + today.getDate()).slice(-2),
+            mm = ('0' + (today.getMonth() + 1)).slice(-2),
             yyyy = today.getFullYear(),
             postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
 

@@ -3,7 +3,6 @@
 var testUtils     = require('../../../utils'),
     supertest     = require('supertest'),
     express       = require('express'),
-    should        = require('should'),
 
     ghost         = require('../../../../../core'),
 
@@ -88,9 +87,8 @@ describe('Notifications API', function () {
                         return done(err);
                     }
 
-                    var location = res.headers['location'];
-
-                    var jsonResponse = res.body;
+                    var location = res.headers['location'],
+                        jsonResponse = res.body;
 
                     jsonResponse.notifications.should.exist;
                     testUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');

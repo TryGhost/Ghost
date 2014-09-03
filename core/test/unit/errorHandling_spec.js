@@ -1,4 +1,4 @@
-/*globals describe, after, before, beforeEach, afterEach, it*/
+/*globals describe, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var should     = require('should'),
     Promise    = require('bluebird'),
@@ -120,7 +120,7 @@ describe('Error handling', function () {
 
             logStub.calledOnce.should.be.true;
             logStub.calledWith(
-                '\nERROR:'.red, 'An unknown error occurred.'.red, '\n', message.white, '\n', message.green , '\n'
+                '\nERROR:'.red, 'An unknown error occurred.'.red, '\n', message.white, '\n', message.green, '\n'
             ).should.be.true;
         });
 
@@ -364,18 +364,18 @@ describe('Error handling', function () {
             errors.error500(err, req, res, null);
         });
 
-        it('Renders custom error template if one exists', function(done){
+        it('Renders custom error template if one exists', function (done) {
             var code = 404,
-                error = {message:'Custom view test'},
+                error = {message: 'Custom view test'},
                 req = {
                     session: null
                 },
                 res = {
-                    status: function(code) {
+                    status: function (code) {
                         /*jshint unused:false*/
                         return this;
                     },
-                    render: function(view, model, fn){
+                    render: function (view, model, fn) {
                         /*jshint unused:false*/
                         view.should.eql('error');
                         errors.updateActiveTheme('casper');

@@ -21,7 +21,7 @@ function findFreePort(port) {
 
         var server = net.createServer();
 
-        server.on('error', function(e) {
+        server.on('error', function (e) {
             if (e.code === 'EADDRINUSE') {
                 resolve(findFreePort(port));
             } else {
@@ -29,9 +29,9 @@ function findFreePort(port) {
             }
         });
 
-        server.listen(port, function() {
+        server.listen(port, function () {
             var listenPort = server.address().port;
-            server.close(function() {
+            server.close(function () {
                 resolve(listenPort);
             });
         });
@@ -52,7 +52,7 @@ function forkGhost(newConfig, envName) {
     envName = envName || 'forked';
 
     return findFreePort(newConfig.server ? newConfig.server.port : undefined)
-        .then(function(port) {
+        .then(function (port) {
             newConfig.server = newConfig.server || {};
             newConfig.server.port = port;
             newConfig.url = url.format(_.extend(url.parse(newConfig.url), {port: port, host: null}));
@@ -60,63 +60,68 @@ function forkGhost(newConfig, envName) {
             var newConfigFile = path.join(config.paths.appRoot, 'config.test' + port + '.js');
 
             return new Promise(function (resolve, reject) {
-                fs.writeFile(newConfigFile, 'module.exports = {' + envName + ': ' + JSON.stringify(newConfig) + '}', function(err) {
+                fs.writeFile(newConfigFile, 'module.exports = {' + envName + ': ' + JSON.stringify(newConfig) + '}', function (err) {
                     if (err) {
                         return reject(err);
                     }
 
                     // setup process environment for the forked Ghost to use the new config file
-                    var env = _.clone(process.env);
+                    var env = _.clone(process.env),
+                        baseKill,
+                        child,
+                        pingTries = 0,
+                        pingCheck,
+                        pingStop = function () {
+                            if (pingCheck) {
+                                clearInterval(pingCheck);
+                                pingCheck = undefined;
+                                return true;
+                            }
+                            return false;
+                        };
+
                     env['GHOST_CONFIG'] = newConfigFile;
                     env['NODE_ENV'] = envName;
-                    var child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
-
-                    var pingTries = 0;
-                    var pingCheck;
-                    var pingStop = function() {
-                        if (pingCheck) {
-                            clearInterval(pingCheck);
-                            pingCheck = undefined;
-                            return true;
-                        }
-                        return false;
-                    };
+                    child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
                     // periodic check until forked Ghost is running and is listening on the port
-                    pingCheck = setInterval(function() {
+                    pingCheck = setInterval(function () {
                         var socket = net.connect(port);
-                        socket.on('connect', function() {
+                        socket.on('connect', function () {
                             socket.end();
                             if (pingStop()) {
                                 resolve(child);
                             }
                         });
-                        socket.on('error', function(err) {
+                        socket.on('error', function (err) {
+                            /*jshint unused:false*/
+                            pingTries = pingTries + 1;
                             // continue checking
-                            if (++pingTries >= 20 && pingStop()) {
-                                reject(new Error("Timed out waiting for child process"));
+                            if (pingTries >= 20 && pingStop()) {
+                                reject(new Error('Timed out waiting for child process'));
                             }
                         });
                     }, 200);
 
-                    child.on('exit', function(code, signal) {
+                    child.on('exit', function (code, signal) {
+                        /*jshint unused:false*/
                         child.exited = true;
                         if (pingStop()) {
-                            reject(new Error("Child process exit code: " + code));
+                            reject(new Error('Child process exit code: ' + code));
                         }
                         // cleanup the temporary config file
                         fs.unlink(newConfigFile);
                     });
                     
                     // override kill() to have an async callback
-                    var baseKill = child.kill;
-                    child.kill = function(signal, cb) {
+                    baseKill = child.kill;
+                    child.kill = function (signal, cb) {
                         if (typeof signal === 'function') {
                             cb = signal;
                             signal = undefined;
                         }
 
                         if (cb) {
-                            child.on('exit', function() {
+                            child.on('exit', function () {
                                 cb();
                             });
                         }

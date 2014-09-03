@@ -1,4 +1,4 @@
-/*globals describe, before, beforeEach, afterEach, after, it*/
+/*globals describe, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var testUtils       = require('../utils'),
     should          = require('should'),
@@ -9,8 +9,8 @@ var testUtils       = require('../utils'),
     // Stuff we are testing
     Models          = require('../../server/models'),
     permissions     = require('../../server/permissions'),
-    effectivePerms  = require('../../server/permissions/effective'),
-    context         = testUtils.context.owner,
+//    effectivePerms  = require('../../server/permissions/effective'),
+//    context         = testUtils.context.owner,
 
     sandbox         = sinon.sandbox.create();
 

@@ -2,7 +2,7 @@ var _             = require('lodash'),
     uuid          = require('node-uuid'),
     globalUtils   = require('../../../server/utils'),
     DataGenerator = {};
-
+/*jshint quotmark:false*/
 DataGenerator.Content = {
     posts: [
         {
@@ -333,7 +333,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(overrides, {
             token: uuid.v4(),
             client_id: 1,
-            expires:Date.now() + globalUtils.ONE_DAY_MS
+            expires: Date.now() + globalUtils.ONE_DAY_MS
         });
     }
 
