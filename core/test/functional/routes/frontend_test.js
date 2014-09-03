@@ -9,7 +9,6 @@ var request    = require('supertest'),
     express    = require('express'),
     should     = require('should'),
     moment     = require('moment'),
-    path       = require('path'),
 
     testUtils  = require('../../utils'),
     ghost      = require('../../../../core'),
@@ -52,7 +51,7 @@ describe('Frontend Routing', function () {
     });
 
     after(function (done) {
-       testUtils.clearData().then(function () {
+        testUtils.clearData().then(function () {
             done();
         }).catch(done);
     });
@@ -101,7 +100,7 @@ describe('Frontend Routing', function () {
 
         it('should not work with date permalinks', function (done) {
             // get today's date
-            var date  = moment().format("YYYY/MM/DD");
+            var date  = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome-to-ghost/')
                 //.expect('Cache-Control', cacheRules['private'])
@@ -146,7 +145,7 @@ describe('Frontend Routing', function () {
     });
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
-    describe('HTTPS', function() {
+    describe('HTTPS', function () {
         var forkedGhost, request;
         before(function (done) {
             var configTestHttps = testUtils.fork.config();
@@ -154,7 +153,7 @@ describe('Frontend Routing', function () {
             configTestHttps.urlSSL = 'https://localhost/';
 
             testUtils.fork.ghost(configTestHttps, 'testhttps')
-                .then(function(child) {
+                .then(function (child) {
                     forkedGhost = child;
                     request = require('supertest');
                     request = request(configTestHttps.url.replace(/\/$/, ''));
@@ -167,20 +166,20 @@ describe('Frontend Routing', function () {
             }
         });
 
-        it('should set links to url over non-HTTPS', function(done) {
+        it('should set links to url over non-HTTPS', function (done) {
             request.get('/')
                 .expect(200)
-                .expect(/\<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
-                .expect(/\<a href="http:\/\/127.0.0.1:2370">Ghost\<\/a\>/)
+                .expect(/<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
+                .expect(/<a href="http:\/\/127.0.0.1:2370">Ghost<\/a\>/)
                 .end(doEnd(done));
         });
 
-        it('should set links to urlSSL over HTTPS', function(done) {
+        it('should set links to urlSSL over HTTPS', function (done) {
             request.get('/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
-                .expect(/\<link rel="canonical" href="https:\/\/localhost\/" \/\>/)
-                .expect(/\<a href="https:\/\/localhost">Ghost\<\/a\>/)
+                .expect(/<link rel="canonical" href="https:\/\/localhost\/" \/\>/)
+                .expect(/<a href="https:\/\/localhost">Ghost<\/a\>/)
                 .end(doEnd(done));
         });
     });
@@ -610,7 +609,7 @@ describe('Frontend Routing', function () {
 //        it('should load a post with date permalink', function (done) {
 //
 //            // get today's date
-//            var date  = moment().format("YYYY/MM/DD");
+//            var date  = moment().format('YYYY/MM/DD');
 //
 //
 //            request.get('/' + date + '/welcome-to-ghost/')

@@ -452,7 +452,6 @@ describe('Post API', function () {
         it('can edit a new draft and update post', function (done) {
             var newTitle = 'My Post',
                 newTagName = 'My Tag',
-                publishedState = 'published',
                 newTag = {id: null, name: newTagName},
                 newPost = {posts: [{status: 'draft', title: newTitle, markdown: 'my post', tags: [newTag]}]};
 
@@ -529,8 +528,6 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-
-                            var unpublishedPost = res.body;
                             // Unpublishing a post should send x-cache-invalidate headers
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             done();
@@ -635,7 +632,6 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            var putBody = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(false);
                             jsonResponse = res.body;
                             jsonResponse.errors.should.exist;
@@ -650,6 +646,7 @@ describe('Post API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .end(function (err, res) {
+                    /*jshint unused:false*/
                     if (err) {
                         return done(err);
                     }
@@ -661,6 +658,7 @@ describe('Post API', function () {
                         .expect('Content-Type', /json/)
                         .expect(401)
                         .end(function (err, res) {
+                            /*jshint unused:false*/
                             if (err) {
                                 return done(err);
                             }
@@ -799,7 +797,7 @@ describe('Post API', function () {
                 .send(newPost)
                 .expect('Content-Type', /json/)
                 .expect(201)
-                .end(function (err ,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
@@ -820,7 +818,7 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            var jsonResponse = res.body
+                            var jsonResponse = res.body;
                             jsonResponse.should.exist;
                             jsonResponse.posts.should.exist;
                             testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -849,6 +847,7 @@ describe('Post API', function () {
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
                         .end(function (err, res) {
+                            /*jshint unused:false*/
                             if (err) {
                                 return done(err);
                             }
@@ -874,6 +873,7 @@ describe('Post API', function () {
                         .expect('Content-Type', /json/)
                         .send(jsonResponse)
                         .end(function (err, res) {
+                            /*jshint unused:false*/
                             if (err) {
                                 return done(err);
                             }
@@ -931,11 +931,6 @@ describe('Post API', function () {
                                 return done(err);
                             }
                             var putBody = res.body;
-                            var today = new Date(),
-                                dd = ("0" + today.getDate()).slice(-2),
-                                mm = ("0" + (today.getMonth() + 1)).slice(-2),
-                                yyyy = today.getFullYear(),
-                                postLink = '/' + yyyy + '/' + mm + '/' + dd + '/' + putBody.posts[0].slug + '/';
 
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             putBody.should.exist;

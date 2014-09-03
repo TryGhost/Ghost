@@ -20,7 +20,7 @@
  * Requirements:
  * you must have phantomjs 1.9.1 and casperjs 1.1.0-DEV installed in order for these tests to work
  */
-
+/*jshint unused:false */
 var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
     host = casper.cli.options.host || 'localhost',
     noPort = casper.cli.options.noPort || false,
@@ -100,7 +100,7 @@ screens = {
     },
     'signout': {
         url: 'ghost/signout/',
-       linkSelector: '.user-menu-signout',
+        linkSelector: '.user-menu-signout',
         // When no user exists we get redirected to setup which has btn-green
         selector: '.btn-blue, .btn-green'
     },
@@ -251,9 +251,9 @@ casper.on('page.error', function (msg, trace) {
     pageErrors.push(msg);
 });
 
-casper.on('resource.received', function(resource) {
+casper.on('resource.received', function (resource) {
     var status = resource.status;
-    if(status >= 400) {
+    if (status >= 400) {
         casper.echoConcise('RESOURCE ERROR: ' + resource.url + ' failed to load (' + status + ')', 'ERROR');
 
         resourceErrors.push({
@@ -284,7 +284,7 @@ casper.test.on('fail', function captureFailure() {
 });
 
 // on exit, output any errors
-casper.test.on('exit', function() {
+casper.test.on('exit', function () {
     if (jsErrors.length > 0) {
         casper.echo(jsErrors.length + ' Javascript errors found', 'WARNING');
     } else {

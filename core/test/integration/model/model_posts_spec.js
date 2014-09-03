@@ -2,7 +2,6 @@
 /*jshint expr:true*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
-    Promise         = require('bluebird'),
     sequence        = require('../../../server/utils/sequence'),
     _               = require('lodash'),
 
@@ -55,13 +54,11 @@ describe('Post Model', function () {
         });
 
         it('can findAll, returning all related data', function (done) {
-            var firstPost;
-
             PostModel.findAll({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                 .then(function (results) {
                     should.exist(results);
                     results.length.should.be.above(0);
-                    posts = results.models.map(function (model) {
+                    var posts = results.models.map(function (model) {
                         return model.toJSON();
                     });
 
@@ -88,8 +85,6 @@ describe('Post Model', function () {
         });
 
         it('can findPage, returning all related data', function (done) {
-            var firstPost;
-
             PostModel.findPage({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                 .then(function (results) {
                     should.exist(results);
@@ -255,7 +250,7 @@ describe('Post Model', function () {
                 return function () {
                     return PostModel.add({
                         title: 'Test Title',
-                        markdown: 'Test Content ' + (i+1)
+                        markdown: 'Test Content ' + (i + 1)
                     }, context);
                 };
             })).then(function (createdPosts) {
@@ -294,7 +289,7 @@ describe('Post Model', function () {
             }).catch(done);
         });
 
-        it('can generate a safe slug when a reserved keyword is used', function(done) {
+        it('can generate a safe slug when a reserved keyword is used', function (done) {
             var newPost = {
                 title: 'rss',
                 markdown: 'Test Content 1'

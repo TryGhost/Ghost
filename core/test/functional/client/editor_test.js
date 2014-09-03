@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, testPost, $ */
 CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
-    test.assertHTMLEquals = function(equals, message) {
+    test.assertHTMLEquals = function (equals, message) {
         test.assertEvalEquals(function () {
             return document.querySelector('.entry-preview .rendered-markdown').innerHTML
                 .replace(/<script.*?><\/script>/g, '');
@@ -19,7 +19,7 @@ CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
 
     // Part 1: Test saving with no data - title is required
     casper.waitForSelector('#entry-title', function then() {
-        test.assertEvalEquals(function() {
+        test.assertEvalEquals(function () {
             return document.getElementById('entry-title').value;
         }, '', 'Title is empty');
     });
@@ -103,7 +103,7 @@ CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
     });
 
     casper.then(function () {
-       casper.writeContentToCodeMirror('even **more** words'); // append another word, assumes newline
+        casper.writeContentToCodeMirror('even **more** words'); // append another word, assumes newline
     });
 
     casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
@@ -139,7 +139,7 @@ CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
 });
 
 CasperTest.begin('Image Uploads', 20, function suite(test) {
-    test.assertHTMLEquals = function(equals, message) {
+    test.assertHTMLEquals = function (equals, message) {
         test.assertEvalEquals(function () {
             return document.querySelector('.entry-preview .rendered-markdown').innerHTML
                 .replace(/<script.*?><\/script>/g, '');
@@ -201,7 +201,8 @@ CasperTest.begin('Image Uploads', 20, function suite(test) {
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
-    var testFileLocation = '/test/file/location';
+    var testFileLocation = '/test/file/location',
+        imageURL = 'http://www.random.url';
 
     casper.then(function () {
         var markdownImageString = '![](' + testFileLocation + ')';
@@ -232,7 +233,6 @@ CasperTest.begin('Image Uploads', 20, function suite(test) {
         casper.thenClick('.entry-preview .image-uploader a.image-url');
     });
 
-    var imageURL = 'http://www.random.url';
     casper.waitForSelector('.image-uploader-url', function onSuccess() {
         casper.sendKeys('.image-uploader-url input.url.js-upload-url', imageURL);
         casper.thenClick('.js-button-accept.btn-blue');
@@ -250,7 +250,8 @@ CasperTest.begin('Tag editor', 7, function suite(test) {
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
-    var tagName = 'someTagName';
+    var tagName = 'someTagName',
+        createdTagSelector = '#entry-tags .tags .tag';
 
     casper.then(function () {
         test.assertExists('#entry-tags', 'should have tag label area');
@@ -260,7 +261,6 @@ CasperTest.begin('Tag editor', 7, function suite(test) {
         casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
     });
 
-    var createdTagSelector = '#entry-tags .tags .tag';
     casper.waitForSelector(createdTagSelector, function onSuccess() {
         test.assertSelectorHasText(createdTagSelector, tagName, 'typing enter after tag name should create tag');
     });
