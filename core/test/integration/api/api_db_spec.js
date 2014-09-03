@@ -25,7 +25,7 @@ describe('DB API', function () {
             result.db.should.be.empty;
         }).then(function () {
             return ModelTag.Tag.findAll(testUtils.context.owner).then(function (results) {
-                 should.exist(results);
+                should.exist(results);
                 results.length.should.equal(0);
             });
         }).then(function () {
@@ -57,17 +57,17 @@ describe('DB API', function () {
     });
 
     it('delete all content is denied (editor & author)', function (done) {
-        return dbAPI.deleteAllContent(testUtils.context.editor).then(function (){
+        return dbAPI.deleteAllContent(testUtils.context.editor).then(function () {
             done(new Error('Delete all content is not denied for editor.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent(testUtils.context.author);
-        }).then(function (){
+        }).then(function () {
             done(new Error('Delete all content is not denied for author.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.deleteAllContent();
-        }).then(function (){
+        }).then(function () {
             done(new Error('Delete all content is not denied without authentication.'));
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');
@@ -76,17 +76,17 @@ describe('DB API', function () {
     });
 
     it('export content is denied (editor & author)', function (done) {
-        return dbAPI.exportContent(testUtils.context.editor).then(function (){
+        return dbAPI.exportContent(testUtils.context.editor).then(function () {
             done(new Error('Export content is not denied for editor.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.exportContent(testUtils.context.author);
-        }).then(function (){
+        }).then(function () {
             done(new Error('Export content is not denied for author.'));
         }, function (error) {
             error.type.should.eql('NoPermissionError');
             return dbAPI.exportContent();
-        }).then(function (){
+        }).then(function () {
             done(new Error('Export content is not denied without authentication.'));
         }).catch(function (error) {
             error.type.should.eql('NoPermissionError');

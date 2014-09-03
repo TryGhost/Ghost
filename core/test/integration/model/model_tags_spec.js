@@ -100,18 +100,19 @@ describe('Tag Model', function () {
 
             function seedTags(tagNames) {
                 var createOperations = [
-                    PostModel.add(testUtils.DataGenerator.forModel.posts[0], context)
-                ];
+                        PostModel.add(testUtils.DataGenerator.forModel.posts[0], context)
+                    ],
+                    tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}, context); });
 
-                var tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}, context); });
                 createOperations = createOperations.concat(tagModels);
 
                 return Promise.all(createOperations).then(function (models) {
                     var postModel = models[0],
-                        attachOperations;
+                        attachOperations,
+                        i;
 
                     attachOperations = [];
-                    for (var i = 1; i < models.length; i += 1) {
+                    for (i = 1; i < models.length; i += 1) {
                         attachOperations.push(postModel.tags().attach(models[i]));
                     }
 

@@ -1,7 +1,7 @@
 // # Post Settings Menu Tests
 // Test the post settings menu on the editor screen works as expected
 
-/*globals CasperTest, casper */
+/*globals CasperTest, casper, __utils__ */
 
 
 CasperTest.begin('Post settings menu', 15, function suite(test) {
@@ -36,7 +36,7 @@ CasperTest.begin('Post settings menu', 15, function suite(test) {
 
     // Enter a title and save draft so converting to/from static post
     // will result in notifications and 'Delete This Post' button appears
-    casper.then(function (){
+    casper.then(function () {
         casper.sendKeys('#entry-title', 'aTitle');
         casper.thenClick('.js-publish-button');
     });

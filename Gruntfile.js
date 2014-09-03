@@ -151,6 +151,17 @@ var _              = require('lodash'),
                             '!core/client/tpl/**/*.js'
                         ]
                     }
+                },
+
+                test: {
+                    options: {
+                        jshintrc: 'core/test/.jshintrc'
+                    },
+                    files: {
+                        src: [
+                            'core/test/**/*.js'
+                        ]
+                    }
                 }
             },
 
