@@ -12,7 +12,6 @@ var should         = require('should'),
 
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
-    theme          = rewire('../../server/config/theme'),
     config         = rewire('../../server/config');
 
 // To stop jshint complaining
@@ -22,41 +21,31 @@ describe('Config', function () {
 
     describe('Theme', function () {
 
-        var sandbox,
-            settings,
-            settingsStub;
-
-        beforeEach(function (done) {
-            sandbox = sinon.sandbox.create();
-
-            settings = {'read': function read() {}};
-
-            settingsStub = sandbox.stub(settings, 'read', function () {
-                return Promise.resolve({ settings: [{value: 'casper'}] });
+        beforeEach(function () {
+            config.set({
+                url: 'http://my-ghost-blog.com',
+                theme: {
+                    title: 'casper',
+                    description: 'casper',
+                    logo: 'casper',
+                    cover: 'casper'
+                }
             });
-
-            theme.update(settings, 'http://my-ghost-blog.com')
-                .then(done)
-                .catch(done);
         });
 
-        afterEach(function (done) {
-            theme.update(settings, defaultConfig.url)
-                .then(done)
-                .catch(done);
-
-            sandbox.restore();
+        afterEach(function () {
+            config.set(_.merge({}, defaultConfig));
         });
 
         it('should have exactly the right keys', function () {
-            var themeConfig = theme();
+            var themeConfig = config.theme;
 
             // This will fail if there are any extra keys
             themeConfig.should.have.keys('url', 'title', 'description', 'logo', 'cover');
         });
 
         it('should have the correct values for each key', function () {
-            var themeConfig = theme();
+            var themeConfig = config.theme;
 
             // Check values are as we expect
             themeConfig.should.have.property('url', 'http://my-ghost-blog.com');
@@ -64,9 +53,6 @@ describe('Config', function () {
             themeConfig.should.have.property('description', 'casper');
             themeConfig.should.have.property('logo', 'casper');
             themeConfig.should.have.property('cover', 'casper');
-
-            // Check settings.read gets called exactly 4 times
-            settingsStub.callCount.should.equal(4);
         });
     });
 

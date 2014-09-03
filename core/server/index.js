@@ -158,12 +158,8 @@ function init(options) {
         return api.init();
     }).then(function () {
         // Initialize the permissions actions and objects
-        // NOTE: Must be done before the config.theme.update and initDbHashAndFirstRun calls
+        // NOTE: Must be done before initDbHashAndFirstRun calls
         return permissions.init();
-    }).then(function () {
-        // We must pass the api.settings object
-        // into this method due to circular dependencies.
-        return config.theme.update(api.settings, config.url);
     }).then(function () {
         return Promise.join(
             // Check for or initialise a dbHash.

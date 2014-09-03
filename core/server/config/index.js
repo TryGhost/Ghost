@@ -12,7 +12,6 @@ var path          = require('path'),
     validator     = require('validator'),
     requireTree   = require('../require-tree').readAll,
     errors        = require('../errors'),
-    theme         = require('./theme'),
     configUrl     = require('./url'),
     appRoot       = path.resolve(__dirname, '../../../'),
     corePath      = path.resolve(appRoot, 'core/'),
@@ -30,7 +29,6 @@ function ConfigManager(config) {
     this._config = {};
 
     // Allow other modules to be externally accessible.
-    this.theme = theme;
     this.urlFor = configUrl.urlFor;
     this.urlForPost = configUrl.urlForPost;
 
@@ -131,6 +129,10 @@ ConfigManager.prototype.set = function (config) {
             'availableThemes':  this._config.paths.availableThemes || {},
             'availableApps':    this._config.paths.availableApps || {},
             'builtScriptPath':  path.join(corePath, 'built/scripts/')
+        },
+        theme: {
+            // normalise the URL by removing any trailing slash
+            url: this._config.url ? this._config.url.replace(/\/$/, '') : ''
         }
     });
 
