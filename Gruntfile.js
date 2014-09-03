@@ -367,7 +367,11 @@ var _              = require('lodash'),
             // Clean up files as part of other tasks
             clean: {
                 built: {
-                    src: ['core/built/**']
+                    src: [
+                        'core/built/**',
+                        'core/client/assets/img/contributors/**',
+                        'core/client/templates/-contributors.hbs'
+                    ]
                 },
                 release: {
                     src: ['<%= paths.releaseBuild %>/**']
@@ -874,8 +878,19 @@ var _              = require('lodash'),
         // Run by any task that compiles the ember assets (emberBuildDev, emberBuildProd)
         //     or manually via `grunt buildAboutPage`.
         // Change which version you're working against by setting the "releaseTag" below.
+        //
+        // Only builds if the contributors template does not exist.
+        // To force a build regardless, supply the --force option.
+        //     `grunt buildAboutPage --force`
         grunt.registerTask('buildAboutPage', 'Compile assets for the About Ghost page', function () {
-            var done = this.async();
+            var done = this.async(),
+                templatePath = 'core/client/templates/-contributors.hbs';
+
+            if (fs.existsSync(templatePath) && !grunt.option('force')) {
+                grunt.log.writeln('Contributors template already exists.');
+                grunt.log.writeln('Skipped'.bold);
+                return done();
+            }
 
             grunt.verbose.writeln('Downloading release and contributor information from GitHub');
             getTopContribs({
@@ -889,7 +904,7 @@ var _              = require('lodash'),
                     '\t</a>\n</li>';
 
                 grunt.verbose.writeln('Creating contributors template.');
-                grunt.file.write('core/client/templates/-contributors.hbs',
+                grunt.file.write(templatePath,
                     //Map contributors to the template.
                     _.map(contributors, function (contributor) {
                         return contributorTemplate
