@@ -19,6 +19,7 @@ config = {
             },
             debug: false
         },
+
         server: {
             // Host to be passed to node's `net.Server#listen()`
             host: '127.0.0.1',
