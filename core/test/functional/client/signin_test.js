@@ -1,7 +1,7 @@
 // # Signin Test
 // Test that signin works, including testing our spam prevention mechanisms
 
-/*globals CasperTest, casper, url, newUser, user, falseUser */
+/*globals CasperTest, casper, url, user, falseUser */
 
 CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
     CasperTest.Routines.signout.run(test);

@@ -339,6 +339,7 @@ describe('User API', function () {
                         .send(jsonResponse)
                         .expect(401)
                         .end(function (err, res) {
+                            /*jshint unused:false*/
                             if (err) {
                                 return done(err);
                             }

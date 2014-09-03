@@ -168,21 +168,21 @@ describe('Mail', function () {
     });
 
     it('should use from address as configured in config.js', function () {
-        overrideConfig({mail:{fromaddress: 'static@example.com'}});
+        overrideConfig({mail: {fromaddress: 'static@example.com'}});
         mailer.fromAddress().should.equal('static@example.com');
     });
 
     it('should fall back to ghost@[blog.url] as from address', function () {
         // Standard domain
-        overrideConfig({url: 'http://default.com', mail:{fromaddress: null}});
+        overrideConfig({url: 'http://default.com', mail: {fromaddress: null}});
         mailer.fromAddress().should.equal('ghost@default.com');
 
         // Trailing slash
-        overrideConfig({url: 'http://default.com/', mail:{}});
+        overrideConfig({url: 'http://default.com/', mail: {}});
         mailer.fromAddress().should.equal('ghost@default.com');
 
         // Strip Port
-        overrideConfig({url: 'http://default.com:2368/', mail:{}});
+        overrideConfig({url: 'http://default.com:2368/', mail: {}});
         mailer.fromAddress().should.equal('ghost@default.com');
     });
 });

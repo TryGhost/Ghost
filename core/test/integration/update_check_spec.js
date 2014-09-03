@@ -3,12 +3,9 @@
 var testUtils       = require('../utils'),
     should          = require('should'),
     rewire          = require('rewire'),
-    _               = require('lodash'),
 
     // Stuff we are testing
     packageInfo     = require('../../../package'),
-    ghost           = require('../../../core'),
-    config          = rewire('../../../core/server/config'),
     updateCheck     = rewire('../../server/update-check');
 
 describe('Update Check', function () {

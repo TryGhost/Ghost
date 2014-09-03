@@ -1,10 +1,10 @@
 // # Signup Test
 // Test that signup works correctly
 
-/*global CasperTest, casper, email */
-
+/*globals CasperTest */
 
 CasperTest.begin('Ghost signup fails properly', 0, function suite(test) {
+    /*jshint unused:false */
 /*
     casper.thenOpenAndWaitForPageLoad('signup', function then() {
         test.assertUrlMatch(/ghost\/signup\/$/, 'Landed on the correct URL');

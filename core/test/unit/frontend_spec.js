@@ -266,7 +266,7 @@ describe('Frontend Controller', function () {
         });
     });
 
-    describe('tag', function() {
+    describe('tag', function () {
         var mockPosts = [{
                 'status': 'published',
                 'id': 1,
@@ -298,7 +298,7 @@ describe('Frontend Controller', function () {
                 'name': 'video',
                 'slug': 'video',
                 'id': 1
-            },{
+            }, {
                 'name': 'audio',
                 'slug': 'audio',
                 'id': 2
@@ -372,7 +372,7 @@ describe('Frontend Controller', function () {
                         render: function (view, context) {
                             assert.equal(view, 'tag');
                             assert.equal(context.tag, mockTags[0]);
-                            assert.equal(context.posts[0].author.email, undefined)
+                            assert.equal(context.posts[0].author.email, undefined);
                             done();
                         }
                     };
@@ -542,7 +542,7 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read', function (args) {
-                return Promise.resolve(_.find(mockPosts, function(mock) {
+                return Promise.resolve(_.find(mockPosts, function (mock) {
                     return mock.posts[0].slug === args.slug;
                 }));
             });
@@ -645,7 +645,7 @@ describe('Frontend Controller', function () {
                         },
                         res = {
                             render: sinon.spy(),
-                            redirect: function(arg) {
+                            redirect: function (arg) {
                                 res.render.called.should.be.false;
                                 arg.should.eql(adminEditPagePath + mockPosts[0].posts[0].id + '/');
                                 done();
@@ -792,7 +792,7 @@ describe('Frontend Controller', function () {
                         },
                         res = {
                             render: sinon.spy(),
-                            redirect: function(arg) {
+                            redirect: function (arg) {
                                 res.render.called.should.be.false;
                                 arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
                                 done();

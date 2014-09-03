@@ -40,11 +40,11 @@ describe('Upload API', function () {
                 path: '/tmp/TMPFILEID'
             };
             UploadAPI.add({uploadimage: uploadimage}).then(function () {
-                    done(new Error('Upload suceeded with invalid file.'));
-                }, function (result) {
-                    result.code.should.equal(415);
-                    result.type.should.equal('UnsupportedMediaTypeError');
-                    done();
+                done(new Error('Upload suceeded with invalid file.'));
+            }, function (result) {
+                result.code.should.equal(415);
+                result.type.should.equal('UnsupportedMediaTypeError');
+                done();
             });
         });
     });
@@ -57,11 +57,11 @@ describe('Upload API', function () {
                 path: '/tmp/TMPFILEID'
             };
             UploadAPI.add({uploadimage: uploadimage}).then(function () {
-                    done(new Error('Upload suceeded with invalid file.'));
-                }, function (result) {
-                    result.code.should.equal(415);
-                    result.type.should.equal('UnsupportedMediaTypeError');
-                    done();
+                done(new Error('Upload suceeded with invalid file.'));
+            }, function (result) {
+                result.code.should.equal(415);
+                result.type.should.equal('UnsupportedMediaTypeError');
+                done();
             });
         });
     });
@@ -87,11 +87,11 @@ describe('Upload API', function () {
                 path: '/tmp/TMPFILEID'
             };
             UploadAPI.add({uploadimage: uploadimage}).then(function () {
-                    done(new Error('Upload suceeded with invalid file.'));
-                }, function (result) {
-                    result.code.should.equal(415);
-                    result.type.should.equal('UnsupportedMediaTypeError');
-                    done();
+                done(new Error('Upload suceeded with invalid file.'));
+            }, function (result) {
+                result.code.should.equal(415);
+                result.type.should.equal('UnsupportedMediaTypeError');
+                done();
             });
         });
 

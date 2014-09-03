@@ -118,22 +118,19 @@ describe('Apps', function () {
         });
 
         it('allows filter registration with permission', function (done) {
-            var registerSpy = sandbox.spy(filters, 'registerFilter');
-
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['testFilter'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
-
-            var fakePosts = [{ id: 0 }, { id: 1 }];
-
-            var filterStub = sandbox.spy(function (val) {
-                return val;
-            });
+            var registerSpy = sandbox.spy(filters, 'registerFilter'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {
+                        filters: ['testFilter'],
+                        helpers: ['myTestHelper'],
+                        posts: ['browse', 'read', 'edit', 'add', 'delete']
+                    }
+                }),
+                fakePosts = [{ id: 0 }, { id: 1 }],
+                filterStub = sandbox.spy(function (val) {
+                    return val;
+                });
 
             appProxy.filters.register('testFilter', 5, filterStub);
 
@@ -151,18 +148,16 @@ describe('Apps', function () {
         });
 
         it('does not allow filter registration without permission', function () {
-            var registerSpy = sandbox.spy(filters, 'registerFilter');
-
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['prePostRender'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
-
-            var filterStub = sandbox.stub().returns('test result');
+            var registerSpy = sandbox.spy(filters, 'registerFilter'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {
+                        filters: ['prePostRender'],
+                        helpers: ['myTestHelper'],
+                        posts: ['browse', 'read', 'edit', 'add', 'delete']
+                    }
+                }),
+                filterStub = sandbox.stub().returns('test result');
 
             function registerFilterWithoutPermission() {
                 appProxy.filters.register('superSecretFilter', 5, filterStub);
@@ -175,20 +170,17 @@ describe('Apps', function () {
         });
 
         it('allows filter deregistration with permission', function (done) {
-            var registerSpy = sandbox.spy(filters, 'deregisterFilter');
-
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['prePostsRender'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
-
-            var fakePosts = [{ id: 0 }, { id: 1 }];
-
-            var filterStub = sandbox.stub().returns(fakePosts);
+            var registerSpy = sandbox.spy(filters, 'deregisterFilter'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {
+                        filters: ['prePostsRender'],
+                        helpers: ['myTestHelper'],
+                        posts: ['browse', 'read', 'edit', 'add', 'delete']
+                    }
+                }),
+                fakePosts = [{ id: 0 }, { id: 1 }],
+                filterStub = sandbox.stub().returns(fakePosts);
 
             appProxy.filters.deregister('prePostsRender', 5, filterStub);
 
@@ -205,18 +197,16 @@ describe('Apps', function () {
         });
 
         it('does not allow filter deregistration without permission', function () {
-            var registerSpy = sandbox.spy(filters, 'deregisterFilter');
-
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['prePostRender'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
-
-            var filterStub = sandbox.stub().returns('test result');
+            var registerSpy = sandbox.spy(filters, 'deregisterFilter'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {
+                        filters: ['prePostRender'],
+                        helpers: ['myTestHelper'],
+                        posts: ['browse', 'read', 'edit', 'add', 'delete']
+                    }
+                }),
+                filterStub = sandbox.stub().returns('test result');
 
             function deregisterFilterWithoutPermission() {
                 appProxy.filters.deregister('superSecretFilter', 5, filterStub);
@@ -229,16 +219,15 @@ describe('Apps', function () {
         });
 
         it('allows helper registration with permission', function () {
-            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper');
-
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['prePostRender'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
+            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {
+                        filters: ['prePostRender'],
+                        helpers: ['myTestHelper'],
+                        posts: ['browse', 'read', 'edit', 'add', 'delete']
+                    }
+                });
 
             appProxy.helpers.register('myTestHelper', sandbox.stub().returns('test result'));
 
@@ -246,16 +235,15 @@ describe('Apps', function () {
         });
 
         it('does not allow helper registration without permission', function () {
-            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper');
-
-            var appProxy = new AppProxy({
-                name: 'TestApp',
-                permissions: {
-                    filters: ['prePostRender'],
-                    helpers: ['myTestHelper'],
-                    posts: ['browse', 'read', 'edit', 'add', 'delete']
-                }
-            });
+            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {
+                        filters: ['prePostRender'],
+                        helpers: ['myTestHelper'],
+                        posts: ['browse', 'read', 'edit', 'add', 'delete']
+                    }
+                });
 
             function registerWithoutPermissions() {
                 appProxy.helpers.register('otherHelper', sandbox.stub().returns('test result'));
