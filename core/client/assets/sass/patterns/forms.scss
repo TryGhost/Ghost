@@ -3,20 +3,14 @@
 // --------------------------------------------------
 
 
-// Labels
-%label {
-    display: block;
-    color: $darkgrey;
-    font-size: 1.3rem;
-    font-weight: bold;
-}
-
-
 // Form Wrapper
 form {
 
     label {
-        @extend %label;
+        display: block;
+        color: $darkgrey;
+        font-size: 1.3rem;
+        font-weight: bold;
     }
 
 } // form
@@ -55,13 +49,7 @@ form {
     input[type="tel"],
     input[type="text"],
     input[type="url"],
-    input[type="color"],
-    input[type="date"],
-    input[type="datetime"],
-    input[type="datetime-local"],
-    input[type="month"],
-    input[type="time"],
-    input[type="week"] {
+    input[type="date"] {
         padding-left: 3.2rem;
     }
     .gh-select {
@@ -154,13 +142,7 @@ input[type="search"],
 input[type="tel"],
 input[type="text"],
 input[type="url"],
-input[type="color"],
 input[type="date"],
-input[type="datetime"],
-input[type="datetime-local"],
-input[type="month"],
-input[type="time"],
-input[type="week"],
 textarea,
 .gh-select,
 select {
@@ -178,6 +160,7 @@ select {
 
     &:focus {
         border-color: $brown;
+        outline: 0;
     }
 
 }
@@ -189,13 +172,7 @@ textarea {
     height: auto;
     min-height: 10rem;
     line-height: 1.5;
-}
-
-input[type="number"] {
-    &::-webkit-inner-spin-button,
-    &::-webkit-outer-spin-button {
-        padding-right: 6px;
-    }
+    resize: vertical;
 }
 
 
@@ -256,7 +233,7 @@ input[type="number"] {
 // </div>
 .for-radio {
     .input-toggle-component {
-        border-radius: 100%;
+        border-radius: 100px; // Use px to prevent ovals
     }
     label {
         .input-toggle-component {
@@ -332,11 +309,6 @@ input[type="number"] {
 
         // Hover style - Not used, but works
         &:hover {}
-
-        // Focus style
-        &:focus {
-          outline: none;
-        }
 
         // This hides focus around selected option in FF
         &:-moz-focusring {
