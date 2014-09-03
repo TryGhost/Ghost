@@ -54,6 +54,8 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
 
         // Don't ever pass uuid's
         delete data.uuid;
+        // Don't send HTML
+        delete data.html;
 
         hash[root] = [data];
     }
