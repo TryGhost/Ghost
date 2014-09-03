@@ -1,8 +1,6 @@
 import uploader from 'ghost/assets/lib/uploader';
 
 var Markdown = Ember.Component.extend({
-    classNames: ['rendered-markdown'],
-
     didInsertElement: function () {
         this.set('scrollWrapper', this.$().closest('.entry-preview-content'));
     },
