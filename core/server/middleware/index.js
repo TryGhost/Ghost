@@ -44,7 +44,7 @@ function ghostLocals(req, res, next) {
 }
 
 function initThemeData(secure) {
-    var themeConfig = config.theme();
+    var themeConfig = config.theme;
     if (secure && config.urlSSL) {
         // For secure requests override .url property with the SSL version
         themeConfig = _.clone(themeConfig);
