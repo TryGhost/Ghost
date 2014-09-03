@@ -10,7 +10,7 @@
         </section>
     </header>
 
-    <section {{bind-attr class=":entry-markdown isPreview::active"}}>
+    <section {{bind-attr class=":entry-markdown :js-entry-markdown isPreview::active"}}>
         <header {{action "togglePreview" false}} class="floatingheader">
             <small>Markdown</small>
             <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
@@ -20,12 +20,13 @@
         </section>
     </section>
 
-    <section {{bind-attr class=":entry-preview isPreview:active"}}>
+    <section {{bind-attr class=":entry-preview :js-entry-preview isPreview:active"}}>
         <header {{action "togglePreview" true}} class="floatingheader">
             <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words scratch}}</span></small>
         </header>
-        <section class="entry-preview-content">
-            {{gh-markdown markdown=scratch scrollPosition=view.scrollPosition
+        <section class="entry-preview-content js-entry-preview-content">
+            {{gh-markdown classNames="rendered-markdown js-rendered-markdown"
+            markdown=scratch scrollPosition=view.scrollPosition
             uploadStarted="disableCodeMirror" uploadFinished="enableCodeMirror" uploadSuccess="handleImgUpload"}}
         </section>
     </section>
