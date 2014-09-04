@@ -677,6 +677,34 @@ coreHelpers.foreach = function (context, options) {
     return ret;
 };
 
+// ### Is Helper
+// `{{#is "paged"}}`
+// `{{#is "index, paged"}}`
+// Checks whether we're in a given context.
+coreHelpers.is = function (context, options) {
+    options = options || {};
+
+    var currentContext = options.data.root.context;
+
+    if (!_.isString(context)) {
+        errors.logWarn('Invalid or no attribute given to is helper');
+        return;
+    }
+
+    function evaluateContext(expr) {
+        return expr.split(',').map(function (v) {
+            return v.trim();
+        }).reduce(function (p, c) {
+            return p || _.contains(currentContext, c);
+        }, false);
+    }
+
+    if (evaluateContext(context)) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+};
+
 // ### Has Helper
 // `{{#has tag="video, music"}}`
 // `{{#has author="sam, pat"}}`
@@ -854,6 +882,8 @@ registerHelpers = function (adminHbs, assetHash) {
     registerThemeHelper('excerpt', coreHelpers.excerpt);
 
     registerThemeHelper('foreach', coreHelpers.foreach);
+
+    registerThemeHelper('is', coreHelpers.is);
 
     registerThemeHelper('has', coreHelpers.has);
 
