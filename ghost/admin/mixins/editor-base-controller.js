@@ -5,7 +5,7 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.isDirty`)
-var watchedProps = ['scratch', 'model.isDirty'];
+var watchedProps = ['scratch', 'titleScratch', 'model.isDirty'];
 
 Ember.get(PostModel, 'attributes').forEach(function (name) {
     watchedProps.push('model.' + name);
@@ -76,7 +76,14 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         // `updateTags` triggers `isDirty => true`.
         // for a saved model it would otherwise be false.
-        this.set('isDirty', false);
+
+        // if the two "scratch" properties (title and content) match the model, then
+        // it's ok to set isDirty to false
+        if (this.get('titleScratch') === model.get('title') &&
+            this.get('scratch') === model.get('markdown')) {
+
+            this.set('isDirty', false);
+        }
     },
 
     // an ugly hack, but necessary to watch all the model's properties
