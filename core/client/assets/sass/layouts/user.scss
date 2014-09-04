@@ -4,6 +4,10 @@
 // Slug: /ghost/settings/users/username/
 // --------------------------------------------------
 
+.user-actions-cog {
+    padding: 9px 11px;
+}
+
 .user-cover {
     position: relative;
     width: auto;
@@ -14,7 +18,7 @@
     overflow: hidden;
 
     @media (max-width: 900px) {
-        margin: 0 15px;
+        margin: 0;
     }
 
     // Gradient overlay
@@ -32,13 +36,13 @@
 .user-cover-edit {
     position: absolute;
     right: 35px;
-    bottom: 34px;
-    min-height: 34px;
-    height: 34px;
+    bottom: 29px;
+    min-height: 37px;
+    height: 37px;
     background: rgba(0,0,0,0.3);
-    border-radius: 0;
     color: rgba(255,255,255,0.8);
     z-index: 2;
+    border-width: 0;
     border-radius: $rounded;
     transition: color 0.3s ease, background 0.3s ease;
     @media (max-width: 1000px) {
@@ -77,7 +81,13 @@
     }
 
     fieldset {
-        padding: 0 0 0 40px;
+        padding: 0 15px 0 40px;
+        @media (max-width: 650px) {
+            padding: 0 40px;
+        }
+        @media (max-width: 550px) {
+            padding: 0 15px;
+        }
     }
 
     textarea {
@@ -89,6 +99,11 @@
 
     @media (max-width: 650px) {
         margin-bottom: 10px;
+        label[for='user-name'] { // Reverse the affects of .sr-only
+            position: static;
+            width: auto;
+            height: auto;
+        }
     }
 
     @media (min-width: 651px) {
@@ -97,10 +112,15 @@
         p {
             color: #fff;
         }
+        .user-name {
+            border-color: #fff;
+        }
     }
 
-    .user-name {
-        border-color: #fff;
+    @media (min-width: 901px) {
+        .user-name {
+            width: calc(100% - 20px);
+        }
     }
 
 }
