@@ -628,11 +628,6 @@ body.zen {
 }
 
 #entry-controls {
-    display: inline-block;
-    position: relative;
-    padding: 0;
-    z-index: 9000;
-
     &.unsaved {
         .post-settings-menu {
             padding-bottom: 0;
@@ -646,7 +641,6 @@ body.zen {
             }
         }
     }
-
 }
 
 #entry-actions {
