@@ -41,7 +41,7 @@ var SettingsUserController = Ember.ObjectController.extend({
     last_login: Ember.computed('user.last_login', function () {
         var lastLogin = this.get('user.last_login');
 
-        return lastLogin ? lastLogin.fromNow() : '';
+        return lastLogin ? lastLogin.fromNow() : '(Never)';
     }),
 
     created_at: Ember.computed('user.created_at', function () {
