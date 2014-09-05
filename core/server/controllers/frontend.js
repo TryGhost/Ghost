@@ -189,7 +189,7 @@ frontendControllers = {
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 getActiveThemePaths().then(function (paths) {
-                    var view = paths.hasOwnProperty('tag.hbs') ? 'tag' : 'index',
+                    var view = template.getThemeViewForTag(paths, options.tag),
 
                         // Format data for template
                         result = _.extend(formatPageResponse(posts, page), {

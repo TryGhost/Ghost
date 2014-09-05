@@ -45,4 +45,25 @@ templates.getThemeViewForPost = function (themePaths, post) {
     return view;
 };
 
+// Given a theme object and a tag slug this will return
+// which theme template page should be used.
+// If no default or custom tag template exists then 'index'
+// will be returned
+// If no custom tag template exists but a default does then
+// 'tag' will be returned
+// If given a tag slug and a custom tag template
+// exits it will return that view.
+templates.getThemeViewForTag = function (themePaths, tag) {
+    var customTagView = 'tag-' + tag,
+        view = 'tag';
+
+    if (themePaths.hasOwnProperty(customTagView + '.hbs')) {
+        view = customTagView;
+    } else if (!themePaths.hasOwnProperty('tag.hbs')) {
+        view = 'index';
+    }
+
+    return view;
+};
+
 module.exports = templates;
