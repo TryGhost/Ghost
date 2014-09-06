@@ -542,3 +542,101 @@ CasperTest.begin('Markdown help modal', 5, function suite(test) {
         test.assert(true, 'clicking close should remove the markdown help modal');
     });
 });
+
+// test editor title input is correct after changing a post attribute in the post-settings-menu
+CasperTest.begin('Title input is set correctly after using the Post-Settings-Menu', function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    // add a new post
+    casper.then(function fillContent() {
+        casper.sendKeys('#entry-title', 'post title');
+        casper.writeContentToCodeMirror('Just a bit of test text');
+    });
+
+    // save draft
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success');
+
+    // change the title
+    casper.then(function updateTitle() {
+        casper.sendKeys('#entry-title', 'changed post title');
+        casper.click('#entry-markdown-content');
+    });
+
+    // change a post attribute via the post-settings-menu
+
+    casper.thenClick('.post-settings');
+    casper.waitForOpaque('.post-settings-menu.open');
+
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': 'changed-slug'
+        }, false);
+
+        this.click('.post-settings');
+    });
+
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
+    });
+
+    casper.then(function checkTitleInput() {
+        test.assertEvalEquals(function () {
+            return $('#entry-title').val();
+        }, 'changed post title', 'Title input should match expected value.');
+    });
+});
+
+// test editor content input is correct after changing a post attribute in the post-settings-menu
+CasperTest.begin('Editor content is set correctly after using the Post-Settings-Menu', function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    // add a new post
+    casper.then(function fillContent() {
+        casper.sendKeys('#entry-title', 'post title');
+        casper.writeContentToCodeMirror('Just a bit of test text');
+    });
+
+    // save draft
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success');
+
+    // change the content
+    casper.then(function updateContent() {
+        casper.writeContentToCodeMirror('updated content');
+        casper.click('#entry-title');
+    });
+
+    // change a post attribute via the post-settings-menu
+
+    casper.thenClick('.post-settings');
+    casper.waitForOpaque('.post-settings-menu.open');
+
+    casper.then(function () {
+        this.fillSelectors('.post-settings-menu form', {
+            '#url': 'changed-slug-after-update'
+        }, false);
+
+        this.click('.post-settings');
+    });
+
+    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
+        test.assert(400 > resource.status);
+    });
+
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText(
+            '.entry-preview .rendered-markdown',
+            'updated content',
+            'Editor has correct content.'
+        );
+    }, casper.failOnTimeout(test, 'markdown was not available'));
+});
