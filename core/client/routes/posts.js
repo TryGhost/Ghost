@@ -11,8 +11,19 @@ var paginationSettings = {
 
 var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
     classNames: ['manage'],
+    queryParams: {
+        status: {
+            refreshModel: true
+        },
+        featured: {
+            refreshModel: true
+        },
+        staticPages: {
+            refreshModel: true
+        }
+    },
 
-    model: function () {
+    model: function (params) {
         var self = this;
 
         return this.store.find('user', 'me').then(function (user) {
@@ -21,7 +32,7 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
             }
             // using `.filter` allows the template to auto-update when new models are pulled in from the server.
             // we just need to 'return true' to allow all models by default.
-            return self.store.filter('post', paginationSettings, function (post) {
+            return self.store.filter('post', _.extend({}, paginationSettings, params), function (post) {
                 if (user.get('isAuthor')) {
                     return post.isAuthoredByUser(user);
                 }
@@ -32,7 +43,26 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
     },
 
     setupController: function (controller, model) {
+        var queryParams;
+
         this._super(controller, model);
+
+        queryParams = {
+            'status': controller.get('status'),
+            'featured': controller.get('featured'),
+            'staticPages': controller.get('staticPages')
+        };
+
+        if (queryParams.status === 'published') {
+            controller.set('filter', 'published');
+        } else if (queryParams.status === 'draft') {
+            controller.set('filter', 'draft');
+        } else if (queryParams.featured === 'true') {
+            controller.set('filter', 'featured');
+        } else if (queryParams.staticPages === 'true') {
+            controller.set('filter', 'pages');
+        }
+
         this.setupPagination(paginationSettings);
     },
 
@@ -65,6 +95,9 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
         },
         moveDown: function () {
             this.stepThroughPosts(1);
+        },
+        filterPosts: function (filterName) {
+            this.controller.setFilter(filterName);
         }
     }
 });

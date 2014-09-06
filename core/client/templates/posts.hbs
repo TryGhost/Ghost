@@ -7,7 +7,18 @@
     <section class="content-list js-content-list">
         <header class="floatingheader">
             <section class="content-filter">
-                <small>All Posts</small>
+                {{#gh-popover-button popoverName="post-filter" classNames="post-filter-button" title="Post Filter"}}
+                <small>{{activeFilterName}}</small> <i class="icon-chevron-down"></i>
+                {{/gh-popover-button}}
+                {{#gh-popover name="post-filter" classNames="dropdown post-filter-list" closeOnClick="true"}}
+                <ul class="dropdown-menu dropdown-triangle-top" role="menu">
+                    <li role="presentation"><button class="dropdown-item" {{action 'filterPosts' 'all'}}>All Posts</button></li>
+                    <li role="presentation"><button class="dropdown-item" {{action 'filterPosts' 'draft'}}>Drafts</button></li>
+                    <li role="presentation"><button class="dropdown-item" {{action 'filterPosts' 'published'}}>Published</button></li>
+                    <li role="presentation"><button class="dropdown-item" {{action 'filterPosts' 'pages'}}>Pages</button></li>
+                    <li role="presentation"><button class="dropdown-item" {{action 'filterPosts' 'featured'}}>Featured</button></li>
+                </ul>
+                {{/gh-popover}}
             </section>
             {{#link-to "editor.new" class="btn btn-green" title="New Post"}}<span class="hidden">New Post</span>{{/link-to}}
         </header>
