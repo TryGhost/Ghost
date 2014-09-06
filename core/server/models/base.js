@@ -5,17 +5,18 @@
 // The models are internal to Ghost, only the API and some internal functions such as migration and import/export
 // accesses the models directly. All other parts of Ghost, including the blog frontend, admin UI, and apps are only
 // allowed to access data via the API.
-var bookshelf  = require('bookshelf'),
-    Promise    = require('bluebird'),
-    moment     = require('moment'),
-    _          = require('lodash'),
-    uuid       = require('node-uuid'),
+var _          = require('lodash'),
+    bookshelf  = require('bookshelf'),
     config     = require('../config'),
-    utils      = require('../utils'),
+    errors     = require('../errors'),
+    filters    = require('../filters'),
+    moment     = require('moment'),
+    Promise    = require('bluebird'),
     sanitize   = require('validator').sanitize,
     schema     = require('../data/schema'),
+    utils      = require('../utils'),
+    uuid       = require('node-uuid'),
     validation = require('../data/validation'),
-    errors     = require('../errors'),
 
     ghostBookshelf;
 
@@ -353,15 +354,19 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
 
         // Check the filtered slug doesn't match any of the reserved keywords
-        slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|setup|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|public|user|users|rss|feed|app|apps)$/g
-            .test(slug) ? slug + '-' + baseName : slug;
+        return filters.doFilter('slug.reservedSlugs', config.slugs.reserved).then(function (slugList) {
+            // Some keywords cannot be changed
+            slugList = _.union(slugList, config.slugs.protected);
 
-        // if slug is empty after trimming use the model name
-        if (!slug) {
-            slug = baseName;
-        }
-        // Test for duplicate slugs.
-        return checkIfSlugExists(slug);
+            return _.contains(slugList, slug) ? slug + '-' + baseName : slug;
+        }).then(function (slug) {
+            // if slug is empty after trimming use the model name
+            if (!slug) {
+                slug = baseName;
+            }
+            // Test for duplicate slugs.
+            return checkIfSlugExists(slug);
+        });
     }
 
 });
