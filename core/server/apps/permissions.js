@@ -33,9 +33,11 @@ AppPermissions.prototype.read = function () {
 };
 
 AppPermissions.prototype.checkPackageContentsExists = function () {
+    var self = this;
+
     // Mostly just broken out for stubbing in unit tests
     return new Promise(function (resolve) {
-        fs.exists(this.packagePath, function (exists) {
+        fs.exists(self.packagePath, function (exists) {
             resolve(exists);
         });
     });
