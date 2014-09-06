@@ -55,7 +55,11 @@ var EditorEditRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, bas
 
     setupController: function (controller, model) {
         this._super(controller, model);
+
         controller.set('scratch', model.get('markdown'));
+
+        controller.set('titleScratch', model.get('title'));
+
         // used to check if anything has changed in the editor
         controller.set('previousTagNames', model.get('tags').mapBy('name'));
 
