@@ -1,6 +1,6 @@
 ---
 layout: themes
-meta_title: How to Make Ghost Themes - Ghost Docs
+meta_title: Ghost Themes - Ghost Developer Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
 chapter: themes
 section: changelog
@@ -11,7 +11,47 @@ next_section: troubleshooting
 
 {% raw %}
 
-##  Changelog
+#  Change Log
 
+The following document acts as a reference for developers who  want to keep their theme up-to-date with the latest
+changes in the Ghost theme API. Since the original
+[public release of 0.3.2](https://github.com/TryGhost/Ghost/releases/tag/0.3.2) there have been a number of changes to
+the Ghost theme API and the way Ghost themes work, resulting in some new requirements and some deprecated features.
+
+### Keeping up to date
+
+The best way to keep up-to-date with the changes is to subscribe to the
+[developer blog](http://dev.ghost.org). All theme related blog posts are tagged with
+'[themes](http://dev.ghost.org/tag/themes/)', so you can subscribe to an RSS feed of only
+[theme related posts](http://dev.ghost.org/tag/themes/rss/) if you prefer.
+
+## Deprecated features
+
+* `{{pageUrl}}` helper, used in pagination templates, was renamed to `{{page_url}}` in Ghost 0.4.2
+* `{{author.email}}` was removed in Ghost 0.5.0
+* Several body classes are deprecated as of Ghost 0.5.2
+
+## Important new requirements
+
+* `{{asset}}` helper, introduced in Ghost 0.4.0, is required for including css, js and images in your theme.
+Please see the [asset helper](/themes/helpers/asset/) documentation for further information.
+* `package.json` file, introduced in Ghost 0.4.2, is required to define the name of your theme file. Please see the
+[package.json](/themes/structure/#package.json) documentation for further information.
+
+## Ghost 0.5.2 (Coming Sep 2014)
+
+* Changes to the body classes, more info coming soon.
+
+## Ghost 0.5.0 (11th Aug 2014)
+
+Please see the [multi-user blog post](http://dev.ghost.org/themes-multi-user-ready/) (info will be moved here soon).
+
+## Ghost 0.4.2 (26th Mar 2014)
+
+Please see the [0.4.2 blog post](http://dev.ghost.org/new-for-themes-0-4-2/) (info will be moved here soon).
+
+## Ghost 0.4.0 (13th Jan 2014)
+
+Please see the [0.4.0 blog post](http://dev.ghost.org/ghost-0-4-themes/) (info will be moved here soon).
 
 {% endraw %}
