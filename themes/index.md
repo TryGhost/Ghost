@@ -2,15 +2,13 @@
 layout: themes
 meta_title: How to Make Ghost Themes - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Theme Documentation
-subheading: The complete guide to creating custom themes for Ghost
 chapter: themes
 next_section: handlebars
 ---
 
 {% raw %}
 
-## About Ghost themes
+# About Ghost themes
 
 Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
 
@@ -18,7 +16,7 @@ Handlebars templates are hierarchical (one template can extend another template)
 
 We really hope you'll enjoy our approach to theming.
 
-## Creating Your Own Theme <a id="create-your-own"></a>
+## Creating Your Own Theme
 
 Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
 

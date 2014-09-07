@@ -140,10 +140,18 @@ h1:before, h2:before {
     background: transparent;
 }
 
-.bs-sidenav li.active a {
+.bs-sidenav li.active > a {
     color:#000;
     background: #fff;
 }
+
+.bs-sidenav li li a {
+    padding-left: 40px;
+}
+
+
+
+
 
 /* ==========================================================================
    Global Headers
@@ -241,12 +249,7 @@ span.warn {
 }
 
 #sidebar {
-    float: right;
     padding: 30px 0;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
     background: #fbfbf9;
     box-shadow: #edece4 1px 0 0 0 inset
 }

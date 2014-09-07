@@ -2,17 +2,15 @@
 layout: themes
 meta_title: How to Make Ghost Themes - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
-heading: Theme Documentation
-subheading: The complete guide to creating custom themes for Ghost
 chapter: themes
 section: troubleshooting
 permalink: /themes/troubleshooting/
-prev_section: structure
+prev_section: changelog
 ---
 
 {% raw %}
 
-## Troubleshooting Themes <a id="troubleshooting"></a>
+# Troubleshooting Themes
 
 #### 1. I see Error: Failed to lookup view "index" or "post"
 

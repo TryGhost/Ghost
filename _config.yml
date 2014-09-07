@@ -30,6 +30,30 @@ languages:
 port:         4478
 
 translations:
+  en:
+    installation:     'Installation'
+    usage:            'Usage'
+    email:            'Email'
+    themes:           'Themes'
+    apps:             'Apps'
+    api:              'API'
+    translations:     'Translations'
+    help:             'Help'
+    mac:              'Mac'
+    windows:          'Windows'
+    linux:            'Linux'
+    deploy:           'Deploy'
+    upgrading:        'Upgrading'
+    troubleshooting:  'Troubleshooting'
+    configuration:    'Configuration'
+    faq:              'FAQ'
+    managing:         'Managing'
+    settings:         'Settings'
+    writing:          'Writing'
+    handlebars:       'Handlebars'
+    structure:        'Structure'
+    helpers:          'Helpers'
+    changelog:        'Change Log'
   zh:
     site_title:   'Ghost使用指南'
     installation: '安装'
