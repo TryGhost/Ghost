@@ -9,6 +9,9 @@ function GhostServer(app) {
     this.httpServer = null;
     this.connections = [];
     this.upgradeWarning = setTimeout(this.logUpgradeWarning.bind(this), 5000);
+
+    // Expose config module for use externally.
+    this.config = config;
 }
 
 GhostServer.prototype.connection = function (socket) {
@@ -86,9 +89,16 @@ GhostServer.prototype.logUpgradeWarning = function () {
     console.log('Warning: Ghost will no longer start automatically when using it as an npm module. Please see the docs(http://tinyurl.com/npm-upgrade) for information on how to update your code.'.red);
 };
 
-// Starts the ghost server listening on the configured port
-GhostServer.prototype.start = function () {
-    var self = this;
+/**
+ * Starts the ghost server listening on the configured port.
+ * Alternatively you can pass in your own express instance and let Ghost
+ * start lisetning for you.
+ * @param  {Object=} externalApp Optional express app instance.
+ * @return {Promise}
+ */
+GhostServer.prototype.start = function (externalApp) {
+    var self = this,
+        app = externalApp ? externalApp : self.app;
 
     // ## Start Ghost App
     return new Promise(function (resolve) {
@@ -100,14 +110,14 @@ GhostServer.prototype.start = function () {
                 // We can ignore this.
             }
 
-            self.httpServer = self.app.listen(
+            self.httpServer = app.listen(
                 config.getSocket()
             );
 
             fs.chmod(config.getSocket(), '0660');
 
         } else {
-            self.httpServer = self.app.listen(
+            self.httpServer = app.listen(
                 config.server.port,
                 config.server.host
             );
