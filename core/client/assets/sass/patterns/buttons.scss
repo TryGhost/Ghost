@@ -26,11 +26,8 @@
     @include user-select(none);
 
     &,
-    &:active,
-    &.active {
-        &:focus {
-            @include tab-focus();
-        }
+    &:active {
+        @include tab-focus();
     }
 
     &:hover,
@@ -39,8 +36,7 @@
         text-decoration: none;
     }
 
-    &:active,
-    &.active {
+    &:active {
         outline: 0;
         background-image: none;
         box-shadow: inset 0 2px 2px rgba(0,0,0,.125);
@@ -72,14 +68,12 @@
     &:hover,
     &:focus,
     &:active,
-    &.active,
     .open > &.dropdown-toggle {
         color: $color;
         background-color: darken($background, 10%);
         border-color: darken($border, 12%);
     }
     &:active,
-    &.active,
     .open > &.dropdown-toggle {
         background-image: none;
     }
@@ -89,8 +83,7 @@
         &,
         &:hover,
         &:focus,
-        &:active,
-        &.active {
+        &:active {
             background-color: $background;
             border-color: $border;
         }
