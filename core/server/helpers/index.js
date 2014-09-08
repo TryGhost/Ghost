@@ -60,6 +60,11 @@ coreHelpers.date = function (context, options) {
         timeago = options.hash.timeago,
         date;
 
+    var l = options.hash.lang
+
+    if (l) {
+        moment.lang(l)
+    }
 
     if (timeago) {
         date = moment(context).fromNow();
