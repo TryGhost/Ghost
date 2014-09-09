@@ -5,5 +5,9 @@ Ember.LinkView.reopen({
         Ember.set(this, 'alternateActive', isActive);
 
         return isActive;
+    }),
+
+    activeClass: Ember.computed('tagName', function () {
+        return this.get('tagName') === 'button' ? '' : 'active';
     })
 });
