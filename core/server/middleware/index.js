@@ -5,9 +5,9 @@
 var api            = require('../api'),
     bodyParser     = require('body-parser'),
     config         = require('../config'),
+    crypto         = require('crypto'),
     errors         = require('../errors'),
     express        = require('express'),
-    favicon        = require('static-favicon'),
     fs             = require('fs'),
     hbs            = require('express-hbs'),
     logger         = require('morgan'),
@@ -211,14 +211,14 @@ function checkSSL(req, res, next) {
     next();
 }
 
-// ### Robots Middleware
-// Handle requests to robots.txt and cache file
-function robots() {
-    var content, // file cache
-        filePath = path.join(config.paths.corePath, '/shared/robots.txt');
+// ### ServeSharedFile Middleware
+// Handles requests to robots.txt and favicon.ico (and caches them)
+function serveSharedFile(file, type, maxAge) {
+    var content,
+        filePath = path.join(config.paths.corePath, 'shared', file);
 
-    return function robots(req, res, next) {
-        if (req.url === '/robots.txt') {
+    return function serveSharedFile(req, res, next) {
+        if (req.url === path.join('/', file)) {
             if (content) {
                 res.writeHead(200, content.headers);
                 res.end(content.body);
@@ -230,9 +230,10 @@ function robots() {
 
                     content = {
                         headers: {
-                            'Content-Type': 'text/plain',
+                            'Content-Type': type,
                             'Content-Length': buf.length,
-                            'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
+                            ETag: '"' + crypto.createHash('md5').update(buf, 'utf8').digest('hex') + '"',
+                            'Cache-Control': 'public, max-age=' + maxAge
                         },
                         body: buf
                     };
@@ -274,7 +275,7 @@ setupMiddleware = function (server) {
     }
 
     // Favicon
-    expressServer.use(favicon(corePath + '/shared/favicon.ico'));
+    expressServer.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
     // Static assets
     expressServer.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
@@ -300,7 +301,7 @@ setupMiddleware = function (server) {
     expressServer.use(middleware.staticTheme());
 
     // Serve robots.txt if not found in theme
-    expressServer.use(robots());
+    expressServer.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_YEAR_S));
 
     // Add in all trailing slashes, properly include the subdir path
     // in the redirect.

@@ -15,6 +15,7 @@ var request    = require('supertest'),
 
     cacheRules = {
         public: 'public, max-age=0',
+        day: 'public, max-age=' + testUtils.ONE_DAY_S,
         hour:  'public, max-age=' + testUtils.ONE_HOUR_S,
         year:  'public, max-age=' + testUtils.ONE_YEAR_S,
         private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
@@ -463,6 +464,15 @@ describe('Frontend Routing', function () {
         it('should retrieve default robots.txt', function (done) {
             request.get('/robots.txt')
                 .expect('Cache-Control', cacheRules.year)
+                .expect('ETag', /[0-9a-f]{32}/i)
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should retrieve default favicon.ico', function (done) {
+            request.get('/favicon.ico')
+                .expect('Cache-Control', cacheRules.day)
+                .expect('ETag', /[0-9a-f]{32}/i)
                 .expect(200)
                 .end(doEnd(done));
         });
