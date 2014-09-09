@@ -123,6 +123,17 @@ GhostServer.prototype.start = function (externalApp) {
             );
         }
 
+        self.httpServer.on('error', function (error) {
+            if (error.errno === 'EADDRINUSE') {
+                console.log('ERROR: Cannot start Ghost. Another program is already using this port (is another Ghost instance already running?)'.red);
+            } else {
+                console.log(
+                    'ERROR: There was an error starting your server. '.red,
+                    ('(Code: ' + error.errno + ')').red
+                );
+            }
+            process.exit(-1);
+        });
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             self.logStartMessages();
