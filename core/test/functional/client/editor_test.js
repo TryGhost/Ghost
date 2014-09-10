@@ -516,7 +516,6 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
     });
 });
 
-
 // test the markdown help modal
 CasperTest.begin('Markdown help modal', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
@@ -580,7 +579,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.then(function checkTitleInput() {
@@ -627,7 +626,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {

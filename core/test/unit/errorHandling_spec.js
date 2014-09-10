@@ -19,7 +19,6 @@ var should     = require('should'),
 colors.setTheme({silly: 'rainbow'});
 
 describe('Error handling', function () {
-
     // Just getting rid of jslint unused error
     should.exist(errors);
 
@@ -179,7 +178,6 @@ describe('Error handling', function () {
 
             logStub.calledOnce.should.be.true;
             logStub.firstCall.calledWith('\nERROR:'.red, message.red, '\n', message.white, '\n').should.be.true;
-
         });
 
         it('logs promise errors and redirects', function (done) {
@@ -215,11 +213,11 @@ describe('Error handling', function () {
         before(function () {
             originalConfig = _.cloneDeep(config._config);
             errors.__set__('getConfigModule', sinon.stub().returns(_.merge({}, originalConfig, {
-                'paths': {
-                    'themePath': '/content/themes',
-                    'availableThemes': {
-                        'casper': {
-                            'assets': null,
+                paths: {
+                    themePath: '/content/themes',
+                    availableThemes: {
+                        casper: {
+                            assets: null,
                             'default.hbs': '/content/themes/casper/default.hbs',
                             'index.hbs': '/content/themes/casper/index.hbs',
                             'page.hbs': '/content/themes/casper/page.hbs',
@@ -297,7 +295,6 @@ describe('Error handling', function () {
                 res.statusCode = status;
                 return res;
             });
-
 
             err.status = 404;
             errors.error500(err, req, res, null);

@@ -27,8 +27,8 @@ sendInviteEmail = function sendInviteEmail(user) {
     var emailData;
 
     return Promise.join(
-        users.read({'id': user.created_by}),
-        settings.read({'key': 'title'}),
+        users.read({id: user.created_by}),
+        settings.read({key: 'title'}),
         settings.read({context: {internal: true}, key: 'dbHash'})
     ).then(function (values) {
         var invitedBy = values[0].users[0],
@@ -111,7 +111,7 @@ users = {
 
         return dataProvider.User.findOne(data, options).then(function (result) {
             if (result) {
-                return { users: [result.toJSON()] };
+                return {users: [result.toJSON()]};
             }
 
             return Promise.reject(new errors.NotFoundError('User not found.'));
@@ -140,7 +140,7 @@ users = {
                 return dataProvider.User.edit(data.users[0], options)
                     .then(function (result) {
                         if (result) {
-                            return { users: [result.toJSON()]};
+                            return {users: [result.toJSON()]};
                         }
 
                         return Promise.reject(new errors.NotFoundError('User not found.'));
@@ -245,8 +245,8 @@ users = {
 
                         // If sending the invitation failed, set status to invited-pending
                         return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function (user) {
-                            return dataProvider.User.findOne({ id: user.id, status: 'all' }, options).then(function (user) {
-                                return { users: [user] };
+                            return dataProvider.User.findOne({id: user.id, status: 'all'}, options).then(function (user) {
+                                return {users: [user]};
                             });
                         });
                     }
@@ -273,12 +273,10 @@ users = {
 
                 return addOperation();
             });
-
         }).catch(function (error) {
             return errors.handleAPIError(error, 'You do not have permission to add this user');
         });
     },
-
 
     /**
      * ### Destroy
@@ -287,7 +285,7 @@ users = {
      */
     destroy: function destroy(options) {
         return canThis(options.context).destroy.user(options.id).then(function () {
-            return users.read(_.merge(options, { status: 'all'})).then(function (result) {
+            return users.read(_.merge(options, {status: 'all'})).then(function (result) {
                 return dataProvider.Base.transaction(function (t) {
                     options.transacting = t;
 
@@ -314,7 +312,6 @@ users = {
             return errors.handleAPIError(error, 'You do not have permission to destroy this user');
         });
     },
-
 
     /**
      * ### Change Password
@@ -348,7 +345,7 @@ users = {
         }).then(function () {
             return utils.checkObject(object, 'owner').then(function (checkedOwnerTransfer) {
                 return dataProvider.User.transferOwnership(checkedOwnerTransfer.owner[0], options).then(function (updatedUsers) {
-                    return Promise.resolve({ users: updatedUsers });
+                    return Promise.resolve({users: updatedUsers});
                 }).catch(function (error) {
                     return Promise.reject(new errors.ValidationError(error.message));
                 });

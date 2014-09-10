@@ -9,7 +9,7 @@ CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
     });
 
     casper.then(function setupWithShortPassword() {
-        casper.fillAndAdd('#setup', { 'blog-title': 'ghost', name: 'slimer', email: email, password: 'short' });
+        casper.fillAndAdd('#setup', {'blog-title': 'ghost', name: 'slimer', email: email, password: 'short'});
     });
 
     // should now throw a short password error
@@ -21,7 +21,7 @@ CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
     });
 
     casper.then(function setupWithLongPassword() {
-        casper.fillAndAdd('#setup', { 'blog-title': 'ghost', name: 'slimer', email: email, password: password });
+        casper.fillAndAdd('#setup', {'blog-title': 'ghost', name: 'slimer', email: email, password: password});
     });
 
     // This can take quite a long time

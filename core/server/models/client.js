@@ -3,7 +3,6 @@ var ghostBookshelf = require('./base'),
     Client,
     Clients;
 
-
 Client = ghostBookshelf.Model.extend({
     tableName: 'clients'
 });

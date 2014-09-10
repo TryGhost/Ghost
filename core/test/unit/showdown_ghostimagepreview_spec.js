@@ -16,9 +16,7 @@ var should      = require('should'),
 should.equal(true, true);
 
 describe('Ghost Image Preview showdown extension', function () {
-
     it('should export an array of methods for processing', function () {
-
         ghostimagepreview.should.be.a.function;
         ghostimagepreview().should.be.an.instanceof(Array);
 

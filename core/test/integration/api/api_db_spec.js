@@ -8,8 +8,6 @@ var testUtils = require('../../utils'),
     ModelTag       = require('../../../server/models/tag'),
     ModelPost      = require('../../../server/models/post');
 
-
-
 describe('DB API', function () {
     // Keep the DB clean
     before(testUtils.teardown);

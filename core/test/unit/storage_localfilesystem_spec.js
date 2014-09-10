@@ -14,7 +14,6 @@ var fs              = require('fs-extra'),
 should.equal(true, true);
 
 describe('Local File System Storage', function () {
-
     var image,
         overrideConfig = function (newConfig) {
             var existingConfig = LocalFileStore.__get__('config'),

@@ -78,7 +78,7 @@ Basetoken = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NotFoundError('Token not found'));
-    },
+    }
 });
 
 module.exports = Basetoken;

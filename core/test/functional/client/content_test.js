@@ -97,19 +97,17 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
 //               test.assert(false, 'status did not change');
 //           });
 //    });
-
 });
 
-
 // TODO: Implement this test... much needed!
-//CasperTest.begin('Infinite scrolling', 2, function suite(test) {
+// CasperTest.begin('Infinite scrolling', 2, function suite(test) {
 //    // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
 //
 //    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
 //        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
 //        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
 //    });
-//});
+// });
 
 CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
     // Create a sample post
@@ -129,7 +127,7 @@ CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function (resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.waitForSelector('.content-list-content li.featured:first-of-type', function () {
@@ -143,7 +141,7 @@ CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
     casper.thenClick('.content-preview .featured');
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.then(function untoggledFeaturedTest() {

@@ -9,7 +9,6 @@ var should  = require('should'),
     Filters = require('../../server/filters').Filters;
 
 describe('Filters', function () {
-
     var filters, sandbox;
 
     beforeEach(function () {
@@ -72,7 +71,6 @@ describe('Filters', function () {
         filters.registerFilter(filterName, 9, testFilterHandler3);
 
         filters.doFilter(filterName, null).then(function () {
-
             testFilterHandler1.calledBefore(testFilterHandler2).should.equal(true);
             testFilterHandler2.calledBefore(testFilterHandler3).should.equal(true);
 
@@ -112,8 +110,7 @@ describe('Filters', function () {
         filters.registerFilter(filterName, 2, testFilterHandler2);
         filters.registerFilter(filterName, 9, testFilterHandler3);
 
-        filters.doFilter(filterName, { test: true }).then(function (newArgs) {
-
+        filters.doFilter(filterName, {test: true}).then(function (newArgs) {
             testFilterHandler1.calledBefore(testFilterHandler2).should.equal(true);
             testFilterHandler2.calledBefore(testFilterHandler3).should.equal(true);
 
@@ -141,12 +138,10 @@ describe('Filters', function () {
         filters.registerFilter(filterName, 0, testFilterHandler1);
         filters.registerFilter(filterName, 1, testFilterHandler2);
 
-        filters.doFilter(filterName, { test: true }, { context: true }).then(function (newArgs) {
-
+        filters.doFilter(filterName, {test: true}, {context: true}).then(function (newArgs) {
             newArgs.context1.should.equal(true);
             newArgs.context2.should.equal(true);
             done();
         }).catch(done);
     });
-
 });
