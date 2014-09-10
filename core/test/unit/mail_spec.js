@@ -26,7 +26,6 @@ SMTP = {
     }
 };
 
-
 describe('Mail', function () {
     var overrideConfig = function (newConfig) {
         var config = rewire('../../server/config'),
@@ -42,7 +41,6 @@ describe('Mail', function () {
             url: 'http://test.tryghost.org',
             email: 'ghost-test@localhost'
         };
-
 
         overrideConfig(fakeConfig);
     });
@@ -82,8 +80,8 @@ describe('Mail', function () {
         Promise.settle([
             mailer.send(),
             mailer.send({}),
-            mailer.send({ subject: '123' }),
-            mailer.send({ subject: '', html: '123' })
+            mailer.send({subject: '123'}),
+            mailer.send({subject: '', html: '123'})
         ]).then(function (descriptors) {
             descriptors.forEach(function (d) {
                 d.isRejected().should.be.true;

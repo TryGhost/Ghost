@@ -79,7 +79,7 @@ describe('Role Model', function () {
             return RoleModel.destroy(firstRole);
         }).then(function (response) {
             response.toJSON().should.be.empty;
-            return  RoleModel.findOne(firstRole);
+            return RoleModel.findOne(firstRole);
         }).then(function (newResults) {
             should.equal(newResults, null);
 

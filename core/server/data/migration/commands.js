@@ -3,7 +3,6 @@ var  _               = require('lodash'),
     utils           = require('../utils'),
     schema          = require('../schema').tables,
 
-
     // private
     logInfo,
 
@@ -12,7 +11,6 @@ var  _               = require('lodash'),
     getAddCommands,
     addColumnCommands,
     modifyUniqueCommands;
-
 
 logInfo = function logInfo(message) {
     errors.logInfo('Migrations', message);
@@ -26,7 +24,6 @@ getDeleteCommands = function getDeleteCommands(oldTables, newTables) {
             return utils.deleteTable(table);
         };
     });
-
 };
 getAddCommands = function getAddCommands(oldTables, newTables) {
     var addTables = _.difference(newTables, oldTables);

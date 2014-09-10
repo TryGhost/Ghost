@@ -319,7 +319,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         checkIfSlugExists = function (slugToFind) {
             var args = {slug: slugToFind};
-            //status is needed for posts
+            // status is needed for posts
             if (options && options.status) {
                 args.status = options.status;
             }
@@ -356,7 +356,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         slug = /^(ghost|ghost\-admin|admin|wp\-admin|wp\-login|dashboard|logout|login|setup|signin|signup|signout|register|archive|archives|category|categories|tag|tags|page|pages|post|posts|public|user|users|rss|feed|app|apps)$/g
             .test(slug) ? slug + '-' + baseName : slug;
 
-        //if slug is empty after trimming use the model name
+        // if slug is empty after trimming use the model name
         if (!slug) {
             slug = baseName;
         }

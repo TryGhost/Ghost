@@ -8,14 +8,13 @@ var testUtils     = require('../../utils'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('Post API', function () {
-
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup('users:roles', 'perms:post', 'posts', 'perms:init'));
 
     function extractFirstPost(posts) {
-        return _.filter(posts, { id: 1 })[0];
+        return _.filter(posts, {id: 1})[0];
     }
 
     should.exist(PostAPI);

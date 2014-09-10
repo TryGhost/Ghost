@@ -19,7 +19,6 @@ describe('App Setting Model', function () {
 
     it('can findAll', function (done) {
         AppSettingModel.findAll().then(function (results) {
-
             should.exist(results);
 
             results.length.should.be.above(0);

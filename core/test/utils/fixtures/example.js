@@ -1,4 +1,4 @@
 
 module.exports = {
-	answer: 42
+    answer: 42
 };

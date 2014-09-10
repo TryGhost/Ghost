@@ -45,7 +45,6 @@ mail = {
                 .catch(function (error) {
                     return Promise.reject(new errors.EmailError(error.message));
                 });
-
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to send mail.'));
         });
@@ -56,7 +55,7 @@ mail = {
      * Send a test email
      *
      * @public
-     * @param {Object} required property 'to' which contains the recipient address
+     * @param {Object} options required property 'to' which contains the recipient address
      * @returns {Promise}
      */
     sendTest: function (options) {
@@ -79,14 +78,13 @@ mail = {
 
     /**
      *
-     * @param {
+     * @param {Object} options {
      *              data: JSON object representing the data that will go into the email
      *              template: which email template to load (files are stored in /core/server/email-templates/)
      *          }
      * @returns {*}
      */
     generateContent: function (options) {
-
         var defaultData = {
                 siteUrl: config.forceAdminSSL ? (config.urlSSL || config.url) : config.url
             },
@@ -94,28 +92,26 @@ mail = {
 
         _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
-        //read the proper email body template
+        // read the proper email body template
         return new Promise(function (resolve, reject) {
             fs.readFile(templatesDir + '/' + options.template + '.html', {encoding: 'utf8'}, function (err, fileContent) {
                 if (err) {
                     reject(err);
                 }
 
-                //insert user-specific data into the email
+                // insert user-specific data into the email
                 var htmlContent = _.template(fileContent, emailData),
                     textContent;
 
-                //generate a plain-text version of the same email
+                // generate a plain-text version of the same email
                 textContent = htmlToText.fromString(htmlContent);
 
                 resolve({
                     html: htmlContent,
                     text: textContent
                 });
-
             });
         });
-
     }
 };
 

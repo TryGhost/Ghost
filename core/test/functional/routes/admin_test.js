@@ -13,10 +13,10 @@ var request    = require('supertest'),
     ghost      = require('../../../../core'),
 
     cacheRules = {
-        'public': 'public, max-age=0',
-        'hour':  'public, max-age=' + testUtils.ONE_HOUR_S,
-        'year':  'public, max-age=' + testUtils.ONE_YEAR_S,
-        'private': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+        public: 'public, max-age=0',
+        hour:  'public, max-age=' + testUtils.ONE_HOUR_S,
+        year:  'public, max-age=' + testUtils.ONE_YEAR_S,
+        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     };
 
 describe('Admin Routing', function () {
@@ -67,7 +67,6 @@ describe('Admin Routing', function () {
     });
 
     describe('Legacy Redirects', function () {
-
         it('should redirect /logout/ to /ghost/signout/', function (done) {
             request.get('/logout/')
                 .expect('Location', '/ghost/signout/')
@@ -235,7 +234,6 @@ describe('Admin Routing', function () {
 //        it('should redirect from /ghost/signup to /ghost/ when logged in', function (done) {
 //           done();
 //        });
-
     });
 //
 //    describe('Ghost Admin Forgot Password', function () {
@@ -277,7 +275,7 @@ describe('Admin Routing', function () {
 //                .end(doEnd(done));
 //        });
 //    });
-//});
+// });
 
 // TODO: not working anymore, needs new test for Ember
 // describe('Authenticated Admin Routing', function () {
@@ -305,7 +303,6 @@ describe('Admin Routing', function () {
 //                             if (err) {
 //                                 return done(err);
 //                             }
-
 
 //                             process.nextTick(function () {
 //                                 request.post('/ghost/signin/')

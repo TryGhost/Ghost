@@ -116,8 +116,6 @@ describe('Mail API Direct', function () {
     });
 });
 
-
-
 describe('Mail API Stub', function () {
     // Keep the DB clean
 
@@ -150,7 +148,6 @@ describe('Mail API Stub', function () {
             mailer.transport.transportType.should.eql('STUB');
             return MailAPI.send(mailDataNoServer, testUtils.context.internal);
         }).then(function (response) {
-
             /*jshint unused:false */
             done();
         }).catch(function (error) {

@@ -38,7 +38,7 @@ AppSandbox.prototype.loadModule = function loadModuleSandboxed(modulePath) {
     currentModule.require = function requireProxy(module) {
         // check whitelist, plugin config, etc.
         if (_.contains(self.opts.blacklist, module)) {
-            throw new Error("Unsafe App require: " + module);
+            throw new Error('Unsafe App require: ' + module);
         }
 
         var firstTwo = module.slice(0, 2),

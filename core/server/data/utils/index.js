@@ -6,7 +6,6 @@ var _       = require('lodash'),
 
     dbConfig;
 
-
 function addTableColumn(tablename, table, columnname) {
     var column,
         columnSpec = schema[tablename][columnname];
@@ -35,7 +34,7 @@ function addTableColumn(tablename, table, columnname) {
         column.unsigned();
     }
     if (columnSpec.hasOwnProperty('references')) {
-        //check if table exists?
+        // check if table exists?
         column.references(columnSpec.references);
     }
     if (columnSpec.hasOwnProperty('defaultTo')) {

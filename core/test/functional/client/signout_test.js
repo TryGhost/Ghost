@@ -29,5 +29,4 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
     });
 
     casper.captureScreenshot('user-menu-logout-clicked.png');
-
 }, true);

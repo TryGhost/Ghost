@@ -10,13 +10,13 @@ var _                  = require('lodash'),
 
 function getValidKeys() {
     var validKeys = {
-            'fileStorage': config.fileStorage === false ? false : true,
-            'apps': config.apps === true ? true : false,
-            'version': false,
-            'environment': process.env.NODE_ENV,
-            'database': config.database.client,
-            'mail': _.isObject(config.mail) ? config.mail.transport : '',
-            'blogUrl': config.url
+            fileStorage: config.fileStorage === false ? false : true,
+            apps: config.apps === true ? true : false,
+            version: false,
+            environment: process.env.NODE_ENV,
+            database: config.database.client,
+            mail: _.isObject(config.mail) ? config.mail.transport : '',
+            blogUrl: config.url
         };
 
     return parsePackageJson('package.json').then(function (json) {
@@ -39,7 +39,7 @@ configuration = {
      */
     browse: function browse() {
         return getValidKeys().then(function (result) {
-            return Promise.resolve({ 'configuration': _.map(result, function (value, key) {
+            return Promise.resolve({configuration: _.map(result, function (value, key) {
                 return {
                     key: key,
                     value: value
@@ -55,7 +55,7 @@ configuration = {
     read: function read(options) {
         return getValidKeys().then(function (result) {
             if (_.has(result, options.key)) {
-                return Promise.resolve({ 'configuration': [{
+                return Promise.resolve({configuration: [{
                     key: options.key,
                     value: result[options.key]
                 }]});

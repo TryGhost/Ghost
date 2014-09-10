@@ -64,4 +64,3 @@ CasperTest.begin('Ensure that character set is UTF-8 for RSS feed', 1, function 
         test.assertEqual(response.headers.get('Content-Type'), 'text/xml; charset=utf-8', 'Content type should include UTF-8 character set encoding.');
     });
 }, false);
-

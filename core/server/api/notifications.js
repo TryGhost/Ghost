@@ -26,7 +26,7 @@ notifications = {
      */
     browse: function browse(options) {
         return canThis(options.context).browse.notification().then(function () {
-            return { 'notifications': notificationsStore };
+            return {notifications: notificationsStore};
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to browse notifications.'));
         });
@@ -47,7 +47,6 @@ notifications = {
      * ```
      */
     add: function add(object, options) {
-
         var defaults = {
                 dismissible: true,
                 location: 'bottom',
@@ -62,14 +61,14 @@ notifications = {
 
                     notification = _.assign(defaults, notification, {
                         id: notificationCounter
-                        //status: 'persistent'
+                        // status: 'persistent'
                     });
 
                     notificationsStore.push(notification);
                     addedNotifications.push(notification);
                 });
 
-                return { notifications: addedNotifications };
+                return {notifications: addedNotifications};
             });
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to add notifications.'));
@@ -102,7 +101,7 @@ notifications = {
             notificationsStore = _.reject(notificationsStore, function (element) {
                 return element.id === parseInt(options.id, 10);
             });
-            return { notifications: [notification] };
+            return {notifications: [notification]};
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to destroy notifications.'));
         });

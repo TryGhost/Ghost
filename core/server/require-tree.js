@@ -110,7 +110,7 @@ var _        = require('lodash'),
 
             return paths;
         }).catch(function () {
-            return {'_messages': messages};
+            return {_messages: messages};
         });
     };
 

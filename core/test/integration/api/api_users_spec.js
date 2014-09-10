@@ -26,8 +26,8 @@ describe('Users API', function () {
     it('dateTime fields are returned as Date objects', function (done) {
         var userData = testUtils.DataGenerator.forModel.users[0];
 
-        ModelUser.User.check({ email: userData.email, password: userData.password }).then(function (user) {
-            return UserAPI.read({ id: user.id });
+        ModelUser.User.check({email: userData.email, password: userData.password}).then(function (user) {
+            return UserAPI.read({id: user.id});
         }).then(function (response) {
             response.users[0].created_at.should.be.an.instanceof(Date);
             response.users[0].updated_at.should.be.an.instanceof(Date);
@@ -87,7 +87,7 @@ describe('Users API', function () {
 
         it('Can browse invited/invited-pending (admin)', function (done) {
             testUtils.fixtures.createInvitedUsers().then(function () {
-                UserAPI.browse(_.extend(testUtils.context.admin, { status: 'invited' })).then(function (response) {
+                UserAPI.browse(_.extend(testUtils.context.admin, {status: 'invited'})).then(function (response) {
                     should.exist(response);
                     testUtils.API.checkResponse(response, 'users');
                     should.exist(response.users);
@@ -116,7 +116,7 @@ describe('Users API', function () {
         });
 
         it('Can browse all', function (done) {
-            UserAPI.browse(_.extend(testUtils.context.admin, { status: 'all'})).then(function (response) {
+            UserAPI.browse(_.extend(testUtils.context.admin, {status: 'all'})).then(function (response) {
                 checkBrowseResponse(response, 7);
                 done();
             }).catch(done);
@@ -139,7 +139,6 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
-
 
         it('Admin can read', function (done) {
             UserAPI.read(_.extend({}, context.admin, {id: userIdFor.owner})).then(function (response) {
@@ -191,7 +190,6 @@ describe('Users API', function () {
 
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.admin}));
                 }).then(function (response) {
-
                     checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.editor}));
                 }).then(function (response) {
@@ -212,7 +210,6 @@ describe('Users API', function () {
 
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
                 }).then(function (response) {
-
                     checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
                 }).then(function (response) {
@@ -316,9 +313,9 @@ describe('Users API', function () {
             UserAPI.edit(
                 {users: [{name: newName, roles: [roleIdFor.author]}]}, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function (response) {
-                    checkEditResponse(response);
-                    done();
-                }).catch(done);
+                checkEditResponse(response);
+                done();
+            }).catch(done);
         });
 
         it('Author can edit self with role set as string', function (done) {
@@ -326,9 +323,9 @@ describe('Users API', function () {
             UserAPI.edit(
                 {users: [{name: newName, roles: [roleIdFor.author.toString()]}]}, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function (response) {
-                    checkEditResponse(response);
-                    done();
-                }).catch(done);
+                checkEditResponse(response);
+                done();
+            }).catch(done);
         });
     });
 
@@ -532,7 +529,6 @@ describe('Users API', function () {
         });
     });
 
-
     describe('Destroy', function () {
         function checkDestroyResponse(response) {
             should.exist(response);
@@ -542,7 +538,6 @@ describe('Users API', function () {
             testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
             response.users[0].created_at.should.be.a.Date;
         }
-
 
         describe('Owner', function () {
             it('CANNOT destroy self', function (done) {
@@ -653,7 +648,6 @@ describe('Users API', function () {
                         done();
                     }).catch(done);
             });
-
         });
 
         describe('Author', function () {
@@ -706,7 +700,6 @@ describe('Users API', function () {
                         done();
                     });
             });
-
         });
     });
 
@@ -730,18 +723,17 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.author);
                     response.users[0].roles[0].name.should.equal('Author');
 
-                    return UserAPI.edit(
-                        {users: [
+                    return UserAPI.edit({
+                        users: [
                             {name: newName, roles: [roleIdFor.admin]}
-                        ]},
-                        options
-                    ).then(function (response) {
-                            checkEditResponse(response);
-                            response.users[0].id.should.equal(userIdFor.author);
-                            response.users[0].roles[0].name.should.equal('Administrator');
+                        ]
+                    }, options).then(function (response) {
+                        checkEditResponse(response);
+                        response.users[0].id.should.equal(userIdFor.author);
+                        response.users[0].roles[0].name.should.equal('Administrator');
 
-                            done();
-                        }).catch(done);
+                        done();
+                    }).catch(done);
                 });
             });
 
@@ -751,18 +743,17 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.admin);
                     response.users[0].roles[0].name.should.equal('Administrator');
 
-                    return UserAPI.edit(
-                        {users: [
+                    return UserAPI.edit({
+                        users: [
                             {name: newName, roles: [roleIdFor.editor]}
-                        ]},
-                        options
-                    ).then(function (response) {
-                            checkEditResponse(response);
-                            response.users[0].id.should.equal(userIdFor.admin);
-                            response.users[0].roles[0].name.should.equal('Editor');
+                        ]
+                    }, options).then(function (response) {
+                        checkEditResponse(response);
+                        response.users[0].id.should.equal(userIdFor.admin);
+                        response.users[0].roles[0].name.should.equal('Editor');
 
-                            done();
-                        }).catch(done);
+                        done();
+                    }).catch(done);
                 });
             });
 
@@ -772,18 +763,17 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.admin);
                     response.users[0].roles[0].name.should.equal('Administrator');
 
-                    return UserAPI.edit(
-                        {users: [
+                    return UserAPI.edit({
+                        users: [
                             {name: newName, roles: [roleIdFor.author]}
-                        ]},
-                        options
-                    ).then(function (response) {
-                            checkEditResponse(response);
-                            response.users[0].id.should.equal(userIdFor.admin);
-                            response.users[0].roles[0].name.should.equal('Author');
+                        ]
+                    }, options).then(function (response) {
+                        checkEditResponse(response);
+                        response.users[0].id.should.equal(userIdFor.admin);
+                        response.users[0].roles[0].name.should.equal('Author');
 
-                            done();
-                        }).catch(done);
+                        done();
+                    }).catch(done);
                 });
             });
         });
@@ -795,18 +785,17 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.author);
                     response.users[0].roles[0].name.should.equal('Author');
 
-                    return UserAPI.edit(
-                        {users: [
+                    return UserAPI.edit({
+                        users: [
                             {name: newName, roles: [roleIdFor.admin]}
-                        ]},
-                        options
-                    ).then(function (response) {
-                            checkEditResponse(response);
-                            response.users[0].id.should.equal(userIdFor.author);
-                            response.users[0].roles[0].name.should.equal('Administrator');
+                        ]
+                    }, options).then(function (response) {
+                        checkEditResponse(response);
+                        response.users[0].id.should.equal(userIdFor.author);
+                        response.users[0].roles[0].name.should.equal('Administrator');
 
-                            done();
-                        }).catch(done);
+                        done();
+                    }).catch(done);
                 });
             });
 
@@ -816,18 +805,17 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.author);
                     response.users[0].roles[0].name.should.equal('Author');
 
-                    return UserAPI.edit(
-                        {users: [
+                    return UserAPI.edit({
+                        users: [
                             {name: newName, roles: [roleIdFor.editor]}
-                        ]},
-                        options
-                    ).then(function (response) {
-                            checkEditResponse(response);
-                            response.users[0].id.should.equal(userIdFor.author);
-                            response.users[0].roles[0].name.should.equal('Editor');
+                        ]
+                    }, options).then(function (response) {
+                        checkEditResponse(response);
+                        response.users[0].id.should.equal(userIdFor.author);
+                        response.users[0].roles[0].name.should.equal('Editor');
 
-                            done();
-                        }).catch(done);
+                        done();
+                    }).catch(done);
                 });
             });
 
@@ -837,18 +825,17 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.editor);
                     response.users[0].roles[0].name.should.equal('Editor');
 
-                    return UserAPI.edit(
-                        {users: [
+                    return UserAPI.edit({
+                        users: [
                             {name: newName, roles: [roleIdFor.author]}
-                        ]},
-                        options
-                    ).then(function (response) {
-                            checkEditResponse(response);
-                            response.users[0].id.should.equal(userIdFor.editor);
-                            response.users[0].roles[0].name.should.equal('Author');
+                        ]
+                    }, options).then(function (response) {
+                        checkEditResponse(response);
+                        response.users[0].id.should.equal(userIdFor.editor);
+                        response.users[0].roles[0].name.should.equal('Author');
 
-                            done();
-                        }).catch(done);
+                        done();
+                    }).catch(done);
                 });
             });
 
@@ -858,10 +845,9 @@ describe('Users API', function () {
                     response.users[0].id.should.equal(userIdFor.owner);
                     response.users[0].roles[0].name.should.equal('Owner');
 
-                    return UserAPI.edit(
-                        { users: [{name: newName, roles: [roleIdFor.author]}]},
-                        options
-                    ).then(function () {
+                    return UserAPI.edit({
+                        users: [{name: newName, roles: [roleIdFor.author]}]
+                    }, options).then(function () {
                         done(new Error('Author should not be able to downgrade owner'));
                     }).catch(function (error) {
                         error.type.should.eql('NoPermissionError');
@@ -874,7 +860,7 @@ describe('Users API', function () {
         describe('Editor', function () {
             it('Can assign author role to author', function (done) {
                 UserAPI.edit(
-                    { users: [{name: newName, roles: [roleIdFor.author]}]},
+                    {users: [{name: newName, roles: [roleIdFor.author]}]},
                     _.extend({}, context.editor, {id: userIdFor.author2}, {include: 'roles'})
                 ).then(function (response) {
                     checkEditResponse(response);
@@ -887,7 +873,7 @@ describe('Users API', function () {
 
             it('CANNOT assign author role to self', function (done) {
                 UserAPI.edit(
-                    { users: [{name: newName, roles: [roleIdFor.author]}]},
+                    {users: [{name: newName, roles: [roleIdFor.author]}]},
                     _.extend({}, context.editor, {id: userIdFor.editor}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to upgrade their role'));
@@ -899,7 +885,7 @@ describe('Users API', function () {
 
             it('CANNOT assign author role to other Editor', function (done) {
                 UserAPI.edit(
-                    { users: [{name: newName, roles: [roleIdFor.author]}]},
+                    {users: [{name: newName, roles: [roleIdFor.author]}]},
                     _.extend({}, context.editor, {id: userIdFor.editor2}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to change the roles of other editors'));
@@ -911,7 +897,7 @@ describe('Users API', function () {
 
             it('CANNOT assign author role to admin', function (done) {
                 UserAPI.edit(
-                    { users: [{name: newName, roles: [roleIdFor.author]}]},
+                    {users: [{name: newName, roles: [roleIdFor.author]}]},
                     _.extend({}, context.editor, {id: userIdFor.admin}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to change the roles of admins'));
@@ -922,7 +908,7 @@ describe('Users API', function () {
             });
             it('CANNOT assign admin role to author', function (done) {
                 UserAPI.edit(
-                    { users: [{name: newName, roles: [roleIdFor.admin]}]},
+                    {users: [{name: newName, roles: [roleIdFor.admin]}]},
                     _.extend({}, context.editor, {id: userIdFor.author}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to upgrade the role of authors'));
@@ -936,7 +922,7 @@ describe('Users API', function () {
         describe('Author', function () {
             it('CANNOT assign higher role to self', function (done) {
                 UserAPI.edit(
-                    { users: [{name: newName, roles: [roleIdFor.editor]}]},
+                    {users: [{name: newName, roles: [roleIdFor.editor]}]},
                     _.extend({}, context.author, {id: userIdFor.author}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Author should not be able to upgrade their role'));
@@ -952,7 +938,7 @@ describe('Users API', function () {
         it('Owner can transfer ownership', function (done) {
             // transfer ownership to admin user id:2
             UserAPI.transferOwnership(
-                { owner: [{id: userIdFor.admin}]},
+                {owner: [{id: userIdFor.admin}]},
                 context.owner
             ).then(function (response) {
                 should.exist(response);
@@ -968,7 +954,7 @@ describe('Users API', function () {
         it('Owner CANNOT downgrade own role', function (done) {
             // Cannot change own role to admin
             UserAPI.transferOwnership(
-                { owner: [{id: userIdFor.owner}]},
+                {owner: [{id: userIdFor.owner}]},
                 context.owner
             ).then(function () {
                 done(new Error('Owner should not be able to downgrade their role'));
@@ -981,7 +967,7 @@ describe('Users API', function () {
         it('Admin CANNOT transfer ownership', function (done) {
             // transfer ownership to user id: 2
             UserAPI.transferOwnership(
-                { owner: [{id: userIdFor.editor}]},
+                {owner: [{id: userIdFor.editor}]},
                 context.admin
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));
@@ -994,7 +980,7 @@ describe('Users API', function () {
         it('Editor CANNOT transfer ownership', function (done) {
             // transfer ownership to user id: 2
             UserAPI.transferOwnership(
-                { owner: [{id: userIdFor.admin}]},
+                {owner: [{id: userIdFor.admin}]},
                 context.editor
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));
@@ -1007,7 +993,7 @@ describe('Users API', function () {
         it('Author CANNOT transfer ownership', function (done) {
             // transfer ownership to user id: 2
             UserAPI.transferOwnership(
-                { owner: [{id: userIdFor.admin}]},
+                {owner: [{id: userIdFor.admin}]},
                 context.author
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));

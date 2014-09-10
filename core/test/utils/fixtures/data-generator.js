@@ -3,6 +3,7 @@ var _             = require('lodash'),
     globalUtils   = require('../../../server/utils'),
     DataGenerator = {};
 /*jshint quotmark:false*/
+// jscs:disable validateQuoteMarks, requireCamelCaseOrUpperCaseIdentifiers
 DataGenerator.Content = {
     posts: [
         {
@@ -225,7 +226,6 @@ DataGenerator.Content = {
 };
 
 DataGenerator.forKnex = (function () {
-
     var posts,
         tags,
         posts_tags,
@@ -245,7 +245,6 @@ DataGenerator.forKnex = (function () {
             updated_at: new Date()
         });
     }
-
 
     function createPost(overrides) {
         return _.defaults(overrides, {
@@ -374,19 +373,19 @@ DataGenerator.forKnex = (function () {
     ];
 
     roles_users = [
-        { user_id: 1, role_id: 4},
-        { user_id: 2, role_id: 1},
-        { user_id: 3, role_id: 2},
-        { user_id: 4, role_id: 3}
+        {user_id: 1, role_id: 4},
+        {user_id: 2, role_id: 1},
+        {user_id: 3, role_id: 2},
+        {user_id: 4, role_id: 3}
     ];
 
     posts_tags = [
-        { post_id: 1, tag_id: 1 },
-        { post_id: 1, tag_id: 2 },
-        { post_id: 2, tag_id: 1 },
-        { post_id: 2, tag_id: 2 },
-        { post_id: 3, tag_id: 3 },
-        { post_id: 4, tag_id: 4 }
+        {post_id: 1, tag_id: 1},
+        {post_id: 1, tag_id: 2},
+        {post_id: 2, tag_id: 1},
+        {post_id: 2, tag_id: 2},
+        {post_id: 3, tag_id: 3},
+        {post_id: 4, tag_id: 4}
     ];
 
     apps = [
@@ -425,11 +424,9 @@ DataGenerator.forKnex = (function () {
         roles_users: roles_users,
         clients: clients
     };
-
 }());
 
 DataGenerator.forModel = (function () {
-
     var posts,
         tags,
         users,
@@ -459,7 +456,6 @@ DataGenerator.forModel = (function () {
         users: users,
         roles: roles
     };
-
 }());
 
 module.exports = DataGenerator;

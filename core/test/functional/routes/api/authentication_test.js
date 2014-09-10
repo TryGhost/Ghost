@@ -8,7 +8,6 @@ var supertest     = require('supertest'),
     ghost         = require('../../../../../core'),
     request;
 
-
 describe('Authentication API', function () {
     var accesstoken = '';
 
@@ -38,7 +37,7 @@ describe('Authentication API', function () {
 
     it('can authenticate', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
-            .send({ grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
             .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
@@ -57,7 +56,7 @@ describe('Authentication API', function () {
 
     it('can\'t authenticate unknown user', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
-            .send({ grant_type: 'password', username: 'invalid@email.com', password: user.password, client_id: 'ghost-admin'})
+            .send({grant_type: 'password', username: 'invalid@email.com', password: user.password, client_id: 'ghost-admin'})
             .expect('Content-Type', /json/)
             .expect(404)
             .end(function (err, res) {
@@ -73,7 +72,7 @@ describe('Authentication API', function () {
 
     it('can\'t authenticate invalid password user', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
-            .send({ grant_type: 'password', username: user.email, password: 'invalid', client_id: 'ghost-admin'})
+            .send({grant_type: 'password', username: user.email, password: 'invalid', client_id: 'ghost-admin'})
             .expect('Content-Type', /json/)
             .expect(401)
             .end(function (err, res) {
@@ -89,7 +88,7 @@ describe('Authentication API', function () {
 
     it('can request new access token', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
-            .send({ grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
             .expect('Content-Type', /json/)
             .expect(200)
             .end(function (err, res) {
@@ -98,7 +97,7 @@ describe('Authentication API', function () {
                 }
                 var refreshToken = res.body.refresh_token;
                 request.post(testUtils.API.getApiQuery('authentication/token'))
-                    .send({ grant_type: 'refresh_token', refresh_token: refreshToken, client_id: 'ghost-admin'})
+                    .send({grant_type: 'refresh_token', refresh_token: refreshToken, client_id: 'ghost-admin'})
                     .expect('Content-Type', /json/)
                     .expect(200)
                     .end(function (err, res) {
@@ -115,7 +114,7 @@ describe('Authentication API', function () {
 
     it('can\'t request new access token with invalid refresh token', function (done) {
         request.post(testUtils.API.getApiQuery('authentication/token'))
-            .send({ grant_type: 'refresh_token', refresh_token: 'invalid', client_id: 'ghost-admin'})
+            .send({grant_type: 'refresh_token', refresh_token: 'invalid', client_id: 'ghost-admin'})
             .expect('Content-Type', /json/)
             .expect(403)
             .end(function (err, res) {

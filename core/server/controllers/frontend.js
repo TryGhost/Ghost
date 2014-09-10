@@ -115,7 +115,7 @@ function getActiveThemePaths() {
 }
 
 frontendControllers = {
-    'homepage': function (req, res, next) {
+    homepage: function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             options = {
@@ -128,7 +128,6 @@ frontendControllers = {
         }
 
         return getPostPage(options).then(function (page) {
-
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(page.meta.pagination.pages === 1 ? config.paths.subdir + '/' : (config.paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
@@ -152,7 +151,7 @@ frontendControllers = {
             });
         }).catch(handleError(next));
     },
-    'tag': function (req, res, next) {
+    tag: function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             options = {
@@ -206,16 +205,13 @@ frontendControllers = {
             });
         }).catch(handleError(next));
     },
-    'author': function (req, res, next) {
-
+    author: function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             options = {
                 page: pageParam,
                 author: req.params.slug
             };
-
-
 
         // Get url for tag page
         function authorUrl(author, page) {
@@ -264,7 +260,7 @@ frontendControllers = {
         }).catch(handleError(next));
     },
 
-    'single': function (req, res, next) {
+    single: function (req, res, next) {
         var path = req.path,
             params,
             editFormat,
@@ -377,7 +373,6 @@ frontendControllers = {
             }
 
             return render();
-
         }).catch(function (err) {
             // If we've thrown an error message
             // of type: 'NotFound' then we found
@@ -389,7 +384,7 @@ frontendControllers = {
             return handleError(next)(err);
         });
     },
-    'rss': function (req, res, next) {
+    rss: function (req, res, next) {
         function isPaginated() {
             return req.route.path.indexOf(':page') !== -1;
         }
@@ -486,7 +481,7 @@ frontendControllers = {
                                 categories: _.pluck(post.tags, 'name'),
                                 author: post.author ? post.author.name : null
                             },
-                            htmlContent = cheerio.load(post.html, { decodeEntities: false });
+                            htmlContent = cheerio.load(post.html, {decodeEntities: false});
 
                         // convert relative resource urls to absolute
                         ['href', 'src'].forEach(function (attributeName) {

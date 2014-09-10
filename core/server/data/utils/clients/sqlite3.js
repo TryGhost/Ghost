@@ -1,14 +1,13 @@
 var _       = require('lodash'),
     config  = require('../../../config/index'),
 
-    //private
+    // private
     doRaw,
 
     // public
     getTables,
     getIndexes,
     getColumns;
-
 
 doRaw = function doRaw(query, fn) {
     return config.database.knex.raw(query).then(function (response) {
