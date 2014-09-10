@@ -6,23 +6,25 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 var PostSettingsMenuController = Ember.ObjectController.extend({
     init: function () {
         this._super();
+    },
 
+    initializeObserver: function () {
         // when creating a new post we want to observe the title
         // to generate the post's slug
         if (this.get('isNew')) {
             this.addObserver('titleScratch', this, 'titleObserver');
         }
-    },
+    }.observes('model'),
 
     selectedAuthor: null,
-    initializeSelectedAuthor: Ember.observer('model', function () {
+    initializeSelectedAuthor: function () {
         var self = this;
-
+        
         return this.get('author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
         });
-    }).on('init'),
+    }.observes('model'),
 
     changeAuthor: function () {
         var author = this.get('author'),

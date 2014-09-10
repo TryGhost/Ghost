@@ -570,7 +570,6 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
     // change a post attribute via the post-settings-menu
 
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
 
     casper.then(function () {
         this.fillSelectors('.post-settings-menu form', {
@@ -618,7 +617,6 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
     // change a post attribute via the post-settings-menu
 
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
 
     casper.then(function () {
         this.fillSelectors('.post-settings-menu form', {
