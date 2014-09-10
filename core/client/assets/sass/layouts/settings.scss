@@ -156,7 +156,7 @@
             padding-right: 15px;
         }
         @media (max-width: 550px) {
-            padding: 0 15px 40px;
+            padding-top: 15px;
         }
     } // .content
 
@@ -238,6 +238,7 @@
 // This is the header for /ghost/settings/view/subview/
 // It's black and fixed position at the top of the screen
 .settings-subview-header {
+    @include clearfix;
     position: fixed;
     top: 0;
     left: 0;
@@ -248,7 +249,6 @@
     text-align: center;
     color: #fff;
     background: #242628;
-    overflow: hidden;
 
     .btn-back {
         position: absolute;
