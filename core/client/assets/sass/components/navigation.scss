@@ -54,7 +54,9 @@
     transition: color 0.5s, background 0.5s;
 }
 .nav-item.active .nav-label,
-.nav-item:hover .nav-label {
+.nav-item:focus .nav-label,
+.nav-item:hover .nav-label,
+.nav-item:active .nav-label {
     color: #fff;
     background: darken($darkgrey, 9%);
     transition: color 0.1s, background 0.1s;
