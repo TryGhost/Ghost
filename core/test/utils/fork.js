@@ -6,7 +6,7 @@ var cp         = require('child_process'),
     Promise    = require('bluebird'),
     path       = require('path'),
     config     = require('../../server/config');
-    
+
 function findFreePort(port) {
     return new Promise(function (resolve, reject) {
         if (typeof port === 'string') {
@@ -80,8 +80,8 @@ function forkGhost(newConfig, envName) {
                             return false;
                         };
 
-                    env['GHOST_CONFIG'] = newConfigFile;
-                    env['NODE_ENV'] = envName;
+                    env.GHOST_CONFIG = newConfigFile;
+                    env.NODE_ENV = envName;
                     child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
                     // periodic check until forked Ghost is running and is listening on the port
                     pingCheck = setInterval(function () {
@@ -111,7 +111,7 @@ function forkGhost(newConfig, envName) {
                         // cleanup the temporary config file
                         fs.unlink(newConfigFile);
                     });
-                    
+
                     // override kill() to have an async callback
                     baseKill = child.kill;
                     child.kill = function (signal, cb) {

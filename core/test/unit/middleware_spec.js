@@ -6,7 +6,6 @@ var assert          = require('assert'),
     middleware      = require('../../server/middleware').middleware;
 
 describe('Middleware', function () {
-
     // TODO: needs new test for ember admin
     // describe('redirectToDashboard', function () {
     //     var req, res;
@@ -172,4 +171,3 @@ describe('Middleware', function () {
         });
     });
 });
-

@@ -63,7 +63,7 @@ function activateTheme(activeTheme) {
     expressServer.cache = {};
 
     // set view engine
-    hbsOptions = { partialsDir: [ config.paths.helperTemplates ] };
+    hbsOptions = {partialsDir: [config.paths.helperTemplates]};
 
     fs.stat(themePartials, function (err, stats) {
         // Check that the theme has a partials directory before trying to use it
@@ -98,7 +98,7 @@ function configHbsForContext(req, res, next) {
     } else {
         expressServer.disable('admin');
         var themeData = initThemeData(req.secure);
-        hbs.updateTemplateOptions({ data: {blog: themeData} });
+        hbs.updateTemplateOptions({data: {blog: themeData}});
         expressServer.engine('hbs', expressServer.get('theme view engine'));
         expressServer.set('views', path.join(config.paths.themePath, expressServer.get('activeTheme')));
     }
@@ -161,7 +161,7 @@ function uncapitalise(req, res, next) {
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];
     }
-    
+
     // Do not lowercase anything after /api/v0.1/ to protect :key/:slug
     if (isAPI) {
         pathToTest = isAPI[1];
@@ -218,7 +218,7 @@ function robots() {
         filePath = path.join(config.paths.corePath, '/shared/robots.txt');
 
     return function robots(req, res, next) {
-        if ('/robots.txt' === req.url) {
+        if (req.url === '/robots.txt') {
             if (content) {
                 res.writeHead(200, content.headers);
                 res.end(content.body);
@@ -314,14 +314,13 @@ setupMiddleware = function (server) {
 
     // Body parsing
     expressServer.use(bodyParser.json());
-    expressServer.use(bodyParser.urlencoded({ extended: true }));
+    expressServer.use(bodyParser.urlencoded({extended: true}));
 
     expressServer.use(passport.initialize());
 
     // ### Caching
     expressServer.use(middleware.cacheControl('public'));
     expressServer.use('/ghost/', middleware.cacheControl('private'));
-
 
     // enable authentication
     expressServer.use(middleware.authenticate);

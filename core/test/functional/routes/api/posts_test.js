@@ -10,7 +10,6 @@ var testUtils     = require('../../../utils'),
 
     request;
 
-
 describe('Post API', function () {
     var accesstoken = '';
 
@@ -21,7 +20,6 @@ describe('Post API', function () {
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
         ghost({app: app}).then(function () {
             request = supertest.agent(app);
-
         }).then(function () {
             return testUtils.doAuth(request, 'posts');
         }).then(function (token) {
@@ -40,7 +38,6 @@ describe('Post API', function () {
     });
 
     describe('Browse', function () {
-
         it('retrieves all published posts only by default', function (done) {
             request.get(testUtils.API.getApiQuery('posts/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -83,7 +80,6 @@ describe('Post API', function () {
                     testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     done();
                 });
-
         });
 
         // Test bits of the API we don't use in the app yet to ensure the API behaves properly
@@ -151,7 +147,6 @@ describe('Post API', function () {
                 });
         });
     });
-
 
     // ## Read
     describe('Read', function () {
@@ -310,7 +305,6 @@ describe('Post API', function () {
                     done();
                 });
         });
-
     });
 
     // ## Add
@@ -333,7 +327,7 @@ describe('Post API', function () {
                     }
 
                     var draftPost = res.body;
-                    res.headers['location'].should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
+                    res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
                     draftPost.posts.should.exist;
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
@@ -403,10 +397,8 @@ describe('Post API', function () {
                                     done();
                                 });
                         });
-
                 });
         });
-
     });
 
     // ## edit
@@ -466,7 +458,7 @@ describe('Post API', function () {
                     }
 
                     var draftPost = res.body;
-                    res.headers['location'].should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
+                    res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=draft');
                     draftPost.posts.should.exist;
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
@@ -509,7 +501,7 @@ describe('Post API', function () {
                     }
 
                     var draftPost = res.body;
-                    res.headers['location'].should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=published');
+                    res.headers.location.should.equal('/ghost/api/v0.1/posts/' + draftPost.posts[0].id + '/?status=published');
                     draftPost.posts.should.exist;
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
@@ -740,7 +732,6 @@ describe('Post API', function () {
                         });
                 });
         });
-
     });
 
     // ## delete
@@ -826,7 +817,6 @@ describe('Post API', function () {
                         });
                 });
         });
-
     });
 
     describe('Dated Permalinks', function () {

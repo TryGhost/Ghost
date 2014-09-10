@@ -7,7 +7,6 @@ var templates     = {},
 // Execute a template helper
 // All template helpers are register as partial view.
 templates.execute = function (name, context) {
-
     var partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {

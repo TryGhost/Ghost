@@ -11,5 +11,4 @@ function EmailError(message) {
 EmailError.prototype = Object.create(Error.prototype);
 EmailError.prototype.name = 'EmailError';
 
-
 module.exports = EmailError;

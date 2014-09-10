@@ -14,10 +14,10 @@ var request    = require('supertest'),
     ghost      = require('../../../../core'),
 
     cacheRules = {
-        'public': 'public, max-age=0',
-        'hour':  'public, max-age=' + testUtils.ONE_HOUR_S,
-        'year':  'public, max-age=' + testUtils.ONE_YEAR_S,
-        'private': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+        public: 'public, max-age=0',
+        hour:  'public, max-age=' + testUtils.ONE_HOUR_S,
+        year:  'public, max-age=' + testUtils.ONE_YEAR_S,
+        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     };
 
 describe('Frontend Routing', function () {
@@ -103,7 +103,7 @@ describe('Frontend Routing', function () {
             var date  = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome-to-ghost/')
-                //.expect('Cache-Control', cacheRules['private'])
+                // .expect('Cache-Control', cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -222,7 +222,6 @@ describe('Frontend Routing', function () {
     // ### The rest of the tests require more data
 
     describe('Archive pages', function () {
-
         // Add enough posts to trigger pages for both the archive (5 pp) and rss (15 pp)
         // insertPosts adds 5 published posts, 1 draft post, 1 published static page and one draft page
         // we then insert with max 11 which ensures we have 16 published posts
@@ -477,14 +476,12 @@ describe('Frontend Routing', function () {
     });
 
     describe('Tag pages', function () {
-
         // Add enough posts to trigger tag pages
         before(function (done) {
             testUtils.clearData().then(function () {
                 // we initialise data, but not a user. No user should be required for navigating the frontend
                 return testUtils.initData();
             }).then(function () {
-
                 return testUtils.fixtures.insertPosts();
             }).then(function () {
                 return testUtils.fixtures.insertMorePosts(22);
@@ -493,7 +490,6 @@ describe('Frontend Routing', function () {
             }).then(function () {
                 done();
             }).catch(done);
-
         });
 
         it('should redirect without slash', function (done) {
@@ -539,14 +535,12 @@ describe('Frontend Routing', function () {
     });
 
     describe('Author pages', function () {
-
         // Add enough posts to trigger tag pages
         before(function (done) {
             testUtils.clearData().then(function () {
                 // we initialise data, but not a user. No user should be required for navigating the frontend
                 return testUtils.initData();
             }).then(function () {
-
                 return testUtils.fixtures.insertPosts();
             }).then(function () {
                 return testUtils.fixtures.insertMorePosts(10);
@@ -597,7 +591,6 @@ describe('Frontend Routing', function () {
         });
     });
 
-
     // ### The rest of the tests switch to date permalinks
 
 //    describe('Date permalinks', function () {
@@ -618,8 +611,4 @@ describe('Frontend Routing', function () {
 //                .end(doEnd(done));
 //        });
 //    });
-
 });
-
-
-

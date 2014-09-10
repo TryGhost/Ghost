@@ -18,9 +18,7 @@ var should         = require('should'),
 should.equal(true, true);
 
 describe('Config', function () {
-
     describe('Theme', function () {
-
         beforeEach(function () {
             config.set({
                 url: 'http://my-ghost-blog.com',
@@ -57,7 +55,6 @@ describe('Config', function () {
     });
 
     describe('Index', function () {
-
         afterEach(function () {
             // Make a copy of the default config file
             // so we can restore it after every test.
@@ -141,7 +138,6 @@ describe('Config', function () {
     });
 
     describe('urlFor', function () {
-
         before(function () {
             config.set(_.merge({}, defaultConfig));
         });
@@ -238,7 +234,6 @@ describe('Config', function () {
             config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
             config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
         });
-
     });
 
     describe('urlForPost', function () {
@@ -254,9 +249,9 @@ describe('Config', function () {
         });
 
         it('should output correct url for post', function (done) {
-            var settings = {'read': function read() {}},
+            var settings = {read: function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return Promise.resolve({ settings: [{value: '/:slug/'}] });
+                    return Promise.resolve({settings: [{value: '/:slug/'}]});
                 }),
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
@@ -275,7 +270,6 @@ describe('Config', function () {
 
                 return config.set({url: 'http://my-ghost-blog.com/blog'});
             }).then(function () {
-
                 // next test
                 return config.urlForPost(settings, testData);
             }).then(function (url) {
@@ -288,13 +282,12 @@ describe('Config', function () {
 
                 done();
             }).catch(done);
-
         });
 
         it('should output correct url for post with date permalink', function (done) {
-            var settings = {'read': function read() {}},
+            var settings = {read: function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return Promise.resolve({ settings: [{value: '/:year/:month/:day/:slug/'}] });
+                    return Promise.resolve({settings: [{value: '/:year/:month/:day/:slug/'}]});
                 }),
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
@@ -317,7 +310,6 @@ describe('Config', function () {
 
                 return config.set({url: 'http://my-ghost-blog.com/blog'});
             }).then(function () {
-
                 // next test
                 return config.urlForPost(settings, testData);
             }).then(function (url) {
@@ -333,9 +325,9 @@ describe('Config', function () {
         });
 
         it('should output correct url for page with date permalink', function (done) {
-            var settings = {'read': function read() {}},
+            var settings = {read: function read() {}},
                 settingsStub = sandbox.stub(settings, 'read', function () {
-                    return Promise.resolve({ settings: [{value: '/:year/:month/:day/:slug/'}] });
+                    return Promise.resolve({settings: [{value: '/:year/:month/:day/:slug/'}]});
                 }),
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[5],
@@ -354,7 +346,6 @@ describe('Config', function () {
 
                 return config.set({url: 'http://my-ghost-blog.com/blog'});
             }).then(function () {
-
                 // next test
                 return config.urlForPost(settings, testData);
             }).then(function (url) {
@@ -479,8 +470,7 @@ describe('Config', function () {
         });
 
         it('rejects a fqdn without a scheme', function (done) {
-
-            overrideConfig({ url: 'example.com' });
+            overrideConfig({url: 'example.com'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -493,8 +483,7 @@ describe('Config', function () {
         });
 
         it('rejects a hostname without a scheme', function (done) {
-
-            overrideConfig({ url: 'example' });
+            overrideConfig({url: 'example'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -507,8 +496,7 @@ describe('Config', function () {
         });
 
         it('rejects a hostname with a scheme', function (done) {
-
-            overrideConfig({ url: 'https://example' });
+            overrideConfig({url: 'https://example'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -521,8 +509,7 @@ describe('Config', function () {
         });
 
         it('rejects a url with an unsupported scheme', function (done) {
-
-            overrideConfig({ url: 'ftp://example.com' });
+            overrideConfig({url: 'ftp://example.com'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -535,8 +522,7 @@ describe('Config', function () {
         });
 
         it('rejects a url with a protocol relative scheme', function (done) {
-
-            overrideConfig({ url: '//example.com' });
+            overrideConfig({url: '//example.com'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -549,7 +535,7 @@ describe('Config', function () {
         });
 
         it('does not permit the word ghost as a url path', function (done) {
-            overrideConfig({ url: 'http://example.com/ghost/' });
+            overrideConfig({url: 'http://example.com/ghost/'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -562,7 +548,7 @@ describe('Config', function () {
         });
 
         it('does not permit the word ghost to be a component in a url path', function (done) {
-            overrideConfig({ url: 'http://example.com/blog/ghost/' });
+            overrideConfig({url: 'http://example.com/blog/ghost/'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -575,7 +561,7 @@ describe('Config', function () {
         });
 
         it('does not permit the word ghost to be a component in a url path', function (done) {
-            overrideConfig({ url: 'http://example.com/ghost/blog/' });
+            overrideConfig({url: 'http://example.com/ghost/blog/'});
 
             config.load().then(function () {
                 done(expectedError);
@@ -589,7 +575,7 @@ describe('Config', function () {
 
         it('does not permit database config to be falsy', function (done) {
             // replace the config file with invalid data
-            overrideConfig({ database: false });
+            overrideConfig({database: false});
 
             config.load().then(function () {
                 done(expectedError);
@@ -603,7 +589,7 @@ describe('Config', function () {
 
         it('does not permit database config to be empty', function (done) {
             // replace the config file with invalid data
-            overrideConfig({ database: {} });
+            overrideConfig({database: {}});
 
             config.load().then(function () {
                 done(expectedError);
@@ -615,9 +601,8 @@ describe('Config', function () {
             }).catch(done);
         });
 
-
         it('requires server to be present', function (done) {
-            overrideConfig({ server: false });
+            overrideConfig({server: false});
 
             config.load().then(function (localConfig) {
                 /*jshint unused:false*/
@@ -631,7 +616,7 @@ describe('Config', function () {
         });
 
         it('allows server to use a socket', function (done) {
-            overrideConfig({ server: { socket: 'test' } });
+            overrideConfig({server: {socket: 'test'}});
 
             config.load().then(function (localConfig) {
                 should.exist(localConfig);
@@ -642,7 +627,7 @@ describe('Config', function () {
         });
 
         it('allows server to have a host and a port', function (done) {
-            overrideConfig({ server: { host: '127.0.0.1', port: '2368' } });
+            overrideConfig({server: {host: '127.0.0.1', port: '2368'}});
 
             config.load().then(function (localConfig) {
                 should.exist(localConfig);
@@ -654,7 +639,7 @@ describe('Config', function () {
         });
 
         it('rejects server if there is a host but no port', function (done) {
-            overrideConfig({ server: { host: '127.0.0.1' } });
+            overrideConfig({server: {host: '127.0.0.1'}});
 
             config.load().then(function () {
                 done(expectedError);
@@ -667,7 +652,7 @@ describe('Config', function () {
         });
 
         it('rejects server if there is a port but no host', function (done) {
-            overrideConfig({ server: { port: '2368' } });
+            overrideConfig({server: {port: '2368'}});
 
             config.load().then(function () {
                 done(expectedError);
@@ -680,7 +665,7 @@ describe('Config', function () {
         });
 
         it('rejects server if configuration is empty', function (done) {
-            overrideConfig({ server: {} });
+            overrideConfig({server: {}});
 
             config.load().then(function () {
                 done(expectedError);

@@ -1,9 +1,10 @@
 var _           = require('lodash'),
     api         = require('../api'),
     helpers     = require('../helpers'),
-    filters     = require('../filters');
+    filters     = require('../filters'),
+    generateProxyFunctions;
 
-var generateProxyFunctions = function (name, permissions) {
+generateProxyFunctions = function (name, permissions) {
     var getPermission = function (perm) {
             return permissions[perm];
         },
@@ -82,7 +83,6 @@ var generateProxyFunctions = function (name, permissions) {
 };
 
 function AppProxy(options) {
-
     if (!options.name) {
         throw new Error('Must provide an app name for api context');
     }

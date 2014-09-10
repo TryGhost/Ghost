@@ -22,7 +22,7 @@ var downsize        = require('downsize'),
     scriptFiles = {
         production: [
             'vendor.min.js',
-            'ghost.min.js',
+            'ghost.min.js'
         ],
         development: [
             'vendor-dev.js',
@@ -59,7 +59,6 @@ coreHelpers.date = function (context, options) {
     var f = options.hash.format || 'MMM Do, YYYY',
         timeago = options.hash.timeago,
         date;
-
 
     if (timeago) {
         date = moment(context).fromNow();
@@ -153,7 +152,6 @@ coreHelpers.url = function (options) {
     if (schema.isUser(this)) {
         return Promise.resolve(config.urlFor('author', {author: this}, absolute));
     }
-
 
     return Promise.resolve(config.urlFor(this, absolute));
 };
@@ -291,7 +289,6 @@ coreHelpers.content = function (options) {
     });
 
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
-        
         // Legacy function: {{content words="0"}} should return leading tags.
         if (truncateOptions.hasOwnProperty('words') && truncateOptions.words === 0) {
             return new hbs.handlebars.SafeString(
@@ -314,7 +311,7 @@ coreHelpers.content = function (options) {
 };
 
 coreHelpers.title = function () {
-    return  new hbs.handlebars.SafeString(hbs.handlebars.Utils.escapeExpression(this.title || ''));
+    return new hbs.handlebars.SafeString(hbs.handlebars.Utils.escapeExpression(this.title || ''));
 };
 
 // ### Excerpt Helper
@@ -416,7 +413,6 @@ coreHelpers.body_class = function (options) {
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-
     if (this.tag !== undefined) {
         classes.push('tag-template');
         classes.push('tag-' + this.tag.slug);
@@ -431,7 +427,6 @@ coreHelpers.body_class = function (options) {
         classes.push('paged');
         // To be removed from pages by #2597 when we're ready to deprecate this
         classes.push('archive-template');
-
     } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
     } else if (post) {
@@ -653,7 +648,7 @@ coreHelpers.foreach = function (context, options) {
                     data.first = data.rowEnd = data.rowStart = data.last = data.even = data.odd = false;
                     data = setKeys(data, i, j, columns);
                 }
-                ret = ret + fn(context[i], { data: data });
+                ret = ret + fn(context[i], {data: data});
             }
         } else {
             for (key in context) {
@@ -785,9 +780,9 @@ coreHelpers.plural = function (context, options) {
     if (context === 0) {
         return new hbs.handlebars.SafeString(options.hash.empty);
     } else if (context === 1) {
-        return new hbs.handlebars.SafeString(options.hash.singular.replace("%", context));
+        return new hbs.handlebars.SafeString(options.hash.singular.replace('%', context));
     } else if (context >= 2) {
-        return new hbs.handlebars.SafeString(options.hash.plural.replace("%", context));
+        return new hbs.handlebars.SafeString(options.hash.plural.replace('%', context));
     }
 };
 
@@ -836,16 +831,12 @@ function registerAdminHelper(name, fn) {
     coreHelpers.adminHbs.registerHelper(name, fn);
 }
 
-
-
 registerHelpers = function (adminHbs, assetHash) {
-
     // Expose hbs instance for admin
     coreHelpers.adminHbs = adminHbs;
 
     // Store hash for assets
     coreHelpers.assetHash = assetHash;
-
 
     // Register theme helpers
     registerThemeHelper('asset', coreHelpers.asset);
@@ -891,7 +882,6 @@ registerHelpers = function (adminHbs, assetHash) {
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
     registerAsyncThemeHelper('url', coreHelpers.url);
-
 
     // Register admin helpers
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);

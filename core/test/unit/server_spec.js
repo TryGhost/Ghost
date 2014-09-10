@@ -9,7 +9,6 @@ describe('Server', function () {
         host = config.testing.server.host,
         url = 'http://' + host + ':' + port;
 
-
     it('should not start a connect server when required', function (done) {
         request(url, function (error, response, body) {
             should(response).equal(undefined);
@@ -19,6 +18,4 @@ describe('Server', function () {
             done();
         });
     });
-
 });
-

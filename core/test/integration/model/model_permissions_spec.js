@@ -86,7 +86,6 @@ describe('Permission Model', function () {
         }).catch(done);
     });
 
-
 //        it('can add user to role', function (done) {
 //            var existingUserRoles;
 //
