@@ -4,7 +4,7 @@
 /*globals CasperTest, casper, __utils__ */
 
 
-CasperTest.begin('Post settings menu', 15, function suite(test) {
+CasperTest.begin('Post settings menu', 14, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
@@ -12,7 +12,7 @@ CasperTest.begin('Post settings menu', 15, function suite(test) {
 
     casper.then(function () {
         test.assertExists('.post-settings', 'icon toggle should exist');
-        test.assertNotVisible('.post-settings-menu', 'popup menu should not be visible at startup');
+        test.assertExists('.post-settings-menu', 'popup menu should be rendered at startup');
         test.assertExists('.post-settings-menu #url', 'url field exists');
         test.assertExists('.post-settings-menu .post-setting-date', 'publication date field exists');
         test.assertExists('.post-settings-menu .post-setting-static-page', 'static page checkbox field exists');
@@ -29,10 +29,6 @@ CasperTest.begin('Post settings menu', 15, function suite(test) {
     });
 
     casper.thenClick('.post-settings');
-
-    casper.waitWhileVisible('.post-settings-menu', function onSuccess() {
-        test.assert(true, 'popup menu should not be visible after clicking post-settings icon');
-    });
 
     // Enter a title and save draft so converting to/from static post
     // will result in notifications and 'Delete This Post' button appears
@@ -79,7 +75,6 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
 
     // Open post settings menu
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
     casper.thenClick('.post-settings-menu button.delete');
 
     casper.waitUntilVisible('#modal-container', function onSuccess() {
@@ -97,7 +92,6 @@ CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
 
     // Test delete
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
     casper.thenClick('.post-settings-menu button.delete');
 
     casper.waitForSelector('#modal-container .modal-content', function onSuccess() {
@@ -130,7 +124,6 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
     casper.waitForSelector('#entry-title');
 
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
 
     // Test change permalink
     casper.then(function () {
@@ -169,7 +162,6 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
     casper.waitForSelector('#entry-title');
 
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
 
     // Test change published date
     casper.then(function () {
@@ -208,7 +200,6 @@ CasperTest.begin('Post can be changed to static page', 6, function suite(test) {
     casper.waitForSelector('#entry-title');
 
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
 
     casper.thenClick('label[for=static-page]');
 
@@ -242,7 +233,6 @@ CasperTest.begin('Post url input is reset from all whitespace back to original v
     casper.waitForSelector('#entry-title');
 
     casper.thenClick('.post-settings');
-    casper.waitForOpaque('.post-settings-menu.open');
 
     var originalSlug;
     casper.then(function () {

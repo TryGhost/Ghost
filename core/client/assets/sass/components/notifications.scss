@@ -11,6 +11,9 @@
         left: 0;
         z-index: 980;
         width: 300px;
+        body.right-outlet-expanded & {
+            transform: translate3d(360px, 0px, 0px);
+        }
     }
 
     @media (max-width: 400px) {
@@ -19,6 +22,9 @@
         left: 0;
         right: 0;
         z-index: 9999;
+        body.right-outlet-expanded & {
+            transform: translate3d(100%, 0px, 0px);
+        }
     }
 }
 
