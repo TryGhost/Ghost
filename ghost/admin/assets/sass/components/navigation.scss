@@ -162,23 +162,6 @@
 
 }//.user-menu
 
-body.right-outlet-expanded & {
-    .global-nav {
-        z-index: 700;
-    }
-
-    .nav-cover {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 700;
-        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-        transform: translate3d(-350px, 0px, 0px);
-    }
-}
-
 
 //
 // Mobile
