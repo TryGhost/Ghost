@@ -8,7 +8,7 @@
     "ember-data": "~1.0.0-beta.8",
     "ember-load-initializers": "git://github.com/stefanpenner/ember-load-initializers.git#0.0.1",
     "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#181251821cf513bb58d3e192faa13245a816f75e",
-    "ember-simple-auth": "0.6.4",
+    "ember-simple-auth": "0.6.6",
     "fastclick": "1.0.0",
     "handlebars": "1.3.0",
     "ic-ajax": "1.0.1",

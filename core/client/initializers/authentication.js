@@ -22,6 +22,7 @@ var AuthenticationInitializer = {
         });
         SimpleAuth.Authenticators.OAuth2.reopen({
             serverTokenEndpoint: Ghost.apiRoot + '/authentication/token',
+            serverTokenRevocationEndpoint: Ghost.apiRoot + '/authentication/revoke',
             refreshAccessTokens: true,
             makeRequest: function (url, data) {
                 data.client_id = 'ghost-admin';
