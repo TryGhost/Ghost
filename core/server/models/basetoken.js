@@ -57,8 +57,28 @@ Basetoken = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NotFoundError('No user found'));
-    }
+    },
 
+    /**
+     * ### destroyByToken
+     * @param  {[type]} options has token where token is the token to destroy
+     */
+    destroyByToken: function (options) {
+        var token = options.token;
+
+        options = this.filterOptions(options, 'destroyByUser');
+
+        if (token) {
+            return ghostBookshelf.Collection.forge([], {model: this})
+                .query('where', 'token', '=', token)
+                .fetch(options)
+                .then(function (collection) {
+                    collection.invokeThen('destroy', options);
+                });
+        }
+
+        return Promise.reject(new errors.NotFoundError('Token not found'));
+    },
 });
 
 module.exports = Basetoken;
