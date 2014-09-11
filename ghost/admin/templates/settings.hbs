@@ -8,14 +8,14 @@
         <ul>
             {{#unless session.user.isAuthor}}
                 {{#unless session.user.isEditor}}
-                    {{gh-activating-list-item route="settings.general" title="General" classNames="settings-menu-general"}}
+                    {{gh-activating-list-item route="settings.general" title="General" classNames="settings-menu-general icon-settings"}}
                 {{/unless}}
 
-                {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-menu-users"}}
+                {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-menu-users icon-users"}}
 
             {{/unless}}
 
-            {{gh-activating-list-item route="settings.about" title="About" classNames="settings-menu-about"}}
+            {{gh-activating-list-item route="settings.about" title="About" classNames="settings-menu-about icon-ghost"}}
         </ul>
     </nav>
 
