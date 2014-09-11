@@ -29,6 +29,9 @@ var AuthenticationInitializer = {
                 return this._super(url, data);
             }
         });
+        SimpleAuth.Stores.LocalStorage.reopen({
+            key: 'ghost' + (Ghost.subdir.indexOf('/') === 0 ? '-' + Ghost.subdir.substr(1) : '') + ':session'
+        });
     }
 };
 
