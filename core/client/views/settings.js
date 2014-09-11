@@ -4,8 +4,8 @@ var SettingsView = Ember.View.extend({
     // used by SettingsContentBaseView and on resize to mobile from desktop
     showSettingsContent: function () {
         if (mobileQuery.matches) {
-            $('.settings-menu').animate({right: '100%', left: '-110%', 'margin-right': '15px'}, 300);
-            $('.settings-content').animate({right: '0', left: '0', 'margin-left': '0'}, 300);
+            $('.settings-menu').css({right: '100%', left: '-110%', 'margin-right': '15px'});
+            $('.settings-content').css({right: '0', left: '0', 'margin-left': '0'});
             $('.settings-header-inner').css('display', 'block');
         }
     },
@@ -13,12 +13,12 @@ var SettingsView = Ember.View.extend({
     showSettingsMenu: function () {
         if (mobileQuery.matches) {
             $('.settings-header-inner').css('display', 'none');
-            $('.settings-menu').animate({right: '0', left: '0', 'margin-right': '0'}, 300);
-            $('.settings-content').animate({right: '-100%', left: '100%', 'margin-left': '15'}, 300);
+            $('.settings-menu').css({right: '0', left: '0', 'margin-right': '0'});
+            $('.settings-content').css({right: '-100%', left: '100%', 'margin-left': '15'});
         }
     },
     showAll: function () {
-        //Remove any styles applied by jQuery#animate
+        //Remove any styles applied by jQuery#css
         $('.settings-menu, .settings-content').removeAttr('style');
     },
 
