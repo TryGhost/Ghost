@@ -37,20 +37,39 @@
 
     li {
         border-top: #fff 1px solid;
+        position: relative;
         @media (max-width: 900px) {
             margin-right: 0;
             border-top: #edece4 1px solid;
         }
 
+        // The icon
+        &:before {
+            position: absolute;
+            top: 50%;
+            left: 30px;
+            transform: translateY(-50%);
+            
+            transition: color 0.1s;
+            color: $brown;
+
+            @media (max-width: 900px) {
+                left: 15px;
+            }
+        }
+        &:hover:before {
+            color: $darkgrey;
+        }
+
         a {
             display: block;
             border-bottom: $lightbrown 1px solid;
-            padding: 15px 15px 15px 40px;
+            padding: 15px 15px 15px 60px;
             border-bottom: none;
             color: $brown;
 
             @media (max-width: 900px) {
-                padding-left: 15px ;
+                padding-left: 45px;
                 @include icon-after($i-chevron) {
                     float: right;
                     margin-top: 5px;
@@ -76,6 +95,11 @@
         &.active {
             @media (min-width: 900px) {
                 // only apply active styles on larger devices
+
+                // The icon
+                &:before {
+                    color: $darkgrey;
+                }
 
                 margin-right: 0;
                 position: relative;
@@ -104,32 +128,6 @@
         }
 
     } // li
-
-    // Add the icons for specific menu items
-    .about a {
-        @include icon($i-ghost);
-    }
-    .general a {
-        @include icon($i-settings);
-    }
-    .publishing a {
-        @include icon($i-content);
-    }
-    .services a {
-        @include icon($i-services);
-    }
-    .users a {
-        @include icon($i-users);
-    }
-    .appearance a {
-        @include icon($i-appearance);
-    }
-    .apps a {
-        @include icon($i-app);
-    }
-    .code a {
-        @include icon($i-code);
-    }
 
 } // .settings-menu
 
