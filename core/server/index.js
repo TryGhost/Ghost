@@ -104,12 +104,12 @@ function builtFilesExist() {
 // This is also a "one central repository" of adding startup notifications in case
 // in the future apps will want to hook into here
 function initNotifications() {
-    if (mailer.state && mailer.state.usingSendmail) {
+    if (mailer.state && mailer.state.usingDirect) {
         api.notifications.add({ notifications: [{
             type: 'info',
             message: [
-                "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
-                "It is recommended that you explicitly configure an e-mail service,",
+                "Ghost is attempting to use a direct method to send e-mail.",
+                "It is recommended that you explicitly configure an e-mail service.",
                 "See <a href=\"http://support.ghost.org/mail\" target=\"_blank\">http://support.ghost.org/mail</a> for instructions"
             ].join(' ')
         }] }, {context: {internal: true}});
