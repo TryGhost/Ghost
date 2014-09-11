@@ -1,10 +1,10 @@
 ---
 lang: zh_TW
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: 如何在主機上安裝 Ghost - Ghost 繁體中文文件
+meta_description: 這裡詳細敘述如何在本地或遠端環境中安裝 Ghost 部落格平台。
+heading: 安裝 Ghost &amp; 開始嘗試
+subheading:開始創建新部落格的第一步
 permalink: /zh_TW/installation/mac/
 chapter: installation
 section: mac
@@ -13,34 +13,34 @@ next_section: windows
 ---
 
 
-# Installing on Mac <a id="install-mac"></a>
+# 安裝在 Mac 上 <a id="install-mac"></a>
 
 <p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
-To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+為了在你的 Mac 上安裝 Node.js 和 Ghost，首先你需要先打開一個 Terminal 終端機視窗。你可以透過 Spotlight 輸入 "Terminal" 來打開一個終端機視窗。
 
-### Install Node
+### 安裝 Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, a '.pkg' file will be downloaded
-*   Click on the download to open the installer, this is going to install both node and npm.
-*   Click through the installer, finally entering your password and clicking 'install software'.
-*   Once the installer is complete, go into your open Terminal window and type `echo $PATH` to check that '/usr/local/bin/' is in your path.
+*   在 [http://nodejs.org](http://nodejs.org) 點擊 Install, 將會下載一個 '.pkg' 檔案。
+*   打開下載好的安裝程式可以同時安裝 node 和 npm。
+*   點擊安裝程式、輸入你的密碼並按下「安裝軟體」。
+*   安裝程序完成後，在終端機視窗中輸入 `echo $PATH` 來檢查 '/usr/local/bin/' 是否已經在你的環境變數之中。
 
-<p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">troubleshooting tips</a> to find out how to add it</p>
+<p class="note"><strong>注意：</strong> 如果 '/usr/local/bin' 沒有出現在你的 $PATH 環境變數之中, 請到 <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">常見問題排除</a> 來查看如何加入它。</p>
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
+如果你遇到了困難，可以參考 [這裡](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac") 來嘗試排除問題。
 
-### Install and Run Ghost
+### 安裝並啟動 Ghost
 
-*   On the [downloads page](https://ghost.org/download/), press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
-*   In finder, double-click on the downloaded zip file to extract it.
-*   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.
-*   In the new terminal tab type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   在 [下載頁面](https://ghost.org/download/), 下載最新的 zip 壓縮檔。
+*   按下最新下載檔案右邊的箭頭，選擇「在 Finder 中顯示」。
+*   在 Finder 中點兩下剛下載的 zip 檔案來解開壓縮。
+*   然後，將剛解開壓縮的「ghost-#.#.#」資料夾拖拉到終端機視窗的標簽頁，這樣將會開啟一個新的標簽頁並進入正確的檔案路徑。
+*   在這個新開啟的終端機標簽頁上輸入 `npm install --production` <span class="note">請注意是兩個 `-` 符號</span>
+*  當 npm 安裝完成之後，輸入 `npm start` 來啟動 Ghost 的開發模式。
+*   在瀏覽器的導覽列中輸入 <code class="path">127.0.0.1:2368</code> 就能看到剛啟動的 Ghost 部落格。
+*   在導覽列中輸入：<code class="path">127.0.0.1:2368/ghost</code>，您就可以註冊管理員帳號並進入到 Ghost 的控制台。
+*   請參考 [使用說明](/usage) 來查看接下來幾個步驟的指引。
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
 
