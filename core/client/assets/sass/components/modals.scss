@@ -69,6 +69,10 @@
     }
 }
 
+.modal {
+    @extend %modal;
+}
+
 .modal-action {
     @extend %modal;
     padding: 60px 0 30px;
