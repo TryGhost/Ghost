@@ -141,6 +141,12 @@
 // The main content panel on the right
 .settings-content {
     margin-left: 25%;
+    
+    @media (max-width: 800px) {
+        &.fade-in {
+            animation: none;
+        }
+    }
 
     .settings-general img {
         max-width: 100%;
