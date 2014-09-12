@@ -14,6 +14,7 @@ var moment      = require('moment'),
     filters     = require('../../server/filters'),
     template    = require('../helpers/template'),
     errors      = require('../errors'),
+    cheerio     = require('cheerio'),
 
     frontendControllers,
     staticPostPermalink,
@@ -485,23 +486,21 @@ frontendControllers = {
                                 categories: _.pluck(post.tags, 'name'),
                                 author: post.author ? post.author.name : null
                             },
-                            content = post.html;
+                            htmlContent = cheerio.load(post.html);
 
-                        //set img src to absolute url
-                        content = content.replace(/src=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                            /*jslint unparam:true*/
-                            p1 = url.resolve(siteUrl, p1);
-                            return "src='" + p1 + "' ";
+                        // convert relative resource urls to absolute
+                        ["href", "src"].forEach(function (attributeName) {
+                            htmlContent("[" + attributeName + "]").each(function (ix, el) {
+                                el = htmlContent(el);
+
+                                var attributeValue = el.attr(attributeName);
+                                attributeValue = url.resolve(siteUrl, attributeValue);
+
+                                el.attr(attributeName, attributeValue);
+                            });
                         });
 
-                        //set a href to absolute url
-                        content = content.replace(/href=["|'|\s]?([\w\/\?\$\.\+\-;%:@&=,_]+)["|'|\s]?/gi, function (match, p1) {
-                            /*jslint unparam:true*/
-                            p1 = url.resolve(siteUrl, p1);
-                            return "href='" + p1 + "' ";
-                        });
-
-                        item.description = content;
+                        item.description = htmlContent.html();
                         feed.item(item);
                     });
                 }).then(function () {
