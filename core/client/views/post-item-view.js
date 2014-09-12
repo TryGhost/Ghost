@@ -6,12 +6,16 @@ var PostItemView = itemView.extend({
     isFeatured: Ember.computed.alias('controller.model.featured'),
 
     isPage: Ember.computed.alias('controller.model.page'),
-    
+
     //Edit post on double click
     doubleClick: function () {
         this.get('controller').send('openEditor', this.get('controller.model'));
+    },
+
+    click: function () {
+        this.get('controller').send('showPostContent');
     }
-    
+
 });
 
 export default PostItemView;
