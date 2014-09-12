@@ -669,6 +669,20 @@ body.zen {
 // Post Settings Menu
 // --------------------------------------------------
 
+ body.right-outlet-expanded {
+
+    .editor-cover {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 600;
+        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
+    }//.editor-cover
+}//body.right-outlet-expanded
+
 .post-settings {
     @include icon($i-settings, 14px);
     display: inline-block;
