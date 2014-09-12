@@ -1,5 +1,5 @@
 <header class="post-preview-header">
-    <button type="button" class="btn btn-default btn-back">Back</button>
+    <button type="button" class="btn btn-default btn-back" {{action "hidePostContent"}}>Back</button>
     <button type="button" {{bind-attr class="featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
         <span class="hidden">Star</span>
     </button>
