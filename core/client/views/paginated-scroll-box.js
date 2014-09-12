@@ -2,17 +2,17 @@ import setScrollClassName from 'ghost/utils/set-scroll-classname';
 import PaginationViewMixin from 'ghost/mixins/pagination-view-infinite-scroll';
 
 
-var PostsListView = Ember.View.extend(PaginationViewMixin, {
-    classNames: ['content-list-content'],
-
-    didInsertElement: function () {
-        this._super();
+var PaginatedScrollBox = Ember.View.extend(PaginationViewMixin, {
+    attachScrollClassHandler: function () {
         var el = this.$();
         el.on('scroll', Ember.run.bind(el, setScrollClassName, {
             target: el.closest('.content-list'),
             offset: 10
         }));
-    }
+    }.on('didInsertElement'),
+    detachScrollClassHandler: function () {
+        this.$().off('scroll');
+    }.on('willDestroyElement')
 });
 
-export default PostsListView;
+export default PaginatedScrollBox;

@@ -21,19 +21,19 @@ var PaginationViewInfiniteScrollMixin = Ember.Mixin.create({
     /**
      * Bind to the scroll event once the element is in the DOM
      */
-    didInsertElement: function () {
+    attachCheckScroll: function () {
         var el = this.$();
 
         el.on('scroll', Ember.run.bind(this, this.checkScroll));
-    },
+    }.on('didInsertElement'),
 
     /**
      * Unbind from the scroll event when the element is no longer in the DOM
      */
-    willDestroyElement: function () {
+    detachCheckScroll: function () {
         var el = this.$();
         el.off('scroll');
-    }
+    }.on('willDestroyElement')
 });
 
 export default PaginationViewInfiniteScrollMixin;

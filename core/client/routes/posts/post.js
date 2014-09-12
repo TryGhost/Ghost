@@ -55,7 +55,7 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
         this.controllerFor('posts').set('currentPost', model);
 
         if (mobileQuery.matches) {
-            this.controllerFor('posts').send('hideContentPreview');
+            this.controllerFor('posts.post').send('hidePostContent');
         }
     },
 
