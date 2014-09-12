@@ -71,23 +71,6 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
         //let the PaginationControllerMixin know what type of model we will be paginating
         //this is necesariy because we do not have access to the model inside the Controller::init method
         this._super({'modelType': 'post'});
-    },
-
-    actions: {
-        resetContentPreview: function () {
-            $('.js-content-list').removeAttr('style');
-            $('.js-content-preview').removeAttr('style');
-        },
-
-        showContentPreview: function () {
-            $('.js-content-list').animate({right: '100%', left: '-100%', 'margin-right': '15px'}, 300);
-            $('.js-content-preview').animate({right: '0', left: '0', 'margin-left': '0'}, 300);
-        },
-
-        hideContentPreview: function () {
-            $('.js-content-list').animate({right: '0', left: '0', 'margin-right': '0'}, 300);
-            $('.js-content-preview').animate({right: '-100%', left: '100%', 'margin-left': '15px'}, 300);
-        },
     }
 });
 
