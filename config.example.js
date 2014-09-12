@@ -26,6 +26,22 @@ config = {
             port: '2368'
         }
     },
+    
+    // ### Production on heroku
+    production: {
+        url: 'http://my-ghost-blog.herokuapp.com',
+        mail: {},
+        database: {
+            client: 'pg',
+            connection: process.env.DATABASE_URL,
+            debug: false,
+            filestorage: false
+        },
+        server: {
+            host: '0.0.0.0',
+            port: process.env.PORT
+        }
+    },
 
     // ### Development **(default)**
     development: {
