@@ -7,6 +7,7 @@ var _              = require('lodash'),
     crypto         = require('crypto'),
     validator      = require('validator'),
     validation     = require('../data/validation'),
+    config         = require('../config'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -844,6 +845,10 @@ User = ghostBookshelf.Model.extend({
                 '?d=404&s=250';
 
         return new Promise(function (resolve) {
+            if (config.isPrivacyDisabled('useGravatar')) {
+                resolve(userData);
+            }
+
             http.get('http:' + gravatarUrl, function (res) {
                 if (res.statusCode !== 404) {
                     userData.image = gravatarUrl;

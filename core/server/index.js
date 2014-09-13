@@ -142,6 +142,8 @@ function init(options) {
 
     // Load our config.js file from the local file system.
     return config.load(options.config).then(function () {
+        return config.checkDeprecated();
+    }).then(function () {
         // Make sure javascript files have been built via grunt concat
         return builtFilesExist();
     }).then(function () {
