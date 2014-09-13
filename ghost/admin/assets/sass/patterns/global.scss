@@ -20,15 +20,11 @@ body {
 }
 
 ::-moz-selection {
-    color: $darkgrey;
     background: lighten($blue, 20%);
-    text-shadow: none;
 }
 
 ::selection {
-    color: $darkgrey;
     background: lighten($blue, 20%);
-    text-shadow: none;
 }
 
 h1, h2, h3,
