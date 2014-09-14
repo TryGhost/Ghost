@@ -278,7 +278,7 @@ setupMiddleware = function (server) {
 
     // Static assets
     expressServer.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
-    expressServer.use('/content/images', storage.get_storage().serve());
+    expressServer.use('/content/images', storage.getStorage().serve());
     expressServer.use('/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: utils.ONE_YEAR_MS}));
     expressServer.use('/public', express['static'](path.join(corePath, '/built/public'), {maxAge: utils.ONE_YEAR_MS}));
 
