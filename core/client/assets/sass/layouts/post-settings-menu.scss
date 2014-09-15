@@ -62,7 +62,11 @@
     .image-uploader {
         padding-top: 35px;
         padding-bottom: 35px;
-        margin: 0 0 1.5rem 0;
+        margin: 0 0 1.6rem 0;
+
+        input {
+            width: auto;
+        }
     }
 
     .form-group {
@@ -76,7 +80,15 @@
     .nav-list {
         margin-top: 3rem;
     }
+
+    .pre-image-uploader {
+        width: auto;
+        min-height: 50px;
+        max-height: 250px;
+    }
+
 }
+
 
 .seo-preview {
     font-family: Arial, sans-serif;
