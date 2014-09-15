@@ -1,6 +1,8 @@
 import mobileQuery from 'ghost/utils/mobile';
 
 var ApplicationView = Ember.View.extend({
+    elementId: 'container',
+
     blogRoot: Ember.computed.alias('controller.ghostPaths.blogRoot'),
 
     setupGlobalMobileNav: function () {
@@ -56,6 +58,10 @@ var ApplicationView = Ember.View.extend({
         mobileQuery.removeListener(this.closeGlobalMobileNavOnDesktop);
     }.on('willDestroyElement'),
 
+
+    toggleRightOutletBodyClass: function () {
+        $('body').toggleClass('right-outlet-expanded', this.get('controller.showRightOutlet'));
+    }.observes('controller.showRightOutlet')
 });
 
 export default ApplicationView;

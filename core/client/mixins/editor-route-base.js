@@ -20,12 +20,6 @@ var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
         //The actual functionality is implemented in utils/codemirror-shortcuts
         codeMirrorShortcut: function (options) {
             this.get('controller.codemirror').shortcut(options.type);
-        },
-        togglePostSettings: function () {
-            Ember.$('body').toggleClass('right-outlet-expanded');
-        },
-        closePostSettings: function () {
-            Ember.$('body').removeClass('right-outlet-expanded');
         }
     },
 

@@ -34,6 +34,8 @@ var EditorNewRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, base
                 isDeleted = model.get('isDeleted'),
                 modelIsDirty = model.get('isDirty');
 
+            this.send('closeRightOutlet');
+
             // when `isDeleted && isSaving`, model is in-flight, being saved
             // to the server. when `isDeleted && !isSaving && !modelIsDirty`,
             // the record has already been deleted and the deletion persisted.

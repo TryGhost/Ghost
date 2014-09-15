@@ -1,9 +1,10 @@
-<div class="editor-cover" {{action "closePostSettings"}}></div>
-<div id="entry-controls" {{bind-attr class=":right-outlet isNew:unsaved"}}>
-    <div class="post-settings-menu outlet-pane outlet-pane-in">
+<div class="editor-cover" {{action "closeRightOutlet"}}></div>
+{{!----for halfdan:{{#gh-tabs-manager selected="showSubview" id="entry-controls" classNameBindings="isNew:unsaved :right-outlet"}}----}}
+<div id="entry-controls" {{bind-attr class="isNew:unsaved :right-outlet"}}>
+    <div {{bind-attr class="isViewingSubview:outlet-pane-out-left:outlet-pane-in :post-settings-menu :outlet-pane"}}>
         <div class="post-settings-header">
             <h4>Post Settings</h4>
-            <button class="close icon-x post-settings-header-action" {{action "closePostSettings"}}><span class="hidden">Close</span></button>
+            <button class="close icon-x post-settings-header-action" {{action "closeRightOutlet"}}><span class="hidden">Close</span></button>
         </div>
         <div class="post-settings-content">
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" image=image tagName="section"}}
@@ -43,45 +44,45 @@
                     <p>Static Page</p>
                 </label>
             </div>
-            <!--
             <ul class="nav-list nav-list-block">
-                <li class="nav-list-item">
-                    <a href="#">
-                        <b>Revision History</b>
-                        <span>12 versions of this post by 3 people.</span>
-                    </a>
-                </li>
-                <li class="nav-list-item">
-                    <a href="#">
-                        <b>Advanced Settings</b>
-                        <span>Convert to a page, mark as featured.</span>
-                    </a>
-                </li>
-                <li class="nav-list-item">
+                {{!--
+                {{#gh-tab tagName="li" classNames="nav-list-item"}}
                     <a href="#">
                         <b>Meta Data</b>
                         <span>Extra content for SEO and social media.</span>
                     </a>
-                </li>
-                <li class="nav-list-item">
+                {{/gh-tab}}
+                {{#gh-tab tagName="li" classNames="nav-list-item"}}
+                    <a href="#">
+                        <b>Advanced Settings</b>
+                        <span>Convert to a page, mark as featured.</span>
+                    </a>
+                {{/gh-tab}}
+                {{#gh-tab tagName="li" classNames="nav-list-item"}}
+                    <a href="#">
+                        <b>Revision History</b>
+                        <span>12 versions of this post by 3 people.</span>
+                    </a>
+                {{/gh-tab}}
+                {{#gh-tab tagName="li" classNames="nav-list-item"}}
                     <a href="#">
                         <b>Custom App</b>
                         <span>Registered an advanced setting panel.</span>
                     </a>
-                </li>
+                {{/gh-tab}}
+                --}}
             </ul>
-            -->
             <button type="button" class="btn btn-red icon-trash delete" {{action "openModal" "delete-post" this}}>Delete This Post</button>
             </form>
         </div><!-- .post-settings-content -->
-    </div><!-- .post-settings-menu -->
-    <!--
-    <div class="post-settings-menu outlet-pane outlet-pane-out-right">
-
+    </div><!-- .post-settings-menu --
+    <div {{bind-attr class="isViewingSubview:outlet-pane-in:outlet-pane-out-right :post-settings-menu :outlet-pane"}}>
+    {{!-----{{#gh-tab-pane}}-----}}
         <div class="post-settings-header subview">
-            <button class="back icon-chevron-left post-settings-header-action"><span class="hidden">Back</span></button>
+            <button {{action "closeSubview"}} class="back icon-chevron-left post-settings-header-action"><span class="hidden">Back</span></button>
             <h4>Meta Data</h4>
         </div>
+
 
         <div class="post-settings-content">
             <div class="form-group">
@@ -105,6 +106,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    -->
+    {{!---{{/gh-tab-pane}}----}}
+    </div>-->
 </div>
+{{!---{{/gh-tabs-manager}} ---}}
