@@ -389,7 +389,7 @@ coreHelpers.apps = function (context, options) {
 // Returns the config value for url.
 coreHelpers.blog_url = function (context, options) {
     /*jshint unused:false*/
-    return config.theme().url.toString();
+    return config.theme.url.toString();
 };
 
 coreHelpers.ghost_script_tags = function () {
@@ -501,7 +501,7 @@ coreHelpers.post_class = function (options) {
 coreHelpers.ghost_head = function (options) {
     /*jshint unused:false*/
     var self = this,
-        blog = config.theme(),
+        blog = config.theme,
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version,
@@ -563,7 +563,7 @@ coreHelpers.meta_title = function (options) {
         pageString = '';
 
     if (_.isString(this.relativeUrl)) {
-        blog = config.theme();
+        blog = config.theme;
 
         page = this.relativeUrl.match(/\/page\/(\d+)/);
 
@@ -595,7 +595,7 @@ coreHelpers.meta_description = function (options) {
         blog;
 
     if (_.isString(this.relativeUrl)) {
-        blog = config.theme();
+        blog = config.theme;
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
             description = blog.description;
         } else if (this.author) {
