@@ -490,7 +490,9 @@ var _              = require('lodash'),
                         'bower_components/google-caja/html-css-sanitizer-bundle.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                        'core/shared/lib/showdown/extensions/ghostgfm.js'
+                        'core/shared/lib/showdown/extensions/ghostgfm.js',
+                        
+                        'core/shared/lib/nanoscroller/nanoscroller.js'
                     ]
                 },
 
@@ -525,7 +527,9 @@ var _              = require('lodash'),
                         'bower_components/google-caja/html-css-sanitizer-bundle.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                        'core/shared/lib/showdown/extensions/ghostgfm.js'
+                        'core/shared/lib/showdown/extensions/ghostgfm.js',
+                        
+                        'core/shared/lib/nanoscroller/nanoscroller.js'
                     ]
                 }
             },
