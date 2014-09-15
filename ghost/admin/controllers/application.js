@@ -3,12 +3,9 @@ var ApplicationController = Ember.Controller.extend({
 
     topNotificationCount: 0,
     showGlobalMobileNav: false,
+    showRightOutlet: false,
 
     actions: {
-        toggleMenu: function () {
-            this.toggleProperty('showMenu');
-        },
-
         topNotificationChange: function (count) {
             this.set('topNotificationCount', count);
         }
