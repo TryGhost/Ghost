@@ -11,6 +11,7 @@ var _            = require('lodash'),
     docName      = 'settings',
     settings,
 
+    updateConfigTheme,
     updateSettingsCache,
     settingsFilter,
     filterPaths,
@@ -30,6 +31,22 @@ var _            = require('lodash'),
 
 
 /**
+* ### Updates Config Theme Settings
+* Maintains the cache of theme specific variables that are reliant on settings.
+* @private
+*/
+updateConfigTheme = function () {
+    config.set({
+        theme: {
+            title: settingsCache.title.value || '',
+            description: settingsCache.description.value || '',
+            logo: settingsCache.logo.value || '',
+            cover: settingsCache.cover.value || ''
+        }
+    });
+};
+
+/**
  * ### Update Settings Cache
  * Maintain the internal cache of the settings object
  * @public
@@ -44,12 +61,16 @@ updateSettingsCache = function (settings) {
             settingsCache[key] = setting;
         });
 
+        updateConfigTheme();
+
         return Promise.resolve(settingsCache);
     }
 
     return dataProvider.Settings.findAll()
         .then(function (result) {
             settingsCache = readSettingsResult(result.models);
+
+            updateConfigTheme();
 
             return settingsCache;
         });
@@ -200,10 +221,6 @@ populateDefaultSetting = function (key) {
 
         // Add to the settings cache
         return updateSettingsCache(readResult).then(function () {
-            // Try to update theme with the new settings
-            // if we're in the middle of populating, this might not work
-            return config.theme.update(settings, config.url).then(function () { return; }, function () { return; });
-        }).then(function () {
             // Get the result from the cache with permission checks
         });
     }).catch(function (err) {
@@ -382,8 +399,6 @@ settings = {
                 var readResult = readSettingsResult(result);
 
                 return updateSettingsCache(readResult).then(function () {
-                    return config.theme.update(settings, config.url);
-                }).then(function () {
                     return settingsResult(readResult, type);
                 });
             });

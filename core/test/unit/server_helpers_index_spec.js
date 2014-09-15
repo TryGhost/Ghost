@@ -47,13 +47,12 @@ describe('Core Helpers', function () {
                         'post.hbs': '/content/themes/casper/post.hbs'
                     }
                 }
+            },
+            theme: {
+                title: 'Ghost',
+                description: 'Just a blogging platform.',
+                url: 'http://testurl.com'
             }
-        });
-
-        existingConfig.theme = sandbox.stub().returns({
-            title: 'Ghost',
-            description: 'Just a blogging platform.',
-            url: 'http://testurl.com'
         });
 
         helpers.loadCoreHelpers(adminHbs);
@@ -564,7 +563,12 @@ describe('Core Helpers', function () {
         var configUrl = config.url;
 
         afterEach(function () {
-            config.set({url: configUrl});
+            overrideConfig({
+                url: configUrl,
+                theme: {
+                    title: 'Ghost'
+                }
+            });
         });
 
         it('has loaded ghost_head helper', function () {
