@@ -1,9 +1,10 @@
-<header class="post-preview-header">
+<header class="post-preview-header clearfix">
     {{#link-to "posts" tagName="button" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">Preview</h2>
     <button type="button" {{bind-attr class="featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
         <span class="hidden">Star</span>
     </button>
-    <small>
+    <small class="post-published-by">
         <span class="status">{{#if isPublished}}Published{{else}}Written{{/if}}</span>
         <span class="normal">by</span>
         <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
