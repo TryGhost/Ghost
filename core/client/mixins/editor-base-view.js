@@ -40,18 +40,16 @@ var EditorViewMixin = Ember.Mixin.create({
         }
 
         var scrollInfo = this.get('markdownScrollInfo'),
-            codemirror = scrollInfo.codemirror,
-            markdownHeight = scrollInfo.height - scrollInfo.clientHeight,
-            previewHeight = this.get('$previewContent').height() - this.get('$previewViewPort').height(),
-            ratio = previewHeight / markdownHeight,
-            previewPosition = scrollInfo.top * ratio,
-            isCursorAtEnd = codemirror.getCursor('end').line > codemirror.lineCount() - 5;
+            markdownHeight,
+            previewHeight,
+            ratio;
 
-        if (isCursorAtEnd) {
-            previewPosition = previewHeight + 30;
-        }
+        markdownHeight = scrollInfo.height - scrollInfo.clientHeight;
+        previewHeight = this.get('$previewContent').height() - this.get('$previewViewPort').height();
 
-        return previewPosition;
+        ratio = previewHeight / markdownHeight;
+
+        return scrollInfo.top * ratio;
     })
 });
 
