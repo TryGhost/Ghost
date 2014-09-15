@@ -24,8 +24,7 @@ describe('Core Helpers', function () {
         };
 
     beforeEach(function (done) {
-        var adminHbs = hbs.create(),
-            existingConfig = helpers.__get__('config');
+        var adminHbs = hbs.create();
         helpers = rewire('../../server/helpers');
         sandbox = sinon.sandbox.create();
         apiStub = sandbox.stub(api.settings, 'read', function () {
