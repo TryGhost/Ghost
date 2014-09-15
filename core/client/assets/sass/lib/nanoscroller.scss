@@ -25,12 +25,12 @@
 .nano > .nano-pane {
     background: transparent;
     position: absolute;
-    width: 6px;
+    width: 7px;
     right: 2px;
     top: 2px;
     bottom: 2px;
     opacity: 0;
-    transition: 0.35s;
+    transition: 0.45s;
     border-radius: 10px;
 }
 .nano > .nano-pane > .nano-slider {
@@ -44,7 +44,8 @@
 .nano-pane.flashed {
     opacity: 1;
 }
-.nano > .nano-pane:hover {
+.nano > .nano-pane:hover,
+.nano > .nano-pane.active {
     width: 10px;
     background: rgba(0, 0, 0, .15);
     opacity: 1;
