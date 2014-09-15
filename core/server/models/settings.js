@@ -21,11 +21,6 @@ function parseDefaultSettings() {
             setting.type = categoryName;
             setting.key = settingName;
 
-            // Special case for dbHash
-            if (setting.key === 'dbHash' && setting.defaultValue === null) {
-                setting.defaultValue = uuid.v4();
-            }
-
             defaultSettingsFlattened[settingName] = setting;
         });
     });
