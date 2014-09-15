@@ -6,15 +6,7 @@
             <button class="close icon-x post-settings-header-action" {{action "closePostSettings"}}><span class="hidden">Close</span></button>
         </div>
         <div class="post-settings-content">
-            <!--
-            <section class="image-uploader">
-                <span class="media">
-                    <span class="hidden">Image Upload</span>
-                </span>
-                <img class="js-upload-target" style="display: none;" src="">
-                <div class="description">Add image of <strong></strong></div>
-            </section>
-            -->
+            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" image=image tagName="section"}}
             <form>
             <div class="form-group">
                 <label for="blog-title">Post URL</label>
