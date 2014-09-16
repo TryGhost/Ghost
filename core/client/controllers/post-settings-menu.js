@@ -19,7 +19,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     selectedAuthor: null,
     initializeSelectedAuthor: function () {
         var self = this;
-        
+
         return this.get('author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
@@ -255,6 +255,36 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
+            if (this.get('isNew')) {
+                return;
+            }
+
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+                self.showErrors(errors);
+                self.get('model').rollback();
+            });
+        },
+
+        setCoverImage: function (image) {
+            var self = this;
+
+            this.set('image', image);
+
+            if (this.get('isNew')) {
+                return;
+            }
+
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+                self.showErrors(errors);
+                self.get('model').rollback();
+            });
+        },
+
+        clearCoverImage: function () {
+            var self = this;
+
+            this.set('image', '');
+
             if (this.get('isNew')) {
                 return;
             }
