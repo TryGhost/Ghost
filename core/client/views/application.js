@@ -1,4 +1,4 @@
-import {mobileQuery} from 'ghost/utils/mobile';
+import mobileQuery from 'ghost/utils/mobile';
 
 var ApplicationView = Ember.View.extend({
     blogRoot: Ember.computed.alias('controller.ghostPaths.blogRoot'),
@@ -33,7 +33,7 @@ var ApplicationView = Ember.View.extend({
             $('.js-user-menu-dropdown-menu').removeClass('dropdown-triangle-bottom').addClass('dropdown-triangle-top-right');
         }
     },
-    
+
     showGlobalMobileNavObserver: function () {
         if (this.get('controller.showGlobalMobileNav')) {
             $('body').addClass('global-nav-expanded');
