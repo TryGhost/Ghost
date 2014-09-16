@@ -1,7 +1,10 @@
 import {mobileQuery} from 'ghost/utils/mobile';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
+import styleBody from 'ghost/mixins/style-body';
 
-var SettingsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, {
+var SettingsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, styleBody, {
+    classNames: ['settings-main'],
+
     // redirect to general tab, unless on a mobile phone
     beforeModel: function () {
         var self = this;
@@ -26,7 +29,7 @@ var SettingsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, 
                 }
             });
     },
-    
+
     deactivate: function () {
         if (this.get('fillOutlet')) {
             mobileQuery.removeListener(this.fillOutlet);
