@@ -1,43 +1,20 @@
-import {mobileQuery} from 'ghost/utils/mobile';
+import MobileParentView from 'ghost/views/mobile/parent-view';
 
-var SettingsView = Ember.View.extend({
-    // used by SettingsContentBaseView and on resize to mobile from desktop
-    showSettingsContent: function () {
-        if (mobileQuery.matches) {
-            $('.settings-menu').css({right: '100%', left: '-110%', 'margin-right': '15px'});
-            $('.settings-content').css({right: '0', left: '0', 'margin-left': '0'});
-            $('.settings-header-inner').css('display', 'block');
-        }
+var SettingsView = MobileParentView.extend({
+    // MobileParentView callbacks
+    showMenu: function () {
+        $('.js-settings-header-inner').css('display', 'none');
+        $('.js-settings-menu').css({right: '0', left: '0', 'margin-right': '0'});
+        $('.js-settings-content').css({right: '-100%', left: '100%', 'margin-left': '15'});
     },
-    // used by SettingsIndexView
-    showSettingsMenu: function () {
-        if (mobileQuery.matches) {
-            $('.settings-header-inner').css('display', 'none');
-            $('.settings-menu').css({right: '0', left: '0', 'margin-right': '0'});
-            $('.settings-content').css({right: '-100%', left: '100%', 'margin-left': '15'});
-        }
+    showContent: function () {
+        $('.js-settings-menu').css({right: '100%', left: '-110%', 'margin-right': '15px'});
+        $('.js-settings-content').css({right: '0', left: '0', 'margin-left': '0'});
+        $('.js-settings-header-inner').css('display', 'block');
     },
     showAll: function () {
-        //Remove any styles applied by jQuery#css
-        $('.settings-menu, .settings-content').removeAttr('style');
-    },
-
-    mobileInteractions: function () {
-        this.set('changeLayout', _.bind(function changeLayout(mq) {
-            if (mq.matches) {
-                //transitioned to mobile layout, so show content
-                this.showSettingsContent();
-            } else {
-                //went from mobile to desktop
-                this.showAll();
-            }
-        }, this));
-        mobileQuery.addListener(this.changeLayout);
-    }.on('didInsertElement'),
-
-    removeMobileInteractions: function () {
-        mobileQuery.removeListener(this.changeLayout);
-    }.on('willDestroyElement')
+        $('.js-settings-menu, .js-settings-content').removeAttr('style');
+    }
 });
 
 export default SettingsView;
