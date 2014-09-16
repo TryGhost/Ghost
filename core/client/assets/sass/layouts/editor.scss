@@ -846,5 +846,14 @@ body.zen {
 }
 
 .modal-markdown-help-table {
-    margin-top: 0;
+    margin: 20px 0;
+    width: 100%;
+
+    td, th {
+        padding: 8px;
+    }
+
+    th {
+        text-align: left;
+    }
 }
