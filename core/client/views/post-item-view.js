@@ -7,9 +7,8 @@ var PostItemView = itemView.extend({
 
     isPage: Ember.computed.alias('controller.model.page'),
 
-    //Edit post on double click
     doubleClick: function () {
-        this.get('controller').send('openEditor', this.get('controller.model'));
+        this.get('controller').send('openEditor');
     },
 
     click: function () {
