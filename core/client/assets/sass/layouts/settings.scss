@@ -49,7 +49,7 @@
             top: 50%;
             left: 30px;
             transform: translateY(-50%);
-            
+
             transition: color 0.1s;
             color: $brown;
 
@@ -139,8 +139,8 @@
 // The main content panel on the right
 .settings-content {
     margin-left: 25%;
-    
-    @media (max-width: 800px) {
+
+    @media (max-width: 900px) {
         &.fade-in {
             animation: none;
         }

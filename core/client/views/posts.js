@@ -1,21 +1,22 @@
-import {mobileQuery} from 'ghost/utils/mobile';
+import MobileParentView from 'ghost/views/mobile/parent-view';
 
-var PostsView = Ember.View.extend({
+var PostsView = MobileParentView.extend({
     classNames: ['content-view-container'],
     tagName: 'section',
 
-    resetMobileView: function (mq) {
-        if (!mq.matches) {
-            $('.js-content-list').removeAttr('style');
-            $('.js-content-preview').removeAttr('style');
-        }
+    // Mobile parent view callbacks
+    showMenu: function () {
+        $('.js-content-list').animate({right: '0', left: '0', 'margin-right': '0'}, 300);
+        $('.js-content-preview').animate({right: '-100%', left: '100%', 'margin-left': '15px'}, 300);
     },
-    attachResetMobileView: function () {
-        mobileQuery.addListener(this.resetMobileView);
-    }.on('didInsertElement'),
-    detachResetMobileView: function () {
-        mobileQuery.removeListener(this.resetMobileView);
-    }.on('willDestroyElement')
+    showContent: function () {
+        $('.js-content-list').animate({right: '100%', left: '-100%', 'margin-right': '15px'}, 300);
+        $('.js-content-preview').animate({right: '0', left: '0', 'margin-left': '0'}, 300);
+    },
+    showAll: function () {
+        $('.js-content-list').removeAttr('style');
+        $('.js-content-preview').removeAttr('style');
+    }
 });
 
 export default PostsView;

@@ -48,7 +48,7 @@
     z-index: 1050;
     pointer-events: auto;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         width: auto;
         padding: 10px;
     };
@@ -57,7 +57,7 @@
         min-width: 100px;
     }
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         width: 100%;
         margin-left: 0;
     }
@@ -77,7 +77,7 @@
     @extend %modal;
     padding: 60px 0 30px;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         padding: 30px 0;
     }
 }
@@ -134,7 +134,7 @@
 .modal-style-wide {
     width: 550px;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         width: 100%;
     }
 }
