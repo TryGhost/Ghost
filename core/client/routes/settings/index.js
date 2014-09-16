@@ -1,36 +1,25 @@
-import {mobileQuery} from 'ghost/utils/mobile';
+import MobileIndexRoute from 'ghost/routes/mobile-index-route';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
+import mobileQuery from 'ghost/utils/mobile';
 
-var SettingsIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, {
-    // redirect to general tab, unless on a mobile phone
+var SettingsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, {
+    // Redirect users without permission to view settings,
+    // and show the settings.general route unless the user
+    // is mobile
     beforeModel: function () {
         var self = this;
-        this.currentUser()
+        return this.currentUser()
             .then(this.transitionAuthor())
             .then(this.transitionEditor())
             .then(function () {
                 if (!mobileQuery.matches) {
                     self.transitionTo('settings.general');
-                } else {
-                    //fill the empty {{outlet}} in settings.hbs if the user
-                    //goes to fullscreen
-
-                    //fillOutlet needs special treatment so that it is
-                    //properly bound to this when called from a MQ event
-                    self.set('fillOutlet', _.bind(function fillOutlet(mq) {
-                        if (!mq.matches) {
-                            self.transitionTo('settings.general');
-                        }
-                    }, self));
-                    mobileQuery.addListener(self.fillOutlet);
                 }
             });
     },
-    
-    deactivate: function () {
-        if (this.get('fillOutlet')) {
-            mobileQuery.removeListener(this.fillOutlet);
-        }
+
+    desktopTransition: function () {
+        this.transitionTo('settings.general');
     }
 });
 
