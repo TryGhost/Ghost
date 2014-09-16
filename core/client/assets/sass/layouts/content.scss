@@ -9,7 +9,7 @@
     height: 100%;
     width: 100%;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         overflow-x: hidden;
     }
 }
@@ -24,7 +24,7 @@
     border-right: $lightbrown 1px solid;
     background: #fff;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         width: auto;
         right: 0;
         z-index: 500;
@@ -77,7 +77,7 @@
         float: right;
         text-align: right;
         margin-left: 15px;
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
             float: none;
         }
     }
@@ -118,7 +118,7 @@
             @media (max-width: 400px) {
                 padding: 15px;
             }
-            @media (max-width: 800px) {
+            @media (max-width: 900px) {
                 padding-right: 40px;
             }
 
@@ -128,7 +128,7 @@
                 margin-top: -6px;
                 right: 15px;
             }
-            @media (min-width: 801px) {
+            @media (min-width: 901px) {
                 &:after {
                     display: none;
                 }
@@ -143,7 +143,7 @@
     } // li
 
     li.active {
-        @media (min-width: 801px) {
+        @media (min-width: 901px) {
             // only apply active styles on larger devices
 
             border-bottom: lighten($midgrey, 40%) 1px solid;
@@ -178,7 +178,7 @@
     right:0;
     overflow: auto;
     background: #fff;
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         width: auto;
         left: 100%;
         right: -100%;
@@ -245,7 +245,7 @@
     padding: 0px;
     display: table;
     z-index: 600;
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         position: fixed;
         top: 45%;
         left: 50%;
@@ -255,7 +255,7 @@
         vertical-align: middle;
         display: table-cell;
         text-align: center;
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
             display: block;
             position: relative;
             left: -50%;
