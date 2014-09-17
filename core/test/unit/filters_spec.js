@@ -32,7 +32,7 @@ describe('Filters', function () {
         should.exist(filters.filterCallbacks[filterName]);
         should.exist(filters.filterCallbacks[filterName][filterPriority]);
 
-        filters.filterCallbacks[filterName][filterPriority].should.include(testFilterHandler);
+        filters.filterCallbacks[filterName][filterPriority].should.containEql(testFilterHandler);
     });
 
     it('can register filters with default priority', function () {
@@ -45,7 +45,7 @@ describe('Filters', function () {
         should.exist(filters.filterCallbacks[filterName]);
         should.exist(filters.filterCallbacks[filterName][defaultPriority]);
 
-        filters.filterCallbacks[filterName][defaultPriority].should.include(testFilterHandler);
+        filters.filterCallbacks[filterName][defaultPriority].should.containEql(testFilterHandler);
     });
 
     it('can register filters with priority null with default priority', function () {
@@ -58,7 +58,7 @@ describe('Filters', function () {
         should.exist(filters.filterCallbacks[filterName]);
         should.exist(filters.filterCallbacks[filterName][defaultPriority]);
 
-        filters.filterCallbacks[filterName][defaultPriority].should.include(testFilterHandler);
+        filters.filterCallbacks[filterName][defaultPriority].should.containEql(testFilterHandler);
     });
 
     it('executes filters in priority order', function (done) {

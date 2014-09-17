@@ -23,5 +23,6 @@
       "indent": 4,
       "onevar": true,
       "white": true,
-      "quotmark": "single"
+      "quotmark": "single",
+      "predef": [ "-Promise" ]
 }
