@@ -56,15 +56,12 @@
 }
 
 .user-image + .form-group {
-    margin-top: 155px;
     max-width: 500px;
     @media (min-width: 651px) and (max-width: 1000px) {
         width: calc(100% - 201px);
     }
     @media (min-width: 651px) {
         min-width: 285px;
-        margin-top: 0;
-        top: -110px;
         left: 40px;
     }
     @media (min-width: 1001px) {
@@ -74,7 +71,6 @@
 
 .user-profile {
     position: relative;
-    top: -110px;
     z-index: 1;
     @media (min-width: 651px) {
         padding-left: 143px;
@@ -97,13 +93,14 @@
 
 .user-details-top {
 
+    position: relative;
+
     @media (max-width: 650px) {
-        margin-bottom: 10px;
-        label[for='user-name'] { // Reverse the affects of .sr-only
-            position: static;
-            width: auto;
-            height: auto;
-        }
+        margin-top: 40px;
+        margin-bottom: 0;
+    }
+    @media (min-width: 651px) {
+        margin-top: -91px;
     }
 
     @media (min-width: 651px) {
@@ -111,6 +108,9 @@
         padding: 0;
         p {
             color: #fff;
+        }
+        label[for="user-name"] {
+            color: transparent;
         }
         .user-name {
             border-color: #fff;
@@ -135,7 +135,18 @@
 
 .user-image {
     display: block;
-    position: relative;
+    position: absolute;
+    
+    @media (min-width: 651px) {
+        top: -19px;
+        left: -98px;
+    }
+
+    @media (max-width: 650px) {
+        top: -159px;
+        left: -19px;
+    }
+    
     width: 126px;
     height: 126px;
     float: left;
@@ -147,16 +158,6 @@
     padding: 3px;
     background: #fff;
     z-index: 2;
-
-    margin-left: -104px;
-
-    @media (max-width: 550px) {
-        margin-left: 0px;
-    }
-
-    @media (min-width: 551px) and (max-width: 650px) {
-        margin-left: 20px;
-    }
 
     .img {
         display: block;
@@ -189,11 +190,4 @@
     text-transform: uppercase;
     text-decoration: none;
     transition: opacity 0.3s ease;
-}
-
-.user-details-bottom {
-    padding: 0 40px;
-    @media (min-width: 651px) {
-        margin: -104px 0 0 0;
-    }
 }
