@@ -22,5 +22,6 @@
       "trailing": true,
       "indent": 4,
       "onevar": true,
-      "white": true
+      "white": true,
+      "predef": [ "-Promise" ]
 }

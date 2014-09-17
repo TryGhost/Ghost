@@ -159,12 +159,12 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
+                .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    res.should.have.status(200);
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
@@ -186,12 +186,12 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/slug/welcome-to-ghost/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
+                .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    res.should.have.status(200);
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
@@ -212,12 +212,12 @@ describe('Post API', function () {
             request.get(testUtils.API.getApiQuery('posts/1/?include=author,tags,created_by'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
+                .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    res.should.have.status(200);
                     should.not.exist(res.headers['x-cache-invalidate']);
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
