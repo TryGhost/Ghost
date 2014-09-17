@@ -71,7 +71,7 @@
 
             <div class="form-group for-select">
                 <label for="activeTheme">Theme</label>
-                <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+                <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}} tabindex="0">
                    {{view Ember.Select
                        id="activeTheme"
                        name="general[activeTheme]"
