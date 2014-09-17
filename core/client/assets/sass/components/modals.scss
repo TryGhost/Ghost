@@ -142,3 +142,10 @@
 .modal-style-centered {
     text-align: center;
 }
+
+// Fixes for specific modals
+.invite-new-user {
+    .btn-green {
+        width: 100%;
+    }
+}
