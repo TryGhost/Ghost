@@ -410,8 +410,8 @@ describe('Apps', function () {
 
             should.exist(AppPermissions.DefaultPermissions.posts);
 
-            AppPermissions.DefaultPermissions.posts.should.contain('browse');
-            AppPermissions.DefaultPermissions.posts.should.contain('read');
+            AppPermissions.DefaultPermissions.posts.should.containEql('browse');
+            AppPermissions.DefaultPermissions.posts.should.containEql('read');
 
             // Make it hurt to add more so additional checks are added here
             _.keys(AppPermissions.DefaultPermissions).length.should.equal(1);
