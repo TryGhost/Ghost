@@ -11,5 +11,4 @@ function RequestEntityTooLargeError(message) {
 RequestEntityTooLargeError.prototype = Object.create(Error.prototype);
 RequestEntityTooLargeError.prototype.name = 'RequestEntityTooLargeError';
 
-
 module.exports = RequestEntityTooLargeError;

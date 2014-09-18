@@ -12,6 +12,7 @@ var _           = require('lodash'),
     errors      = require('../errors'),
     utils       = require('../utils'),
 
+    middleware,
     expressServer,
     oauthServer,
     loginSecurity = [],
@@ -31,7 +32,7 @@ function cacheOauthServer(server) {
     oauthServer = server;
 }
 
-var middleware = {
+middleware = {
 
     // ### Authenticate Middleware
     // authentication has to be done for /ghost/* routes with
@@ -52,14 +53,13 @@ var middleware = {
         if (res.isAdmin) {
             if (subPath.indexOf('/ghost/api/') === 0
                 && path.indexOf('/ghost/api/v0.1/authentication/') !== 0) {
-
-                return passport.authenticate('bearer', { session: false, failWithError: true },
+                return passport.authenticate('bearer', {session: false, failWithError: true},
                     function (err, user, info) {
                         if (err) {
                             return next(err); // will generate a 500 error
                         }
                         // Generate a JSON response reflecting authentication status
-                        if (! user) {
+                        if (!user) {
                             var msg = {
                                 type: 'error',
                                 message: 'Please Sign In',
@@ -84,8 +84,8 @@ var middleware = {
     cacheControl: function (options) {
         /*jslint unparam:true*/
         var profiles = {
-                'public': 'public, max-age=0',
-                'private': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                public: 'public, max-age=0',
+                private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
             },
             output;
 
@@ -212,8 +212,6 @@ var middleware = {
             deniedEmailRateLimit = (forgottenSecurity[index].count > rateForgottenAttempts);
         }
 
-
-
         if (deniedEmailRateLimit) {
             errors.logError(
                 'Only ' + rateForgottenAttempts + ' forgotten password attempts per email every ' +
@@ -254,7 +252,7 @@ var middleware = {
     // ### Authenticate Client Middleware
     // authenticate client that is asking for an access token
     authenticateClient: function (req, res, next) {
-        return passport.authenticate(['oauth2-client-password'], { session: false })(req, res, next);
+        return passport.authenticate(['oauth2-client-password'], {session: false})(req, res, next);
     },
 
     // ### Generate access token Middleware

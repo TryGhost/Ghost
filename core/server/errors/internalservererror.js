@@ -11,5 +11,4 @@ function InternalServerError(message) {
 InternalServerError.prototype = Object.create(Error.prototype);
 InternalServerError.prototype.name = 'InternalServerError';
 
-
 module.exports = InternalServerError;

@@ -4,10 +4,9 @@
 
 var express = require('express'),
     ghost   = require('./core'),
-    errors  = require('./core/server/errors');
-
-// Create our parent express app instance.
-var server = express();
+    errors  = require('./core/server/errors'),
+    // Create our parent express app instance.
+    server = express();
 
 ghost().then(function (instance) {
     // Mount our ghost instance on our desired subdirectory path if it exists.

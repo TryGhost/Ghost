@@ -7,7 +7,6 @@ var supertest     = require('supertest'),
     ghost         = require('../../../../../core'),
     request;
 
-
 describe('DB API', function () {
     var accesstoken = '';
 

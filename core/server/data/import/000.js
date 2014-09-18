@@ -5,7 +5,6 @@ var Promise = require('bluebird'),
 
     Importer000;
 
-
 Importer000 = function () {
     _.bindAll(this, 'doImport');
 
@@ -34,13 +33,12 @@ Importer000.prototype.canImport = function (data) {
     return Promise.reject('Unsupported version of data: ' + data.meta.version);
 };
 
-
 Importer000.prototype.loadUsers = function () {
     var users = {all: {}};
 
     return models.User.findAll({include: 'roles'}).then(function (_users) {
         _users.forEach(function (user) {
-            users.all[user.get('email')] = {'realId': user.get('id')};
+            users.all[user.get('email')] = {realId: user.get('id')};
             if (user.related('roles').toJSON()[0] && user.related('roles').toJSON()[0].name === 'Owner') {
                 users.owner = user.toJSON();
             }
@@ -54,9 +52,9 @@ Importer000.prototype.loadUsers = function () {
     });
 };
 
-//Importer000.prototype.importerFunction = function (t) {
+// Importer000.prototype.importerFunction = function (t) {
 //
-//};
+// };
 
 Importer000.prototype.doUserImport = function (t, tableData, users, errors) {
     var userOps = [],
@@ -104,7 +102,6 @@ Importer000.prototype.doImport = function (data) {
         users = result.all;
 
         return models.Base.transaction(function (t) {
-
             // Step 1: Attempt to handle adding new users
             self.doUserImport(t, tableData, users, errors).then(function (result) {
                 var importResults = [];
@@ -167,7 +164,7 @@ Importer000.prototype.doImport = function (data) {
                  */
             });
         }).then(function () {
-            //TODO: could return statistics of imported items
+            // TODO: could return statistics of imported items
             return Promise.resolve();
         });
     });

@@ -1,7 +1,7 @@
 var _       = require('lodash'),
     config  = require('../../../config/index'),
 
-    //private
+    // private
     doRawAndFlatten,
 
     // public

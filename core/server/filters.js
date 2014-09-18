@@ -13,13 +13,13 @@ defaults = {
     maxPriority: 9
 };
 
-var Filters = function () {
+function Filters() {
     // Holds the filters
     this.filterCallbacks = [];
 
     // Holds the filter hooks (that are built in to Ghost Core)
     this.filters = [];
-};
+}
 
 // Register a new filter callback function
 Filters.prototype.registerFilter = function (name, priority, fn) {

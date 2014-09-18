@@ -13,5 +13,4 @@ function DataImportError(message, offendingProperty, value) {
 DataImportError.prototype = Object.create(Error.prototype);
 DataImportError.prototype.name = 'DataImportError';
 
-
 module.exports = DataImportError;

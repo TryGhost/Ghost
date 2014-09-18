@@ -19,7 +19,6 @@ var path          = require('path'),
     defaultConfig = {},
     knexInstance;
 
-
 function ConfigManager(config) {
     /**
      * Our internal true representation of our current config object.
@@ -108,27 +107,27 @@ ConfigManager.prototype.set = function (config) {
             knex: knexInstance
         },
         paths: {
-            'appRoot':          appRoot,
-            'subdir':           subdir,
-            'config':           this._config.paths.config || path.join(appRoot, 'config.js'),
-            'configExample':    path.join(appRoot, 'config.example.js'),
-            'corePath':         corePath,
+            appRoot:          appRoot,
+            subdir:           subdir,
+            config:           this._config.paths.config || path.join(appRoot, 'config.js'),
+            configExample:    path.join(appRoot, 'config.example.js'),
+            corePath:         corePath,
 
-            'contentPath':      contentPath,
-            'themePath':        path.resolve(contentPath, 'themes'),
-            'appPath':          path.resolve(contentPath, 'apps'),
-            'imagesPath':       path.resolve(contentPath, 'images'),
-            'imagesRelPath':    'content/images',
+            contentPath:      contentPath,
+            themePath:        path.resolve(contentPath, 'themes'),
+            appPath:          path.resolve(contentPath, 'apps'),
+            imagesPath:       path.resolve(contentPath, 'images'),
+            imagesRelPath:    'content/images',
 
-            'adminViews':       path.join(corePath, '/server/views/'),
-            'helperTemplates':  path.join(corePath, '/server/helpers/tpl/'),
-            'exportPath':       path.join(corePath, '/server/data/export/'),
-            'lang':             path.join(corePath, '/shared/lang/'),
-            'debugPath':        subdir + '/ghost/debug/',
+            adminViews:       path.join(corePath, '/server/views/'),
+            helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
+            exportPath:       path.join(corePath, '/server/data/export/'),
+            lang:             path.join(corePath, '/shared/lang/'),
+            debugPath:        subdir + '/ghost/debug/',
 
-            'availableThemes':  this._config.paths.availableThemes || {},
-            'availableApps':    this._config.paths.availableApps || {},
-            'builtScriptPath':  path.join(corePath, 'built/scripts/')
+            availableThemes:  this._config.paths.availableThemes || {},
+            availableApps:    this._config.paths.availableApps || {},
+            builtScriptPath:  path.join(corePath, 'built/scripts/')
         },
         theme: {
             // normalise the URL by removing any trailing slash
@@ -258,7 +257,7 @@ ConfigManager.prototype.validate = function () {
     }
 
     // Check that our url is valid
-    if (!validator.isURL(config.url, { protocols: ['http', 'https'], require_protocol: true })) {
+    if (!validator.isURL(config.url, {protocols: ['http', 'https'], require_protocol: true})) {
         errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
 
         return Promise.reject(new Error('invalid site url'));
@@ -294,7 +293,7 @@ ConfigManager.prototype.validate = function () {
 
 /**
  * Helper method for checking the state of a particular privacy flag
- * @param privacyFlag The flag to check
+ * @param {String} privacyFlag The flag to check
  * @returns {boolean}
  */
 ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
@@ -324,10 +323,8 @@ ConfigManager.prototype.checkDeprecated = function () {
 
             errors.logWarn(errorText, explinationText, helpText);
         }
-
     });
 };
-
 
 if (testingEnvs.indexOf(process.env.NODE_ENV) > -1) {
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];

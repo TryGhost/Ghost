@@ -34,7 +34,6 @@ roles = {
         return canThis(options.context).browse.role().then(function () {
             return dataProvider.Role.findAll(options).then(function (foundRoles) {
                 if (options.permissions === 'assign') {
-
                     // Hacky implementation of filtering because when.filter is only available in when 3.4.0,
                     // but that's buggy and kills other tests and introduces Heisenbugs. Until we turn everything
                     // to Bluebird, this works. Sorry.
@@ -51,12 +50,12 @@ roles = {
                     });
 
                     return Promise.all(permissionMap).then(function (resolved) {
-                        return { roles: _.filter(resolved, function (role) {
+                        return {roles: _.filter(resolved, function (role) {
                             return role !== null;
-                        }) };
+                        })};
                     }).catch(errors.logAndThrowError);
                 }
-                return { roles: foundRoles.toJSON() };
+                return {roles: foundRoles.toJSON()};
             });
         })
         .catch(errors.logAndThrowError);

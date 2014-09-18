@@ -44,7 +44,6 @@ cleanError = function cleanError(error) {
     return new errors.DataImportError(message, offendingProperty, value);
 };
 
-
 handleErrors = function handleErrors(errorList) {
     var processedErrors = [];
 
@@ -67,11 +66,9 @@ handleErrors = function handleErrors(errorList) {
 };
 
 sanitize = function sanitize(data) {
-
     // Check for correct UUID and fix if neccessary
     _.each(_.keys(data.data), function (tableName) {
         _.each(data.data[tableName], function (importValues) {
-
             var uuidMissing = (!importValues.uuid && tables[tableName].uuid) ? true : false,
                 uuidMalformed = (importValues.uuid && !validator.isUUID(importValues.uuid)) ? true : false;
 

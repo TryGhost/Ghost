@@ -118,11 +118,11 @@ reset = function () {
 migrateUpFreshDb = function (tablesOnly) {
     var tableSequence,
         tables = _.map(schemaTables, function (table) {
-        return function () {
-            logInfo('Creating table: ' + table);
-            return utils.createTable(table);
-        };
-    });
+            return function () {
+                logInfo('Creating table: ' + table);
+                return utils.createTable(table);
+            };
+        });
     logInfo('Creating tables...');
     tableSequence = sequence(tables);
 
@@ -168,7 +168,6 @@ migrateUp = function (fromVersion, toVersion) {
                 });
             })
         );
-
     }).then(function () {
         migrateOps = migrateOps.concat(_.compact(modifyUniCommands));
 
