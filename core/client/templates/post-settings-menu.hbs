@@ -1,5 +1,5 @@
 <div class="editor-cover" {{action "closeRightOutlet"}}></div>
-{{!----for halfdan:{{#gh-tabs-manager selected="showSubview" id="entry-controls" classNameBindings="isNew:unsaved :right-outlet"}}----}}
+{{#gh-tabs-manager selected="showSubview" id="entry-controls" classNameBindings="isNew:unsaved :right-outlet"}}
 <div id="entry-controls" {{bind-attr class="isNew:unsaved :right-outlet"}}>
     <div {{bind-attr class="isViewingSubview:outlet-pane-out-left:outlet-pane-in :post-settings-menu :outlet-pane"}}>
         <div class="post-settings-header">
@@ -12,14 +12,14 @@
             <div class="form-group">
                 <label for="blog-title">Post URL</label>
                 <span class="input-icon icon-link">
-                    {{gh-blur-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" action="updateSlug" placeholder=slugPlaceholder selectOnClick="true" stopEnterKeyDownPropagation="true"}}
+                    {{gh-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" placeholder=slugPlaceholder selectOnClick="true" stopEnterKeyDownPropagation="true"}}
                 </span>
             </div>
 
             <div class="form-group">
                 <label for="blog-title">Publish Date</label>
                 <span class="input-icon icon-calendar">
-                    {{gh-blur-input class="post-setting-date" value=publishedAtValue name="post-setting-date" action="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
+                    {{gh-input class="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
                 </span>
             </div>
 
@@ -45,13 +45,13 @@
                 </label>
             </div>
             <ul class="nav-list nav-list-block">
-                {{!--
                 {{#gh-tab tagName="li" classNames="nav-list-item"}}
                     <a href="#">
                         <b>Meta Data</b>
                         <span>Extra content for SEO and social media.</span>
                     </a>
                 {{/gh-tab}}
+                {{!--
                 {{#gh-tab tagName="li" classNames="nav-list-item"}}
                     <a href="#">
                         <b>Advanced Settings</b>
@@ -75,9 +75,9 @@
             <button type="button" class="btn btn-red icon-trash delete" {{action "openModal" "delete-post" this}}>Delete This Post</button>
             </form>
         </div><!-- .post-settings-content -->
-    </div><!-- .post-settings-menu --
+    </div><!-- .post-settings-menu -->
     <div {{bind-attr class="isViewingSubview:outlet-pane-in:outlet-pane-out-right :post-settings-menu :outlet-pane"}}>
-    {{!-----{{#gh-tab-pane}}-----}}
+    {{#gh-tab-pane}}
         <div class="post-settings-header subview">
             <button {{action "closeSubview"}} class="back icon-chevron-left post-settings-header-action"><span class="hidden">Back</span></button>
             <h4>Meta Data</h4>
@@ -87,26 +87,26 @@
         <div class="post-settings-content">
             <div class="form-group">
                 <label for="blog-title">Meta Title</label>
-                <input type="text" value="My Post is Super SEO Friendly" />
-                <p>Recommended: <b>70</b> characters. You’ve used <b class="green">43</b></p>
+                {{gh-input class="post-setting-meta-title" value=metaTitleValue name="post-setting-meta-title" focus-out="setMetaTitle" placeholder=titleScratch stopEnterKeyDownPropagation="true"}}
+                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleValue 70}}</p>
             </div>
 
             <div class="form-group">
                 <label for="blog-title">Meta Description</label>
-                <textarea>In this fascinating posts I explore the value of SEO meta descriptions and their impact on blogging. Don’t miss my stunning insights!</textarea>
-                <p>Recommended: <b>156</b> characters. You’ve used <b class="green">133</b></p>
+                {{gh-textarea class="post-setting-meta-description" value=metaDescriptionValue name="post-setting-meta-description" focus-out="setMetaDescription" placeholder=metaDescriptionPlaceholder stopEnterKeyDownPropagation="true"}}
+                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionValue 156}}</p>
             </div>
 
             <div class="form-group">
                 <label>Search Engine Result Preview</label>
                 <div class="seo-preview">
-                    <div class="seo-preview-title">My Post is Super SEO Friendly</div>
-                    <div class="seo-preview-link">myblog.com/this-is-my-post/</div>
-                    <div class="seo-preview-description">In this fascinating posts I explore the value of SEO meta descriptions and their impact on blogging. Don’t miss my stunning insights!</div>
+                    <div class="seo-preview-title">{{seoTitle}}</div>
+                    <div class="seo-preview-link">{{gh-blog-url}}/{{seoSlug}}{{#if seoSlug}}/{{/if}}</div>
+                    <div class="seo-preview-description">{{seoDescription}}</div>
                 </div>
             </div>
         </div>
-    {{!---{{/gh-tab-pane}}----}}
-    </div>-->
+    {{/gh-tab-pane}}
+    </div>
 </div>
-{{!---{{/gh-tabs-manager}} ---}}
+{{/gh-tabs-manager}}
