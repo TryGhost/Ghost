@@ -50,8 +50,6 @@ describe('Permissions', function () {
     });
 
 
-
-
 //    it('does not allow edit post without permission', function (done) {
 //        var fakePage = {
 //            id: 1

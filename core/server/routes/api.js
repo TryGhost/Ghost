@@ -12,6 +12,12 @@ apiRoutes = function (middleware) {
     router.get('/configuration', api.http(api.configuration.browse));
     router.get('/configuration/:key', api.http(api.configuration.read));
 
+    // ## Apps
+    router.get('/apps', api.http(api.apps.browse));
+    router.get('/apps/:id', api.http(api.apps.read));
+    router.del('/apps/:id', api.http(api.apps.destroy));
+    router.put('/apps/:id', api.http(api.apps.edit));
+
     // ## Posts
     router.get('/posts', api.http(api.posts.browse));
     router.post('/posts', api.http(api.posts.add));
@@ -64,7 +70,6 @@ apiRoutes = function (middleware) {
     router.post('/mail/test', function (req, res) {
         api.http(api.mail.sendTest)(req, res);
     });
-
 
     // ## Authentication
     router.post('/authentication/passwordreset',
