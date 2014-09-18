@@ -19,8 +19,7 @@ AppDependencies.prototype.install = function installAppDependencies() {
             if (!exists) {
                 // Nothing to do, resolve right away?
                 resolve();
-            }
-            else {
+            } else {
                 // Run npm install in the app directory
                 spawnOpts = {
                     cwd: self.appPath
@@ -47,7 +46,7 @@ AppDependencies.prototype.spawnCommand = function (command, args, opt) {
 
     opt = opt || {};
 
-    return spawn(winCommand, winArgs, _.defaults({ stdio: 'inherit' }, opt));
+    return spawn(winCommand, winArgs, _.defaults({stdio: 'inherit'}, opt));
 };
 
 module.exports = AppDependencies;

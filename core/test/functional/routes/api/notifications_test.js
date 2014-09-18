@@ -18,7 +18,6 @@ describe('Notifications API', function () {
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
         ghost({app: app}).then(function () {
             request = supertest.agent(app);
-
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
@@ -45,7 +44,7 @@ describe('Notifications API', function () {
         it('creates a new notification', function (done) {
             request.post(testUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
-                .send({ notifications: [newNotification] })
+                .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
                 .expect(201)
                 .end(function (err, res) {
@@ -79,7 +78,7 @@ describe('Notifications API', function () {
             // create the notification that is to be deleted
             request.post(testUtils.API.getApiQuery('notifications/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
-                .send({ notifications: [newNotification] })
+                .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
                 .expect(201)
                 .end(function (err, res) {
@@ -87,7 +86,7 @@ describe('Notifications API', function () {
                         return done(err);
                     }
 
-                    var location = res.headers['location'],
+                    var location = res.headers.location,
                         jsonResponse = res.body;
 
                     jsonResponse.notifications.should.exist;

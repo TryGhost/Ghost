@@ -24,7 +24,7 @@ validator.extend('notContains', function (str, badString) {
 });
 
 validator.extend('isEmptyOrURL', function (str) {
-    return (_.isEmpty(str) || validator.isURL(str, { require_protocol: false }));
+    return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
 });
 
 // Validation validation against schema attributes
@@ -57,12 +57,12 @@ validateSchema = function (tableName, model) {
                 }
             }
 
-            //check validations objects
+            // check validations objects
             if (schema[tableName][columnKey].hasOwnProperty('validations')) {
                 validationErrors = validationErrors.concat(validate(model[columnKey], columnKey, schema[tableName][columnKey].validations));
             }
 
-            //check type
+            // check type
             if (schema[tableName][columnKey].hasOwnProperty('type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(model[columnKey])) {
                     message = 'Value in [' + tableName + '.' + columnKey + '] is not an integer.';

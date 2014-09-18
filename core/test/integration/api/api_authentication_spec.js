@@ -17,9 +17,7 @@ describe('Authentication API', function () {
     should.exist(AuthAPI);
 
     describe('Setup', function () {
-
         describe('Not completed', function () {
-
             // TODO: stub settings
             beforeEach(testUtils.setup('roles', 'owner:pre', 'settings', 'perms:setting', 'perms:mail', 'perms:init'));
 
@@ -46,7 +44,7 @@ describe('Authentication API', function () {
                     return Promise.resolve();
                 });
 
-                AuthAPI.setup({ setup: [setupData] }).then(function (result) {
+                AuthAPI.setup({setup: [setupData]}).then(function (result) {
                     should.exist(result);
                     should.exist(result.users);
                     should.not.exist(result.meta);
@@ -67,7 +65,6 @@ describe('Authentication API', function () {
         });
 
         describe('Completed', function () {
-
             beforeEach(testUtils.setup('owner'));
 
             it('should report that setup has been completed', function (done) {
@@ -87,7 +84,7 @@ describe('Authentication API', function () {
                     title: 'a test blog'
                 };
 
-                AuthAPI.setup({ setup: [setupData] }).then(function () {
+                AuthAPI.setup({setup: [setupData]}).then(function () {
                     done(new Error('Setup was able to be run'));
                 }).catch(function (err) {
                     should.exist(err);

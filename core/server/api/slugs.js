@@ -43,7 +43,7 @@ slugs = {
                     return Promise.reject(new errors.InternalServerError('Could not generate slug.'));
                 }
 
-                return { slugs: [{ slug: slug }] };
+                return {slugs: [{slug: slug}]};
             });
         }).catch(function (err) {
             if (err) {

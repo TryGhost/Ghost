@@ -107,7 +107,7 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
     }, casper.failOnTimeout(test, 'No success notification :('));
 });
 
-//// ## General settings validations tests
+// ## General settings validations tests
 CasperTest.begin('General settings validation is correct', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -136,7 +136,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
 
     casper.thenClick('.js-bb-notification .close');
 
-    // Check postsPerPage autocorrect   
+    // Check postsPerPage autocorrect
     casper.fillAndSave('form#settings-general', {
         'general[postsPerPage]': 'notaninteger'
     });
@@ -181,7 +181,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
             return true;
         }, '"Owner" is not a role option for new users');
     });
-    //role options get loaded asynchronously; give them a chance to come in
+    // role options get loaded asynchronously; give them a chance to come in
     casper.waitForSelector('.invite-new-user select#new-user-role option', function then() {
         test.assertEval(function authorIsSelectedByDefault() {
             var options = document.querySelectorAll('.invite-new-user select#new-user-role option'),
@@ -312,7 +312,7 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
     casper.thenClick('body');
 
     casper.waitForResource(/\/slugs\/user\//, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.then(function checkSlugInputValue() {

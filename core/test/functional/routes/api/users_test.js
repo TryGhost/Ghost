@@ -37,7 +37,6 @@ describe('User API', function () {
     });
 
     describe('Browse', function () {
-
         it('returns dates in ISO 8601 format', function (done) {
             request.get(testUtils.API.getApiQuery('users/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -294,7 +293,7 @@ describe('User API', function () {
                     jsonResponse.users[0].should.exist;
                     testUtils.API.checkResponse(jsonResponse.users[0], 'user', ['roles']);
 
-                    dataToSend = { users: [
+                    dataToSend = {users: [
                         {website: changedValue}
                     ]};
 
@@ -346,7 +345,6 @@ describe('User API', function () {
 
                             done();
                         });
-
                 });
         });
     });

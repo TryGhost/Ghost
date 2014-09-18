@@ -25,7 +25,6 @@ var Promise     = require('bluebird'),
     populate,
     update;
 
-
 logInfo = function logInfo(message) {
     errors.logInfo('Migrations', message);
 };

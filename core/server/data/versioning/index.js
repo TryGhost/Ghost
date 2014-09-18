@@ -56,7 +56,7 @@ function getDatabaseVersion() {
 function setDatabaseVersion() {
     return config.database.knex('settings')
         .where('key', 'databaseVersion')
-        .update({ 'value': defaultDatabaseVersion });
+        .update({value: defaultDatabaseVersion});
 }
 
 module.exports = {

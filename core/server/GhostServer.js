@@ -31,12 +31,12 @@ GhostServer.prototype.logStartMessages = function () {
     // Tell users if their node version is not supported, and exit
     if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
         console.log(
-            "\nERROR: Unsupported version of Node".red,
-            "\nGhost needs Node version".red,
+            '\nERROR: Unsupported version of Node'.red,
+            '\nGhost needs Node version'.red,
             packageInfo.engines.node.yellow,
-            "you are using version".red,
+            'you are using version'.red,
             process.versions.node.yellow,
-            "\nPlease go to http://nodejs.org to get a supported version".green
+            '\nPlease go to http://nodejs.org to get a supported version'.green
         );
 
         process.exit(0);
@@ -45,36 +45,36 @@ GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(
-            "Ghost is running...".green,
-            "\nYour blog is now available on",
+            'Ghost is running...'.green,
+            '\nYour blog is now available on',
             config.url,
-            "\nCtrl+C to shut down".grey
+            '\nCtrl+C to shut down'.grey
         );
 
         // ensure that Ghost exits correctly on Ctrl+C
         process.removeAllListeners('SIGINT').on('SIGINT', function () {
             console.log(
-                "\nGhost has shut down".red,
-                "\nYour blog is now offline"
+                '\nGhost has shut down'.red,
+                '\nYour blog is now offline'
             );
             process.exit(0);
         });
     } else {
         console.log(
-            ("Ghost is running in " + process.env.NODE_ENV + "...").green,
-            "\nListening on",
+            ('Ghost is running in ' + process.env.NODE_ENV + '...').green,
+            '\nListening on',
                 config.getSocket() || config.server.host + ':' + config.server.port,
-            "\nUrl configured as:",
+            '\nUrl configured as:',
             config.url,
-            "\nCtrl+C to shut down".grey
+            '\nCtrl+C to shut down'.grey
         );
         // ensure that Ghost exits correctly on Ctrl+C
         process.removeAllListeners('SIGINT').on('SIGINT', function () {
             console.log(
-                "\nGhost has shutdown".red,
-                "\nGhost was running for",
+                '\nGhost has shutdown'.red,
+                '\nGhost was running for',
                 Math.round(process.uptime()),
-                "seconds"
+                'seconds'
             );
             process.exit(0);
         });
@@ -115,7 +115,6 @@ GhostServer.prototype.start = function (externalApp) {
             );
 
             fs.chmod(config.getSocket(), '0660');
-
         } else {
             self.httpServer = app.listen(
                 config.server.port,

@@ -38,7 +38,6 @@ themes = {
                             && key !== '_messages'
                             && key !== 'README.md'
                             ) {
-
                         var item = {
                             uuid: key
                         };
@@ -53,7 +52,7 @@ themes = {
                     }
                 });
 
-                return { themes: themes };
+                return {themes: themes};
             });
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
@@ -92,10 +91,10 @@ themes = {
 
                 // Activate the theme
                 return settings.edit(
-                    {settings: [{ key: 'activeTheme', value: themeName }]}, {context: {internal: true }}
+                    {settings: [{key: 'activeTheme', value: themeName}]}, {context: {internal: true}}
                 ).then(function () {
                     theme.active = true;
-                    return { themes: [theme]};
+                    return {themes: [theme]};
                 });
             });
         }, function () {

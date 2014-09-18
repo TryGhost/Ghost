@@ -14,5 +14,4 @@ function ValidationError(message, offendingProperty) {
 ValidationError.prototype = Object.create(Error.prototype);
 ValidationError.prototype.name = 'ValidationError';
 
-
 module.exports = ValidationError;

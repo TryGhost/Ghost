@@ -65,7 +65,6 @@ apiRoutes = function (middleware) {
         api.http(api.mail.sendTest)(req, res);
     });
 
-
     // ## Authentication
     router.post('/authentication/passwordreset',
         middleware.spamForgottenPrevention,

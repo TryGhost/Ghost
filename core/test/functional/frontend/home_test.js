@@ -75,4 +75,3 @@ CasperTest.begin('Test navigating to Post with date permalink', 4, function suit
     });
     CasperTest.Routines.togglePermalinks.run('off');
 }, false);
-

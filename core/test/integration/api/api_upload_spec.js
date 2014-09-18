@@ -77,7 +77,6 @@ describe('Upload API', function () {
                 result.should.equal('URL');
                 done();
             });
-
         });
 
         it('cannot upload jpg with incorrect extension', function (done) {

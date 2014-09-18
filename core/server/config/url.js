@@ -106,9 +106,9 @@ function urlFor(context, data, absolute) {
 
     // this will become really big
     knownPaths = {
-        'home': '/',
-        'rss': '/rss/',
-        'api': '/ghost/api/v0.1'
+        home: '/',
+        rss: '/rss/',
+        api: '/ghost/api/v0.1'
     };
 
     // Make data properly optional

@@ -8,7 +8,6 @@ var testUtils        = require('../../utils'),
     NotificationsAPI = require('../../../server/api/notifications');
 
 describe('Notifications API', function () {
-
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
@@ -22,7 +21,7 @@ describe('Notifications API', function () {
             message: 'Hello, this is dog'
         };
 
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.internal).then(function (result) {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
             var notification;
 
             should.exist(result);
@@ -43,7 +42,7 @@ describe('Notifications API', function () {
             message: 'Hello, this is dog'
         };
 
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.owner).then(function (result) {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.owner).then(function (result) {
             var notification;
 
             should.exist(result);
@@ -65,7 +64,7 @@ describe('Notifications API', function () {
             id: 99
         };
 
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.internal).then(function (result) {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
             var notification;
 
             should.exist(result);
@@ -86,7 +85,7 @@ describe('Notifications API', function () {
             type: 'error', // this can be 'error', 'success', 'warn' and 'info'
             message: 'This is an error' // A string. Should fit in one line.
         };
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.internal).then(function () {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function () {
             NotificationsAPI.browse(testUtils.context.internal).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -102,7 +101,7 @@ describe('Notifications API', function () {
             type: 'error', // this can be 'error', 'success', 'warn' and 'info'
             message: 'This is an error' // A string. Should fit in one line.
         };
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.owner).then(function () {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.owner).then(function () {
             NotificationsAPI.browse(testUtils.context.owner).then(function (results) {
                 should.exist(results);
                 should.exist(results.notifications);
@@ -113,26 +112,24 @@ describe('Notifications API', function () {
         });
     });
 
-
-
     it('can destroy (internal)', function (done) {
         var msg = {
             type: 'error',
             message: 'Goodbye, cruel world!'
         };
 
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.internal).then(function (result) {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
             var notification = result.notifications[0];
 
             NotificationsAPI.destroy(
                 _.extend(testUtils.context.internal, {id: notification.id})
             ).then(function (result) {
-                    should.exist(result);
-                    should.exist(result.notifications);
-                    result.notifications[0].id.should.equal(notification.id);
+                should.exist(result);
+                should.exist(result.notifications);
+                result.notifications[0].id.should.equal(notification.id);
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
     });
 
@@ -142,18 +139,18 @@ describe('Notifications API', function () {
             message: 'Goodbye, cruel world!'
         };
 
-        NotificationsAPI.add({ notifications: [msg] }, testUtils.context.internal).then(function (result) {
+        NotificationsAPI.add({notifications: [msg]}, testUtils.context.internal).then(function (result) {
             var notification = result.notifications[0];
 
             NotificationsAPI.destroy(
                 _.extend(testUtils.context.owner, {id: notification.id})
             ).then(function (result) {
-                    should.exist(result);
-                    should.exist(result.notifications);
-                    result.notifications[0].id.should.equal(notification.id);
+                should.exist(result);
+                should.exist(result.notifications);
+                result.notifications[0].id.should.equal(notification.id);
 
-                    done();
-                }).catch(done);
+                done();
+            }).catch(done);
         });
     });
 });

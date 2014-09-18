@@ -1,4 +1,3 @@
-
 var knex = require('knex');
 
 function BadApp(app) {
@@ -10,7 +9,6 @@ BadApp.prototype.install = function () {
 };
 
 BadApp.prototype.activate = function () {
-
 };
 
 module.exports = BadApp;

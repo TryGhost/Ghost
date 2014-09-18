@@ -13,7 +13,6 @@ var _             = require('lodash'),
 
     sandbox     = sinon.sandbox.create();
 
-
 describe('Themes API', function () {
     var config,
         configStub;
@@ -30,22 +29,22 @@ describe('Themes API', function () {
     beforeEach(function () {
         // Override settings.read for activeTheme
         sandbox.stub(SettingsAPI, 'read', function () {
-            return Promise.resolve({ settings: [{value: 'casper'}] });
+            return Promise.resolve({settings: [{value: 'casper'}]});
         });
 
         sandbox.stub(SettingsAPI, 'edit', function () {
-            return Promise.resolve({ settings: [{value: 'rasper'}] });
+            return Promise.resolve({settings: [{value: 'rasper'}]});
         });
 
         configStub = {
-            'paths': {
-                'subdir': '',
-                'availableThemes': {
-                    'casper': {
-                        'package.json': { name: 'Casper', version: '0.9.3' }
+            paths: {
+                subdir: '',
+                availableThemes: {
+                    casper: {
+                        'package.json': {name: 'Casper', version: '0.9.3'}
                     },
-                    'rasper': {
-                        'package.json': { name: 'Rasper', version: '0.9.6' }
+                    rasper: {
+                        'package.json': {name: 'Rasper', version: '0.9.6'}
                     }
                 }
             }
@@ -53,7 +52,6 @@ describe('Themes API', function () {
 
         config = ThemeAPI.__get__('config');
         _.extend(config, configStub);
-
     });
 
     should.exist(ThemeAPI);
@@ -70,7 +68,7 @@ describe('Themes API', function () {
     });
 
     it('can edit', function (done) {
-        ThemeAPI.edit({themes: [{uuid: 'rasper', active: true }]}, testUtils.context.owner).then(function (result) {
+        ThemeAPI.edit({themes: [{uuid: 'rasper', active: true}]}, testUtils.context.owner).then(function (result) {
             should.exist(result);
             should.exist(result.themes);
             result.themes.length.should.be.above(0);

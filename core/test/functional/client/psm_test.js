@@ -3,7 +3,6 @@
 
 /*globals CasperTest, casper, __utils__ */
 
-
 CasperTest.begin('Post settings menu', 14, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
@@ -56,7 +55,6 @@ CasperTest.begin('Post settings menu', 14, function suite(test) {
     casper.waitUntilVisible('.post-settings-menu button.delete', function onSuccess() {
         test.assert(true, 'delete post button should be visible for saved drafts');
     });
-
 });
 
 CasperTest.begin('Delete post modal', 7, function testDeleteModal(test) {
@@ -135,11 +133,11 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.then(function checkValueMatches() {
-        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        // using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
         var slugVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-slug');
         });
@@ -173,11 +171,11 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
     });
 
     casper.then(function checkValueMatches() {
-        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        // using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
         var dateVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-date');
         });
@@ -204,7 +202,7 @@ CasperTest.begin('Post can be changed to static page', 6, function suite(test) {
     casper.thenClick('label[for=static-page]');
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
 
         test.assertExists('.post-setting-static-page:checked', 'can turn on static page');
     });
@@ -212,7 +210,7 @@ CasperTest.begin('Post can be changed to static page', 6, function suite(test) {
     casper.thenClick('label[for=static-page]');
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(400 > resource.status);
+        test.assert(resource.status < 400);
 
         test.assertDoesntExist('.post-setting-static-page:checked', 'can turn off static page');
     });
@@ -251,7 +249,7 @@ CasperTest.begin('Post url input is reset from all whitespace back to original v
     });
 
     casper.then(function checkValueMatches() {
-        //using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
+        // using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
         var slugVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-slug');
         });

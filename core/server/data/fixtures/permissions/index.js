@@ -55,13 +55,12 @@ addAllRolesPermissions = function () {
     return Promise.all(ops);
 };
 
-
 addAllPermissions = function (options) {
     var ops = [];
-    _.each(fixtures.permissions, function (permissions, object_type) {
+    _.each(fixtures.permissions, function (permissions, objectType) {
         _.each(permissions, function (permission) {
             ops.push(function () {
-                permission.object_type = object_type;
+                permission.object_type = objectType;
                 return models.Permission.add(permission, options);
             });
         });

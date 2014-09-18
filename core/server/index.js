@@ -36,10 +36,10 @@ function doFirstRun() {
         'See <a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a> for instructions.'
     ];
 
-    return api.notifications.add({ notifications: [{
+    return api.notifications.add({notifications: [{
         type: 'info',
         message: firstRunMessage.join(' ')
-    }] }, {context: {internal: true}});
+    }]}, {context: {internal: true}});
 }
 
 function initDbHashAndFirstRun() {
@@ -73,9 +73,9 @@ function builtFilesExist() {
             helpers.scriptFiles.production : helpers.scriptFiles.development;
 
     function checkExist(fileName) {
-        var errorMessage = "Javascript files have not been built.",
-            errorHelp = "\nPlease read the getting started instructions at:" +
-                        "\nhttps://github.com/TryGhost/Ghost#getting-started-guide-for-developers";
+        var errorMessage = 'Javascript files have not been built.',
+            errorHelp = '\nPlease read the getting started instructions at:' +
+                        '\nhttps://github.com/TryGhost/Ghost#getting-started-guide-for-developers';
 
         return new Promise(function (resolve, reject) {
             fs.exists(fileName, function (exists) {
@@ -105,23 +105,23 @@ function builtFilesExist() {
 // in the future apps will want to hook into here
 function initNotifications() {
     if (mailer.state && mailer.state.usingDirect) {
-        api.notifications.add({ notifications: [{
+        api.notifications.add({notifications: [{
             type: 'info',
             message: [
-                "Ghost is attempting to use a direct method to send e-mail.",
-                "It is recommended that you explicitly configure an e-mail service.",
-                "See <a href=\"http://support.ghost.org/mail\" target=\"_blank\">http://support.ghost.org/mail</a> for instructions"
+                'Ghost is attempting to use a direct method to send e-mail.',
+                'It is recommended that you explicitly configure an e-mail service.',
+                'See <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions'
             ].join(' ')
-        }] }, {context: {internal: true}});
+        }]}, {context: {internal: true}});
     }
     if (mailer.state && mailer.state.emailDisabled) {
-        api.notifications.add({ notifications: [{
+        api.notifications.add({notifications: [{
             type: 'warn',
             message: [
-                "Ghost is currently unable to send e-mail.",
-                "See <a href=\"http://support.ghost.org/mail\" target=\"_blank\">http://support.ghost.org/mail</a> for instructions"
+                'Ghost is currently unable to send e-mail.',
+                'See <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions'
             ].join(' ')
-        }] }, {context: {internal: true}});
+        }]}, {context: {internal: true}});
     }
 }
 

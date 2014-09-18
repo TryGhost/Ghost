@@ -17,7 +17,6 @@ var assert   = require('assert'),
 should.equal(true, true);
 
 describe('Frontend Controller', function () {
-
     var sandbox,
         apiSettingsStub,
         adminEditPagePath = '/ghost/editor/';
@@ -42,7 +41,6 @@ describe('Frontend Controller', function () {
         };
     }
 
-
     describe('homepage redirects', function () {
         var res;
 
@@ -53,14 +51,14 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: {}, meta: {pagination: { pages: 3}}});
+                return Promise.resolve({posts: {}, meta: {pagination: {pages: 3}}});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
-                    'key': 'postsPerPage',
-                    'value': 5
+                    key: 'postsPerPage',
+                    value: 5
                 }]
             }));
         });
@@ -73,7 +71,6 @@ describe('Frontend Controller', function () {
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/').should.be.true;
             res.render.called.should.be.false;
-
         });
 
         it('Redirects to home if page number is 0', function () {
@@ -84,7 +81,6 @@ describe('Frontend Controller', function () {
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/').should.be.true;
             res.render.called.should.be.false;
-
         });
 
         it('Redirects to home if page number is 1', function () {
@@ -153,7 +149,6 @@ describe('Frontend Controller', function () {
     });
 
     describe('homepage', function () {
-
         beforeEach(function () {
             sandbox.stub(api.posts, 'browse', function () {
                 return Promise.resolve({
@@ -171,24 +166,24 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
-                    'key': 'activeTheme',
-                    'value': 'casper'
+                    key: 'activeTheme',
+                    value: 'casper'
                 }]
             }));
 
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
-                    'key': 'postsPerPage',
-                    'value': '10'
+                    key: 'postsPerPage',
+                    value: '10'
                 }]
             }));
 
             frontend.__set__('config', {
-                'paths': {
-                    'subdir': '',
-                    'availableThemes': {
-                        'casper': {
-                            'assets': null,
+                paths: {
+                    subdir: '',
+                    availableThemes: {
+                        casper: {
+                            assets: null,
                             'default.hbs': '/content/themes/casper/default.hbs',
                             'index.hbs': '/content/themes/casper/index.hbs',
                             'home.hbs': '/content/themes/casper/home.hbs',
@@ -236,11 +231,11 @@ describe('Frontend Controller', function () {
 
         it('Renders index.hbs template when home.hbs doesn\'t exist', function (done) {
             frontend.__set__('config', {
-                'paths': {
-                    'subdir': '',
-                    'availableThemes': {
-                        'casper': {
-                            'assets': null,
+                paths: {
+                    subdir: '',
+                    availableThemes: {
+                        casper: {
+                            assets: null,
                             'default.hbs': '/content/themes/casper/default.hbs',
                             'index.hbs': '/content/themes/casper/index.hbs',
                             'page.hbs': '/content/themes/casper/page.hbs',
@@ -268,40 +263,40 @@ describe('Frontend Controller', function () {
 
     describe('tag', function () {
         var mockPosts = [{
-                'status': 'published',
-                'id': 1,
-                'title': 'Test static page',
-                'slug': 'test-static-page',
-                'markdown': 'Test static page content',
-                'page': 1,
-                'published_at': new Date('2013/12/30').getTime(),
-                'author': {
-                    'id': 1,
-                    'name': 'Test User',
-                    'email': 'test@ghost.org'
+                status: 'published',
+                id: 1,
+                title: 'Test static page',
+                slug: 'test-static-page',
+                markdown: 'Test static page content',
+                page: 1,
+                published_at: new Date('2013/12/30').getTime(),
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    email: 'test@ghost.org'
                 }
             }, {
-                'status': 'published',
-                'id': 2,
-                'title': 'Test normal post',
-                'slug': 'test-normal-post',
-                'markdown': 'The test normal post content',
-                'page': 0,
-                'published_at': new Date('2014/1/2').getTime(),
-                'author': {
-                    'id': 1,
-                    'name': 'Test User',
-                    'email': 'test@ghost.org'
+                status: 'published',
+                id: 2,
+                title: 'Test normal post',
+                slug: 'test-normal-post',
+                markdown: 'The test normal post content',
+                page: 0,
+                published_at: new Date('2014/1/2').getTime(),
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    email: 'test@ghost.org'
                 }
             }],
             mockTags = [{
-                'name': 'video',
-                'slug': 'video',
-                'id': 1
+                name: 'video',
+                slug: 'video',
+                id: 1
             }, {
-                'name': 'audio',
-                'slug': 'audio',
-                'id': 2
+                name: 'audio',
+                slug: 'audio',
+                id: 2
             }];
 
         beforeEach(function () {
@@ -324,24 +319,24 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
-                    'key': 'activeTheme',
-                    'value': 'casper'
+                    key: 'activeTheme',
+                    value: 'casper'
                 }]
             }));
 
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
-                    'key': 'postsPerPage',
-                    'value': '10'
+                    key: 'postsPerPage',
+                    value: '10'
                 }]
             }));
 
             frontend.__set__('config', {
-                'paths': {
-                    'subdir': '',
-                    'availableThemes': {
-                        'casper': {
-                            'assets': null,
+                paths: {
+                    subdir: '',
+                    availableThemes: {
+                        casper: {
+                            assets: null,
                             'default.hbs': '/content/themes/casper/default.hbs',
                             'index.hbs': '/content/themes/casper/index.hbs',
                             'page.hbs': '/content/themes/casper/page.hbs',
@@ -353,7 +348,6 @@ describe('Frontend Controller', function () {
         });
 
         describe('custom tag template', function () {
-
             beforeEach(function () {
                 apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                     settings: [{
@@ -392,14 +386,14 @@ describe('Frontend Controller', function () {
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: {}, meta: {pagination: { pages: 3}}});
+                return Promise.resolve({posts: {}, meta: {pagination: {pages: 3}}});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
-                    'key': 'postsPerPage',
-                    'value': 5
+                    key: 'postsPerPage',
+                    value: 5
                 }]
             }));
         });
@@ -412,7 +406,6 @@ describe('Frontend Controller', function () {
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/tag/pumpkin/').should.be.true;
             res.render.called.should.be.false;
-
         });
 
         it('Redirects to base tag page if page number is 0', function () {
@@ -423,7 +416,6 @@ describe('Frontend Controller', function () {
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/tag/pumpkin/').should.be.true;
             res.render.called.should.be.false;
-
         });
 
         it('Redirects to base tag page if page number is 1', function () {
@@ -488,54 +480,53 @@ describe('Frontend Controller', function () {
                 res.render.called.should.be.false;
                 done();
             }).catch(done);
-
         });
     });
 
     describe('single', function () {
         var mockPosts = [{
-                'posts': [{
-                    'status': 'published',
-                    'id': 1,
-                    'title': 'Test static page',
-                    'slug': 'test-static-page',
-                    'markdown': 'Test static page content',
-                    'page': 1,
-                    'published_at': new Date('2013/12/30').getTime(),
-                    'author': {
-                        'id': 1,
-                        'name': 'Test User',
-                        'email': 'test@ghost.org'
+                posts: [{
+                    status: 'published',
+                    id: 1,
+                    title: 'Test static page',
+                    slug: 'test-static-page',
+                    markdown: 'Test static page content',
+                    page: 1,
+                    published_at: new Date('2013/12/30').getTime(),
+                    author: {
+                        id: 1,
+                        name: 'Test User',
+                        email: 'test@ghost.org'
                     }
                 }]
             }, {
-                'posts': [{
-                    'status': 'published',
-                    'id': 2,
-                    'title': 'Test normal post',
-                    'slug': 'test-normal-post',
-                    'markdown': 'The test normal post content',
-                    'page': 0,
-                    'published_at': new Date('2014/1/2').getTime(),
-                    'author': {
-                        'id': 1,
-                        'name': 'Test User',
-                        'email': 'test@ghost.org'
+                posts: [{
+                    status: 'published',
+                    id: 2,
+                    title: 'Test normal post',
+                    slug: 'test-normal-post',
+                    markdown: 'The test normal post content',
+                    page: 0,
+                    published_at: new Date('2014/1/2').getTime(),
+                    author: {
+                        id: 1,
+                        name: 'Test User',
+                        email: 'test@ghost.org'
                     }
                 }]
             }, {
-                'posts': [{
-                    'status': 'published',
-                    'id': 3,
-                    'title': 'About',
-                    'slug': 'about',
-                    'markdown': 'This is the about page content',
-                    'page': 1,
-                    'published_at': new Date('2014/1/30').getTime(),
-                    'author': {
-                        'id': 1,
-                        'name': 'Test User',
-                        'email': 'test@ghost.org'
+                posts: [{
+                    status: 'published',
+                    id: 3,
+                    title: 'About',
+                    slug: 'about',
+                    markdown: 'This is the about page content',
+                    page: 1,
+                    published_at: new Date('2014/1/30').getTime(),
+                    author: {
+                        id: 1,
+                        name: 'Test User',
+                        email: 'test@ghost.org'
                     }
                 }]
             }];
@@ -551,17 +542,17 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
                 settings: [{
-                    'key': 'activeTheme',
-                    'value': 'casper'
+                    key: 'activeTheme',
+                    value: 'casper'
                 }]
             }));
 
             frontend.__set__('config', {
-                'paths': {
-                    'subdir': '',
-                    'availableThemes': {
-                        'casper': {
-                            'assets': null,
+                paths: {
+                    subdir: '',
+                    availableThemes: {
+                        casper: {
+                            assets: null,
                             'default.hbs': '/content/themes/casper/default.hbs',
                             'index.hbs': '/content/themes/casper/index.hbs',
                             'page.hbs': '/content/themes/casper/page.hbs',
@@ -574,7 +565,6 @@ describe('Frontend Controller', function () {
         });
 
         describe('static pages', function () {
-
             describe('custom page templates', function () {
                 beforeEach(function () {
                     apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
@@ -1028,13 +1018,13 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             res = {
-                locals: { version: '' },
+                locals: {version: ''},
                 redirect: sandbox.spy(),
                 render: sandbox.spy()
             };
 
             sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: {}, meta: {pagination: { pages: 3}}});
+                return Promise.resolve({posts: {}, meta: {pagination: {pages: 3}}});
             });
 
             apiUsersStub = sandbox.stub(api.users, 'read').returns(Promise.resolve({}));
@@ -1042,20 +1032,20 @@ describe('Frontend Controller', function () {
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             apiSettingsStub.withArgs('title').returns(Promise.resolve({
                 settings: [{
-                    'key': 'title',
-                    'value': 'Test'
+                    key: 'title',
+                    value: 'Test'
                 }]
             }));
             apiSettingsStub.withArgs('description').returns(Promise.resolve({
                 settings: [{
-                    'key': 'description',
-                    'value': 'Some Text'
+                    key: 'description',
+                    value: 'Some Text'
                 }]
             }));
             apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                 settings: [{
-                    'key': 'permalinks',
-                    'value': '/:slug/'
+                    key: 'permalinks',
+                    value: '/:slug/'
                 }]
             }));
         });
@@ -1068,7 +1058,6 @@ describe('Frontend Controller', function () {
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/rss/').should.be.true;
             res.render.called.should.be.false;
-
         });
 
         it('Redirects to rss if page number is 0', function () {
@@ -1079,7 +1068,6 @@ describe('Frontend Controller', function () {
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/rss/').should.be.true;
             res.render.called.should.be.false;
-
         });
 
         it('Redirects to home if page number is 1', function () {
@@ -1140,7 +1128,6 @@ describe('Frontend Controller', function () {
                 res.render.called.should.be.false;
                 done();
             }).catch(done);
-
         });
     });
 });

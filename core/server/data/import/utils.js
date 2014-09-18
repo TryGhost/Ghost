@@ -49,11 +49,11 @@ utils = {
             if (tableData[obj]) {
                 // For each object in the tableData that matches
                 _.each(tableData[obj], function (data) {
-                    //console.log('checking ' + obj + ' ' + data.slug);
+                    // console.log('checking ' + obj + ' ' + data.slug);
                     // For each possible user foreign key
                     _.each(userKeys, function (key) {
                         if (_.has(data, key) && data[key] !== null) {
-                            //console.log('found ' + key + ' with value ' + data[key]);
+                            // console.log('found ' + key + ' with value ' + data[key]);
                             userMap[data[key]] = {};
                         }
                     });
@@ -105,23 +105,22 @@ utils = {
         var postTags,
             postsWithTags = {};
 
-
         postTags = tableData.posts_tags;
-        _.each(postTags, function (post_tag) {
-            if (!postsWithTags.hasOwnProperty(post_tag.post_id)) {
-                postsWithTags[post_tag.post_id] = [];
+        _.each(postTags, function (postTag) {
+            if (!postsWithTags.hasOwnProperty(postTag.post_id)) {
+                postsWithTags[postTag.post_id] = [];
             }
-            postsWithTags[post_tag.post_id].push(post_tag.tag_id);
+            postsWithTags[postTag.post_id].push(postTag.tag_id);
         });
 
-        _.each(postsWithTags, function (tag_ids, post_id) {
+        _.each(postsWithTags, function (tagIds, postId) {
             var post, tags;
             post = _.find(tableData.posts, function (post) {
-                return post.id === parseInt(post_id, 10);
+                return post.id === parseInt(postId, 10);
             });
             if (post) {
                 tags = _.filter(tableData.tags, function (tag) {
-                    return _.indexOf(tag_ids, tag.id) !== -1;
+                    return _.indexOf(tagIds, tag.id) !== -1;
                 });
                 post.tags = [];
                 _.each(tags, function (tag) {
@@ -136,13 +135,13 @@ utils = {
     },
 
     preProcessRolesUsers: function preProcessRolesUsers(tableData) {
-        _.each(tableData.roles_users, function (role_user) {
+        _.each(tableData.roles_users, function (roleUser) {
             var user = _.find(tableData.users, function (user) {
-                return user.id === parseInt(role_user.user_id, 10);
+                return user.id === parseInt(roleUser.user_id, 10);
             });
             // just the one role for now
             if (user && !user.roles) {
-                user.roles = [role_user.role_id];
+                user.roles = [roleUser.role_id];
             }
         });
 
@@ -265,10 +264,9 @@ utils = {
             datum.key = updatedSettingKeys[datum.key] || datum.key;
         });
 
-        ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction}))
-             .catch(function (error) {
-                return Promise.reject({raw: error, model: 'setting', data: tableData});
-            }));
+        ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction})).catch(function (error) {
+            return Promise.reject({raw: error, model: 'setting', data: tableData});
+        }));
 
         return Promise.settle(ops);
     },

@@ -12,7 +12,6 @@ var testUtils   = require('../utils/index'),
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
-
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     afterEach(function () {

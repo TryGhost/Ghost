@@ -2,8 +2,6 @@ var ghostBookshelf = require('./base'),
     App,
     Apps;
 
-
-
 App = ghostBookshelf.Model.extend({
     tableName: 'apps',
 

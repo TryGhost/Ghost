@@ -62,7 +62,7 @@ Post = ghostBookshelf.Model.extend({
         this.set('html', converter.makeHtml(this.get('markdown')));
 
         // disabling sanitization until we can implement a better version
-        //this.set('title', this.sanitize('title').trim());
+        // this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
 
         if ((this.hasChanged('status') || !this.get('published_at')) && this.get('status') === 'published') {
@@ -83,7 +83,6 @@ Post = ghostBookshelf.Model.extend({
                     self.set({slug: slug});
                 });
         }
-
     },
 
     creating: function (newPage, attr, options) {
@@ -244,15 +243,14 @@ Post = ghostBookshelf.Model.extend({
     /**
      * ### Find All
      *
-     * @param options
+     * @param {Object} options
      * @returns {*}
      */
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
+        options.withRelated = _.union(['tags', 'fields'], options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
     },
-
 
     /**
      * #### findPage
@@ -272,7 +270,7 @@ Post = ghostBookshelf.Model.extend({
      *     total: __
      *     }
      *
-     * @params {Object} options
+     * @param {Object} options
      */
     findPage: function (options) {
         options = options || {};
@@ -323,7 +321,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
+        options.withRelated = _.union(['tags', 'fields'], options.include);
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
@@ -468,7 +466,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union([ 'tags', 'fields' ], options.include);
+        options.withRelated = _.union(['tags', 'fields'], options.include);
 
         return ghostBookshelf.Model.findOne.call(this, data, options);
     },
@@ -524,7 +522,6 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
-
     /**
      * ### destroyByAuthor
      * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
@@ -547,7 +544,6 @@ Post = ghostBookshelf.Model.extend({
         }
         return Promise.reject(new errors.NotFoundError('No user found'));
     },
-
 
     permissible: function (postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,

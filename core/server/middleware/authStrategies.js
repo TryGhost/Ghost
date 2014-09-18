@@ -50,7 +50,7 @@ passport.use(new BearerStrategy(
                     .then(function (model) {
                         if (model) {
                             var user = model.toJSON(),
-                                info = { scope: '*' };
+                                info = {scope: '*'};
                             return done(null, {id: user.id}, info);
                         }
                         return done(null, false);
@@ -64,4 +64,3 @@ passport.use(new BearerStrategy(
         });
     }
 ));
-
