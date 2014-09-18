@@ -11,5 +11,4 @@ function UnsupportedMediaTypeError(message) {
 UnsupportedMediaTypeError.prototype = Object.create(Error.prototype);
 UnsupportedMediaTypeError.prototype.name = 'UnsupportedMediaTypeError';
 
-
 module.exports = UnsupportedMediaTypeError;

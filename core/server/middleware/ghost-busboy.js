@@ -16,7 +16,7 @@ function ghostBusBoy(req, res, next) {
         return next();
     }
 
-    busboy = new BusBoy({ headers: req.headers });
+    busboy = new BusBoy({headers: req.headers});
     tmpDir = os.tmpdir();
 
     req.files = req.files || {};
@@ -59,7 +59,6 @@ function ghostBusBoy(req, res, next) {
         });
 
         file.pipe(stream);
-
     });
 
     busboy.on('error', function (error) {

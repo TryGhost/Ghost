@@ -111,7 +111,7 @@ describe('Settings API', function () {
                     changedValue = 'Ghost changed',
                     settingToChange = {
                         settings: [
-                            { key: 'title', value: changedValue }
+                            {key: 'title', value: changedValue}
                         ]
                     };
 
@@ -167,7 +167,6 @@ describe('Settings API', function () {
             });
     });
 
-
     it('can\'t edit non existent setting', function (done) {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
@@ -181,7 +180,7 @@ describe('Settings API', function () {
                     newValue = 'new value';
                 jsonResponse.should.exist;
                 should.exist(jsonResponse.settings);
-                jsonResponse.settings = [{ key: 'testvalue', value: newValue }];
+                jsonResponse.settings = [{key: 'testvalue', value: newValue}];
 
                 request.put(testUtils.API.getApiQuery('settings/'))
                     .set('Authorization', 'Bearer ' + accesstoken)
@@ -201,6 +200,4 @@ describe('Settings API', function () {
                     });
             });
     });
-
-
 });

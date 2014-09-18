@@ -35,8 +35,8 @@ adminControllers = {
             };
 
             return api.notifications.browse({context: {internal: true}}).then(function (results) {
-                if (!_.some(results.notifications, { message: notification.message })) {
-                    return api.notifications.add({ notifications: [notification] }, {context: {internal: true}});
+                if (!_.some(results.notifications, {message: notification.message})) {
+                    return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
                 }
             });
         }).finally(function () {

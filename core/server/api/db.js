@@ -14,7 +14,6 @@ var dataExport       = require('../data/export'),
 
 api.settings         = require('./settings');
 
-
 function isValidFile(ext) {
     if (ext === '.json') {
         return true;
@@ -35,19 +34,19 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Ghost Export JSON format
      */
-    'exportContent': function (options) {
+    exportContent: function (options) {
         options = options || {};
 
         // Export data, otherwise send error 500
         return canThis(options.context).exportContent.db().then(function () {
-                return dataExport().then(function (exportedData) {
-                    return { db: [exportedData] };
-                }).catch(function (error) {
-                    return Promise.reject(new errors.InternalServerError(error.message || error));
-                });
-            }, function () {
-                return Promise.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
+            return dataExport().then(function (exportedData) {
+                return {db: [exportedData]};
+            }).catch(function (error) {
+                return Promise.reject(new errors.InternalServerError(error.message || error));
             });
+        }, function () {
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
+        });
     },
     /**
      * ### Import Content
@@ -57,7 +56,7 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    'importContent': function (options) {
+    importContent: function (options) {
         options = options || {};
         var databaseVersion,
             type,
@@ -79,7 +78,7 @@ db = {
                 }
             }).then(function () {
                 return api.settings.read(
-                    {key: 'databaseVersion', context: { internal: true }}
+                    {key: 'databaseVersion', context: {internal: true}}
                 ).then(function (response) {
                     var setting = response.settings[0];
 
@@ -113,9 +112,8 @@ db = {
 
                 // Import for the current version
                 return dataImport(databaseVersion, importData);
-
             }).then(api.settings.updateSettingsCache)
-            .return({ db: [] })
+            .return({db: []})
             .finally(function () {
                 // Unlink the file after import
                 return Promise.promisify(fs.unlink)(filepath);
@@ -132,12 +130,12 @@ db = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    'deleteAllContent': function (options) {
+    deleteAllContent: function (options) {
         options = options || {};
 
         return canThis(options.context).deleteAllContent.db().then(function () {
             return Promise.resolve(dataProvider.deleteAllContent())
-                .return({ db: [] })
+                .return({db: []})
                 .catch(function (error) {
                     return Promise.reject(new errors.InternalServerError(error.message || error));
                 });

@@ -66,7 +66,7 @@ loader = {
 
                 return perms.read().catch(function (err) {
                     // Provide a helpful error about which app
-                    return Promise.reject(new Error("Error loading app named " + name + "; problem reading permissions: " + err.message));
+                    return Promise.reject(new Error('Error loading app named ' + name + '; problem reading permissions: ' + err.message));
                 });
             })
             .then(function (appPerms) {
@@ -76,7 +76,7 @@ loader = {
 
                 // Check for an install() method on the app.
                 if (!_.isFunction(app.install)) {
-                    return Promise.reject(new Error("Error loading app named " + name + "; no install() method defined."));
+                    return Promise.reject(new Error('Error loading app named ' + name + '; no install() method defined.'));
                 }
 
                 // Run the app.install() method
@@ -97,7 +97,7 @@ loader = {
 
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
-                return Promise.reject(new Error("Error loading app named " + name + "; no activate() method defined."));
+                return Promise.reject(new Error('Error loading app named ' + name + '; no activate() method defined.'));
             }
 
             // Wrapping the activate() with a when because it's possible

@@ -85,7 +85,7 @@ posts = {
 
         return dataProvider.Post.findOne(data, options).then(function (result) {
             if (result) {
-                return { posts: [ result.toJSON() ]};
+                return {posts: [result.toJSON()]};
             }
 
             return Promise.reject(new errors.NotFoundError('Post not found.'));
@@ -118,7 +118,7 @@ posts = {
                     if (result.updated('status') !== result.get('status')) {
                         post.statusChanged = true;
                     }
-                    return { posts: [ post ]};
+                    return {posts: [post]};
                 }
 
                 return Promise.reject(new errors.NotFoundError('Post not found.'));
@@ -154,13 +154,12 @@ posts = {
                     // When creating a new post that is published right now, signal the change
                     post.statusChanged = true;
                 }
-                return { posts: [ post ]};
+                return {posts: [post]};
             });
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to add posts.'));
         });
     },
-
 
     /**
      * ### Destroy

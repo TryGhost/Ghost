@@ -14,7 +14,6 @@ var supertest     = require('supertest'),
     request;
 
 describe('Unauthorized', function () {
-
     before(function (done) {
         var app = express();
 
@@ -31,7 +30,6 @@ describe('Unauthorized', function () {
         }).catch(done);
     });
 
-
     describe('Unauthorized API', function () {
         it('can\'t retrieve posts', function (done) {
             request.get(testUtils.API.getApiQuery('posts/'))
@@ -45,13 +43,9 @@ describe('Unauthorized', function () {
                     res.should.be.json;
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
-                    //TODO: testUtils.API.checkResponseValue(jsonResponse, ['error']);
+                    // TODO: testUtils.API.checkResponseValue(jsonResponse, ['error']);
                     done();
-
                 });
         });
-
     });
-
-
 });

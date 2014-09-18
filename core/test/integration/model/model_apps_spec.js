@@ -21,7 +21,6 @@ describe('App Model', function () {
 
     it('can findAll', function (done) {
         AppModel.findAll().then(function (results) {
-
             should.exist(results);
 
             results.length.should.be.above(0);

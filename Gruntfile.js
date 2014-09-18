@@ -32,10 +32,47 @@ var _              = require('lodash'),
         });
     }()),
 
+    // ## List of files we want to lint through jshint and jscs to make sure
+    // they conform to our desired code styles.
+    lintFiles = {
+        // Linting files for server side or shared javascript code.
+        server: {
+            files: {
+                src: [
+                    '*.js',
+                    '!config*.js', // note: i added this, do we want this linted?
+                    'core/*.js',
+                    'core/server/**/*.js',
+                    'core/shared/**/*.js',
+                    '!core/shared/vendor/**/*.js',
+                    '!core/shared/lib/**/*.js'
+                ]
+            }
+        },
+        // Linting files for client side javascript code.
+        client: {
+            files: {
+                src: [
+                    'core/client/**/*.js',
+                    '!core/client/docs/js/*.js',
+                    '!core/client/assets/vendor/**/*.js',
+                    '!core/client/tpl/**/*.js'
+                ]
+            }
+        },
+        // Linting files for test code.
+        test: {
+            files: {
+                src: [
+                    'core/test/**/*.js'
+                ]
+            }
+        }
+    },
+
     // ## Grunt configuration
 
     configureGrunt = function (grunt) {
-
         // *This is not useful but required for jshint*
         colors.setTheme({silly: 'rainbow'});
 
@@ -65,7 +102,7 @@ var _              = require('lodash'),
                     files: ['core/shared/**/*.js'],
                     tasks: ['concat:dev']
                 },
-                'emberTemplates': {
+                emberTemplates: {
                     files: ['core/client/**/*.hbs'],
                     tasks: ['emberTemplates:dev']
                 },
@@ -121,49 +158,56 @@ var _              = require('lodash'),
             // ### grunt-contrib-jshint
             // Linting rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
             // more information.
-            jshint: {
-                // Linting rules for server side or shared javascript code
-                server: {
-                    options: {
-                        jshintrc: '.jshintrc'
+            jshint: (function () {
+                return _.merge({
+                    server: {
+                        options: {
+                            jshintrc: '.jshintrc'
+                        }
                     },
-                    files: {
-                        src: [
-                            '*.js',
-                            'core/*.js',
-                            'core/server/**/*.js',
-                            'core/shared/**/*.js',
-                            '!core/shared/vendor/**/*.js',
-                            '!core/shared/lib/**/*.js'
-                        ]
-                    }
-                },
-                // Linting rules for client side javascript code
-                client: {
-                    options: {
-                        jshintrc: 'core/client/.jshintrc'
+                    client: {
+                        options: {
+                            jshintrc: 'core/client/.jshintrc'
+                        }
                     },
-                    files: {
-                        src: [
-                            'core/client/**/*.js',
-                            '!core/client/docs/js/*.js',
-                            '!core/client/assets/vendor/**/*.js',
-                            '!core/client/tpl/**/*.js'
-                        ]
+                    test: {
+                        options: {
+                            jshintrc: 'core/test/.jshintrc'
+                        }
                     }
-                },
+                }, lintFiles);
+            })(),
 
-                test: {
-                    options: {
-                        jshintrc: 'core/test/.jshintrc'
+            // ### grunt-jscs
+            // Code style rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
+            // more information.
+            jscs: (function () {
+                var jscsConfig = _.merge({
+                    server: {
+                        options: {
+                            config: '.jscsrc'
+                        }
                     },
-                    files: {
-                        src: [
-                            'core/test/**/*.js'
-                        ]
+                    client: {
+                        options: {
+                            config: '.jscsrc'
+                        }
+                    },
+                    test: {
+                        options: {
+                            config: '.jscsrc'
+                        }
                     }
-                }
-            },
+                }, lintFiles);
+
+                // JSCS depends on Esprima which doesn't yet support ES6 module
+                // syntax.  As such we cannot run JSCS on the client code yet.
+                // Related JSCS issue: https://github.com/jscs-dev/node-jscs/issues/561
+                // @TODO(hswolff): remove this once JSCS supports ES6.
+                delete jscsConfig.client;
+
+                return jscsConfig;
+            })(),
 
             // ### grunt-mocha-cli
             // Configuration for the mocha test runner, used to run unit, integration and route tests as part of
@@ -280,14 +324,13 @@ var _              = require('lodash'),
                 options: {
                     silent: true, // suppress logging
                     map: true, // Use and update the sourcemap
-                    browsers: ["last 2 versions", "> 1%", "Explorer 10"]
+                    browsers: ['last 2 versions', '> 1%', 'Explorer 10']
                 },
                 single_file: {
                     src: 'core/client/assets/css/<%= pkg.name %>.min.css',
                     dest: 'core/client/assets/css/<%= pkg.name %>.min.css'
                 }
             },
-
 
             // ### grunt-ember-templates
             // Compiles handlebar templates for ember
@@ -320,7 +363,7 @@ var _              = require('lodash'),
                     files: {
                         'core/built/scripts/templates.js': 'core/client/templates/**/*.hbs'
                     }
-                },
+                }
             },
 
             // ### grunt-es6-module-transpiler
@@ -460,7 +503,7 @@ var _              = require('lodash'),
             // ### grunt-contrib-concat
             // concatenate multiple JS files into a single file ready for use
             concat: {
-                'dev': {
+                dev: {
                     nonull: true,
                     dest: 'core/built/scripts/vendor-dev.js',
                     src: [
@@ -492,12 +535,12 @@ var _              = require('lodash'),
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                         'core/shared/lib/showdown/extensions/ghostgfm.js',
-                        
+
                         'core/shared/lib/nanoscroller/nanoscroller.js'
                     ]
                 },
 
-                'prod': {
+                prod: {
                     nonull: true,
                     dest: 'core/built/scripts/vendor.js',
                     src: [
@@ -529,7 +572,7 @@ var _              = require('lodash'),
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                         'core/shared/lib/showdown/extensions/ghostgfm.js',
-                        
+
                         'core/shared/lib/nanoscroller/nanoscroller.js'
                     ]
                 }
@@ -562,7 +605,7 @@ var _              = require('lodash'),
 
             // ### grunt-update-submodules
             // Grunt task to update git submodules
-            'update_submodules': {
+            update_submodules: {
                 default: {
                     options: {
                         params: '--init'
@@ -580,7 +623,6 @@ var _              = require('lodash'),
         // Custom test runner for our Casper.js functional tests
         // This really ought to be refactored into a separate grunt task module
         grunt.registerTask('spawnCasperJS', function (target) {
-
             target = _.contains(['client', 'frontend', 'setup'], target) ? target + '/' : undefined;
 
             var done = this.async(),
@@ -650,7 +692,6 @@ var _              = require('lodash'),
         // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
         grunt.registerTask('docs', 'Generate Docs', ['docker']);
 
-
         // ## Testing
 
         // Ghost has an extensive set of test suites. The following section documents the various types of tests
@@ -719,11 +760,11 @@ var _              = require('lodash'),
         //
         // `grunt test` will lint and test your pre-built local Ghost codebase.
         //
-        // `grunt test` runs jshint as well as the 4 test suites. See the individual sub tasks below for details of
+        // `grunt test` runs jshint and jscs as well as the 4 test suites. See the individual sub tasks below for details of
         // each of the test suites.
         //
         grunt.registerTask('test', 'Run tests and lint code',
-            ['jshint', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
+            ['jshint', 'jscs', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
 
         // ### Unit Tests *(sub task)*
         // `grunt test-unit` will run just the unit tests
@@ -840,7 +881,6 @@ var _              = require('lodash'),
         grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report',
             ['clean:test', 'setTestEnv', 'ensureConfig', 'shell:coverage']);
 
-
         // ## Building assets
         //
         // Ghost's GitHub repository contains the un-built source code for Ghost. If you're looking for the already
@@ -921,7 +961,7 @@ var _              = require('lodash'),
 
                 grunt.verbose.writeln('Creating contributors template.');
                 grunt.file.write(templatePath,
-                    //Map contributors to the template.
+                    // Map contributors to the template.
                     _.map(contributors, function (contributor) {
                         return contributorTemplate
                             .replace(/<%githubUrl%>/g, contributor.githubUrl)
