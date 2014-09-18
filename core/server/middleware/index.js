@@ -195,7 +195,7 @@ function checkSSL(req, res, next) {
             // Check if forceAdminSSL: { redirect: false } is set, which means
             // we should just deny non-SSL access rather than redirect
             if (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect) {
-                return res.status(403).end();
+                return res.sendStatus(403);
             }
 
             redirectUrl = url.parse(config.urlSSL || config.url);
