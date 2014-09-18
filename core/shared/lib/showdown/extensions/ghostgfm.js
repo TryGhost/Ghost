@@ -22,6 +22,15 @@
                 }
             },
             {
+                // Escaped tildes
+                // NOTE: showdown already replaced "~" with "~T", and this char doesn't get escaped properly.
+                type    : 'lang',
+                regex   : '\\\\(~T)',
+                replace : function (match,  content) {
+                    return content;
+                }
+            },
+            {
                 // GFM newline and underscore modifications, happen BEFORE showdown
                 type    : 'lang',
                 filter  : function (text) {

@@ -50,6 +50,16 @@ describe('Ghost GFM showdown extension', function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it('should honour escaped tildes', function () {
+        /*jshint -W044 */
+        var testPhrase = {input: '\\~T\\~Tfoo_bar\\~T\\~T', output: /~T~Tfoo_bar~T~T/},
+        /*jshint +W044 */
+            processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        // The image is the entire markup, so the image box should be too
+        processedMarkup.should.match(testPhrase.output);
+    });
+
     it('should allow 4 underscores', function () {
         var testPhrase = {input: 'Ghost ____', output: /Ghost\s(?:&#95;){4}$/},
             processedMarkup = _ConvertPhrase(testPhrase.input);
