@@ -1,8 +1,8 @@
-var when               = require('when'),
-    _                  = require('lodash'),
-    dataProvider       = require('../models'),
-    settings           = require('./settings'),
-    ONE_DAY            = 86400000,
+var when = require('when'),
+    _ = require('lodash'),
+    dataProvider = require('../models'),
+    settings = require('./settings'),
+    ONE_DAY = 86400000,
     filteredAttributes = ['password', 'created_by', 'updated_by', 'last_login'],
     users;
 
