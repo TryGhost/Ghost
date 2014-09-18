@@ -26,17 +26,19 @@ function setConfig(config) {
 // Parameters:
 // - urlPath - string which must start and end with a slash
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
+// - secure (optional, default:false) - boolean whether or not to use urlSSL or url config
 // Returns:
 //  - a URL which always ends with a slash
-function createUrl(urlPath, absolute) {
+function createUrl(urlPath, absolute, secure) {
     urlPath = urlPath || '/';
     absolute = absolute || false;
 
-    var output = '';
+    var output = '', baseUrl;
 
     // create base of url, always ends without a slash
     if (absolute) {
-        output += ghostConfig.url.replace(/\/$/, '');
+        baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+        output += baseUrl.replace(/\/$/, '');
     } else {
         output += ghostConfig.paths.subdir;
     }
@@ -63,7 +65,7 @@ function urlPathForPost(post, permalinks) {
             id: function () { return post.id; }
         };
 
-    if (post.page === 1) {
+    if (post.page) {
         output += '/:slug/';
     } else {
         output += permalinks.value;
@@ -99,8 +101,15 @@ function urlPathForPost(post, permalinks) {
 // This is probably not the right place for this, but it's the best place for now
 function urlFor(context, data, absolute) {
     var urlPath = '/',
-        knownObjects = ['post', 'tag', 'user'],
-        knownPaths = {'home': '/', 'rss': '/rss/'}; // this will become really big
+        secure,
+        knownObjects = ['post', 'tag', 'author'],
+
+    // this will become really big
+    knownPaths = {
+        'home': '/',
+        'rss': '/rss/',
+        'api': '/ghost/api/v0.1'
+    };
 
     // Make data properly optional
     if (_.isBoolean(data)) {
@@ -108,14 +117,22 @@ function urlFor(context, data, absolute) {
         data = null;
     }
 
+    // Can pass 'secure' flag in either context or data arg
+    secure = (context && context.secure) || (data && data.secure);
+
     if (_.isObject(context) && context.relativeUrl) {
         urlPath = context.relativeUrl;
     } else if (_.isString(context) && _.indexOf(knownObjects, context) !== -1) {
         // trying to create a url for an object
         if (context === 'post' && data.post && data.permalinks) {
             urlPath = urlPathForPost(data.post, data.permalinks);
+            secure = data.post.secure;
         } else if (context === 'tag' && data.tag) {
             urlPath = '/tag/' + data.tag.slug + '/';
+            secure = data.tag.secure;
+        } else if (context === 'author' && data.author) {
+            urlPath = '/author/' + data.author.slug + '/';
+            secure = data.author.secure;
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
@@ -123,7 +140,7 @@ function urlFor(context, data, absolute) {
         urlPath = knownPaths[context] || '/';
     }
 
-    return createUrl(urlPath, absolute);
+    return createUrl(urlPath, absolute, secure);
 }
 
 // ## urlForPost
@@ -134,7 +151,9 @@ function urlFor(context, data, absolute) {
 // - post - a json object representing a post
 // - absolute (optional, default:false) - boolean whether or not the url should be absolute
 function urlForPost(settings, post, absolute) {
-    return settings.read('permalinks').then(function (permalinks) {
+    return settings.read('permalinks').then(function (response) {
+        var permalinks = response.settings[0];
+
         return urlFor('post', {post: post, permalinks: permalinks}, absolute);
     });
 }

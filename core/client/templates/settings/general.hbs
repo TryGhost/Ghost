@@ -1,0 +1,88 @@
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">General</h2>
+    <section class="page-actions">
+        <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
+    </section>
+</header>
+
+<section class="content settings-general">
+    <form id="settings-general" novalidate="novalidate">
+        <fieldset>
+
+            <div class="form-group">
+                <label for="blog-title">Blog Title</label>
+                {{input id="blog-title" name="general[title]" type="text" value=title}}
+                <p>The name of your blog</p>
+            </div>
+
+            <div class="form-group description-container">
+                <label for="blog-description">Blog Description</label>
+                {{textarea id="blog-description" name="general[description]" value=description}}
+                <p>
+                    Describe what your blog is about
+                    {{gh-count-characters description}}
+                </p>
+
+            </div>
+        </fieldset>
+
+        <div class="form-group">
+            <label for="blog-logo">Blog Logo</label>
+            {{#if logo}}
+                <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
+            {{else}}
+                <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
+            {{/if}}
+            <p>Display a sexy logo for your publication</p>
+        </div>
+
+        <div class="form-group">
+            <label for="blog-cover">Blog Cover</label>
+            {{#if cover}}
+                <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
+            {{else}}
+                <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
+            {{/if}}
+            <p>Display a cover image on your site</p>
+        </div>
+
+        <fieldset>
+            <div class="form-group">
+                <label for="email-address">Email Address</label>
+                {{input id="email-address" name="general[email-address]" type="email" value=email autocapitalize="off" autocorrect="off"}}
+                <p>Address to use for admin notifications</p>
+            </div>
+
+            <div class="form-group">
+                <label for="postsPerPage">Posts per page</label>
+                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=postsPerPage min="1" max="1000" type="number"}}
+                <p>How many posts should be displayed on each page</p>
+            </div>
+
+            <div class="form-group for-checkbox">
+                <label for="permalinks">Dated Permalinks</label>
+                <label class="checkbox" for="permalinks">
+                    {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
+                    <span class="input-toggle-component"></span>
+                    <p>Include the date in your post URLs</p>
+                </label>
+            </div>
+
+            <div class="form-group for-select">
+                <label for="activeTheme">Theme</label>
+                <span class="gh-select" {{bind-attr data-select-text=selectedTheme.label}}>
+                   {{view Ember.Select
+                       id="activeTheme"
+                       name="general[activeTheme]"
+                       content=themes
+                       optionValuePath="content.name"
+                       optionLabelPath="content.label"
+                       value=activeTheme
+                       selection=selectedTheme}}
+               </span>
+                <p>Select a theme for your blog</p>
+            </div>
+        </fieldset>
+    </form>
+</section>

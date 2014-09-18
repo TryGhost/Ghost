@@ -1,0 +1,17 @@
+<label class="tag-label" for="tags" title="Tags"><span class="hidden">Tags</span></label>
+<div class="tags">
+{{#each controller.tags}}
+    {{#view view.tagView tag=this}}
+        {{view.tag.name}}
+    {{/view}}
+{{/each}}
+</div>
+<input type="hidden" class="tags-holder" id="tags-holder">
+{{view view.tagInputView class="tag-input" id="tags" value=newTagText}}
+<ul class="suggestions overlay" {{bind-attr style=view.overlayStyles}}>
+  {{#each suggestions}}
+    {{#view view.suggestionView suggestion=this}}
+        <a href="javascript:void(0);">{{view.suggestion.highlightedName}}</a>
+    {{/view}}
+  {{/each}}
+</ul>

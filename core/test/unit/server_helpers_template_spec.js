@@ -1,20 +1,14 @@
-/*globals describe, beforeEach, it*/
-var testUtils = require('../utils'),
-    should    = require('should'),
-    sinon     = require('sinon'),
-    when      = require('when'),
-    _         = require('lodash'),
-    path      = require('path'),
+/*globals describe, it*/
+/*jshint expr:true*/
+var should    = require('should'),
     hbs = require('express-hbs'),
 
     // Stuff we are testing
-    config   = require('../../server/config'),
-    api      = require('../../server/api'),
     template = require('../../server/helpers/template');
 
 describe('Helpers Template', function () {
 
-    it("can execute a template", function () {
+    it('can execute a template', function () {
         hbs.registerPartial('test', '<h1>Hello {{name}}</h1>');
 
         var safeString = template.execute('test', {name: 'world'});
@@ -55,6 +49,38 @@ describe('Helpers Template', function () {
             view = template.getThemeViewForPost(themePaths, posts[2]);
             view.should.exist;
             view.should.eql('post');
+        });
+
+    });
+
+    describe('getThemeViewForTag', function () {
+        var themePathsWithTagViews = {
+                'assets': null,
+                'default.hbs': '/content/themes/casper/default.hbs',
+                'index.hbs': '/content/themes/casper/index.hbs',
+                'tag.hbs': '/content/themes/casper/tag.hbs',
+                'tag-design.hbs': '/content/themes/casper/tag-about.hbs'
+            },
+            themePaths = {
+                'assets': null,
+                'default.hbs': '/content/themes/casper/default.hbs',
+                'index.hbs': '/content/themes/casper/index.hbs'
+            },
+            TAG_CUSTOM_EXISTS = 'design',
+            TAG_DEFAULT = 'development';
+
+        it('will return correct view for a tag', function () {
+            var view = template.getThemeViewForTag(themePathsWithTagViews, TAG_CUSTOM_EXISTS);
+            view.should.exist;
+            view.should.eql('tag-design');
+
+            view = template.getThemeViewForTag(themePathsWithTagViews, TAG_DEFAULT);
+            view.should.exist;
+            view.should.eql('tag');
+
+            view = template.getThemeViewForTag(themePaths, TAG_DEFAULT);
+            view.should.exist;
+            view.should.eql('index');
         });
 
     });

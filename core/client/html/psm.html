@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New PSM</title>
+    <link rel="stylesheet" href="../assets/css/ghost.min.css">
+
+    <!--
+        Styles to mimick the rest of Ghost
+        There ARE NOT needed at all.
+    -->
+    <style>
+        .temp-nav {
+            height: 60px;
+            background: #000;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 100;
+        }
+        .temp-main {
+            position: fixed;
+            top: 60px;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: #fff;
+            z-index: 100;
+        }
+        .temp-main .post-settings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background: #eee;
+            padding: 11px 20px 10px;
+            margin-left: -108px;
+            margin-top: -22px;
+        }
+        .temp-main .post-settings:before {
+            margin-right: 5px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <nav class="global-nav temp-nav"></nav>
+    <main class="viewport temp-main">
+        <button class="post-settings">Make the magic happen</button>
+    </main>
+
+    <div class="right-outlet">
+
+        <div class="post-settings-menu outlet-pane outlet-pane-in">
+            <div class="post-settings-header">
+                <h4>Post Settings</h4>
+                <button class="close icon-x post-settings-header-action"><span class="hidden">Close</span></button>
+            </div>
+            <div class="post-settings-content">
+
+                <section class="image-uploader">
+                    <span class="media">
+                        <span class="hidden">Image Upload</span>
+                    </span>
+                    <img class="js-upload-target" style="display: none;" src="">
+                    <div class="description">Add image of <strong></strong></div>
+                </section>
+
+                <div class="form-group">
+                    <label for="blog-title">Post URL</label>
+                    <span class="input-icon icon-link">
+                        <input type="text" value="myblog.com/this-is-my-post/" />
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="blog-title">Publish Date</label>
+                    <span class="input-icon icon-calendar">
+                        <input type="text" value="23 Apr 14 @ 11:59" />
+                    </span>
+                </div>
+
+                <div class="form-group for-select">
+                    <label for="activeTheme">Author</label>
+                    <span class="input-icon icon-user">
+                        <span class="gh-select">
+                            <select>
+                                <option>Lorem Ipsum</option>
+                                <option>Corporis Voluptates</option>
+                                <option>Veniam Quae</option>
+                            </select>
+                        </span>
+                    </span>
+                </div>
+
+                <div class="form-group for-checkbox">
+                    <label class="checkbox" for="thing">
+                        <input id="thing" type="checkbox">
+                        <span class="input-toggle-component"></span>
+                        <p>Static Page</p>
+                    </label>
+                </div>
+
+                <ul class="nav-list nav-list-block">
+                    <li class="nav-list-item">
+                        <a href="#">
+                            <b>Revision History</b>
+                            <span>12 versions of this post by 3 people.</span>
+                        </a>
+                    </li>
+                    <li class="nav-list-item">
+                        <a href="#">
+                            <b>Advanced Settings</b>
+                            <span>Convert to a page, mark as featured.</span>
+                        </a>
+                    </li>
+                    <li class="nav-list-item">
+                        <a href="#">
+                            <b>Meta Data</b>
+                            <span>Extra content for SEO and social media.</span>
+                        </a>
+                    </li>
+                    <li class="nav-list-item">
+                        <a href="#">
+                            <b>Custom App</b>
+                            <span>Registered an advanced setting panel.</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <button class="btn btn-red icon-trash">Delete This Post</button>
+
+            </div><!-- .post-settings-content -->
+        </div><!-- .post-settings-menu -->
+
+        <div class="post-settings-menu outlet-pane outlet-pane-out-right">
+
+            <div class="post-settings-header subview">
+                <button class="back icon-chevron-left post-settings-header-action"><span class="hidden">Back</span></button>
+                <h4>Meta Data</h4>
+            </div>
+
+            <div class="post-settings-content">
+                <div class="form-group">
+                    <label for="blog-title">Meta Title</label>
+                    <input type="text" value="My Post is Super SEO Friendly" />
+                    <p>Recommended: <b>70</b> characters. You’ve used <b class="green">43</b></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="blog-title">Meta Description</label>
+                    <textarea>In this fascinating posts I explore the value of SEO meta descriptions and their impact on blogging. Don’t miss my stunning insights!</textarea>
+                    <p>Recommended: <b>156</b> characters. You’ve used <b class="green">133</b></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Search Engine Result Preview</label>
+                    <div class="seo-preview">
+                        <div class="seo-preview-title">My Post is Super SEO Friendly</div>
+                        <div class="seo-preview-link">myblog.com/this-is-my-post/</div>
+                        <div class="seo-preview-description">In this fascinating posts I explore the value of SEO meta descriptions and their impact on blogging. Don’t miss my stunning insights!</div>
+                    </div>
+                </div><!-- .post-settings-search-preview -->
+
+            </div><!-- .post-settings-content -->
+
+        </div><!-- .post-settings-menu -->
+
+</div>
+
+    <script src="../../../bower_components/jquery/dist/jquery.js"></script>
+    <script>
+        $(function(){
+            $(".post-settings, .post-settings-header-action.close").on("click", function(e){
+                e.preventDefault();
+                $(".viewport, .global-nav, .right-outlet, body").toggleClass("right-outlet-expanded");
+            });
+
+            $(".nav-list-item a").on("click", function(e){
+                e.preventDefault();
+                $(".outlet-pane:nth-child(1)").addClass("outlet-pane-out-left").removeClass("outlet-pane-in");
+                $(".outlet-pane:nth-child(2)").addClass("outlet-pane-in").removeClass("outlet-pane-hidden-left");
+            });
+
+
+
+
+            $(".post-settings-header-action.back").on("click", function(e){
+                e.preventDefault();
+                $(".outlet-pane:nth-child(1)").addClass("outlet-pane-in").removeClass("outlet-pane-out-left");
+                $(".outlet-pane:nth-child(2)").addClass("outlet-pane-out-right").removeClass("outlet-pane-in");
+            });
+
+            // This also needs to close the right outlet when clicking outside of it (like when clicking outside of popovers)
+            // And... close outlet by hitting escape
+        });
+    </script>
+
+    
+</body>
+</html>

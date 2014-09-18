@@ -1,0 +1,329 @@
+//
+// Forms
+// --------------------------------------------------
+
+
+// Form Wrapper
+form {
+
+    label {
+        display: block;
+        color: $darkgrey;
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+
+} // form
+
+
+// Form Groups
+.form-group {
+    position: relative;
+    margin-bottom: 1.6em;
+    width: 100%;
+    max-width: 500px;
+    p {
+        margin: 4px 0 0 0;
+        color: #B3B2A8;
+        font-size: 1.3rem;
+    }
+
+    label {
+        margin-bottom: 4px;
+    }
+
+    @media (max-width: 550px) {
+        max-width: 100%;
+    }
+
+} // .form-group
+
+// If the from group has an icon...
+.input-icon[class*='icon-'] {
+    position: relative;
+    display: block;
+    input[type="email"],
+    input[type="number"],
+    input[type="password"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="text"],
+    input[type="url"],
+    input[type="date"] {
+        padding-left: 3.2rem;
+    }
+    .gh-select {
+        select {
+            padding-left: 3.2rem;
+        }
+    }
+    &:before {
+        position: absolute;
+        top: 50%;
+        left: 1.1rem;
+        font-size: 1.3rem;
+        transform: translateY(-52%);
+        z-index: 100;
+    }
+} // .thing[class*='icon-']
+
+// Wrapper for input[type="radio"] and input[type="checkbox"] elements
+.for-radio,
+.for-checkbox {
+    @include clearfix;
+
+    label {
+        display: block;
+        padding-bottom: 4px;
+        p {
+            font-weight: normal;
+            color: #000;
+        }
+        &:hover {
+            input:not(:checked) + .input-toggle-component {
+                border-color: $midbrown;
+            }
+        }
+    }
+
+    input {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: -9999px;
+    }
+
+    .input-toggle-component {
+        position: relative;
+        top: 1px;
+        display: inline-block;
+        float: left;
+        width: 18px;
+        height: 18px;
+        margin-right: 7px;
+        background: #F7F7F3;
+        border: 1px solid $lightbrown;
+    }
+
+    p {
+        font-weight: normal;
+        color: #B3B2A8;
+        white-space: nowrap;
+    }
+} // .for-radio, .for-checkbox
+
+
+// Fieldsets
+fieldset {
+    border: none;
+    margin: 0 0 3em 0;
+    padding: 0;
+} // fieldset
+
+
+// Legends
+legend {
+    display: block;
+    width: 100%;
+    margin: 2em 0;
+    border-bottom: $lightbrown 1px solid;
+    font-size: 1.2em;
+    line-height: 2.0em;
+    color: $brown;
+} // legend
+
+
+// Input, textarea & select
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="url"],
+input[type="date"],
+textarea,
+.gh-select,
+select {
+    display: block;
+    padding: 8px 10px;
+    width: 100%;
+    border: 1px solid #E0DFD7;
+    border-radius: $rounded;
+
+    font-size: 1.4rem;
+    font-weight: normal;
+    color: $darkgrey;
+
+    transition: border-color 0.15s linear;
+
+    &:focus {
+        border-color: $brown;
+        outline: 0;
+    }
+
+}
+
+textarea {
+    width: 100%;
+    max-width: 500px;
+    min-width: 250px;
+    height: auto;
+    min-height: 10rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+
+// Checkboxes
+// ---
+// <div class="form-group for-checkbox">
+//     <label for="permalinks">Dated Permalinks</label>
+//     <label class="checkbox" for="thing">
+//         <input id="thing" type="checkbox">
+//         <span class="input-toggle-component"></span>
+//         <p>Include the date in your post URLs</p>
+//     </label>
+//     <p>This is a label</p>
+// </div>
+.for-checkbox {
+    .input-toggle-component {
+        border-radius: $rounded;
+    }
+    label {
+        .input-toggle-component {
+            transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+            &:before {
+                transition: opacity 0.15s ease-in-out;
+                content: '';
+                position: absolute;
+                width: 10px;
+                height: 6px;
+                top: 4px;
+                left: 3px;
+                border: 2px solid #fff;
+                border-top: none;
+                border-right: none;
+                transform: rotate(-45deg);
+                opacity: 0;
+            }
+        }
+        input:checked + .input-toggle-component {
+            background: $green;
+            border-color: darken($green, 10%);
+            &:before {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+
+// Radio Buttons
+// ---
+// <div class="form-group for-radio">
+//     <label>The Option Title</label>
+//     <label class="radio">
+//         <input name="testing" type="radio" value="no">
+//         <span class="input-toggle-component"></span>
+//         <p>No</p>
+//     </label>
+//     <p>What does this thing mean?</p>
+// </div>
+.for-radio {
+    .input-toggle-component {
+        border-radius: 100px; // Use px to prevent ovals
+    }
+    label {
+        .input-toggle-component {
+            transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+            &:before {
+                transition: opacity 0.15s ease-in-out;
+                content: '';
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                top: 4px;
+                left: 4px;
+                background: #FFF;
+                border-radius: 100%;
+                opacity: 0;
+            }
+        }
+        input:checked + .input-toggle-component {
+            background: $green;
+            border-color: darken($green, 10%);
+            &:before {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+
+// Select Component
+// ---
+// <span class="gh-select">
+//     {{view Ember.Select
+//         id="activeTheme"
+//         name="general[activeTheme]"
+//         content=themes
+//         optionValuePath="content.name"
+//         optionLabelPath="content.label"
+//         value=activeTheme
+//         selection=selectedTheme}}
+// </span>
+.gh-select {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    border-width: 0;
+
+    @include icon-after($i-chevron-down, 0.85em, $midbrown) {
+        position: absolute;
+        top: 50%;
+        right: 0.8em;
+        margin-top: -0.5em;
+        pointer-events: none;
+    };
+
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: window;
+        text-indent: 0.01px;
+        text-overflow: "";
+        background: #fff;
+        outline: none;
+        padding: 8px 10px;
+        line-height: normal;
+
+        // This hides native gh-select button arrow in IE
+        &::-ms-expand {
+            display: none;
+        }
+
+        // Hover style - Not used, but works
+        &:hover {}
+
+        // This hides focus around selected option in FF
+        &:-moz-focusring {
+          color: transparent;
+          text-shadow: 0 0 0 #000;
+        }
+    } // select
+} // .gh-select
+
+// Firefox-specific size fixes
+@-moz-document url-prefix() {
+    .gh-select {
+        border-width: 1px;
+        select {
+            padding: 7px 10px 7px 8px;
+        }
+    }
+} // @-moz-document
