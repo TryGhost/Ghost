@@ -19,6 +19,7 @@ utils = {
     /**
      * Timespans in seconds and milliseconds for better readability
      */
+    ONE_MINUTE_MS: 60000,
     ONE_HOUR_S: 3600,
     ONE_DAY_S: 86400,
     ONE_YEAR_S: 31536000,

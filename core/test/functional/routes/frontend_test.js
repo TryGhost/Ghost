@@ -467,6 +467,13 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
+        it('should retrieve sitemap.xml', function (done) {
+            request.get('/sitemap.xml')
+                .expect('Content-Type', 'application/xml')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
         // at the moment there is no image fixture to test
         // it('should retrieve image assets', function (done) {
         // request.get('/content/images/some.jpg')

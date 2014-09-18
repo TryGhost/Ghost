@@ -58,6 +58,7 @@
         "rss": "0.2.1",
         "semver": "2.2.1",
         "showdown": "https://github.com/ErisDS/showdown/archive/v0.3.2-ghost.tar.gz",
+        "sitemap": "^0.7.3",
         "sqlite3": "2.2.7",
         "static-favicon": "1.0.2",
         "unidecode": "0.1.3",
