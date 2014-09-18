@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-var when = require('when'),
-    _ = require('lodash'),
-    dataProvider = require('../models'),
-    settings = require('./settings'),
-    ONE_DAY = 86400000,
-    filteredAttributes = ['password', 'created_by', 'updated_by', 'last_login'],
-    users;
-
-// ## Users
-users = {
-=======
 // # Users API
 // RESTful API for the User resource
 var Promise         = require('bluebird'),
@@ -22,7 +10,6 @@ var Promise         = require('bluebird'),
     globalUtils     = require('../utils'),
     config          = require('../config'),
     mail            = require('./mail'),
->>>>>>> 9777f5e0c85a0714caa266849234baabdd672d16
 
     docName         = 'users',
     // TODO: implement created_by, updated_by
