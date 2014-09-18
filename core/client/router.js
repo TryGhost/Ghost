@@ -1,78 +1,46 @@
-/*global Ghost, Backbone, NProgress */
-(function () {
-    "use strict";
+/*global Ember */
+import ghostPaths from 'ghost/utils/ghost-paths';
 
-    Ghost.Router = Backbone.Router.extend({
+// ensure we don't share routes between all Router instances
+var Router = Ember.Router.extend();
 
-        routes: {
-            ''                 : 'blog',
-            'content/'         : 'blog',
-            'settings(/:pane)/' : 'settings',
-            'editor(/:id)/'     : 'editor',
-            'debug/'           : 'debug',
-            'register/'        : 'register',
-            'signup/'          : 'signup',
-            'signin/'          : 'login',
-            'forgotten/'       : 'forgotten',
-            'reset/:token/'     : 'reset'
-        },
+Router.reopen({
+    location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
+    rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 
-        signup: function () {
-            Ghost.currentView = new Ghost.Views.Signup({ el: '.js-signup-box' });
-        },
+    clearNotifications: function () {
+        this.notifications.closePassive();
+        this.notifications.displayDelayed();
+    }.on('didTransition')
+});
 
-        login: function () {
-            Ghost.currentView = new Ghost.Views.Login({ el: '.js-login-box' });
-        },
-
-        forgotten: function () {
-            Ghost.currentView = new Ghost.Views.Forgotten({ el: '.js-forgotten-box' });
-        },
-
-        reset: function (token) {
-            Ghost.currentView = new Ghost.Views.ResetPassword({ el: '.js-reset-box', token: token });
-        },
-
-        blog: function () {
-            var posts = new Ghost.Collections.Posts();
-            NProgress.start();
-            posts.fetch({ data: { status: 'all', staticPages: 'all'} }).then(function () {
-                Ghost.currentView = new Ghost.Views.Blog({ el: '#main', collection: posts });
-                NProgress.done();
-            });
-        },
-
-        settings: function (pane) {
-            if (!pane) {
-                // Redirect to settings/general if no pane supplied
-                this.navigate('/settings/general/', {
-                    trigger: true,
-                    replace: true
-                });
-                return;
-            }
-
-            // only update the currentView if we don't already have a Settings view
-            if (!Ghost.currentView || !(Ghost.currentView instanceof Ghost.Views.Settings)) {
-                Ghost.currentView = new Ghost.Views.Settings({ el: '#main', pane: pane });
-            }
-        },
-
-        editor: function (id) {
-            var post = new Ghost.Models.Post();
-            post.urlRoot = Ghost.paths.apiRoot + '/posts';
-            if (id) {
-                post.id = id;
-                post.fetch({ data: {status: 'all'}}).then(function () {
-                    Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
-                });
-            } else {
-                Ghost.currentView = new Ghost.Views.Editor({ el: '#main', model: post });
-            }
-        },
-
-        debug: function () {
-            Ghost.currentView = new Ghost.Views.Debug({ el: "#main" });
-        }
+Router.map(function () {
+    this.route('setup');
+    this.route('signin');
+    this.route('signout');
+    this.route('signup', { path: '/signup/:token' });
+    this.route('forgotten');
+    this.route('reset', { path: '/reset/:token' });
+    this.resource('posts', { path: '/' }, function () {
+        this.route('post', { path: ':post_id' });
     });
-}());
+    this.resource('editor', function () {
+        this.route('new', { path: '' });
+        this.route('edit', { path: ':post_id' });
+    });
+    this.resource('settings', function () {
+        this.route('general');
+        this.resource('settings.users', { path: '/users' }, function () {
+            this.route('user', { path: '/:slug' });
+        });
+        this.route('about');
+    });
+    this.route('debug');
+    //Redirect legacy content to posts
+    this.route('content');
+
+    this.route('error404', { path: '/*path' });
+
+});
+
+export default Router;

@@ -1,44 +1,34 @@
-/*globals describe, before, beforeEach, afterEach, it */
-var testUtils = require('../../utils'),
-    should    = require('should'),
+ /*globals describe, before, beforeEach, afterEach, it */
+ /*jshint expr:true*/
+var testUtils     = require('../../utils'),
+    should        = require('should'),
+    _             = require('lodash'),
 
     // Stuff we are testing
-    DataGenerator = require('../../utils/fixtures/data-generator'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('Post API', function () {
 
-    before(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }, done);
-    });
+    // Keep the DB clean
+    before(testUtils.teardown);
+    afterEach(testUtils.teardown);
+    beforeEach(testUtils.setup('users:roles', 'perms:post', 'posts', 'perms:init'));
 
-    beforeEach(function (done) {
-        testUtils.initData()
-            .then(function () {
-                return testUtils.insertDefaultFixtures();
-            })
-            .then(function () {
-                done();
-            }, done);
-    });
+    function extractFirstPost(posts) {
+        return _.filter(posts, { id: 1 })[0];
+    }
 
-    afterEach(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }, done);
-    });
+    should.exist(PostAPI);
 
     it('can browse', function (done) {
         PostAPI.browse().then(function (results) {
             should.exist(results);
-            testUtils.API.checkResponse(results, 'posts');            
+            testUtils.API.checkResponse(results, 'posts');
             should.exist(results.posts);
             results.posts.length.should.be.above(0);
             testUtils.API.checkResponse(results.posts[0], 'post');
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 
     it('can read', function (done) {
@@ -48,12 +38,23 @@ describe('Post API', function () {
             should.exist(results);
             should.exist(results.posts);
             results.posts.length.should.be.above(0);
-            firstPost = results.posts[0];
-            return PostAPI.read({slug: firstPost.slug});
+            firstPost = extractFirstPost(results.posts);
+            return PostAPI.read({slug: firstPost.slug, include: 'tags'});
         }).then(function (found) {
+            var post;
+
             should.exist(found);
-            testUtils.API.checkResponse(found, 'post');
+            testUtils.API.checkResponse(found.posts[0], 'post');
+
+            post = found.posts[0];
+
+            post.created_at.should.be.an.instanceof(Date);
+
+            should.exist(post.tags);
+            post.tags.length.should.be.above(0);
+            testUtils.API.checkResponse(post.tags[0], 'tag');
+
             done();
-        }).then(null, done);
+        }).catch(done);
     });
 });

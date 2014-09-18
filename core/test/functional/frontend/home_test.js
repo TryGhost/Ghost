@@ -2,17 +2,17 @@
  * Tests the homepage
  */
 
-/*globals CasperTest, casper, __utils__, url, testPost, falseUser, email */
+/*globals CasperTest, casper, url */
 CasperTest.begin('Home page loads', 3, function suite(test) {
-    casper.start(url, function then(response) {
-        test.assertTitle('Ghost', 'The homepage should have a title and it should be Ghost');
+    casper.start(url, function then() {
+        test.assertTitle('Test Blog', 'The homepage should have a title and it should be "Test Blog"');
         test.assertExists('.content .post', 'There is at least one post on this page');
         test.assertSelectorHasText('.poweredby', 'Proudly published with Ghost');
     });
 }, true);
 
 CasperTest.begin('Test helpers on homepage', 3, function suite(test) {
-    casper.start(url, function then(response) {
+    casper.start(url, function then() {
         // body class
         test.assertExists('body.home-template', 'body_class outputs correct home-template class');
         // post class
@@ -22,7 +22,7 @@ CasperTest.begin('Test helpers on homepage', 3, function suite(test) {
 }, true);
 
 CasperTest.begin('Test navigating to Post', 4, function suite(test) {
-    casper.thenOpen(url, function then(response) {
+    casper.thenOpen(url, function then() {
         var lastPost = '.content article:last-of-type',
             lastPostLink = lastPost + ' .post-title a';
 
@@ -47,12 +47,12 @@ CasperTest.begin('Test navigating to Post', 4, function suite(test) {
 
 CasperTest.begin('Test navigating to Post with date permalink', 4, function suite(test) {
     CasperTest.Routines.togglePermalinks.run('on');
-    casper.thenOpen(url, function then(response) {
+    casper.thenOpen(url, function then() {
         var lastPost = '.content article:last-of-type',
             lastPostLink = lastPost + ' .post-title a',
             today = new Date(),
-            dd = ("0" + today.getDate()).slice(-2),
-            mm = ("0" + (today.getMonth() + 1)).slice(-2),
+            dd = ('0' + today.getDate()).slice(-2),
+            mm = ('0' + (today.getMonth() + 1)).slice(-2),
             yyyy = today.getFullYear(),
             postLink = '/' + yyyy + '/' + mm + '/' + dd + '/welcome-to-ghost/';
 

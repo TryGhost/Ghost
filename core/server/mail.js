@@ -1,9 +1,6 @@
-var cp         = require('child_process'),
-    _          = require('lodash'),
-    when       = require('when'),
-    nodefn     = require('when/node/function'),
+var _          = require('lodash'),
+    Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
-    api        = require('./api'),
     config     = require('./config');
 
 function GhostMailer(opts) {
@@ -15,79 +12,30 @@ function GhostMailer(opts) {
 // *This promise should always resolve to avoid halting Ghost::init*.
 GhostMailer.prototype.init = function () {
     var self = this;
-    if (config().mail && config().mail.transport) {
+    self.state = {};
+    if (config.mail && config.mail.transport) {
         this.createTransport();
-        return when.resolve();
+        return Promise.resolve();
     }
 
-    // Attempt to detect and fallback to `sendmail`
-    return this.detectSendmail().then(function (binpath) {
-        self.transport = nodemailer.createTransport('sendmail', {
-            path: binpath
-        });
-        self.usingSendmail();
-    }, function () {
-        self.emailDisabled();
-    }).ensure(function () {
-        return when.resolve();
-    });
-};
+    self.transport = nodemailer.createTransport('direct');
+    self.state.usingDirect = true;
 
-GhostMailer.prototype.isWindows = function () {
-    return process.platform === 'win32';
-};
-
-GhostMailer.prototype.detectSendmail = function () {
-    if (this.isWindows()) {
-        return when.reject();
-    }
-    return when.promise(function (resolve, reject) {
-        cp.exec('which sendmail', function (err, stdout) {
-            if (err && !/bin\/sendmail/.test(stdout)) {
-                return reject();
-            }
-            resolve(stdout.toString().replace(/(\n|\r|\r\n)$/, ''));
-        });
-    });
+    return Promise.resolve();
 };
 
 GhostMailer.prototype.createTransport = function () {
-    this.transport = nodemailer.createTransport(config().mail.transport, _.clone(config().mail.options) || {});
+    this.transport = nodemailer.createTransport(config.mail.transport, _.clone(config.mail.options) || {});
 };
 
-GhostMailer.prototype.usingSendmail = function () {
-    api.notifications.add({
-        type: 'info',
-        message: [
-            "Ghost is attempting to use your server's <b>sendmail</b> to send e-mail.",
-            "It is recommended that you explicitly configure an e-mail service,",
-            "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
-        ].join(' '),
-        status: 'persistent',
-        id: 'ghost-mail-fallback'
-    });
-};
-
-GhostMailer.prototype.emailDisabled = function () {
-    api.notifications.add({
-        type: 'warn',
-        message: [
-            "Ghost is currently unable to send e-mail.",
-            "See <a href=\"http://docs.ghost.org/mail\">http://docs.ghost.org/mail</a> for instructions"
-        ].join(' '),
-        status: 'persistent',
-        id: 'ghost-mail-disabled'
-    });
-    this.transport = null;
-};
 
 GhostMailer.prototype.fromAddress = function () {
-    var from = config().mail && config().mail.fromaddress,
+    var from = config.mail && config.mail.fromaddress,
         domain;
 
     if (!from) {
         // Extract the domain name from url set in config.js
-        domain = config().url.match(new RegExp("^https?://([^/:?#]+)(?:[/:?#]|$)", "i"));
+        domain = config.url.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         domain = domain && domain[1];
 
         // Default to ghost@[blog.url]
@@ -98,31 +46,56 @@ GhostMailer.prototype.fromAddress = function () {
 };
 
 // Sends an e-mail message enforcing `to` (blog owner) and `from` fields
+// This assumes that api.settings.read('email') was aready done on the API level
 GhostMailer.prototype.send = function (message) {
-    var self = this;
+    var self = this,
+        to,
+        sendMail;
+
+    message = message || {};
+    to = message.to || false;
 
     if (!this.transport) {
-        return when.reject(new Error('Email Error: No e-mail transport configured.'));
+        return Promise.reject(new Error('Email Error: No e-mail transport configured.'));
     }
-    if (!(message && message.subject && message.html)) {
-        return when.reject(new Error('Email Error: Incomplete message data.'));
+    if (!(message && message.subject && message.html && message.to)) {
+        return Promise.reject(new Error('Email Error: Incomplete message data.'));
     }
+    sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
-    return api.settings.read('email').then(function (email) {
-        var to = message.to || email.value;
+    message = _.extend(message, {
+        from: self.fromAddress(),
+        to: to,
+        generateTextFromHTML: true
+    });
 
-        message = _.extend(message, {
-            from: self.fromAddress(),
-            to: to,
-            generateTextFromHTML: true
+    return new Promise(function (resolve, reject) {
+        sendMail(message, function (error, response) {
+            if (error) {
+                return reject(new Error(error));
+            }
+
+            if (self.transport.transportType !== 'DIRECT') {
+                return resolve(response);
+            }
+
+            response.statusHandler.once("failed", function (data) {
+                var reason = 'Email Error: Failed sending email';
+                if (data.error.errno === "ENOTFOUND") {
+                    reason += ': there is no mail server at this address: ' + data.domain;
+                }
+                reason += '.';
+                return reject(new Error(reason));
+            });
+
+            response.statusHandler.once("requeue", function (data) {
+                return reject(new Error("Email Error: message was not sent, requeued. Probably will not be sent. :( \nMore info: " + data.error.message));
+            });
+
+            response.statusHandler.once("sent", function () {
+                return resolve("Message was accepted by the mail server. Make sure to check inbox and spam folders. :)");
+            });
         });
-    }).then(function () {
-        var sendMail = nodefn.lift(self.transport.sendMail.bind(self.transport));
-        return sendMail(message);
-    }).otherwise(function (error) {
-        // Proxy the error message so we can add 'Email Error:' to the beginning to make it clearer.
-        error =  _.isString(error) ? 'Email Error:' + error : (_.isObject(error) ? 'Email Error: ' + error.message : 'Email Error: Unknown Email Error');
-        return when.reject(new Error(error));
     });
 };
 

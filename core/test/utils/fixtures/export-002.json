@@ -32,10 +32,10 @@
             {
                 "id": 1,
                 "uuid": "e5188224-4742-4c32-a2d6-e9c5c5d4c123",
-                "name": "Josephine Bloggs",
-                "slug": "josephine-blogs",
+                "name": "Joe Bloggs",
+                "slug": "joe-bloggs",
                 "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
-                "email": "josephinebloggs@example.com",
+                "email": "jbloggs@example.com",
                 "image": null,
                 "cover": null,
                 "bio": "A blogger",

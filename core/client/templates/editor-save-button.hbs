@@ -1,0 +1,15 @@
+<button type="button" {{action "save"}} {{bind-attr class=":btn :btn-sm view.isDangerous:btn-red:btn-blue :js-publish-button" }}>{{view.saveText}}</button>
+{{#gh-popover-button popoverName="post-save-menu" classNameBindings=":btn :btn-sm view.isDangerous:btn-red:btn-blue btnopen:active :dropdown-toggle :up"}}
+    <i class="options"></i>
+    <span class="sr-only">Toggle Settings Menu</span>
+{{/gh-popover-button}}
+{{#gh-popover name="post-save-menu" closeOnClick="true" tagName="div" classNames="dropdown editor-options"}}
+    <ul class="dropdown-menu dropdown-triangle-bottom-right">
+        <li class="post-save-publish" {{bind-attr class="willPublish:active"}}>
+            <a {{action "setSaveType" "publish"}} href="#">{{view.publishText}}</a>
+        </li>
+        <li class="post-save-draft" {{bind-attr class="willPublish::active"}}>
+            <a {{action "setSaveType" "draft"}} href="#">{{view.draftText}}</a>
+        </li>
+    </ul>
+{{/gh-popover}}

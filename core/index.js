@@ -2,17 +2,14 @@
 // Orchestrates the loading of Ghost
 // When run from command line.
 
-var bootstrap = require('./bootstrap'),
-    errors    = require('./server/errorHandling');
+var server = require('./server');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-function startGhost(options) {
+function makeGhost(options) {
     options = options || {};
-    bootstrap(options.config).then(function () {
-        var ghost = require('./server');
-        ghost(options.app);
-    }).otherwise(errors.logAndThrowError);
+
+    return server(options);
 }
 
-module.exports = startGhost;
+module.exports = makeGhost;

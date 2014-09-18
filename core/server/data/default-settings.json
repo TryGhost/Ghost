@@ -1,7 +1,7 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "002"
+            "defaultValue": "003"
         },
         "dbHash": {
             "defaultValue": null
@@ -40,11 +40,11 @@
             }
         },
         "postsPerPage": {
-            "defaultValue": "6",
+            "defaultValue": "5",
             "validations": {
                 "isNull": false,
                 "isInt": true,
-                "isLength": [0, 1000]
+                "isLength": [1, 1000]
             }
         },
         "forceI18n": {

@@ -1,0 +1,9 @@
+<footer id="publish-bar">
+    {{render 'post-tags-input'}}
+
+    <div class="right">
+        <button type="button" class='post-settings' {{action "togglePostSettings"}}></button> 
+
+        {{view "editor-save-button" id="entry-actions"}}
+    </div>
+</footer>
