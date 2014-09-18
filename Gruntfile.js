@@ -171,8 +171,9 @@ var _              = require('lodash'),
             mochacli: {
                 options: {
                     ui: 'bdd',
-                    reporter: 'spec',
-                    timeout: '15000'
+                    reporter: grunt.option('reporter') || 'spec',
+                    timeout: '15000',
+                    save: grunt.option('reporter-output')
                 },
 
                 // #### All Unit tests
