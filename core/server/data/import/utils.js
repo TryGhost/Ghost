@@ -265,7 +265,10 @@ utils = {
         });
 
         ops.push(models.Settings.edit(tableData, _.extend(internal, {transacting: transaction})).catch(function (error) {
-            return Promise.reject({raw: error, model: 'setting', data: tableData});
+            // Ignore NotFound errors
+            if (!(error instanceof errors.NotFoundError)) {
+                return Promise.reject({raw: error, model: 'setting', data: tableData});
+            }
         }));
 
         return Promise.settle(ops);
