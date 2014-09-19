@@ -9,13 +9,22 @@
 html {
     font: 62.5%/1.65 "Open Sans", sans-serif;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+
+    // Prevent elastic scrolling on the whole page
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
 }
 
 body {
-    width: 100%;
     color: lighten($darkgrey, 10%);
     font-size: 1.4rem;
     font-feature-settings: "kern" 1;
+
+    // Prevent elastic scrolling on the whole page
+    height: 100%;
+    width: 100%;
+    overflow: auto;
     overflow-x: hidden; // Never allow horizontal scrollbars
 }
 
