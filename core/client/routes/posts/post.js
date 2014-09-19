@@ -55,11 +55,15 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
     },
 
     shortcuts: {
-        'enter': 'openEditor'
+        'enter': 'openEditor',
+        'command+backspace, ctrl+backspace': 'deletePost'
     },
     actions: {
         openEditor: function () {
             this.transitionTo('editor.edit', this.get('controller.model'));
+        },
+        deletePost: function () {
+            this.send('openModal', 'delete-post', this.get('controller.model'));
         }
     }
 });
