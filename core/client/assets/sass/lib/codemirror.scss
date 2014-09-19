@@ -11,6 +11,7 @@
 .CodeMirror-scroll {
     /* Set scrolling behaviour here */
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* PADDING */
