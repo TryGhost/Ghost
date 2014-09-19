@@ -4,7 +4,7 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
 
     // Stuff we are testing
-    AppFieldsModel  = require('../../../server/models/appField').AppField,
+    AppFieldsModel  = require('../../../server/models/app-field').AppField,
     context         = testUtils.context.admin;
 
 describe('App Fields Model', function () {

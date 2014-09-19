@@ -19,7 +19,7 @@ var crypto      = require('crypto'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
     packageInfo = require('../../package.json'),
-    GhostServer = require('./GhostServer'),
+    GhostServer = require('./ghost-server'),
 
 // Variables
     dbHash;
@@ -131,8 +131,8 @@ function initNotifications() {
 // Finally it returns an instance of GhostServer
 function init(options) {
     // Get reference to an express app instance.
-    var server = options.app ? options.app : express(),
-        adminExpress = express(),
+    var blogApp = express(),
+        adminApp = express(),
         // create a hash for cache busting assets
         assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
@@ -184,22 +184,22 @@ function init(options) {
 
         // enabled gzip compression by default
         if (config.server.compress !== false) {
-            server.use(compress());
+            blogApp.use(compress());
         }
 
         // ## View engine
         // set the view engine
-        server.set('view engine', 'hbs');
+        blogApp.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        adminExpress.set('view engine', 'hbs');
-        adminExpress.engine('hbs', adminHbs.express3({}));
+        adminApp.set('view engine', 'hbs');
+        adminApp.engine('hbs', adminHbs.express3({}));
 
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);
 
         // ## Middleware and Routing
-        middleware(server, adminExpress);
+        middleware(blogApp, adminApp);
 
         // Log all theme errors and warnings
         _.each(config.paths.availableThemes._messages.errors, function (error) {
@@ -210,7 +210,7 @@ function init(options) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
 
-        return new GhostServer(server);
+        return new GhostServer(blogApp);
     });
 }
 

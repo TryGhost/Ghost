@@ -6,7 +6,6 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 var supertest     = require('supertest'),
-    express       = require('express'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
 
@@ -15,10 +14,8 @@ var supertest     = require('supertest'),
 
 describe('Unauthorized', function () {
     before(function (done) {
-        var app = express();
-
-        ghost({app: app}).then(function () {
-            request = supertest.agent(app);
+        ghost().then(function (ghostServer) {
+            request = supertest.agent(ghostServer.rootApp);
 
             done();
         });
