@@ -3,11 +3,17 @@ import loadingIndicator from 'ghost/mixins/loading-indicator';
 import mobileQuery from 'ghost/utils/mobile';
 
 var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
+    noPosts: false,
     // Transition to a specific post if we're not on mobile
     beforeModel: function () {
         if (!mobileQuery.matches) {
             return this.goToPost();
         }
+    },
+
+    setupController: function (controller, model) {
+        /*jshint unused:false*/
+        controller.set('noPosts', this.get('noPosts'));
     },
 
     goToPost: function () {
@@ -26,7 +32,7 @@ var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin
             if (post) {
                 return self.transitionTo('posts.post', post);
             }
-            self.get('controller').set('noPosts', true);
+            self.set('noPosts', true);
         });
     },
 
