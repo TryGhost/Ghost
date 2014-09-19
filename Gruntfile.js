@@ -760,11 +760,16 @@ var _              = require('lodash'),
         //
         // `grunt test` will lint and test your pre-built local Ghost codebase.
         //
-        // `grunt test` runs jshint and jscs as well as the 4 test suites. See the individual sub tasks below for details of
-        // each of the test suites.
+        // `grunt test` runs jshint and jscs as well as the 4 test suites. See the individual sub tasks below for
+        // details of each of the test suites.
         //
         grunt.registerTask('test', 'Run tests and lint code',
             ['jshint', 'jscs', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
+
+        // ### Lint
+        //
+        // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
+        grunt.registerTask('lint', 'Run the code style checks and linter', ['jshint', 'jscs']);
 
         // ### Unit Tests *(sub task)*
         // `grunt test-unit` will run just the unit tests
