@@ -2,10 +2,6 @@ import ajax from 'ghost/utils/ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 var SignupController = Ember.ObjectController.extend(ValidationEngine, {
-    name: null,
-    email: null,
-    password: null,
-    token: null,
     submitting: false,
 
     // ValidationEngine settings
