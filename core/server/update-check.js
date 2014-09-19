@@ -38,6 +38,11 @@ var crypto   = require('crypto'),
     currentVersion = packageInfo.version;
 
 function updateCheckError(error) {
+    api.settings.edit(
+        {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
+        internal
+    ).catch(errors.rejectError);
+
     errors.logError(
         error,
         'Checking for updates failed, your blog will continue to function.',
@@ -125,12 +130,20 @@ function updateCheckRequest() {
                 });
             });
 
-            req.write(reqData);
-            req.end();
+            req.on('socket', function (socket) {
+                // Wait a maximum of 10seconds
+                socket.setTimeout(10000);
+                socket.on('timeout', function () {
+                    req.abort();
+                });
+            });
 
             req.on('error', function (error) {
                 reject(error);
             });
+
+            req.write(reqData);
+            req.end();
         });
     });
 }
