@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "dependencies": {
-    "codemirror": "4.5.0",
+    "codemirror": "4.0.1",
     "Countable": "2.0.2",
     "device": "git://github.com/matthewhudson/device.js#5347a275b66020a0d4dfe9aad81a488f8cce448d",
     "ember": "1.7.0",
