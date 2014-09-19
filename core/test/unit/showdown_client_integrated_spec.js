@@ -29,6 +29,14 @@ describe('Showdown client side converter', function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it('should honour escaped tildes', function () {
+        var testPhrase = {input: '\\~\\~foo_bar\\~\\~', output: /^<p>~~foo_bar~~<\/p>$/},
+            processedMarkup = converter.makeHtml(testPhrase.input);
+
+        // The image is the entire markup, so the image box should be too
+        processedMarkup.should.match(testPhrase.output);
+    });
+
     it('should not touch single underscores inside words', function () {
         var testPhrase = {input: 'foo_bar', output: /^<p>foo_bar<\/p>$/},
             processedMarkup = converter.makeHtml(testPhrase.input);
