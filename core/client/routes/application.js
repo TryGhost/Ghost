@@ -40,8 +40,8 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             this.get('popover').closePopovers();
             this.get('notifications').closeAll();
 
-            // Close PSM if open
-            Ember.$('body').removeClass('right-outlet-expanded');
+            // Close right outlet if open
+            this.send('closeRightOutlet');
 
             this.send('closeModal');
         },
