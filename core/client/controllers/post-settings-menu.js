@@ -4,18 +4,18 @@ import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
 var PostSettingsMenuController = Ember.ObjectController.extend({
-    init: function () {
-        this._super();
-    },
-
-    initializeObserver: function () {
-        // when creating a new post we want to observe the title
-        // to generate the post's slug
-        if (this.get('isNew')) {
-            this.addObserver('titleScratch', this, 'titleObserver');
+    //State for if the user is viewing a tab's pane.
+    needs: 'application',
+    isViewingSubview: Ember.computed('controllers.application.showRightOutlet', function (key, value) {
+        // Not viewing a subview if we can't even see the PSM
+        if (!this.get('controllers.application.showRightOutlet')) {
+            return false;
         }
-    }.observes('model'),
-
+        if (arguments.length > 1) {
+            return value;
+        }
+        return false;
+    }),
     selectedAuthor: null,
     initializeSelectedAuthor: function () {
         var self = this;
@@ -96,6 +96,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             self.set('slugPlaceholder', slug);
         });
     },
+
+
+    // observe titleScratch, keeping the post's slug in sync
+    // with it until saved for the first time.
+    addTitleObserver: function () {
+        if (this.get('isNew')) {
+            this.addObserver('titleScratch', this, 'titleObserver');
+        }
+    }.observes('model'),
     titleObserver: function () {
         if (this.get('isNew') && !this.get('title')) {
             Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
@@ -293,6 +302,14 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
+        },
+
+        showSubview: function () {
+            this.set('isViewingSubview', true);
+        },
+
+        closeSubview: function () {
+            this.set('isViewingSubview', false);
         }
     }
 });

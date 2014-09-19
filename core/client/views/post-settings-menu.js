@@ -7,11 +7,7 @@ var PostSettingsMenuView = Ember.View.extend({
     publishedAtBinding: Ember.Binding.oneWay('controller.publishedAt'),
     datePlaceholder: Ember.computed('controller.publishedAt', function () {
         return formatDate(moment());
-    }),
-
-    animateOut: function () {
-        $('body').removeClass('right-outlet-expanded');
-    }.on('willDestroyElement')
+    })
 });
 
 export default PostSettingsMenuView;
