@@ -43,16 +43,6 @@ function ghostLocals(req, res, next) {
     next();
 }
 
-function initThemeData(secure) {
-    var themeConfig = config.theme;
-    if (secure && config.urlSSL) {
-        // For secure requests override .url property with the SSL version
-        themeConfig = _.clone(themeConfig);
-        themeConfig.url = config.urlSSL.replace(/\/$/, '');
-    }
-    return themeConfig;
-}
-
 // ### Activate Theme
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
@@ -72,7 +62,7 @@ function activateTheme(activeTheme) {
         }
     });
 
-    expressServer.set('theme view engine', hbs.express3(hbsOptions));
+    expressServer.engine('hbs', hbs.express3(hbsOptions));
 
     // Update user error template
     errors.updateActiveTheme(activeTheme);
@@ -91,17 +81,15 @@ function decideIsAdmin(req, res, next) {
 // ### configHbsForContext Middleware
 // Setup handlebars for the current context (admin or theme)
 function configHbsForContext(req, res, next) {
-    if (res.isAdmin) {
-        expressServer.enable('admin');
-        expressServer.engine('hbs', expressServer.get('admin view engine'));
-        expressServer.set('views', config.paths.adminViews);
-    } else {
-        expressServer.disable('admin');
-        var themeData = initThemeData(req.secure);
-        hbs.updateTemplateOptions({data: {blog: themeData}});
-        expressServer.engine('hbs', expressServer.get('theme view engine'));
-        expressServer.set('views', path.join(config.paths.themePath, expressServer.get('activeTheme')));
+    var themeData = config.theme;
+    if (req.secure && config.urlSSL) {
+        // For secure requests override .url property with the SSL version
+        themeData = _.clone(themeData);
+        themeData.url = config.urlSSL.replace(/\/$/, '');
     }
+
+    hbs.updateTemplateOptions({data: {blog: themeData}});
+    expressServer.set('views', path.join(config.paths.themePath, expressServer.get('activeTheme')));
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose 'url' vs 'urlSSL'
@@ -143,7 +131,7 @@ function redirectToSetup(req, res, next) {
     /*jslint unparam:true*/
 
     api.authentication.isSetup().then(function (exists) {
-        if (!exists.setup[0].status && !req.path.match(/\/ghost\/setup\//)) {
+        if (!exists.setup[0].status && !req.path.match(/\/setup\//)) {
             return res.redirect(config.paths.subdir + '/ghost/setup/');
         }
         next();
@@ -247,7 +235,7 @@ function serveSharedFile(file, type, maxAge) {
     };
 }
 
-setupMiddleware = function (server) {
+setupMiddleware = function (server, adminExpress) {
     var logging = config.logging,
         corePath = config.paths.corePath,
         oauthServer = oauth2orize.createServer();
@@ -289,13 +277,14 @@ setupMiddleware = function (server) {
     expressServer.use(configHbsForContext);
 
     // Admin only config
-    expressServer.use('/ghost', middleware.whenEnabled('admin', express['static'](path.join(corePath, '/client/assets'), {maxAge: utils.ONE_YEAR_MS})));
+    expressServer.use('/ghost', express['static'](path.join(corePath, '/client/assets'), {maxAge: utils.ONE_YEAR_MS}));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
     //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
     //       not display properly when HTTPS is not available!
     expressServer.use(checkSSL);
+    adminExpress.set('views', config.paths.adminViews);
 
     // Theme only config
     expressServer.use(middleware.staticTheme());
@@ -321,7 +310,7 @@ setupMiddleware = function (server) {
 
     // ### Caching
     expressServer.use(middleware.cacheControl('public'));
-    expressServer.use('/ghost/', middleware.cacheControl('private'));
+    adminExpress.use(middleware.cacheControl('private'));
 
     // enable authentication
     expressServer.use(middleware.authenticate);
@@ -333,8 +322,10 @@ setupMiddleware = function (server) {
     // Set up API routes
     expressServer.use(routes.apiBaseUri, routes.api(middleware));
 
-    // Set up Admin routes
-    expressServer.use(routes.admin(middleware));
+    // Mount admin express app to /ghost and set up routes
+    adminExpress.use(middleware.redirectToSetup);
+    adminExpress.use(routes.admin());
+    expressServer.use('/ghost', adminExpress);
 
     // Set up Frontend routes
     expressServer.use(routes.frontend());
