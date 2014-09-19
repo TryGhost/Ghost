@@ -13,7 +13,7 @@ var _           = require('lodash'),
     utils       = require('../utils'),
 
     middleware,
-    expressServer,
+    blogApp,
     oauthServer,
     loginSecurity = [],
     forgottenSecurity = [];
@@ -24,8 +24,8 @@ function isBlackListedFileType(file) {
     return _.contains(blackListedFileTypes, ext);
 }
 
-function cacheServer(server) {
-    expressServer = server;
+function cacheBlogApp(app) {
+    blogApp = app;
 }
 
 function cacheOauthServer(server) {
@@ -105,7 +105,7 @@ middleware = {
     whenEnabled: function (setting, fn) {
         return function settingEnabled(req, res, next) {
             // Set from server/middleware/index.js for now
-            if (expressServer.enabled(setting)) {
+            if (blogApp.enabled(setting)) {
                 fn(req, res, next);
             } else {
                 next();
@@ -263,5 +263,5 @@ middleware = {
 };
 
 module.exports = middleware;
-module.exports.cacheServer = cacheServer;
+module.exports.cacheBlogApp = cacheBlogApp;
 module.exports.cacheOauthServer = cacheOauthServer;

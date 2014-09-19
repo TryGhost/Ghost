@@ -76,11 +76,11 @@ describe('Middleware', function () {
     });
 
     describe('whenEnabled', function () {
-        var cbFn, server;
+        var cbFn, blogApp;
 
         beforeEach(function () {
             cbFn = sinon.spy();
-            server = {
+            blogApp = {
                 enabled: function (setting) {
                     if (setting === 'enabled') {
                         return true;
@@ -89,7 +89,7 @@ describe('Middleware', function () {
                     }
                 }
             };
-            middleware.cacheServer(server);
+            middleware.cacheBlogApp(blogApp);
         });
 
         it('should call function if setting is enabled', function (done) {
