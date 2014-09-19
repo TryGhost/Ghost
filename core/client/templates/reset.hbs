@@ -6,6 +6,8 @@
         <div class="password-wrap">
             {{input value=ne2Password class="password" type="password" placeholder="Confirm Password" name="ne2password" }}
         </div>
-        <button class="btn btn-blue" type="submit" {{bind-attr disabled='submitButtonDisabled'}}>Reset Password</button>
+        {{#gh-spin-button class="btn btn-blue" action="submit" submitting=submitting}}
+            Reset Password
+        {{/gh-spin-button}}
     </form>
 </section>

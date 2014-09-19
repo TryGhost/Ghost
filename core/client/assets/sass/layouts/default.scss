@@ -177,3 +177,25 @@
         top: 44px;
     }
 }
+
+.spinner {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+    margin: -2px 0;
+    border-radius: 100px;
+    border: rgba(0,0,0,0.2) solid 4px;
+    animation: spin 1s linear infinite;
+
+    &:before {
+        content: '';
+        display: block;
+        border-radius: 100px;
+        width: 4px;
+        height: 4px;
+        background: rgba(0,0,0,0.6);
+        margin-top: 6px;
+    }
+}

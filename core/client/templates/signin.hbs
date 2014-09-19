@@ -11,7 +11,9 @@
                 {{input class="password" type="password" placeholder="Password" name="password" value=password}}
             </span>
         </div>
-        <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>Log in</button>
+        {{#gh-spin-button class="btn btn-blue" action="validateAndAuthenticate" submitting=submitting}}
+            Log in
+        {{/gh-spin-button}}
         <section class="meta">
             {{#link-to 'forgotten' class="forgotten-password"}}Forgotten password?{{/link-to}}
         </section>

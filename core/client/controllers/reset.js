@@ -7,7 +7,6 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
     newPassword: '',
     ne2Password: '',
     token: '',
-    submitButtonDisabled: false,
 
     validationType: 'reset',
 
