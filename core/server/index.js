@@ -132,6 +132,7 @@ function initNotifications() {
 function init(options) {
     // Get reference to an express app instance.
     var server = options.app ? options.app : express(),
+        adminExpress = express(),
         // create a hash for cache busting assets
         assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
@@ -191,13 +192,14 @@ function init(options) {
         server.set('view engine', 'hbs');
 
         // Create a hbs instance for admin and init view engine
-        server.set('admin view engine', adminHbs.express3({}));
+        adminExpress.set('view engine', 'hbs');
+        adminExpress.engine('hbs', adminHbs.express3({}));
 
         // Load helpers
         helpers.loadCoreHelpers(adminHbs, assetHash);
 
         // ## Middleware and Routing
-        middleware(server, dbHash);
+        middleware(server, adminExpress);
 
         // Log all theme errors and warnings
         _.each(config.paths.availableThemes._messages.errors, function (error) {
