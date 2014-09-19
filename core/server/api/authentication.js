@@ -155,10 +155,6 @@ authentication = {
      * @returns {Promise(Invitation}} An invitation status
      */
     isInvitation: function (options) {
-        if (!options.email) {
-            return Promise.reject(new errors.NoPermissionError('The server did not receive a valid email'));
-        }
-
         return authentication.isSetup().then(function (result) {
             var setup = result.setup[0].status;
 
@@ -174,6 +170,8 @@ authentication = {
                         return {invitation: [{valid: false}]};
                     }
                 });
+            } else {
+                return Promise.reject(new errors.BadRequestError('The server did not receive a valid email'));
             }
         });
     },
