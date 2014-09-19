@@ -122,6 +122,7 @@
         &.active .entry-preview-content {
             height: auto;
             overflow: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         // Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
@@ -268,6 +269,7 @@
         left: 0;
         padding: 60px 40px 40px 40px;
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
         word-break: break-word;
         hyphens: auto;
         @include user-select(none);
