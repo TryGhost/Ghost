@@ -256,9 +256,9 @@ setupMiddleware = function (server, adminExpress) {
     // Logging configuration
     if (logging !== false) {
         if (expressServer.get('env') !== 'development') {
-            expressServer.use(logger(logging || {}));
+            expressServer.use(logger('combined', logging));
         } else {
-            expressServer.use(logger(logging || 'dev'));
+            expressServer.use(logger('dev', logging));
         }
     }
 
