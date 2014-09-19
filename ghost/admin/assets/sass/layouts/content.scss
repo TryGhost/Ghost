@@ -63,6 +63,7 @@
         bottom: 0;
         left: 0;
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
         padding-top: 40px;
     }
 
@@ -176,6 +177,7 @@
     top:0;
     right:0;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     background: #fff;
     @media (max-width: 900px) {
         width: auto;
