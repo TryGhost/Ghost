@@ -30,6 +30,7 @@
         speak: none;
         line-height: 1;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
 
         //Function
         content: '#{$char}';
@@ -62,6 +63,7 @@
         speak: none;
         line-height: 1;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
 
         // Function
         content: '#{$char}';
@@ -186,6 +188,11 @@ $i-code:            \e03e;
 //
 // Icon Classes
 // --------------------------------------------------
+
+[class*='icon-'] {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
 .icon-ghost:before {
     content: '#{$i-ghost}';
