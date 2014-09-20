@@ -11,8 +11,19 @@ permalink: /themes/helpers/log/
 
 # log
 
-*   Helper type: output
-*   Options: none
+ * Type: Output
+ * Parameters: value to output (any)
+ * Attributes: none
+
+
+<!--
+  * Origin: Handlebars, Ghost
+  * Required: No
+  * Context: All
+-->
+
+
+### Description
 
 `{{log}}` is a helper which is part of Handlebars, but until Ghost 0.4.2 this hasn't done anything useful.
 

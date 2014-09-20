@@ -11,8 +11,17 @@ permalink: /themes/helpers/pagination/
 
 # pagination
 
-*   Helper type: output, template-driven
-*   Options: none (coming soon)
+ * Type: Output, Template-driven
+ * Parameters: none
+ * Attributes: none
+
+<!--
+  * Origin: Ghost
+  * Required: No
+  * Context: Index
+-->
+
+### Description
 
 `{{pagination}}` is a template driven helper which outputs HTML for 'newer posts' and 'older posts' links if they are available and also says which page you are on.
 

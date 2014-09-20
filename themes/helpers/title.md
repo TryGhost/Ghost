@@ -4,12 +4,12 @@ meta_title: Theme helper reference - Ghost Docs
 meta_description: Ghost theme helper API, helper reference documentation
 chapter: themes
 section: helpers
-permalink: /themes/helpers/body_class/
+permalink: /themes/helpers/title/
 ---
 
 {% raw %}
 
-# body_class
+# title
 
  * Type: Output
  * Parameters: none
@@ -17,13 +17,12 @@ permalink: /themes/helpers/body_class/
 
 <!--
  * Origin: Ghost
- * Required: Yes
- * Context: All
+ * Required: No
+ * Context: Post
 -->
 
 ### Description
 
-`{{body_class}}` – outputs classes intended for the `<body>` tag in <code class="path">default.hbs</code>, useful for targeting specific pages with styles.
+The title tag outputs a post title ensuring it outputs correctly.
 
 {% endraw %}
-

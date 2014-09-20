@@ -11,8 +11,17 @@ permalink: /themes/helpers/content/
 
 # content
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to show all]
+ * Type: Output
+ * Parameters: none
+ * Attributes: `words` (number), `characters` (number) [defaults to show all]
+
+<!--
+ * Origin: Ghost
+ * Required: No
+ * Context: Post
+ -->
+
+### Description
 
 `{{content}}` is a very simple helper used for outputting post content. It makes sure that your HTML gets output correctly.
 

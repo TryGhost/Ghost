@@ -11,8 +11,17 @@ permalink: /themes/helpers/url/
 
 # url
 
-*   Helper type: output
-*   Options: `absolute`
+ * Type: Output
+ * Parameters: none
+ * Attributes: `absolute` (boolean)
+
+<!--
+ * Origin: Ghost
+ * Required: No
+ * Context: All
+-->
+
+### Description
 
 `{{url}}` outputs the relative url for a post when inside the post context.
 

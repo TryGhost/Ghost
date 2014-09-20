@@ -11,15 +11,38 @@ permalink: /themes/helpers/date/
 
 # date
 
-*   Helper type: output
-*   Options: `empty` (string), `singular` (string), `plural` (string)
+ * Type: Output, Formatting
+ * Parameters: value to format (date, default `published_at`)
+ * Attributes: `format` (date format, default “MMM Do, YYYY”), `timeago` (boolean)
 
-`{{plural}}` is a formatting helper for outputting strings which change depending on whether a number is singular or plural.
+<!--
+ * Origin: Ghost
+ * Required: No
+ * Context: All
+ -->
+
+### Description
+
+`{{date}}` is a formatting helper for outputting dates in various format. You can either pass it a date and a format string to be used to output the date like so:
 
 ```
-{{plural pagination.total empty='No posts' singular='% post' plural='% posts'}}
+// outputs something like 'July 11, 2014'
+{{date published_at format="MMMM DD, YYYY"}}
 ```
 
-The most common usecase for the plural helper is outputting information about how many posts there are in total in a collection. For example, themes have access to `pagination.total` on the homepage, a tag page or an author page.
+Or you can pass it a date and the timeago flag:
+
+```
+// outputs something like '5 mins ago'
+{{date published_at timeago="true"}}
+```
+
+If you call `{{date}}` without a format, it will default to “MMM Do, YYYY”.
+
+If you call `{{date}}` in the context of a post without telling it which date to display, it will default to `published_at`.
+
+If you call `{{date}}` outside the context of a post without telling it which date to display, it will default to the current date.
+
+`date` uses [moment.js](http://momentjs.com/) for formatting dates. See their [documentation](http://momentjs.com/docs/#/parsing/string-format/) for a full explanation of all the different format strings that can be used.
 
 {% endraw %}

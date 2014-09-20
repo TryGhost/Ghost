@@ -11,8 +11,17 @@ permalink: /themes/helpers/excerpt/
 
 # excerpt
 
-*   Helper type: output
-*   Options: `words` (number), `characters` (number) [defaults to 50 words]
+ * Type: Output
+ * Parameters: none
+ * Attributes: `words` (number), `characters` (number) [defaults to 50 words]
+
+<!--
+ * Origin: Ghost
+ * Required: No
+ * Context: All
+ -->
+
+### Description
 
 `{{excerpt}}` outputs content but strips all HTML. This is useful for creating excerpts of posts.
 

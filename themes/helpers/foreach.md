@@ -11,8 +11,18 @@ permalink: /themes/helpers/foreach/
 
 # foreach
 
-*   Helper type: block
-*   Options: `columns` (number)
+ * Type: Block
+ * Parameters: data to loop over (collection)
+ * Attributes: `columns` (number)
+
+
+<!--
+  * Origin: Ghost
+  * Required: No
+  * Context: All
+-->
+
+### Description
 
 `{{#foreach}}` is a special loop helper designed for working with lists of posts. By default the each helper in handlebars adds the private properties `@index` for arrays and `@key` for objects, which can be used inside the each loop.
 

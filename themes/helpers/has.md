@@ -11,11 +11,22 @@ permalink: /themes/helpers/has/
 
 # has
 
+ * Type: Block
+ * Parameters: none
+ * Attributes: `tag` (comma separated list), `author` (comma separated list)
 
-*   Helper type: block
-*   Options: `tag` (comma separated list), `author` (comma separated list)
+
+<!--
+* Origin: Ghost
+* Required: No
+* Context: All
+-->
+
+### Description
 
 `{{has}}` intends to allow theme developers to ask questions about the current context and provide more flexibility for creating different post layouts in Ghost.
+
+### Usage
 
 Currently, the `{{has}}` helper only allows you to ask questions about a post's author or tags:
 

@@ -11,8 +11,17 @@ permalink: /themes/helpers/post_class/
 
 # post_class
 
-*   Helper type: output
-*   Options: none
+ * Type: Output
+ * Parameters: none
+ * Attributes: none
+
+<!--
+ * Origin: Ghost
+ * Required: Yes
+ * Context: All
+ -->
+
+### Description
 
 `{{post_class}}` – outputs classes intended your post container, useful for targeting posts with styles.
 

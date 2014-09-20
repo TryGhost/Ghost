@@ -11,8 +11,18 @@ permalink: /themes/helpers/asset/
 
 # asset
 
-* Helper type: output
-* Options: none
+ * Type: Output
+ * Parameters: asset path (string)
+ * Attributes: none
+
+<!--
+ * Origin: Ghost
+ * Required: Yes
+ * Context: All
+-->
+
+
+### Description
 
 The `{{asset}}` helper exists to take the pain out of asset management. Firstly, it ensures that the relative path to an asset is always correct, regardless of how Ghost is installed. So if Ghost is installed in a subdirectory, the paths to the files are still correct, without having to use absolute URLs.
 
@@ -22,7 +32,7 @@ Thirdly, it provides stability for theme developers so that as Ghost's asset han
 
 Finally, it imposes a little bit of structure on themes by requiring an <code class="path">assets</code> folder, meaning that Ghost knows where the assets are, and theme installing, switching live reloading will be easier in future.
 
-#### Usage
+### Usage
 
 To use the `{{asset}}` helper to output the path for an asset, simply provide it with the path for the asset you want to load, relative to the <code class="path">assets</code> folder.
 
@@ -36,7 +46,7 @@ To use the `{{asset}}` helper to output the path for an asset, simply provide it
 <script type="text/javascript" src="{{asset "js/index.js"}}"></script>
 ```
 
-#### Favicons
+### Favicons
 
 Favicons are a slight exception to the rule on how to use the asset helper, because the browser always requests one regardless of whether it is defined in the theme, and Ghost aims to serve this request as fast as possible.
 

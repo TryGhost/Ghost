@@ -4,26 +4,26 @@ meta_title: Theme helper reference - Ghost Docs
 meta_description: Ghost theme helper API, helper reference documentation
 chapter: themes
 section: helpers
-permalink: /themes/helpers/ghost_foot/
+permalink: /themes/helpers/is/
 ---
 
 {% raw %}
 
-# ghost_foot
+# is
 
- * Type: Output
- * Parameters: none
+ * Type: Block
+ * Parameters: contexts to check (string)
  * Attributes: none
+
 
 <!--
   * Origin: Ghost
-  * Required: Yes
+  * Required: No
   * Context: All
 -->
 
 ### Description
 
-`{{ghost_foot}}` – belongs just before the `</body>` tag in <code class="path">default.hbs</code>, used for outputting scripts. Outputs jquery by default. Will be hookable.
-
+The `{{is}}` helper is coming soon.
 
 {% endraw %}

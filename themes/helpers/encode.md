@@ -11,8 +11,17 @@ permalink: /themes/helpers/encode/
 
 # encode
 
-*   Helper type: output
-*   Options: none
+ * Type: Output
+ * Parameters: value to encode (string)
+ * Attributes: none
+
+<!--
+ * Origin: Ghost
+ * Required: No
+ * Context: All
+ -->
+
+### Description
 
 `{{encode}}` is a simple output helper which will encode a given string so that it can be used in a URL.
 

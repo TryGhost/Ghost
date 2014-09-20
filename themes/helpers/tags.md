@@ -11,8 +11,17 @@ permalink: /themes/helpers/tags/
 
 # tags
 
-*   Helper type: output
-*   Options: `separator` (string, default ", "), `suffix` (string), `prefix` (string)
+ * Type: Output
+ * Parameters: none
+ * Attributes: `separator` (string, default ", "), `suffix` (string), `prefix` (string), `autolink` (boolean)
+
+<!--
+* Origin: Ghost
+* Required: No
+* Context: Post
+-->
+
+### Description
 
 `{{tags}}` is a formatting helper for outputting a linked list of tags for a particular post. It defaults to a comma-separated list:
 

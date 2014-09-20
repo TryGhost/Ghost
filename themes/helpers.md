@@ -11,7 +11,7 @@ next_section: changelog
 
 {% raw %}
 
-# Ghost Helpers
+# Helper Reference
 
 Ghost has a number of built in helpers which give you the tools you need to build your theme. Helpers are classified into two types: block and output helpers.
 

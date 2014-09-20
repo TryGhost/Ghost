@@ -11,8 +11,17 @@ permalink: /themes/helpers/ghost_head/
 
 # ghost_head
 
-*   Helper type: output
-*   Options: none
+ * Type: Output
+ * Parameters: none
+ * Attributes: none
+
+<!--
+ * Origin: Ghost
+ * Required: Yes
+ * Context: All
+ -->
+
+### Description
 
 `{{ghost_head}}` – belongs just before the `</head>` tag in <code class="path">default.hbs</code>, used for outputting meta tags, scripts and styles. Will be hookable.
 
