@@ -16,6 +16,9 @@
 var GhostSelect = Ember.Component.extend({
     tagName: 'span',
     classNames: ['gh-select'],
+    attributeBindings: ['tabindex'],
+
+    tabindex: '0', // 0 must be a string, or else it's interpreted as false
 
     options: null,
     initialValue: null,
