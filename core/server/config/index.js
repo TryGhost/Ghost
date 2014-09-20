@@ -319,7 +319,7 @@ ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
  * Check if any of the currently set config items are deprecated, and issues a warning.
  */
 ConfigManager.prototype.checkDeprecated = function () {
-    var deprecatedItems = ['updateCheck'],
+    var deprecatedItems = ['updateCheck', 'mail.fromaddress'],
         self = this;
 
     _.each(deprecatedItems, function (property) {
