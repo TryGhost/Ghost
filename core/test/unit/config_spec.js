@@ -12,7 +12,9 @@ var should         = require('should'),
 
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
-    config         = rewire('../../server/config');
+    config         = rewire('../../server/config'),
+    // storing current environment
+    currentEnv     = process.env.NODE_ENV;
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -675,6 +677,76 @@ describe('Config', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('Deprecated', function () {
+        var logStub,
+            // Can't use afterEach here, because mocha uses console.log to output the checkboxes
+            // which we've just stubbed, so we need to restore it before the test ends to see ticks.
+            resetEnvironment = function () {
+                logStub.restore();
+                process.env.NODE_ENV = currentEnv;
+            };
+
+        beforeEach(function () {
+            logStub = sinon.stub(console, 'log');
+            process.env.NODE_ENV = 'development';
+        });
+
+        afterEach(function () {
+            // logStub.restore();
+            config = rewire('../../server/config');
+        });
+
+        it('doesn\'t display warning when deprecated options not set', function () {
+            config.checkDeprecated();
+            logStub.calledOnce.should.be.false;
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('displays warning when updateCheck exists and is truthy', function () {
+            config.set({
+                updateCheck: 'foo'
+            });
+            // Run the test code
+            config.checkDeprecated();
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWith(
+                '\nWarning:'.yellow,
+                ('The configuration property [' + 'updateCheck'.bold + '] has been deprecated.').yellow,
+                '\n',
+                'This will be removed in a future version, please update your config.js file.'.white,
+                '\n',
+                'Please check http://support.ghost.org/config for the most up-to-date example.'.green,
+                '\n').should.be.true;
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('displays warning when updateCheck exists and is falsy', function () {
+            config.set({
+                updateCheck: undefined
+            });
+            // Run the test code
+            config.checkDeprecated();
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWith(
+                '\nWarning:'.yellow,
+                ('The configuration property [' + 'updateCheck'.bold + '] has been deprecated.').yellow,
+                '\n',
+                'This will be removed in a future version, please update your config.js file.'.white,
+                '\n',
+                'Please check http://support.ghost.org/config for the most up-to-date example.'.green,
+                '\n').should.be.true;
+
+            // Future tests: This is important here!
+            resetEnvironment();
         });
     });
 });
