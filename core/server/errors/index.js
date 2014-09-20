@@ -73,6 +73,7 @@ errors = {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
+            warn = warn || 'no message supplied';
             var msgs = ['\nWarning:'.yellow, warn.yellow, '\n'];
 
             if (context) {

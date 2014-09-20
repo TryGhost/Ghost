@@ -1,6 +1,7 @@
 var _          = require('lodash'),
     Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
+    validator  = require('validator'),
     config     = require('./config');
 
 function GhostMailer(opts) {
@@ -28,20 +29,30 @@ GhostMailer.prototype.createTransport = function () {
     this.transport = nodemailer.createTransport(config.mail.transport, _.clone(config.mail.options) || {});
 };
 
-GhostMailer.prototype.fromAddress = function () {
-    var from = config.mail && config.mail.fromaddress,
-        domain;
+GhostMailer.prototype.from = function () {
+    var from = config.mail && (config.mail.from || config.mail.fromaddress);
 
+    // If we don't have a from address at all
     if (!from) {
-        // Extract the domain name from url set in config.js
-        domain = config.url.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        domain = domain && domain[1];
-
         // Default to ghost@[blog.url]
-        from = 'ghost@' + domain;
+        from = 'ghost@' + this.getDomain();
+    }
+
+    // If we do have a from address, and it's just an email
+    if (validator.isEmail(from)) {
+        if (!config.theme.title) {
+            config.theme.title = 'Ghost at ' + this.getDomain();
+        }
+        from = config.theme.title + ' <' + from + '>';
     }
 
     return from;
+};
+
+// Moved it to its own module
+GhostMailer.prototype.getDomain = function () {
+    var domain = config.url.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    return domain && domain[1];
 };
 
 // Sends an e-mail message enforcing `to` (blog owner) and `from` fields
@@ -63,7 +74,7 @@ GhostMailer.prototype.send = function (message) {
     sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
     message = _.extend(message, {
-        from: self.fromAddress(),
+        from: self.from(),
         to: to,
         generateTextFromHTML: true
     });

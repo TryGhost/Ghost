@@ -12,7 +12,7 @@ var should         = require('should'),
 
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
-    config         = rewire('../../server/config'),
+    config         = require('../../server/config'),
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
 
@@ -680,7 +680,7 @@ describe('Config', function () {
         });
     });
 
-    describe('Deprecated', function () {
+    describe('Check for deprecation messages:', function () {
         var logStub,
             // Can't use afterEach here, because mocha uses console.log to output the checkboxes
             // which we've just stubbed, so we need to restore it before the test ends to see ticks.
@@ -695,7 +695,7 @@ describe('Config', function () {
         });
 
         afterEach(function () {
-            // logStub.restore();
+            logStub.restore();
             config = rewire('../../server/config');
         });
 
@@ -715,14 +715,11 @@ describe('Config', function () {
             config.checkDeprecated();
 
             logStub.calledOnce.should.be.true;
-            logStub.calledWith(
-                '\nWarning:'.yellow,
-                ('The configuration property [' + 'updateCheck'.bold + '] has been deprecated.').yellow,
-                '\n',
-                'This will be removed in a future version, please update your config.js file.'.white,
-                '\n',
-                'Please check http://support.ghost.org/config for the most up-to-date example.'.green,
-                '\n').should.be.true;
+
+            logStub.calledWithMatch(null, 'updateCheck').should.be.false;
+            logStub.calledWithMatch('', 'updateCheck').should.be.true;
+            logStub.calledWithMatch(sinon.match.string, 'updateCheck').should.be.true;
+            logStub.calledWithMatch(sinon.match.number, 'updateCheck').should.be.false;
 
             // Future tests: This is important here!
             resetEnvironment();
@@ -736,14 +733,64 @@ describe('Config', function () {
             config.checkDeprecated();
 
             logStub.calledOnce.should.be.true;
-            logStub.calledWith(
-                '\nWarning:'.yellow,
-                ('The configuration property [' + 'updateCheck'.bold + '] has been deprecated.').yellow,
-                '\n',
-                'This will be removed in a future version, please update your config.js file.'.white,
-                '\n',
-                'Please check http://support.ghost.org/config for the most up-to-date example.'.green,
-                '\n').should.be.true;
+
+            logStub.calledWithMatch(null, 'updateCheck').should.be.false;
+            logStub.calledWithMatch('', 'updateCheck').should.be.true;
+            logStub.calledWithMatch(sinon.match.string, 'updateCheck').should.be.true;
+            logStub.calledWithMatch(sinon.match.number, 'updateCheck').should.be.false;
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('displays warning when mail.fromaddress exists and is truthy', function () {
+            config.set({
+                mail: {
+                    fromaddress: 'foo'
+                }
+            });
+            // Run the test code
+            config.checkDeprecated();
+
+            logStub.calledOnce.should.be.true;
+
+            logStub.calledWithMatch(null, 'mail.fromaddress').should.be.false;
+            logStub.calledWithMatch('', 'mail.fromaddress').should.be.true;
+            logStub.calledWithMatch(sinon.match.string, 'mail.fromaddress').should.be.true;
+            logStub.calledWithMatch(sinon.match.number, 'mail.fromaddress').should.be.false;
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('displays warning when mail.fromaddress exists and is falsy', function () {
+            config.set({
+                mail: {
+                    fromaddress: undefined
+                }
+            });
+            // Run the test code
+            config.checkDeprecated();
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWithMatch(null, 'mail.fromaddress').should.be.false;
+            logStub.calledWithMatch('', 'mail.fromaddress').should.be.true;
+            logStub.calledWithMatch(sinon.match.string, 'mail.fromaddress').should.be.true;
+            logStub.calledWithMatch(sinon.match.number, 'mail.fromaddress').should.be.false;
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('doesn\'t display warning when only part of a deprecated option is set', function () {
+            config.set({
+                mail: {
+                    notfromaddress: 'foo'
+                }
+            });
+
+            config.checkDeprecated();
+            logStub.calledOnce.should.be.false;
 
             // Future tests: This is important here!
             resetEnvironment();
