@@ -50,7 +50,80 @@ describe('Error handling', function () {
         });
     });
 
-    describe('Logging', function () {
+    describe('Warn Logging', function () {
+        var logStub,
+            // Can't use afterEach here, because mocha uses console.log to output the checkboxes
+            // which we've just stubbed, so we need to restore it before the test ends to see ticks.
+            resetEnvironment = function () {
+                logStub.restore();
+                process.env.NODE_ENV = currentEnv;
+            };
+
+        beforeEach(function () {
+            logStub = sinon.stub(console, 'log');
+            process.env.NODE_ENV = 'development';
+        });
+
+        afterEach(function () {
+            logStub.restore();
+        });
+
+        it('logs default warn with no message supplied', function () {
+            errors.logWarn();
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWith(
+                '\nWarning: no message supplied'.yellow, '\n');
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('logs warn with only message', function () {
+            var errorText = 'Error1';
+
+            errors.logWarn(errorText);
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWith(('\nWarning: ' + errorText).yellow, '\n');
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('logs warn with message and context', function () {
+            var errorText = 'Error1',
+                contextText = 'Context1';
+
+            errors.logWarn(errorText, contextText);
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWith(
+                ('\nWarning: ' + errorText).yellow, '\n', contextText.white, '\n'
+            );
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+
+        it('logs warn with message and context and help', function () {
+            var errorText = 'Error1',
+                contextText = 'Context1',
+                helpText = 'Help1';
+
+            errors.logWarn(errorText, contextText, helpText);
+
+            logStub.calledOnce.should.be.true;
+            logStub.calledWith(
+                ('\nWarning: ' + errorText).yellow, '\n', contextText.white, '\n', helpText.green, '\n'
+            );
+
+            // Future tests: This is important here!
+            resetEnvironment();
+        });
+    });
+
+    describe('Error Logging', function () {
         var logStub;
 
         beforeEach(function () {
