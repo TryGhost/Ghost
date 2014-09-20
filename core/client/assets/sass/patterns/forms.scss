@@ -325,5 +325,8 @@ textarea {
         select {
             padding: 7px 10px 7px 8px;
         }
+        &:focus {
+            border-color: $brown;
+        }
     }
 } // @-moz-document
