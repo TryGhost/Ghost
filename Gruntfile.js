@@ -311,10 +311,10 @@ var _              = require('lodash'),
                         style: 'compressed',
                         sourceMap: true
                     },
-                    files: {
-                        'core/client/assets/css/<%= pkg.name %>.min.css': 'core/client/assets/sass/screen.scss',
-                        'core/client/docs/dist/css/<%= pkg.name %>.min.css': 'core/client/assets/sass/screen.scss'
-                    }
+                    files: [
+                        {dest: path.resolve('core/client/assets/css/<%= pkg.name %>.min.css'), src: path.resolve('core/client/assets/sass/screen.scss')},
+                        {dest: path.resolve('core/client/docs/dist/css/<%= pkg.name %>.min.css'), src: path.resolve('core/client/assets/sass/screen.scss')}
+                    ]
                 }
             },
 
