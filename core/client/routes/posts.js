@@ -56,10 +56,14 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
     },
 
     shortcuts: {
-        'up': 'moveUp',
-        'down': 'moveDown'
+        'up, k': 'moveUp',
+        'down, j': 'moveDown',
+        'c': 'newPost'
     },
     actions: {
+        newPost: function () {
+            this.transitionTo('editor.new');
+        },
         moveUp: function () {
             this.stepThroughPosts(-1);
         },
