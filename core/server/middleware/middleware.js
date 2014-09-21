@@ -143,6 +143,10 @@ middleware = {
             rateSigninAttempts = config.rateSigninAttempts || 10;
 
         if (req.body.username && req.body.grant_type === 'password') {
+            // remove entries with the same username
+            loginSecurity = _.filter(loginSecurity, function (logUser) {
+                return (logUser.email !== req.body.username);
+            });
             loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
         } else if (req.body.grant_type === 'refresh_token') {
             return next();
