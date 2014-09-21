@@ -97,6 +97,38 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         });
     },
 
+    metaTitleValue: boundOneWay('meta_title'),
+
+    metaDescriptionValue: boundOneWay('meta_description'),
+    metaDescriptionPlaceholder: Ember.computed('scratch', function () {
+        var html = this.get('scratch'),
+            placeholder;
+
+        // Strip HTML
+        placeholder = $('<div />', { html: html }).text();
+        // Replace new lines and trim
+        placeholder = placeholder.replace(/\n+/g, ' ').trim();
+        // Limit to 156 characters
+        placeholder = placeholder.substring(0,156);
+
+        return placeholder;
+    }),
+
+    seoTitle: Ember.computed('titleScratch', 'metaTitleValue', function () {
+        var metaTitle = this.get('metaTitleValue') || '';
+
+        return metaTitle.length > 0 ? metaTitle : this.get('titleScratch');
+    }),
+
+    seoDescription: Ember.computed('scratch', 'metaDescriptionValue', function () {
+        var metaDescription = this.get('metaDescriptionValue') || '';
+
+        return metaDescription.length > 0 ? metaDescription : this.get('metaDescriptionPlaceholder');
+    }),
+
+    seoSlug: Ember.computed('slug', 'slugPlaceholder', function () {
+        return this.get('slug') ? this.get('slug') : this.get('slugPlaceholder');
+    }),
 
     // observe titleScratch, keeping the post's slug in sync
     // with it until saved for the first time.
@@ -261,6 +293,40 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             //Validation complete
             this.set('published_at', newPublishedAt);
+
+            // If this is a new post.  Don't save the model.  Defer the save
+            // to the user pressing the save button
+            if (this.get('isNew')) {
+                return;
+            }
+
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+                self.showErrors(errors);
+                self.get('model').rollback();
+            });
+        },
+
+        setMetaTitle: function (metaTitle) {
+            var self = this;
+
+            this.set('meta_title', metaTitle);
+
+            // If this is a new post.  Don't save the model.  Defer the save
+            // to the user pressing the save button
+            if (this.get('isNew')) {
+                return;
+            }
+
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+                self.showErrors(errors);
+                self.get('model').rollback();
+            });
+        },
+
+        setMetaDescription: function (metaDescription) {
+            var self = this;
+
+            this.set('meta_description', metaDescription);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
