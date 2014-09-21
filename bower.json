@@ -16,7 +16,7 @@
     "jquery-file-upload": "9.5.6",
     "jquery-hammerjs": "1.0.1",
     "jquery-ui": "1.10.4",
-    "keymaster": "git://github.com/madrobby/keymaster#0f09fc1b7e66c2b7e07afe89a419366dcf2d1cd8",
+    "keymaster": "git://github.com/madrobby/keymaster#564ea42e07de40da8113a571f17ceae8802672ff",
     "loader.js": "git://github.com/stefanpenner/loader.js#1.0.0",
     "lodash": "2.4.1",
     "moment": "2.4.0",
