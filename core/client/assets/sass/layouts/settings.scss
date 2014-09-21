@@ -12,8 +12,8 @@
 // Main settings-menu styles, apply to every item
 .settings-menu {
     width: 25%;
-    position: fixed;
-    top: 60px;
+    position: absolute;
+    top: 0;
     left: 0;
     bottom: 0;
     z-index: 700;
@@ -24,7 +24,7 @@
     }
 
     @media (max-width: 900px) {
-        top: 44px;
+        top: 0;
     }
 
     ul {
