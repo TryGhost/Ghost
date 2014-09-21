@@ -1,13 +1,10 @@
-var BlurInput = Ember.TextField.extend({
+var BlurField = Ember.Mixin.create({
     selectOnClick: false,
     stopEnterKeyDownPropagation: false,
     click: function (event) {
         if (this.get('selectOnClick')) {
             event.currentTarget.select();
         }
-    },
-    focusOut: function () {
-        this.sendAction('action', this.get('value'));
     },
     keyDown: function (event) {
         // stop event propagation when pressing "enter"
@@ -20,4 +17,4 @@ var BlurInput = Ember.TextField.extend({
     }
 });
 
-export default BlurInput;
+export default BlurField;
