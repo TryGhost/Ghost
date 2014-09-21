@@ -6,6 +6,7 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 var PostSettingsMenuController = Ember.ObjectController.extend({
     //State for if the user is viewing a tab's pane.
     needs: 'application',
+
     isViewingSubview: Ember.computed('controllers.application.showRightOutlet', function (key, value) {
         // Not viewing a subview if we can't even see the PSM
         if (!this.get('controllers.application.showRightOutlet')) {
@@ -97,12 +98,18 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         });
     },
 
-    metaTitleValue: boundOneWay('meta_title'),
+    metaTitleScratch: boundOneWay('meta_title'),
+    metaDescriptionScratch: boundOneWay('meta_description'),
 
-    metaDescriptionValue: boundOneWay('meta_description'),
     metaDescriptionPlaceholder: Ember.computed('scratch', function () {
-        var html = this.get('scratch'),
+        var el = $('.rendered-markdown'),
+            html = '',
             placeholder;
+
+        // Get rendered markdown
+        if (!_.isUndefined(el) && el.length > 0) {
+            html = el[0].innerHTML;
+        }
 
         // Strip HTML
         placeholder = $('<div />', { html: html }).text();
@@ -114,14 +121,14 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         return placeholder;
     }),
 
-    seoTitle: Ember.computed('titleScratch', 'metaTitleValue', function () {
-        var metaTitle = this.get('metaTitleValue') || '';
+    seoTitle: Ember.computed('titleScratch', 'metaTitleScratch', function () {
+        var metaTitle = this.get('metaTitleScratch') || '';
 
         return metaTitle.length > 0 ? metaTitle : this.get('titleScratch');
     }),
 
-    seoDescription: Ember.computed('scratch', 'metaDescriptionValue', function () {
-        var metaDescription = this.get('metaDescriptionValue') || '';
+    seoDescription: Ember.computed('metaDescriptionScratch', function () {
+        var metaDescription = this.get('metaDescriptionScratch') || '';
 
         return metaDescription.length > 0 ? metaDescription : this.get('metaDescriptionPlaceholder');
     }),
@@ -319,7 +326,6 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             this.get('model').save(this.get('saveOptions')).catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
             });
         },
 
@@ -336,7 +342,6 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
             this.get('model').save(this.get('saveOptions')).catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
             });
         },
 
