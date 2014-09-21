@@ -50,8 +50,13 @@ CanThisResult = function () {
 };
 
 CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, context, permissionLoad) {
-    // @TODO: remove this lazy require
-    var objectTypeModelMap  = require('./object-type-model-map');
+    var objectTypeModelMap = {
+        post:       Models.Post,
+        role:       Models.Role,
+        user:       Models.User,
+        permission: Models.Permission,
+        setting:    Models.Settings
+    };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
     return _.reduce(objTypes, function (objTypeHandlers, objType) {
