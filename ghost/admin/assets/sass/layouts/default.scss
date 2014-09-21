@@ -135,7 +135,12 @@
 
 // The burger to expand .global-nav menu
 .menu-button {
-    @include icon($i-menu, 18px) { line-height: 44px; }
+    @include icon($i-menu, 18px) {
+        position: absolute;
+        top: 50%;
+        left: 22px;
+        transform: translateY(-50%);
+    }
     display: block;
     position: absolute;
     top: 0;
