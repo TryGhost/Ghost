@@ -296,12 +296,6 @@ coreHelpers.content = function (options) {
             );
         }
 
-        // Due to weirdness in downsize the 'words' option
-        // must be passed as a string. refer to #1796
-        // TODO: when downsize fixes this quirk remove this hack.
-        if (truncateOptions.hasOwnProperty('words')) {
-            truncateOptions.words = truncateOptions.words.toString();
-        }
         return new hbs.handlebars.SafeString(
             downsize(this.html, truncateOptions)
         );
@@ -573,7 +567,7 @@ coreHelpers.meta_title = function (options) {
         } else if (this.tag) {
             title = this.tag.name + pageString + ' - ' + blog.title;
         } else if (this.post) {
-            title = this.post.title;
+            title = _.isEmpty(this.post.meta_title) ? this.post.title : this.post.meta_title;
         } else {
             title = blog.title + pageString;
         }
@@ -595,8 +589,10 @@ coreHelpers.meta_description = function (options) {
             description = blog.description;
         } else if (this.author) {
             description = /\/page\//.test(this.relativeUrl) ? '' : this.author.bio;
-        } else if (this.tag || this.post || /\/page\//.test(this.relativeUrl)) {
+        } else if (this.tag || /\/page\//.test(this.relativeUrl)) {
             description = '';
+        } else if (this.post) {
+            description = _.isEmpty(this.post.meta_description) ? '' : this.post.meta_description;
         }
     }
 
