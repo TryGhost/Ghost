@@ -85,16 +85,17 @@
 
 
         <div class="post-settings-content">
+            <form>
             <div class="form-group">
                 <label for="blog-title">Meta Title</label>
-                {{gh-input class="post-setting-meta-title" value=metaTitleValue name="post-setting-meta-title" focus-out="setMetaTitle" placeholder=titleScratch stopEnterKeyDownPropagation="true"}}
-                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleValue 70}}</p>
+                {{gh-input class="post-setting-meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" placeholder=titleScratch stopEnterKeyDownPropagation="true"}}
+                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
             </div>
 
             <div class="form-group">
                 <label for="blog-title">Meta Description</label>
-                {{gh-textarea class="post-setting-meta-description" value=metaDescriptionValue name="post-setting-meta-description" focus-out="setMetaDescription" placeholder=metaDescriptionPlaceholder stopEnterKeyDownPropagation="true"}}
-                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionValue 156}}</p>
+                {{gh-textarea class="post-setting-meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" placeholder=metaDescriptionPlaceholder stopEnterKeyDownPropagation="true"}}
+                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
             </div>
 
             <div class="form-group">
@@ -105,6 +106,7 @@
                     <div class="seo-preview-description">{{seoDescription}}</div>
                 </div>
             </div>
+            </form>
         </div>
     {{/gh-tab-pane}}
     </div>
