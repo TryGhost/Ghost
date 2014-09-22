@@ -282,13 +282,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     add: function (data, options) {
         data = this.filterData(data);
         options = this.filterOptions(options, 'add');
-        var instance = this.forge(data);
+        var model = this.forge(data);
         // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
         // as the import json blob. More details refer to https://github.com/TryGhost/Ghost/issues/1696
         if (options.importing) {
-            instance.hasTimestamps = false;
+            model.hasTimestamps = false;
         }
-        return instance.save(null, options);
+        return model.save(null, options);
     },
 
     /**

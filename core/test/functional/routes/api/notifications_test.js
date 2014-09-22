@@ -2,7 +2,6 @@
 /*jshint expr:true*/
 var testUtils     = require('../../../utils'),
     supertest     = require('supertest'),
-    express       = require('express'),
 
     ghost         = require('../../../../../core'),
 
@@ -12,12 +11,10 @@ describe('Notifications API', function () {
     var accesstoken = '';
 
     before(function (done) {
-        var app = express();
-
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost({app: app}).then(function () {
-            request = supertest.agent(app);
+        ghost().then(function (ghostServer) {
+            request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
