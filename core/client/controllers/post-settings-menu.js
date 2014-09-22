@@ -43,7 +43,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             return;
         }
 
-        model.save(this.get('saveOptions')).catch(function (errors) {
+        model.save().catch(function (errors) {
             self.showErrors(errors);
             self.set('selectedAuthor', author);
             model.rollback();
@@ -65,8 +65,6 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             .extend(Ember.PromiseProxyMixin)
             .create(deferred);
     }),
-    //Changes in the PSM are too minor to warrant NProgress firing
-    saveOptions: {disableNProgress: true},
     /**
      * The placeholder is the published date of the post,
      * or the current date if the pubdate has not been set.
@@ -192,7 +190,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
@@ -271,12 +269,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                     return;
                 }
 
-                return self.get('model').save(self.get('saveOptions'));
-            }).then(function (changed) {
-                if (changed) {
-                    self.showSuccess('Permalink successfully changed to <strong>' +
-                    self.get('slug') + '</strong>.');
-                }
+                return self.get('model').save();
             }).catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
@@ -331,7 +324,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
@@ -354,7 +347,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
             });
         },
@@ -376,7 +369,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
             });
         },
@@ -390,7 +383,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
@@ -405,7 +398,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
