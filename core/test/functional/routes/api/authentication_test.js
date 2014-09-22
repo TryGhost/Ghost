@@ -1,7 +1,6 @@
 /*global describe, it, before, after */
 /*jshint expr:true*/
 var supertest     = require('supertest'),
-    express       = require('express'),
     should        = require('should'),
     testUtils     = require('../../../utils'),
     user          = testUtils.DataGenerator.forModel.users[0],
@@ -12,12 +11,10 @@ describe('Authentication API', function () {
     var accesstoken = '';
 
     before(function (done) {
-        var app = express();
-
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost({app: app}).then(function () {
-            request = supertest.agent(app);
+        ghost().then(function (ghostServer) {
+            request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
             return testUtils.doAuth(request);
         }).then(function (token) {
