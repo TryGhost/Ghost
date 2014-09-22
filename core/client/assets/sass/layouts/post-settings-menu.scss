@@ -70,7 +70,15 @@
     }
 
     .form-group {
-        // margin-bottom: 1.5rem;
+        &.for-checkbox,
+        &.for-radio {
+            label input:not(:checked) + .input-toggle-component {
+                border-color: #E0DFD7;
+            }
+            label input:not(:checked):hover + .input-toggle-component {
+                border-color: darken(#E0DFD7, 5%);
+            }
+        }
     } // .form-group
 
     textarea {
@@ -90,6 +98,14 @@
     .word-count {
         font-weight: bold;
     }
+
+    .btn.delete {
+        width: 100%;
+        &:before {
+            margin-right: 5px;
+        }
+    }
+
 }
 
 
