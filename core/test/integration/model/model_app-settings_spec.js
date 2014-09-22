@@ -4,7 +4,7 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
 
     // Stuff we are testing
-    AppSettingModel = require('../../../server/models/appSetting').AppSetting,
+    AppSettingModel = require('../../../server/models/app-setting').AppSetting,
     context         = testUtils.context.admin;
 
 describe('App Setting Model', function () {

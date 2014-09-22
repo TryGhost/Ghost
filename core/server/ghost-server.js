@@ -4,8 +4,8 @@ var Promise = require('bluebird'),
     packageInfo = require('../../package.json'),
     config = require('./config');
 
-function GhostServer(app) {
-    this.app = app;
+function GhostServer(rootApp) {
+    this.rootApp = rootApp;
     this.httpServer = null;
     this.connections = [];
     this.upgradeWarning = setTimeout(this.logUpgradeWarning.bind(this), 5000);
@@ -98,7 +98,7 @@ GhostServer.prototype.logUpgradeWarning = function () {
  */
 GhostServer.prototype.start = function (externalApp) {
     var self = this,
-        app = externalApp ? externalApp : self.app;
+        rootApp = externalApp ? externalApp : self.rootApp;
 
     // ## Start Ghost App
     return new Promise(function (resolve) {
@@ -110,13 +110,13 @@ GhostServer.prototype.start = function (externalApp) {
                 // We can ignore this.
             }
 
-            self.httpServer = app.listen(
+            self.httpServer = rootApp.listen(
                 config.getSocket()
             );
 
             fs.chmod(config.getSocket(), '0660');
         } else {
-            self.httpServer = app.listen(
+            self.httpServer = rootApp.listen(
                 config.server.port,
                 config.server.host
             );

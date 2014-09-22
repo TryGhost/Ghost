@@ -6,7 +6,6 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 var request    = require('supertest'),
-    express    = require('express'),
     should     = require('should'),
 
     testUtils  = require('../../utils'),
@@ -47,11 +46,9 @@ describe('Admin Routing', function () {
     }
 
     before(function (done) {
-        var app = express();
-
-        ghost({app: app}).then(function () {
+        ghost().then(function (ghostServer) {
             // Setup the request object with the ghost express app
-            request = request(app);
+            request = request(ghostServer.rootApp);
 
             done();
         }).catch(function (e) {
