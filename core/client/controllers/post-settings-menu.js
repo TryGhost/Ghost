@@ -52,7 +52,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         //Loaded asynchronously, so must use promise proxies.
         var deferred = {};
 
-        deferred.promise = this.store.find('user').then(function (users) {
+        deferred.promise = this.store.find('user', {limit: 'all'}).then(function (users) {
             return users.rejectBy('id', 'me');
         }).then(function (users) {
             return users.filter(function (user) {
