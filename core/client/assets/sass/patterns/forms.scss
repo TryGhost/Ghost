@@ -81,7 +81,7 @@ form {
         }
         &:hover {
             input:not(:checked) + .input-toggle-component {
-                border-color: $midbrown;
+                border-color: $brown;
             }
         }
     }
@@ -103,7 +103,7 @@ form {
         height: 18px;
         margin-right: 7px;
         background: #F7F7F3;
-        border: 1px solid $lightbrown;
+        border: 1px solid #E0DFD7;
     }
 
     p {

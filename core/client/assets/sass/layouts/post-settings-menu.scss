@@ -69,18 +69,6 @@
         }
     }
 
-    .form-group {
-        &.for-checkbox,
-        &.for-radio {
-            label input:not(:checked) + .input-toggle-component {
-                border-color: #E0DFD7;
-            }
-            label input:not(:checked):hover + .input-toggle-component {
-                border-color: darken(#E0DFD7, 5%);
-            }
-        }
-    } // .form-group
-
     textarea {
         height: 108px;
     }
