@@ -9,15 +9,15 @@ var PostValidator = Ember.Object.create({
             });
         }
 
-        if (!validator.isLength(data.meta_title, 0, 70)) {
+        if (!validator.isLength(data.meta_title, 0, 150)) {
             validationErrors.push({
-                message: 'Meta Title is too long.'
+                message: 'Meta Title cannot be longer than 150 characters.'
             });
         }
 
-        if (!validator.isLength(data.meta_description, 0, 156)) {
+        if (!validator.isLength(data.meta_description, 0, 200)) {
             validationErrors.push({
-                message: 'Meta Description is too long.'
+                message: 'Meta Description cannot be longer than 200 characters.'
             });
         }
 
