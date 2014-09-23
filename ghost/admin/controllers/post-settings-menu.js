@@ -101,36 +101,44 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     metaTitleScratch: boundOneWay('meta_title'),
     metaDescriptionScratch: boundOneWay('meta_description'),
 
-    metaDescriptionPlaceholder: Ember.computed('scratch', function () {
-        var el = $('.rendered-markdown'),
-            html = '',
-            placeholder;
-
-        // Get rendered markdown
-        if (!_.isUndefined(el) && el.length > 0) {
-            html = el[0].innerHTML;
-        }
-
-        // Strip HTML
-        placeholder = $('<div />', { html: html }).text();
-        // Replace new lines and trim
-        placeholder = placeholder.replace(/\n+/g, ' ').trim();
-        // Limit to 156 characters
-        placeholder = placeholder.substring(0,156);
-
-        return placeholder;
-    }),
-
     seoTitle: Ember.computed('titleScratch', 'metaTitleScratch', function () {
         var metaTitle = this.get('metaTitleScratch') || '';
 
         return metaTitle.length > 0 ? metaTitle : this.get('titleScratch');
     }),
 
-    seoDescription: Ember.computed('metaDescriptionScratch', function () {
-        var metaDescription = this.get('metaDescriptionScratch') || '';
+    seoDescription: Ember.computed('scratch', 'metaDescriptionScratch', function () {
+        var metaDescription = this.get('metaDescriptionScratch') || '',
+            el,
+            html = '',
+            placeholder;
 
-        return metaDescription.length > 0 ? metaDescription : this.get('metaDescriptionPlaceholder');
+        if (metaDescription.length > 0) {
+            placeholder = metaDescription;
+        } else {
+            el = $('.rendered-markdown');
+
+            // Get rendered markdown
+            if (!_.isUndefined(el) && el.length > 0) {
+                html = el.clone();
+                html.find('.image-uploader').remove();
+                html = html[0].innerHTML;
+            }
+
+            // Strip HTML
+            placeholder = $('<div />', { html: html }).text();
+            // Replace new lines and trim
+            placeholder = placeholder.replace(/\n+/g, ' ').trim();
+        }
+
+        if (placeholder.length > 156) {
+            // Limit to 156 characters
+            placeholder = placeholder.substring(0,156).trim();
+            placeholder = Ember.Handlebars.Utils.escapeExpression(placeholder);
+            placeholder = new Ember.Handlebars.SafeString(placeholder + '&hellip;');
+        }
+
+        return placeholder;
     }),
 
     seoSlug: Ember.computed('slug', 'slugPlaceholder', function () {
@@ -314,7 +322,13 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         },
 
         setMetaTitle: function (metaTitle) {
-            var self = this;
+            var self = this,
+                currentTitle = this.get('meta_title') || '';
+
+            // Only update if the title has changed
+            if (currentTitle === metaTitle) {
+                return;
+            }
 
             this.set('meta_title', metaTitle);
 
@@ -330,7 +344,13 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         },
 
         setMetaDescription: function (metaDescription) {
-            var self = this;
+            var self = this,
+                currentDescription = this.get('meta_description') || '';
+
+            // Only update if the description has changed
+            if (currentDescription === metaDescription) {
+                return;
+            }
 
             this.set('meta_description', metaDescription);
 
