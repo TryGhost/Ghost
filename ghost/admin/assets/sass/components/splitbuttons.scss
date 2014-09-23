@@ -56,43 +56,22 @@
             color: #fff;
 
             @include icon($i-chevron-down, 9px) {
-                margin-top: -3px;
-                transition: margin-top 0.3s ease;
-                /* Transition of transform properties are split out due to a
-                    defect in the vendor prefixing of transform transitions.
-                    See: http://github.com/thoughtbot/bourbon/pull/86 */
-                transition-property: transform;
-                transition-duration: 0.3;
-                transition-timing-function: ease;
+                top: 0;
+                display: inline-block;
+                position: relative;
             }
 
         }
 
-        // Keep the arrow spun when the associated menu is open
-        &.active .options:before {
+        &.up .options:before {
             transform: rotate(-360deg);
+            transition: transform 0.6s ease, top 0.6s ease;
         }
-
-        &.up.active .options:before {
-            margin-top:-4px;
-            transform: rotate(540deg);
-        }
-
-        // Spin the arrow on hover and while menu is open
-        &:hover .options:before,
-        &:focus .options:before {
-            will-change: transform;
-            transform: rotate(-360deg);
-        }
-
-        // If it has a class of "up" spin it an extra 180degress to point up
         &.up:hover .options:before,
-        &.up:focus .options:before {
-            margin-top:-4px;
+        &.up.open .options:before {
             transform: rotate(540deg);
-            transition-property: transform;
-            transition-duration: 0.6;
-            transition-timing-function: ease;
+            top: -1px;
+            transition: transform 0.3s ease, top 0.3s ease;
         }
 
     }
