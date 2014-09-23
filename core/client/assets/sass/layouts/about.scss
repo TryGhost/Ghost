@@ -38,6 +38,7 @@
     h1 {
         margin-top: -6px;
         margin-bottom: -21px;
+        font-feature-settings: normal;
 
         .version {
             font-weight: 300;
@@ -71,6 +72,7 @@
         float: left;
         display: inline-block;
         margin: 0;
+        font-feature-settings: normal;
     }
     dt {
         margin-right: 5px;
