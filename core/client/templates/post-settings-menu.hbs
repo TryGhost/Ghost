@@ -1,6 +1,6 @@
 <div class="editor-cover" {{action "closeRightOutlet"}}></div>
-{{#gh-tabs-manager selected="showSubview" id="entry-controls" classNameBindings="isNew:unsaved :right-outlet"}}
-<div id="entry-controls" {{bind-attr class="isNew:unsaved :right-outlet"}}>
+{{#gh-tabs-manager selected="showSubview" id="entry-controls" class="right-outlet"}}
+<div id="entry-controls" class="right-outlet">
     <div {{bind-attr class="isViewingSubview:outlet-pane-out-left:outlet-pane-in :post-settings-menu :outlet-pane"}}>
         <div class="post-settings-header">
             <h4>Post Settings</h4>
@@ -37,13 +37,6 @@
                 </span>
             </div>
 
-            <div class="form-group for-checkbox">
-                <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
-                    <span class="input-toggle-component"></span>
-                    <p>Static Page</p>
-                </label>
-            </div>
             <ul class="nav-list nav-list-block">
                 {{#gh-tab tagName="li" classNames="nav-list-item"}}
                     <a href="#">
@@ -51,28 +44,22 @@
                         <span>Extra content for SEO and social media.</span>
                     </a>
                 {{/gh-tab}}
-                {{!--
-                {{#gh-tab tagName="li" classNames="nav-list-item"}}
-                    <a href="#">
-                        <b>Advanced Settings</b>
-                        <span>Convert to a page, mark as featured.</span>
-                    </a>
-                {{/gh-tab}}
-                {{#gh-tab tagName="li" classNames="nav-list-item"}}
-                    <a href="#">
-                        <b>Revision History</b>
-                        <span>12 versions of this post by 3 people.</span>
-                    </a>
-                {{/gh-tab}}
-                {{#gh-tab tagName="li" classNames="nav-list-item"}}
-                    <a href="#">
-                        <b>Custom App</b>
-                        <span>Registered an advanced setting panel.</span>
-                    </a>
-                {{/gh-tab}}
-                --}}
             </ul>
-            <button type="button" class="btn btn-red icon-trash delete" {{action "openModal" "delete-post" this}}>Delete This Post</button>
+
+            <div class="form-group for-checkbox">
+                <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
+                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
+                    <span class="input-toggle-component"></span>
+                    <p>Turn this post into a static page</p>
+                </label>
+
+                <label class="checkbox" for="static-page" {{action "toggleFeatured" bubbles="false"}}>
+                    {{input type="checkbox" name="featured" id="featured" class="post-setting-featured" checked=featured}}
+                    <span class="input-toggle-component"></span>
+                    <p>Feature this post</p>
+                </label>
+            </div>
+            
             </form>
         </div><!-- .post-settings-content -->
     </div><!-- .post-settings-menu -->
