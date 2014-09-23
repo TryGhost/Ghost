@@ -2,6 +2,7 @@ var Promise = require('bluebird'),
     fs = require('fs'),
     semver = require('semver'),
     packageInfo = require('../../package.json'),
+    errors = require('./errors'),
     config = require('./config');
 
 function GhostServer(rootApp) {
@@ -86,7 +87,11 @@ GhostServer.prototype.logShutdownMessages = function () {
 };
 
 GhostServer.prototype.logUpgradeWarning = function () {
-    console.log('Warning: Ghost will no longer start automatically when using it as an npm module. Please see the docs(http://tinyurl.com/npm-upgrade) for information on how to update your code.'.red);
+    errors.logWarn(
+        'Ghost no longer starts automatically when using it as an npm module.',
+        'If you\'re seeing this message, you may need to update your custom code.',
+        'Please see the docs at http://tinyurl.com/npm-upgrade for more information.'
+    );
 };
 
 /**
@@ -124,11 +129,16 @@ GhostServer.prototype.start = function (externalApp) {
 
         self.httpServer.on('error', function (error) {
             if (error.errno === 'EADDRINUSE') {
-                console.log('ERROR: Cannot start Ghost. Another program is already using this port (is another Ghost instance already running?)'.red);
+                errors.logError(
+                    '(EADDRINUSE) Cannot start Ghost.',
+                    'Port ' + config.server.port + ' is already in use by another program.',
+                    'Is another Ghost instance already running?'
+                );
             } else {
-                console.log(
-                    'ERROR: There was an error starting your server. '.red,
-                    ('(Code: ' + error.errno + ')').red
+                errors.logError(
+                    '(Code: ' + error.errno + ')',
+                    'There was an error starting your server.',
+                    'Please use the error code above to search for a solution.'
                 );
             }
             process.exit(-1);
