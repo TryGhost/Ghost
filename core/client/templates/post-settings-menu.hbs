@@ -88,13 +88,13 @@
             <form>
             <div class="form-group">
                 <label for="blog-title">Meta Title</label>
-                {{gh-input class="post-setting-meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" placeholder=titleScratch stopEnterKeyDownPropagation="true"}}
+                {{gh-input class="post-setting-meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
             </div>
 
             <div class="form-group">
                 <label for="blog-title">Meta Description</label>
-                {{gh-textarea class="post-setting-meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" placeholder=metaDescriptionPlaceholder stopEnterKeyDownPropagation="true"}}
+                {{gh-textarea class="post-setting-meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
             </div>
 
