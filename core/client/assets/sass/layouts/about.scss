@@ -34,6 +34,16 @@
 // App Details
 // --------------------------------------------------
 
+// Special case to hide the desktop page header, because
+// in this instance the Ghost logo replaces it.
+.settings-view-about {
+    @media (min-width: 901px) {
+        .settings-view-header {
+            display: none;
+        }
+    }
+}
+
 .about-ghost-intro {
     h1 {
         margin-top: -6px;
