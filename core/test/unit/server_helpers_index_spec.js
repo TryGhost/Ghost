@@ -669,6 +669,55 @@ describe('Core Helpers', function () {
         });
     });
 
+    describe('is Block Helper', function () {
+        it('has loaded is block helper', function () {
+            should.exist(handlebars.helpers.is);
+        });
+
+        // All positive tests
+        it('should match single context "index"', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.is.call(
+                {},
+                'index',
+                {fn: fn, inverse: inverse, data: {root: {context: ['home', 'index']}}}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should match OR context "index, paged"', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.is.call(
+                {},
+                'index, paged',
+                {fn: fn, inverse: inverse, data: {root: {context: ['tag', 'paged']}}}
+            );
+
+            fn.called.should.be.true;
+            inverse.called.should.be.false;
+        });
+
+        it('should not match "paged"', function () {
+            var fn = sinon.spy(),
+                inverse = sinon.spy();
+
+            helpers.is.call(
+                {},
+                'paged',
+                {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
+            );
+
+            fn.called.should.be.false;
+            inverse.called.should.be.true;
+        });
+    });
+
     describe('has Block Helper', function () {
         it('has loaded has block helper', function () {
             should.exist(handlebars.helpers.has);

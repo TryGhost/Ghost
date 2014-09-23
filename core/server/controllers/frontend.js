@@ -88,6 +88,35 @@ function handleError(next) {
     };
 }
 
+function setResponseContext(req, res, data) {
+    var contexts = [],
+        pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+
+    // paged context
+    if (!isNaN(pageParam) && pageParam > 1) {
+        contexts.push('paged');
+    }
+
+    if (req.route.path === '/page/:page/') {
+        contexts.push('index');
+    } else if (req.route.path === '/') {
+        contexts.push('home');
+        contexts.push('index');
+    } else if (/\/rss\/(:page\/)?$/.test(req.route.path)) {
+        contexts.push('rss');
+    } else if (/^\/tag\//.test(req.route.path)) {
+        contexts.push('tag');
+    } else if (/^\/author\//.test(req.route.path)) {
+        contexts.push('author');
+    } else if (data && data.post && data.post.page) {
+        contexts.push('page');
+    } else {
+        contexts.push('post');
+    }
+
+    res.locals.context = contexts;
+}
+
 // Add Request context parameter to the data object
 // to be passed down to the templates
 function setReqCtx(req, data) {
@@ -146,6 +175,7 @@ frontendControllers = {
                         view = 'index';
                     }
 
+                    setResponseContext(req, res);
                     res.render(view, formatPageResponse(posts, page));
                 });
             });
@@ -200,6 +230,7 @@ frontendControllers = {
                     if (!result.tag) {
                         return next();
                     }
+                    setResponseContext(req, res);
                     res.render(view, result);
                 });
             });
@@ -254,6 +285,8 @@ frontendControllers = {
                     if (!result.author) {
                         return next();
                     }
+
+                    setResponseContext(req, res);
                     res.render(view, result);
                 });
             });
@@ -325,9 +358,12 @@ frontendControllers = {
 
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     getActiveThemePaths().then(function (paths) {
-                        var view = template.getThemeViewForPost(paths, post);
+                        var view = template.getThemeViewForPost(paths, post),
+                            response = formatResponse(post);
 
-                        res.render(view, formatResponse(post));
+                        setResponseContext(req, res, response);
+
+                        res.render(view, response);
                     });
                 });
             }
@@ -470,6 +506,7 @@ frontendControllers = {
                 }
 
                 setReqCtx(req, page.posts);
+                setResponseContext(req, res);
 
                 filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                     posts.forEach(function (post) {
