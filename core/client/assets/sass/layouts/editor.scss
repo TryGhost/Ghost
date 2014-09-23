@@ -671,6 +671,11 @@ body.zen {
 
  body.right-outlet-expanded {
 
+     // Keep settings cog highlighted when menu is open
+     .post-settings:before {
+         color: $lightgrey;
+     }
+
     .editor-cover {
         position: absolute;
         top: 0;
