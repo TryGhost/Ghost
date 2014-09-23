@@ -439,7 +439,7 @@ body.zen {
         color: $midgrey;
         transition: all 0.15s ease-out 0s;
         position: relative;
-        top: 1px;
+        top: 3px;
 
         &:hover,
         &.active {
@@ -682,6 +682,11 @@ body.zen {
 // --------------------------------------------------
 
  body.right-outlet-expanded {
+
+     // Keep settings cog highlighted when menu is open
+     .post-settings:before {
+         color: $lightgrey;
+     }
 
     .editor-cover {
         position: absolute;
