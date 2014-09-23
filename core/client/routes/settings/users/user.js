@@ -1,4 +1,8 @@
-var SettingsUserRoute = Ember.Route.extend({
+import styleBody from 'ghost/mixins/style-body';
+
+var SettingsUserRoute = Ember.Route.extend(styleBody, {
+    classNames: ['settings-view-user'],
+
     model: function (params) {
         var self = this;
         // TODO: Make custom user adapter that uses /api/users/:slug endpoint
