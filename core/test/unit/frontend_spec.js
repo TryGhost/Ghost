@@ -202,6 +202,7 @@ describe('Frontend Controller', function () {
                     route: {}
                 },
                 res = {
+                    locals: {},
                     render: function (view) {
                         assert.equal(view, 'home');
                         done();
@@ -220,6 +221,7 @@ describe('Frontend Controller', function () {
                     route: {}
                 },
                 res = {
+                    locals: {},
                     render: function (view) {
                         assert.equal(view, 'index');
                         done();
@@ -251,6 +253,7 @@ describe('Frontend Controller', function () {
                     route: {}
                 },
                 res = {
+                    locals: {},
                     render: function (view) {
                         assert.equal(view, 'index');
                         done();
@@ -360,9 +363,13 @@ describe('Frontend Controller', function () {
             it('it will render custom tag template if it exists', function (done) {
                 var req = {
                         path: '/tag/' + mockTags[0].slug,
-                        params: {}
+                        params: {},
+                        route: {
+                            path: '/tag/:slug'
+                        }
                     },
                     res = {
+                        locals: {},
                         render: function (view, context) {
                             assert.equal(view, 'tag');
                             assert.equal(context.tag, mockTags[0]);
@@ -576,9 +583,14 @@ describe('Frontend Controller', function () {
 
                 it('it will render custom page template if it exists', function (done) {
                     var req = {
-                            path: '/' + mockPosts[2].posts[0].slug
+                            path: '/' + mockPosts[2].posts[0].slug,
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
                         },
                         res = {
+                            locals: {},
                             render: function (view, context) {
                                 assert.equal(view, 'page-' + mockPosts[2].posts[0].slug);
                                 assert.equal(context.post, mockPosts[2].posts[0]);
@@ -601,9 +613,14 @@ describe('Frontend Controller', function () {
 
                 it('will render static page via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockPosts[0].posts[0].slug
+                            path: '/' + mockPosts[0].posts[0].slug,
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
                         },
                         res = {
+                            locals: {},
                             render: function (view, context) {
                                 assert.equal(view, 'page');
                                 assert.equal(context.post, mockPosts[0].posts[0]);
@@ -620,6 +637,7 @@ describe('Frontend Controller', function () {
                             path: '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -634,6 +652,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
@@ -650,6 +669,7 @@ describe('Frontend Controller', function () {
                             path: '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: sinon.spy()
                         };
@@ -673,9 +693,14 @@ describe('Frontend Controller', function () {
 
                 it('will render static page via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockPosts[0].posts[0].slug
+                            path: '/' + mockPosts[0].posts[0].slug,
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
                         },
                         res = {
+                            locals: {},
                             render: function (view, context) {
                                 assert.equal(view, 'page');
                                 assert.equal(context.post, mockPosts[0].posts[0]);
@@ -705,6 +730,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
@@ -721,6 +747,7 @@ describe('Frontend Controller', function () {
                             path: '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: sinon.spy()
                         };
@@ -746,9 +773,14 @@ describe('Frontend Controller', function () {
 
                 it('will render post via /:slug', function (done) {
                     var req = {
-                            path: '/' + mockPosts[1].posts[0].slug
+                            path: '/' + mockPosts[1].posts[0].slug,
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
                         },
                         res = {
+                            locals: {},
                             render: function (view, context) {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
@@ -766,6 +798,7 @@ describe('Frontend Controller', function () {
                             path: '/' + ['2012/12/30', mockPosts[1].posts[0].slug].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -781,6 +814,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
@@ -797,6 +831,7 @@ describe('Frontend Controller', function () {
                             path: '/' + ['2012/12/30', mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: sinon.spy()
                         };
@@ -821,9 +856,14 @@ describe('Frontend Controller', function () {
                 it('will render post via /YYYY/MM/DD/:slug', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD'),
                         req = {
-                            path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
+                            path: '/' + [date, mockPosts[1].posts[0].slug].join('/'),
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
                         },
                         res = {
+                            locals: {},
                             render: function (view, context) {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
@@ -842,6 +882,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -856,6 +897,7 @@ describe('Frontend Controller', function () {
                             path: '/' + mockPosts[1].posts[0].slug
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -872,6 +914,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [dateFormat, mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
@@ -888,6 +931,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: sinon.spy()
                         };
@@ -912,9 +956,14 @@ describe('Frontend Controller', function () {
                 it('will render post via /:year/:slug', function (done) {
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY'),
                         req = {
-                            path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
+                            path: '/' + [date, mockPosts[1].posts[0].slug].join('/'),
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
                         },
                         res = {
+                            locals: {},
                             render: function (view, context) {
                                 assert.equal(view, 'post');
                                 assert(context.post, 'Context object has post attribute');
@@ -933,6 +982,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -948,6 +998,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -962,6 +1013,7 @@ describe('Frontend Controller', function () {
                             path: '/' + mockPosts[1].posts[0].slug
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy()
                         };
 
@@ -978,6 +1030,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
                                 res.render.called.should.be.false;
@@ -994,6 +1047,7 @@ describe('Frontend Controller', function () {
                             path: '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
+                            locals: {},
                             render: sinon.spy(),
                             redirect: sinon.spy()
                         };
