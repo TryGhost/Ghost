@@ -11,13 +11,13 @@ next_section: mac
 
 ## Panoramica <a id="overview"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Nota</strong> Ghost richiede Node.js <strong>0.10.x</strong> (l'ultima versione stabile). Ti raccomandiamo Node.js <strong>0.10.30</strong> e npm <strong>1.4.21</strong>.</p>
 
 La documentazione di Ghost è ancora "Work in Progress", viene aggiornata e migliorata regolarmente. Se hai problemi o hai suggerimenti su come migliorare, faccelo sapere.
 
 Ghost è sviluppato in [Node.js](http://nodejs.org), e richiede la versione `0.10.*` (l'ultima versione stabile).
 
-Far funzionare Ghost in locale sul tuo computer è abbastanza semplice, ma prima è necessario che tu installi Node.js.
+Far funzionare Ghost in locale sul tuo computer è abbastanza semplice, ma prima è necessario installare Node.js.
 
 ### Cos'è Node.js?
 

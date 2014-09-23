@@ -18,7 +18,7 @@ prev_section: upgrading
     <dt id="export-path">'/usr/local/bin' non appare in $PATH</dt>
     <dd>Puoi aggiungerlo come segue:
         <ul>
-            <li>Da terminale digita <code>cd ~</code>, ti porterà alla tua cartella home (per digitare il carattere ~ con la tastiera italiana, premi ALT + 126)</li>
+            <li>Da terminale digita <code>cd ~</code>, ti porterà alla tua cartella home (per digitare il carattere ~ con la tastiera italiana, premi ALT + 126 o ALT + 5 su Mac~)</li>
             <li>Ora digita <code>ls -al</code> per mostrare tutti i files e le sottocartelle in questa cartella, inclusi quelli nascosti</li>
             <li>Dovresti vedere un file <code class="path">.profile</code> o <code class="path">.bash_profile</code>, in caso contrario digita <code>touch .bash_profile</code> per crearlo</li>
             <li>Successivamente digita <code>open -a Textedit .bash_profile</code> per aprire il file con Textedit.</li>
@@ -28,11 +28,11 @@ prev_section: upgrading
     </dd>
     <dt id="sqlite3-errors">SQLite3 non si installa</dt>
     <dd>
-        <p>Il pacchetto SQLite3 comprende binari precompilati per le più comuni architetture. Se stai usando una distro linux meno popolare o altri sistemi unix-like, potresti ottenere da SQLite3 un errore 404 in quanto non è in grado di trovare i binari per la tua piattaforma.</p>
-        <p>La soluzione è forzare la ricompilazione di SQLite3. Ti occorreranno Python & gcc. Prova ad eseguire <code>npm install sqlite3 --build-from-source</code></p>
-        <p>In caso di errore probabilmente ti mancano dipendenze di Python o di gcc, su Linux prova ad eseguire <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> e <code>sudo apt-get install python-software-properties python g++ make</code> prima di riprovare a compilare il sorgente.</p>
+        <p>Il pacchetto SQLite3 comprende binari precompilati per le più comuni architetture. Se stai usando una distro Linux meno popolare o altri sistemi Unix-like, potresti ottenere da SQLite3 un errore 404 in quanto non è in grado di trovare i binari per la tua piattaforma.</p>
+        <p>La soluzione è forzare la ricompilazione di SQLite3. Ti occorreranno Python e gcc. Prova ad eseguire <code>npm install sqlite3 --build-from-source</code></p>
+        <p>In caso di errore probabilmente ti mancano dipendenze di Python o di gcc: su Linux prova ad eseguire <code>sudo npm install -g node-gyp</code>, <code>sudo apt-get install build-essential</code> e <code>sudo apt-get install python-software-properties python g++ make</code> prima di riprovare a compilare il sorgente.</p>
         <p>Per ulteriori informazioni sulla compilazione consulta: <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">https://github.com/developmentseed/node-sqlite3/wiki/Binaries</a></p>
-        <p>Una volta compilati i binari per la tua piattaforma, segui le <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">instruzioni qui</a> per inoltrare i binari al progetto node-sqlite, affinché i futuri utenti non incorreranno nello stesso problema.</p>
+        <p>Una volta compilati i binari per la tua piattaforma, segui le <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries#creating-new-binaries">istruzioni qui</a> per inoltrare i binari al progetto node-sqlite, affinché i futuri utenti non incorrano nello stesso problema.</p>
     </dd>
     <dt id="image-uploads">Non riesco a fare l'upload delle immagini</dt>
     <dd>
@@ -42,7 +42,7 @@ prev_section: upgrading
         <ul>
             <li>Accedi al tuo server e digita <code>sudo nano /etc/nginx/conf.d/default.conf</code> per aprire il file di configurazione.</li>
             <li>Dopo la riga con <code>server_name</code> aggiungi: <code>client_max_body_size 10M;</code></li>
-            <li>Infine premi <kbd>ctrl</kbd> + <kbd>x</kbd> per uscire. Nano ti chiederà se vuoi salvare, quindi digita <kbd>y</kbd> per acconsentire e premi <kbd>enter</kbd> per salvare il file.</li>
+            <li>Infine premi <kbd>ctrl</kbd> + <kbd>x</kbd> per uscire; nano ti chiederà se vuoi salvare, quindi digita <kbd>y</kbd> per acconsentire e premi <kbd>Invio</kbd> per salvare il file.</li>
         </ul>
     </dd>
 </dl>
