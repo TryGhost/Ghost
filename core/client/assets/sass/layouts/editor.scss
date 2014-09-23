@@ -433,6 +433,14 @@ body.zen {
     }
 
     .post-settings {
+        @include icon($i-settings, 14px);
+        display: inline-block;
+        padding: 0 10px;
+        color: $midgrey;
+        transition: all 0.15s ease-out 0s;
+        position: relative;
+        top: 1px;
+
         &:hover,
         &.active {
             color: $lightgrey;
@@ -644,19 +652,23 @@ body.zen {
 }
 
 #entry-actions {
-    margin-right: 6px;
     position: relative;
+    margin-right: 6px;
+
     .dropdown {
         position: absolute;
-        bottom: 49px;
         right: 0;
+        bottom: 49px;
+
         .dropdown-menu {
             top: auto;
-            left: auto;
             right: 100%;
             bottom: 100%;
+            left: auto;
         }
+
     }
+
 }
 
 #entry-actions-menu {
@@ -680,24 +692,9 @@ body.zen {
         z-index: 600;
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
         transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
-    }//.editor-cover
-}//body.right-outlet-expanded
-
-.post-settings {
-    @include icon($i-settings, 14px);
-    display: inline-block;
-    padding: 0 10px;
-    color: $midgrey;
-    transition: all 0.15s ease-out 0s;
-    position: relative;
-    top: 1px;
-
-    &:hover,
-    &.active {
-        color: $darkgrey;
     }
-} // .post-settings
 
+}
 
 
 //
