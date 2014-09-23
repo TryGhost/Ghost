@@ -15,6 +15,7 @@ var EditorNewRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, base
     setupController: function (controller, model) {
         this._super(controller, model);
         controller.set('scratch', '');
+        controller.set('titleScratch', '');
 
         // used to check if anything has changed in the editor
         controller.set('previousTagNames', Ember.A());
