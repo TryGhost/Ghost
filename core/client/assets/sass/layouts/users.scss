@@ -15,7 +15,7 @@
     font-weight: normal;
     color: $midbrown;
     margin-bottom: 14px;
-} // .object-list-title
+}
 
 .object-list-item {
 
@@ -35,13 +35,15 @@
 
     border-top: 1px solid $lightbrown;
 
-} // .object-list-item
+}
 
 a.object-list-item {
     text-decoration: none;
+
     &:hover {
         background: lighten($lightbrown, 5%);
     }
+
     &:last-of-type:hover {
         box-shadow: inset 0px -1px 0px $lightbrown;
     }
@@ -57,6 +59,7 @@ a.object-list-item {
     color: transparent;
     overflow: hidden;
     position: relative;
+
     &:before {
         position: absolute;
         top: 50%;
@@ -67,7 +70,7 @@ a.object-list-item {
         color: $brown;
         font-size: 14px;
     }
-} // .object-list-item-icon
+}
 
 .object-list-item-figure {
     width: 35px;
@@ -77,7 +80,7 @@ a.object-list-item {
     border-radius: 100%;
     background-size: 105%;
     background-position: center center;
-} // .object-list-item-figure
+}
 
 .object-list-item-icon,
 .object-list-item-figure {
@@ -88,10 +91,8 @@ a.object-list-item {
 }
 
 .object-list-item-body {
-
     flex: 1 1 auto;
     align-items: stretch;
-
     padding-left: 15px;
     line-height: 1;
 
@@ -113,7 +114,7 @@ a.object-list-item {
         margin-top: 3px;
     }
 
-} // .object-list-item-body
+} //.object-list-item-body
 
 .object-list-item-aside {
     @media (max-width: 500px) {
@@ -121,16 +122,19 @@ a.object-list-item {
         width: 100%;
         margin-top: 15px;
     }
+
     .object-list-action:not(:first-of-type) {
         margin-left: 20px;
         @media (min-width: 501px) {
             margin-left: 50px;
         }
     }
+
     .role-label {
         float: left;
         margin-top: -1px;
     }
+
     .role-label + .role-label {
         margin-left: 5px;
     }
@@ -143,7 +147,7 @@ a.object-list-item {
     &:hover {
 
     }
-} // .object-list-action
+}
 
 
 //
@@ -194,12 +198,15 @@ a.object-list-item {
 // --------------------------------------------------
 
 .invite-new-user {
+
     .modal-body {
         @include clearfix;
+
         fieldset {
             margin: 1em 0 0 0;
         }
     }
+
     .form-group {
 
         margin-bottom: 0;
@@ -215,6 +222,7 @@ a.object-list-item {
             float: left;
             width: 60%;
         }
+
         &:nth-of-type(2) {
             float: left;
             width: 35%;
@@ -225,7 +233,7 @@ a.object-list-item {
             width: 100%;
         }
 
-    } // .form-group
+    } //.form-group
 
     .button-add {
         width: 100%;
@@ -234,4 +242,4 @@ a.object-list-item {
         line-height: 16px;
     }
 
-} // .invite-new-user
+} //.invite-new-user
