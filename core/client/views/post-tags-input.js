@@ -1,7 +1,7 @@
 var PostTagsInputView = Ember.View.extend({
     tagName: 'section',
     elementId: 'entry-tags',
-    classNames: 'left',
+    classNames: 'publish-bar-inner',
 
     templateName: 'post-tags-input',
 
