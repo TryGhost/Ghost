@@ -217,7 +217,8 @@ function serveSharedFile(file, type, maxAge) {
 setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     var logging = config.logging,
         corePath = config.paths.corePath,
-        oauthServer = oauth2orize.createServer();
+        oauthServer = oauth2orize.createServer(),
+        apiRouter;
 
     // silence JSHint without disabling unused check for the whole file
     authStrategies = authStrategies;
@@ -310,7 +311,19 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
 
     // ### Routing
     // Set up API routes
-    blogApp.use(routes.apiBaseUri, routes.api(middleware));
+    apiRouter = routes.api(middleware);
+    blogApp.use(routes.apiBaseUri, apiRouter);
+    // ### Invalid method call on valid route
+    apiRouter.use(function (req, res, next) {
+        apiRouter.stack.forEach(function (item) {
+            if (item.regexp.test(req.path) && item.route !== undefined) {
+                return next(new errors.MethodNotAllowedError('Method not allowed'));
+            }
+        });
+
+        // Didn't match any path -> 404
+        res.status(404).json({errors: {type: 'NotFoundError', message: 'Unknown API endpoint.'}});
+    });
 
     // Mount admin express app to /ghost and set up routes
     adminApp.use(middleware.redirectToSetup);
