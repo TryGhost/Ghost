@@ -297,15 +297,17 @@
 } // .post-preview-header
 
 .no-posts-box {
-    position: relative;
-    height: 90%;
+    position: absolute;
+    top: 45%;
     margin: 0px auto;
     padding: 0px;
     display: table;
     z-index: 600;
+    @media (min-width: 901px) {
+        left: 50%;
+        transform: translateX(-50%);
+    }
     @media (max-width: 900px) {
-        position: fixed;
-        top: 45%;
         left: 50%;
     }
 
