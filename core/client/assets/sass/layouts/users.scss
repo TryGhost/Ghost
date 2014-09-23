@@ -19,13 +19,13 @@
 
 .object-list-item {
 
-    @media (max-width: 600px) {
+    @media (max-width: 500px) {
         display: block;
         padding: 15px 0;
         @include clearfix;
     }
 
-    @media (min-width: 601px) {
+    @media (min-width: 501px) {
         display: flex;
         justify-content: start;
         align-items: center;
@@ -40,12 +40,10 @@
 a.object-list-item {
     text-decoration: none;
 
-    &:hover {
-        background: lighten($lightbrown, 5%);
-    }
-
-    &:last-of-type:hover {
-        box-shadow: inset 0px -1px 0px $lightbrown;
+    // Hover states only for large viewports
+    @media (min-width: 601px) {
+        &:hover { background: lighten($lightbrown, 5%); }
+        &:last-of-type:hover { box-shadow: inset 0px -1px 0px $lightbrown; }
     }
 }
 
@@ -120,7 +118,7 @@ a.object-list-item {
     @media (max-width: 500px) {
         float: left;
         width: 100%;
-        margin-top: 15px;
+        margin: 12px 0 0 50px;
     }
 
     .object-list-action:not(:first-of-type) {
