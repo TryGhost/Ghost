@@ -19,21 +19,21 @@
 
 .object-list-item {
 
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
         display: block;
         padding: 15px 0;
         @include clearfix;
     }
 
-    @media (min-width: 501px) {
+    @media (min-width: 601px) {
         display: flex;
         justify-content: start;
         align-items: center;
         padding: 0 15px;
+        height: 68px;
     }
 
     border-top: 1px solid $lightbrown;
-    min-height: 68px;
 
 } // .object-list-item
 
@@ -89,7 +89,7 @@ a.object-list-item {
 
 .object-list-item-body {
 
-    flex: 1;
+    flex: 1 1 auto;
     align-items: stretch;
 
     padding-left: 15px;
