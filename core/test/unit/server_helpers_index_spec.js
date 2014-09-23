@@ -1239,6 +1239,16 @@ describe('Core Helpers', function () {
             }).catch(done);
         });
 
+        it('returns correct title for a post with meta_title set', function (done) {
+            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title', meta_title: 'Awesome Post'}};
+            helpers.meta_title.call(post).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Awesome Post');
+
+                done();
+            }).catch(done);
+        });
+
         it('returns correct title for a tag page', function (done) {
             var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
             helpers.meta_title.call(tag).then(function (rendered) {
@@ -1353,11 +1363,21 @@ describe('Core Helpers', function () {
             }).catch(done);
         });
 
-        it('returns empty description on post', function (done) {
-            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
+        it('returns empty description when meta_description is not set', function (done) {
+            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title', html: 'Very nice post indeed.'}};
             helpers.meta_description.call(post).then(function (rendered) {
                 should.exist(rendered);
                 String(rendered).should.equal('');
+
+                done();
+            }).catch(done);
+        });
+
+        it('returns meta_description on post with meta_description set', function (done) {
+            var post = {relativeUrl: '/nice-post', post: {title: 'Post Title', meta_description: 'Nice post about stuff.'}};
+            helpers.meta_description.call(post).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('Nice post about stuff.');
 
                 done();
             }).catch(done);
