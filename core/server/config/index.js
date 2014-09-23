@@ -319,18 +319,32 @@ ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
  * Check if any of the currently set config items are deprecated, and issues a warning.
  */
 ConfigManager.prototype.checkDeprecated = function () {
-    var deprecatedItems = ['updateCheck'],
+    var deprecatedItems = ['updateCheck', 'mail.fromaddress'],
         self = this;
 
-    _.each(deprecatedItems, function (item) {
-        if (self.hasOwnProperty(item)) {
-            var errorText = 'The configuration property [' + item.toString().bold + '] has been deprecated.',
-                explinationText =  'This will be removed in a future version, please update your config.js file.',
-                helpText = 'Please check http://support.ghost.org/config for the most up-to-date example.';
-
-            errors.logWarn(errorText, explinationText, helpText);
-        }
+    _.each(deprecatedItems, function (property) {
+        self.displayDeprecated(self, property.split('.'), []);
     });
+};
+
+ConfigManager.prototype.displayDeprecated = function (item, properties, address) {
+    var self = this,
+        property = properties.shift(),
+        errorText,
+        explanationText,
+        helpText;
+
+    address.push(property);
+
+    if (item.hasOwnProperty(property)) {
+        if (properties.length) {
+            return self.displayDeprecated(item[property], properties, address);
+        }
+        errorText = 'The configuration property [' + address.join('.').bold + '] has been deprecated.';
+        explanationText =  'This will be removed in a future version, please update your config.js file.';
+        helpText = 'Please check http://support.ghost.org/config for the most up-to-date example.';
+        errors.logWarn(errorText, explanationText, helpText);
+    }
 };
 
 if (testingEnvs.indexOf(process.env.NODE_ENV) > -1) {
