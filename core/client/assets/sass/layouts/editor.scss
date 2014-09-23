@@ -433,14 +433,6 @@ body.zen {
     }
 
     .post-settings {
-        @include icon($i-settings, 14px);
-        display: inline-block;
-        padding: 0 10px;
-        color: $midgrey;
-        transition: all 0.15s ease-out 0s;
-        position: relative;
-        top: 1px;
-
         &:hover,
         &.active {
             color: $lightgrey;
@@ -454,7 +446,7 @@ body.zen {
     }
 
     .splitbtn {
-        margin-top: 5px;
+        margin-top: -2px;
 
         .btn {
             border-top: rgba(255,255,255,0.3) 1px solid;
@@ -495,69 +487,6 @@ body.zen {
 }
 
 #entry-tags {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    text-transform: none;
-    padding: 10px 0 0 0;
-
-    &:after {
-        content: "";
-        position: fixed;
-        top: 10px;
-        right: 220px;
-        width: 20px;
-        height: 26px;
-        background: linear-gradient(left, rgba(26, 28, 29, 0.00), rgba(26, 28, 29, 1.00));
-        z-index: 9999;
-        pointer-events: none;
-
-        @media (max-width: 400px) {
-            right: 200px;
-        }
-    }
-
-    .tags {
-        position: relative;
-        display: inline-block;
-        vertical-align: middle;
-        width: auto;
-        max-width: 80%;
-        max-width: calc(100% - 250px);
-        height: 22px;
-        padding-left: 5px;
-        padding-bottom: 20px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-        transition: width 0.2s linear;
-
-        @media (max-width: 400px) {
-            display: block;
-            max-width: calc(100% - 230px);
-            padding-bottom: 0;
-        }
-    }
-
-    .tag-label {
-        display: block;
-        float: left;
-        @include icon($i-tag);
-        padding: 1px 8px 0 8px;
-        transition: all 0.15s ease-out 0s;
-
-        &:hover {
-            cursor: pointer;
-            color: $lightgrey;
-        }
-
-        &.touch {
-            color: inherit;
-        }
-    }
 
     input[type="text"].tag-input {
         display: inline-block;
@@ -567,17 +496,9 @@ body.zen {
         background: transparent;
         border: none;
 
-        width: 150px;
-        margin-top: -8px;
+        width: 100%;
         line-height: 1;
         padding: 9px;
-
-        @media (max-width: 400px) {
-            position: absolute;
-            top: 11px;
-            right: 170px;
-            width: 20px;
-        }
 
         &:focus {
             outline: none;
@@ -615,21 +536,24 @@ body.zen {
 }
 
 .suggestions {
-    //@extend .dropdown-menu;
-    bottom: 100%;
+    
+    top: auto;
+    bottom: calc(100% + 15px);
 
-    li.selected{
-        background: $blue;
-        box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, rgba(0,0,0,0.5) 0 1px 5px;
+    li.selected {
+        &, a {
+            text-decoration: none;
+            color: #fff;
+            background: $blue;
+        }
+        mark {
+            color: #fff;
+        }
     }
 
-    li a {
-        padding-left: 25px;
-    }
-
-    mark{
+    mark {
         background: none;
-        color: white;
+        color: #000;
         font-weight: bold;
     }
 
@@ -652,23 +576,19 @@ body.zen {
 }
 
 #entry-actions {
-    position: relative;
     margin-right: 6px;
-
+    position: relative;
     .dropdown {
         position: absolute;
-        right: 0;
         bottom: 49px;
-
+        right: 0;
         .dropdown-menu {
             top: auto;
+            left: auto;
             right: 100%;
             bottom: 100%;
-            left: auto;
         }
-
     }
-
 }
 
 #entry-actions-menu {
@@ -677,16 +597,100 @@ body.zen {
     right: -5px;
 }
 
+.tags-wrapper {
+    white-space: nowrap;
+    span {
+        display: inline-block;
+        margin-right: 10px;
+    }
+}
+
+.tag-label {
+    display: block;
+    width: 40px;
+    height: 40px;
+    position: relative;
+    &:before {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        font-size: 1.3rem;
+        color: #7D878A;
+        transition: color 0.15s linear;
+    }
+    &:hover:before {
+        color: #fff;
+    }
+}//.tag-label
+
+.publish-bar-inner {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: space-between;
+
+    align-items: center;
+    justify-content: center;
+
+    height: 100%;
+    width: 100%;
+}
+
+.publish-bar-tags-icon {
+    flex: 0 1 auto;
+    align-self: auto;
+    min-width: 40px;
+    max-width: 40px;
+}
+
+.publish-bar-tags {
+    flex: 0 1 auto;
+    align-self: auto;
+    margin-right: 10px;
+    position: relative;
+
+    .tags-wrapper {
+        white-space: nowrap;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-top: 8px;
+        padding-bottom: 9px;
+    }
+
+    &:after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(to right, transparent 0%, darken($darkgrey, 4%) 100%);
+        pointer-events: none;
+    }
+
+}//.publish-bar-2
+
+.publish-bar-tags-input {
+    flex: 1 1 auto;
+    align-self: auto;
+    position: relative;
+}
+
+.publish-bar-actions {
+    flex: 0 1 auto;
+    align-self: auto;
+    min-width: 174px;
+    max-width: 174px;
+    text-align: right;
+}
+
+
 //
 // Post Settings Menu
 // --------------------------------------------------
 
  body.right-outlet-expanded {
-
-     // Keep settings cog highlighted when menu is open
-     .post-settings:before {
-         color: $lightgrey;
-     }
 
     .editor-cover {
         position: absolute;
@@ -697,9 +701,34 @@ body.zen {
         z-index: 600;
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
         transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
+    }//.editor-cover
+}//body.right-outlet-expanded
+
+.post-settings {
+    @include icon($i-settings, 14px);
+    display: inline-block;
+    padding: 10px;
+    color: $midgrey;
+    transition: all 0.15s ease-out 0s;
+    position: relative;
+    top: 1px;
+
+    &:hover,
+    &.active {
+        color: $darkgrey;
+    }
+} // .post-settings
+
+.post-settings-menu {
+
+    .dropdown-menu {
+        top: auto;
+        bottom: 100%;
+        left: auto;
+        right: 100%;
     }
 
-}
+} // .post-settings-menu
 
 
 //
