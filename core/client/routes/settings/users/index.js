@@ -1,4 +1,5 @@
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
+import styleBody from 'ghost/mixins/style-body';
 
 var paginationSettings = {
     page: 1,
@@ -6,7 +7,9 @@ var paginationSettings = {
     status: 'all'
 };
 
-var UsersIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, PaginationRouteMixin, {
+var UsersIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody, PaginationRouteMixin, {
+    classNames: ['settings-view-users'],
+
     setupController: function (controller, model) {
         this._super(controller, model);
         this.setupPagination(paginationSettings);

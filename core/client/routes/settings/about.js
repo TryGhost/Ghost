@@ -1,6 +1,9 @@
 import loadingIndicator from 'ghost/mixins/loading-indicator';
+import styleBody from 'ghost/mixins/style-body';
 
-var SettingsAboutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
+var SettingsAboutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody, loadingIndicator, {
+    classNames: ['settings-view-about'],
+
     cachedConfig: false,
     model: function () {
         var cachedConfig = this.get('cachedConfig'),
