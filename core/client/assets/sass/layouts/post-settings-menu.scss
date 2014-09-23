@@ -93,21 +93,35 @@
 }
 
 
+//
+// Meta Data
+// --------------------------------------------------
+
+// These styles are copied from Google.com
 .seo-preview {
     font-family: Arial, sans-serif;
-    line-height: 1.46;
 }
+
 .seo-preview-title {
-    font-size: 1.6rem;
-    text-decoration: underline;
+    font-size: 1.8rem;
+    line-height: 2.16rem;
     color: #1E0FBE;
+    text-overflow: ellipses;
+    -webkit-text-overflow: ellipsis;
+    word-wrap: break-word;
 }
+
 .seo-preview-link {
+    margin: 1px 0 2px 0;
     font-size: 1.3rem;
+    line-height: 1.6rem;
     color: #006621;
-    margin: 2px 0;
+    word-wrap: break-word;
 }
+
 .seo-preview-description {
     font-size: 1.3rem;
+    line-height: 1.4;
     color: #545454;
+    word-wrap: break-word;
 }
