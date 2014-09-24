@@ -2,7 +2,7 @@
   Popovers and their buttons are evented and do not propagate clicks.
 */
 var PopoverMixin = Ember.Mixin.create(Ember.Evented, {
-    classNameBindings: ['isOpen:open'],
+    classNameBindings: ['isOpen:open:closed'],
     isOpen: false,
     click: function (event) {
         this._super(event);
