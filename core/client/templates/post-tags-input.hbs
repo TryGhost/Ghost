@@ -1,17 +1,25 @@
-<label class="tag-label" for="tags" title="Tags"><span class="hidden">Tags</span></label>
-<div class="tags">
-{{#each controller.tags}}
-    {{#view view.tagView tag=this}}
-        {{view.tag.name}}
-    {{/view}}
-{{/each}}
+<div class="publish-bar-tags-icon">
+    <label class="tag-label icon-tag" for="tags" title="Tags">
+        <span class="hidden">Tags</span>
+    </label>
 </div>
-<input type="hidden" class="tags-holder" id="tags-holder">
-{{view view.tagInputView class="tag-input" id="tags" value=newTagText}}
-<ul class="suggestions overlay" {{bind-attr style=view.overlayStyles}}>
-  {{#each suggestions}}
-    {{#view view.suggestionView suggestion=this}}
-        <a href="javascript:void(0);">{{view.suggestion.highlightedName}}</a>
-    {{/view}}
-  {{/each}}
-</ul>
+<div class="publish-bar-tags">
+    <div class="tags-wrapper tags">
+        {{#each controller.tags}}
+            {{#view view.tagView tag=this}}
+                {{view.tag.name}}
+            {{/view}}
+        {{/each}}
+    </div>
+</div>
+<div class="publish-bar-tags-input">
+    <input type="hidden" class="tags-holder" id="tags-holder">
+    {{view view.tagInputView class="tag-input" id="tags" value=newTagText}}
+    <ul class="suggestions dropdown-menu dropdown-triangle-bottom" {{bind-attr style=view.overlayStyles}}>
+        {{#each suggestions}}
+            {{#view view.suggestionView suggestion=this}}
+                <a href="javascript:void(0);">{{view.suggestion.highlightedName}}</a>
+            {{/view}}
+        {{/each}}
+    </ul>
+</div>
