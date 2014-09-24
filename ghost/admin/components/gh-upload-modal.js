@@ -13,7 +13,7 @@ var UploadModal = ModalDialog.extend({
             func: function () { // The function called on rejection
                 return true;
             },
-            buttonClass: true,
+            buttonClass: 'btn btn-default',
             text: 'Cancel' // The reject button text
         },
         accept: {
