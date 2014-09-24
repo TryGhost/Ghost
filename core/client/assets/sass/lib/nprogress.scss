@@ -6,6 +6,10 @@
 #nprogress {
     pointer-events: none;
     -webkit-pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 800;
 }
 
 #nprogress .bar {
