@@ -1,17 +1,34 @@
+//
+// Navigation Lists
+// --------------------------------------------------
+// Mobile style groups of list of links with chevrons
+
 .nav-list {
-    background: #FFF;
-    border: 1px solid #E0DFD7;
-    border-radius: $rounded;
-    max-width: 500px;
     padding: 0;
+    border: 1px solid #E0DFD7;
+    max-width: 500px;
+    border-radius: $rounded;
+    background: #FFF;
+
     &.nav-list-block {
         max-width: none;
     }
 }
 .nav-list-item {
+    @include icon($i-chevron, 1.4rem, $midbrown) {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+    }
+    position: relative;
     display: block;
     padding: 8px 40px 8px 12px;
-    position: relative;
+    color: $darkgrey;
+
+    &:hover {
+        background: lighten($lightbrown, 5%);
+    }
 
     &:first-of-type {
         border-top-left-radius: $rounded;
@@ -26,22 +43,8 @@
         border-bottom: 1px solid #E0DFD7;
     }
 
-    @include icon($i-chevron, 1.4rem, $midbrown) {
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-    };
-
-    color: $darkgrey;
     a {
-        &:link, &:visited {
-            color: $darkgrey;
-        }
-    }
-
-    &:hover {
-        background: lighten($lightbrown, 5%);
+        color: $darkgrey;
     }
 
     b {
@@ -50,10 +53,12 @@
         font-size: 1.6rem;
         line-height: 1.375;
     }
+
     span {
         display: block;
         font-size: 1.1rem;
         color: $midgrey;
         line-height: 1.375;
     }
-}
+
+}//.nav-list-item
