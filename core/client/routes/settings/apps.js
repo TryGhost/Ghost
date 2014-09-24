@@ -1,6 +1,9 @@
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
+import styleBody from 'ghost/mixins/style-body';
 
-var AppsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, {
+var AppsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody, CurrentUserSettings, {
+    classNames: ['settings-view-apps'],
+
     beforeModel: function () {
         if (!this.get('config.apps')) {
             return this.transitionTo('settings.general');
