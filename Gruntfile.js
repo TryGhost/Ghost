@@ -981,7 +981,7 @@ var _              = require('lodash'),
                 var downloadImagePromise = function (url, name) {
                     return new Promise(function (resolve, reject) {
                         request(url)
-                        .pipe(fs.createWriteStream('core/client/assets/img/contributors/' + name))
+                        .pipe(fs.createWriteStream('core/client/assets/img/contributors/' + name + '.png'))
                         .on('close', resolve)
                         .on('error', reject);
                     });
