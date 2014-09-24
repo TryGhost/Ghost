@@ -33,7 +33,7 @@
     z-index: 1000;
     display: none; // none by default, but block on "open" of the menu
     float: left;
-    min-width: 160px;
+    min-width: 220px;
     padding: 5px 0;
     margin: 2px 0 0; // override default ul
     list-style: none;
@@ -43,8 +43,8 @@
     letter-spacing: 0;
     text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
     background-color: #fff;
-    border: #B0BEC4 1px solid;
-    border-radius: $rounded;
+    border: darken($lightgrey, 15%) 1px solid;
+    border-radius: 2px;
     box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
     background-clip: padding-box;
 
@@ -59,9 +59,9 @@
     // Dividers (basically an hr) within the dropdown
     .divider {
         height: 1px;
-        margin: 9px 0;
+        margin: 4px 0;
         overflow: hidden;
-        background: #D0DADE;
+        background: darken($lightgrey, 5%);
     }
 
     // Links within the dropdown menu
@@ -72,10 +72,15 @@
         padding: 3px 20px;
         clear: both;
         font-weight: normal;
-        line-height: 1.428571429;
+        line-height: 1.9em;
         text-align: left;
         color: #333;
         white-space: nowrap; // prevent links from randomly breaking onto new lines
+    }
+
+    i {
+        font-size: 0.9em;
+        margin-right: 0.5rem;
     }
 }
 
@@ -250,7 +255,7 @@
         top: -$dropdown_triangle;
     }
     &:after {
-        @include triangle(($dropdown_triangle * 2) + 2, #B0BEC4, up);
+        @include triangle(($dropdown_triangle * 2) + 2, darken($lightgrey, 15%), up);
         top: -($dropdown_triangle + 1);
     }
 }
@@ -260,7 +265,7 @@
         bottom: -$dropdown_triangle;
     }
     &:after {
-        @include triangle(($dropdown_triangle * 2) + 2, #B0BEC4, down);
+        @include triangle(($dropdown_triangle * 2) + 2, darken($lightgrey, 15%), down);
         bottom: -($dropdown_triangle + 1);
     }
 }
