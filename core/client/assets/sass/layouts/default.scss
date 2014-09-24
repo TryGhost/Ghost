@@ -63,6 +63,7 @@
     right: 0;
     bottom: 0;
     overflow: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(60px, 0px, 0px);
