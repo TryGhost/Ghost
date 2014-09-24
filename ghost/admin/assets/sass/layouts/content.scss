@@ -205,9 +205,13 @@
     }
 
     .content-preview-content {
-        padding: 80px 40px;
+        padding: 5%;
         word-break: break-word;
         hyphens: auto;
+
+        @media (max-width:400px) {
+            padding: 0;
+        }
 
         .wrapper {
             max-width: 700px;
