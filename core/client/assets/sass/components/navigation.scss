@@ -138,25 +138,24 @@
             line-height: 11px;
         }
     }
+
     &:hover .name {
         color: rgba(255,255,255,0.9);
         background: darken($darkgrey, 7%);
         transition: background 0.1s;
     }
 
-    i:before {
-        width: auto;
-        margin-left: 5px;
-    }
-
     .dropdown {
-        position: absolute;
-        top: 100%;
-        right: 100%;
+        position: fixed;
+        top: 50px;
+        right: 15px;
+        left: auto;
+
         .dropdown-menu {
             position: absolute;
             top: 0;
             right: 0;
+            left: auto;
         }
     }
 
@@ -284,11 +283,17 @@
             }
         }
 
-        .dropdown .dropdown-menu {
-            top: auto;
-            right: auto;
-            bottom: calc(100% + 80px);
-            left: 10px;
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 100%;
+            
+            .dropdown-menu {
+                top: auto;
+                right: auto;
+                bottom: calc(100% + 80px);
+                left: 10px;
+            }
         }
 
 
