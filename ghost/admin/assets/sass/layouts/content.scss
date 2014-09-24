@@ -190,13 +190,13 @@
         @include icon($i-unfeatured, 14px);
         vertical-align: -6%;
         margin: 0 7px 0 -5px;
-        padding: 5px;
+        padding: 3px;
     }
     .featured {
         @include icon($i-featured, 14px);
         vertical-align: -6%;
         margin: 0 7px 0 -5px;
-        padding: 5px;
+        padding: 3px;
     }
 
     .normal {
