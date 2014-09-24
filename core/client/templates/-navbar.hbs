@@ -3,7 +3,7 @@
     <a class="nav-item ghost-logo" {{bind-attr href=ghostPaths.blogRoot title=ghostPaths.blogRoot}}>
         <div class="nav-label"><i class="icon-ghost"></i> <span>Visit blog</span> </div>
     </a>
-    
+
     {{#link-to "posts" classNames="nav-item nav-content js-nav-item"}}
         <div class="nav-label"><i class="icon-content"></i> Content</div>
     {{/link-to}}
@@ -11,13 +11,13 @@
     {{#link-to "editor.new" classNames="nav-item nav-new js-nav-item"}}
         <div class="nav-label"><i class="icon-add"></i> New Post</div>
     {{/link-to}}
-    
+
     {{#unless session.user.isAuthor}}
     {{#link-to "settings" classNames="nav-item nav-settings js-nav-item"}}
         <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
     {{/link-to}}
     {{/unless}}
-    
+
     {{! TODO: Mobile-only menu items
 
     <a class="nav-item thing" href="#">
@@ -43,10 +43,10 @@
         {{/gh-popover-button}}
         {{#gh-popover tagName="div" classNames="dropdown" name="user-menu" closeOnClick="true"}}
             <ul class="dropdown-menu dropdown-triangle-top-right js-user-menu-dropdown-menu" role="menu">
-                <li role="presentation">{{#link-to "settings.users.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}Your Profile{{/link-to}}</li>
-                <li role="presentation"><a class="dropdown-item user-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/">Help / Support</a></li>
+                <li role="presentation">{{#link-to "settings.users.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-user"></i> Your Profile{{/link-to}}</li>
+                <li role="presentation"><a class="dropdown-item user-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/"><i class="icon-support"></i> Help / Support</a></li>
                 <li class="divider"></li>
-                <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}Sign Out{{/link-to}}</li>
+                <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}<i class="icon-power"></i> Sign Out{{/link-to}}</li>
             </ul>
         {{/gh-popover}}
     </div>{{! .user-menu }}
