@@ -197,6 +197,22 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.get('model').rollback();
             });
         },
+
+        toggleFeatured: function () {
+            var self = this;
+
+            this.toggleProperty('featured');
+            // If this is a new post.  Don't save the model.  Defer the save
+            // to the user pressing the save button
+            if (this.get('isNew')) {
+                return;
+            }
+
+            this.get('model').save(this.get('saveOptions')).catch(function (errors) {
+                self.showErrors(errors);
+                self.get('model').rollback();
+            });
+        },
         /**
          * triggered by user manually changing slug
          */

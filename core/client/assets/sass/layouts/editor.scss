@@ -559,22 +559,6 @@ body.zen {
 
 }
 
-#entry-controls {
-    &.unsaved {
-        .post-settings-menu {
-            padding-bottom: 0;
-
-            .post-setting:nth-child(3) td {
-                border-bottom: none;
-            }
-
-            .delete {
-                display: none;
-            }
-        }
-    }
-}
-
 #entry-actions {
     margin-right: 6px;
     position: relative;
@@ -587,6 +571,14 @@ body.zen {
             left: auto;
             right: 100%;
             bottom: 100%;
+        }
+    }
+
+    &.unsaved {
+        padding-bottom: 0;
+
+        .delete {
+            display: none;
         }
     }
 }
