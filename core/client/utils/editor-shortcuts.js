@@ -17,9 +17,9 @@ shortcuts['ctrl+alt+u'] = {action: 'codeMirrorShortcut', options: {type: 'strike
 shortcuts[ctrlOrCmd + '+b'] = {action: 'codeMirrorShortcut', options: {type: 'bold'}};
 shortcuts[ctrlOrCmd + '+i'] = {action: 'codeMirrorShortcut', options: {type: 'italic'}};
 
-shortcuts['ctrl+U'] = {action: 'codeMirrorShortcut', options: {type: 'uppercase'}};
-shortcuts['ctrl+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'lowercase'}};
-shortcuts['ctrl+alt+shift+U'] = {action: 'codeMirrorShortcut', options: {type: 'titlecase'}};
+shortcuts['ctrl+u'] = {action: 'codeMirrorShortcut', options: {type: 'uppercase'}};
+shortcuts['ctrl+shift+u'] = {action: 'codeMirrorShortcut', options: {type: 'lowercase'}};
+shortcuts['ctrl+alt+shift+u'] = {action: 'codeMirrorShortcut', options: {type: 'titlecase'}};
 shortcuts[ctrlOrCmd + '+shift+c'] = {action: 'codeMirrorShortcut', options: {type: 'copyHTML'}};
 
 //Headings
