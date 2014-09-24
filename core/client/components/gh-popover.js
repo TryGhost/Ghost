@@ -1,15 +1,23 @@
 import PopoverMixin from 'ghost/mixins/popover-mixin';
 
 var GhostPopover = Ember.Component.extend(PopoverMixin, {
-    classNames: 'ghost-popover fade-in',
+    classNames: 'ghost-popover',
     name: null,
     closeOnClick: false,
     //Helps track the user re-opening the menu while it's fading out.
     closing: false,
+    //Helps track whether the popover is open or closes, or in a transition to either
+    isOpen: false,
+    //Managed the toggle between the fade-in and fade-out classes
+    fadeIn: Ember.computed('isOpen', 'closing', function () {
+        return this.get('isOpen') && !this.get('closing');
+    }),
+
+    classNameBindings: ['fadeIn:fade-in-scale:fade-out', 'isOpen:open:closed'],
 
     open: function () {
-        this.set('closing', false);
         this.set('isOpen', true);
+        this.set('closing', false);
         this.set('button.isOpen', true);
     },
     close: function () {
@@ -18,12 +26,12 @@ var GhostPopover = Ember.Component.extend(PopoverMixin, {
         if (this.get('button')) {
             this.set('button.isOpen', false);
         }
-        this.$().fadeOut(200, function () {
-            //Make sure this wasn't an aborted fadeout by
-            //checking `closing`.
-            if (self.get('closing')) {
-                self.set('isOpen', false);
-                self.set('closing', false);
+        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+            if (event.originalEvent.animationName === 'fade-out') {
+                if (self.get('closing')) {
+                    self.set('isOpen', false);
+                    self.set('closing', false);
+                }
             }
         });
     },
