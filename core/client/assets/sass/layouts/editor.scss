@@ -506,14 +506,13 @@ body.zen {
     }
 
     .tag {
-        @include icon-after($i-x, 8px, $darkgrey) {
-            margin-left: 4px;
+        @include icon-after($i-x, 10px, #fff) {
+            margin-left: 1px;
             vertical-align: 10%;
             text-shadow: rgba(255,255,255,0.15) 0 1px 0;
-            transition: all 0.15s ease-out 0s;
         }
         display: inline;
-        margin-right: 2px;
+        margin-right: 3px;
         padding: 0 5px;
         color: $lightgrey;
         white-space: nowrap;
@@ -525,18 +524,12 @@ body.zen {
 
         &:hover {
             cursor: pointer;
-            @include icon-after($i-x, 8px, $lightgrey) {
-                margin-left: 4px;
-                vertical-align: 10%;
-                text-shadow: none;
-            }
-
         }
     }
 }
 
 .suggestions {
-    
+
     top: auto;
     bottom: calc(100% + 15px);
 
