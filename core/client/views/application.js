@@ -8,14 +8,14 @@ var ApplicationView = Ember.View.extend({
     setupGlobalMobileNav: function () {
         // #### Navigating within the sidebar closes it.
         var self = this;
-        $('body').on('click', '.js-nav-item', function () {
+        $('body').on('click tap', '.js-nav-item', function () {
             if (mobileQuery.matches) {
                 self.set('controller.showGlobalMobileNav', false);
             }
         });
 
         // #### Close the nav if mobile and clicking outside of the nav or not the burger toggle
-        $('.js-nav-cover').on('click', function () {
+        $('.js-nav-cover').on('click tap', function () {
             var isOpen = self.get('controller.showGlobalMobileNav');
             if (isOpen) {
                 self.set('controller.showGlobalMobileNav', false);
