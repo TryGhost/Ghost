@@ -945,7 +945,8 @@ var _              = require('lodash'),
         //     `grunt buildAboutPage --force`
         grunt.registerTask('buildAboutPage', 'Compile assets for the About Ghost page', function () {
             var done = this.async(),
-                templatePath = 'core/client/templates/-contributors.hbs';
+                templatePath = 'core/client/templates/-contributors.hbs',
+                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90);
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
                 grunt.log.writeln('Contributors template already exists.');
@@ -957,7 +958,7 @@ var _              = require('lodash'),
             getTopContribs({
                 user: 'tryghost',
                 repo: 'ghost',
-                releaseTag: '0.4.2',
+                releaseDate: ninetyDaysAgo,
                 count: 20
             }).then(function makeContributorTemplate(contributors) {
                 var contributorTemplate = '<li>\n\t<a href="<%githubUrl%>" title="<%name%>">\n' +
