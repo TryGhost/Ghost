@@ -194,7 +194,7 @@
         bottom: 0;
         font-family: $font-family-mono;
         font-size: 1.4em;
-        line-height: 1.3em;
+        line-height: 1.56em;
         color: lighten($darkgrey, 10%);
 
         .CodeMirror-focused,
@@ -326,8 +326,9 @@
 // TODO: These should just be defaults, overridden by editor.hbs in theme dir
 .entry-preview-content,
 .content-preview-content {
-    font-size: 1.4em;
+    font-size: 1.8rem;
     line-height: 1.5em;
+    font-weight: 200;
 
     a {
         color: $blue;

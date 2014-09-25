@@ -18,12 +18,12 @@ This service can be disabled at any time. All of the information and code relate
 
 ## Third Party Services
 
-Ghost uses a number of third party services for specific functionality within Ghost. 
+Ghost uses a number of third party services for specific functionality within Ghost.
 
 
 ### Google Fonts
 
-Ghost makes use of the Open Sans and Inconsolata [Google Fonts](https://www.google.com/fonts). These are loaded into the Ghost admin area to provide a typographically stimulating experience.
+Ghost makes use of the Open Sans [Google Font](https://www.google.com/fonts), which is loaded into the Ghost admin area to provide a typographically stimulating experience.
 
 ### Gravatar
 
