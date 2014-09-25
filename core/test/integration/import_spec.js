@@ -106,6 +106,70 @@ describe('Import', function () {
         });
     });
 
+    describe('Sanitizes', function () {
+        before(function ()  {
+            knex = config.database.knex;
+        });
+        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+
+        it('import results have data and problems', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
+                exportData = exported;
+                return importer('003', exportData);
+            }).then(function (importResult) {
+                should.exist(importResult);
+                should.exist(importResult.data);
+                should.exist(importResult.problems);
+
+                done();
+            }).catch(done);
+        });
+
+        it('removes duplicate posts', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-duplicate-posts').then(function (exported) {
+                exportData = exported;
+                return importer('003', exportData);
+            }).then(function (importResult) {
+                should.exist(importResult.data.data.posts);
+
+                importResult.data.data.posts.length.should.equal(1);
+
+                importResult.problems.posts.length.should.equal(1);
+
+                done();
+            }).catch(done);
+        });
+
+        it('removes duplicate tags and updates associations', function (done) {
+            var exportData;
+
+            testUtils.fixtures.loadExportFixture('export-003-duplicate-tags').then(function (exported) {
+                exportData = exported;
+                return importer('003', exportData);
+            }).then(function (importResult) {
+                should.exist(importResult.data.data.tags);
+                should.exist(importResult.data.data.posts_tags);
+
+                importResult.data.data.tags.length.should.equal(1);
+
+                // Check we imported all posts_tags associations
+                importResult.data.data.posts_tags.length.should.equal(2);
+                // Check the post_tag.tag_id was updated when we removed duplicate tag
+                _.all(importResult.data.data.posts_tags, function (postTag) {
+                    return postTag.tag_id !== 2;
+                });
+
+                importResult.problems.tags.length.should.equal(1);
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('000', function () {
         before(function ()  {
             knex = config.database.knex;
