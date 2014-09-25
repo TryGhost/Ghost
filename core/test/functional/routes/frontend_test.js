@@ -10,15 +10,7 @@ var request    = require('supertest'),
     moment     = require('moment'),
 
     testUtils  = require('../../utils'),
-    ghost      = require('../../../../core'),
-
-    cacheRules = {
-        public: 'public, max-age=0',
-        day: 'public, max-age=' + testUtils.ONE_DAY_S,
-        hour:  'public, max-age=' + testUtils.ONE_HOUR_S,
-        year:  'public, max-age=' + testUtils.ONE_YEAR_S,
-        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-    };
+    ghost      = require('../../../../core');
 
 describe('Frontend Routing', function () {
     function doEnd(done) {
@@ -58,7 +50,7 @@ describe('Frontend Routing', function () {
         it('should respond with html', function (done) {
             request.get('/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -66,7 +58,7 @@ describe('Frontend Routing', function () {
         it('should not have as second page', function (done) {
             request.get('/page/2/')
                 .expect('Location', '/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -76,7 +68,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/welcome-to-ghost')
                 .expect('Location', '/welcome-to-ghost/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -91,7 +83,7 @@ describe('Frontend Routing', function () {
         it('should respond with html for valid url', function (done) {
             request.get('/welcome-to-ghost/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -101,7 +93,7 @@ describe('Frontend Routing', function () {
             var date  = moment().format('YYYY/MM/DD');
 
             request.get('/' + date + '/welcome-to-ghost/')
-                // .expect('Cache-Control', cacheRules['private'])
+                // .expect('Cache-Control', testUtils.cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -109,7 +101,7 @@ describe('Frontend Routing', function () {
 
         it('should 404 for unknown post', function (done) {
             request.get('/spectacular/')
-                .expect('Cache-Control', cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -120,7 +112,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/welcome-to-ghost/edit')
                 .expect('Location', '/welcome-to-ghost/edit/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -128,14 +120,14 @@ describe('Frontend Routing', function () {
         it('should redirect to editor', function (done) {
             request.get('/welcome-to-ghost/edit/')
                 .expect('Location', '/ghost/editor/1/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
 
         it('should 404 for non-edit parameter', function (done) {
             request.get('/welcome-to-ghost/notedit/')
-                .expect('Cache-Control', cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules['private'])
                 .expect(404)
                 .expect(/Page Not Found/)
                 .end(doEnd(done));
@@ -186,7 +178,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/rss')
                 .expect('Location', '/rss/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -194,7 +186,7 @@ describe('Frontend Routing', function () {
         it('should respond with xml', function (done) {
             request.get('/rss/')
                 .expect('Content-Type', /xml/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -203,7 +195,7 @@ describe('Frontend Routing', function () {
             request.get('/rss/2/')
                 // TODO this should probably redirect straight to /rss/ with 301?
                 .expect('Location', '/rss/1/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -211,7 +203,7 @@ describe('Frontend Routing', function () {
         it('should get redirected to /rss/ from /feed/', function (done) {
             request.get('/feed/')
                 .expect('Location', '/rss/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -234,7 +226,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/page/2')
                 .expect('Location', '/page/2/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -242,7 +234,7 @@ describe('Frontend Routing', function () {
         it('should respond with html', function (done) {
             request.get('/page/2/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -250,7 +242,7 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/page/1/')
                 .expect('Location', '/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 // TODO: This should probably be a 301?
                 .expect(302)
                 .end(doEnd(done));
@@ -259,7 +251,7 @@ describe('Frontend Routing', function () {
         it('should redirect to last page if page too high', function (done) {
             request.get('/page/4/')
                 .expect('Location', '/page/3/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -267,7 +259,7 @@ describe('Frontend Routing', function () {
         it('should redirect to first page if page too low', function (done) {
             request.get('/page/0/')
                 .expect('Location', '/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -282,7 +274,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/rss/2')
                 .expect('Location', '/rss/2/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -290,7 +282,7 @@ describe('Frontend Routing', function () {
         it('should respond with xml', function (done) {
             request.get('/rss/2/')
                 .expect('Content-Type', /xml/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -298,7 +290,7 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/rss/1/')
                 .expect('Location', '/rss/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 // TODO: This should probably be a 301?
                 .expect(302)
                 .end(doEnd(done));
@@ -307,7 +299,7 @@ describe('Frontend Routing', function () {
         it('should redirect to last page if page too high', function (done) {
             request.get('/rss/3/')
                 .expect('Location', '/rss/2/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -315,7 +307,7 @@ describe('Frontend Routing', function () {
         it('should redirect to first page if page too low', function (done) {
             request.get('/rss/0/')
                 .expect('Location', '/rss/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -325,7 +317,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/tag/getting-started/rss')
                 .expect('Location', '/tag/getting-started/rss/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -333,7 +325,7 @@ describe('Frontend Routing', function () {
         it('should respond with xml', function (done) {
             request.get('/tag/getting-started/rss/')
                 .expect('Content-Type', /xml/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -341,7 +333,7 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/tag/getting-started/rss/1/')
                 .expect('Location', '/tag/getting-started/rss/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 // TODO: This should probably be a 301?
                 .expect(302)
                 .end(doEnd(done));
@@ -350,7 +342,7 @@ describe('Frontend Routing', function () {
         it('should redirect to last page if page too high', function (done) {
             request.get('/tag/getting-started/rss/2/')
                 .expect('Location', '/tag/getting-started/rss/1/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -358,7 +350,7 @@ describe('Frontend Routing', function () {
         it('should redirect to first page if page too low', function (done) {
             request.get('/tag/getting-started/rss/0/')
                 .expect('Location', '/tag/getting-started/rss/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -368,7 +360,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/author/ghost-owner/rss')
                 .expect('Location', '/author/ghost-owner/rss/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -376,7 +368,7 @@ describe('Frontend Routing', function () {
         it('should respond with xml', function (done) {
             request.get('/author/ghost-owner/rss/')
                 .expect('Content-Type', /xml/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -384,7 +376,7 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/author/ghost-owner/rss/1/')
                 .expect('Location', '/author/ghost-owner/rss/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 // TODO: This should probably be a 301?
                 .expect(302)
                 .end(doEnd(done));
@@ -393,7 +385,7 @@ describe('Frontend Routing', function () {
         it('should redirect to last page if page too high', function (done) {
             request.get('/author/ghost-owner/rss/3/')
                 .expect('Location', '/author/ghost-owner/rss/2/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -401,7 +393,7 @@ describe('Frontend Routing', function () {
         it('should redirect to first page if page too low', function (done) {
             request.get('/author/ghost-owner/rss/0/')
                 .expect('Location', '/author/ghost-owner/rss/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -411,7 +403,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/static-page-test')
                 .expect('Location', '/static-page-test/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -419,7 +411,7 @@ describe('Frontend Routing', function () {
         it('should respond with xml', function (done) {
             request.get('/static-page-test/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -430,7 +422,7 @@ describe('Frontend Routing', function () {
         // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
         it('should retrieve a blog post with ghost at the start of the url', function (done) {
             request.get('/ghostly-kitchen-sink/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -439,28 +431,28 @@ describe('Frontend Routing', function () {
     describe('Static assets', function () {
         it('should retrieve shared assets', function (done) {
             request.get('/shared/img/user-image.png')
-                .expect('Cache-Control', cacheRules.hour)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect(200)
                 .end(doEnd(done));
         });
 
         it('should retrieve theme assets', function (done) {
             request.get('/assets/css/screen.css')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(200)
                 .end(doEnd(done));
         });
 
         it('should retrieve built assets', function (done) {
             request.get('/ghost/scripts/vendor-dev.js')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(200)
                 .end(doEnd(done));
         });
 
         it('should retrieve default robots.txt', function (done) {
             request.get('/robots.txt')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect('ETag', /[0-9a-f]{32}/i)
                 .expect(200)
                 .end(doEnd(done));
@@ -468,7 +460,7 @@ describe('Frontend Routing', function () {
 
         it('should retrieve default favicon.ico', function (done) {
             request.get('/favicon.ico')
-                .expect('Cache-Control', cacheRules.day)
+                .expect('Cache-Control', testUtils.cacheRules.day)
                 .expect('ETag', /[0-9a-f]{32}/i)
                 .expect(200)
                 .end(doEnd(done));
@@ -477,7 +469,7 @@ describe('Frontend Routing', function () {
         // at the moment there is no image fixture to test
         // it('should retrieve image assets', function (done) {
         // request.get('/content/images/some.jpg')
-        //    .expect('Cache-Control', cacheRules.year)
+        //    .expect('Cache-Control', testUtils.cacheRules.year)
         //    .end(doEnd(done));
         // });
     });
@@ -502,7 +494,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/tag/injection/page/2')
                 .expect('Location', '/tag/injection/page/2/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -510,7 +502,7 @@ describe('Frontend Routing', function () {
         it('should respond with html', function (done) {
             request.get('/tag/injection/page/2/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -518,7 +510,7 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/tag/injection/page/1/')
                 .expect('Location', '/tag/injection/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 // TODO: This should probably be a 301?
                 .expect(302)
                 .end(doEnd(done));
@@ -527,7 +519,7 @@ describe('Frontend Routing', function () {
         it('should redirect to last page if page too high', function (done) {
             request.get('/tag/injection/page/4/')
                 .expect('Location', '/tag/injection/page/3/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -535,7 +527,7 @@ describe('Frontend Routing', function () {
         it('should redirect to first page if page too low', function (done) {
             request.get('/tag/injection/page/0/')
                 .expect('Location', '/tag/injection/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -559,7 +551,7 @@ describe('Frontend Routing', function () {
         it('should redirect without slash', function (done) {
             request.get('/author/ghost-owner/page/2')
                 .expect('Location', '/author/ghost-owner/page/2/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEnd(done));
         });
@@ -567,7 +559,7 @@ describe('Frontend Routing', function () {
         it('should respond with html', function (done) {
             request.get('/author/ghost-owner/page/2/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -575,7 +567,7 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/author/ghost-owner/page/1/')
                 .expect('Location', '/author/ghost-owner/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 // TODO: This should probably be a 301?
                 .expect(302)
                 .end(doEnd(done));
@@ -584,7 +576,7 @@ describe('Frontend Routing', function () {
         it('should redirect to last page if page too high', function (done) {
             request.get('/author/ghost-owner/page/4/')
                 .expect('Location', '/author/ghost-owner/page/3/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -592,7 +584,7 @@ describe('Frontend Routing', function () {
         it('should redirect to first page if page too low', function (done) {
             request.get('/author/ghost-owner/page/0/')
                 .expect('Location', '/author/ghost-owner/')
-                .expect('Cache-Control', cacheRules['public'])
+                .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(302)
                 .end(doEnd(done));
         });
