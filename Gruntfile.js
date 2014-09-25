@@ -988,7 +988,7 @@ var _              = require('lodash'),
                     });
                 };
                 return Promise.all(_.map(contributors, function (contributor) {
-                    return downloadImagePromise(contributor.avatarUrl, contributor.name);
+                    return downloadImagePromise(contributor.avatarUrl + '&s=60', contributor.name);
                 }));
             }).catch(function (error) {
                 grunt.log.error(error);
