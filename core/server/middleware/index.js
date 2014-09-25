@@ -206,7 +206,7 @@ function serveSharedFile(file, type, maxAge) {
         filePath = path.join(config.paths.corePath, 'shared', file);
 
     return function serveSharedFile(req, res, next) {
-        if (req.url === path.join('/', file)) {
+        if (req.url === '/' + file) {
             if (content) {
                 res.writeHead(200, content.headers);
                 res.end(content.body);
@@ -290,7 +290,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use(middleware.staticTheme());
 
     // Serve robots.txt if not found in theme
-    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_YEAR_S));
+    blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
 
     // Add in all trailing slashes, properly include the subdir path
     // in the redirect.
