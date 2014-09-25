@@ -3,8 +3,6 @@ import mobileQuery from 'ghost/utils/mobile';
 var ApplicationView = Ember.View.extend({
     elementId: 'container',
 
-    blogRoot: Ember.computed.alias('controller.ghostPaths.blogRoot'),
-
     setupGlobalMobileNav: function () {
         // #### Navigating within the sidebar closes it.
         var self = this;
