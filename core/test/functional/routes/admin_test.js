@@ -9,14 +9,7 @@ var request    = require('supertest'),
     should     = require('should'),
 
     testUtils  = require('../../utils'),
-    ghost      = require('../../../../core'),
-
-    cacheRules = {
-        public: 'public, max-age=0',
-        hour:  'public, max-age=' + testUtils.ONE_HOUR_S,
-        year:  'public, max-age=' + testUtils.ONE_YEAR_S,
-        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-    };
+    ghost      = require('../../../../core');
 
 describe('Admin Routing', function () {
     function doEnd(done) {
@@ -67,7 +60,7 @@ describe('Admin Routing', function () {
         it('should redirect /logout/ to /ghost/signout/', function (done) {
             request.get('/logout/')
                 .expect('Location', '/ghost/signout/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEndNoAuth(done));
         });
@@ -75,7 +68,7 @@ describe('Admin Routing', function () {
         it('should redirect /signout/ to /ghost/signout/', function (done) {
             request.get('/signout/')
                 .expect('Location', '/ghost/signout/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEndNoAuth(done));
         });
@@ -83,7 +76,7 @@ describe('Admin Routing', function () {
         it('should redirect /signup/ to /ghost/signup/', function (done) {
             request.get('/signup/')
                 .expect('Location', '/ghost/signup/')
-                .expect('Cache-Control', cacheRules.year)
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(301)
                 .end(doEndNoAuth(done));
         });
@@ -92,7 +85,7 @@ describe('Admin Routing', function () {
         it('should redirect /signin/ to /ghost/', function (done) {
             request.get('/signin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(302)
                 .end(doEndNoAuth(done));
         });
@@ -100,7 +93,7 @@ describe('Admin Routing', function () {
         it('should redirect /admin/ to /ghost/', function (done) {
             request.get('/admin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .expect(302)
                 .end(doEndNoAuth(done));
         });
@@ -191,7 +184,7 @@ describe('Admin Routing', function () {
         it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
             request.get('/ghost/')
                 .expect('Location', /ghost\/setup/)
-                .expect('Cache-Control', cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules['private'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -199,7 +192,7 @@ describe('Admin Routing', function () {
         it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
             request.get('/ghost/signin/')
                 .expect('Location', /ghost\/setup/)
-                .expect('Cache-Control', cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules['private'])
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -207,7 +200,7 @@ describe('Admin Routing', function () {
         it('should respond with html for /ghost/setup/', function (done) {
             request.get('/ghost/setup/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules['private'])
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -251,14 +244,14 @@ describe('Admin Routing', function () {
 //        it('should respond with html for /ghost/forgotten/', function (done) {
 //            request.get('/ghost/forgotten/')
 //                .expect('Content-Type', /html/)
-//                .expect('Cache-Control', cacheRules['private'])
+//                .expect('Cache-Control', testUtils.cacheRules['private'])
 //                .expect(200)
 //                .end(doEnd(done));
 //        });
 //
 //        it('should respond 404 for /ghost/reset/', function (done) {
 //            request.get('/ghost/reset/')
-//                .expect('Cache-Control', cacheRules['private'])
+//                .expect('Cache-Control', testUtils.cacheRules['private'])
 //                .expect(404)
 //                .expect(/Page Not Found/)
 //                .end(doEnd(done));
@@ -267,7 +260,7 @@ describe('Admin Routing', function () {
 //        it('should redirect /ghost/reset/*/', function (done) {
 //            request.get('/ghost/reset/athing/')
 //                .expect('Location', /ghost\/forgotten/)
-//                .expect('Cache-Control', cacheRules['private'])
+//                .expect('Cache-Control', testUtils.cacheRules['private'])
 //                .expect(302)
 //                .end(doEnd(done));
 //        });

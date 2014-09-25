@@ -311,6 +311,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     // ### Caching
     blogApp.use(middleware.cacheControl('public'));
     adminApp.use(middleware.cacheControl('private'));
+    blogApp.use(routes.apiBaseUri, middleware.cacheControl('private'));
 
     // enable authentication
     blogApp.use(middleware.authenticate);
