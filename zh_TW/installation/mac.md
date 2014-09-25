@@ -4,7 +4,7 @@ layout: installation
 meta_title: 如何在主機上安裝 Ghost - Ghost 繁體中文文件
 meta_description: 這裡詳細敘述如何在本地或遠端環境中安裝 Ghost 部落格平台。
 heading: 安裝 Ghost &amp; 開始嘗試
-subheading:開始創建新部落格的第一步
+subheading: 開始創建新部落格的第一步
 permalink: /zh_TW/installation/mac/
 chapter: installation
 section: mac
