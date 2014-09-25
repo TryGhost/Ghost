@@ -10,11 +10,11 @@ Want to report a bug, request a feature, contribute or translate Ghost? Check ou
 
 ## Getting Started
 
-There are **two** main ways to get started with Ghost, take care to use the method which best suits your needs.
+There are a few different ways to install Ghost, take care to use the method which best suits your needs.
 
-**Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download) are pre-built packages designed for getting started quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
+**Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download), the [GitHub releases page](https://github.com/TryGhost/Ghost/releases), and via npm are pre-built packages designed for getting setup quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
 
-### Getting Started Guide for Bloggers
+### Install from zip (fastest & best for bloggers)
 
 If you just want to get a Ghost blog running in the fastest time possible, this method is for you.
 
@@ -22,7 +22,6 @@ For detailed instructions for various platforms visit the [Ghost Installation Gu
 
 1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
-   **If you cloned the GitHub repository you should follow the instructions [for developers](https://github.com/TryGhost/Ghost#getting-started-guide-for-developers) here.**
 1. Create a new directory where you would like to run the code, and un-zip the package to that location.
 1. Fire up a Terminal, the Node Command Prompt or shell and change directory to the root of the Ghost application (where config.example.js and index.js are)
 1. run `npm install --production` to install the node dependencies. If you see `error Error: ENOENT` on this step, make sure you are in the project directory and try again.
@@ -33,9 +32,9 @@ Check out the [Documentation](http://support.ghost.org/) for more detailed instr
 
 
 
-### Getting Started Guide for Developers
+### Install from git
 
-If you're a theme, app or core developer, or someone comfortable getting up and running from a `git clone`, this method is for you.
+If you're a developer or someone comfortable getting up and running from a `git clone`, this method is for you.
 
 If you clone the GitHub repository, you will need to build a number of assets using grunt.
 
@@ -52,7 +51,14 @@ Full instructions & troubleshooting tips can be found in the [Contributing Guide
 
 Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
-If you want to use [Ghost as a NPM module there is a Wiki entry](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-NPM-module) where you can find instructions on how to get set up.
+### Install from npm
+
+If you want to build Ghost into a larger node app, or are familiar with using `npm` packages, then this method might be for you.
+
+`npm install ghost`
+
+Further setup instructions can be found in the [using Ghost as a NPM module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-NPM-module) wiki entry.
+
 
 ### Upgrading to The Latest Version
 
@@ -60,7 +66,7 @@ Upgrade instructions can be found on the [Ghost Support Site](http://support.gho
 
 ### Logging in For The First Time
 
-Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost/` from a web browser, where you will be prompted to register a new user. Once you have entered your desired credentials you will be automatically logged in to the admin area.
+Once you have the Ghost server up and running, you should be able to navigate to `http://localhost:2368/ghost/` from a web browser, where you will be prompted to setup your blog and user account. Once you have entered your desired credentials you will be automatically logged in to the admin area. The setup screen will not be accessible once the process has been completed.
 
 
 ## Community
