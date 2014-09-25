@@ -64,7 +64,15 @@ var Codemirror = Ember.TextArea.extend(MarkerManager, {
             dragDrop:       false,
             extraKeys: {
                 Home:   'goLineLeft',
-                End:    'goLineRight'
+                End:    'goLineRight',
+                'Ctrl-U': false,
+                'Cmd-U': false,
+                'Shift-Ctrl-U': false,
+                'Shift-Cmd-U': false,
+                'Ctrl-S': false,
+                'Cmd-S': false,
+                'Ctrl-D': false,
+                'Cmd-D': false
             }
         });
 
