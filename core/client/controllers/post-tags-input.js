@@ -6,7 +6,6 @@ var PostTagsInputController = Ember.Controller.extend({
         var proxyTags = Ember.ArrayProxy.create({
             content: this.get('parentController.tags')
         }),
-
         temp = proxyTags.get('arrangedContent').slice();
 
         proxyTags.get('arrangedContent').clear();
@@ -22,9 +21,7 @@ var PostTagsInputController = Ember.Controller.extend({
             }
         });
 
-        temp.forEach(function (tag) {
-            proxyTags.get('arrangedContent').addObject(tag);
-        });
+        proxyTags.get('arrangedContent').unshiftObjects(temp);
 
         return proxyTags;
     }),
