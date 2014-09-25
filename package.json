@@ -98,6 +98,6 @@
         "should": "~4.0.4",
         "sinon": "~1.10.3",
         "supertest": "~0.13.0",
-        "top-gh-contribs": "0.0.1"
+        "top-gh-contribs": "0.0.2"
     }
 }
