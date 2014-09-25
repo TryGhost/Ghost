@@ -6,7 +6,8 @@ var TabPane = Ember.Component.extend({
         return this.nearestWithProperty('isTabsManager');
     }),
 
-    tab: Ember.computed('tabsManager.tabs.@each', function () {
+    tab: Ember.computed('tabsManager.tabs.[]', 'tabsManager.tabPanes.[]',
+    function () {
         var index = this.get('tabsManager.tabPanes').indexOf(this),
             tabs = this.get('tabsManager.tabs');
 
