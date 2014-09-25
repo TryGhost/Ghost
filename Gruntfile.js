@@ -975,7 +975,7 @@ var _              = require('lodash'),
                 count: 20
             }).then(function makeContributorTemplate(contributors) {
                 var contributorTemplate = '<li>\n\t<a href="<%githubUrl%>" title="<%name%>">\n' +
-                    '\t\t<img src="{{unbound ghostPaths.contributorsDir}}/<%name%>" alt="<%name%>">\n' +
+                    '\t\t<img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>">\n' +
                     '\t</a>\n</li>';
 
                 grunt.verbose.writeln('Creating contributors template.');
