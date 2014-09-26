@@ -176,7 +176,7 @@
                 top: 40px;
             }
             @media (max-height: 560px) {
-                height: calc(100% - 40px);
+                height: calc(100% - 5px);
             }
 
             &:focus {
@@ -426,7 +426,7 @@ body.zen {
     padding: 0;
     color: $midgrey;
     background: darken($darkgrey, 4%);
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
@@ -701,7 +701,7 @@ body.zen {
 .post-settings {
     @include icon($i-settings, 14px);
     display: inline-block;
-    padding: 10px;
+    padding: 8px 10px;
     color: $midgrey;
     transition: all 0.15s ease-out 0s;
     position: relative;
