@@ -3,113 +3,42 @@ layout: themes
 meta_title: How to Make Ghost Themes - Ghost Docs
 meta_description: An in depth guide to making themes for the Ghost blogging platform. Everything you need to know to build themes for Ghost.
 chapter: themes
-next_section: handlebars
+next_section: getting-started
 ---
 
 {% raw %}
 
-# About Ghost themes
+# Overview
 
-Ghost themes are intended to be simple to build and maintain. They advocate strong separation between templates (the HTML) and any business logic (JavaScript). Handlebars is (almost) logicless and enforces this separation, providing the helper mechanism so that business logic for displaying content remains separate and self-contained. This separation lends itself towards easier collaboration between designers and developers when building themes.
+Welcome to Ghost's theme development guide!
 
-Handlebars templates are hierarchical (one template can extend another template) and also support partial templates. Ghost uses these features to reduce code duplication and keep individual templates focused on doing a single job, and doing it well. A well structured theme will be easy to maintain and keeping components separated makes them easier to reuse between themes.
+If you're new to Ghost themes, we recommend starting right here, and reading through the guide pages about how Ghost themes work before getting stuck in.
 
-We really hope you'll enjoy our approach to theming.
+If you're already comfortable building themes for Ghost, perhaps jump over to the [helper reference](), we're working on turning this into a Ghost theming dictionary. Be sure to keep an eye on the [change log]() as this is where we keep track of all the things we add, remove and change which may break your theme, or make it more awesome!
 
-## Creating Your Own Theme
+## About Ghost Themes
 
-Create your own Ghost theme by either copying Casper, or adding a new folder to the <code class="path">content/themes</code> directory with the name of your theme, E.g. my-theme (names should be lowercase, and contain letters, numbers and hyphens only). Then add two empty files to your new theme folder: index.hbs and post.hbs. It won't display anything, but this is effectively a valid theme.
+Ghost themes are intended to be very simple to build and maintain. They use the [Handlebars]() templating language, which is (almost) logicless and creates strong separation between templates (the HTML) and any business logic (JavaScript) via [helpers](). This separation lends itself towards easier collaboration between designers and developers when building themes. Learning Handlebars thoroughly will help you realise the full power of theming Ghost, and to that end we're working on expanding our [Handlebars]() section here in the docs.
 
-### The post list
+With Handlebars, you can create the static HTML and CSS for a theme just the way you want it, and then substitute in Handlebars expressions wherever you need dynamic data. For example you might output a post title using `{{title}}` - this is a handlebars expression for referencing a data item called `title`. All Handlebars expressions are contained in either double or triple curly braces, so they're easy to spot.
 
-<code class="path">index.hbs</code> gets handed an object called `posts` which can be used with the foreach helper to output each post. E.g.
+To get Ghost to understand your HTML files as being theme files, you'll need to use the `.hbs` file extension. Ghost also expects your files to have certain names, some of which are required. Each of these files or 'templates' will be used by a different part of your blog and therefore get access to different data. You can find out more about this in the [structure]() section of the theme docs.
 
-```
-{{#foreach posts}}
-// here we are in the context of a single post
-// whatever you put here gets run for each post in posts
-{{/foreach}}
-```
+Theme templates are hierarchical, i.e one template can extend another template, which means that all your base HTML doesn't have to be repeated. There is also support for partial templates, meaning you can share blocks of HTML between multiple templates. Using these features it's possible to reduce code duplication and keep individual templates focused on doing a single job to keep your theme lightweight and easy to maintain.
 
-See the section on the [`{{#foreach}}`](#foreach-helper) helper for more details.
+We really hope you'll enjoy Ghost's approach to theming.
 
-#### Pagination
+## Behind the Scenes
 
-See the section on the [`{{pagination}}`](#pagination-helper) helper.
+Ghost is intended to be a happy medium between a completely dynamic CMS-style application, and a static file generator. The Ghost admin is a dynamic client side app, but the blog pages are generated server side and sent to the browser as static HTML. This makes Ghost themes super fast, and also allows for the blog pages to be heavily cached.
 
-### Outputting individual posts
+If you're familiar with MVC, it may help to think of the pages of a Ghost blog in this way, with your templates as the views. On the server there's a router which takes a request for a URL and figures out which controller needs to be used. The controller takes information from the router (like the post slug), the data needed for the page (i.e. the model) and your theme template (the view) and puts it all together to create a finished page.
 
-Once you are in the context of a single post, either by looping through the posts list with `foreach` or inside of <code class="path">post.hbs</code> you have access to the properties of a post.
+In production mode, the template files are loaded and cached by the server ready to send to the browser. This means that if you make changes to a `*.hbs` file, you won't see those changes reflected unless you restart Ghost. This doesn't happen in development mode, and so pages will take a little longer to get generated, but it makes creating your theme much easier.
 
-For the time being, these are:
+All assets provided by your theme like css, js and images are served with headers telling browsers and any other cache that these files are good to cache for a long period, and the `{{asset}}` helper ensures they get refreshed at the right time. If you include assets without using the `{{asset}}` helper, this will cause problems for people using their blog with a cache and also anyone using a subdirectory, therefore using the `{{asset}}` helper is required.
 
-*   id – *post id*
-*   title – *post title*
-*   url – *the relative URL for a post*
-*   content – *post HTML*
-*   published_at – *date the post was published*
-*   author – *full details of the post author* (see below for more details)
+At present, Ghost themes only support serving standard CSS and JS - there is no support for CSS preprocessors etc. That's not to say you can't build your theme using those tools, only that the theme you provide to Ghost must contain the built CSS rather than the source files.
 
-Each of these properties can be output using the standard handlebars expression, e.g. `{{title}}`.
-
-<div class="note">
-  <p>
-    <strong>Notes:</strong> <ul>
-      <li>
-        the content property is overridden and output by the <code>{{content}}</code> helper which ensures the HTML is output safely & correctly. See the section on the <a href="#content-helper"><code>{{content}}</code> helper</a> for more info.
-      </li>
-      <li>
-        the url property provided by the <code>{{url}}</code> helper. See the section on the <a href="#url-helper"><code>{{url}}</code> helper</a> for more info.
-      </li>
-    </ul>
-  </p>
-</div>
-
-#### Post author
-
-When inside the context of a single post, the following author data is available:
-
-*   `{{author.name}}` – the name of the author
-*   `{{author.bio}}` – the author's bio
-*   `{{author.website}}` – the author's website
-*   `{{author.image}}` – the author's profile image
-*   `{{author.cover}}` – the author's cover image
-
-You can use just`{{author}}` to output the author's name with a link to their author page.
-
-This can also be done by using a block expression:
-
-```
-{{#author}}
-    <a href="{{url}}">{{name}}</a>
-{{/author}}
-```
-
-#### Post Tags
-
-When inside the context of a single post, the following tag data is available
-
-*   `{{tag.name}}` – the name of the tag
-
-You can use `{{tags}}` to output a customisable list of tags, this can also be done by using a block expression:
-
-```
-<ul>
-    {{#foreach tags}}
-        <li>{{name}}</li>
-    {{/foreach}}
-</ul>
-```
-
-See the section on the [`{{tags}}`](#tags-helper) helper for details of the options.
-
-### Global Settings
-
-Ghost themes have access to a number of global settings via the `@blog` global data accessor.
-
-*   `{{@blog.url}}` – the url specified for this env in <code class="path">config.js</code>
-*   `{{@blog.title}}` – the blog title from the settings page
-*   `{{@blog.description}}` – the blog description from the settings page
-*   `{{@blog.logo}}` – the blog logo from the settings page
 
 {% endraw %}

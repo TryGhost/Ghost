@@ -50,6 +50,7 @@ translations:
     managing:         'Managing'
     settings:         'Settings'
     writing:          'Writing'
+    getting-started:  'Getting Started'
     handlebars:       'Handlebars'
     structure:        'Structure'
     helpers:          'Helpers'

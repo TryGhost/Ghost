@@ -5,7 +5,7 @@ meta_description: An in depth guide to making themes for the Ghost blogging plat
 chapter: themes
 section: handlebars
 permalink: /themes/handlebars/
-prev_section: themes
+prev_section: getting-started
 next_section: structure
 ---
 
