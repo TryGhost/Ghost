@@ -192,10 +192,13 @@
         left: 0;
         right: 0;
         bottom: 0;
-        font-family: $font-family-mono;
-        font-size: 1.4em;
-        line-height: 1.56em;
-        color: lighten($darkgrey, 10%);
+
+        pre {
+            font-size: 1.6rem;
+            line-height: 1.56em;
+            font-family: $font-family-mono;
+            color: lighten($darkgrey, 10%);
+        }
 
         .CodeMirror-focused,
         .CodeMirror-selected {
