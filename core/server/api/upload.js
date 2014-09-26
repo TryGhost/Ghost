@@ -1,4 +1,6 @@
-var Promise = require('bluebird'),
+var _       = require('lodash'),
+    config  = require('../config'),
+    Promise = require('bluebird'),
     path    = require('path'),
     fs      = require('fs-extra'),
     storage = require('../storage'),
@@ -7,8 +9,7 @@ var Promise = require('bluebird'),
     upload;
 
 function isImage(type, ext) {
-    if ((type === 'image/jpeg' || type === 'image/png' || type === 'image/gif' || type === 'image/svg+xml')
-            && (ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.gif' || ext === '.svg' || ext === '.svgz')) {
+    if (_.contains(config.uploads.contentTypes, type) && _.contains(config.uploads.extensions, ext)) {
         return true;
     }
     return false;
