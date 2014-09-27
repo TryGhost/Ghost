@@ -45,7 +45,7 @@ db = {
                 return Promise.reject(new errors.InternalServerError(error.message || error));
             });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data (no rights).'));
         });
     },
     /**
@@ -101,7 +101,7 @@ db = {
                     }
                 } catch (e) {
                     errors.logError(e, 'API DB import content', 'check that the import file is valid JSON.');
-                    return Promise.reject(new errors.BadRequest('Failed to parse the import JSON file'));
+                    return Promise.reject(new errors.BadRequestError('Failed to parse the import JSON file.'));
                 }
 
                 if (!importData.meta || !importData.meta.version) {
@@ -119,7 +119,7 @@ db = {
                 return Promise.promisify(fs.unlink)(filepath);
             });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to import data. (no rights)'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to import data (no rights).'));
         });
     },
     /**
@@ -140,7 +140,7 @@ db = {
                     return Promise.reject(new errors.InternalServerError(error.message || error));
                 });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data. (no rights)'));
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data (no rights).'));
         });
     }
 };
