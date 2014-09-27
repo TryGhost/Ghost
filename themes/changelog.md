@@ -13,6 +13,8 @@ next_section: troubleshooting
 
 #  Change Log
 
+**Note:** This documentation is in the process of being updated for Ghost 0.5.2.
+
 The following document acts as a reference for developers who  want to keep their theme up-to-date with the latest
 changes in the Ghost theme API. Since the original
 [public release of 0.3.2](https://github.com/TryGhost/Ghost/releases/tag/0.3.2) there have been a number of changes to
@@ -27,9 +29,12 @@ The best way to keep up-to-date with the changes is to subscribe to the
 
 ## Deprecated features
 
+These features have been deprecated and will be removed in a future version.
+
 * `{{pageUrl}}` helper, used in pagination templates, was renamed to `{{page_url}}` in Ghost 0.4.2
 * `{{author.email}}` was removed in Ghost 0.5.0
-* Several body classes are deprecated as of Ghost 0.5.2
+* `.archive-template` and `.page` classes from `{{body_class}}` helper deprecated in 0.5.2
+* `.post-template` class appearing on pages (it will only appear on posts) deprecated as of Ghost 0.5.2
 
 ## Important new requirements
 
@@ -38,19 +43,44 @@ Please see the [asset helper](/themes/helpers/asset/) documentation for further 
 * `package.json` file, introduced in Ghost 0.4.2, is required to define the name of your theme file. Please see the
 [package.json](/themes/structure/#package.json) documentation for further information.
 
-## Ghost 0.5.2 (Coming Sep 2014)
+## Ghost 0.5.2
 
-* Changes to the body classes, more info coming soon.
+<date class="release-date">25 Sep 2014</date>
 
-## Ghost 0.5.0 (11th Aug 2014)
+#### New:
+
+* `{{is}}` helper
+* `{{image}}` for posts
+* Custom tag templates i.e. `tag-{{slug}}.hbs`
+
+#### Changed
+
+* `{{body_class}}` output
+* `{{meta_title}}` output
+* `{{meta_description}}` output
+* `{{ghost_head}}` output
+
+#### Deprecated
+
+* `.archive-template` and `.page` classes from `{{body_class}}`.
+* `.post-template` will soon only appear on posts, not pages.
+
+
+## Ghost 0.5.0
+
+<date class="release-date">11th Aug 2014</date>
 
 Please see the [multi-user blog post](http://dev.ghost.org/themes-multi-user-ready/) (info will be moved here soon).
 
-## Ghost 0.4.2 (26th Mar 2014)
+## Ghost 0.4.2
+
+<date class="release-date">26th Mar 2014</date>
 
 Please see the [0.4.2 blog post](http://dev.ghost.org/new-for-themes-0-4-2/) (info will be moved here soon).
 
-## Ghost 0.4.0 (13th Jan 2014)
+## Ghost 0.4.0
+
+<date class="release-date">13th Jan 2014</date>
 
 Please see the [0.4.0 blog post](http://dev.ghost.org/ghost-0-4-themes/) (info will be moved here soon).
 

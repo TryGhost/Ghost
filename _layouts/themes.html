@@ -53,7 +53,7 @@ nav_items:
             </aside>
         {% endif %}
 
-        <section id="content" class="col-lg-9">
+        <section id="content" class="col-lg-9 {{ page.section }}">
             {{ content }}
 
             {% if page.next_section or page.prev_section %}
