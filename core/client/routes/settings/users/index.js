@@ -8,7 +8,7 @@ var paginationSettings = {
 };
 
 var UsersIndexRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody, PaginationRouteMixin, {
-    classNames: ['settings-view-users'],
+    classNames: ['settings-view', 'settings-view-users'],
 
     setupController: function (controller, model) {
         this._super(controller, model);

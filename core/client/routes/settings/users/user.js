@@ -1,7 +1,7 @@
 import styleBody from 'ghost/mixins/style-body';
 
 var SettingsUserRoute = Ember.Route.extend(styleBody, {
-    classNames: ['settings-view-user'],
+    classNames: ['settings-subview', 'settings-view-user'],
 
     model: function (params) {
         var self = this;

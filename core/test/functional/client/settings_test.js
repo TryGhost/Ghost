@@ -8,19 +8,21 @@
 var generalTabDetector = '.settings-content form#settings-general',
     usersTabDetector = '.settings-content .settings-users';
 
-CasperTest.begin('Settings screen is correct', 15, function suite(test) {
+CasperTest.begin('Settings screen is correct', 16, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
     });
 
     casper.then(function testViews() {
-        test.assertExists('.settings', 'Settings main view is present');
+        // Body classes are properly applied
+        test.assertExists('body.settings', 'Settings main view is present');
+        test.assertExists('body.settings-view', 'Settings view class is present');
+        test.assertExists('body.settings-view-general', 'Settings general view is present');
         test.assertExists('.settings-menu', 'Settings menu is present');
         test.assertExists('.settings-menu-general a', 'General link is present');
         test.assertExists('.settings-menu-users a', 'Users link is present');
         test.assertNotExists('.settings-menu-apps a', 'Apps link is present');
-        test.assertExists('.settings', 'Settings main view is present');
         test.assertExists('.settings-content', 'Settings content view is present');
         test.assertExists(generalTabDetector, 'Form is present');
         test.assertSelectorHasText('.page-title', 'General', 'Title is "General"');
@@ -154,11 +156,15 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
     });
 });
 
-CasperTest.begin('Users screen is correct', 9, function suite(test) {
+CasperTest.begin('Users screen is correct', 12, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general');
     casper.thenTransitionAndWaitForScreenLoad('settings.users', function canTransition() {
         test.assert(true, 'Can transition to users screen from settings.general');
         test.assertUrlMatch(/ghost\/settings\/users\/$/, 'settings.users transitions to correct url');
+        // Body classes
+        test.assertExists('body.settings', 'Settings main view is present');
+        test.assertExists('body.settings-view', 'Settings view class is present');
+        test.assertExists('body.settings-view-users', 'Settings users view is present');
     });
     casper.then(function usersScreenHasContent() {
         test.assertSelectorHasText('.settings-users .object-list .object-list-title', 'Active users');
@@ -196,10 +202,14 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
     });
 });
 // ### User settings tests
-CasperTest.begin('Can save settings', 7, function suite(test) {
+CasperTest.begin('Can save settings', 10, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost Admin title is GhostAdmin');
         test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'settings.users.user has correct URL');
+        // Body classes
+        test.assertExists('body.settings', 'Settings main view is present');
+        test.assertExists('body.settings-subview', 'Settings view class is present');
+        test.assertExists('body.settings-view-user', 'Settings user view is present');
     });
 
     function handleUserRequest(requestData) {
