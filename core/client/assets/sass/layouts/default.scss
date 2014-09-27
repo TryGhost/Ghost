@@ -62,9 +62,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    overflow: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
     transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(60px, 0px, 0px);
     body.right-outlet-expanded & {
@@ -78,6 +76,9 @@
         left: 0;
         transform: translate3d(0, 0px, 0px);
         opacity: 1;
+
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
 
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
 
