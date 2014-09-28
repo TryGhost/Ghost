@@ -6,13 +6,13 @@
     <section class="page-actions">
         {{#if view.userActionsAreVisible}}
             <span class="dropdown">
-                {{#gh-popover-button popoverName="user-actions-menu" classNames="btn btn-default only-has-icon user-actions-cog" title="User Actions"}}
+                {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="btn btn-default only-has-icon user-actions-cog" title="User Actions"}}
                     <i class="icon-settings"></i>
                     <span class="hidden">User Settings</span>
-                {{/gh-popover-button}}
-                {{#gh-popover name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
+                {{/gh-dropdown-button}}
+                {{#gh-dropdown name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
                     {{partial "user-actions-menu"}}
-                {{/gh-popover}}
+                {{/gh-dropdown}}
             </span>
         {{/if}}
 
