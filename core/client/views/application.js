@@ -23,12 +23,12 @@ var ApplicationView = Ember.View.extend({
         });
 
         // #### Listen to the viewport and change user-menu dropdown triangle classes accordingly
-        mobileQuery.addListener(this.swapUserMenuPopoverTriangleClasses);
-        this.swapUserMenuPopoverTriangleClasses(mobileQuery);
+        mobileQuery.addListener(this.swapUserMenuDropdownTriangleClasses);
+        this.swapUserMenuDropdownTriangleClasses(mobileQuery);
 
     }.on('didInsertElement'),
 
-    swapUserMenuPopoverTriangleClasses: function (mq) {
+    swapUserMenuDropdownTriangleClasses: function (mq) {
         if (mq.matches) {
             $('.js-user-menu-dropdown-menu').removeClass('dropdown-triangle-top-right ').addClass('dropdown-triangle-bottom');
         } else {

@@ -1,12 +1,12 @@
-import PopoverMixin from 'ghost/mixins/popover-mixin';
+import DropdownMixin from 'ghost/mixins/dropdown-mixin';
 
-var GhostPopover = Ember.Component.extend(PopoverMixin, {
-    classNames: 'ghost-popover',
+var GhostDropdown = Ember.Component.extend(DropdownMixin, {
+    classNames: 'ghost-dropdown',
     name: null,
     closeOnClick: false,
     //Helps track the user re-opening the menu while it's fading out.
     closing: false,
-    //Helps track whether the popover is open or closes, or in a transition to either
+    //Helps track whether the dropdown is open or closes, or in a transition to either
     isOpen: false,
     //Managed the toggle between the fade-in and fade-out classes
     fadeIn: Ember.computed('isOpen', 'closing', function () {
@@ -35,15 +35,15 @@ var GhostPopover = Ember.Component.extend(PopoverMixin, {
             }
         });
     },
-    //Called by the popover service when any popover button is clicked.
+    //Called by the dropdown service when any dropdown button is clicked.
     toggle: function (options) {
         var isClosing = this.get('closing'),
             isOpen = this.get('isOpen'),
             name = this.get('name'),
             button = this.get('button'),
-            targetPopoverName = options.target;
+            targetDropdownName = options.target;
         
-        if (name === targetPopoverName && (!isOpen || isClosing)) {
+        if (name === targetDropdownName && (!isOpen || isClosing)) {
             if (!button) {
                 button = options.button;
                 this.set('button', button);
@@ -63,18 +63,18 @@ var GhostPopover = Ember.Component.extend(PopoverMixin, {
 
     didInsertElement: function () {
         this._super();
-        var popoverService = this.get('popover');
+        var dropdownService = this.get('dropdown');
 
-        popoverService.on('close', this, this.close);
-        popoverService.on('toggle', this, this.toggle);
+        dropdownService.on('close', this, this.close);
+        dropdownService.on('toggle', this, this.toggle);
     },
     willDestroyElement: function () {
         this._super();
-        var popoverService = this.get('popover');
+        var dropdownService = this.get('dropdown');
 
-        popoverService.off('close', this, this.close);
-        popoverService.off('toggle', this, this.toggle);
+        dropdownService.off('close', this, this.close);
+        dropdownService.off('toggle', this, this.toggle);
     }
 });
 
-export default GhostPopover;
+export default GhostDropdown;

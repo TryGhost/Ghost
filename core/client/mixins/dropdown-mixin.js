@@ -1,7 +1,7 @@
 /*
-  Popovers and their buttons are evented and do not propagate clicks.
+  Dropdowns and their buttons are evented and do not propagate clicks.
 */
-var PopoverMixin = Ember.Mixin.create(Ember.Evented, {
+var DropdownMixin = Ember.Mixin.create(Ember.Evented, {
     classNameBindings: ['isOpen:open:closed'],
     isOpen: false,
     click: function (event) {
@@ -10,4 +10,4 @@ var PopoverMixin = Ember.Mixin.create(Ember.Evented, {
     }
 });
 
-export default PopoverMixin;
+export default DropdownMixin;
