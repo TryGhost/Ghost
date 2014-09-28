@@ -23,6 +23,7 @@
                 </span>
             </div>
 
+            {{#unless session.user.isAuthor}}
             <div class="form-group for-select">
                 <label for="activeTheme">Author</label>
                 <span class="input-icon icon-user">
@@ -36,6 +37,7 @@
                     </span>
                 </span>
             </div>
+            {{/unless}}
 
             <ul class="nav-list nav-list-block">
                 {{#gh-tab tagName="li" classNames="nav-list-item"}}
