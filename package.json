@@ -64,7 +64,8 @@
         "xml": "0.0.12"
     },
     "optionalDependencies": {
-        "mysql": "2.1.1"
+        "mysql": "2.1.1",
+        "cloudinary": "~1.0.12"
     },
     "devDependencies": {
         "blanket": "~1.1.6",
