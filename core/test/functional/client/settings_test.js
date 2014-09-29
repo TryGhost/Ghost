@@ -199,7 +199,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 CasperTest.begin('Can save settings', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost Admin title is GhostAdmin');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'settings.users.user has correct URL');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'settings.users.user has correct URL');
     });
 
     function handleUserRequest(requestData) {
@@ -274,7 +274,7 @@ CasperTest.begin('User settings screen resets all whitespace slug to original va
 
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     casper.then(function setSlugToAllWhitespace() {
@@ -298,7 +298,7 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
 
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     casper.then(function changeSlug() {
@@ -325,7 +325,7 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
 
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     casper.then(function setEmailToInvalid() {
@@ -366,7 +366,7 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
 CasperTest.begin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     function getRemainingBioCharacterCount() {
@@ -391,7 +391,7 @@ CasperTest.begin('User settings screen shows remaining characters for Bio proper
 CasperTest.begin('Ensure user bio field length validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     casper.then(function setBioToInvalid() {
@@ -410,7 +410,7 @@ CasperTest.begin('Ensure user bio field length validation', 3, function suite(te
 CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     casper.then(function setWebsiteToInvalid() {
@@ -429,7 +429,7 @@ CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
 CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
         test.assertTitle('Ghost Admin', 'Ghost admin has no title');
-        test.assertUrlMatch(/ghost\/settings\/users\/test-user\/$/, 'Ghost doesn\'t require login this time');
+        test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
     casper.then(function setLocationToInvalid() {

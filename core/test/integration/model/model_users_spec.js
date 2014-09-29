@@ -45,6 +45,50 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
+        it('shortens slug if possible', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[2];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return Promise.resolve(userData);
+            });
+
+            UserModel.add(userData, context).then(function (createdUser) {
+                should.exist(createdUser);
+                createdUser.has('slug').should.equal(true);
+                createdUser.attributes.slug.should.equal('jimothy');
+                done();
+            }).catch(done);
+        });
+
+        it('does not short slug if not possible', function (done) {
+            var userData = testUtils.DataGenerator.forModel.users[2];
+
+            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+                return Promise.resolve(userData);
+            });
+
+            UserModel.add(userData, context).then(function (createdUser) {
+                should.exist(createdUser);
+                createdUser.has('slug').should.equal(true);
+                createdUser.attributes.slug.should.equal('jimothy');
+            }).then(function () {
+                userData.email = 'newmail@mail.com';
+                UserModel.add(userData, context).then(function (createdUser) {
+                    should.exist(createdUser);
+                    createdUser.has('slug').should.equal(true);
+                    createdUser.attributes.slug.should.equal('jimothy-bogendath');
+                }).then(function () {
+                    userData.email = 'newmail2@mail.com';
+                    UserModel.add(userData, context).then(function (createdUser) {
+                        should.exist(createdUser);
+                        createdUser.has('slug').should.equal(true);
+                        createdUser.attributes.slug.should.equal('jimothy-bogendath-2');
+                        done();
+                    });
+                });
+            }).catch(done);
+        });
+
         it('does NOT lowercase email', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
 
