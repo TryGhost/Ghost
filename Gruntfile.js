@@ -336,9 +336,13 @@ var _              = require('lodash'),
                     map: true, // Use and update the sourcemap
                     browsers: ['last 2 versions', '> 1%', 'Explorer 10']
                 },
-                single_file: {
+                ghost: {
                     src: 'core/client/assets/css/<%= pkg.name %>.min.css',
                     dest: 'core/client/assets/css/<%= pkg.name %>.min.css'
+                },
+                docs: {
+                    src: 'core/client/docs/dist/css/<%= pkg.name %>.min.css',
+                    dest: 'core/client/docs/dist/css/<%= pkg.name %>.min.css'
                 }
             },
 
