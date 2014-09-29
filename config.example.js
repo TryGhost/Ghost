@@ -65,6 +65,18 @@ config = {
         paths: {
             contentPath: path.join(__dirname, '/content/')
         }
+        // Example Cloudinary config
+        // see http://cloudinary.com/documentation/node_integration#getting_started_guide
+        //
+        //,storage: {
+        //    type: 'cloudinary-file-store',
+        //    credentials: {
+        //        cloud_name: 'example-cloud',
+        //        api_key: 'APIKEY', 
+        //        api_secret: 'APISECRET' 
+        //    
+        //    }
+        //}
     },
 
     // **Developers only need to edit below here**
