@@ -275,6 +275,13 @@ var _              = require('lodash'),
                     src: [
                         'core/test/functional/routes/**/*_test.js'
                     ]
+                },
+
+                // #### All Module tests
+                module: {
+                    src: [
+                        'core/test/functional/module/**/*_test.js'
+                    ]
                 }
             },
 
@@ -764,7 +771,7 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test', 'Run tests and lint code',
-            ['jshint', 'jscs', 'test-routes', 'test-unit', 'test-integration', 'test-functional']);
+            ['jshint', 'jscs', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'test-functional']);
 
         // ### Lint
         //
@@ -840,6 +847,14 @@ var _              = require('lodash'),
         // quick to test many permutations of routes / urls in the system.
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
             ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:routes']);
+
+        // ### Module tests *(sub task)*
+        // `grunt test-module` will run just the module tests
+        //
+        // The purpose of the module tests is to ensure that Ghost can be used as an npm module and exposes all
+        // required methods to interact with it.
+        grunt.registerTask('test-module', 'Run functional module tests (mocha)',
+            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:module']);
 
         // ### Functional tests for the setup process
         // `grunt test-functional-setup will run just the functional tests for the setup page.
