@@ -54,7 +54,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         var deferred = {};
 
         deferred.promise = this.store.find('user', {limit: 'all'}).then(function (users) {
-            return users.rejectBy('id', 'me');
+            return users.rejectBy('id', 'me').sortBy('name');
         }).then(function (users) {
             return users.filter(function (user) {
                 return user.get('active');
