@@ -329,6 +329,41 @@ describe('Tag Model', function () {
                 }).catch(done);
             });
 
+            it('correctly creates non-conflicting slugs', function (done) {
+                var seededTagNames = ['tag1'],
+                    postModel;
+
+                seedTags(seededTagNames).then(function (_postModel) {
+                    postModel = _postModel;
+                    return TagModel.add({name: 'tagc'}, context);
+                }).then(function () {
+                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
+                    var tagData = [];
+
+                    tagData.push({id: 2, name: 'tagc'});
+                    tagData.push({id: 3, name: 'tagc++'});
+
+                    postModel = postModel.toJSON();
+                    postModel.tags = tagData;
+
+                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                }).then(function () {
+                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
+                }).then(function (reloadedPost) {
+                    var tagModels = reloadedPost.related('tags').models,
+                        tagSlugs = tagModels.map(function (t) { return t.get('slug'); }),
+                        tagIds = _.pluck(tagModels, 'id');
+
+                    tagSlugs.sort().should.eql(['tagc', 'tagc-2']);
+
+                    // make sure it hasn't just added a new tag with the same name
+                    // Don't expect a certain order in results - check for number of items!
+                    Math.max.apply(Math, tagIds).should.eql(3);
+
+                    done();
+                }).catch(done);
+            });
+
             it('can add a tag to a post on creation', function (done) {
                 var newPost = _.extend(testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]});
 
