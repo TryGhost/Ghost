@@ -103,31 +103,35 @@
 
 //==== Simple SCSS mixin to create CSS triangles
 //==== Example: @include css-triangle (10px, #fff, "up");
-@mixin triangle ($size: 20px, $color: #000, $direction: "down") {
-    $size: $size / 2;
+@mixin triangle ($size: 20px, $color: #000, $direction: "down", $type: "normal") {
+    $verticalSize: $size;
     width: 0;
     height: 0;
+
+    @if $type == "shallow" {
+      $verticalSize: floor($size * $popover_triangle_shallow_multiplier);
+    }
 
     @if $direction == "down" {
         border-left: $size solid #{setTriangleColor($direction, "left", $color)};
         border-right: $size solid #{setTriangleColor($direction, "right", $color)};
-        border-top: $size solid #{setTriangleColor($direction, "top", $color)};
+        border-top: $verticalSize solid #{setTriangleColor($direction, "top", $color)};
     }
 
     @if $direction == "up" {
         border-left: $size solid #{setTriangleColor($direction, "left", $color)};
         border-right: $size solid #{setTriangleColor($direction, "right", $color)};
-        border-bottom: $size solid #{setTriangleColor($direction, "bottom", $color)};
+        border-bottom: $verticalSize solid #{setTriangleColor($direction, "bottom", $color)};
     }
 
     @if $direction == "left" {
-        border-right: $size solid #{setTriangleColor($direction, "right", $color)};
+        border-right: $verticalSize solid #{setTriangleColor($direction, "right", $color)};
         border-top: $size solid #{setTriangleColor($direction, "top", $color)};
         border-bottom: $size solid #{setTriangleColor($direction, "bottom", $color)};
     }
 
     @if $direction == "right" {
-        border-left: $size solid #{setTriangleColor($direction, "left", $color)};
+        border-left: $verticalSize solid #{setTriangleColor($direction, "left", $color)};
         border-bottom: $size solid #{setTriangleColor($direction, "bottom", $color)};
         border-top: $size solid #{setTriangleColor($direction, "top", $color)};
     }
