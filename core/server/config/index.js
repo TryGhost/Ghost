@@ -139,6 +139,11 @@ ConfigManager.prototype.set = function (config) {
             // protected slugs cannot be changed or removed
             reserved: ['admin', 'app', 'apps', 'archive', 'archives', 'categories', 'category', 'dashboard', 'feed', 'ghost-admin', 'login', 'logout', 'page', 'pages', 'post', 'posts', 'public', 'register', 'setup', 'signin', 'signout', 'signup', 'tag', 'tags', 'user', 'users', 'wp-admin', 'wp-login'],
             protected: ['ghost', 'rss']
+        },
+        uploads: {
+            // Used by the upload API to limit uploads to images
+            extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
+            contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
         }
     });
 
