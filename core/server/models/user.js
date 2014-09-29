@@ -52,7 +52,7 @@ User = ghostBookshelf.Model.extend({
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
             return ghostBookshelf.Model.generateSlug(User, this.get('slug') || this.get('name'),
-                {transacting: options.transacting})
+                {transacting: options.transacting, shortSlug: !this.get('slug')})
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
@@ -493,6 +493,7 @@ User = ghostBookshelf.Model.extend({
 
         options = this.filterOptions(options, 'setup');
         options.withRelated = _.union(['roles'], options.include);
+        options.shortSlug = true;
 
         return validatePasswordLength(userData.password).then(function () {
             // Generate a new password hash
