@@ -16,24 +16,24 @@ next_section: upgrading
 
 Dunque sei pronto a scaricare Ghost? Eccellente!
 
-La prima decisione da prendere è se vuoi installare Ghost manualmente o se preferisci usare un'installer.
+La prima decisione da prendere è se vuoi installare Ghost manualmente o se preferisci usare un installer.
 
 ### Installers
 
-Al momento le alternative con installers semplici da usare sono principalmente:
+Al momento le alternative con installer semplici da usare sono principalmente:
 
 *   Rilasciare sul cloud di [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
 *   Avviare Ghost tramite [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Configurare [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   Configurare un [droplet su DigitalOcean](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
 ### Installazione Manuale
 
 Hai bisogno di un servizio di hosting che abbia o ti permetta di installare [Node.js](http://nodejs.org).
-    Ciò significa qualcosa come un cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) o altri pacchetti con accesso SSH (terminale) e che ti permettano di installare Node.js. Ne esistono molti, alcuni molto economici.
+    Ciò significa qualcosa come un cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) o altri pacchetti con accesso SSH (terminale) e che ti permettano di installare Node.js. Ne esistono diversi, alcuni molto economici.
 
-Attualmente non sono utilizzabili hosting condivisi stile cPanel in quanto solitamente concepiti per hosting PHP. Sebbene alcuni offrano Ruby, dunque in futuro potrebbero offrire Node.js essendo simili.
+Attualmente non sono utilizzabili hosting condivisi stile cPanel, in quanto solitamente concepiti per hosting PHP. Alcuni di essi offrono Ruby, dunque in futuro potrebbero darti la possibilità di usare anche Node.js, essendo simili.
 
-<p>Sfortunatamente molte delle soluzioni di cloud non designate specificatamente per Node, come **Nodejitsu** o **Heroku**, **NON** sono compatibili con Ghost. Funzionano inizialmente, ma cancellano i tuoi files, dunque tutte le immagini caricate e il database scompaiono. Heroku supporta MySQL quindi potresti adoperarlo, ma perderesti ugualmente le immagini caricate.
+<p>Sfortunatamente molte delle soluzioni di cloud non concepite specificatamente per Node.js, come **Nodejitsu** o **Heroku**, **NON** sono compatibili con Ghost. Funzionano inizialmente, ma cancellano i tuoi file, dunque tutte le immagini caricate e il database scompaiono. Heroku supporta MySQL quindi potresti adoperarlo, ma perderesti ugualmente le immagini caricate.
 
 I seguenti links contengono istruzioni su come configurare:
 
@@ -46,7 +46,7 @@ I seguenti links contengono istruzioni su come configurare:
 
 ## Rendere Ghost permanente
 
-Il metodo precedentemente descritto per avviare Ghost è `npm start`. É valido  per sviluppare localmente e per testare, tuttavia avviare Ghost da riga di comando implica interromperne l'erogazione una volta chiuso il terminale o la sessione SSH. Per evitare che Ghost si interrompa occorre eseguirlo come servizio. Ci sono due modi per arrivare a questo risultato.
+Il metodo precedentemente descritto per avviare Ghost è `npm start`. È valido per sviluppare localmente e per testare, tuttavia avviare Ghost da riga di comando implica interromperne l'erogazione una volta chiuso il terminale o la sessione SSH. Per evitare che Ghost si interrompa occorre eseguirlo come servizio. Ci sono due modi per ottenere questo risultato.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever))
 
@@ -87,7 +87,7 @@ Puoi consultare la [documentazione di Supervisor](http://supervisord.org) per ul
 
 ### Init Script
 
-I sistemi Linux usano scripts di init per avviare al boot del sistema. Questi scripts sono presenti in /etc/init.d. Per rendere Ghost permanente anche in caso di riavvio puoi utilizzare uno script di init. L'esempio seguente funziona con Ubuntu ed è stato testato con **Ubuntu 12.04**.
+I sistemi Linux usano script di init per avviare al boot del sistema. Questi scripts sono presenti in /etc/init.d. Per rendere Ghost permanente anche in caso di riavvio puoi utilizzare uno script di init. L'esempio seguente funziona con Ubuntu ed è stato testato con **Ubuntu 12.04**.
 
 
 *   Crea il file /etc/init.d/ghost:
@@ -134,7 +134,7 @@ I sistemi Linux usano scripts di init per avviare al boot del sistema. Questi sc
     $ sudo update-rc.d ghost enable
     ```
 
-*   Assicuriamoci che il tuo utente possa modificare i file, ad esempio config.js (nella cartella di installazione di Ghost), aggiungendoti al gruppo utenti di ghost:
+*   Assicurati che il tuo utente possa modificare i file, ad esempio config.js (nella cartella di installazione di Ghost), aggiungendoti al gruppo utenti di ghost:
     ```
     $ sudo adduser USERNAME ghost
     ```
@@ -190,20 +190,20 @@ Diamo per scontato che Ghost sia già in esecuzione come servizio in background 
 
 ## Configurare Ghost con SSL <a id="ssl"></a>
 
-Dopo di configurare il tuo dominio, è buona idea assicurare l’interfaccia di amministrazione o forse pure tutto il resto del tuo blog utilizzando HTTPS. Si consiglia la protezione dell’interfaccia di amministrazione con HTTPS perchè il username e password sono tramessi in testo normale se non si attiva la crittografia.
+Dopo aver configurato il tuo dominio, è buona idea assicurare l’interfaccia di amministrazione o anche il resto del tuo blog utilizzando HTTPS. Si consiglia la protezione dell’interfaccia di amministrazione con HTTPS perchè username e password sono tramessi in testo normale se non si attiva la crittografia.
 
-L'esempio seguente mostra come configurare SSL. Partiamo dal presupposto che segui questa guida dall'inizio e quindi stai utilizzando nginx come server proxy. Configurazione con un altro server proxy sarebbe molto simile.
+L'esempio seguente mostra come configurare SSL. Partiamo dal presupposto che segui questa guida dall'inizio e quindi stai utilizzando nginx come server proxy. La configurazione con un altro server proxy sarebbe molto simile.
 
-Prima bisogna ottenere un certificato SSL da un fornitore di certificati affidabile. Il tuo fornitore vi darà istruzioni per generare la tua chiave privata e CRS (certificate signing request). Dopo di avere ricevuto il certificato, copia il file CRT dal tuo fornitore di certificato e il KEY file generato durante la trasmissione del CSR al server.
+Prima bisogna ottenere un certificato SSL da un fornitore di certificati affidabile. Il tuo fornitore ti darà istruzioni per generare la tua chiave privata e CRS (certificate signing request). Dopo aver ricevuto il certificato, copia il file CRT dal tuo fornitore di certificato e il KEY file generato durante la trasmissione del CSR al server.
 
 - `mkdir /etc/nginx/ssl`
 - `cp server.crt /etc/nginx/ssl/server.crt`
 - `cp server.key /etc/nginx/ssl/server.key`
 
-Dopo queste due file sono a posto, è necessario aggiornare la configurazione di nginx.
+Dopo che questi due file sono a posto, è necessario aggiornare la configurazione di nginx.
 
 *   Apri il file di configurazione di nginx con un editor di testo (per esempio `sudo nano /etc/nginx/sites-available/ghost.conf`)
-*   Aggiungi le impostazioni indicate con qui giù con `+` al tuo file di configurazioneÑ
+*   Aggiungi le impostazioni indicate qui sotto con `+` al tuo file di configurazione
 
     ```
      server {
@@ -229,8 +229,8 @@ Dopo queste due file sono a posto, è necessario aggiornare la configurazione di
     $ sudo service nginx restart
     ```
 
-Dopo questi passi, dovrebbe essere possibile aprire la pagina di amministrazione del tuo blog attraverso un collegamento sicuro con HTTPS. Se vuoi che tutto il tuo traffico utilizzi SSL, è possibile modificare il protocollo di impostazioni url nel file config.js a https (per esempio, 'url' https://my-ghost-blog.com '`). Questo forzerà l'uso di SSL per frontend e admin. Qualsiasi richiesta tramite HTTP verrà reindirizzata a HTTPS. Se includi l'immagini nel tuo post che vengono da un dominio HTTP farà apparire un avvertimento 'insecure content'. Script e font da domini HTTP non funzioneranno.
+Dopo questi passi, dovrebbe essere possibile aprire la pagina di amministrazione del tuo blog attraverso un collegamento sicuro con HTTPS. Se vuoi che tutto il tuo traffico utilizzi SSL, è possibile modificare il protocollo di impostazioni url nel file config.js a https (per esempio, 'url' https://my-ghost-blog.com '`). Questo forzerà l'uso di SSL per frontend e admin. Qualsiasi richiesta tramite HTTP verrà reindirizzata a HTTPS. Includere delle immagini nei tuoi post che provengono da un dominio HTTP farà apparire l'avvertimento 'insecure content'. Script e font da domini HTTP non funzioneranno.
 
-Nella maggior parte dei casi vorrete forzare SSL per l'interfaccia di amministrazione e frontend per servire via HTTP e HTTPS. L'opzione `forceAdminSSL: true` è stata introdotta per forzare SSL nella pagina di amministrazione.
+Nella maggior parte dei casi vorrai forzare SSL per l'interfaccia di amministrazione e frontend per servire via HTTP e HTTPS. L'opzione `forceAdminSSL: true` è stata introdotta per forzare SSL nella pagina di amministrazione.
 
-Se avete bisogno di ulteriori informazione sulla configurazione di SSL per il tuo server proxy, la documentazione ufficiale [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) e [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) sono un posto perfetto per iniziare.
+Se hai bisogno di ulteriori informazioni sulla configurazione di SSL per il tuo server proxy, la documentazione ufficiale [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) e [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) sono il posto perfetto per iniziare.

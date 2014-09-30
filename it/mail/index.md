@@ -10,7 +10,7 @@ chapter: mail
 
 ## Configurazione Email <a id="email-config"></a>
 
-La documentazione seguente, spiega come configurare le email in Ghost. Ghost utilizza [Nodemailer](https://github.com/andris9/Nodemailer), la loro documentazione contiene diversi altri esempi di configurazione. 
+La documentazione seguente spiega come configurare le email in Ghost. Ghost utilizza [Nodemailer](https://github.com/andris9/Nodemailer), la loro documentazione contiene diversi altri esempi di configurazione. 
 
 ### Cosa aspetti?
 
@@ -18,7 +18,7 @@ Se hai familiarità con PHP, allora sarai abituato ad avere le email magicamente
 
 Ma non aver paura, configurare le email è una cosa che va fatta una sola volta e questa guida ti darà una mano.
 
-### Ma perchè?
+### Ma perché?
 
 Al momento, l'unico utilizzo delle email da parte di Ghost è durante l'invio di una nuova password nel caso dimenticassi la tua. Non è molto, ma non sottovalutare l'utilità di questa funzione nel caso ne dovessi mai aver bisogno.
 
