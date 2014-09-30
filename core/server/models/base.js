@@ -316,7 +316,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             slugTryCount = 1,
             baseName = Model.prototype.tableName.replace(/s$/, ''),
             // Look for a matching slug, append an incrementing number if so
-            checkIfSlugExists;
+            checkIfSlugExists, longSlug;
 
         checkIfSlugExists = function (slugToFind) {
             var args = {slug: slugToFind};
@@ -352,6 +352,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // Remove trailing hyphen
         slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
+
+        // If it's a user, let's try to cut it down
+        if (Model && Model.resetPassword && slugTryCount === 1 && base.indexOf('-') > -1) {
+            longSlug = slug;
+            slug = slug.substr(0, base.indexOf('-'));
+        }
+        slug = (slugTryCount > 1 && longSlug) ? longSlug : slug;
 
         // Check the filtered slug doesn't match any of the reserved keywords
         return filters.doFilter('slug.reservedSlugs', config.slugs.reserved).then(function (slugList) {

@@ -30,7 +30,7 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
     url = 'http://' + host + (noPort ? '/' : ':' + port + '/'),
     newUser = {
         name: 'Test User',
-        slug: 'test-user',
+        slug: 'test',
         email: email,
         password: password
     },
@@ -90,7 +90,7 @@ screens = {
         selector: '.settings-menu-users.active'
     },
     'settings.users.user': {
-        url: 'ghost/settings/users/test-user',
+        url: 'ghost/settings/users/test',
         linkSelector: '.user-menu-profile',
         selector: '.user-profile'
     },
