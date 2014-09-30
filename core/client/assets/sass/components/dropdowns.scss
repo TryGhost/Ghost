@@ -31,7 +31,6 @@
     top: 100%;
     left: 0;
     z-index: 1000;
-    display: none; // none by default, but block on "open" of the menu
     float: left;
     min-width: 220px;
     padding: 5px 0;
@@ -142,6 +141,13 @@
     // Remove the outline when :focus is triggered
     > a {
         outline: 0;
+    }
+}
+
+// Closed state for the dropdown
+.closed {
+    > .dropdown-menu {
+        display: none;
     }
 }
 
