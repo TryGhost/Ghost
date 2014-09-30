@@ -12,12 +12,32 @@
 }
 .fade-in {
     animation: fade-in 0.2s;
+    animation-fill-mode: forwards;
 }
 
 @keyframes fade-in-snap {
     to {
         opacity: 1;
     }
+}
+
+
+//
+// Fade in scale up
+// --------------------------------------------------
+@keyframes fade-in-scale {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+.fade-in-scale {
+    animation: fade-in-scale 0.2s;
+    animation-fill-mode: forwards;
 }
 
 
@@ -35,4 +55,5 @@
 }
 .fade-out {
     animation: fade-out 0.5s;
+    animation-fill-mode: forwards;
 }
