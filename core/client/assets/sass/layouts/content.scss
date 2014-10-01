@@ -14,6 +14,25 @@
     }
 }
 
+// Show/hide content list & preview on mobile
+.content-list {
+    &.show-menu {
+        display: block;
+    }
+    &.show-content {
+        display: none;
+    }
+}
+
+.content-preview {
+    &.show-menu {
+        display: none;
+    }
+    &.show-content {
+        display: block;
+    }
+}
+
 .content-list {
     width: 33%;
     padding: 15px;
@@ -30,7 +49,6 @@
         z-index: 500;
         border: none;
     }
-
 
     .content-filter {
         position: relative;
@@ -54,7 +72,6 @@
         padding: 2px 4px 3px 5px;
         color: #fff !important; // getting overridden by floatingheader
     }
-
 
     .content-list-content {
         position: absolute;
@@ -173,18 +190,16 @@
     width: 67%;
     padding: 15px;
     position: absolute;
-    bottom:0;
-    top:0;
-    right:0;
+    bottom: 0;
+    top: 0;
+    right: 0;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     background: #fff;
+    
     @media (max-width: 900px) {
-        width: auto;
-        left: 100%;
-        right: -100%;
-        margin-left: 15px;
-        border:none;
+        width: 100%;
+        border: none;
     }
 
     .unfeatured {
