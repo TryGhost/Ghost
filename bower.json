@@ -24,6 +24,7 @@
     "nprogress": "0.1.2",
     "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
     "validator-js": "3.4.0",
-    "google-caja": "5669.0.0"
+    "google-caja": "5669.0.0",
+    "sass-mq": "~1"
   }
 }
