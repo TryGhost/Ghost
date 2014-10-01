@@ -70,6 +70,7 @@
         padding: 10px 43px 10px 57px;
         max-height: 253px;
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .close {
