@@ -14,6 +14,20 @@
     }
 }
 
+.post-filter-button {
+    text-transform: uppercase;
+    .icon-chevron-down {
+        display: inline-block;
+        margin-left: 2px;
+    }
+}
+.post-filter-list {
+    .dropdown-menu {
+        top: calc(100% + 4px);
+        min-width: 0;
+    }
+}
+
 .content-list {
     width: 33%;
     padding: 15px;
@@ -97,14 +111,14 @@
         };
     }
 
-    ol {
+    .posts-list {
         list-style: none;
         padding: 0;
         margin: 0;
         border-top: $lightbrown 1px solid;
     }
 
-    li {
+    .posts-list {
         margin: 0;
         padding: 0;
         border-bottom: $lightbrown 1px solid;
