@@ -30,6 +30,30 @@ $list-colours:
 
 
 //
+// Breakpoints
+// --------------------------------------------------
+// Breakpoints referenced in current project state:
+//
+//  <= & > 350px
+//  <= & > 400px
+//  <= & > 500px
+//  <=     550px
+//  <= & > 600px
+//  <= & > 630px
+//  <= & > 650px
+//  >=     768px
+//  <= & > 900px
+//  <= & > 1000px
+
+// Potential candidates for breakpoint naming conventions:
+$mq-breakpoints: (
+    (phablet 401px)
+    (tablet  601px)
+    (desktop 901px)
+    (wide    1001px)
+);
+
+//
 // Styles
 // --------------------------------------------------
 
