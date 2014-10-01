@@ -5,7 +5,7 @@
 // Wrapper
 .notifications {
 
-    @media (min-width: 401px) {
+    @include mq(phablet) {
         position: absolute;
         bottom: 0;
         left: 0;
@@ -17,7 +17,7 @@
         }
     }
 
-    @media (max-width: 400px) {
+    @include mq($to: phablet) {
         position: fixed;
         top: 0;
         left: 0;
@@ -61,7 +61,7 @@
     box-shadow: $shadow;
     transform: translateZ(0);
 
-    @media (max-width: 400px) {
+    @include mq($to: phablet) {
         margin-bottom: 1px;
     }
 
