@@ -25,6 +25,6 @@
     "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
     "validator-js": "3.4.0",
     "google-caja": "5669.0.0",
-    "sass-mq": "~1"
+    "sass-mq": "git://github.com/kaelig/sass-mq.git#682753925e952f8c5ec364bdbfd6cddc4f1ded70"
   }
 }
