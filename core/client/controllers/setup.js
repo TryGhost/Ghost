@@ -36,11 +36,11 @@ var SetupController = Ember.ObjectController.extend(ValidationEngine, {
                         identification: self.get('email'),
                         password: self.get('password')
                     });
-                }, function (resp) {
+                }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     self.notifications.showAPIError(resp);
                 });
-            }, function (errors) {
+            }).catch(function (errors) {
                 self.toggleProperty('submitting');
                 self.notifications.showErrors(errors);
             });
