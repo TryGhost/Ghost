@@ -11,6 +11,11 @@ var ResetRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     },
     setupController: function (controller, params) {
         controller.token = params.token;
+    },
+    // Clear out any sensitive information
+    deactivate: function () {
+        this._super();
+        this.controller.clearData();
     }
 });
 
