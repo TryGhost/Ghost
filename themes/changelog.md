@@ -11,9 +11,8 @@ next_section: troubleshooting
 
 {% raw %}
 
-#  Change Log
+# Change Log
 
-**Note:** This documentation is in the process of being updated for Ghost 0.5.2.
 
 The following document acts as a reference for developers who  want to keep their theme up-to-date with the latest
 changes in the Ghost theme API. Since the original
@@ -65,23 +64,72 @@ Please see the [asset helper](/themes/helpers/asset/) documentation for further 
 * `.archive-template` and `.page` classes from `{{body_class}}`.
 * `.post-template` will soon only appear on posts, not pages.
 
-
 ## Ghost 0.5.0
 
 <date class="release-date">11th Aug 2014</date>
 
-Please see the [multi-user blog post](http://dev.ghost.org/themes-multi-user-ready/) (info will be moved here soon).
+#### New
+
+* Author pages i.e. `author.hbs`
+* `home.hbs` template
+* `{{plural}}` helper
+
+#### Changed
+
+* `{{has}}` helper updates for authors
+* `{{author}}` changed to output HTML
+
+#### Deprecated
+
+* `{{author.email}}` now outputs an empty string
+
+Please see the [multi-user blog post](http://dev.ghost.org/themes-multi-user-ready/) for more information.
 
 ## Ghost 0.4.2
 
 <date class="release-date">26th Mar 2014</date>
 
-Please see the [0.4.2 blog post](http://dev.ghost.org/new-for-themes-0-4-2/) (info will be moved here soon).
+#### New
+
+* `package.json` support (will be required)
+* `{{log}}` helper
+* `{{has}}` helper
+* Tag pages `tag.hbs`
+* Custom page templates i.e. `page-{{slug}}.hbs`
+
+#### Changed
+
+* `{{pageUrl}}` -> `{{page_url}}`
+* `{{tags}}` changed to output HTML
+
+#### Deprecated
+
+* `{{pageUrl}}` will be removed
+
+Please see the [0.4.2 blog post](http://dev.ghost.org/new-for-themes-0-4-2/) for more information.
 
 ## Ghost 0.4.0
 
+#### New
+
+* Featured posts
+* Static pages with `page.hbs`
+* Custom error pages `error.hbs`
+* Customisable favicon
+* `{{asset}}` helper
+* `{{encode}}` helper
+
+#### Changed
+
+* `{{tags}}` got `prefix` and `suffix` options
+* `{{excerpt}}` got unicode character support
+
+#### Deprecated
+
+* Using `{{@blog.url}}` or relative urls for assets - please use the `{{asset}}` helper
+
 <date class="release-date">13th Jan 2014</date>
 
-Please see the [0.4.0 blog post](http://dev.ghost.org/ghost-0-4-themes/) (info will be moved here soon).
+Please see the [0.4.0 blog post](http://dev.ghost.org/ghost-0-4-themes/) for more information.
 
 {% endraw %}

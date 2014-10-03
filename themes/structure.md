@@ -73,13 +73,15 @@ If you want to have a custom template for a specific page you can do so by creat
 
 ### tag.hbs
 
-You can optionally provide a tag template for the tag listing pages. If your theme doesn't have a <code class="path">tag.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for tag pages.
+You can optionally provide a tag template for the tag archive pages. If your theme doesn't have a <code class="path">tag.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for tag pages.
 
 Tag pages have access to both a tag object, a list of posts and pagination properties.
 
+If you want to have a custom template for a specific tag you can do so by creating a template with the name <code class="path">tag-{{slug}}.hbs</code>. For example if you have a tag name 'Music' that lives at <code class="path">/tag/music/</code> then you can add a template called <code class="path">tag-music.hbs</code> and this template will be used to render only the 'music' tag archive.
+
 ### author.hbs
 
-You can optionally provide an author template for the author listing pages. If your theme doesn't have an <code class="path">author.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for author pages.
+You can optionally provide an author template for the author archive pages. If your theme doesn't have an <code class="path">author.hbs</code> template, Ghost will use the standard <code class="path">index.hbs</code> template for author pages.
 
 ### error.hbs
 
