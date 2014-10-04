@@ -2,8 +2,9 @@ var _        = require('lodash'),
     fs       = require('fs'),
     path     = require('path'),
     Promise  = require('bluebird'),
-    readdirAsync = Promise.promisify(fs.readdir),
-    lstatAsync   = Promise.promisify(fs.lstat),
+    readdirAsync  = Promise.promisify(fs.readdir),
+    lstatAsync    = Promise.promisify(fs.lstat),
+    readlinkAsync = Promise.promisify(fs.readlink),
 
     parsePackageJson = function (path, messages) {
         // Default the messages if non were passed
@@ -56,7 +57,8 @@ var _        = require('lodash'),
         };
 
         options = _.extend({
-            index: true
+            index: true,
+            followSymlinks: true
         }, options);
 
         if (depth > 1) {
@@ -72,6 +74,18 @@ var _        = require('lodash'),
                 return lstatAsync(fpath).then(function (result) {
                     if (result.isDirectory()) {
                         return readDir(fpath, options, depth + 1, messages);
+                    } else if (options.followSymlinks && result.isSymbolicLink()) {
+                        return readlinkAsync(fpath).then(function (linkPath) {
+                            linkPath = path.resolve(dir, linkPath);
+
+                            return lstatAsync(linkPath).then(function (result) {
+                                if (result.isFile()) {
+                                    return linkPath;
+                                }
+
+                                return readDir(linkPath, options, depth + 1, messages);
+                            });
+                        });
                     } else if (depth === 1 && file === 'package.json') {
                         return parsePackageJson(fpath, messages);
                     } else {
