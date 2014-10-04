@@ -1,7 +1,6 @@
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import mobileQuery from 'ghost/utils/mobile';
-import bind from 'ghost/utils/bind';
 
 var SettingsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin, CurrentUserSettings, {
     // Redirect users without permission to view settings,
