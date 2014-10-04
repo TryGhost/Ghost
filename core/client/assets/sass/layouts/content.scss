@@ -200,6 +200,7 @@
     @media (max-width: 900px) {
         width: 100%;
         border: none;
+        overflow: visible;
     }
 
     .unfeatured {
@@ -217,7 +218,7 @@
 
     .normal {
         text-transform: none;
-        margin:0 3px;
+        margin: 0 3px;
     }
 
     .content-preview-content {
@@ -225,8 +226,14 @@
         word-break: break-word;
         hyphens: auto;
 
-        @media (max-width:400px) {
-            padding: 0;
+        @media (max-width: 900px) {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .wrapper {
