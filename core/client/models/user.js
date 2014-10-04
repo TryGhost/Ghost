@@ -90,7 +90,7 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     active: function () {
         return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
     }.property('status'),
- 
+
     invited: function () {
         return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
     }.property('status'),

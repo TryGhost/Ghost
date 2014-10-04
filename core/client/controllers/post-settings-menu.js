@@ -136,7 +136,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             el = $('.rendered-markdown');
 
             // Get rendered markdown
-            if (!_.isUndefined(el) && el.length > 0) {
+            if (el !== undefined && el.length > 0) {
                 html = el.clone();
                 html.find('.image-uploader').remove();
                 html = html[0].innerHTML;

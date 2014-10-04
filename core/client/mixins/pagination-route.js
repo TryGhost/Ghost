@@ -13,8 +13,10 @@ var PaginationRoute = Ember.Mixin.create({
 
         settings = settings || {};
         for (var key in defaultPaginationSettings) {
-            if (!settings.hasOwnProperty(key)) {
-                settings[key] = defaultPaginationSettings[key];
+            if (defaultPaginationSettings.hasOwnProperty(key)) {
+                if (!settings.hasOwnProperty(key)) {
+                    settings[key] = defaultPaginationSettings[key];
+                }
             }
         }
 

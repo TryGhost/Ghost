@@ -1,5 +1,4 @@
 import MobileParentView from 'ghost/views/mobile/parent-view';
-import bind from 'ghost/utils/bind';
 
 var SettingsView = MobileParentView.extend({
     // MobileParentView callbacks
