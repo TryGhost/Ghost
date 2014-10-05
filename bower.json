@@ -20,6 +20,7 @@
     "loader.js": "git://github.com/stefanpenner/loader.js#1.0.0",
     "lodash": "2.4.1",
     "moment": "2.4.0",
+    "nanoscroller": "0.8.4",
     "normalize-scss": "~3.0.1",
     "nprogress": "0.1.2",
     "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
