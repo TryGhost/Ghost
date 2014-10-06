@@ -25,10 +25,6 @@ function ghostPaths() {
         blogRoot: subdir + '/',
         adminRoot: adminRoot,
         apiRoot: apiRoot,
-        contributorsDir: assetUrl('/ghost/img/contributors'),
-        errorImageSrc: assetUrl('/ghost/img/404-ghost@2x.png'),
-        errorImageSrcSet: assetUrl('/ghost/img/404-ghost.png') + ' 1x, ' +
-            assetUrl('/ghost/img/404-ghost@2x.png') + ' 2x',
 
         url: {
             admin: function () {
