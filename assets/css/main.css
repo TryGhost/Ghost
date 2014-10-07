@@ -4,10 +4,11 @@
 
 body {
     padding-top: 60px;
-    font-family: 'Open Sans', Lato, sans-serif;
-    font-size: 16px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
     line-height: 1.6em;
-    background: #edece4;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
 }
 
 code, tt {
@@ -45,6 +46,12 @@ h1:before, h2:before {
     position: relative;
 }
 
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1070px;
+    padding: 0px 15px;
+  }
+}
 
 /* ==========================================================================
    Navigation - filling in styles that are not in Ghost's version of
@@ -61,6 +68,9 @@ h1:before, h2:before {
 }
 
 @media (min-width: 768px) {
+  .navbar-brand {
+    margin-right: 15px;
+  }
   .navbar-collapse {
     width: auto;
     border-top: 0;
@@ -108,22 +118,40 @@ h1:before, h2:before {
 .navbar {
     background: #fff;
     box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+    border-bottom-color: #333333;
+    border-bottom: 8px solid;
+    padding: 10px;
 }
 
 .navbar-brand {
+    background: url(/assets/img/logo.jpeg) no-repeat 50% 50%;
+    background-size: contain;
     padding: 20px 15px;
+    width: 40px;
+    text-indent: -99999px;
 }
 
 .navbar-nav > li > a {
+    color: #bbb;
     padding-top: 20px;
     padding-bottom: 20px;
 }
 
+.navbar-nav > .active > a {
+  color: #333;
+  background: #fff;
+}
+
 @media (max-width: 991px) and (min-width: 768px) {
-    .navbar-brand, .navbar-nav > li > a {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
+    /*.navbar-brand, .navbar-nav > li > a {*/
+        /*padding-left: 10px;*/
+        /*padding-right: 10px;*/
+    /*}*/
+   .container {
+       padding-left: 12px;
+       padding-right: 12px;
+   }
+
 }
 
 .bs-sidenav li a {
@@ -150,9 +178,6 @@ h1:before, h2:before {
 }
 
 
-
-
-
 /* ==========================================================================
    Global Headers
    ========================================================================== */
@@ -165,7 +190,7 @@ h1:before, h2:before {
 }
 
 .bs-masthead h1 {
-    font-size: 100px;
+    font-size: 95px;
     font-weight: 700;
     letter-spacing: -2px;
 }
@@ -173,8 +198,12 @@ h1:before, h2:before {
 .bs-masthead p {
     margin-left: 15%;
     margin-right: 15%;
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 300;
+}
+
+.bs-masthead small {
+  font-size: 12px;
 }
 
 .bs-header {
@@ -199,7 +228,7 @@ h1:before, h2:before {
    ========================================================================== */
 
 #content {
-    padding: 1px 3em 2em 3em;
+    padding: 15px 3em 2em 3em;
     background: #fff;
 }
 

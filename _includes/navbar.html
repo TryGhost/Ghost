@@ -37,43 +37,43 @@
                 </li>
                 {% endif %}
 
-                {% if page.lang == nil or site.translations.[page.lang].api %}
+                {% if page.lang == nil %}
+                <li><a href="http://api.ghost.org">API</a></li>
+                {% elsif site.translations.[page.lang].api %}
                 <li {%if page.chapter == 'api'%}class="active"{% endif %}>
-                    <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}api/">
-                        {% unless page.lang and site.translations.[page.lang].api %}
-                        API
-                        {% else %}
+                    <a href="{{ site.url }}/{{page.lang}}/api/">
                         {{site.translations.[page.lang].api}}
-                        {% endunless %}
                     </a>
                 </li>
                 {% endif %}
-                {% if page.lang == nil or site.translations.[page.lang].apps %}
+                {% if page.lang == nil %}
+                <li><a href="http://apps.ghost.org">Apps</a></li>
+                {% elsif site.translations.[page.lang].apps %}
                 <li {%if page.chapter == 'apps'%}class="active"{% endif %}>
-                    <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}apps/">
-                        {% unless page.lang and site.translations.[page.lang].apps %}
-                        Apps
-                        {% else %}
+                    <a href="{{ site.url }}/{{page.lang}}/apps/">
                         {{site.translations.[page.lang].apps}}
-                        {% endunless %}
                     </a>
                 </li>
                 {% endif %}
+                {% if page.lang == nil %}
+                <li><a href="http://themes.ghost.org">Themes</a></li>
+                {% else %}
                 <li {%if page.chapter == 'themes'%}class="active"{% endif %}>
-                    <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}themes/">
-                        {% if page.lang %}
+                    <a href="{{ site.url }}/{{page.lang}}/themes/">
+                        {% if site.translations.[page.lang].themes %}
                         {{site.translations.[page.lang].themes}}
                         {% else %}
                         Themes
                         {% endif %}
                     </a>
                 </li>
+                {% endif %}
                 <li>
                     <a href="http://ghost.org/forum/">
                         {% if page.lang %}
                         {{site.translations.[page.lang].help}}
                         {% else %}
-                        Help
+                        Help & Support
                         {% endif %}
                     </a>
                 </li>
