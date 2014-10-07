@@ -7,6 +7,8 @@ section: structure
 permalink: /themes/structure/
 prev_section: handlebars
 next_section: helpers
+canonical: http://themes.ghost.org/v5.2/docs/structure
+redirectToCanonical: true
 ---
 
 {% raw %}

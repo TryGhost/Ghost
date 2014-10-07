@@ -7,6 +7,9 @@ section: helpers
 permalink: /themes/helpers/
 prev_section: structure
 next_section: changelog
+canonical: http://themes.ghost.org/v5.2/docs/helpers
+redirectToCanonical: true
+
 ---
 
 {% raw %}

@@ -6,6 +6,8 @@ chapter: themes
 section: troubleshooting
 permalink: /themes/troubleshooting/
 prev_section: changelog
+canonical: http://themes.ghost.org/v5.2/docs/faq
+redirectToCanonical: true
 ---
 
 {% raw %}

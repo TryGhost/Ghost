@@ -5,6 +5,8 @@ meta_description: Ghost theme helper API, helper reference documentation
 chapter: themes
 section: helpers
 permalink: /themes/helpers/content/
+canonical: http://themes.ghost.org/v5.2/docs/content
+redirectToCanonical: true
 ---
 
 {% raw %}

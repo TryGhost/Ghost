@@ -7,6 +7,8 @@ section: getting-started
 permalink: /themes/getting-started/
 prev_section: themes
 next_section: handlebars
+canonical: http://themes.ghost.org/v5.2/docs/getting-started
+redirectToCanonical: true
 ---
 
 

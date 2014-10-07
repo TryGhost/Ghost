@@ -7,6 +7,8 @@ section: changelog
 permalink: /themes/changelog/
 prev_section: helpers
 next_section: troubleshooting
+canonical: http://themes.ghost.org/v5.2/docs/changelog
+redirectToCanonical: true
 ---
 
 {% raw %}
