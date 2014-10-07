@@ -31,6 +31,9 @@
     "disallowSpacesInFunctionDeclaration": {
         "beforeOpeningRoundBrace": true
     },
+    "requireSpacesInAnonymousFunctionExpression": {
+        "beforeOpeningRoundBrace": true
+    },
     "requireMultipleVarDecl": "onevar",
     "requireBlocksOnNewline": 1,
     "disallowPaddingNewlinesInBlocks": true,
