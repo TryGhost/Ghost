@@ -20,7 +20,7 @@ If you're looking to start building your own custom theme from scratch, or using
 
 ## Setting Up
 
-The first thing you'll need to is, is setup a local development environment for Ghost. Use whichever is your preferred method of installing Ghost (zip, git or npm) to get it running on your computer, the Ghost [README.md](https://github.com/TryGhost/Ghost) and [support site](http://support.ghost.org/installation) have more information about getting installed.
+The first thing you'll need to do is, is setup a local development environment for Ghost. Use whichever is your preferred method of installing Ghost (zip, git or npm) to get it running on your computer, the Ghost [README.md](https://github.com/TryGhost/Ghost) and [support site](http://support.ghost.org/installation) have more information about getting installed.
 
 The most important thing is that you run Ghost in development mode not production mode (this means using `npm start` rather than `npm start --production`) because in development mode you don't have to keep restarting Ghost to see your changes.
 
