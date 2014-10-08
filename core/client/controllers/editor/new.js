@@ -5,9 +5,9 @@ var EditorNewController = Ember.ObjectController.extend(EditorControllerMixin, {
         /**
           * Redirect to editor after the first save
           */
-        save: function () {
+        save: function (options) {
             var self = this;
-            this._super().then(function (model) {
+            return this._super(options).then(function (model) {
                 if (model.get('id')) {
                     self.transitionToRoute('editor.edit', model);
                 }

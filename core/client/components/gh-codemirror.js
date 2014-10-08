@@ -9,19 +9,20 @@ codeMirrorShortcuts.init();
 
 var onChangeHandler = function (cm, changeObj) {
     var line,
-        component = cm.component,
-        checkLine = _.bind(component.checkLine, component),
-        checkMarkers = _.bind(component.checkMarkers, component);
+        component = cm.component;
 
     // fill array with a range of numbers
     for (line = changeObj.from.line; line < changeObj.from.line + changeObj.text.length; line += 1) {
-        checkLine(line, changeObj.origin);
+        component.checkLine(line, changeObj.origin);
     }
 
     // Is this a line which may have had a marker on it?
-    checkMarkers();
+    component.checkMarkers();
 
     cm.component.set('value', cm.getValue());
+
+    // Send an action notifying a 5 second pause in typing/changes.
+    Ember.run.debounce(component, 'sendAction', 'typingPause', 5000);
 };
 
 var onScrollHandler = function (cm) {

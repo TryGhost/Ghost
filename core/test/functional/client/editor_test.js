@@ -2,7 +2,7 @@
 // Test the editor screen works as expected
 
 /*globals CasperTest, casper, testPost, $ */
-CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
+CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     test.assertHTMLEquals = function (equals, message) {
         test.assertEvalEquals(function () {
             return document.querySelector('.entry-preview .rendered-markdown').innerHTML
@@ -17,7 +17,7 @@ CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
         test.assertExists('.entry-preview', 'Ghost preview is present');
     });
 
-    // Part 1: Test saving with no data - title is required
+    // Part 1: Test saving with no data - title should default
     casper.waitForSelector('#entry-title', function then() {
         test.assertEvalEquals(function () {
             return document.getElementById('entry-title').value;
@@ -26,12 +26,13 @@ CasperTest.begin('Ghost editor functions correctly', 21, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-error', function onSuccess() {
-        test.assert(true, 'Save without title results in error notification as expected');
-        test.assertSelectorHasText('.notification-error', 'must specify a title', 'notification text is correct');
-        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Can save with no title.');
+        test.assertEvalEquals(function () {
+            return document.getElementById('entry-title').value;
+        }, '(Untitled)', 'Title is "(Untitled)"');
     }, function onTimeout() {
-        test.assert(false, 'Save without title did not result in an error notification');
+        test.assert(false, 'Failed to save without a title.');
     });
 
     this.thenClick('.js-bb-notification .close');
