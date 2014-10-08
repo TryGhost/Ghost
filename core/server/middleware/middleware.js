@@ -53,8 +53,8 @@ middleware = {
         if (subPath.indexOf('/ghost/api/') === 0
             && path.indexOf('/ghost/api/v0.1/authentication/') !== 0) {
 
-            if (api.publicEndpoints.isPublic(req, path)){
-              return next(null, {}, {});
+            if (api.publicEndpoints.isPublic(req, path)) {
+                return next(null, {}, {});
             } else {
                 return passport.authenticate('bearer', {session: false, failWithError: true},
                     function (err, user, info) {
