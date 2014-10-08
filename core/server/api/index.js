@@ -4,25 +4,26 @@
 // Ghost's JSON API is integral to the workings of Ghost, regardless of whether you want to access data internally,
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
-var _              = require('lodash'),
-    Promise        = require('bluebird'),
-    config         = require('../config'),
+var _               = require('lodash'),
+    Promise         = require('bluebird'),
+    config          = require('../config'),
     // Include Endpoints
-    configuration  = require('./configuration'),
-    db             = require('./db'),
-    mail           = require('./mail'),
-    notifications  = require('./notifications'),
-    posts          = require('./posts'),
-    roles          = require('./roles'),
-    settings       = require('./settings'),
-    tags           = require('./tags'),
-    themes         = require('./themes'),
-    users          = require('./users'),
-    slugs          = require('./slugs'),
-    authentication = require('./authentication'),
-    uploads        = require('./upload'),
-    dataExport     = require('../data/export'),
-    errors         = require('../errors'),
+    configuration   = require('./configuration'),
+    db              = require('./db'),
+    mail            = require('./mail'),
+    notifications   = require('./notifications'),
+    posts           = require('./posts'),
+    roles           = require('./roles'),
+    settings        = require('./settings'),
+    tags            = require('./tags'),
+    themes          = require('./themes'),
+    users           = require('./users'),
+    slugs           = require('./slugs'),
+    authentication  = require('./authentication'),
+    uploads         = require('./upload'),
+    dataExport      = require('../data/export'),
+    publicEndpoints = require('./publicEndpoints'),
+    errors          = require('../errors'),
 
     http,
     formatHttpErrors,
@@ -289,7 +290,8 @@ module.exports = {
     users: users,
     slugs: slugs,
     authentication: authentication,
-    uploads: uploads
+    uploads: uploads,
+    publicEndpoints: publicEndpoints
 };
 
 /**
