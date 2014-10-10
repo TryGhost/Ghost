@@ -1,3 +1,4 @@
+/* global key */
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 
 var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
@@ -9,7 +10,8 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
     },
 
     shortcuts: {
-        'esc': 'closePopups'
+        'esc': {action: 'closePopups', scope: 'all'},
+        'enter': {action: 'confirmModal', scope: 'modal'}
     },
 
     actions: {
@@ -79,7 +81,9 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
 
         openModal: function (modalName, model, type) {
             this.get('dropdown').closeDropdowns();
+            key.setScope('modal');
             modalName = 'modals/' + modalName;
+            this.set('modalName', modalName);
             // We don't always require a modal to have a controller
             // so we're skipping asserting if one exists
             if (this.controllerFor(modalName, true)) {
@@ -90,10 +94,19 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
                     this.controllerFor(modalName).set('src', model.get(type));
                 }
             }
+
             return this.render(modalName, {
                 into: 'application',
                 outlet: 'modal'
             });
+        },
+
+        confirmModal : function () {
+            var modalName = this.get('modalName');
+            this.send('closeModal');
+            if (this.controllerFor(modalName, true)) {
+                this.controllerFor(modalName).send('confirmAccept');
+            }
         },
 
         closeModal: function () {
@@ -101,6 +114,7 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
                 outlet: 'modal',
                 parentView: 'application'
             });
+            key.setScope('default');
         },
 
         loadServerNotifications: function (isDelayed) {
