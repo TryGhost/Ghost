@@ -45,6 +45,7 @@ a.object-list-item {
         &:hover { background: lighten($lightbrown, 5%); }
         &:last-of-type:hover { box-shadow: inset 0px -1px 0px $lightbrown; }
     }
+
 }
 
 .object-list-item-icon {
@@ -68,6 +69,7 @@ a.object-list-item {
         color: $brown;
         font-size: 14px;
     }
+
 }
 
 .object-list-item-figure {
@@ -82,10 +84,12 @@ a.object-list-item {
 
 .object-list-item-icon,
 .object-list-item-figure {
+
     @media (max-width: 500px) {
         float: left;
         margin-right: 15px;
     }
+
 }
 
 .object-list-item-body {
@@ -104,6 +108,7 @@ a.object-list-item {
         font-weight: 400;
         color: $darkgrey;
     }
+
     .description {
         display: inline-block;
         font-size: 12px;
@@ -112,7 +117,7 @@ a.object-list-item {
         margin-top: 3px;
     }
 
-} //.object-list-item-body
+}//.object-list-item-body
 
 .object-list-item-aside {
     @media (max-width: 500px) {
@@ -136,7 +141,7 @@ a.object-list-item {
     .role-label + .role-label {
         margin-left: 5px;
     }
-} // .object-list-item-aside
+}// .object-list-item-aside
 
 .object-list-action {
     font-size: 11px;
@@ -178,7 +183,7 @@ a.object-list-item {
         background: $blue;
     }
 
-}
+}//.role-label
 
 //
 // User Actions
@@ -203,6 +208,7 @@ a.object-list-item {
         fieldset {
             margin: 1em 0 0 0;
         }
+
     }
 
     .form-group {
@@ -231,7 +237,7 @@ a.object-list-item {
             width: 100%;
         }
 
-    } //.form-group
+    }//.form-group
 
     .button-add {
         width: 100%;
@@ -240,4 +246,4 @@ a.object-list-item {
         line-height: 16px;
     }
 
-} //.invite-new-user
+}//.invite-new-user

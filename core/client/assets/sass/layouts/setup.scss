@@ -9,6 +9,7 @@
 .ghost-setup {
     color: $midgrey;
     background: $darkgrey;
+
     @media (max-width: 550px) {
         background: darken($darkgrey, 5%);
     }
@@ -17,10 +18,13 @@
         padding-top: 15px;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
+
         @media (max-width: 550px) {
             top: 0;
         }
+
     }
+
 }
 
 // The wrapper to center the form in all ways
@@ -49,17 +53,16 @@
     }
 
     label {
-        // width: 90px;
         color: $lightgrey;
         font-weight: 300;
 
         @media (max-width: 550px) {
             width: 100%;
         }
+
     }
 
     .form-group input {
-        // width: 300px;
         padding: 7px;
         border: none;
         color: #fff;
@@ -70,6 +73,7 @@
             border:none;
             background: lighten($darkgrey, 15%);
         }
+
     }
 
     // Chrome auto-fill style
@@ -87,6 +91,7 @@
         @media (max-width: 550px) {
             font-size: 20px;
         }
+
     }
 
     h2 {
@@ -102,6 +107,7 @@
         @media (max-width: 550px) {
             font-size: 14px;
         }
+
     }
 
     p {
@@ -119,4 +125,5 @@
         padding: 0.9em 1.8em;
         font-size: 13px;
     }
-}
+
+}//.setup-form

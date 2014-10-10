@@ -19,6 +19,7 @@
     z-index: 700;
     background: #fff;
     box-shadow: $lightbrown 1px 0 0;
+
     @media (max-width: 900px) {
         width: 100%;
     }
@@ -32,12 +33,17 @@
         margin: 0;
         padding: 0;
         border-top: none;
-        @media (max-width: 900px) { border-bottom: #edece4 1px solid; }
+
+        @media (max-width: 900px) {
+            border-bottom: #edece4 1px solid;
+        }
+
     }
 
     li {
         border-top: #fff 1px solid;
         position: relative;
+
         @media (max-width: 900px) {
             margin-right: 0;
             border-top: #edece4 1px solid;
@@ -56,7 +62,9 @@
             @media (max-width: 900px) {
                 left: 15px;
             }
+
         }
+
         &:hover:before {
             color: $darkgrey;
         }
@@ -86,13 +94,17 @@
             // Make space for icons
             &:before {
                 margin-right: 20px;
+
                 @media (max-width: 900px) {
                     margin-right: 15px;
                 }
+
             }
+
         }
 
         &.active {
+
             @media (min-width: 900px) {
                 // only apply active styles on larger devices
 
@@ -112,24 +124,28 @@
                     color: $darkgrey;
                     font-weight: bold;
                     background: #fff;
+
                     &:focus {
                         background: $lightbrown;
                     }
+
                 }
 
-            }
-        } // .active
+            }//@media (min-width: 900px)
+
+        }//.active
 
         &:first-of-type {
             border-top: none;
         }
+
         &:first-of-type.active {
             border-top: none;
         }
 
-    } // li
+    }//li
 
-} // .settings-menu
+}//.settings-menu
 
 
 //
@@ -140,9 +156,11 @@
 .settings-content {
 
     @media (max-width: 900px) {
+
         &.fade-in {
             animation: none;
         }
+
     }
 
     @media (min-width: 901px) {
@@ -169,6 +187,7 @@
             padding-left: 15px;
             padding-right: 15px;
         }
+
         @media (max-width: 550px) {
             padding-top: 15px;
         }
@@ -184,13 +203,14 @@
             -webkit-overflow-scrolling: touch;
         }
 
-    } // .content
+    }//.content
 
     .word-count {
         float: right;
         font-weight: bold;
     }
-} // .settings-content
+
+}//.settings-content
 
 // This is the header for /ghost/settings/view/
 // It's black and fixed position at the top of the screen
@@ -261,8 +281,10 @@
             position: static;
             float: right;
         }
-    }
-}
+
+    }//@media (min-width: 900px)
+
+}//.settings-view-header
 
 
 // This is the header for /ghost/settings/view/subview/
@@ -333,5 +355,7 @@
             position: static;
             float: right;
         }
-    }
-}
+
+    }//@media (min-width: 900px)
+
+}//.settings-subview-header

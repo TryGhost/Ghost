@@ -16,6 +16,7 @@
         max-width: 264px;
         text-align: center;
     }
+
 }
 
 .error-details {
@@ -38,6 +39,7 @@
         width: 100%;
         height: 100%;
     }
+
 }
 
 .error-message {
@@ -57,6 +59,7 @@
     @media (max-width: 630px) {
         font-size: 5.8em;
     }
+
 }
 
 .error-description {
@@ -70,6 +73,7 @@
     @media (max-width: 630px) {
         font-size: 1.4em;
     }
+
 }
 
 .error-stack {
@@ -95,6 +99,7 @@
         font-size: 1.2em;
         margin-right: 0.5em;
     }
+
 }
 
 .error-stack-function {

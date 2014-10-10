@@ -12,25 +12,32 @@
     @media (max-width: 900px) {
         overflow-x: hidden;
     }
+
 }
 
 // Show/hide content list & preview on mobile
 .content-list {
+
     &.show-menu {
         display: block;
     }
+
     &.show-content {
         display: none;
     }
+
 }
 
 .content-preview {
+
     &.show-menu {
         display: none;
     }
+
     &.show-content {
         display: block;
     }
+
 }
 
 .content-list {
@@ -53,6 +60,7 @@
     .content-filter {
         position: relative;
         z-index: 300;
+
         > a {
             padding: 5px;
             margin-left: -5px;
@@ -61,6 +69,7 @@
         .menu-drop {
             display: block;
         }
+
     }
 
     .btn-green {
@@ -95,17 +104,25 @@
         float: right;
         text-align: right;
         margin-left: 15px;
+
         @media (max-width: 900px) {
             float: none;
         }
+
     }
 
     .status {
         font-size: 1.3rem;
         font-weight: 300;
 
-        .draft { color: $red; }
-        .scheduled { color: $orange; }
+        .draft {
+            color: $red;
+        }
+
+        .scheduled {
+            color: $orange;
+        }
+
     }
 
     .featured .status {
@@ -132,9 +149,11 @@
             display: block;
             padding: 20px 20px;
             color: rgba(0,0,0,0.5);
+
             @media (max-width: 400px) {
                 padding: 15px;
             }
+
             @media (max-width: 900px) {
                 padding-right: 40px;
             }
@@ -145,6 +164,7 @@
                 margin-top: -6px;
                 right: 15px;
             }
+
             @media (min-width: 901px) {
                 &:after {
                     display: none;
@@ -155,13 +175,13 @@
                 text-decoration: none;
             }
 
-        } // a
+        }//a
 
-    } // li
+    }//li
 
     li.active {
-        @media (min-width: 901px) {
-            // only apply active styles on larger devices
+
+        @media (min-width: 901px) { // only apply active styles on larger devices
 
             border-bottom: lighten($midgrey, 40%) 1px solid;
             background: lighten($lightbrown, 5%);
@@ -177,9 +197,10 @@
             }
 
         }
-    } // li.active
 
-} // .content-list
+    }//li.active
+
+}//.content-list
 
 
 //
@@ -196,7 +217,7 @@
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     background: #fff;
-    
+
     @media (max-width: 900px) {
         width: 100%;
         border: none;
@@ -240,7 +261,8 @@
             max-width: 700px;
             margin:0 auto;
         }
-    } // .content-preview-content
+
+    }//.content-preview-content
 
     .post-controls {
         float:right;
@@ -262,9 +284,11 @@
         width:100%;
         height:auto;
     }
-} // .content-preview
+
+}//.content-preview
 
 .post-preview-header {
+
     .page-title, .btn-back {
         display: none;
     }
@@ -300,7 +324,6 @@
             right: 4px;
         }
 
-
         .post-edit {
             color: #fff;
             background-color: transparent;
@@ -308,20 +331,25 @@
 
         .featured, .unfeatured, small {
             display: none;
-        } // @media (max-width: 900px)
+        }//@media (max-width: 900px)
+
     }
 
     @media (min-width: 901px) {
+
         .unfeatured, .featured {
             float: left;
         }
+
         .post-published-by {
             float: left;
             margin-top: 7px;
             margin-left: 3px;
         }
+
     }
-} // .post-preview-header
+
+}//.post-preview-header
 
 .no-posts-box {
     position: relative;
@@ -330,6 +358,7 @@
     padding: 0px;
     display: table;
     z-index: 600;
+
     @media (max-width: 900px) {
         position: fixed;
         top: 45%;
@@ -340,6 +369,7 @@
         vertical-align: middle;
         display: table-cell;
         text-align: center;
+
         @media (max-width: 900px) {
             display: block;
             position: relative;
@@ -351,6 +381,7 @@
             font-weight: 200;
             font-size: 2em;
         }
-    } // ,no-posts
 
-} // .no-posts-box
+    }//,no-posts
+
+}//.no-posts-box
