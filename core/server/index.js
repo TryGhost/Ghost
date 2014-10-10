@@ -1,6 +1,5 @@
 // Module dependencies
-var crypto      = require('crypto'),
-    express     = require('express'),
+var express     = require('express'),
     hbs         = require('express-hbs'),
     compress    = require('compression'),
     fs          = require('fs'),
@@ -18,7 +17,6 @@ var crypto      = require('crypto'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
-    packageInfo = require('../../package.json'),
     GhostServer = require('./ghost-server'),
 
 // Variables
@@ -132,9 +130,7 @@ function initNotifications() {
 function init(options) {
     // Get reference to an express app instance.
     var blogApp = express(),
-        adminApp = express(),
-        // create a hash for cache busting assets
-        assetHash = (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
+        adminApp = express();
 
     // ### Initialisation
     // The server and its dependencies require a populated config
@@ -196,7 +192,7 @@ function init(options) {
         adminApp.engine('hbs', adminHbs.express3({}));
 
         // Load helpers
-        helpers.loadCoreHelpers(adminHbs, assetHash);
+        helpers.loadCoreHelpers(adminHbs);
 
         // ## Middleware and Routing
         middleware(blogApp, adminApp);
