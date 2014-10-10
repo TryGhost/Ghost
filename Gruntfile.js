@@ -231,6 +231,10 @@ var _              = require('lodash'),
                     src: ['core/test/unit/**/server*_spec.js']
                 },
 
+                helpers: {
+                    src: ['core/test/unit/server_helpers/*_spec.js']
+                },
+
                 showdown: {
                     src: ['core/test/unit/**/showdown*_spec.js']
                 },
