@@ -12,9 +12,11 @@
         z-index: 980;
         width: 300px;
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+
         body.right-outlet-expanded & {
             transform: translate3d(350px, 0px, 0px);
         }
+
     }
 
     @media (max-width: 400px) {
@@ -24,11 +26,14 @@
         right: 0;
         z-index: 9999;
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-        body.right-outlet-expanded & {    
+
+        body.right-outlet-expanded & {
             transform: translate3d(100%, 0px, 0px);
         }
+
     }
-}
+
+}//.notifications
 
 // TODO: What is this? Docs plz.
 .js-bb-notification {
@@ -86,15 +91,18 @@
             right: 1px;
         };
         color: rgba(255,255,255,0.6);
+
         &:hover {
             color: #fff;
         }
+
     } // .close
 
     a {
         color: inherit;
         text-decoration: underline;
     }
+
 }
 
 
@@ -117,6 +125,7 @@
     &.notification-passive:hover {
         animation: fade-in-snap 0.2s linear;
     }
+
 }
 
 .notification-error {
