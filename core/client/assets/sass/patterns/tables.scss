@@ -26,10 +26,10 @@ table,
 
 .table {
 
-    @extend %table;    
+    @extend %table;
 
     th,
-    td {  
+    td {
         border-top: 1px solid $lightbrown;
     }
 
@@ -60,9 +60,12 @@ table,
     }
 
     &.plain {
+
         tbody > tr:nth-child(odd) > td,
         tbody > tr:nth-child(odd) > th {
             background: transparent;
         }
+
     }
+
 }

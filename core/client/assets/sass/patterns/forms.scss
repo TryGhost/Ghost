@@ -13,7 +13,7 @@ form {
         font-weight: bold;
     }
 
-} // form
+}//form
 
 
 // Form Groups
@@ -22,6 +22,7 @@ form {
     margin-bottom: 1.6em;
     width: 100%;
     max-width: 500px;
+
     p {
         margin: 4px 0 0 0;
         color: #B3B2A8;
@@ -36,12 +37,13 @@ form {
         max-width: 100%;
     }
 
-} // .form-group
+}//.form-group
 
 // If the from group has an icon...
 .input-icon[class*='icon-'] {
     position: relative;
     display: block;
+
     input[type="email"],
     input[type="number"],
     input[type="password"],
@@ -52,11 +54,15 @@ form {
     input[type="date"] {
         padding-left: 3.2rem;
     }
+
     .gh-select {
+
         select {
             padding-left: 3.2rem;
         }
+
     }
+
     &:before {
         position: absolute;
         top: 50%;
@@ -65,7 +71,8 @@ form {
         transform: translateY(-52%);
         z-index: 100;
     }
-} // .thing[class*='icon-']
+
+}//.thing[class*='icon-']
 
 // Wrapper for input[type="radio"] and input[type="checkbox"] elements
 .for-radio,
@@ -75,15 +82,20 @@ form {
     label {
         display: block;
         padding-bottom: 4px;
+
         p {
             font-weight: normal;
             color: #000;
         }
+
         &:hover {
+
             input:not(:checked) + .input-toggle-component {
                 border-color: $midbrown;
             }
+
         }
+
     }
 
     input {
@@ -111,7 +123,8 @@ form {
         color: #B3B2A8;
         white-space: nowrap;
     }
-} // .for-radio, .for-checkbox
+
+}//.for-radio, .for-checkbox
 
 
 // Fieldsets
@@ -119,7 +132,7 @@ fieldset {
     border: none;
     margin: 0 0 3em 0;
     padding: 0;
-} // fieldset
+}//fieldset
 
 
 // Legends
@@ -131,7 +144,7 @@ legend {
     font-size: 1.2em;
     line-height: 2.0em;
     color: $brown;
-} // legend
+}//legend
 
 
 // Input, textarea & select
@@ -188,12 +201,16 @@ textarea {
 //     <p>This is a label</p>
 // </div>
 .for-checkbox {
+
     .input-toggle-component {
         border-radius: $rounded;
     }
+
     label {
+
         .input-toggle-component {
             transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
             &:before {
                 transition: opacity 0.15s ease-in-out;
                 content: '';
@@ -208,16 +225,22 @@ textarea {
                 transform: rotate(-45deg);
                 opacity: 0;
             }
+
         }
+
         input:checked + .input-toggle-component {
             background: $green;
             border-color: darken($green, 10%);
+
             &:before {
                 opacity: 1;
             }
+
         }
-    }
-}
+
+    }//label
+
+}//.for-checkbox
 
 
 // Radio Buttons
@@ -232,12 +255,16 @@ textarea {
 //     <p>What does this thing mean?</p>
 // </div>
 .for-radio {
+
     .input-toggle-component {
         border-radius: 100px; // Use px to prevent ovals
     }
+
     label {
+
         .input-toggle-component {
             transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
             &:before {
                 transition: opacity 0.15s ease-in-out;
                 content: '';
@@ -250,16 +277,23 @@ textarea {
                 border-radius: 100%;
                 opacity: 0;
             }
+
         }
+
         input:checked + .input-toggle-component {
             background: $green;
             border-color: darken($green, 10%);
+
             &:before {
                 opacity: 1;
+
             }
+
         }
-    }
-}
+
+    }//label
+
+}//.for-radio
 
 
 // Select Component
@@ -315,18 +349,26 @@ textarea {
           color: transparent;
           text-shadow: 0 0 0 #000;
         }
-    } // select
-} // .gh-select
+
+    }//select
+
+}//.gh-select
 
 // Firefox-specific size fixes
 @-moz-document url-prefix() {
+
     .gh-select {
         border-width: 1px;
+
         select {
             padding: 7px 10px 7px 8px;
+
         }
+
         &:focus {
             border-color: $brown;
+
         }
+
     }
-} // @-moz-document
+}//@-moz-document
