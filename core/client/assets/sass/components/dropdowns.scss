@@ -2,7 +2,6 @@
 // Dropdown menus
 // --------------------------------------------------
 
-
 // Dropdown arrow/caret
 .caret {
     display: inline-block;
@@ -111,6 +110,7 @@
     }
 
 }
+
 
 // Disabled state
 //
@@ -227,6 +227,7 @@
         border-bottom: 4px solid;
         content: "";
     }
+
     // Different positioning for bottom up menu
     .dropdown-menu {
         top: auto;

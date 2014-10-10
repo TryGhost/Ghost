@@ -1,6 +1,7 @@
 //
 // Pagination (multiple pages)
 // --------------------------------------------------
+
 .pagination {
     display: inline-block;
     padding-left: 0;
@@ -44,7 +45,7 @@
 
         }
 
-    }
+    }//>li
 
     > li > a,
     > li > span {
@@ -87,7 +88,7 @@
 
     }
 
-}
+}//.pagination
 
 // Sizing
 // --------------------------------------------------
@@ -122,9 +123,9 @@
 
         }
 
-    }
+    }//>li
 
-}
+}//@mixin pagination-size
 
 // Large
 .pagination-lg {

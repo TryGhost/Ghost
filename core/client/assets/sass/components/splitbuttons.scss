@@ -79,9 +79,9 @@
             transition: transform 0.3s ease, top 0.3s ease;
         }
 
-    }
+    }//.dropdown-toggle
 
-}
+}//.splitbtn
 
 %splitbtn {
     display: inline-block;
@@ -164,9 +164,9 @@
             };
         }
 
-    }
+    }//.options
 
-}
+}//%splitbtn
 
 
 //
@@ -237,8 +237,7 @@
 
 }
 
-// Alternative style with more visual attention,
-// but no extra semantic meaning
+// Alternative style with more visual attention, but no extra semantic meaning
 .splitbutton-alt {
     @extend %splitbtn;
 

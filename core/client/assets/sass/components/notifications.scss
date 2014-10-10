@@ -84,13 +84,13 @@
         right: 0;
         bottom: 0;
         width: 34px;
+        color: rgba(255,255,255,0.6);
         @include icon-after($i-close) {
             padding: 10px;
             position: absolute;
             top: 4px;
             right: 1px;
         };
-        color: rgba(255,255,255,0.6);
 
         &:hover {
             color: #fff;
