@@ -5,6 +5,7 @@
 
 var path          = require('path'),
     Promise       = require('bluebird'),
+    crypto        = require('crypto'),
     fs            = require('fs'),
     url           = require('url'),
     _             = require('lodash'),
@@ -13,6 +14,7 @@ var path          = require('path'),
     requireTree   = require('../require-tree').readAll,
     errors        = require('../errors'),
     configUrl     = require('./url'),
+    packageInfo   = require('../../../package.json'),
     appRoot       = path.resolve(__dirname, '../../../'),
     corePath      = path.resolve(appRoot, 'core/'),
     testingEnvs   = ['testing', 'testing-mysql', 'testing-pg'],
@@ -70,7 +72,8 @@ ConfigManager.prototype.init = function (rawConfig) {
 ConfigManager.prototype.set = function (config) {
     var localPath = '',
         contentPath,
-        subdir;
+        subdir,
+        assetHash;
 
     // Merge passed in config object onto our existing config object.
     // We're using merge here as it doesn't assign `undefined` properties
@@ -97,6 +100,9 @@ ConfigManager.prototype.set = function (config) {
     // Allow contentPath to be over-written by passed in config object
     // Otherwise default to default content path location
     contentPath = this._config.paths.contentPath || path.resolve(appRoot, 'content');
+
+    assetHash = this._config.assetHash ||
+        (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
     if (!knexInstance && this._config.database && this._config.database.client) {
         knexInstance = knex(this._config.database);
@@ -145,12 +151,14 @@ ConfigManager.prototype.set = function (config) {
             extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
             contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
         },
-        deprecatedItems: ['updateCheck', 'mail.fromaddress']
+        deprecatedItems: ['updateCheck', 'mail.fromaddress'],
+        // create a hash for cache busting assets
+        assetHash: assetHash
     });
 
     // Also pass config object to
     // configUrl object to maintain
-    // clean depedency tree
+    // clean dependency tree
     configUrl.setConfig(this._config);
 
     // For now we're going to copy the current state of this._config
