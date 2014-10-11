@@ -131,7 +131,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
         if (placeholder.length > 156) {
             // Limit to 156 characters
-            placeholder = placeholder.substring(0,156).trim();
+            placeholder = placeholder.substring(0, 156).trim();
             placeholder = Ember.Handlebars.Utils.escapeExpression(placeholder);
             placeholder = new Ember.Handlebars.SafeString(placeholder + '&hellip;');
         }
