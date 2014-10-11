@@ -314,7 +314,7 @@
         -webkit-overflow-scrolling: touch;
         word-break: break-word;
         hyphens: auto;
-        @include user-select(none);
+        user-select: none;
         cursor: default;
 
         // Tweak padding for smaller screens
@@ -592,7 +592,7 @@ body.zen {
         border-radius: $rounded;
         box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, #000 0 1px 3px;
 
-        @include user-select(none);
+        user-select: none;
 
         &:hover {
             cursor: pointer;

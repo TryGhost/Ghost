@@ -45,7 +45,7 @@
         left: 0;
         color: $brown;
         text-decoration: none;
-        @include user-select(none);
+        user-select: none;
 
         &:hover {
           cursor: pointer;

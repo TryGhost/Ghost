@@ -23,7 +23,7 @@
     border: 1px solid transparent;
     white-space: nowrap;
     border-radius: $rounded;
-    @include user-select(none);
+    user-select: none;
 
     &,
     &:active,
