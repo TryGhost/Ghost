@@ -169,7 +169,6 @@
 // Signup / Reset
 // --------------------------------------------------
 
-.signup-form,
 .reset-form {
     max-width: 280px;
     color: lighten($midgrey, 15%);
@@ -180,11 +179,9 @@
         width: 264px;
     }
 
-    div { // Yes. Really.
-        // TODO: Same here as above
+    .password-wrap {
         position: relative;
         margin: 0 0 1em 0;
-        background: lighten($darkgrey, 10%);
         float: left;
         display: table;
     }
