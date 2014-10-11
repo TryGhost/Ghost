@@ -41,3 +41,10 @@ RPC pings only happen when Ghost is running in the `production` environment.
 ### Sharing Buttons
 
 The default theme which comes with Ghost contains three sharing buttons to [Twitter](http://twitter.com), [Facebook](http://facebook.com), and [Google Plus](http://plus.google.com). No resources are loaded from any services, however the buttons do allow visitors to your blog to share your content publicly on these respective networks.
+
+
+### Structured Data
+
+Ghost outputs Meta data for your blog that allows published content to be more easily machine-readable. This allows content to be easily discoverable in search engines as well as popular social networks where blog posts are typically shared.
+
+This includes output for post.hbs in {{ghost_head}} based on the Open Graph protocol specification.
