@@ -12,8 +12,9 @@ var should      = require('should'),
     Showdown    = require('showdown'),
     ghostgfm            = require('../../shared/lib/showdown/extensions/ghostgfm'),
     ghostimagepreview   = require('../../shared/lib/showdown/extensions/ghostimagepreview'),
+    ghostfootnotes      = require('../../shared/lib/showdown/extensions/ghostfootnotes'),
 
-    converter   = new Showdown.converter({extensions: [ghostimagepreview, ghostgfm]});
+    converter   = new Showdown.converter({extensions: [ghostimagepreview, ghostgfm, ghostfootnotes]});
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -503,6 +504,25 @@ describe('Showdown client side converter', function () {
             {   // audio isn't counted as a block tag by showdown so gets wrapped in <p></p>
                 input: '<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n    <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>',
                 output: /^<audio class=\"podcastplayer\" controls>  \n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/
+            }
+        ];
+
+        testPhrases.forEach(function (testPhrase) {
+            var processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup.should.match(testPhrase.output);
+        });
+    });
+
+    it('should treat ![^n] as footnote unless it occurs on a new line', function () {
+        var testPhrases = [
+            {
+                input: 'Foo![^1](bar)',
+                output: '<p>Foo!<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>(bar)</p>'
+            },
+
+            {
+                input: '![^1](bar)',
+                output: '<section id="image_upload_undefined" class="js-drop-zone image-uploader"><img class="js-upload-target" src="bar"/><div class="description">Add image of <strong>^1</strong></div><input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage"></section>'
             }
         ];
 
