@@ -795,5 +795,14 @@ describe('Config', function () {
             // Future tests: This is important here!
             resetEnvironment();
         });
+
+        it('can not modify the deprecatedItems on the config object', function () {
+            config.set({
+                deprecatedItems: ['foo']
+            });
+
+            config.deprecatedItems.should.not.equal(['foo']);
+            resetEnvironment();
+        });
     });
 });
