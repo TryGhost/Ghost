@@ -44,8 +44,7 @@ var _              = require('lodash'),
                     'core/*.js',
                     'core/server/**/*.js',
                     'core/shared/**/*.js',
-                    '!core/shared/vendor/**/*.js',
-                    '!core/shared/lib/**/*.js'
+                    '!core/shared/vendor/**/*.js'
                 ]
             }
         },
