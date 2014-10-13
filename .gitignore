@@ -17,6 +17,7 @@ bower_components
 .bowerrc
 .idea/*
 *.iml
+*.sublime-*
 projectFilesBackup
 
 .DS_Store
