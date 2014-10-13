@@ -9,6 +9,9 @@ chapter: installation
 section: deploy
 prev_section: linux
 next_section: upgrading
+canonical: http://support.ghost.org/deploying-ghost/
+redirectToCanonical: true
+
 ---
 
 ## Getting Ghost Live <a id="deploy"></a>
