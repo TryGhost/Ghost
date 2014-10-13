@@ -139,7 +139,8 @@ authentication = {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
             }).then(function (user) {
-                return dataProvider.User.edit({name: name, email: email}, {id: user.id});
+                // Setting the slug to '' has the model regenerate the slug from the user's name
+                return dataProvider.User.edit({name: name, email: email, slug: ''}, {id: user.id});
             }).then(function () {
                 return Promise.resolve({invitation: [{message: 'Invitation accepted.'}]});
             }).catch(function (error) {
