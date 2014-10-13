@@ -1,9 +1,3 @@
-<script>
-$(document).ready(function() {
-    $('body').addClass('settings-view');
-});
-</script>
-
 <header class="settings-view-header">
     {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="page-title">Users</h2>
@@ -15,15 +9,15 @@ $(document).ready(function() {
 {{#view "settings/users/users-list-view" tagName="section" class="content settings-users" }}
     {{#if invitedUsers}}
 
-        <section class="object-list invited-users">
+        <section class="user-list invited-users">
 
-            <h4 class="object-list-title">Invited users</h4>
+            <h4 class="user-list-title">Invited users</h4>
 
             {{#each invitedUsers itemController="settings/users/user"}}
-                <div class="object-list-item">
-                    <span class="object-list-item-icon icon-mail">ic</span>
+                <div class="user-list-item">
+                    <span class="user-list-item-icon icon-mail">ic</span>
 
-                    <div class="object-list-item-body">
+                    <div class="user-list-item-body">
                         <span class="name">{{email}}</span><br>
                             {{#if pending}}
                                 <span class="red">Invitation not sent - please try again</span>
@@ -31,9 +25,9 @@ $(document).ready(function() {
                                 <span class="description">Invitation sent: {{created_at}}</span>
                             {{/if}}
                     </div>
-                    <aside class="object-list-item-aside">
-                        <a class="object-list-action" href="#" {{action "revoke"}}>Revoke</a>
-                        <a class="object-list-action" href="#" {{action "resend"}}>Resend</a>
+                    <aside class="user-list-item-aside">
+                        <a class="user-list-action" href="#" {{action "revoke"}}>Revoke</a>
+                        <a class="user-list-action" href="#" {{action "resend"}}>Resend</a>
                     </aside>
                 </div>
             {{/each}}
@@ -42,24 +36,24 @@ $(document).ready(function() {
 
     {{/if}}
 
-    <section class="object-list active-users">
+    <section class="user-list active-users">
 
-        <h4 class="object-list-title">Active users</h4>
+        <h4 class="user-list-title">Active users</h4>
 
         {{#each activeUsers itemController="settings/users/user"}}
-            {{#link-to 'settings.users.user' this class="object-list-item" }}
-                <span class="object-list-item-figure" {{bind-attr style=image}}>
+            {{#link-to 'settings.users.user' this class="user-list-item" }}
+                <span class="user-list-item-figure" {{bind-attr style=image}}>
                     <span class="hidden">Photo of {{unbound name}}</span>
                 </span>
 
-                <div class="object-list-item-body">
+                <div class="user-list-item-body">
                     <span class="name">
                         {{name}}
                     </span>
                     <br>
                     <span class="description">Last seen: {{unbound last_login}}</span>
                 </div>
-                <aside class="object-list-item-aside">
+                <aside class="user-list-item-aside">
                     {{#unless isAuthor}}
                         {{#each roles}}
                             <span class="role-label {{unbound lowerCaseName}}">{{name}}</span>
