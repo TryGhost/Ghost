@@ -144,7 +144,8 @@ ConfigManager.prototype.set = function (config) {
             // Used by the upload API to limit uploads to images
             extensions: ['.jpg', '.jpeg', '.gif', '.png', '.svg', '.svgz'],
             contentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
-        }
+        },
+        deprecatedItems: ['updateCheck', 'mail.fromaddress']
     });
 
     // Also pass config object to
@@ -324,10 +325,8 @@ ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
  * Check if any of the currently set config items are deprecated, and issues a warning.
  */
 ConfigManager.prototype.checkDeprecated = function () {
-    var deprecatedItems = ['updateCheck', 'mail.fromaddress'],
-        self = this;
-
-    _.each(deprecatedItems, function (property) {
+    var self = this;
+    _.each(this.deprecatedItems, function (property) {
         self.displayDeprecated(self, property.split('.'), []);
     });
 };
