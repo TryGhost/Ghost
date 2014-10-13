@@ -1,0 +1,171 @@
+//
+// Settings Menu
+// --------------------------------------------------
+
+
+// Wrapper
+.settings-menu-container {
+    background: $lightestgrey;
+    width: 100%;
+    max-width: 350px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+    transform: translate3d(60px, 0px, 0px);
+
+    // This selector ends up being `body.settings-menu-expanded .settings-menu-container`
+    body.settings-menu-expanded & {
+        transform: translate3d(0, 0px, 0px);
+    }
+    .settings-menu-pane {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        transform: translate3d(0, 0px, 0px);
+        opacity: 1;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+
+        @media (min-width: 901px) {
+            transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        }
+
+        &.settings-menu-pane-out-left {
+            transform: translate3d(-100%, 0px, 0px);
+        }
+        &.settings-menu-pane-out-right {
+            transform: translate3d(100%, 0px, 0px);
+        }
+        &.settings-menu-pane-in {
+            transform: translate3d(0, 0px, 0px);
+        }
+    }
+}
+
+// Header
+.settings-menu-header {
+    position: relative;
+    padding: 19px 24px;
+
+    h4 {
+        font-weight: normal;
+        font-size: 1.6rem;
+        line-height: 1.375;
+        margin: 0;
+    }
+
+    .close {
+        right: 0;
+
+        &:before {
+            right: 22px;
+        }
+
+    }
+
+}
+
+.settings-menu-header.subview {
+
+    h4 {
+        text-align: center;
+    }
+
+    .back {
+        left: 0;
+
+        &:before {
+            left: 19px;
+        }
+
+    }
+
+}
+
+.settings-menu-header-action {
+    position: absolute;
+    top: 0;
+    bottom: 7px;
+    width: 45px;
+    padding: 0;
+
+    &:before {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $midbrown;
+        font-size: 2rem;
+    }
+
+    &:hover {
+
+        &:before {
+            color: $midgrey;
+        }
+
+    }
+
+}
+
+// Content
+.settings-menu-content {
+    padding: 0 24px 24px;
+
+    .image-uploader {
+        padding-top: 35px;
+        padding-bottom: 35px;
+        margin: 0 0 1.6rem 0;
+
+        input {
+            width: auto;
+        }
+
+    }
+
+    textarea {
+        height: 108px;
+    }
+
+    .nav-list {
+        margin-top: 3rem;
+    }
+
+    .pre-image-uploader {
+        width: auto;
+        min-height: 50px;
+        max-height: 250px;
+        margin-top: 0;
+    }
+
+    .word-count {
+        font-weight: bold;
+    }
+
+}//.settings-menu-content
+
+
+//
+// Content Cover
+// --------------------------------------------------
+// A transparent div that goes over the content, used
+// to listen for clicks to close the right outlet
+
+body.settings-menu-expanded {
+
+    .content-cover {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 600;
+        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
+    }//.editor-cover
+
+}//body.settings-menu-expanded
