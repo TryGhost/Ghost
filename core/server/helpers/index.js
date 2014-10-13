@@ -72,6 +72,20 @@ coreHelpers.apps = function (context, options) {
     return 'false';
 };
 
+// ### TagsUI helper
+//
+// *Usage example:*
+// `{{tags_ui}}`
+//
+// Returns the config value for tagsUI or false if no value present
+coreHelpers.tags_ui = function (context, options) {
+    /*jshint unused:false*/
+    if (config.hasOwnProperty('tagsUI')) {
+        return config.tagsUI.toString();
+    }
+    return 'false';
+};
+
 // ### Blog Url helper
 //
 // *Usage example:*
@@ -154,6 +168,8 @@ registerHelpers = function (adminHbs) {
     registerAdminHelper('asset', coreHelpers.asset);
     registerAdminHelper('apps', coreHelpers.apps);
     registerAdminHelper('file_storage', coreHelpers.file_storage);
+    registerAdminHelper('tags_ui', coreHelpers.tags_ui);
+
     registerAdminHelper('blog_url', coreHelpers.blog_url);
 };
 
