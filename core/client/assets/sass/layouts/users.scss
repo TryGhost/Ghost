@@ -3,21 +3,20 @@
 // --------------------------------------------------
 // Slug: /ghost/settings/users/
 // --------------------------------------------------
-// TODO: Rename everything. This is a layout, rather
-// than a re-usable component.
+
 
 .invited-users {
     margin-bottom: 34px;
 }
 
-.object-list-title {
+.user-list-title {
     font-size: 13px;
     font-weight: normal;
     color: $midbrown;
     margin-bottom: 14px;
 }
 
-.object-list-item {
+.user-list-item {
 
     @media (max-width: 500px) {
         display: block;
@@ -37,17 +36,21 @@
 
 }
 
-a.object-list-item {
+a.user-list-item {
     text-decoration: none;
 
     // Hover states only for large viewports
     @media (min-width: 601px) {
-        &:hover { background: lighten($lightbrown, 5%); }
-        &:last-of-type:hover { box-shadow: inset 0px -1px 0px $lightbrown; }
+        &:hover {
+            background: lighten($lightbrown, 5%);
+        }
+        &:last-of-type:hover {
+            box-shadow: inset 0px -1px 0px $lightbrown;
+        }
     }
 }
 
-.object-list-item-icon {
+.user-list-item-icon {
     width: 35px;
     height: 35px;
     display: block;
@@ -70,7 +73,7 @@ a.object-list-item {
     }
 }
 
-.object-list-item-figure {
+.user-list-item-figure {
     width: 35px;
     height: 35px;
     display: block;
@@ -80,15 +83,15 @@ a.object-list-item {
     background-position: center center;
 }
 
-.object-list-item-icon,
-.object-list-item-figure {
+.user-list-item-icon,
+.user-list-item-figure {
     @media (max-width: 500px) {
         float: left;
         margin-right: 15px;
     }
 }
 
-.object-list-item-body {
+.user-list-item-body {
     flex: 1 1 auto;
     align-items: stretch;
     padding-left: 15px;
@@ -112,16 +115,16 @@ a.object-list-item {
         margin-top: 3px;
     }
 
-} //.object-list-item-body
+}//.user-list-item-body
 
-.object-list-item-aside {
+.user-list-item-aside {
     @media (max-width: 500px) {
         float: left;
         width: 100%;
         margin: 12px 0 0 50px;
     }
 
-    .object-list-action:not(:first-of-type) {
+    .user-list-action:not(:first-of-type) {
         margin-left: 20px;
         @media (min-width: 501px) {
             margin-left: 50px;
@@ -136,9 +139,9 @@ a.object-list-item {
     .role-label + .role-label {
         margin-left: 5px;
     }
-} // .object-list-item-aside
+}//.user-list-item-aside
 
-.object-list-action {
+.user-list-action {
     font-size: 11px;
     text-transform: uppercase;
     text-decoration: underline;
@@ -178,7 +181,7 @@ a.object-list-item {
         background: $blue;
     }
 
-}
+}//.role-label
 
 //
 // User Actions
@@ -231,7 +234,7 @@ a.object-list-item {
             width: 100%;
         }
 
-    } //.form-group
+    }//.form-group
 
     .button-add {
         width: 100%;
@@ -240,4 +243,4 @@ a.object-list-item {
         line-height: 16px;
     }
 
-} //.invite-new-user
+}//.invite-new-user
