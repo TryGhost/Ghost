@@ -645,7 +645,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
     casper.thenClick('.post-settings');
 
     casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
+        this.fillSelectors('.settings-menu form', {
             '#url': 'changed-slug'
         }, false);
 
@@ -692,7 +692,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
     casper.thenClick('.post-settings');
 
     casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
+        this.fillSelectors('.settings-menu form', {
             '#url': 'changed-slug-after-update'
         }, false);
 

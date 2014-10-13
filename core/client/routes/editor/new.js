@@ -35,7 +35,7 @@ var EditorNewRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, base
                 isDeleted = model.get('isDeleted'),
                 modelIsDirty = model.get('isDirty');
 
-            this.send('closeRightOutlet');
+            this.send('closeSettingsMenu');
 
             // when `isDeleted && isSaving`, model is in-flight, being saved
             // to the server. when `isDeleted && !isSaving && !modelIsDirty`,

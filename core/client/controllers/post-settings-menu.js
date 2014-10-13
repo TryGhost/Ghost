@@ -9,9 +9,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
     lastPromise: null,
 
-    isViewingSubview: Ember.computed('controllers.application.showRightOutlet', function (key, value) {
+    isViewingSubview: Ember.computed('controllers.application.showSettingsMenu', function (key, value) {
         // Not viewing a subview if we can't even see the PSM
-        if (!this.get('controllers.application.showRightOutlet')) {
+        if (!this.get('controllers.application.showSettingsMenu')) {
             return false;
         }
         if (arguments.length > 1) {

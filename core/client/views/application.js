@@ -57,9 +57,9 @@ var ApplicationView = Ember.View.extend({
     }.on('willDestroyElement'),
 
 
-    toggleRightOutletBodyClass: function () {
-        $('body').toggleClass('right-outlet-expanded', this.get('controller.showRightOutlet'));
-    }.observes('controller.showRightOutlet')
+    toggleSettingsMenuBodyClass: function () {
+        $('body').toggleClass('settings-menu-expanded', this.get('controller.showSettingsMenu'));
+    }.observes('controller.showSettingsMenu')
 });
 
 export default ApplicationView;
