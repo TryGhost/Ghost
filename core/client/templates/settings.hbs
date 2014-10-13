@@ -11,6 +11,11 @@
                     {{gh-activating-list-item route="settings.general" title="General" classNames="settings-nav-general icon-settings"}}
                 {{/unless}}
 
+                {{! Whilst tag management is still in development only show tags button if there if tagsUI is true in config.js --}}
+                {{#if showTags}}
+                    {{gh-activating-list-item route="settings.tags" title="Tags" classNames="settings-nav-tags icon-tag"}}
+                {{/if}}
+
                 {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-nav-users icon-users"}}
 
             {{/unless}}
