@@ -452,8 +452,6 @@ body.zen {
     }
 
     .splitbtn {
-        margin-top: -2px;
-
         .btn {
             border-top: rgba(255,255,255,0.3) 1px solid;
         }
@@ -559,6 +557,10 @@ body.zen {
 }
 
 #entry-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-content: center;
+    align-items: center;
     margin-right: 6px;
     position: relative;
     .dropdown {
@@ -672,10 +674,9 @@ body.zen {
 }
 
 .publish-bar-actions {
-    flex: 0 1 auto;
+    display: flex;
+    flex: 1 0 auto;
     align-self: auto;
-    min-width: 174px;
-    max-width: 174px;
     text-align: right;
 }
 
