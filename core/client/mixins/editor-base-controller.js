@@ -7,7 +7,7 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 // to know if the model has been changed (`controller.isDirty`)
 var watchedProps = ['scratch', 'titleScratch', 'model.isDirty'];
 
-Ember.get(PostModel, 'attributes').forEach(function (name) {
+PostModel.eachAttribute(function (name) {
     watchedProps.push('model.' + name);
 });
 
