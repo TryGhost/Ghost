@@ -27,7 +27,7 @@
         color: $midgrey;
     }
 
-}
+}//.settings-about
 
 
 //
@@ -37,14 +37,19 @@
 // Special case to hide the desktop page header, because
 // in this instance the Ghost logo replaces it.
 .settings-view-about {
+
     @media (min-width: 901px) {
+
         .settings-view-header {
             display: none;
         }
+
     }
+
 }
 
 .about-ghost-intro {
+
     h1 {
         margin-top: -6px;
         margin-bottom: -21px;
@@ -58,6 +63,7 @@
             left: -9px;
             color: $blue;
         }
+
     }
 
     @media (max-width: 550px) {
@@ -71,12 +77,14 @@
 }
 
 .about-environment {
+
     dl {
         @include clearfix;
         color: $midgrey;
         margin: 2px 0 0 0;
         line-height: 1.6;
     }
+
     dt, dd {
         width: auto;
         float: left;
@@ -84,13 +92,16 @@
         margin: 0;
         font-feature-settings: normal;
     }
+
     dt {
         margin-right: 5px;
     }
+
     .about-environment-detail {
         text-transform: capitalize;
     }
-}
+
+}//.about-environment
 
 .about-help {
     padding-top: 8px;
@@ -120,20 +131,24 @@
 
     }
 
-} // .about-help
+}//.about-help
 
 @media (min-width: 501px) {
+
     .about-environment-help {
         max-width: 430px;
     }
+
     .about-environment {
         float: left;
         width: calc(100% - 190px);
     }
+
     .about-help {
         float: right;
         width: 170px;
     }
+
 }
 
 
@@ -152,11 +167,13 @@
 
         a {
             display: block;
+            position: relative;
 
             @media (min-width: 601px) {
                 margin-right: 9px;
                 margin-bottom: 9px;
             }
+
             @media (max-width: 600px) {
                 margin-right: 6px;
                 margin-bottom: 6px;
@@ -168,7 +185,6 @@
                 border-radius: 100%;
             }
 
-            position: relative;
             &:before {
                 opacity: 0;
                 content: attr(title);
@@ -184,6 +200,7 @@
                 font-size: 1rem;
                 pointer-events: none;
             }
+
             &:after {
                 opacity: 0;
                 content: '';
@@ -194,6 +211,7 @@
                 transition: opacity 0.15s ease-in-out;
                 @include triangle(8px, $darkgrey, "down");
             }
+
             &:hover {
                 &:before,
                 &:after {
@@ -201,7 +219,7 @@
                 }
             }
 
-        }
+        }//a
 
     } // li
 
@@ -219,6 +237,7 @@
         font-size: 2.4rem;
         margin-bottom: 24px;
     }
+
 }
 
 .about-contributors-info {
@@ -241,16 +260,19 @@
     margin-top: 62px;
 
     a {
+
         &:link,
         &:visited {
             color: inherit;
         }
+
         &:hover,
         &:focus,
         &:active {
             text-decoration: none;
             color: $blue;
         }
+
     }
 
 } // .about-copyright

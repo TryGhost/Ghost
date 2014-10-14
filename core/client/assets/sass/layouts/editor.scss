@@ -24,15 +24,19 @@
         &:focus {
             outline: 0;
         }
+
     }
-} // .entry-title
+
+}//.entry-title
 
 .editor {
 
     .notifications {
+
         @media (min-width: 401px) {
             bottom: 40px;
         }
+
     }
 
     .entry-container {
@@ -41,8 +45,14 @@
     }
 
     // The two content panel wrappers, positioned left/right
-    .entry-markdown { left: 0; }
-    .entry-preview { right: 0; border-left: $lightbrown 1px solid; }
+    .entry-markdown {
+        left: 0;
+    }
+
+    .entry-preview {
+        right: 0;
+        border-left: $lightbrown 1px solid;
+    }
 
     // The visual styles for both panels
     .entry-markdown,
@@ -64,10 +74,12 @@
             border: none;
             z-index: 100;
             min-height: 380px;
+
             .markdown, .entry-preview-content {
                 height: 50px;
                 overflow: hidden;
             }
+
         }
 
         .floatingheader {
@@ -88,6 +100,7 @@
                 a {
                     color: #fff;
                 }
+
             }
 
             a {
@@ -103,13 +116,19 @@
         }
 
         @media (max-width: 1000px) {
+
             &:not(.active) {
+
                 .markdown-help {
+
                     &:hover:before {
                         color: #fff;
                     }
+
                 }
+
             }
+
         }
 
         // Give the tab with the .active class the highest z-index
@@ -127,27 +146,33 @@
 
         // Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
         &.active header {
+
             @media (max-width: 1000px) {
                 border-top: $lightbrown 1px solid;
                 cursor: auto;
                 color: $brown;
                 background: #fff;
                 box-shadow: none;
+
                 a {
                     color: $brown;
                 }
+
             }
+
         }
 
         // Hide markdown icon + wordcount when we hit mobile
         @media (max-width: 400px) {
+
             .markdown-help,
             .entry-word-count {
                 display: none;
             }
+
         }
 
-    } // .entry-markdown, .entry-preview
+    }//.entry-markdown, .entry-preview
 
     .entry-markdown-content {
 
@@ -169,12 +194,15 @@
             @media (max-width: 600px) {
                 padding: 10px;
             }
+
             @media (min-width: 601px) and (max-width: 1000px) {
                 padding: 15px;
             }
+
             @media (min-width: 1001px) {
                 top: 40px;
             }
+
             @media (max-height: 560px) {
                 height: calc(100% - 5px);
             }
@@ -182,9 +210,10 @@
             &:focus {
                 outline: 0;
             }
-        }
 
-    } // .entry-markdown-content
+        }//textarea
+
+    }//.entry-markdown-content
 
     .CodeMirror {
         height: auto;
@@ -213,13 +242,22 @@
             background: lighten($blue, 20%);
             text-shadow: none;
         }
+
     }
 
     .CodeMirror-lines {
         padding-top: 65px; /* Vertical padding around content */
-        @media (max-width: 1000px) {padding-top: 25px;}
-        @media (max-width: 400px) {padding: 15px 0;}
+
+        @media (max-width: 1000px) {
+            padding-top: 25px;
+        }
+
+        @media (max-width: 400px) {
+            padding: 15px 0;
+        }
+
     }
+
     .CodeMirror pre {
         padding: 0 40px; /* Horizontal padding of content */
         @media (max-width: 400px) {padding: 0 15px;}
@@ -252,13 +290,17 @@
 
     .entry-preview {
         // Align the tab of entry-preview on the right
+
         .floatingheader {
+
             @media (max-width: 1000px) {
                 right: 0;
                 left: auto;
                 border-right: none;
             }
+
         }
+
     }
 
     .entry-preview-content {
@@ -272,42 +314,50 @@
         -webkit-overflow-scrolling: touch;
         word-break: break-word;
         hyphens: auto;
-        @include user-select(none);
+        user-select: none;
         cursor: default;
 
         // Tweak padding for smaller screens
         @media (max-width: 1000px) {
             padding-top: 20px;
         }
+
         @media (max-width: 400px) {
             padding: 15px;
         }
+
     }
 
     // Special case, when scrolling, add shadows to content headers.
     .scrolling {
 
         .floatingheader {
+
             @media (max-width: 1000px) {
                 box-shadow: none;
             }
 
             &::before,
             &::after {
+
                 @media (max-width: 1000px) {
                     display: none;
                 }
+
             }
+
         }
         .CodeMirror-scroll,
         .entry-preview-content {
+
             @media (max-width: 1000px) {
                 box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
             }
-        }
-    } // .scrolling
 
-} // .editor
+        }
+    }//.scrolling
+
+}//.editor
 
 .markdown-help {
     position: relative;
@@ -344,10 +394,12 @@
         text-decoration: none;
         color: $grey;
     }
+
     .img-placeholder {
         border: 5px dashed $grey;
         height: 100px;
         position: relative;
+
         span {
             display: block;
             height: 30px;
@@ -357,13 +409,18 @@
             width: 100%;
             text-align: center;
         }
+
     }
+
     a {
+
         &.image-edit {
             width: 16px;
             height: 16px;
         }
+
     }
+
     img {
         max-width: 100%;
         height: auto;
@@ -391,9 +448,11 @@
 
 body.zen {
     background: lighten($lightbrown, 3%);
+
     .usermenu {
         display: none;
     }
+
     .global-nav,
     .page-header,
     #publish-bar {
@@ -414,7 +473,7 @@ body.zen {
         transition: all 0.5s ease-out;
     }
 
-}
+}//body.zen
 
 
 //
@@ -455,19 +514,23 @@ body.zen {
         .btn {
             border-top: rgba(255,255,255,0.3) 1px solid;
         }
+
     }
 
-}
+}//#publish-bar
 
 .extended-tags { // When the tag bar is exapanded
     position: static;
     min-height: 100%;
 
     #entry-tags {
+
         &:after {
             right: 10px;
         }
+
     }
+
     .tags {
         width: 281px;
     }
@@ -485,10 +548,12 @@ body.zen {
         border-top: 1px solid $darkgrey;
 
     }
+
     .right {
         display: none;
     }
-}
+
+}//.extended-tags
 
 #entry-tags {
 
@@ -507,6 +572,7 @@ body.zen {
         &:focus {
             outline: none;
         }
+
     }
 
     .tag {
@@ -524,13 +590,15 @@ body.zen {
         border-radius: $rounded;
         box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, #000 0 1px 3px;
 
-        @include user-select(none);
+        user-select: none;
 
         &:hover {
             cursor: pointer;
         }
+
     }
-}
+
+}//#entry-tags
 
 .suggestions {
 
@@ -538,14 +606,17 @@ body.zen {
     bottom: calc(100% + 15px);
 
     li.selected {
+
         &, a {
             text-decoration: none;
             color: #fff;
             background: $blue;
         }
+
         mark {
             color: #fff;
         }
+
     }
 
     mark {
@@ -554,7 +625,7 @@ body.zen {
         font-weight: bold;
     }
 
-}
+}//.suggestions
 
 #entry-actions {
     display: flex;
@@ -563,16 +634,19 @@ body.zen {
     align-items: center;
     margin-right: 6px;
     position: relative;
+
     .dropdown {
         position: absolute;
         bottom: 49px;
         right: 0;
+
         .dropdown-menu {
             top: auto;
             left: auto;
             right: 100%;
             bottom: 100%;
         }
+
     }
 
     &.unsaved {
@@ -581,8 +655,10 @@ body.zen {
         .delete {
             display: none;
         }
+
     }
-}
+
+}//#entry-actions
 
 #entry-actions-menu {
     position: absolute;
@@ -592,10 +668,12 @@ body.zen {
 
 .tags-wrapper {
     white-space: nowrap;
+
     span {
         display: inline-block;
         margin-right: 10px;
     }
+
 }
 
 .tag-label {
@@ -603,6 +681,7 @@ body.zen {
     width: 40px;
     height: 40px;
     position: relative;
+
     &:before {
         position: absolute;
         top: 50%;
@@ -612,9 +691,11 @@ body.zen {
         color: #7D878A;
         transition: color 0.15s linear;
     }
+
     &:hover:before {
         color: #fff;
     }
+
 }//.tag-label
 
 .publish-bar-inner {
@@ -622,10 +703,8 @@ body.zen {
     flex-direction: row;
     flex-wrap: nowrap;
     align-content: space-between;
-
     align-items: center;
     justify-content: center;
-
     height: 100%;
     width: 100%;
 }
@@ -697,6 +776,7 @@ body.zen {
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
         transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
     }//.editor-cover
+
 }//body.right-outlet-expanded
 
 .post-settings {
@@ -711,7 +791,8 @@ body.zen {
     &.active {
         color: $darkgrey;
     }
-} // .post-settings
+
+}//.post-settings
 
 .post-settings-menu {
 
@@ -722,7 +803,7 @@ body.zen {
         right: 100%;
     }
 
-} // .post-settings-menu
+}//.post-settings-menu
 
 
 //
@@ -744,4 +825,5 @@ body.zen {
     th {
         text-align: left;
     }
+
 }

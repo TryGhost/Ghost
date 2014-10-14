@@ -27,6 +27,7 @@
     .thing2 {
         display: none; // hide until mobile
     }
+
 }
 
 // Wrapper for each item
@@ -53,6 +54,7 @@
     white-space: nowrap;
     transition: color 0.5s, background 0.5s;
 }
+
 .nav-item.active .nav-label,
 .nav-item:focus .nav-label,
 .nav-item:hover .nav-label,
@@ -75,6 +77,7 @@
     span {
         display: none;
     }
+
 }
 .ghost-logo:hover,
 .ghost-logo:focus {
@@ -84,6 +87,7 @@
     .nav-label {
         background: transparent;
     }
+
 }
 
 // Right hand dropdown
@@ -113,6 +117,7 @@
             height: 30px;
             border-radius: 100%;
         }
+
     }
 
     // Descriptive label for mobile menu
@@ -137,6 +142,7 @@
             margin-top: 0;
             line-height: 11px;
         }
+
     }
 
     &:hover .name {
@@ -157,6 +163,7 @@
             right: 0;
             left: auto;
         }
+
     }
 
 }//.user-menu
@@ -190,6 +197,7 @@
         body.global-nav-expanded & {
             transform: translate3d(0, 0px, 0px);
         }
+
     }
 
     .nav-item {
@@ -210,12 +218,17 @@
         padding: 0 15px;
         border-radius: 0;
     }
+
     .nav-item.active .nav-label {
         color: #fff !important;
         background: darken($darkgrey, 4%);
 
-        i { color: #fff; }
+        i {
+            color: #fff;
+        }
+
     }
+
     .nav-item:hover .nav-label {
         color: rgba(255,255,255,0.9);
         background: $darkgrey;
@@ -228,7 +241,10 @@
         line-height: 44px;
         text-align: left;
 
-        span { display: inline; }
+        span {
+            display: inline;
+        }
+
     }
 
     // Drop it to the bottom of the menu
@@ -266,6 +282,7 @@
             small {
                 display: block;
             }
+
         }
 
         i {
@@ -281,19 +298,21 @@
                 background: transparent;
                 transition: none;
             }
+
         }
 
         .dropdown {
             position: absolute;
             top: 100%;
             right: 100%;
-            
+
             .dropdown-menu {
                 top: auto;
                 right: auto;
                 bottom: calc(100% + 80px);
                 left: 10px;
             }
+
         }
 
 
@@ -311,6 +330,7 @@
             transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
             transform: translate3d(260px, 0px, 0px); // Not off the screen, to give a parallax effect
         }//.nav-cover
+
     }//body.global-nav-expanded
 
 }

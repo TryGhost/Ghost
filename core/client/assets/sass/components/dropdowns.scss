@@ -2,7 +2,6 @@
 // Dropdown menus
 // --------------------------------------------------
 
-
 // Dropdown arrow/caret
 .caret {
     display: inline-block;
@@ -81,22 +80,26 @@
         font-size: 0.9em;
         margin-right: 0.5rem;
     }
+
 }
 
 // Hover/Focus state
 .dropdown-menu > li > a,
 .dropdown-menu > li > button {
+
     &:hover,
     &:focus {
         text-decoration: none;
         color: #fff;
         background: $blue;
     }
+
 }
 
 // Active state
 .dropdown-menu > .active > a,
 .dropdown-menu > .active > button {
+
     &,
     &:hover,
     &:focus {
@@ -105,7 +108,9 @@
         outline: 0;
         background-color: #428bca;
     }
+
 }
+
 
 // Disabled state
 //
@@ -113,15 +118,18 @@
 
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > button {
+
     &,
     &:hover,
     &:focus {
         color: #777;
     }
+
 }
 // Nuke hover/focus effects
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > button {
+
     &:hover,
     &:focus {
         text-decoration: none;
@@ -129,10 +137,12 @@
         background-image: none; // Remove CSS gradient
         cursor: not-allowed;
     }
+
 }
 
 // Open state for the dropdown
 .open {
+
     // Show the menu
     > .dropdown-menu {
         display: block;
@@ -142,14 +152,18 @@
     > a {
         outline: 0;
     }
+
 }
 
 // Closed state for the dropdown
 .closed {
+
     > .dropdown-menu {
         display: none;
     }
+
 }
+
 
 // Menu positioning
 //
@@ -159,6 +173,8 @@
     left: auto; // Reset the default from `.dropdown-menu`
     right: 0;
 }
+
+
 // With v3, we enabled auto-flipping if you have a dropdown within a right
 // aligned nav component. To enable the undoing of that, we provide an override
 // to restore the default dropdown menu alignment.
@@ -169,6 +185,7 @@
     left: 0;
     right: auto;
 }
+
 
 // Dropdown section headers
 .dropdown-header {
@@ -203,18 +220,21 @@
 
 .dropup,
 .navbar-fixed-bottom .dropdown {
+
     // Reverse the caret
     .caret {
         border-top: 0;
         border-bottom: 4px solid;
         content: "";
     }
+
     // Different positioning for bottom up menu
     .dropdown-menu {
         top: auto;
         bottom: 100%;
         margin-bottom: 1px;
     }
+
 }
 
 
@@ -223,16 +243,21 @@
 // Reiterate per navbar.less and the modified component alignment there.
 
 @media (min-width: 768px) {
+
     .navbar-right {
+
         .dropdown-menu {
             right: 0; left: auto;
         }
+
         // Necessary for overrides of the default right aligned menu.
         // Will remove come v4 in all likelihood.
         .dropdown-menu-left {
             left: 0; right: auto;
         }
+
     }
+
 }
 
 
@@ -242,6 +267,7 @@
 
 // Placeholders
 %dropdown-triangle {
+
     &:before {
         content: '';
         position: absolute;
@@ -253,57 +279,73 @@
         position: absolute;
         z-index: -1;
     } // :after
+
 }
 
 %dropdown-triangle-top {
+
     &:before {
         @include triangle(($dropdown_triangle * 2), #fff, up);
         top: -$dropdown_triangle;
     }
+
     &:after {
         @include triangle(($dropdown_triangle * 2) + 2, darken($lightgrey, 15%), up);
         top: -($dropdown_triangle + 1);
     }
+
 }
 %dropdown-triangle-bottom {
+
     &:before {
         @include triangle(($dropdown_triangle * 2), #fff, down);
         bottom: -$dropdown_triangle;
     }
+
     &:after {
         @include triangle(($dropdown_triangle * 2) + 2, darken($lightgrey, 15%), down);
         bottom: -($dropdown_triangle + 1);
     }
+
 }
 %dropdown-triangle-center {
+
     &:before {
         left: 50%;
         margin-left: (-$dropdown_triangle);
     }
+
     &:after {
         left: 50%;
         margin-left: -($dropdown_triangle + 1);
     }
+
 }
 
 // TODO: Make the values here use the $dropdown_triangle var
 %dropdown-triangle-left {
+
     &:before {
         left: ($dropdown_triangle + 2);
     }
+
     &:after {
         left: ($dropdown_triangle + 1);
     }
+
 }
 %dropdown-triangle-right {
+
     &:before {
         left: auto;
         right: ($dropdown_triangle + 2);
     }
+
     &:after {
         left: auto;
         right: ($dropdown_triangle + 1);
     }
+
 }
 
 // Usable classes
@@ -312,26 +354,31 @@
     @extend %dropdown-triangle-top;
     @extend %dropdown-triangle-center;
 }
+
 .dropdown-triangle-top-left {
     @extend %dropdown-triangle;
     @extend %dropdown-triangle-top;
     @extend %dropdown-triangle-left;
 }
+
 .dropdown-triangle-top-right {
     @extend %dropdown-triangle;
     @extend %dropdown-triangle-top;
     @extend %dropdown-triangle-right;
 }
+
 .dropdown-triangle-bottom {
     @extend %dropdown-triangle;
     @extend %dropdown-triangle-bottom;
     @extend %dropdown-triangle-center;
 }
+
 .dropdown-triangle-bottom-left {
     @extend %dropdown-triangle;
     @extend %dropdown-triangle-bottom;
     @extend %dropdown-triangle-left;
 }
+
 .dropdown-triangle-bottom-right {
     @extend %dropdown-triangle;
     @extend %dropdown-triangle-bottom;

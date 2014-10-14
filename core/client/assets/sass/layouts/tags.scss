@@ -9,19 +9,21 @@
     position: relative;
     display: inline-block;
     margin-left: 7px;
-    
+
     .btn {
         position: relative;
         padding-left: 10px;
         padding-right: 10px;
         transition: padding 0.3s ease-in-out;
-        
+
         .icon-search:before {
             font-size: 1.3rem;
         }
+
         &.active {
             box-shadow: none;
         }
+
     }
 
     .tags-search-input {
@@ -40,30 +42,38 @@
     }
 
     &.opened {
-        
+
         .tags-search-input {
             opacity: 1;
             pointer-events: auto;
         }
-        
+
         @media (max-width: 400px) {
+
             .btn {
                 padding-left: 120px;
             }
+
             .tags-search-input {
                 width: 110px;
             }
+
         }
-        
+
         @media (min-width: 401px) {
+
             .btn {
                 padding-left: 140px;
             }
+
             .tags-search-input {
                 width: 130px;
             }
+
         }
-    }
+
+    }//&.opened
+
 }//.tags-search
 
 .settings-tag {
@@ -78,6 +88,7 @@
         position: relative;
         top: -2px;
     }
+
     .label-alt {
         text-transform: uppercase;
     }
@@ -86,11 +97,13 @@
         font-size: 16px;
         color: $darkgrey;
         font-weight: normal;
+
         &:hover,
         &:focus,
         &:active {
             color: $blue;
         }
+
     }
 
     .tag-description {
@@ -106,6 +119,7 @@
         font-size: 16px;
         color: $midbrown;
     }
+
 }//.settings-tag
 
 // Tags with a parent get the arrow, and slightly different padding/margin
@@ -122,16 +136,18 @@
         position: absolute;
     }
 
-    &:before { 
+    &:before {
         width: 1px;
-        height: 16px;  
+        height: 16px;
         top: 16px;
         left: -34px;
     }
+
     &:after {
         width: 16px;
         height: 1px;
         top: 32px;
         left: -34px;
     }
+
 }//.settings-tag .settings-tag

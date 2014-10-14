@@ -9,30 +9,40 @@
 .post-settings-header {
     position: relative;
     padding: 19px 24px;
+
     h4 {
         font-weight: normal;
         font-size: 1.6rem;
         line-height: 1.375;
         margin: 0;
     }
+
     .close {
         right: 0;
+
         &:before {
             right: 22px;
         }
+
     }
+
 }
 
 .post-settings-header.subview {
+
     h4 {
         text-align: center;
     }
+
     .back {
         left: 0;
+
         &:before {
             left: 19px;
         }
+
     }
+
 }
 
 .post-settings-header-action {
@@ -41,6 +51,7 @@
     bottom: 7px;
     width: 45px;
     padding: 0;
+
     &:before {
         position: absolute;
         top: 50%;
@@ -48,12 +59,16 @@
         color: $midbrown;
         font-size: 2rem;
     }
+
     &:hover {
+
         &:before {
             color: $midgrey;
         }
+
     }
-}
+
+}//.post-settings-header-action
 
 // Content
 .post-settings-content {
@@ -67,11 +82,8 @@
         input {
             width: auto;
         }
-    }
 
-    .form-group {
-        // margin-bottom: 1.5rem;
-    } // .form-group
+    }
 
     textarea {
         height: 108px;
@@ -90,6 +102,7 @@
     .word-count {
         font-weight: bold;
     }
+
 }
 
 

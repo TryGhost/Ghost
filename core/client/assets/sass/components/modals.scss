@@ -24,6 +24,7 @@
     &.in {
         opacity: 1;
     }
+
 }
 
 .modal-background {
@@ -67,7 +68,7 @@
     .pre-image-uploader {
         margin: 0;
     }
-}
+}//%modal
 
 .modal {
     @extend %modal;
@@ -106,8 +107,11 @@
         &:hover:before {
             color: $grey;
         }
+
     }
-}
+
+}//.modal-content
+
 .modal-header {
     position: relative;
 
@@ -117,6 +121,7 @@
         font-size: 1.85em;
         font-weight: 100;
     }
+
 }
 
 .modal-body {
@@ -126,9 +131,11 @@
 
 .modal-footer {
     margin-top: 20px;
+
     .reject-button-class {
         @extend .btn;
     }
+
 }
 
 .modal-style-wide {
@@ -137,6 +144,7 @@
     @media (max-width: 900px) {
         width: 100%;
     }
+
 }
 
 .modal-style-centered {
@@ -144,8 +152,6 @@
 }
 
 // Fixes for specific modals
-.invite-new-user {
-    .btn-green {
-        width: 100%;
-    }
+.invite-new-user .btn-green {
+    width: 100%;
 }

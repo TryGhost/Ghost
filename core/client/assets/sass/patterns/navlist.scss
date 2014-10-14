@@ -13,7 +13,9 @@
     &.nav-list-block {
         max-width: none;
     }
+
 }
+
 .nav-list-item {
     @include icon($i-chevron, 1.4rem, $midbrown) {
         position: absolute;
@@ -34,6 +36,7 @@
         border-top-left-radius: $rounded;
         border-top-right-radius: $rounded;
     }
+
     &:last-of-type {
         border-bottom-left-radius: $rounded;
         border-bottom-right-radius: $rounded;

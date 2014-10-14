@@ -35,9 +35,11 @@
     }
 
     body.right-outlet-expanded & {
+
         @media (max-width: 350px) {
             transform: translate3d(-100%, 0px, 0px);
         }
+
         @media (min-width: 351px) {
             &:before {
                 content: '';
@@ -51,8 +53,10 @@
             }
             transform: translate3d(-350px, 0px, 0px);
         }
+
     }
-}
+
+}//.viewport
 
 .right-outlet {
     background: $lightestgrey;
@@ -76,7 +80,6 @@
         left: 0;
         transform: translate3d(0, 0px, 0px);
         opacity: 1;
-
         overflow: auto;
         -webkit-overflow-scrolling: touch;
 
@@ -87,14 +90,18 @@
         &.outlet-pane-out-left {
             transform: translate3d(-100%, 0px, 0px);
         }
+
         &.outlet-pane-out-right {
             transform: translate3d(100%, 0px, 0px);
         }
+
         &.outlet-pane-in {
             transform: translate3d(0, 0px, 0px);
         }
+
     }
-}
+
+}//.right-outlet
 
 //
 // The header bar - visible below 900px
@@ -135,6 +142,7 @@
         height: 60px;
         line-height: 60px;
     }
+
 }
 
 // The burger to expand .global-nav menu
@@ -176,4 +184,5 @@
     @media (max-width: 900px) {
         top: 44px;
     }
+
 }

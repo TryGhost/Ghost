@@ -1,0 +1,75 @@
+//
+// Reusable Mixins
+// --------------------------------------------------
+// Mixins for one specific purpose are in their respective files
+
+// Vertical baseline
+@mixin baseline {
+        margin: 1.6em 0;
+}
+
+// Clearfix for stopping floats overflowing the container
+@mixin clearfix {
+
+    &:after {
+        content:"";
+        display:table;
+        clear:both;
+    }
+
+}
+
+// WebKit-style focus
+@mixin tab-focus() {
+    outline: thin dotted; // Default
+    outline: 0px auto -webkit-focus-ring-color; // WebKit
+    outline-offset: -2px;
+}
+
+
+// Create triangles from borders
+@mixin triangle($size: 20px, $color: #000, $direction: "down") {
+    $size: $size / 2;
+    width: 0;
+    height: 0;
+
+    @if $direction == "down" {
+        border-left: $size solid #{triangleColor($direction, "left", $color)};
+        border-right: $size solid #{triangleColor($direction, "right", $color)};
+        border-top: $size solid #{triangleColor($direction, "top", $color)};
+    }
+
+    @if $direction == "up" {
+        border-left: $size solid #{triangleColor($direction, "left", $color)};
+        border-right: $size solid #{triangleColor($direction, "right", $color)};
+        border-bottom: $size solid #{triangleColor($direction, "bottom", $color)};
+    }
+
+    @if $direction == "left" {
+        border-right: $size solid #{triangleColor($direction, "right", $color)};
+        border-top: $size solid #{triangleColor($direction, "top", $color)};
+        border-bottom: $size solid #{triangleColor($direction, "bottom", $color)};
+    }
+
+    @if $direction == "right" {
+        border-left: $size solid #{triangleColor($direction, "left", $color)};
+        border-bottom: $size solid #{triangleColor($direction, "bottom", $color)};
+        border-top: $size solid #{triangleColor($direction, "top", $color)};
+    }
+
+}//@mixin triangle
+
+// Utility function to return the relevant colour depending on what type of arrow it is
+// Required by @mixin triangle
+@function triangleColor($direction, $side, $color) {
+
+    @if $direction == "left" and $side == "right"
+    or  $direction == "right" and $side == "left"
+    or $direction == "down" and $side == "top"
+    or $direction == "up" and $side == "bottom" {
+        @return $color
+    } @else {
+        @return "transparent";
+    }
+
+}

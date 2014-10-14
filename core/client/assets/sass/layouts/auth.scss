@@ -28,17 +28,19 @@
         margin: 0;
         position: relative;
         transition: background ease 0.25s;
+
         &:focus {
             border: none;
             background: lighten($darkgrey, 15%);
         }
+
     }
 
     input:-webkit-autofill {
         -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
     }
 
-}
+}//.ghost-login, .ghost-signup, .ghost-forgotten, .ghost-reset
 
 .login-box,
 .signup-box,
@@ -54,6 +56,7 @@
         max-width: 264px;
         text-align: center;
     }
+
 }
 
 
@@ -80,6 +83,7 @@
         @media (max-width: 630px) {
             margin-bottom: 1em;
         }
+
     }
 
     .email,
@@ -92,29 +96,37 @@
         @media (max-width: 630px) {
             width: 264px;
         }
-    } // .email, .password
+
+    }//.email, .password
 
     .email-wrap {
         margin-right: 3px;
+
         @media (max-width: 630px) {
             margin-right: 0;
         }
-    } // .email-wrap
+
+    }//.email-wrap
 
     @media (max-width: 630px) {
+
         .email,
         .password {
             border-radius: 2px;
         }
+
     }
 
     @media (min-width: 631px) {
+
         .email {
             border-radius: 2px 0 0 2px;
         }
+
         .password {
             border-radius: 0 2px 2px 0;
         }
+
     }
 
     button {
@@ -131,7 +143,8 @@
             width: 100%;
             margin-bottom: 1em;
         }
-    } // button
+
+    }//button
 
     .meta {
         clear: both;
@@ -146,16 +159,16 @@
             color: lighten($midgrey, 5%);
             text-decoration: none;
         }
-    } // a
 
-} // .login-form
+    }//a
+
+}//.login-form
 
 
 //
 // Signup / Reset
 // --------------------------------------------------
 
-.signup-form,
 .reset-form {
     max-width: 280px;
     color: lighten($midgrey, 15%);
@@ -166,11 +179,9 @@
         width: 264px;
     }
 
-    div { // Yes. Really.
-        // TODO: Same here as above
+    .password-wrap {
         position: relative;
         margin: 0 0 1em 0;
-        background: lighten($darkgrey, 10%);
         float: left;
         display: table;
     }
@@ -182,6 +193,7 @@
         @media (max-width: 630px) {
             width: 264px;
         }
+
     }
 
     .name-wrap {
@@ -191,6 +203,7 @@
         .name {
             border-radius: 2px;
         }
+
     }
 
     .email-wrap {
@@ -200,6 +213,7 @@
         .email {
             border-radius: 2px;
         }
+
     }
 
     .password-wrap {
@@ -209,6 +223,7 @@
         .password {
             border-radius: 2px;
         }
+
     }
 
     button {
@@ -221,7 +236,7 @@
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
     }
 
-} // .signup-form, .reset-form
+}//.signup-form, .reset-form
 
 
 //
@@ -240,12 +255,12 @@
         float: left;
         border-radius: 2px;
         width: 100%;
-    } // .email-wrap
+    }//.email-wrap
 
     .email {
         padding: 8px 10px;
         border-radius: 2px;
-    } // .email
+    }//.email
 
     button {
         width: 100%;
@@ -255,6 +270,6 @@
         min-height: 30px;
         min-width: 80px;
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
-    } // button
+    }//button
 
-} // .forgotten-form
+}//.forgotten-form

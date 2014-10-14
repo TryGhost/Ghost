@@ -22,9 +22,11 @@
             color: $darkgrey;
         }
     }
+
     .description {
         margin-top: 10px;
     }
+
     .media {
         @include icon($i-image, 60px, darken($lightbrown, 3%)) {
             display: inline-block;
@@ -43,11 +45,12 @@
         left: 0;
         color: $brown;
         text-decoration: none;
-        @include user-select(none);
+        user-select: none;
 
         &:hover {
           cursor: pointer;
         }
+
     }
 
     .image-webcam {
@@ -68,11 +71,13 @@
         z-index: 700;
         color: #fff;
     }
+
     .btn-blue {
-      margin: 0 0 0 10px;
+        margin: 0 0 0 10px;
     }
 
     input {
+
         &.main{
             position: absolute;
             right: 0;
@@ -87,6 +92,7 @@
                 right: 9999px;
                 height: 0;
             }
+
         }
 
         &.url{
@@ -102,7 +108,8 @@
             border-radius: 4px;
             transition: all 0.15s ease-in-out;
         }
-    }
+
+    }//input
 
     .progress {
         position: relative;
@@ -136,6 +143,7 @@
         &.fail {
             background: $red;
         }
+
     }
 
 } // .image-uploader
@@ -170,6 +178,7 @@
         &:hover {
             color: $darkgrey;
         }
+
     }
 
     img {
@@ -198,6 +207,7 @@
             cursor: pointer;
             background: $red;
         }
+
     }
 
 } // .pre-image-uploader

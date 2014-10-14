@@ -106,6 +106,7 @@ a {
         color: $orange;
         font-weight: bold;
     }
+
 }
 
 hr {
@@ -136,6 +137,7 @@ dl {
         margin-left: 200px;
         margin-bottom: 1em
     }
+
 }
 
 blockquote {
@@ -161,9 +163,14 @@ blockquote {
 
     cite {
         font-weight:bold;
-        a { font-weight: normal; }
+
+        a {
+            font-weight: normal;
+        }
+
     }
-}
+
+}//blockquote
 
 .markdown,
 pre,
@@ -200,6 +207,7 @@ pre {
         border: none;
         padding: 0;
     }
+
 }
 
 kbd {
@@ -271,16 +279,18 @@ button {
         overflow: visible;
         clip: auto;
     }
+
 }
 
 .right {
     float: right;
 }
+
 .left {
     float: left;
 }
 
 .vertical {
-  display: table-cell;
-  vertical-align: middle;
+    display: table-cell;
+    vertical-align: middle;
 }
