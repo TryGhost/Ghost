@@ -32,10 +32,11 @@ ghost_head = function (options) {
         trimmedUrlpattern = /.+(?=\/page\/\d*\/)/,
         trimmedUrl, next, prev, tags,
         ops = [],
-        structuredData;
+        structuredData,
+        coverImage, authorImage, keywords,
+        schema;
 
     trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
-
     // Push Async calls to an array of promises
     ops.push(urlHelper.call(self, {hash: {absolute: true}}));
     ops.push(meta_description.call(self));
@@ -46,12 +47,16 @@ ghost_head = function (options) {
         var url = results[0].value(),
             metaDescription = results[1].value(),
             metaTitle = results[2].value(),
-            publishedDate, modifiedDate;
+            publishedDate, modifiedDate,
+            tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(','),
+            card = 'content';
 
         if (!metaDescription) {
-            metaDescription = excerpt.call(self.post, {hash: {words: '40'}});
+            metaDescription = excerpt.call(self.post, {hash: {words: '40'}}).string;
         }
-
+        if (tags[0] !== '') {
+            keywords = tagsHelper.call(self.post, {hash: {autolink: 'false', seperator: ', '}}).string;
+        }
         head.push('<link rel="canonical" href="' + url + '" />');
 
         if (self.pagination) {
@@ -73,33 +78,76 @@ ghost_head = function (options) {
             publishedDate = moment(self.post.published_at).toISOString();
             modifiedDate = moment(self.post.updated_at).toISOString();
 
+            if (self.post.image) {
+                coverImage = self.post.image;
+                // Test to see if image was linked by url or uploaded
+                coverImage = coverImage.substring(0, 4) === 'http' ? coverImage : _.escape(blog.url) + coverImage;
+                card = 'summary_large_image';
+            }
+
+            if (self.post.author.image) {
+                authorImage = self.post.author.image;
+                // Test to see if image was linked by url or uploaded
+                authorImage = authorImage.substring(0, 4) === 'http' ? authorImage : _.escape(blog.url) + authorImage;
+            }
+
+            schema = {
+                '@context': 'http://schema.org',
+                '@type': 'Article',
+                publisher: _.escape(blog.title),
+                author: {
+                    '@type': 'Person',
+                    name: self.post.author.name,
+                    image: authorImage,
+                    url: _.escape(blog.url) + '/author/' + self.post.author.slug,
+                    sameAs: self.post.author.website
+                },
+                headline: metaTitle,
+                url: url,
+                datePublished: publishedDate,
+                dateModified: modifiedDate,
+                image: coverImage,
+                keywords: keywords,
+                description: metaDescription
+            };
+
             structuredData = {
                 'og:site_name': _.escape(blog.title),
                 'og:type': 'article',
                 'og:title': metaTitle,
                 'og:description': metaDescription + '...',
                 'og:url': url,
+                'og:image': coverImage,
                 'article:published_time': publishedDate,
-                'article:modified_time': modifiedDate
+                'article:modified_time': modifiedDate,
+                'article:tag': tags,
+                'twitter:card': card,
+                'twitter:title': metaTitle,
+                'twitter:description': metaDescription + '...',
+                'twitter:url': url,
+                'twitter:image:src': coverImage
             };
-
-            if (self.post.image)  {
-                structuredData['og:image'] = _.escape(blog.url) + self.post.image;
-            }
-
+            head.push('');
             _.each(structuredData, function (content, property) {
-                head.push('<meta property="' + property + '" content="' + content + '" />');
-            });
-
-            // Calls tag helper and assigns an array of tag names for a post
-            tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(',');
-
-            _.each(tags, function (tag) {
-                if (tag !== '') {
-                    head.push('<meta property="article:tag" content="' + tag.trim() + '" />');
+                if (property === 'article:tag') {
+                    _.each(tags, function (tag) {
+                        if (tag !== '') {
+                            head.push('<meta property="' + property + '" content="' + tag.trim() + '" />');
+                        }
+                    });
+                    head.push('');
+                } else if (content !== null && content !== undefined) {
+                    if (property.substring(0, 7) === 'twitter') {
+                        head.push('<meta name="' + property + '" content="' + content + '" />');
+                    } else {
+                        head.push('<meta property="' + property + '" content="' + content + '" />');
+                    }
                 }
             });
+            head.push('');
+            head.push('<script type="application/ld+json">\n' + JSON.stringify(schema, null, '    ') + '\n    </script>\n');
         }
+
         head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             _.escape(blog.title)  + '" href="' + config.urlFor('rss') + '" />');

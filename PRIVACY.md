@@ -2,7 +2,7 @@
 
 This is a plain English summary of all of the components within Ghost which may affect your privacy in some way. Please keep in mind that if you use third party Themes or Apps with Ghost, there may be additional things not listed here.
 
-Each of the items listed in this document can be disabled via the `config.js` file. Please see the the [configuration guide](http://support.ghost.org/config/) in the support documentation for details.
+Each of the items listed in this document can be disabled via Ghost's `config.js` file. Check out the [configuration guide](http://support.ghost.org/config/) for details.
 
 ## Official Services
 
@@ -42,9 +42,10 @@ RPC pings only happen when Ghost is running in the `production` environment.
 
 The default theme which comes with Ghost contains three sharing buttons to [Twitter](http://twitter.com), [Facebook](http://facebook.com), and [Google Plus](http://plus.google.com). No resources are loaded from any services, however the buttons do allow visitors to your blog to share your content publicly on these respective networks.
 
-
 ### Structured Data
 
-Ghost outputs Meta data for your blog that allows published content to be more easily machine-readable. This allows content to be easily discoverable in search engines as well as popular social networks where blog posts are typically shared.
+Ghost outputs basic meta tags to allow rich snippets of your content to be recognised by popular social networks. Currently there are 3 supported rich data protocols which are output in `{{ghost_head}}`:
 
-This includes output for post.hbs in {{ghost_head}} based on the Open Graph protocol specification.
+- Schema.org - http://schema.org/docs/documents.html
+- Open Graph - http://ogp.me/
+- Twitter cards - https://dev.twitter.com/cards/overview
