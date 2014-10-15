@@ -4,6 +4,8 @@
             {{gh-trim-focus-input value=email class="email" type="email" placeholder="Email Address" name="email" 
             autofocus="autofocus" autocapitalize="off" autocorrect="off"}}
         </div>
-        <button class="btn btn-blue" type="submit" {{action "submit"}} {{bind-attr disabled=submitting}}>Send new password</button>
+        {{#gh-spin-button class="btn btn-blue" action="submit" submitting=submitting}}
+            Send new password
+        {{/gh-spin-button}}
     </form>
 </section>

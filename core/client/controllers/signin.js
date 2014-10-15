@@ -4,6 +4,7 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
     authenticator: 'simple-auth-authenticator:oauth2-password-grant',
 
     validationType: 'signin',
+    submitting: false,
 
     actions: {
         authenticate: function () {
@@ -15,11 +16,13 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
         validateAndAuthenticate: function () {
             var self = this;
 
+            this.toggleProperty('submitting');
             this.validate({ format: false }).then(function () {
                 self.notifications.closePassive();
                 self.send('authenticate');
             }).catch(function (errors) {
                 self.notifications.showErrors(errors);
+                self.toggleProperty('submitting');
             });
         }
     }

@@ -31,7 +31,9 @@
                 <p>Must be at least 8 characters</p>
             </div>
             <footer>
-                <button type="submit" class="btn btn-green btn-lg" {{action "setup"}} {{bind-attr disabled=submitting}}>Ok, Let's Do This</button>
+                {{#gh-spin-button class="btn btn-green btn-lg" action="setup" submitting=submitting}}
+                    Ok, Let's Do This
+                {{/gh-spin-button}}
             </footer>
         </form>
     </div>

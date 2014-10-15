@@ -53,6 +53,8 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         },
 
         sessionAuthenticationFailed: function (error) {
+            this.controllerFor('signin').toggleProperty('submitting');
+
             if (error.errors) {
                 this.notifications.showErrors(error.errors);
             } else {
@@ -63,6 +65,7 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
 
         sessionAuthenticationSucceeded: function () {
             var self = this;
+            this.controllerFor('signin').toggleProperty('submitting');
             this.store.find('user', 'me').then(function (user) {
                 self.send('signedIn', user);
                 var attemptedTransition = self.get('session').get('attemptedTransition');
