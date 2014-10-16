@@ -39,7 +39,7 @@ describe('Slug API', function () {
     });
 
     it('can generate user slug', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'tag', name: 'user name'})
+        SlugAPI.generate({context: {user: 1}, type: 'user', name: 'user name'})
         .then(function (results) {
             should.exist(results);
             testUtils.API.checkResponse(results, 'slugs');
