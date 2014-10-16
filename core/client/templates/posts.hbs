@@ -4,7 +4,7 @@
 </header>
 
 <div class="page-content">
-    <section class="content-list js-content-list">
+    <section {{bind-attr class=":content-list :js-content-list postListFocused:keyboard-focused"}}>
         <header class="floatingheader">
             <section class="content-filter">
                 <small>All Posts</small>
@@ -36,7 +36,7 @@
         </ol>
         {{/view}}
     </section>
-    <section class="content-preview js-content-preview">
+    <section {{bind-attr class=":content-preview :js-content-preview postContentFocused:keyboard-focused"}}>
         {{outlet}}
     </section>
 </div>
