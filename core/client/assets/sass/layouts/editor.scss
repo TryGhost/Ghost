@@ -616,6 +616,11 @@ body.zen {
         color: #fff;
     }
 }//.tag-label
+#entry-tags.focused {
+    .tag-label:before {
+        color: #fff;
+    }
+}
 
 .publish-bar-inner {
     display: flex;
