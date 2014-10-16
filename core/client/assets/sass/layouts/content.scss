@@ -63,6 +63,21 @@
         }
     }
 
+    &.keyboard-focused {
+        // This has to be a pseudo element to sit over the top of everything else in the content list
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 500;
+            pointer-events: none;
+            animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+        }
+    }
+
     .btn-green {
         @include icon($i-add);
         position: absolute;
@@ -196,11 +211,15 @@
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     background: #fff;
-    
+
     @media (max-width: 900px) {
         width: 100%;
         border: none;
         overflow: visible;
+    }
+
+    &.keyboard-focused {
+        animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
     }
 
     .unfeatured {

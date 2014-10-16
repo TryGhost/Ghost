@@ -57,3 +57,17 @@
     animation: fade-out 0.5s;
     animation-fill-mode: forwards;
 }
+
+
+//
+// Fade out inset box shadow for content page keyboard focus
+// --------------------------------------------------
+
+@keyframes keyboard-focus-style-fade-out {
+    from {
+        box-shadow: inset 0 0 30px 1px lighten($midgrey, 20%);
+    }
+    to {
+        box-shadow: none;
+    }
+}
