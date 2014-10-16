@@ -3,7 +3,7 @@ import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
 var SettingsGeneralRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody, loadingIndicator, CurrentUserSettings, {
-    classNames: ['settings-view-general'],
+    classNames: ['settings-view', 'settings-view-general'],
 
     beforeModel: function () {
         return this.currentUser()
