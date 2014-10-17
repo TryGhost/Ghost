@@ -86,7 +86,7 @@
         "grunt-express-server": "~0.4.19",
         "grunt-jscs": "~0.7.1",
         "grunt-mocha-cli": "~1.10.0",
-        "grunt-sass": "~0.14.1",
+        "grunt-sass": "~0.16.0",
         "grunt-shell": "~1.1.1",
         "grunt-update-submodules": "~0.4.1",
         "matchdep": "~0.3.0",
