@@ -1,4 +1,4 @@
-/* global key, console */
+/* global key */
 
 //Configure KeyMaster to respond to all shortcuts,
 //even inside of
@@ -17,7 +17,7 @@ key.setScope('default');
  * and implement a `shortcuts` hash.
  * In this hash, keys are shortcut combinations and values are route action names.
  *  (see [keymaster docs](https://github.com/madrobby/keymaster/blob/master/README.markdown)),
- * 
+ *
  * ```javascript
  * shortcuts: {
  *     'ctrl+s, command+s': 'save',
@@ -73,7 +73,6 @@ var ShortcutsRoute = Ember.Mixin.create({
     activate: function () {
         this._super();
         if (!this.shortcuts) {
-            console.error('Shortcuts not found on route');
             return;
         }
         this.registerShortcuts();
