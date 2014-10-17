@@ -641,7 +641,6 @@ body.zen {
     flex: 0 1 auto;
     align-self: auto;
     margin-right: 10px;
-    position: relative;
     height: 40px;
     overflow-y: hidden;
 
@@ -652,17 +651,6 @@ body.zen {
         padding-top: 8px;
         padding-bottom: 9px;
         height: 70px;
-    }
-
-    &:after {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 30px;
-        background: linear-gradient(to right, transparent 0%, darken($darkgrey, 4%) 100%);
-        pointer-events: none;
     }
 
 }//.publish-bar-2
