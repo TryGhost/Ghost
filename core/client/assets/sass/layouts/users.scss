@@ -4,6 +4,15 @@
 // Slug: /ghost/settings/users/
 // --------------------------------------------------
 
+.user-list-header {
+    padding-left: 0;
+}
+
+.content.settings-users {
+    padding: 0 40px;
+    overflow: auto;
+    height: 100%;
+}
 
 .invited-users {
     margin-bottom: 34px;

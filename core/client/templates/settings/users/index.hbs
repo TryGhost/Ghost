@@ -1,12 +1,12 @@
-<header class="settings-view-header">
-    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
-    <h2 class="page-title">Users</h2>
-    <section class="page-actions">
-        <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
-    </section>
-</header>
-
 {{#view "settings/users/users-list-view" tagName="section" class="content settings-users" }}
+    <header class="settings-view-header user-list-header">
+        {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+        <h2 class="page-title">Users</h2>
+        <section class="page-actions">
+            <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
+        </section>
+    </header>
+
     {{#if invitedUsers}}
 
         <section class="user-list invited-users">
