@@ -16,7 +16,10 @@
             <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo setCodeMirror="setCodeMirror" openModal="openModal"}}
+            {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo
+            setCodeMirror="setCodeMirror"
+            openModal="openModal"
+            typingPause="autoSave"}}
         </section>
     </section>
 
