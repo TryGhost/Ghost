@@ -22,7 +22,7 @@ var onChangeHandler = function (cm, changeObj) {
     cm.component.set('value', cm.getValue());
 
     // Send an action notifying a 5 second pause in typing/changes.
-    Ember.run.debounce(component, 'sendAction', 'typingPause', 5000);
+    Ember.run.debounce(component, 'sendAction', 'typingPause', 3000);
 };
 
 var onScrollHandler = function (cm) {
