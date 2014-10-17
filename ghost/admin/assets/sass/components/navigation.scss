@@ -151,6 +151,14 @@
         right: 15px;
         left: auto;
 
+        &.fade-in-scale {
+            animation-duration: 0.1s;
+        }
+
+        &.fade-out {
+            animation-duration: 0;
+        }
+
         .dropdown-menu {
             position: absolute;
             top: 0;
@@ -287,7 +295,7 @@
             position: absolute;
             top: 100%;
             right: 100%;
-            
+
             .dropdown-menu {
                 top: auto;
                 right: auto;
