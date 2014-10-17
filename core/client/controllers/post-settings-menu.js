@@ -102,7 +102,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     seoTitle: Ember.computed('titleScratch', 'metaTitleScratch', function () {
         var metaTitle = this.get('metaTitleScratch') || '';
 
-        return metaTitle.length > 0 ? metaTitle : this.get('titleScratch');
+        metaTitle = metaTitle.length > 0 ? metaTitle : this.get('titleScratch');
+
+        if (metaTitle.length > 70) {
+            metaTitle = metaTitle.substring(0, 70).trim();
+            metaTitle = Ember.Handlebars.Utils.escapeExpression(metaTitle);
+            metaTitle = new Ember.Handlebars.SafeString(metaTitle + '&hellip;');
+        }
+
+        return metaTitle;
     }),
 
     seoDescription: Ember.computed('scratch', 'metaDescriptionScratch', function () {
@@ -139,8 +147,17 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         return placeholder;
     }),
 
-    seoSlug: Ember.computed('slug', 'slugPlaceholder', function () {
-        return this.get('slug') ? this.get('slug') : this.get('slugPlaceholder');
+    seoURL: Ember.computed('slug', 'slugPlaceholder', function () {
+        var blogUrl = this.get('config').blogUrl,
+            seoSlug = this.get('slug') ? this.get('slug') : this.get('slugPlaceholder'),
+            seoURL = blogUrl + '/' + seoSlug + '/';
+
+        if (seoURL.length > 70) {
+            seoURL = seoURL.substring(0, 70).trim();
+            seoURL = new Ember.Handlebars.SafeString(seoURL + '&hellip;');
+        }
+
+        return seoURL;
     }),
 
     // observe titleScratch, keeping the post's slug in sync
