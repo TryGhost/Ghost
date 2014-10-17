@@ -212,7 +212,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             }
             this.set('title', this.get('titleScratch'));
 
-            return this.get('model').save().then(function (model) {
+            return this.get('model').save(options).then(function (model) {
                 if (!options.silent) {
                     self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
                 }
