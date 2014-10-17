@@ -64,12 +64,12 @@ ghost_head = function (options) {
             if (self.pagination.prev) {
                 prev = (self.pagination.prev > 1 ? prev = '/page/' + self.pagination.prev + '/' : prev = '/');
                 prev = (trimmedUrl) ? '/' + trimmedUrl + prev : prev;
-                head.push('<link rel="prev" href="' + config.urlFor({relativeUrl: prev}, true) + '" />');
+                head.push('<link rel="prev" href="' + config.urlFor({relativeUrl: prev, secure: self.secure}, true) + '" />');
             }
             if (self.pagination.next) {
                 next = '/page/' + self.pagination.next + '/';
                 next = (trimmedUrl) ? '/' + trimmedUrl + next : next;
-                head.push('<link rel="next" href="' + config.urlFor({relativeUrl: next}, true) + '" />');
+                head.push('<link rel="next" href="' + config.urlFor({relativeUrl: next, secure: self.secure}, true) + '" />');
             }
         }
 
