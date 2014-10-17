@@ -75,6 +75,7 @@
         text-align: left;
         color: #333;
         white-space: nowrap; // prevent links from randomly breaking onto new lines
+        transition: none;
     }
 
     i {
