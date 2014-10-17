@@ -73,7 +73,7 @@ CasperTest.begin('Can transition to the editor and back', 6, function suite(test
     });
 
     casper.thenTransitionAndWaitForScreenLoad('editor', function testTransitionToEditor() {
-        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/editor\//, 'Landed on the correct URL');
         test.assertExists('.entry-markdown', 'Ghost editor is present');
         test.assertExists('.entry-preview', 'Ghost preview is present');
     });
