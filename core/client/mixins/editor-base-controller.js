@@ -296,6 +296,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             if (this.get('model.isDraft')) {
                 this.send('save', {silent: true, disableNProgress: true});
             }
+        },
+
+        autoSaveOnce: function () {
+            if (this.get('isNew')) {
+                this.send('autoSave');
+            }
         }
     }
 });
