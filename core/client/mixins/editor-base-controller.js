@@ -5,17 +5,13 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.isDirty`)
-var watchedProps = ['scratch', 'titleScratch', 'model.isDirty'];
+var watchedProps = ['scratch', 'titleScratch', 'model.isDirty', 'tags.[]'];
 
 PostModel.eachAttribute(function (name) {
     watchedProps.push('model.' + name);
 });
 
-// watch if number of tags changes on the model
-watchedProps.push('tags.[]');
-
 var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
-
     needs: ['post-tags-input'],
 
     init: function () {
@@ -34,11 +30,14 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
      */
     willPublish: boundOneWay('isPublished'),
 
+    // Make sure editor starts with markdown shown
+    isPreview: false,
+
     // set by the editor route and `isDirty`. useful when checking
     // whether the number of tags has changed for `isDirty`.
     previousTagNames: null,
 
-    tagNames: Ember.computed('tags.[]', function () {
+    tagNames: Ember.computed('tags.@each.name', function () {
         return this.get('tags').mapBy('name');
     }),
 
@@ -130,11 +129,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         // which does *not* change the model's `isDirty` property,
         // `isDirty` will tell us if the other props have changed,
         // as long as the model is not new (model.isNew === false).
-        if (model.get('isDirty')) {
-            return true;
-        }
-
-        return false;
+        return model.get('isDirty');
     })),
 
     // used on window.onbeforeunload
@@ -152,12 +147,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         errors: {
             post: {
                 published: {
-                    'published': 'Update failed.',
-                    'draft': 'Saving failed.'
+                    published: 'Update failed.',
+                    draft: 'Saving failed.'
                 },
                 draft: {
-                    'published': 'Publish failed.',
-                    'draft': 'Saving failed.'
+                    published: 'Publish failed.',
+                    draft: 'Saving failed.'
                 }
 
             }
@@ -166,12 +161,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         success: {
             post: {
                 published: {
-                    'published': 'Updated.',
-                    'draft': 'Saved.'
+                    published: 'Updated.',
+                    draft: 'Saved.'
                 },
                 draft: {
-                    'published': 'Published!',
-                    'draft': 'Saved.'
+                    published: 'Published!',
+                    draft: 'Saved.'
                 }
             }
         }
@@ -191,16 +186,15 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         this.notifications.showError(message, { delayed: delay });
     },
 
-    shouldFocusTitle: Ember.computed('model', function () {
-        return !!this.get('model.isNew');
-    }),
+    shouldFocusTitle: Ember.computed.alias('model.isNew'),
 
     actions: {
-        save: function () {
+        save: function (options) {
             var status = this.get('willPublish') ? 'published' : 'draft',
                 prevStatus = this.get('status'),
                 isNew = this.get('isNew'),
                 self = this;
+            options = options || {};
 
             self.notifications.closePassive();
 
@@ -210,15 +204,23 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('markdown', this.getMarkdown().withoutMarkers);
-            this.set('title', this.get('titleScratch'));
             this.set('status', status);
 
+            // Set a default title
+            if (!this.get('titleScratch')) {
+                this.set('titleScratch', '(Untitled)');
+            }
+            this.set('title', this.get('titleScratch'));
+
             return this.get('model').save().then(function (model) {
-                self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+                if (!options.silent) {
+                    self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+                }
                 return model;
             }).catch(function (errors) {
-                self.showErrorNotification(prevStatus, self.get('status'), errors);
-
+                if (!options.silent) {
+                    self.showErrorNotification(prevStatus, self.get('status'), errors);
+                }
                 self.set('status', prevStatus);
 
                 return Ember.RSVP.reject(errors);
@@ -286,11 +288,14 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             editor.replaceSelection(result_src);
         },
 
-        // Make sure editor starts with markdown shown
-        isPreview: false,
-
         togglePreview: function (preview) {
             this.set('isPreview', preview);
+        },
+
+        autoSave: function () {
+            if (this.get('model.isDraft')) {
+                this.send('save', {silent: true, disableNProgress: true});
+            }
         }
     }
 });
