@@ -18,7 +18,7 @@ var EditorSaveButtonView = Ember.View.extend({
 
     'saveText': Ember.computed('controller.willPublish', function () {
         return this.get('controller.willPublish') ? this.get('publishText') : this.get('draftText');
-    }),
+    })
 });
 
 export default EditorSaveButtonView;
