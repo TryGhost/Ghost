@@ -17,6 +17,27 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
         test.assertExists('.entry-preview', 'Ghost preview is present');
     });
 
+    // Part 1: Test saving with no data - title should default
+    casper.waitForSelector('#entry-title', function then() {
+        test.assertEvalEquals(function () {
+            return document.getElementById('entry-title').value;
+        }, '', 'Title is empty');
+    });
+
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assert(true, 'Can save with no title.');
+        test.assertEvalEquals(function () {
+            return document.getElementById('entry-title').value;
+        }, '(Untitled)', 'Title is "(Untitled)"');
+    }, function onTimeout() {
+        test.assert(false, 'Failed to save without a title.');
+    });
+
+    this.thenClick('.js-bb-notification .close');
+
+    // Part 2: Test saving with data
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
         casper.writeContentToCodeMirror(testPost.html);
@@ -309,15 +330,6 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
-    casper.then(function createTestPost() {
-        casper.sendKeys('#entry-title', testPost.title);
-        casper.writeContentToCodeMirror(testPost.html);
-    });
-
-    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
-        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'test', 'Editor value is correct');
-    });
-
     casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
     casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu', function onSuccess() {
@@ -325,6 +337,15 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
         test.assertNotVisible(
             '.js-publish-splitbutton .delete', 'delete post button shouldn\'t be visible on unsaved drafts'
         );
+    });
+
+    casper.then(function createTestPost() {
+        casper.sendKeys('#entry-title', testPost.title);
+        casper.writeContentToCodeMirror(testPost.html);
+    });
+
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText('.entry-preview .rendered-markdown', 'test', 'Editor value is correct');
     });
 
     casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
@@ -480,7 +501,6 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
     // Fill title and content
     casper.then(function writePost() {
         casper.sendKeys('#entry-title', new Array(160).join('x'));
-        casper.writeContentToCodeMirror('body content');
     });
 
     casper.then(function switchMenuToPublish() {
