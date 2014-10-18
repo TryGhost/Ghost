@@ -619,6 +619,32 @@ var _              = require('lodash'),
                         params: '--init'
                     }
                 }
+            },
+
+            // ### grunt-retire
+            // Grunt task to check for outdated front-end code
+            retire: {
+                js: ['bower_components/**/*.js'], /** Which js-files to scan. **/
+                node: ['.'], /** Which node directories to scan (containing package.json). **/
+                options: {
+                    proxy: 'http://localhost:2368',
+                    verbose: false,
+                    packageOnly: true,
+                    jsRepository: 'https://raw.github.com/bekk/retire.js/master/repository/jsrepository.json',
+                    nodeRepository: 'https://raw.github.com/bekk/retire.js/master/repository/npmrepository.json',
+                    // ignore: 'documents,java',
+                    ignorefile: '.retireignore' /** list of files to ignore **/
+                }
+            },
+
+            // ### grunt-david
+            // Grunt task to check for outdated packages
+            david: {
+                all: {
+                    options: {
+                        update: false
+                    }
+                }
             }
         };
 
@@ -1052,6 +1078,13 @@ var _              = require('lodash'),
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
            ['default', 'express:dev', 'watch']);
+
+        // ### Validate Packages
+        // Uses grunt-nsp-package to check for vulnerable dependencies
+        grunt.registerTask('audit',
+            'Checks for outdated / vulnerable packages\n' +
+            '- Please run with the --force flag on',
+            ['retire', 'validate-package', 'david']);
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
