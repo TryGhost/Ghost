@@ -6,7 +6,8 @@
 <div class="page-content">
     <header>
         <section class="box entry-title">
-            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=titleScratch tabindex="1" focus=shouldFocusTitle onFocusOut="autoSaveOnce"}}
+            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=titleScratch
+            tabindex="1" focus=shouldFocusTitle}}
         </section>
     </header>
 
@@ -17,9 +18,8 @@
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
             {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo
-            setCodeMirror="setCodeMirror"
-            openModal="openModal"
-            typingPause="autoSave"}}
+            setCodeMirror="setCodeMirror" openModal="openModal" typingPause="autoSave"
+            focus=shouldFocusEditor onFocusIn="autoSaveNew"}}
         </section>
     </section>
 

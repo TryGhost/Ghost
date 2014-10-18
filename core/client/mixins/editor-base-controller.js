@@ -187,6 +187,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     },
 
     shouldFocusTitle: Ember.computed.alias('model.isNew'),
+    shouldFocusEditor: Ember.computed.not('model.isNew'),
 
     actions: {
         save: function (options) {
@@ -210,6 +211,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             if (!this.get('titleScratch')) {
                 this.set('titleScratch', '(Untitled)');
             }
+
             this.set('title', this.get('titleScratch'));
 
             return this.get('model').save(options).then(function (model) {
@@ -298,7 +300,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             }
         },
 
-        autoSaveOnce: function () {
+        autoSaveNew: function () {
             if (this.get('isNew')) {
                 this.send('autoSave');
             }
