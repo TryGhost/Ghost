@@ -71,3 +71,5 @@ config.js
 
 # Coverage reports
 coverage.html
+
+sftp-config.json
