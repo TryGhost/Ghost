@@ -633,12 +633,12 @@ var _              = require('lodash'),
         // Custom test runner for our Casper.js functional tests
         // This really ought to be refactored into a separate grunt task module
         grunt.registerTask('spawnCasperJS', function (target) {
-            target = _.contains(['client', 'frontend', 'setup'], target) ? target + '/' : undefined;
+            target = _.contains(['client', 'setup'], target) ? target + '/' : undefined;
 
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
                 args = ['test']
-                    .concat(grunt.option('target') || target || ['client/', 'frontend/'])
+                    .concat(grunt.option('target') || target || ['client/'])
                     .concat(['--includes=base.js', '--log-level=debug', '--port=2369']);
 
             // Forward parameters from grunt to casperjs
