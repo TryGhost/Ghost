@@ -1,7 +1,7 @@
 {
     "name"        : "ghost",
     "version"     : "0.5.2-zh-rc1",
-    "description" : "Just a blogging platform.",
+    "description" : "简约、纯粹的独立博客平台",
     "author"      : "Ghost Foundation",
     "homepage"    : "http://ghost.diancloud.com",
     "keywords"    : [
