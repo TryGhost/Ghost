@@ -21,6 +21,8 @@ var Promise       = require('bluebird'),
     teardown,
     setup,
     doAuth,
+    login,
+    togglePermalinks,
 
     initFixtures,
     initData,
@@ -462,7 +464,6 @@ setup = function setup() {
 doAuth = function doAuth() {
     var options = arguments,
         request = arguments[0],
-        user = DataGenerator.forModel.users[0],
         fixtureOps;
 
     // Remove request from this list
@@ -474,16 +475,52 @@ doAuth = function doAuth() {
 
     fixtureOps = getFixtureOps(options);
 
+    return sequence(fixtureOps).then(function () {
+        return login(request);
+    });
+};
+
+login = function login(request) {
+    var user = DataGenerator.forModel.users[0];
+
     return new Promise(function (resolve, reject) {
-        return sequence(fixtureOps).then(function () {
-            request.post('/ghost/api/v0.1/authentication/token/')
-                .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+        request.post('/ghost/api/v0.1/authentication/token/')
+            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+            .end(function (err, res) {
+                if (err) {
+                    return reject(err);
+                }
+
+                resolve(res.body.access_token);
+            });
+    });
+};
+
+togglePermalinks = function togglePermalinks(request, toggle) {
+    var permalinkString = toggle === 'date' ? '/:year/:month/:day/:slug/' : '/:slug/';
+
+    return new Promise(function (resolve, reject) {
+        doAuth(request).then(function (token) {
+            request.put('/ghost/api/v0.1/settings/')
+                .set('Authorization', 'Bearer ' + token)
+                .send({settings: [
+                    {
+                        uuid: '75e994ae-490e-45e6-9207-0eab409c1c04',
+                        key: 'permalinks',
+                        value: permalinkString,
+                        type: 'blog',
+                        created_at: '2014-10-16T17:39:16.005Z',
+                        created_by: 1,
+                        updated_at: '2014-10-20T19:44:18.077Z',
+                        updated_by: 1
+                    }
+                ]})
                 .end(function (err, res) {
                     if (err) {
                         return reject(err);
                     }
 
-                    resolve(res.body.access_token);
+                    resolve(res.body);
                 });
         });
     });
@@ -499,6 +536,8 @@ module.exports = {
     teardown: teardown,
     setup: setup,
     doAuth: doAuth,
+    login: login,
+    togglePermalinks: togglePermalinks,
 
     initFixtures: initFixtures,
     initData: initData,
