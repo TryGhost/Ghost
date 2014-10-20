@@ -134,11 +134,10 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
     // used on window.onbeforeunload
     unloadDirtyMessage: function () {
-        return '==============================\n\n' +
-            'Hey there! It looks like you\'re in the middle of writing' +
-            ' something and you haven\'t saved all of your content.' +
-            '\n\nSave before you go!\n\n' +
-            '==============================';
+         return '==============================\n\n' +
+                '刚刚做的修改还没有保存呢。' +
+                '\n\n建议保存后离开!\n\n' +
+                '==============================';
     },
 
     //TODO: This has to be moved to the I18n localization file.
@@ -147,12 +146,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         errors: {
             post: {
                 published: {
-                    published: 'Update failed.',
-                    draft: 'Saving failed.'
+                    published: '更新失败。',
+                    draft: '保存失败。'
                 },
                 draft: {
-                    published: 'Publish failed.',
-                    draft: 'Saving failed.'
+                    published: '发布失败。',
+                    draft: '保存失败。'
                 }
 
             }
@@ -161,12 +160,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         success: {
             post: {
                 published: {
-                    published: 'Updated.',
-                    draft: 'Saved.'
+                    published: '更新成功。',
+                    draft: '保存成功。'
                 },
                 draft: {
-                    published: 'Published!',
-                    draft: 'Saved.'
+                    published: '发布成功。',
+                    draft: '保存成功。'
                 }
             }
         }
@@ -209,7 +208,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
             // Set a default title
             if (!this.get('titleScratch')) {
-                this.set('titleScratch', '(Untitled)');
+                this.set('titleScratch', '(未命名)');
             }
 
             this.set('title', this.get('titleScratch'));

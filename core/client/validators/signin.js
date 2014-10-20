@@ -4,11 +4,11 @@ var SigninValidator = Ember.Object.create({
             validationErrors = [];
 
         if (!validator.isEmail(data.identification)) {
-            validationErrors.push('Invalid Email');
+            validationErrors.push('邮箱格式不正确');
         }
 
         if (!validator.isLength(data.password || '', 1)) {
-            validationErrors.push('Please enter a password');
+            validationErrors.push('请输入密码');
         }
 
         return validationErrors;

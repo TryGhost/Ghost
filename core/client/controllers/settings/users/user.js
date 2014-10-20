@@ -71,7 +71,7 @@ var SettingsUserController = Ember.ObjectController.extend({
             model.reload().then(function () {
                 if (self.get('invited')) {
                     model.destroyRecord().then(function () {
-                        var notificationText = 'Invitation revoked. (' + email + ')';
+                        var notificationText = '邀请已撤销。 (' + email + ')';
                         self.notifications.showSuccess(notificationText, false);
                     }).catch(function (error) {
                         self.notifications.showAPIError(error);
@@ -79,7 +79,7 @@ var SettingsUserController = Ember.ObjectController.extend({
                 } else {
                     //if the user is no longer marked as "invited", then show a warning and reload the route
                     self.get('target').send('reload');
-                    self.notifications.showError('This user has already accepted the invitation.', {delayed: 500});
+                    self.notifications.showError('这个用户已接受了你的邀请。', {delayed: 500});
                 }
             });
         },
@@ -88,11 +88,11 @@ var SettingsUserController = Ember.ObjectController.extend({
             var self = this;
 
             this.get('model').resendInvite().then(function (result) {
-                var notificationText = 'Invitation resent! (' + self.get('email') + ')';
+                var notificationText = '邀请邮件发送成功。(' + self.get('email') + ')';
                 // If sending the invitation email fails, the API will still return a status of 201
                 // but the user's status in the response object will be 'invited-pending'.
                 if (result.users[0].status === 'invited-pending') {
-                    self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+                    self.notifications.showWarn('邀请邮件发送失败，请重新发送。');
                 } else {
                     self.get('model').set('status', result.users[0].status);
                     self.notifications.showSuccess(notificationText);
@@ -121,7 +121,7 @@ var SettingsUserController = Ember.ObjectController.extend({
                 var currentPath,
                     newPath;
 
-                self.notifications.showSuccess('Settings successfully saved.');
+                self.notifications.showSuccess('用户资料保存成功。');
 
                 // If the user's slug has changed, change the URL and replace
                 // the history so refresh and back button still work
@@ -157,7 +157,7 @@ var SettingsUserController = Ember.ObjectController.extend({
                         'ne2Password': ''
                     });
 
-                    self.notifications.showSuccess('Password updated.');
+                    self.notifications.showSuccess('密码修改成功。');
 
                     return model;
                 }).catch(function (errors) {

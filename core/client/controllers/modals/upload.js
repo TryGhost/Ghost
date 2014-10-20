@@ -6,7 +6,7 @@ var UploadController = Ember.Controller.extend({
             var self = this;
 
             this.get('model').save().then(function (model) {
-                self.notifications.showSuccess('Saved');
+                self.notifications.showSuccess('保存成功');
                 return model;
             }).catch(function (err) {
                 self.notifications.showErrors(err);

@@ -1,9 +1,9 @@
 {{#view "settings/users/users-list-view" tagName="section" class="content settings-users" }}
     <header class="settings-view-header user-list-header">
-        {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
-        <h2 class="page-title">Users</h2>
+        {{#link-to "settings" class="btn btn-default btn-back"}}返回{{/link-to}}
+        <h2 class="page-title">用户列表</h2>
         <section class="page-actions">
-            <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
+            <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >邀请用户</button>
         </section>
     </header>
 
@@ -11,7 +11,7 @@
 
         <section class="user-list invited-users">
 
-            <h4 class="user-list-title">Invited users</h4>
+            <h4 class="user-list-title">已邀请用户</h4>
 
             {{#each invitedUsers itemController="settings/users/user"}}
                 <div class="user-list-item">
@@ -20,14 +20,14 @@
                     <div class="user-list-item-body">
                         <span class="name">{{email}}</span><br>
                             {{#if pending}}
-                                <span class="red">Invitation not sent - please try again</span>
+                                <span class="red">邀请发送失败 - 请重试</span>
                             {{else}}
-                                <span class="description">Invitation sent: {{created_at}}</span>
+                                <span class="description">邀请已发送 @{{created_at}}</span>
                             {{/if}}
                     </div>
                     <aside class="user-list-item-aside">
-                        <a class="user-list-action" href="#" {{action "revoke"}}>Revoke</a>
-                        <a class="user-list-action" href="#" {{action "resend"}}>Resend</a>
+                        <a class="user-list-action" href="#" {{action "revoke"}}>取消邀请</a>
+                        <a class="user-list-action" href="#" {{action "resend"}}>重发邮件</a>
                     </aside>
                 </div>
             {{/each}}
@@ -38,12 +38,12 @@
 
     <section class="user-list active-users">
 
-        <h4 class="user-list-title">Active users</h4>
+        <h4 class="user-list-title">已注册用户</h4>
 
         {{#each activeUsers itemController="settings/users/user"}}
             {{#link-to 'settings.users.user' this class="user-list-item" }}
                 <span class="user-list-item-figure" {{bind-attr style=image}}>
-                    <span class="hidden">Photo of {{unbound name}}</span>
+                    <span class="hidden">{{unbound name}}的头像</span>
                 </span>
 
                 <div class="user-list-item-body">
@@ -51,7 +51,7 @@
                         {{name}}
                     </span>
                     <br>
-                    <span class="description">Last seen: {{unbound last_login}}</span>
+                    <span class="description">{{unbound last_login}}登录</span>
                 </div>
                 <aside class="user-list-item-aside">
                     {{#unless isAuthor}}

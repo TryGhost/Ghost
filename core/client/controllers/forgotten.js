@@ -26,12 +26,12 @@ var ForgottenController = Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
-                    self.notifications.showSuccess('Please check your email for instructions.', {delayed: true});
+                    self.notifications.showSuccess('发送成功，请按照邮件提示重置密码。(如未收到，请检查垃圾箱)', {delayed: true});
                     self.set('email', '');
                     self.transitionToRoute('signin');
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
-                    self.notifications.showAPIError(resp, { defaultErrorText: 'There was a problem logging in, please try again.' });
+                    self.notifications.showAPIError(resp, { defaultErrorText: '登录时系统错误,请重试。（ 反馈QQ群: 335978388 ）' });
                 });
             }).catch(function (errors) {
                 self.toggleProperty('submitting');

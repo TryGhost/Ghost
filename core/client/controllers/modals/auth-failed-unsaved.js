@@ -21,11 +21,11 @@ var AuthFailedUnsavedController = Ember.Controller.extend({
 
     confirm: {
         accept: {
-            text: 'Leave',
+            text: '离开此页',
             buttonClass: 'btn btn-red'
         },
         reject: {
-            text: 'Stay',
+            text: '留在此页',
             buttonClass: 'btn btn-default btn-minor'
         }
     }

@@ -38,7 +38,9 @@ $shadow: rgba(0,0,0,0.05) 0 1px 5px;
 $default-transition-duration: 0.3s;
 $side-outlet-transition-duration: 0.4s;
 
-$font-family: 'Open Sans', sans-serif;
+//$font-family: 'Open Sans', sans-serif; //Hacked By weiping 
+$font-family: 'Helvetica','STHeiti',  "Open Sans", "Hiragino Sans GB", "Microsoft Yahei", "微软雅黑",  "宋体",  sans-serif,  "\5b8b\4f53";   //Hacked By Weiping
+
 $font-family-mono: monospace;
 
 $at2x: 2 device-pixel-ratio;

@@ -91,7 +91,7 @@
 
         &.url{
             font: -webkit-small-control;
-            width: 276px;
+            width: 100%;                // Hacked By Weiping 
             vertical-align: middle;
             padding: 9px 7px;
             margin: 10px 0;
@@ -141,6 +141,15 @@
 } // .image-uploader
 
 
+//Hacked by weiping 
+.image-uploader-url {
+    .description {
+        text-align: left;
+    }
+} // .image-uploader-url 
+
+
+
 //
 // Pre Image Uploader
 // --------------------------------------------------
@@ -178,6 +187,11 @@
         margin: 0 auto;
         line-height: 0;
     }
+
+    .description {  //Hacked By Weiping
+        text-align: center;
+    }
+
 
     .image-cancel {
         @include icon($i-trash, 11px);

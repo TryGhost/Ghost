@@ -7,7 +7,7 @@ var UploadUi,
 
 UploadUi = function ($dropzone, settings) {
     var $url = '<div class="js-url"><input class="url js-upload-url" type="url" placeholder="http://"/></div>',
-        $cancel = '<a class="image-cancel js-cancel" title="Delete"><span class="hidden">Delete</span></a>',
+        $cancel = '<a class="image-cancel js-cancel" title="Delete"><span class="hidden">删除</span></a>',
         $progress =  $('<div />', {
             'class' : 'js-upload-progress progress progress-success active',
             'role': 'progressbar',
@@ -97,11 +97,11 @@ UploadUi = function ($dropzone, settings) {
                     $dropzone.trigger('uploadfailure', [data.result]);
                     $dropzone.find('.js-upload-progress-bar').addClass('fail');
                     if (data.jqXHR.status === 413) {
-                        $dropzone.find('div.js-fail').text('The image you uploaded was larger than the maximum file size your server allows.');
+                        $dropzone.find('div.js-fail').text('图片太大了！可将图片上传到云存储，通过地址引用。');
                     } else if (data.jqXHR.status === 415) {
-                        $dropzone.find('div.js-fail').text('The image type you uploaded is not supported. Please use .PNG, .JPG, .GIF, .SVG.');
+                        $dropzone.find('div.js-fail').text('图片格式不正确。支持的图片格式: PNG, JPG, GIF, SVG。');
                     } else {
-                        $dropzone.find('div.js-fail').text('Something went wrong :(');
+                        $dropzone.find('div.js-fail').text('出错了 :(');
                     }
                     $dropzone.find('div.js-fail, button.js-fail').fadeIn(1500);
                     $dropzone.find('button.js-fail').on('click', function () {
@@ -120,16 +120,16 @@ UploadUi = function ($dropzone, settings) {
 
         buildExtras: function () {
             if (!$dropzone.find('span.media')[0]) {
-                $dropzone.prepend('<span class="media"><span class="hidden">Image Upload</span></span>');
+                $dropzone.prepend('<span class="media"><span class="hidden">上传图片</span></span>');
             }
             if (!$dropzone.find('div.description')[0]) {
-                $dropzone.append('<div class="description">Add image</div>');
+                $dropzone.append('<div class="description">单击添加图片</div>');
             }
             if (!$dropzone.find('div.js-fail')[0]) {
-                $dropzone.append('<div class="js-fail failed" style="display: none">Something went wrong :(</div>');
+                $dropzone.append('<div class="js-fail failed" style="display: none">出错了 :(</div>');
             }
             if (!$dropzone.find('button.js-fail')[0]) {
-                $dropzone.append('<button class="js-fail btn btn-green" style="display: none">Try Again</button>');
+                $dropzone.append('<button class="js-fail btn btn-green" style="display: none">重试</button>');
             }
             if (!$dropzone.find('a.image-url')[0]) {
                 $dropzone.append('<a class="image-url" title="Add image from URL"><span class="hidden">URL</span></a>');
@@ -146,6 +146,10 @@ UploadUi = function ($dropzone, settings) {
         initWithDropzone: function () {
             var self = this;
             //This is the start point if no image exists
+            $dropzone.find('div.description').html('单击添加图片');   //Hacked By Weiping
+            $dropzone.find('div.description').show(); //Hacked By Weiping
+
+
             $dropzone.find('img.js-upload-target').css({'display': 'none'});
             $dropzone.removeClass('pre-image-uploader image-uploader-url').addClass('image-uploader');
             this.removeExtras();
@@ -161,6 +165,9 @@ UploadUi = function ($dropzone, settings) {
         },
         initUrl: function () {
             var self = this, val;
+            $dropzone.find('div.description').html('输入图片地址');  //Hacked By Weiping
+            $dropzone.find('div.description').show(); //Hacked By Weiping
+
             this.removeExtras();
             $dropzone.addClass('image-uploader-url').removeClass('pre-image-uploader');
             $dropzone.find('.js-fileupload').addClass('right');
@@ -176,8 +183,13 @@ UploadUi = function ($dropzone, settings) {
 
             $dropzone.find('div.description').before($url);
 
-            if (settings.editor) {
-                $dropzone.find('div.js-url').append('<button class="btn btn-blue js-button-accept">Save</button>');
+            if (settings.editor) { //Hacked By weiping 
+
+                $dropzone.find('div.description').hide();
+                $dropzone.find('div.js-url').append('<div class="description">输入图片地址</div>'); 
+                $dropzone.find('div.js-url').append('<div><button class="btn btn-blue js-button-accept">保存</button></div>');
+
+                //$dropzone.find('div.image-uploader-url').append('<div><button class="btn btn-blue js-button-accept">保存</button></div>');
             }
 
             $dropzone.find('.js-button-accept').on('click', function () {
@@ -195,7 +207,7 @@ UploadUi = function ($dropzone, settings) {
 
             // Only show the toggle icon if there is a dropzone mode to go back to
             if (settings.fileStorage !== false) {
-                $dropzone.append('<a class="image-upload" title="Add image"><span class="hidden">Upload</span></a>');
+                $dropzone.append('<a class="image-upload" title="Add image"><span class="hidden">上传</span></a>');
             }
 
             $dropzone.find('a.image-upload').on('click', function () {
@@ -209,7 +221,7 @@ UploadUi = function ($dropzone, settings) {
             var self = this;
             // This is the start point if an image already exists
             $dropzone.removeClass('image-uploader image-uploader-url').addClass('pre-image-uploader');
-            $dropzone.find('div.description').hide();
+            //$dropzone.find('div.description').hide();
             $dropzone.append($cancel);
             $dropzone.find('.js-cancel').on('click', function () {
                 $dropzone.find('img.js-upload-target').attr({'src': ''});

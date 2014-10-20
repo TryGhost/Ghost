@@ -15,7 +15,7 @@ var LeaveEditorController = Ember.Controller.extend({
             }
 
             if (!transition || !editorController) {
-                this.notifications.showError('Sorry, there was an error in the application. Please let the Ghost team know what happened.');
+                this.notifications.showError('对不起, 出现应用出错了，请联系我们修复.（ 反馈QQ群: 335978388 ）');
                 return true;
             }
 

@@ -3,21 +3,21 @@
 <div id="entry-controls" class="right-outlet">
     <div {{bind-attr class="isViewingSubview:outlet-pane-out-left:outlet-pane-in :post-settings-menu :outlet-pane"}}>
         <div class="post-settings-header">
-            <h4>Post Settings</h4>
-            <button class="close icon-x post-settings-header-action" {{action "closeRightOutlet"}}><span class="hidden">Close</span></button>
+            <h4>博文选项</h4>
+            <button class="close icon-x post-settings-header-action" {{action "closeRightOutlet"}}><span class="hidden">关闭</span></button>
         </div>
         <div class="post-settings-content">
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" image=image tagName="section"}}
             <form>
             <div class="form-group">
-                <label for="url">Post URL</label>
+                <label for="url">博文地址</label>
                 <span class="input-icon icon-link">
                     {{gh-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" placeholder=slugPlaceholder selectOnClick="true" stopEnterKeyDownPropagation="true"}}
                 </span>
             </div>
 
             <div class="form-group">
-                <label for="post-setting-date">Publish Date</label>
+                <label for="post-setting-date">发布时间</label>
                 <span class="input-icon icon-calendar">
                     {{gh-input class="post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" placeholder=publishedAtPlaceholder stopEnterKeyDownPropagation="true"}}
                 </span>
@@ -25,7 +25,7 @@
 
             {{#unless session.user.isAuthor}}
             <div class="form-group for-select">
-                <label for="author-list">Author</label>
+                <label for="author-list">作者</label>
                 <span class="input-icon icon-user">
                     <span class="gh-select" tabindex="0">
                     {{view Ember.Select
@@ -43,8 +43,8 @@
             <ul class="nav-list nav-list-block">
                 {{#gh-tab tagName="li" classNames="nav-list-item"}}
                     <a href="#">
-                        <b>Meta Data</b>
-                        <span>Extra content for SEO and social media.</span>
+                        <b>搜索引擎优化</b>
+                        <span>优化在搜索引擎中的呈现效果，提高访问量。</span>
                     </a>
                 {{/gh-tab}}
             </ul>
@@ -53,13 +53,13 @@
                 <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
                     {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=page}}
                     <span class="input-toggle-component"></span>
-                    <p>Turn this post into a static page</p>
+                    <p>作为独立页面(不出现在博文列表)</p>
                 </label>
 
                 <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
                     {{input type="checkbox" name="featured" id="featured" class="post-setting-featured" checked=featured}}
                     <span class="input-toggle-component"></span>
-                    <p>Feature this post</p>
+                    <p>这是特殊页面(部分主题呈现样式不同)</p>
                 </label>
             </div>
             
@@ -69,35 +69,36 @@
     <div {{bind-attr class="isViewingSubview:outlet-pane-in:outlet-pane-out-right :post-settings-menu :outlet-pane"}}>
     {{#gh-tab-pane}}
         <div class="post-settings-header subview">
-            <button {{action "closeSubview"}} class="back icon-chevron-left post-settings-header-action"><span class="hidden">Back</span></button>
-            <h4>Meta Data</h4>
+            <button {{action "closeSubview"}} class="back icon-chevron-left post-settings-header-action"><span class="hidden">返回</span></button>
+            <h4>搜索引擎优化</h4>
         </div>
 
 
         <div class="post-settings-content">
             <form>
             <div class="form-group">
-                <label for="meta-title">Meta Title</label>
+                <label for="meta-title">呈现标题</label>
                 {{gh-input class="post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
-                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
+                <p> <b>15</b> 字以内效果最佳。 已输入 {{gh-count-down-characters metaTitleScratch 15}} 个字</p>
             </div>
 
             <div class="form-group">
-                <label for="meta-description">Meta Description</label>
+                <label for="meta-description">呈现摘要</label>
                 {{gh-textarea class="post-setting-meta-description" id="meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
-                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
+                <p><b>80</b> 字以内效果最佳。 characters. 已输入 {{gh-count-down-characters metaDescriptionScratch 80}} 个字</p>
             </div>
 
             <div class="form-group">
-                <label>Search Engine Result Preview</label>
+                <label>搜索引擎呈现效果预览</label>
                 <div class="seo-preview">
                     <div class="seo-preview-title">{{seoTitle}}</div>
-                    <div class="seo-preview-link">{{seoURL}}</div>
                     <div class="seo-preview-description">{{seoDescription}}</div>
+                    <div class="seo-preview-link">{{seoURL}}</div>
                 </div>
             </div>
             </form>
         </div>
+
     {{/gh-tab-pane}}
     </div>
 </div>
