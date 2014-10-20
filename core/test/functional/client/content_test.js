@@ -109,7 +109,7 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
 //    });
 // });
 
-CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
+CasperTest.begin('Posts can be marked as featured', 6, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
@@ -140,14 +140,9 @@ CasperTest.begin('Posts can be marked as featured', 8, function suite(test) {
     // Mark as not featured
     casper.thenClick('.content-preview .featured');
 
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(resource.status < 400);
-    });
-
-    casper.then(function untoggledFeaturedTest() {
-        test.assertDoesntExist('.content-preview .featured', 'Untoggled featured.');
+    casper.waitWhileSelector('.content-preview .featured', function onSuccess() {
         test.assertDoesntExist('.content-list-content li.featured:first-of-type');
     }, function onTimeout() {
-        test.assert(false, 'Couldn\'t unfeature post.');
-    });
+        casper.test.fail('Couldn\'t unfeature post.');
+    }, 2000);
 });
