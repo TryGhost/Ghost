@@ -20,11 +20,11 @@ var DeleteUserController = Ember.Controller.extend({
     },
     confirm: {
         accept: {
-            text: 'Delete User',
+            text: '确认删除',
             buttonClass: 'btn btn-red'
         },
         reject: {
-            text: 'Cancel',
+            text: '取消操作',
             buttonClass: 'btn btn-default btn-minor'
         }
     }

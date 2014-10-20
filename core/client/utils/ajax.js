@@ -28,11 +28,11 @@ var getRequestErrorMessage = function (request, performConcat) {
                     return errorItem.message;
                 });
             } else {
-                message =  request.responseJSON.error || 'Unknown Error';
+                message =  request.responseJSON.error || '未知错误（ 反馈QQ群: 335978388 ）';
             }
         } catch (e) {
-            msgDetail = request.status ? request.status + ' - ' + request.statusText : 'Server was not available';
-            message = 'The server returned an error (' + msgDetail + ').';
+            msgDetail = request.status ? request.status + ' - ' + request.statusText : '服务器挂了（ 反馈QQ群: 335978388 ）';
+            message = '服务返回错误 (' + msgDetail + ')。（ 反馈QQ群: 335978388 ）';
         }
     }
 

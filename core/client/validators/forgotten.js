@@ -5,7 +5,7 @@ var ForgotValidator = Ember.Object.create({
 
         if (!validator.isEmail(data.email)) {
             validationErrors.push({
-                message: 'Invalid email address'
+                message: '邮箱格式不正确。'
             });
         }
 

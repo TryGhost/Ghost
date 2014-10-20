@@ -10,7 +10,7 @@
     display: inline-block;
     margin-bottom: 0; // For input.btn
     padding: 9px 14px;
-    font-size: 1.1rem;
+    //font-size: 1.1rem;  //hacked By weiping 
     line-height: 1.428571429;
     font-weight: 300;
     text-align: center;
@@ -171,7 +171,7 @@
 .btn-minor {
     text-transform: none;
     letter-spacing: 0;
-    font-size: 1.2rem;
+    //font-size: 1.2rem;  //hacked by weiping
     padding: 8px 14px;
 }
 
@@ -180,14 +180,14 @@
 
 .btn-lg {
     padding: 12px 18px;
-    font-size: 1.4rem;
+    //font-size: 1.4rem;  //hacked by Weiping
     line-height: 1.33;
     border-radius: 4px;
 }
 
 .btn-sm {
     padding: 7px 10px;
-    font-size: 1rem;
+    //font-size: 1rem;  //hacked by weiping
     line-height: 1.5;
     border-radius: 2px;
 }

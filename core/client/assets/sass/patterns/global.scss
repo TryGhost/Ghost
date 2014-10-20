@@ -7,13 +7,18 @@
 }
 
 html {
-    font: 62.5%/1.65 "Open Sans", sans-serif;
+    
+    //font: 68.5%/1.65  "Open Sans", sans-serif, 'Hiragino Sans GB', 'Microsoft Yahei', '微软雅黑', '宋体', '\5b8b\4f53';  //Hacked By weiping
+
+    font: 62.5%/1.65 'Helvetica','STHeiti',  "Open Sans", "Hiragino Sans GB", "Microsoft Yahei", "微软雅黑",  "宋体",  sans-serif,  "\5b8b\4f53" ;
+
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 
     // Prevent elastic scrolling on the whole page
     height: 100%;
     width: 100%;
     overflow: hidden;
+
 }
 
 body {

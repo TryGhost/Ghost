@@ -66,7 +66,7 @@ var Notifications = Ember.ArrayProxy.extend({
             this.closePassive();
         }
 
-        options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
+        options.defaultErrorText = options.defaultErrorText || '服务器出错了，请重试。（ 反馈QQ群: 335978388 ）';
 
         if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.error) {
             this.showError(resp.jqXHR.responseJSON.error, options);

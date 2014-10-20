@@ -1,15 +1,15 @@
 <header class="page-header">
-    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
-    <h2 class="page-title">Content</h2>
+    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">菜单</span></button>
+    <h2 class="page-title">博文列表</h2>
 </header>
 
 <div class="page-content">
     <section class="content-list js-content-list">
         <header class="floatingheader">
             <section class="content-filter">
-                <small>All Posts</small>
+                <small>所有博文</small>
             </section>
-            {{#link-to "editor.new" class="btn btn-green" title="New Post"}}<span class="hidden">New Post</span>{{/link-to}}
+            {{#link-to "editor.new" class="btn btn-green" title="New Post"}}<span class="hidden">新建博文</span>{{/link-to}}
         </header>
         {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content"}}
         <ol class="posts-list">
@@ -20,14 +20,14 @@
                 <span class="status">
                     {{#if isPublished}}
                     {{#if page}}
-                    <span class="page">Page</span>
+                    <span class="page">页面</span>
                     {{else}}
                     <time datetime="{{unbound published_at}}" class="date published">
-                        Published {{gh-format-timeago published_at}}
+                        发布于{{gh-format-timeago published_at}}
                     </time>
                     {{/if}}
                     {{else}}
-                    <span class="draft">Draft</span>
+                    <span class="draft">草稿</span>
                     {{/if}}
                 </span>
             </section>

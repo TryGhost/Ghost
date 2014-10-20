@@ -317,8 +317,11 @@
         }
         .post-published-by {
             float: left;
-            margin-top: 7px;
+            //margin-top: 7px;
+            margin-top: 4px;
             margin-left: 3px;
+
+            font-size: 100%; //hacked by weipng
         }
     }
 } // .post-preview-header

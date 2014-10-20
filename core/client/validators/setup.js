@@ -7,7 +7,7 @@ var SetupValidator = NewUserValidator.extend({
 
         if (!validator.isLength(data.blogTitle, 1)) {
             validationErrors.push({
-                message: 'Please enter a blog title.'
+                message: '请填写博客名称。'
             });
         }
 

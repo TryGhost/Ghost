@@ -26,6 +26,14 @@ var GhostDropdown = Ember.Component.extend(DropdownMixin, {
         if (this.get('button')) {
             this.set('button.isOpen', false);
         }
+
+        //fix safari bug 
+        if (self.get('closing')) {
+             self.set('isOpen', false);
+             self.set('closing', false);
+        }
+
+        /*
         this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
             if (event.originalEvent.animationName === 'fade-out') {
                 if (self.get('closing')) {
@@ -33,7 +41,8 @@ var GhostDropdown = Ember.Component.extend(DropdownMixin, {
                     self.set('closing', false);
                 }
             }
-        });
+        }); */
+
     },
     //Called by the dropdown service when any dropdown button is clicked.
     toggle: function (options) {
