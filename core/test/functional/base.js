@@ -247,7 +247,7 @@ casper.on('remote.message', function (msg) {
 // output any errors
 casper.on('error', function (msg, trace) {
     casper.echoConcise('ERROR, ' + msg, 'ERROR');
-    if (trace) {
+    if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
         casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
@@ -258,7 +258,7 @@ casper.on('error', function (msg, trace) {
 // output any page errors
 casper.on('page.error', function (msg, trace) {
     casper.echoConcise('PAGE ERROR: ' + msg, 'ERROR');
-    if (trace) {
+    if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
         casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
