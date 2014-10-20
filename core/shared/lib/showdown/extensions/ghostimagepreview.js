@@ -25,7 +25,7 @@ var Ghost = Ghost || {};
                             output;
 
                         if (src && (src.match(uriRegex) || src.match(pathRegex))) {
-                            result = '<img class="js-upload-target" src="' + src + '" alt="'+alt+'" />'; //hacked by weiping
+                            result = '<img class="js-upload-target" src="' + src + '" alt="' + alt + '" />';  // hacked by weiping
                         }
 
                         if ((Ghost && Ghost.touchEditor) || (typeof window !== 'undefined' && Ember.touchEditor)) {
@@ -33,7 +33,7 @@ var Ghost = Ghost || {};
                                 result + '<div class="description">图片即将呈现...</div></section>';
                         } else {
                             output = '<section id="image_upload_' + key + '" class="js-drop-zone image-uploader">' +
-                              //  result + '<div class="description"><strong>' + alt + '</strong></div>' +  //hacked by weiping
+                              //  result + '<div class="description"><strong>' + alt + '</strong></div>' +  // hacked by weiping
                                 result +  '<input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage">' +
                                 '</section>';
                         }

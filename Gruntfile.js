@@ -347,12 +347,18 @@ var _              = require('lodash'),
             emberTemplates: {
                 dev: {
                     options: {
+                        precompile: true,
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
+
+                            //eval( 'func = ' + template );
+                           // console.log( template );
+
+
                             return grunt.config.process('define(\'ghost/') +
                                 name + '\', [\'exports\'], function(__exports__){ __exports__[\'default\'] = ' +
-                                template + '; });';
+                                template + '; });'; 
                         }
                     },
                     files: {
