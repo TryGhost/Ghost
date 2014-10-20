@@ -71,63 +71,63 @@ describe('Ghost GFM showdown extension', function () {
         var testPhrases = [
             {
                 input: 'http://google.co.uk',
-                output: /^<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^<a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: 'https://atest.com/fizz/buzz?baz=fizzbuzz',
-                output: /^<a href=\'https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz\'>https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz<\/a>$/
+                output: /^<a href="https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz">https:\/\/atest.com\/fizz\/buzz\?baz=fizzbuzz<\/a>$/
             },
             {
                 input: 'Some text http://www.google.co.uk some other text',
-                output: /^Some text <a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a> some other text$/
+                output: /^Some text <a href="http:\/\/www.google.co.uk">http:\/\/www.google.co.uk<\/a> some other text$/
             },
             {
                 input: 'Some [ text http://www.google.co.uk some other text',
-                output: /^Some \[ text <a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a> some other text$/
+                output: /^Some \[ text <a href="http:\/\/www.google.co.uk">http:\/\/www.google.co.uk<\/a> some other text$/
             },
             {
                 input: 'Some [ text (http://www.google.co.uk) some other text',
-                output: /^Some \[ text \(<a href=\'http:\/\/www.google.co.uk\'>http:\/\/www.google.co.uk<\/a>\) some other text$/
+                output: /^Some \[ text \(<a href="http:\/\/www.google.co.uk">http:\/\/www.google.co.uk<\/a>\) some other text$/
             },
             {
                 input: '  http://google.co.uk  ',
-                output: /^  <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>  $/
+                output: /^  <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>  $/
             },
             {
                 input: '>http://google.co.uk',
-                output: /^><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '> http://google.co.uk',
-                output: /^> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '<>>> http://google.co.uk',
-                output: /^<>>> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^<>>> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '<>>>http://google.co.uk',
-                output: /^<>>><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^<>>><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '<some text>>>http://google.co.uk',
-                output: /^<some text>>><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^<some text>>><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '<strong>http://google.co.uk',
-                output: /^<strong><a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^<strong><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '# http://google.co.uk',
-                output: /^# <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^# <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '#http://google.co.uk',
-                output: /^#<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^#<a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             },
             {
                 input: '* http://google.co.uk',
-                output: /^\* <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^\* <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             }
         ],
         processedMarkup;
@@ -158,7 +158,7 @@ describe('Ghost GFM showdown extension', function () {
             },
             {
                 input: '<a href="http://facebook.com">test</a> http://google.co.uk',
-                output: /^<a href="http:\/\/facebook.com">test<\/a> <a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>$/
+                output: /^<a href="http:\/\/facebook.com">test<\/a> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>$/
             }
         ],
         processedMarkup;
@@ -248,12 +248,12 @@ describe('Ghost GFM showdown extension', function () {
         var testPhrases = [
             {
                 input: '[1] (http://google.co.uk)',
-                output: /^\[1\] \(<a href=\'http:\/\/google.co.uk\'>http:\/\/google.co.uk<\/a>\)$/
+                output: /^\[1\] \(<a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a>\)$/
             },
             {
                 input: '![1] (http://google.co.uk/kitten.jpg)',
                 output:
-                    /^!\[1\] \(<a href=\'http:\/\/google.co.uk\/kitten.jpg\'>http:\/\/google.co.uk\/kitten.jpg<\/a>\)$/
+                    /^!\[1\] \(<a href="http:\/\/google.co.uk\/kitten.jpg">http:\/\/google.co.uk\/kitten.jpg<\/a>\)$/
             }
         ],
         processedMarkup;

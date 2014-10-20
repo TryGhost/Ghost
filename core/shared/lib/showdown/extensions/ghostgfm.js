@@ -141,7 +141,7 @@
                                 return wholeMatch;
                             }
                             // If we have a matching lookBehind, this is a failure, else wrap the match in <a> tag
-                            return lookBehind ? wholeMatch : '<a href=\'' + wholeMatch + '\'>' + wholeMatch + '</a>';
+                            return lookBehind ? wholeMatch : '<a href="' + wholeMatch + '">' + wholeMatch + '</a>';
                         });
                     /*jshint +W049 */
 
