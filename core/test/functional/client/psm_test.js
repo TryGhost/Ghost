@@ -117,7 +117,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
     });
 });
 
-CasperTest.begin('Post can be changed to static page', 6, function suite(test) {
+CasperTest.begin('Post can be changed to static page', 2, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
@@ -135,19 +135,17 @@ CasperTest.begin('Post can be changed to static page', 6, function suite(test) {
 
     casper.thenClick('label[for=static-page]');
 
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(resource.status < 400);
+    casper.waitForSelector('.post-setting-static-page:checked', function onSuccess() {
+        casper.click('label[for=static-page]');
+    }, function onTimeout() {
+        casper.test.fail('Post was not changed to static page.');
+    }, 2000);
 
-        test.assertExists('.post-setting-static-page:checked', 'can turn on static page');
-    });
-
-    casper.thenClick('label[for=static-page]');
-
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function waitForSuccess(resource) {
-        test.assert(resource.status < 400);
-
-        test.assertDoesntExist('.post-setting-static-page:checked', 'can turn off static page');
-    });
+    casper.waitForSelector('.post-setting-static-page:not(checked)', function onSuccess() {
+        return;
+    }, function onTimeout() {
+        casper.test.fail('Static page was not changed to post.');
+    }, 2000);
 });
 
 CasperTest.begin('Post url input is reset from all whitespace back to original value', 3, function suite(test) {
