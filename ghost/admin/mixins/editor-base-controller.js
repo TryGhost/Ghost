@@ -194,8 +194,15 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             var status = this.get('willPublish') ? 'published' : 'draft',
                 prevStatus = this.get('status'),
                 isNew = this.get('isNew'),
+                autoSaveId = this.get('autoSaveId'),
                 self = this;
+
             options = options || {};
+
+            if(autoSaveId) {
+                Ember.run.cancel(autoSaveId);
+                this.set('autoSaveId', null);
+            }
 
             self.notifications.closePassive();
 
@@ -296,13 +303,17 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         autoSave: function () {
             if (this.get('model.isDraft')) {
-                this.send('save', {silent: true, disableNProgress: true});
+                var autoSaveId;
+
+                autoSaveId = Ember.run.debounce(this, 'send', 'save', {silent: true, disableNProgress: true}, 3000);
+
+                this.set('autoSaveId', autoSaveId);
             }
         },
 
         autoSaveNew: function () {
             if (this.get('isNew')) {
-                this.send('autoSave');
+                this.send('save', {silent: true, disableNProgress: true});
             }
         }
     }
