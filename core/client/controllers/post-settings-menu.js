@@ -87,12 +87,12 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         });
     }),
     //Requests slug from title
-    generateSlugPlaceholder: function () {
+    generateAndSetSlug: function (destination) {
         var self = this,
             title = this.get('titleScratch');
 
         this.get('slugGenerator').generateSlug(title).then(function (slug) {
-            self.set('slugPlaceholder', slug);
+            self.set(destination, slug);
         });
     },
 
@@ -163,13 +163,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     // observe titleScratch, keeping the post's slug in sync
     // with it until saved for the first time.
     addTitleObserver: function () {
-        if (this.get('isNew')) {
+        if (this.get('isNew') || this.get('title') === '(Untitled)') {
             this.addObserver('titleScratch', this, 'titleObserver');
         }
     }.observes('model'),
     titleObserver: function () {
         if (this.get('isNew') && !this.get('title')) {
-            Ember.run.debounce(this, 'generateSlugPlaceholder', 700);
+            Ember.run.debounce(this, 'generateAndSetSlug', ['slugPlaceholder'], 700);
+        } else if (this.get('title') === '(Untitled)') {
+            Ember.run.debounce(this, 'generateAndSetSlug', ['slug'], 700);
         }
     },
     slugPlaceholder: Ember.computed(function (key, value) {

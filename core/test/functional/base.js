@@ -126,6 +126,22 @@ screens = {
 casper.writeContentToCodeMirror = function (content) {
     var lines = content.split('\n');
 
+    // If we are on a new editor, the autosave is going to get triggered when we try to type, so we need to trigger
+    // that and wait for it to sort itself out
+    if (/ghost\/editor\/$/.test(casper.getCurrentUrl())) {
+        casper.waitForSelector('.CodeMirror-wrap textarea', function onSuccess() {
+            casper.click('.CodeMirror-wrap textarea');
+        }, function onTimeout() {
+            casper.test.fail('CodeMirror was not found on initial load.');
+        }, 2000);
+
+        casper.waitForUrl(/\/ghost\/editor\/\d+\/$/, function onSuccess() {
+            // do nothing
+        }, function onTimeout() {
+            casper.test.fail('The url didn\'t change: ' + casper.getCurrentUrl());
+        }, 2000);
+    }
+
     casper.waitForSelector('.CodeMirror-wrap textarea', function onSuccess() {
         casper.each(lines, function (self, line) {
             self.sendKeys('.CodeMirror-wrap textarea', line, {keepFocus: true});
@@ -136,7 +152,7 @@ casper.writeContentToCodeMirror = function (content) {
 
         return this;
     }, function onTimeout() {
-        casper.test.fail('CodeMirror was not found.');
+        casper.test.fail('CodeMirror was not found on main load.');
     }, 2000);
 };
 

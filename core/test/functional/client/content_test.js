@@ -62,7 +62,7 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
     });
 
     // Select first non-draft, non-static post.  Should be second in the list at this stage of testing.
-    casper.thenClick('.content-list-content li:nth-of-type(2) a');
+    casper.thenClick('.content-list-content li:nth-of-type(3) a');
 
     // Test for status of 'Published'
     casper.then(function checkStatus() {
