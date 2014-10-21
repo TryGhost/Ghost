@@ -1,0 +1,3 @@
+[submodule "content/themes/casper"]
+	path = content/themes/casper
+	url = https://github.com/diancloud/Casper.git
