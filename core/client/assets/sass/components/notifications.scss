@@ -12,7 +12,9 @@
         z-index: 980;
         width: 300px;
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-        body.right-outlet-expanded & {
+
+        // This selector ends up being `body.settings-menu-expanded .notifications`
+        body.settings-menu-expanded & {
             transform: translate3d(350px, 0px, 0px);
         }
     }
@@ -24,7 +26,9 @@
         right: 0;
         z-index: 9999;
         transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-        body.right-outlet-expanded & {    
+
+        // This selector ends up being `body.settings-menu-expanded .notifications`
+        body.settings-menu-expanded & {
             transform: translate3d(100%, 0px, 0px);
         }
     }
