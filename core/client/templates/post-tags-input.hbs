@@ -6,15 +6,13 @@
 <div class="publish-bar-tags">
     <div class="tags-wrapper tags">
         {{#each controller.tags}}
-            {{#view view.tagView tag=this}}
-                {{view.tag.name}}
-            {{/view}}
+           <span class="tag" {{action "deleteTag" this target=view}}>{{name}}</span>
         {{/each}}
     </div>
 </div>
 <div class="publish-bar-tags-input">
     <input type="hidden" class="tags-holder" id="tags-holder">
-    {{view view.tagInputView class="tag-input" id="tags" value=newTagText}}
+    {{view view.tagInputView class="tag-input js-tag-input" id="tags" value=newTagText}}
     <ul class="suggestions dropdown-menu dropdown-triangle-bottom" {{bind-attr style=view.overlayStyles}}>
         {{#each suggestions}}
             {{#view view.suggestionView suggestion=this}}
