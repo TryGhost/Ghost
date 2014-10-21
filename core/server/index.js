@@ -24,14 +24,10 @@ var express     = require('express'),
 
 function doFirstRun() {
     var firstRunMessage = [
-        'Welcome to Ghost.',
-        'You\'re running under the <strong>',
-        process.env.NODE_ENV,
-        '</strong>environment.',
-
-        'Your URL is set to',
+        '欢迎使用Ghost博客。',
+        '你的Ghost博客地址:',
         '<strong>' + config.url + '</strong>.',
-        'See <a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a> for instructions.'
+        '点云用户反馈QQ群: <strong>335978388</strong>。',
     ];
 
     return api.notifications.add({notifications: [{
@@ -106,9 +102,8 @@ function initNotifications() {
         api.notifications.add({notifications: [{
             type: 'info',
             message: [
-                'Ghost is attempting to use a direct method to send e-mail.',
-                'It is recommended that you explicitly configure an e-mail service.',
-                'See <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions'
+                '<p>你可能无法接收到由Ghost博客推送的通知，请联系点云技术支持。(support@diancloud.com) <p>',
+                '<p>用户反馈QQ群: 335978388</p>',
             ].join(' ')
         }]}, {context: {internal: true}});
     }
@@ -116,8 +111,8 @@ function initNotifications() {
         api.notifications.add({notifications: [{
             type: 'warn',
             message: [
-                'Ghost is currently unable to send e-mail.',
-                'See <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions'
+                '<p>你可能无法接收到由Ghost博客推送的通知，请联系点云技术支持。(support@diancloud.com) <p>',
+                '<p>用户反馈QQ群: 335978388</p>',
             ].join(' ')
         }]}, {context: {internal: true}});
     }

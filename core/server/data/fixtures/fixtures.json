@@ -9,7 +9,7 @@
     "posts": [
         {
             "title":            "欢迎使用Ghost博客",
-            "slug":             "huan-ying-shi-yong-ghost-bo-ke",
+            "slug":             "welcome-to-ghost",
             "markdown":         "太棒了,你现在可以使用Ghost博客说出你的思想、打造你的品牌了。\n这篇博文引导你使用Ghost博客。如果你在使用过程中遇到技术问题，也可以发送邮件到 **support@diancloud.com** 寻求帮助。强烈建议你加入点云用户反馈QQ群 **( 335978388 )**与大家交流Ghost博客使用心得。\n\n你可以通过 **`http://<你的博客地址>/ghost/`** 进入管理后台。（初次登录后台时，需要填写一些注册信息）你可以在博文列表中看到本文。点击预览界面右上角的铅笔图标，即可看到本文用到的样式如何编写。\n\n\n## 开始使用\n\n开始写作前，你需要花1分钟学习一个新技能 - `Markdown`。 Markdown 定义了一系列文本格式，当你按照格式书写，Ghost会自动将这些文字显示成约定好的样式。\nMarkdown用起来很简单，你也不用刻意记忆这些格式。在博文编辑器右上角，点击问号图标，即可查看Markdown标签参考。\n\n### 列表\n\n* 关关雎鸠，在河之洲，窈窕淑女，君子好逑。\n *  《诗经·国风·周南·关雎》\n* 死生契阔（qì kuò)，与子成说。执子之手，与子偕老。 《诗经·国风·邶风·击鼓》\n* 知我者，谓我心忧。不知我者，谓我何求。悠悠苍天,此何人哉? \n    * 《诗经·国风·王风·黍离》\n\n\n**带数字的：把一只大象放进冰箱要几步?**\n\n1. 在纸上写上大象两个字。\n2. 开冰箱门把纸放进去。\n3. 把冰箱门关上。\n\n\n\n### 链接\n\n在博文编辑器中粘贴一个网址，博文编辑器会自动添加网址链接。例如：http://diancloud.com 你也可以自定义链接。例如： [点云](http://www.diancloud.com)\n\n\n\n### 插入图片\n\n你也可以在博文中插入图片。例如：\n{<4>}![Ghost博客LOGO](http://diancloud-ghost.stor.sinaapp.com/ghost.png)\n\n如果你还没选好配图，可以先插入一个占位图片，等文章写完了，再上传或添加图片地址。\n{<5>}![这是一个图片]\n\n\n### 引用\n\n如果你想在博文中引用某位名人说过的话，可以这样：\n\n> 梦想还是要有的，万一实现了呢！ - 马云 \n\n\n### 程序代码\n\n如果你需要分享一大段代码，只要在代码前保留4个空格即可。\n\n    .awesome-thing {\n        display: block;\n        width: 100%;\n    }\n\n\n\n### 分割线\n\n在任意一行输三个半角破折号，就可打出一条漂亮的分割线。\n\n---\n\n\n### 更牛B的写法\n\n如果你会写HTML，你可以直接写HTML标签。\n\n<input type=\"text\" placeholder=\"那么问题来了，博客系统哪家强？\" style=\"width:100%\"/>\n\n\n差不多了，你可以开始使用Ghost博客，把你的想法告诉全世界了  ：）",
             "image":            null,
             "featured":         false,
@@ -24,7 +24,7 @@
     "tags": [
         {
             "name":             "开始使用",
-            "slug":             "kai-shi-shi-yong",
+            "slug":             "getting-started",
             "description":      null,
             "parent_id":        null,
             "meta_title":       null,

@@ -66,10 +66,10 @@ GhostMailer.prototype.send = function (message) {
     to = message.to || false;
 
     if (!this.transport) {
-        return Promise.reject(new Error('Email Error: No e-mail transport configured.'));
+        return Promise.reject(new Error('邮件配置错误: 没有配置邮件发送服务器。'));
     }
     if (!(message && message.subject && message.html && message.to)) {
-        return Promise.reject(new Error('Email Error: Incomplete message data.'));
+        return Promise.reject(new Error('邮件配置错误: 未知错误，请联系管理员。（点云用户反馈QQ群: 335978388 ）'));
     }
     sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
@@ -90,7 +90,7 @@ GhostMailer.prototype.send = function (message) {
             }
 
             response.statusHandler.once('failed', function (data) {
-                var reason = 'Email Error: Failed sending email';
+                var reason = '邮件发送错误: 邮件发送失败';
                 if (data.error.errno === 'ENOTFOUND') {
                     reason += ': there is no mail server at this address: ' + data.domain;
                 }
@@ -99,11 +99,11 @@ GhostMailer.prototype.send = function (message) {
             });
 
             response.statusHandler.once('requeue', function (data) {
-                return reject(new Error('Email Error: message was not sent, requeued. Probably will not be sent. :( \nMore info: ' + data.error.message));
+                return reject(new Error('邮件发送错误: 邮件发送失败 :( \n更多信息: ' + data.error.message));
             });
 
             response.statusHandler.once('sent', function () {
-                return resolve('Message was accepted by the mail server. Make sure to check inbox and spam folders. :)');
+                return resolve('邮件已发送成功。如未收到请检查垃圾邮箱 :)');
             });
         });
     });

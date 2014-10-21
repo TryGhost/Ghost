@@ -31,7 +31,7 @@ var SettingsGeneralController = Ember.ObjectController.extend({
             var self = this;
 
             return this.get('model').save().then(function (model) {
-                self.notifications.showSuccess('Settings successfully saved.');
+                self.notifications.showSuccess('博客选项保存成功。');
 
                 return model;
             }).catch(function (errors) {

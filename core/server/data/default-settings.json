@@ -15,11 +15,12 @@
     },
     "blog": {
         "title": {
-            "defaultValue": "Ghost"
+            "defaultValue": "Ghost @ DianCloud.com"
         },
         "description": {
-            "defaultValue": "Just a blogging platform."
+            "defaultValue": "又一个使用点云一键安装的Ghost博客。"
         },
+
         "email": {
             "defaultValue": "ghost@example.com",
             "validations": {

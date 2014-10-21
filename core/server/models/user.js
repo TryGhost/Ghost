@@ -22,7 +22,7 @@ var _              = require('lodash'),
 function validatePasswordLength(password) {
     try {
         if (!validator.isLength(password, 8)) {
-            throw new Error('Your password must be at least 8 characters long.');
+            throw new Error('密码应该至少8个字符。');
         }
     } catch (error) {
         return Promise.reject(error);
@@ -599,7 +599,7 @@ User = ghostBookshelf.Model.extend({
             s;
         return this.getByEmail(object.email).then(function (user) {
             if (!user) {
-                return Promise.reject(new errors.NotFoundError('There is no user with that email address.'));
+                return Promise.reject(new errors.NotFoundError('用户不存在。'));
             }
             if (user.get('status') === 'invited' || user.get('status') === 'invited-pending' ||
                     user.get('status') === 'inactive'
@@ -611,8 +611,8 @@ User = ghostBookshelf.Model.extend({
                     if (!matched) {
                         return Promise.resolve(self.setWarning(user, {validate: false})).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
-                            return Promise.reject(new errors.UnauthorizedError('Your password is incorrect.<br>' +
-                                remaining + ' attempt' + s + ' remaining!'));
+                           return Promise.reject(new errors.UnauthorizedError('密码不正确。' +
+                              '还可以尝试' + remaining + '次'));
 
                             // Use comma structure, not .catch, because we don't want to catch incorrect passwords
                         }, function (error) {
@@ -623,7 +623,7 @@ User = ghostBookshelf.Model.extend({
                                 'Error thrown from user update during login',
                                 'Visit and save your profile after logging in to check for problems.'
                             );
-                            return Promise.reject(new errors.UnauthorizedError('Your password is incorrect.'));
+                            return Promise.reject(new errors.UnauthorizedError('密码不正确。'));
                         });
                     }
 
@@ -640,12 +640,11 @@ User = ghostBookshelf.Model.extend({
                         });
                 }, errors.logAndThrowError);
             }
-            return Promise.reject(new errors.NoPermissionError('Your account is locked due to too many ' +
-                'login attempts. Please reset your password to log in again by clicking ' +
-                'the "Forgotten password?" link!'));
+            return Promise.reject(new errors.NoPermissionError('因多次登录失败，你的账号被锁定。' +
+                '请点击 "找回密码" 链接，重置你的账号密码！ '));
         }, function (error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
-                return Promise.reject(new errors.NotFoundError('There is no user with that email address.'));
+                return Promise.reject(new errors.NotFoundError('用户不存在。'));
             }
 
             return Promise.reject(error);
@@ -665,7 +664,7 @@ User = ghostBookshelf.Model.extend({
             user = null;
 
         if (newPassword !== ne2Password) {
-            return Promise.reject(new Error('Your new passwords do not match'));
+            return Promise.reject(new Error('两次输入的密码不一致。'));
         }
 
         return validatePasswordLength(newPassword).then(function () {
@@ -675,7 +674,7 @@ User = ghostBookshelf.Model.extend({
             return bcryptCompare(oldPassword, user.get('password'));
         }).then(function (matched) {
             if (!matched) {
-                return Promise.reject(new Error('Your password is incorrect'));
+                return Promise.reject(new Error('原密码不正确。'));
             }
             return bcryptGenSalt();
         }).then(function (salt) {
@@ -772,7 +771,7 @@ User = ghostBookshelf.Model.extend({
         var self = this;
 
         if (newPassword !== ne2Password) {
-            return Promise.reject(new Error('Your new passwords do not match'));
+            return Promise.reject(new Error('两次输入的密码不一致。'));
         }
 
         return validatePasswordLength(newPassword).then(function () {

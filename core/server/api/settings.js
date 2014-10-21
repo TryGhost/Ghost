@@ -55,13 +55,12 @@ updateConfigTheme = function () {
 updateSettingsCache = function (settings) {
     settings = settings || {};
 
+
     if (!_.isEmpty(settings)) {
         _.map(settings, function (setting, key) {
             settingsCache[key] = setting;
         });
-
         updateConfigTheme();
-
         return Promise.resolve(settingsCache);
     }
 
@@ -211,14 +210,24 @@ settingsResult = function (settings, type) {
  * @returns Promise(Setting)
  */
 populateDefaultSetting = function (key) {
+
+    // console.log( "\t-------------- THE KEY:" + key + '\n');
+
     // Call populateDefault and update the settings cache
     return dataProvider.Settings.populateDefault(key).then(function (defaultSetting) {
         // Process the default result and add to settings cache
         var readResult = readSettingsResult([defaultSetting]);
 
+        // console.log( "\t-------------- Start \n");
+        // console.log( readResult );
+        // console.log ( updateSettingsCache(readResult) );
+
         // Add to the settings cache
         return updateSettingsCache(readResult).then(function () {
             // Get the result from the cache with permission checks
+
+            // console.log('\t === here ====' );
+
         });
     }).catch(function (err) {
         // Pass along NotFoundError
@@ -227,6 +236,10 @@ populateDefaultSetting = function (key) {
         }
 
         // TODO: Different kind of error?
+        // console.log( '\t key:' + key );
+        // console.log( '\t err:' );
+        // console.log( err );
+        // console.log( "\t-------------- END \n");
         return Promise.reject(new errors.NotFoundError('Problem finding setting: ' + key));
     });
 };

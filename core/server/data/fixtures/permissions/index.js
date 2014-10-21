@@ -71,6 +71,7 @@ addAllPermissions = function (options) {
 
 // ## Populate
 populate = function (options) {
+
     logInfo('Populating permissions');
     // ### Ensure all permissions are added
     return addAllPermissions(options).then(function () {

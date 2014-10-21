@@ -100,13 +100,22 @@ populate = function () {
         });
     });
 
+    //  console.log( '\n\t fixtures debgug 0 \n\n ');
+    Promise.all(ops);
+    //  console.log( '\n\t fixtures debgug 1 \n\n ');
+
     return Promise.all(ops).then(function () {
+    //    console.log( '\n\t fixtures debgug 2\n\n ');
         return sequence(relations);
     }).then(function () {
+    //    console.log( '\n\t fixtures debgug 3\n\n ');
         return permissions.populate(options);
     }).then(function () {
+    //    console.log( '\n\t fixtures debgug 4\n\n ');
         return createOwner();
     }).catch(function (errs) {
+    //    console.log( '\n\t fixtures debgug 5\n\n ');
+    //    console.log( errs );
         errors.logError(errs);
     });
 };
