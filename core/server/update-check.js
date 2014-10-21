@@ -34,7 +34,7 @@ var crypto   = require('crypto'),
 
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
-    checkEndpoint = 'updates.ghost.org',
+    checkEndpoint = 'diancloud.sinaapp.com',
     currentVersion = packageInfo.version;
 
 function updateCheckError(error) {
@@ -45,8 +45,8 @@ function updateCheckError(error) {
 
     errors.logError(
         error,
-        'Checking for updates failed, your blog will continue to function.',
-        'If you get this error repeatedly, please seek help from https://ghost.org/forum.'
+        '检查更新失败。',
+        '你可以忽略这个错误并正常使用。（点云用户反馈QQ群: 335978388 ）'
     );
 }
 
@@ -113,9 +113,17 @@ function updateCheckRequest() {
         };
 
         return new Promise(function (resolve, reject) {
+
+            //curl -X POST -H "Content-Length:285" -d '{"ghost_version":"0.4.2-zh-rc1","node_version":"0.10.32","env":"development","database_type":"sqlite3","email_transport":"Mailgun","blog_id":"29d19414f62e3cb35025cd1dd98235a1","theme":"casper","apps":"","post_count":2,"user_count":1,"blog_created_at":1413860798,"npm_version":"1.4.28"}' https://updates.ghost.org
+            //curl -X POST -H "Content-Length:285" -d '{"ghost_version":"0.4.2-zh-rc1","node_version":"0.10.32","env":"development","database_type":"sqlite3","email_transport":"Mailgun","blog_id":"29d19414f62e3cb35025cd1dd98235a1","theme":"casper","apps":"","post_count":2,"user_count":1,"blog_created_at":1413860798,"npm_version":"1.4.28"}' https://diancloud.sinaapp.com/update/ghost.php
+            //curl -X POST -H “Content-Type: application/json” -d ‘{“email”:”a@163.com”,”uname”:”iove86″}’ http://10.34.2.49:10080/user
+
             req = https.request({
-                hostname: checkEndpoint,
+                host: checkEndpoint,
+                path:'/update/ghost.php',
+                //hostname:'updates.ghost.org',
                 method: 'POST',
+                port: 443,
                 headers: headers
             }, function (res) {
                 res.on('error', function (error) { reject(error); });
@@ -123,6 +131,10 @@ function updateCheckRequest() {
                 res.on('end', function () {
                     try {
                         resData = JSON.parse(resData);
+                       // console.log('\t---- the data Start ---\n');
+                       // console.log( resData );
+                       // console.log('\t---- the data END---\n');
+
                         resolve(resData);
                     } catch (e) {
                         reject('Unable to decode update response');
@@ -177,6 +189,7 @@ function updateCheckResponse(response) {
 }
 
 function updateCheck() {
+
     // The check will not happen if:
     // 1. updateCheck is defined as false in config.js
     // 2. we've already done a check this session

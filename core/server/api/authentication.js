@@ -57,7 +57,7 @@ authentication = {
                     mail: [{
                         message: {
                             to: email,
-                            subject: 'Reset Password',
+                            subject: '重置密码',
                             html: emailContent.html,
                             text: emailContent.text
                         },
@@ -101,7 +101,7 @@ authentication = {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
             }).then(function () {
-                return Promise.resolve({passwordreset: [{message: 'Password changed successfully.'}]});
+                return Promise.resolve({passwordreset: [{message: '密码修改成功。'}]});
             }).catch(function (error) {
                 return Promise.reject(new errors.UnauthorizedError(error.message));
             });
@@ -197,7 +197,7 @@ authentication = {
             var setup = result.setup[0].status;
 
             if (setup) {
-                return Promise.reject(new errors.NoPermissionError('Setup has already been completed.'));
+                return Promise.reject(new errors.NoPermissionError('已成功配置。'));
             }
 
             return utils.checkObject(object, 'setup');
@@ -228,7 +228,7 @@ authentication = {
             // Handles the additional values set by the setup screen.
             if (!_.isEmpty(setupUser.blogTitle)) {
                 userSettings.push({key: 'title', value: setupUser.blogTitle});
-                userSettings.push({key: 'description', value: 'Thoughts, stories and ideas.'});
+                userSettings.push({key: 'description', value: '思想，故事，创意，团队'});
             }
             setupUser = user.toJSON();
             return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
@@ -241,7 +241,7 @@ authentication = {
         }).then(function (emailContent) {
             var message = {
                     to: setupUser.email,
-                    subject: 'Your New Ghost Blog',
+                    subject: '成功开启Ghost博客',
                     html: emailContent.html,
                     text: emailContent.text
                 },
@@ -255,8 +255,8 @@ authentication = {
             return mail.send(payload, {context: {internal: true}}).catch(function (error) {
                 errors.logError(
                     error.message,
-                    'Unable to send welcome email, your blog will continue to function.',
-                    'Please see http://support.ghost.org/mail/ for instructions on configuring email.'
+                    '欢迎邮件发送失败。',
+                    '邮件配置，请联系管理员。（点云用户反馈QQ群: 335978388 ）'
                 );
             });
         }).then(function () {

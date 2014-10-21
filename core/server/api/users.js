@@ -54,7 +54,7 @@ sendInviteEmail = function sendInviteEmail(user) {
             mail: [{
                 message: {
                     to: user.email,
-                    subject: emailData.invitedByName + ' has invited you to join ' + emailData.blogName,
+                    subject: emailData.invitedByName + ' 邀请你加入 ' + emailData.blogName,
                     html: emailContent.html,
                     text: emailContent.text
                 },
@@ -86,7 +86,7 @@ users = {
             }
             return dataProvider.User.findPage(options);
         }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to browse users.');
+            return errors.handleAPIError(error, '你没有权限浏览用户列表。');
         });
     },
 
@@ -114,7 +114,7 @@ users = {
                 return {users: [result.toJSON()]};
             }
 
-            return Promise.reject(new errors.NotFoundError('User not found.'));
+            return Promise.reject(new errors.NotFoundError('用户不存在。'));
         });
     },
 
@@ -143,7 +143,7 @@ users = {
                             return {users: [result.toJSON()]};
                         }
 
-                        return Promise.reject(new errors.NotFoundError('User not found.'));
+                        return Promise.reject(new errors.NotFoundError('用户不存在。'));
                     });
             };
 
@@ -160,7 +160,7 @@ users = {
 
                         if (roleId !== contextRoleId &&
                                 parseInt(options.id, 10) === parseInt(options.context.user, 10)) {
-                            return Promise.reject(new errors.NoPermissionError('You cannot change your own role.'));
+                            return Promise.reject(new errors.NoPermissionError('你不能修改你自己的角色。'));
                         } else if (roleId !== contextRoleId) {
                             return dataProvider.User.findOne({role: 'Owner'}).then(function (result) {
                                 if (parseInt(result.id, 10) !== parseInt(options.id, 10)) {
@@ -168,7 +168,7 @@ users = {
                                         return editOperation();
                                     });
                                 } else {
-                                    return Promise.reject(new errors.NoPermissionError('There has to be one owner.'));
+                                    return Promise.reject(new errors.NoPermissionError('应该至少有一个所有者。'));
                                 }
                             });
                         }
@@ -180,7 +180,7 @@ users = {
                 return editOperation();
             });
         }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to edit this user');
+            return errors.handleAPIError(error, '你没有修改这个用户的权限。');
         });
     },
 
@@ -208,7 +208,7 @@ users = {
                     newUser.password = globalUtils.uid(50);
                     newUser.status = 'invited';
                 } else {
-                    return Promise.reject(new errors.BadRequestError('No email provided.'));
+                    return Promise.reject(new errors.BadRequestError('请提供邮箱。'));
                 }
 
                 return dataProvider.User.getByEmail(
@@ -221,7 +221,7 @@ users = {
                         if (foundUser.get('status') === 'invited' || foundUser.get('status') === 'invited-pending') {
                             return foundUser;
                         } else {
-                            return Promise.reject(new errors.BadRequestError('User is already registered.'));
+                            return Promise.reject(new errors.BadRequestError('用户已经注册了。'));
                         }
                     }
                 }).then(function (invitedUser) {
@@ -240,7 +240,7 @@ users = {
                     return Promise.resolve({users: [user]});
                 }).catch(function (error) {
                     if (error && error.type === 'EmailError') {
-                        error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
+                        error.message = '邮件发送失败: ' + error.message + '请检查邮箱配置后重新发送邀请函。';
                         errors.logWarn(error.message);
 
                         // If sending the invitation failed, set status to invited-pending
@@ -274,7 +274,7 @@ users = {
                 return addOperation();
             });
         }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to add this user');
+            return errors.handleAPIError(error, '你没有添加这个用户的权限。');
         });
     },
 
@@ -309,7 +309,7 @@ users = {
                 return errors.handleAPIError(error);
             });
         }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to destroy this user');
+            return errors.handleAPIError(error, '你没有删除这个用户的权限。');
         });
     },
 
@@ -329,7 +329,7 @@ users = {
             ne2Password = checkedPasswordReset.password[0].ne2Password;
 
             return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, options).then(function () {
-                return Promise.resolve({password: [{message: 'Password changed successfully.'}]});
+                return Promise.resolve({password: [{message: '密码修改成功。'}]});
             }).catch(function (error) {
                 return Promise.reject(new errors.ValidationError(error.message));
             });

@@ -34,14 +34,20 @@ validateSchema = function (tableName, model) {
     var columns = _.keys(schema[tableName]),
         validationErrors = [];
 
+    // Hacked By Weiping
+    var cSchema = {'posts.slug':'博文地址' };
+
+
     _.each(columns, function (columnKey) {
         var message = '';
+
+        cFieldName = cSchema[tableName+'.'+columnKey] || tableName + '.' + columnKey; // Hacked By Weiping
 
         // check nullable
         if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('nullable')
                 && schema[tableName][columnKey].nullable !== true) {
             if (validator.isNull(model[columnKey]) || validator.empty(model[columnKey])) {
-                message = 'Value in [' + tableName + '.' + columnKey + '] cannot be blank.';
+                message = '[' + cFieldName + '] 不能为空。'; // Hacked By Weiping
                 validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
             }
         }
@@ -51,8 +57,11 @@ validateSchema = function (tableName, model) {
             // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(model[columnKey], 0, schema[tableName][columnKey].maxlength)) {
-                    message = 'Value in [' + tableName + '.' + columnKey + '] exceeds maximum length of '
-                        + schema[tableName][columnKey].maxlength + ' characters.';
+                    /*message = 'Value in [' + tableName + '.' + columnKey + '] exceeds maximum length of '
+                        + schema[tableName][columnKey].maxlength + ' characters.';*/
+
+                     message = ' [' + cFieldName + '] 最大长度不能超过' + schema[tableName][columnKey].maxlength + '个字。';// Hacked By Weiping
+
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
                 }
             }
@@ -65,7 +74,7 @@ validateSchema = function (tableName, model) {
             // check type
             if (schema[tableName][columnKey].hasOwnProperty('type')) {
                 if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(model[columnKey])) {
-                    message = 'Value in [' + tableName + '.' + columnKey + '] is not an integer.';
+                    message = '[' + cFieldName + '] 不是数字。';  // Hacked By Weiping
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
                 }
             }

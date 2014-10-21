@@ -30,8 +30,8 @@ adminControllers = {
                 location: 'top',
                 dismissible: false,
                 status: 'persistent',
-                message: '<a href="https://ghost.org/download">Ghost ' + updateVersion +
-                '</a> is available! Hot Damn. Please <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">upgrade</a> now'
+                message: '<a href="http://ghost.diancloud.com"> Ghost ' + updateVersion +
+                '</a> 发布了!   <a href="http://ghost.diancloud.com" target="_blank">立即升级</a> '
             };
 
             return api.notifications.browse({context: {internal: true}}).then(function (results) {

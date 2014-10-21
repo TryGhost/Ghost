@@ -28,7 +28,7 @@ notifications = {
         return canThis(options.context).browse.notification().then(function () {
             return {notifications: notificationsStore};
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to browse notifications.'));
+            return Promise.reject(new errors.NoPermissionError('您没有权限关闭此通知。'));
         });
     },
 
