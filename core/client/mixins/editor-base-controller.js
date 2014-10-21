@@ -12,7 +12,7 @@ PostModel.eachAttribute(function (name) {
 });
 
 var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
-    needs: ['post-tags-input'],
+    needs: ['post-tags-input', 'post-settings-menu'],
 
     init: function () {
         var self = this;
@@ -194,7 +194,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 prevStatus = this.get('status'),
                 isNew = this.get('isNew'),
                 autoSaveId = this.get('autoSaveId'),
-                self = this;
+                self = this,
+                psmController = this.get('controllers.post-settings-menu'),
+                promise;
 
             options = options || {};
 
@@ -220,11 +222,21 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
             this.set('title', this.get('titleScratch'));
 
-            return this.get('model').save(options).then(function (model) {
-                if (!options.silent) {
-                    self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
-                }
-                return model;
+            if (!this.get('slug')) {
+                // Cancel any pending slug generation that may still be queued in the
+                // run loop because we need to run it before the post is saved.
+                Ember.run.cancel(psmController.get('debounceId'));
+
+                psmController.generateAndSetSlug('slug');
+            }
+
+            promise = Ember.RSVP.resolve(psmController.get('lastPromise')).then(function () {
+                return self.get('model').save(options).then(function (model) {
+                    if (!options.silent) {
+                        self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+                    }
+                    return model;
+                });
             }).catch(function (errors) {
                 if (!options.silent) {
                     self.showErrorNotification(prevStatus, self.get('status'), errors);
@@ -233,6 +245,10 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
                 return Ember.RSVP.reject(errors);
             });
+
+            psmController.set('lastPromise', promise);
+
+            return promise;
         },
 
         setSaveType: function (newType) {
