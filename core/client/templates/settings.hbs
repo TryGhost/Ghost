@@ -1,21 +1,22 @@
 <header class="page-header">
-    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
+    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">菜单</span></button>
     <h2 class="page-title">博客设置</h2>
 </header>
 
 <div class="page-content">
-    <nav class="settings-menu js-settings-menu">
+    <nav class="settings-nav js-settings-menu">
         <ul>
             {{#unless session.user.isAuthor}}
                 {{#unless session.user.isEditor}}
-                    {{gh-activating-list-item route="settings.general" title="博客选项" classNames="settings-menu-general icon-settings"}}
+
+                    {{gh-activating-list-item route="settings.general" title="博客选项" classNames="settings-nav-general icon-settings"}}
                 {{/unless}}
 
-                {{gh-activating-list-item route="settings.users" title="用户管理" classNames="settings-menu-users icon-users"}}
+                {{gh-activating-list-item route="settings.users" title="用户管理" classNames="settings-nav-users icon-users"}}
 
             {{/unless}}
 
-            {{gh-activating-list-item route="settings.about" title="关于我们" classNames="settings-menu-about icon-pacman"}}
+            {{gh-activating-list-item route="settings.about" title="关于我们" classNames="settings-nav-about icon-pacman"}}
         </ul>
     </nav>
 

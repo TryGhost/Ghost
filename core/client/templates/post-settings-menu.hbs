@@ -1,12 +1,12 @@
-<div class="editor-cover" {{action "closeRightOutlet"}}></div>
-{{#gh-tabs-manager selected="showSubview" id="entry-controls" class="right-outlet"}}
-<div id="entry-controls" class="right-outlet">
-    <div {{bind-attr class="isViewingSubview:outlet-pane-out-left:outlet-pane-in :post-settings-menu :outlet-pane"}}>
-        <div class="post-settings-header">
+<div class="content-cover" {{action "closeSettingsMenu"}}></div>
+{{#gh-tabs-manager selected="showSubview" id="entry-controls" class="settings-menu-container"}}
+<div id="entry-controls">
+    <div {{bind-attr class="isViewingSubview:settings-menu-pane-out-left:settings-menu-pane-in :settings-menu :settings-menu-pane"}}>
+        <div class="settings-menu-header">
             <h4>博文选项</h4>
-            <button class="close icon-x post-settings-header-action" {{action "closeRightOutlet"}}><span class="hidden">关闭</span></button>
+            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}><span class="hidden">关闭</span></button>
         </div>
-        <div class="post-settings-content">
+        <div class="settings-menu-content">
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" image=image tagName="section"}}
             <form>
             <div class="form-group">
@@ -62,19 +62,19 @@
                     <p>这是特殊页面(部分主题呈现样式不同)</p>
                 </label>
             </div>
-            
+
             </form>
-        </div><!-- .post-settings-content -->
-    </div><!-- .post-settings-menu -->
-    <div {{bind-attr class="isViewingSubview:outlet-pane-in:outlet-pane-out-right :post-settings-menu :outlet-pane"}}>
+        </div>{{! .settings-menu-content }}
+    </div>{{! .post-settings-menu }}
+
+    <div {{bind-attr class="isViewingSubview:settings-menu-pane-in:settings-menu-pane-out-right :settings-menu :settings-menu-pane"}}>
     {{#gh-tab-pane}}
-        <div class="post-settings-header subview">
-            <button {{action "closeSubview"}} class="back icon-chevron-left post-settings-header-action"><span class="hidden">返回</span></button>
+        <div class="settings-menu-header subview">
+            <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
             <h4>搜索引擎优化</h4>
         </div>
 
-
-        <div class="post-settings-content">
+        <div class="settings-menu-content">
             <form>
             <div class="form-group">
                 <label for="meta-title">呈现标题</label>
@@ -95,10 +95,8 @@
                     <div class="seo-preview-description">{{seoDescription}}</div>
                     <div class="seo-preview-link">{{seoURL}}</div>
                 </div>
-            </div>
             </form>
-        </div>
-
+        </div>{{! .settings-menu-content }}
     {{/gh-tab-pane}}
     </div>
 </div>

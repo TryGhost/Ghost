@@ -616,6 +616,11 @@ body.zen {
         color: #fff;
     }
 }//.tag-label
+#entry-tags.focused {
+    .tag-label:before {
+        color: #fff;
+    }
+}
 
 .publish-bar-inner {
     display: flex;
@@ -668,25 +673,6 @@ body.zen {
     text-align: right;
 }
 
-
-//
-// Post Settings Menu
-// --------------------------------------------------
-
- body.right-outlet-expanded {
-
-    .editor-cover {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 600;
-        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-        transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
-    }//.editor-cover
-}//body.right-outlet-expanded
-
 .post-settings {
     @include icon($i-settings, 14px);
     display: inline-block;
@@ -711,6 +697,40 @@ body.zen {
     }
 
 } // .post-settings-menu
+
+
+//
+// Post Settings Menu eta Data
+// --------------------------------------------------
+
+// These styles are copied from Google.com
+.seo-preview {
+    font-family: Arial, sans-serif;
+}
+
+.seo-preview-title {
+    font-size: 1.8rem;
+    line-height: 2.16rem;
+    color: #1E0FBE;
+    text-overflow: ellipses;
+    -webkit-text-overflow: ellipsis;
+    word-wrap: break-word;
+}
+
+.seo-preview-link {
+    margin: 1px 0 2px 0;
+    font-size: 1.3rem;
+    line-height: 1.6rem;
+    color: #006621;
+    word-wrap: break-word;
+}
+
+.seo-preview-description {
+    font-size: 1.3rem;
+    line-height: 1.4;
+    color: #545454;
+    word-wrap: break-word;
+}
 
 
 //

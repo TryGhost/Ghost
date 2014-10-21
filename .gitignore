@@ -43,8 +43,7 @@ Session.vim
 .tmp
 
 /core/server/data/export/exported*
-/docs
-/_site
+/core/client/docs/_site
 /content/tmp/*
 /content/data/*
 /content/apps/**/*
