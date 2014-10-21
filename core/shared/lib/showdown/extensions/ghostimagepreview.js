@@ -26,6 +26,8 @@ var Ghost = Ghost || {};
 
                         if (src && (src.match(uriRegex) || src.match(pathRegex))) {
                             result = '<img class="js-upload-target" src="' + src + '" alt="' + alt + '" />';  // hacked by weiping
+
+                            //console.log('hre---');
                         }
 
                         if ((Ghost && Ghost.touchEditor) || (typeof window !== 'undefined' && Ember.touchEditor)) {

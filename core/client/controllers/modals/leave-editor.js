@@ -46,11 +46,11 @@ var LeaveEditorController = Ember.Controller.extend({
 
     confirm: {
         accept: {
-            text: 'Leave',
+            text: '离开本页',
             buttonClass: 'btn btn-red'
         },
         reject: {
-            text: 'Stay',
+            text: '留在本页',
             buttonClass: 'btn btn-default btn-minor'
         }
     }
