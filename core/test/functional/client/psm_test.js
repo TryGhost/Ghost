@@ -11,10 +11,10 @@ CasperTest.begin('Post settings menu', 10, function suite(test) {
 
     casper.then(function () {
         test.assertExists('.post-settings', 'icon toggle should exist');
-        test.assertExists('.post-settings-menu', 'popup menu should be rendered at startup');
-        test.assertExists('.post-settings-menu #url', 'url field exists');
-        test.assertExists('.post-settings-menu .post-setting-date', 'publication date field exists');
-        test.assertExists('.post-settings-menu .post-setting-static-page', 'static page checkbox field exists');
+        test.assertExists('.settings-menu', 'popup menu should be rendered at startup');
+        test.assertExists('.settings-menu #url', 'url field exists');
+        test.assertExists('.settings-menu .post-setting-date', 'publication date field exists');
+        test.assertExists('.settings-menu .post-setting-static-page', 'static page checkbox field exists');
     });
 
     // Enter a title and save draft so converting to/from static post
@@ -36,7 +36,7 @@ CasperTest.begin('Post settings menu', 10, function suite(test) {
 
     casper.thenClick('.post-settings');
 
-    casper.waitForOpaque('.post-settings-menu', function onSuccess() {
+    casper.waitForOpaque('.settings-menu', function onSuccess() {
         test.assert(true, 'post settings menu should be visible after clicking post-settings icon');
     });
 });
@@ -59,7 +59,7 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
 
     // Test change permalink
     casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
+        this.fillSelectors('.settings-menu form', {
             '#url': 'new-url'
         }, false);
 
@@ -97,7 +97,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
 
     // Test change published date
     casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
+        this.fillSelectors('.settings-menu form', {
             '.post-setting-date': '22 May 14 @ 23:39'
         }, false);
 
@@ -173,7 +173,7 @@ CasperTest.begin('Post url input is reset from all whitespace back to original v
 
     // Test change permalink
     casper.then(function () {
-        this.fillSelectors('.post-settings-menu form', {
+        this.fillSelectors('.settings-menu form', {
             '#url': '    '
         }, false);
 
