@@ -258,52 +258,52 @@
 
 %dropdown-triangle-top {
     &:before {
-        @include triangle(($dropdown_triangle * 2), #fff, up);
+        @include triangle($dropdown_triangle, #fff, up);
         top: -$dropdown_triangle;
     }
     &:after {
-        @include triangle(($dropdown_triangle * 2) + 2, darken($lightgrey, 15%), up);
-        top: -($dropdown_triangle + 1);
+        @include triangle($dropdown_triangle + 2, darken($lightgrey, 15%), up);
+        top: -($dropdown_triangle + 2);
     }
 }
 %dropdown-triangle-bottom {
     &:before {
-        @include triangle(($dropdown_triangle * 2), #fff, down);
+        @include triangle($dropdown_triangle, #fff, down);
         bottom: -$dropdown_triangle;
     }
     &:after {
-        @include triangle(($dropdown_triangle * 2) + 2, darken($lightgrey, 15%), down);
-        bottom: -($dropdown_triangle + 1);
+        @include triangle($dropdown_triangle + 2, darken($lightgrey, 15%), down);
+        bottom: -($dropdown_triangle + 2);
     }
 }
 %dropdown-triangle-center {
     &:before {
         left: 50%;
-        margin-left: (-$dropdown_triangle);
+        margin-left: -($dropdown_triangle / 2);
     }
     &:after {
         left: 50%;
-        margin-left: -($dropdown_triangle + 1);
+        margin-left: -($dropdown_triangle / 2 + 2);
     }
 }
 
 // TODO: Make the values here use the $dropdown_triangle var
 %dropdown-triangle-left {
     &:before {
-        left: ($dropdown_triangle + 2);
+        left: ($dropdown_triangle / 2 + 2);
     }
     &:after {
-        left: ($dropdown_triangle + 1);
+        left: ($dropdown_triangle / 2);
     }
 }
 %dropdown-triangle-right {
     &:before {
         left: auto;
-        right: ($dropdown_triangle + 2);
+        right: ($dropdown_triangle / 2 + 2);
     }
     &:after {
         left: auto;
-        right: ($dropdown_triangle + 1);
+        right: ($dropdown_triangle / 2);
     }
 }
 
