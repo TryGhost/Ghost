@@ -42,7 +42,7 @@ var GhostDropdown = Ember.Component.extend(DropdownMixin, {
             name = this.get('name'),
             button = this.get('button'),
             targetDropdownName = options.target;
-        
+
         if (name === targetDropdownName && (!isOpen || isClosing)) {
             if (!button) {
                 button = options.button;
