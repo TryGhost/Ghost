@@ -4,18 +4,18 @@
 </header>
 
 <div class="page-content">
-    <nav class="settings-menu js-settings-menu">
+    <nav class="settings-nav js-settings-menu">
         <ul>
             {{#unless session.user.isAuthor}}
                 {{#unless session.user.isEditor}}
-                    {{gh-activating-list-item route="settings.general" title="General" classNames="settings-menu-general icon-settings"}}
+                    {{gh-activating-list-item route="settings.general" title="General" classNames="settings-nav-general icon-settings"}}
                 {{/unless}}
 
-                {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-menu-users icon-users"}}
+                {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-nav-users icon-users"}}
 
             {{/unless}}
 
-            {{gh-activating-list-item route="settings.about" title="About" classNames="settings-menu-about icon-pacman"}}
+            {{gh-activating-list-item route="settings.about" title="About" classNames="settings-nav-about icon-pacman"}}
         </ul>
     </nav>
 

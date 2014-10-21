@@ -3,7 +3,7 @@ var ApplicationController = Ember.Controller.extend({
 
     topNotificationCount: 0,
     showGlobalMobileNav: false,
-    showRightOutlet: false,
+    showSettingsMenu: false,
 
     actions: {
         topNotificationChange: function (count) {

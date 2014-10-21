@@ -16,9 +16,9 @@ CasperTest.begin('Settings screen is correct', 15, function suite(test) {
 
     casper.then(function testViews() {
         test.assertExists('.settings', 'Settings main view is present');
-        test.assertExists('.settings-menu', 'Settings menu is present');
-        test.assertExists('.settings-menu-general a', 'General link is present');
-        test.assertExists('.settings-menu-users a', 'Users link is present');
+        test.assertExists('.settings-nav', 'Settings menu is present');
+        test.assertExists('.settings-nav-general a', 'General link is present');
+        test.assertExists('.settings-nav-users a', 'Users link is present');
         test.assertNotExists('.settings-menu-apps a', 'Apps link is present');
         test.assertExists('.settings', 'Settings main view is present');
         test.assertExists('.settings-content', 'Settings content view is present');
@@ -27,18 +27,18 @@ CasperTest.begin('Settings screen is correct', 15, function suite(test) {
     });
 
     casper.then(function testSwitchingTabs() {
-        casper.thenClick('.settings-menu-users a');
+        casper.thenClick('.settings-nav-users a');
         casper.waitForSelector(usersTabDetector, function then() {
             // assert that the right menu item is active
-            test.assertExists('.settings-menu-users.active a', 'Users link is active');
-            test.assertDoesntExist('.settings-menu-general.active a', 'General link is not active');
+            test.assertExists('.settings-nav-users.active a', 'Users link is active');
+            test.assertDoesntExist('.settings-nav-general.active a', 'General link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
 
-        casper.thenClick('.settings-menu-general a');
+        casper.thenClick('.settings-nav-general a');
         casper.waitForSelector(generalTabDetector, function then() {
             // assert that the right menu item is active
-            test.assertExists('.settings-menu-general.active a', 'General link is active');
-            test.assertDoesntExist('.settings-menu-users.active a', 'User link is not active');
+            test.assertExists('.settings-nav-general.active a', 'General link is active');
+            test.assertDoesntExist('.settings-nav-users.active a', 'User link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `generalTabDetector` timed out'));
     });
 });
@@ -237,11 +237,11 @@ CasperTest.begin('Can save settings', 7, function suite(test) {
         test.assert(true, 'Got success notification');
     }, casper.failOnTimeout(test, 'No success notification :('));
 
-    casper.thenClick('.settings-menu-general a').then(function testTransitionToGeneral() {
+    casper.thenClick('.settings-nav-general a').then(function testTransitionToGeneral() {
         casper.waitForSelector(generalTabDetector, function then() {
             casper.on('resource.requested', handleSettingsRequest);
             test.assertEval(function testGeneralIsActive() {
-                return document.querySelector('.settings-menu-general').classList.contains('active');
+                return document.querySelector('.settings-nav-general').classList.contains('active');
             }, 'general tab is marked active');
         },
         casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));

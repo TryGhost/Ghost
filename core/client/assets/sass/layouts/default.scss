@@ -30,11 +30,13 @@
         transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     }
 
+    // This selector ends up being `body.settings-menu-expanded .viewport`
     body.global-nav-expanded & {
         transform: translate3d(260px, 0px, 0px);
     }
 
-    body.right-outlet-expanded & {
+    // This selector ends up being `body.settings-menu-expanded .viewport`
+    body.settings-menu-expanded & {
         @media (max-width: 350px) {
             transform: translate3d(-100%, 0px, 0px);
         }
@@ -54,47 +56,6 @@
     }
 }
 
-.right-outlet {
-    background: $lightestgrey;
-    width: 100%;
-    max-width: 350px;
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-    transform: translate3d(60px, 0px, 0px);
-    body.right-outlet-expanded & {
-        transform: translate3d(0, 0px, 0px);
-    }
-    .outlet-pane {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        transform: translate3d(0, 0px, 0px);
-        opacity: 1;
-
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-
-        @media (min-width: 901px) {
-            transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
-        }
-
-        &.outlet-pane-out-left {
-            transform: translate3d(-100%, 0px, 0px);
-        }
-        &.outlet-pane-out-right {
-            transform: translate3d(100%, 0px, 0px);
-        }
-        &.outlet-pane-in {
-            transform: translate3d(0, 0px, 0px);
-        }
-    }
-}
 
 //
 // The header bar - visible below 900px

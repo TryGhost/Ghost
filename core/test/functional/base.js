@@ -82,12 +82,12 @@ screens = {
     },
     'settings.general': {
         url: 'ghost/settings/general',
-        selector: '.settings-menu-general.active'
+        selector: '.settings-nav-general.active'
     },
     'settings.users': {
         url: 'ghost/settings/users',
-        linkSelector: '.settings-menu-users a',
-        selector: '.settings-menu-users.active'
+        linkSelector: '.settings-nav-users a',
+        selector: '.settings-nav-users.active'
     },
     'settings.users.user': {
         url: 'ghost/settings/users/test',

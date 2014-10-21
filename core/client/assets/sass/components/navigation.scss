@@ -19,7 +19,8 @@
         width: 16px;
     }
 
-    body.right-outlet-expanded & {
+    // This selector ends up being `body.settings-menu-expanded .global-nav`
+    body.settings-menu-expanded & {
         transform: translate3d(-350px, 0px, 0px);
     }
 
