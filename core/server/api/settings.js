@@ -40,7 +40,8 @@ updateConfigTheme = function () {
             title: settingsCache.title.value || '',
             description: settingsCache.description.value || '',
             logo: settingsCache.logo.value || '',
-            cover: settingsCache.cover.value || ''
+            cover: settingsCache.cover.value || '',
+            tongji: settingsCache.tongji.value || ''
         }
     });
 };
