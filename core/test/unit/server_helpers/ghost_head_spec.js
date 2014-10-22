@@ -181,7 +181,7 @@ describe('{{ghost_head}} helper', function () {
                 '    <meta property="article:tag" content="tag1" />\n' +
                 '    <meta property="article:tag" content="tag2" />\n' +
                 '    <meta property="article:tag" content="tag3" />\n    \n' +
-                '    <meta name="twitter:card" content="content" />\n' +
+                '    <meta name="twitter:card" content="summary" />\n' +
                 '    <meta name="twitter:title" content="Welcome to Ghost" />\n' +
                 '    <meta name="twitter:description" content="blog description..." />\n' +
                 '    <meta name="twitter:url" content="http://testurl.com/post/" />\n    \n' +
