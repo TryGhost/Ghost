@@ -49,7 +49,7 @@ ghost_head = function (options) {
             metaTitle = results[2].value(),
             publishedDate, modifiedDate,
             tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(','),
-            card = 'content';
+            card = 'summary';
 
         if (!metaDescription) {
             metaDescription = excerpt.call(self.post, {hash: {words: '40'}}).string;
