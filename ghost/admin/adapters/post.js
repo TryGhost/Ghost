@@ -13,7 +13,7 @@ var PostAdapter = EmbeddedRelationAdapter.extend({
         // an array with a post object like the API expects
         serializer.serializeIntoHash(data, type, record);
 
-        return this.ajax(url, 'POST', { data: data });
+        return this.ajax(url, 'POST', {data: data});
     },
 
     updateRecord: function (store, type, record) {
@@ -30,7 +30,7 @@ var PostAdapter = EmbeddedRelationAdapter.extend({
         serializer.serializeIntoHash(data, type, record);
 
         // use the ApplicationAdapter's buildURL method
-        return this.ajax(url, 'PUT', { data: data });
+        return this.ajax(url, 'PUT', {data: data});
     }
 });
 

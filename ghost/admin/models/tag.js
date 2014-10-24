@@ -5,7 +5,7 @@ var Tag = DS.Model.extend({
     description: DS.attr('string'),
     parent_id: DS.attr('number'),
     meta_title: DS.attr('string'),
-    meta_description: DS.attr('string'),
+    meta_description: DS.attr('string')
 });
 
 export default Tag;

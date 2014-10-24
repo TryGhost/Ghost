@@ -1,18 +1,14 @@
 var shortcuts = {},
     ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';
-//
-//General editor shortcuts
-//
 
+// General editor shortcuts
 shortcuts[ctrlOrCmd + '+s'] = 'save';
 shortcuts[ctrlOrCmd + '+alt+p'] = 'publish';
 shortcuts['alt+shift+z'] = 'toggleZenMode';
 
-//
-//CodeMirror Markdown Shortcuts
-//
+// CodeMirror Markdown Shortcuts
 
-//Text
+// Text
 shortcuts['ctrl+alt+u'] = {action: 'codeMirrorShortcut', options: {type: 'strike'}};
 shortcuts[ctrlOrCmd + '+b'] = {action: 'codeMirrorShortcut', options: {type: 'bold'}};
 shortcuts[ctrlOrCmd + '+i'] = {action: 'codeMirrorShortcut', options: {type: 'italic'}};
@@ -23,11 +19,11 @@ shortcuts['ctrl+alt+shift+u'] = {action: 'codeMirrorShortcut', options: {type: '
 shortcuts[ctrlOrCmd + '+shift+c'] = {action: 'codeMirrorShortcut', options: {type: 'copyHTML'}};
 shortcuts[ctrlOrCmd + '+h'] = {action: 'codeMirrorShortcut', options: {type: 'cycleHeaderLevel'}};
 
-//Formatting
+// Formatting
 shortcuts['ctrl+q'] = {action: 'codeMirrorShortcut', options: {type: 'blockquote'}};
 shortcuts['ctrl+l'] = {action: 'codeMirrorShortcut', options: {type: 'list'}};
 
-//Insert content
+// Insert content
 shortcuts['ctrl+shift+1'] = {action: 'codeMirrorShortcut', options: {type: 'currentDate'}};
 shortcuts[ctrlOrCmd + '+k'] = {action: 'codeMirrorShortcut', options: {type: 'link'}};
 shortcuts[ctrlOrCmd + '+shift+i'] = {action: 'codeMirrorShortcut', options: {type: 'image'}};

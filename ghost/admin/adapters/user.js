@@ -14,7 +14,7 @@ var UserAdapter = EmbeddedRelationAdapter.extend({
         serializer.serializeIntoHash(data, type, record);
 
         // Use the url from the ApplicationAdapter's buildURL method
-        return this.ajax(url, 'POST', { data: data });
+        return this.ajax(url, 'POST', {data: data});
     },
 
     updateRecord: function (store, type, record) {
@@ -31,7 +31,7 @@ var UserAdapter = EmbeddedRelationAdapter.extend({
         serializer.serializeIntoHash(data, type, record);
 
         // Use the url from the ApplicationAdapter's buildURL method
-        return this.ajax(url, 'PUT', { data: data });
+        return this.ajax(url, 'PUT', {data: data});
     },
 
     find: function (store, type, id) {

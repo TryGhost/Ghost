@@ -7,17 +7,17 @@ var DeleteUserController = Ember.Controller.extend({
             user.destroyRecord().then(function () {
                 self.store.unloadAll('post');
                 self.transitionToRoute('settings.users');
-                self.notifications.showSuccess('The user has been deleted.', { delayed: true });
+                self.notifications.showSuccess('The user has been deleted.', {delayed: true});
             }, function () {
                 self.notifications.showError('The user could not be deleted. Please try again.');
             });
-
         },
 
         confirmReject: function () {
             return false;
         }
     },
+
     confirm: {
         accept: {
             text: 'Delete User',

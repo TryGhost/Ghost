@@ -1,16 +1,19 @@
 var InviteNewUserController = Ember.Controller.extend({
-    //Used to set the initial value for the dropdown
+    // Used to set the initial value for the dropdown
     authorRole: Ember.computed(function () {
         var self = this;
+
         return this.store.find('role').then(function (roles) {
             var authorRole = roles.findBy('name', 'Author');
-            //Initialize role as well.
+
+            // Initialize role as well.
             self.set('role', authorRole);
             self.set('authorRole', authorRole);
+
             return authorRole;
         });
     }),
-    
+
     confirm: {
         accept: {
             text: 'send invitation now'
@@ -19,7 +22,7 @@ var InviteNewUserController = Ember.Controller.extend({
             buttonClass: 'hidden'
         }
     },
-        
+
     actions: {
         setRole: function (role) {
             this.set('role', role);
@@ -38,13 +41,13 @@ var InviteNewUserController = Ember.Controller.extend({
 
             this.store.find('user').then(function (result) {
                 var invitedUser = result.findBy('email', email);
+
                 if (invitedUser) {
                     if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
                         self.notifications.showWarn('A user with that email address was already invited.');
                     } else {
                         self.notifications.showWarn('A user with that email address already exists.');
                     }
-                    
                 } else {
                     newUser = self.store.createRecord('user', {
                         email: email,

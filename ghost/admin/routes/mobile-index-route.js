@@ -1,6 +1,6 @@
 import mobileQuery from 'ghost/utils/mobile';
 
-//Routes that extend MobileIndexRoute need to implement
+// Routes that extend MobileIndexRoute need to implement
 // desktopTransition, a function which is called when
 // the user resizes to desktop levels.
 var MobileIndexRoute = Ember.Route.extend({
