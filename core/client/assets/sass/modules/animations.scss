@@ -1,5 +1,14 @@
+// ------------------------------------------------------------
+// Animations
 //
-// Fade in
+// Keyframe animations used through Ghost
+//
+// * Define animations
+// * Classed to use these animations
+// ------------------------------------------------------------
+
+//
+// Define animations
 // --------------------------------------------------
 
 @keyframes fade-in {
@@ -10,10 +19,6 @@
         opacity: 1;
     }
 }
-.fade-in {
-    animation: fade-in 0.2s;
-    animation-fill-mode: forwards;
-}
 
 @keyframes fade-in-snap {
     to {
@@ -21,10 +26,6 @@
     }
 }
 
-
-//
-// Fade in scale up
-// --------------------------------------------------
 @keyframes fade-in-scale {
     from {
         transform: scale(0.8);
@@ -35,15 +36,6 @@
         opacity: 1;
     }
 }
-.fade-in-scale {
-    animation: fade-in-scale 0.2s;
-    animation-fill-mode: forwards;
-}
-
-
-//
-// Fade out
-// --------------------------------------------------
 
 @keyframes fade-out {
     from {
@@ -53,15 +45,6 @@
         opacity: 0;
     }
 }
-.fade-out {
-    animation: fade-out 0.5s;
-    animation-fill-mode: forwards;
-}
-
-
-//
-// Fade out inset box shadow for content page keyboard focus
-// --------------------------------------------------
 
 @keyframes keyboard-focus-style-fade-out {
     from {
@@ -70,4 +53,24 @@
     to {
         box-shadow: none;
     }
+}
+
+
+//
+// Classed to use these animations
+// --------------------------------------------------
+
+.fade-in {
+    animation: fade-in 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.fade-in-scale {
+    animation: fade-in-scale 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.fade-out {
+    animation: fade-out 0.5s;
+    animation-fill-mode: forwards;
 }
