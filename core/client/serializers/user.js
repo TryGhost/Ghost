@@ -2,7 +2,7 @@ import ApplicationSerializer from 'ghost/serializers/application';
 
 var UserSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
     attrs: {
-        roles: { embedded: 'always' }
+        roles: {embedded: 'always'}
     },
 
     extractSingle: function (store, primaryType, payload) {

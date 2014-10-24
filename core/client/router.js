@@ -18,29 +18,35 @@ Router.map(function () {
     this.route('setup');
     this.route('signin');
     this.route('signout');
-    this.route('signup', { path: '/signup/:token' });
+    this.route('signup', {path: '/signup/:token'});
     this.route('forgotten');
-    this.route('reset', { path: '/reset/:token' });
-    this.resource('posts', { path: '/' }, function () {
-        this.route('post', { path: ':post_id' });
+    this.route('reset', {path: '/reset/:token'});
+
+    this.resource('posts', {path: '/'}, function () {
+        this.route('post', {path: ':post_id'});
     });
+
     this.resource('editor', function () {
-        this.route('new', { path: '' });
-        this.route('edit', { path: ':post_id' });
+        this.route('new', {path: ''});
+        this.route('edit', {path: ':post_id'});
     });
+
     this.resource('settings', function () {
         this.route('general');
-        this.resource('settings.users', { path: '/users' }, function () {
-            this.route('user', { path: '/:slug' });
+
+        this.resource('settings.users', {path: '/users'}, function () {
+            this.route('user', {path: '/:slug'});
         });
+
         this.route('about');
     });
+
     this.route('debug');
-    //Redirect legacy content to posts
+
+    // Redirect legacy content to posts
     this.route('content');
 
-    this.route('error404', { path: '/*path' });
-
+    this.route('error404', {path: '/*path'});
 });
 
 export default Router;

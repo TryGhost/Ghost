@@ -13,14 +13,14 @@ var SettingSerializer = ApplicationSerializer.extend({
         delete data.id;
 
         Object.keys(data).forEach(function (k) {
-            payload.push({ key: k, value: data[k] });
+            payload.push({key: k, value: data[k]});
         });
 
         hash[root] = payload;
     },
 
     extractArray: function (store, type, _payload) {
-        var payload = { id: '0' };
+        var payload = {id: '0'};
 
         _payload.settings.forEach(function (setting) {
             payload[setting.key] = setting.value;
