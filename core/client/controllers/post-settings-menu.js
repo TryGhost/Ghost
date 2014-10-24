@@ -67,21 +67,18 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             .extend(Ember.PromiseProxyMixin)
             .create(deferred);
     }),
-    /**
-     * The placeholder is the published date of the post,
-     * or the current date if the pubdate has not been set.
-     */
-    publishedAtPlaceholder: Ember.computed('publishedAtValue', function () {
+
+    publishedAtValue: Ember.computed('published_at', function () {
         var pubDate = this.get('published_at');
         if (pubDate) {
             return formatDate(pubDate);
         }
         return formatDate(moment());
     }),
-    publishedAtValue: boundOneWay('published_at', formatDate),
 
     slugValue: boundOneWay('slug'),
-    //Lazy load the slug generator for slugPlaceholder
+
+    //Lazy load the slug generator
     slugGenerator: Ember.computed(function () {
         return SlugGenerator.create({
             ghostPaths: this.get('ghostPaths'),
@@ -160,10 +157,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         return placeholder;
     }),
 
-    seoURL: Ember.computed('slug', 'slugPlaceholder', function () {
+    seoURL: Ember.computed('slug', function () {
         var blogUrl = this.get('config').blogUrl,
-            seoSlug = this.get('slug') ? this.get('slug') : this.get('slugPlaceholder'),
-            seoURL = blogUrl + '/' + seoSlug + '/';
+            seoSlug = this.get('slug') ? this.get('slug') : '',
+            seoURL = blogUrl + '/' + seoSlug;
+
+        // only append a slash to the URL if the slug exists
+        if (seoSlug) {
+            seoURL += '/';
+        }
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
@@ -180,33 +182,20 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             this.addObserver('titleScratch', this, 'titleObserver');
         }
     }.observes('model'),
-    titleObserver: function () {
-        var debounceId;
 
-        if (this.get('isNew') && !this.get('title')) {
-            debounceId = Ember.run.debounce(this, 'generateAndSetSlug', ['slugPlaceholder'], 700);
-        } else if (this.get('title') === '(Untitled)') {
+    titleObserver: function () {
+        var debounceId,
+            title = this.get('title'),
+            slug = this.get('slug');
+
+        // generate a slug if a post is new and doesn't have a title yet or 
+        // if the title is still '(Untitled)' and the slug is unaltered.
+        if ((this.get('isNew') && !title) || title === '(Untitled)' && /^untitled(-\d+){0,1}$/.test(slug)) {
             debounceId = Ember.run.debounce(this, 'generateAndSetSlug', ['slug'], 700);
         }
 
         this.set('debounceId', debounceId);
     },
-    slugPlaceholder: Ember.computed(function (key, value) {
-        var slug = this.get('slug');
-
-        //If the post has a slug, that's its placeholder.
-        if (slug) {
-            return slug;
-        }
-
-        //Otherwise, it's whatever value was set by the
-        //  slugGenerator (below)
-        if (arguments.length > 1) {
-            return value;
-        }
-        //The title will stand in until the actual slug has been generated
-        return this.get('titleScratch');
-    }),
 
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
