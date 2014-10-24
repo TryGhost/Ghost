@@ -12,7 +12,7 @@ var SignoutRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleB
         } else {
             this.send('invalidateSession');
         }
-    },
+    }
 });
 
 export default SignoutRoute;

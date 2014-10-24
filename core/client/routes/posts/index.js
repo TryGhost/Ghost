@@ -4,6 +4,7 @@ import mobileQuery from 'ghost/utils/mobile';
 
 var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
     noPosts: false,
+
     // Transition to a specific post if we're not on mobile
     beforeModel: function () {
         if (!mobileQuery.matches) {
@@ -21,22 +22,26 @@ var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin
             // the store has been populated by PostsRoute
             posts = this.store.all('post'),
             post;
+
         return this.store.find('user', 'me').then(function (user) {
             post = posts.find(function (post) {
                 // Authors can only see posts they've written
                 if (user.get('isAuthor')) {
                     return post.isAuthoredByUser(user);
                 }
+
                 return true;
             });
+
             if (post) {
                 return self.transitionTo('posts.post', post);
             }
+
             self.set('noPosts', true);
         });
     },
 
-    //Mobile posts route callback
+    // Mobile posts route callback
     desktopTransition: function () {
         this.goToPost();
     }

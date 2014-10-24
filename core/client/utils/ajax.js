@@ -6,7 +6,7 @@ var ajax = window.ajax = function () {
 
 // Used in API request fail handlers to parse a standard api error
 // response json for the message to display
-var getRequestErrorMessage = function (request, performConcat) {
+function getRequestErrorMessage(request, performConcat) {
     var message,
         msgDetail;
 
@@ -23,7 +23,6 @@ var getRequestErrorMessage = function (request, performConcat) {
         try {
             // Try to parse out the error, or default to 'Unknown'
             if (request.responseJSON.errors && Ember.isArray(request.responseJSON.errors)) {
-
                 message = request.responseJSON.errors.map(function (errorItem) {
                     return errorItem.message;
                 });
@@ -46,7 +45,7 @@ var getRequestErrorMessage = function (request, performConcat) {
     }
 
     return message;
-};
+}
 
-export { getRequestErrorMessage, ajax };
+export {getRequestErrorMessage, ajax};
 export default ajax;

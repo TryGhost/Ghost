@@ -3,13 +3,16 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
-var paginationSettings = {
+var paginationSettings,
+    PostsRoute;
+
+paginationSettings = {
     status: 'all',
     staticPages: 'all',
     page: 1
 };
 
-var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
+PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
     classNames: ['manage'],
 
     model: function () {
@@ -19,6 +22,7 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
             if (user.get('isAuthor')) {
                 paginationSettings.author = user.get('slug');
             }
+
             // using `.filter` allows the template to auto-update when new models are pulled in from the server.
             // we just need to 'return true' to allow all models by default.
             return self.store.filter('post', paginationSettings, function (post) {
@@ -52,21 +56,25 @@ var PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, Shortcut
         } else if (newPosition < 0) {
             return;
         }
+
         this.transitionTo('posts.post', posts.objectAt(newPosition));
     },
 
     shortcuts: {
         'up, k': 'moveUp',
         'down, j': 'moveDown',
-        'c': 'newPost'
+        c: 'newPost'
     },
+
     actions: {
         newPost: function () {
             this.transitionTo('editor.new');
         },
+
         moveUp: function () {
             this.stepThroughPosts(-1);
         },
+
         moveDown: function () {
             this.stepThroughPosts(1);
         }

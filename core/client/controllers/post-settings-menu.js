@@ -5,7 +5,7 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
 var PostSettingsMenuController = Ember.ObjectController.extend({
-    //State for if the user is viewing a tab's pane.
+    // State for if the user is viewing a tab's pane.
     needs: 'application',
 
     lastPromise: null,
@@ -18,8 +18,10 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         if (arguments.length > 1) {
             return value;
         }
+
         return false;
     }),
+
     selectedAuthor: null,
     initializeSelectedAuthor: function () {
         var self = this;
@@ -35,13 +37,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             selectedAuthor = this.get('selectedAuthor'),
             model = this.get('model'),
             self = this;
-        //return if nothing changed
+
+        // return if nothing changed
         if (selectedAuthor.get('id') === author.get('id')) {
             return;
         }
+
         model.set('author', selectedAuthor);
 
-        //if this is a new post (never been saved before), don't try to save it
+        // if this is a new post (never been saved before), don't try to save it
         if (this.get('isNew')) {
             return;
         }
@@ -52,8 +56,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             model.rollback();
         });
     }.observes('selectedAuthor'),
+
     authors: Ember.computed(function () {
-        //Loaded asynchronously, so must use promise proxies.
+        // Loaded asynchronously, so must use promise proxies.
         var deferred = {};
 
         deferred.promise = this.store.find('user', {limit: 'all'}).then(function (users) {
@@ -71,22 +76,25 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
     publishedAtValue: Ember.computed('published_at', function () {
         var pubDate = this.get('published_at');
+
         if (pubDate) {
             return formatDate(pubDate);
         }
+
         return formatDate(moment());
     }),
 
     slugValue: boundOneWay('slug'),
 
-    //Lazy load the slug generator
+    // Lazy load the slug generator
     slugGenerator: Ember.computed(function () {
         return SlugGenerator.create({
             ghostPaths: this.get('ghostPaths'),
             slugType: 'post'
         });
     }),
-    //Requests slug from title
+
+    // Requests slug from title
     generateAndSetSlug: function (destination) {
         var self = this,
             title = this.get('titleScratch'),
@@ -143,9 +151,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             }
 
             // Strip HTML
-            placeholder = $('<div />', { html: html }).text();
+            placeholder = $('<div />', {html: html}).text();
             // Replace new lines and trim
+            // jscs: disable
             placeholder = placeholder.replace(/\n+/g, ' ').trim();
+            // jscs: enable
         }
 
         if (placeholder.length > 156) {
@@ -189,7 +199,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             title = this.get('title'),
             slug = this.get('slug');
 
-        // generate a slug if a post is new and doesn't have a title yet or 
+        // generate a slug if a post is new and doesn't have a title yet or
         // if the title is still '(Untitled)' and the slug is unaltered.
         if ((this.get('isNew') && !title) || title === '(Untitled)' && /^untitled(-\d+){0,1}$/.test(slug)) {
             debounceId = Ember.run.debounce(this, 'generateAndSetSlug', ['slug'], 700);
@@ -202,9 +212,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         errors = Ember.isArray(errors) ? errors : [errors];
         this.notifications.showErrors(errors);
     },
+
     showSuccess: function (message) {
         this.notifications.showSuccess(message);
     },
+
     actions: {
         togglePage: function () {
             var self = this;
@@ -226,6 +238,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             var self = this;
 
             this.toggleProperty('featured');
+
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
             if (this.get('isNew')) {
@@ -237,6 +250,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.get('model').rollback();
             });
         },
+
         /**
          * triggered by user manually changing slug
          */
@@ -314,10 +328,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self = this;
 
             if (!userInput) {
-                //Clear out the published_at field for a draft
+                // Clear out the published_at field for a draft
                 if (this.get('isDraft')) {
                     this.set('published_at', null);
                 }
+
                 return;
             }
 
@@ -330,9 +345,10 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 errMessage = 'Published Date cannot currently be in the future.';
             }
 
-            //If errors, notify and exit.
+            // If errors, notify and exit.
             if (errMessage) {
                 this.showErrors(errMessage);
+
                 return;
             }
 
@@ -341,7 +357,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            //Validation complete
+            // Validation complete
             this.set('published_at', newPublishedAt);
 
             // If this is a new post.  Don't save the model.  Defer the save

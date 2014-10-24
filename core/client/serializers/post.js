@@ -3,7 +3,7 @@ import ApplicationSerializer from 'ghost/serializers/application';
 var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.
     attrs: {
-        tags: { embedded: 'always' }
+        tags: {embedded: 'always'}
     },
 
     normalize: function (type, hash) {

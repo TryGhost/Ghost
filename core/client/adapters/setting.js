@@ -14,7 +14,7 @@ var SettingAdapter = ApplicationAdapter.extend({
 
         // use the ApplicationAdapter's buildURL method but do not
         // pass in an id.
-        return this.ajax(this.buildURL(type.typeKey), 'PUT', { data: data });
+        return this.ajax(this.buildURL(type.typeKey), 'PUT', {data: data});
     }
 });
 

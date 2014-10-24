@@ -1,4 +1,4 @@
-// This is used by the dropdown initializer (and subsequently popovers) to manage closing & toggeling
+// This is used by the dropdown initializer (and subsequently popovers) to manage closing & toggling
 import BodyEventListener from 'ghost/mixins/body-event-listener';
 
 var DropdownService = Ember.Object.extend(Ember.Evented, BodyEventListener, {

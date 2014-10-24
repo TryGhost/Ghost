@@ -24,7 +24,6 @@ var ApplicationView = Ember.View.extend({
         // #### Listen to the viewport and change user-menu dropdown triangle classes accordingly
         mobileQuery.addListener(this.swapUserMenuDropdownTriangleClasses);
         this.swapUserMenuDropdownTriangleClasses(mobileQuery);
-
     }.on('didInsertElement'),
 
     swapUserMenuDropdownTriangleClasses: function (mq) {
@@ -50,13 +49,13 @@ var ApplicationView = Ember.View.extend({
                 this.set('controller.showGlobalMobileNav', false);
             }
         }, this));
+
         mobileQuery.addListener(this.closeGlobalMobileNavOnDesktop);
     }.on('didInsertElement'),
 
     removeCloseNavOnDesktop: function () {
         mobileQuery.removeListener(this.closeGlobalMobileNavOnDesktop);
     }.on('willDestroyElement'),
-
 
     toggleSettingsMenuBodyClass: function () {
         $('body').toggleClass('settings-menu-expanded', this.get('controller.showSettingsMenu'));

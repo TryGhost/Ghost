@@ -5,9 +5,13 @@ import mobileCodeMirror from 'ghost/utils/codemirror-mobile';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 import codeMirrorShortcuts from 'ghost/utils/codemirror-shortcuts';
 
+var onChangeHandler,
+    onScrollHandler,
+    Codemirror;
+
 codeMirrorShortcuts.init();
 
-var onChangeHandler = function (cm, changeObj) {
+onChangeHandler = function (cm, changeObj) {
     var line,
         component = cm.component;
 
@@ -24,7 +28,7 @@ var onChangeHandler = function (cm, changeObj) {
     component.sendAction('typingPause');
 };
 
-var onScrollHandler = function (cm) {
+onScrollHandler = function (cm) {
     var scrollInfo = cm.getScrollInfo(),
         component = cm.component;
 
@@ -36,7 +40,7 @@ var onScrollHandler = function (cm) {
     }, 10);
 };
 
-var Codemirror = Ember.TextArea.extend(MarkerManager, {
+Codemirror = Ember.TextArea.extend(MarkerManager, {
     focus: true,
 
     setFocus: function () {
@@ -51,8 +55,9 @@ var Codemirror = Ember.TextArea.extend(MarkerManager, {
 
     afterRenderEvent: function () {
         var self = this;
-        function initMarkers () {
-          self.initMarkers.apply(self, arguments);
+
+        function initMarkers() {
+            self.initMarkers.apply(self, arguments);
         }
 
         // replaces CodeMirror with TouchEditor only if we're on mobile

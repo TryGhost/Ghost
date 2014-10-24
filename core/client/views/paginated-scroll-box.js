@@ -1,7 +1,6 @@
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 import PaginationViewMixin from 'ghost/mixins/pagination-view-infinite-scroll';
 
-
 var PaginatedScrollBox = Ember.View.extend(PaginationViewMixin, {
     attachScrollClassHandler: function () {
         var el = this.$();
@@ -10,6 +9,7 @@ var PaginatedScrollBox = Ember.View.extend(PaginationViewMixin, {
             offset: 10
         }));
     }.on('didInsertElement'),
+
     detachScrollClassHandler: function () {
         this.$().off('scroll');
     }.on('willDestroyElement')

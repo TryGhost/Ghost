@@ -24,15 +24,17 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     created_by: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
-    roles: DS.hasMany('role', { embedded: 'always' }),
+    roles: DS.hasMany('role', {embedded: 'always'}),
 
     role: Ember.computed('roles', function (name, value) {
         if (arguments.length > 1) {
-            //Only one role per user, so remove any old data.
+            // Only one role per user, so remove any old data.
             this.get('roles').clear();
             this.get('roles').pushObject(value);
+
             return value;
         }
+
         return this.get('roles.firstObject');
     }),
 
@@ -45,13 +47,14 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
 
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
+
         return ic.ajax.request(url, {
             type: 'PUT',
             data: {
                 password: [{
-                    'oldPassword': this.get('password'),
-                    'newPassword': this.get('newPassword'),
-                    'ne2Password': this.get('ne2Password')
+                    oldPassword: this.get('password'),
+                    newPassword: this.get('newPassword'),
+                    ne2Password: this.get('ne2Password')
                 }]
             }
         });
@@ -60,9 +63,9 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     resendInvite: function () {
         var fullUserData = this.toJSON(),
             userData = {
-            email: fullUserData.email,
-            roles: fullUserData.roles
-        };
+                email: fullUserData.email,
+                roles: fullUserData.roles
+            };
 
         return ic.ajax.request(this.get('ghostPaths.url').api('users'), {
             type: 'POST',

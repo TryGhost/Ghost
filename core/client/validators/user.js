@@ -16,11 +16,11 @@ var UserValidator = Ember.Object.create({
                 roles = model.get('roles');
 
             if (!validator.isEmail(email)) {
-                validationErrors.push({ message: 'Please supply a valid email address' });
+                validationErrors.push({message: 'Please supply a valid email address'});
             }
 
             if (roles.length < 1) {
-                validationErrors.push({ message: 'Please select a role' });
+                validationErrors.push({message: 'Please select a role'});
             }
 
             return validationErrors;
@@ -35,26 +35,25 @@ var UserValidator = Ember.Object.create({
                 website = model.get('website');
 
             if (!validator.isLength(name, 0, 150)) {
-                validationErrors.push({ message: 'Name is too long' });
+                validationErrors.push({message: 'Name is too long'});
             }
 
             if (!validator.isLength(bio, 0, 200)) {
-                validationErrors.push({ message: 'Bio is too long' });
+                validationErrors.push({message: 'Bio is too long'});
             }
 
             if (!validator.isEmail(email)) {
-                validationErrors.push({ message: 'Please supply a valid email address' });
+                validationErrors.push({message: 'Please supply a valid email address'});
             }
 
             if (!validator.isLength(location, 0, 150)) {
-                validationErrors.push({ message: 'Location is too long' });
+                validationErrors.push({message: 'Location is too long'});
             }
 
             if (!Ember.isEmpty(website) &&
-                (!validator.isURL(website, { protocols: ['http', 'https'], require_protocol: true }) ||
+                (!validator.isURL(website, {protocols: ['http', 'https'], require_protocol: true}) ||
                 !validator.isLength(website, 0, 2000))) {
-
-                validationErrors.push({ message: 'Website is not a valid url' });
+                validationErrors.push({message: 'Website is not a valid url'});
             }
 
             return validationErrors;

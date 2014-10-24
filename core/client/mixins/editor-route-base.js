@@ -4,20 +4,23 @@ import loadingIndicator from 'ghost/mixins/loading-indicator';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
 var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndicator, {
-
     actions: {
         save: function () {
             this.get('controller').send('save');
         },
+
         publish: function () {
             var controller = this.get('controller');
+
             controller.send('setSaveType', 'publish');
             controller.send('save');
         },
+
         toggleZenMode: function () {
             Ember.$('body').toggleClass('zen');
         },
-        //The actual functionality is implemented in utils/codemirror-shortcuts
+
+        // The actual functionality is implemented in utils/codemirror-shortcuts
         codeMirrorShortcut: function (options) {
             this.get('controller.codemirror').shortcut(options.type);
         }

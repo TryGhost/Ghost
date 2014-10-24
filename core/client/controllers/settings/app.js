@@ -1,48 +1,52 @@
 /*global alert */
 
-var AppStates = {
+var appStates,
+    SettingsAppController;
+
+appStates = {
     active: 'active',
     working: 'working',
     inactive: 'inactive'
 };
 
-var SettingsAppController = Ember.ObjectController.extend({
-    appState: AppStates.active,
+SettingsAppController = Ember.ObjectController.extend({
+    appState: appStates.active,
     buttonText: '',
-    
+
     setAppState: function () {
-        this.set('appState', this.get('active') ? AppStates.active : AppStates.inactive);
+        this.set('appState', this.get('active') ? appStates.active : appStates.inactive);
     }.on('init'),
 
     buttonTextSetter: function () {
         switch (this.get('appState')) {
-            case AppStates.active:
+            case appStates.active:
                 this.set('buttonText', 'Deactivate');
                 break;
-            case AppStates.inactive:
+            case appStates.inactive:
                 this.set('buttonText', 'Activate');
                 break;
-            case AppStates.working:
+            case appStates.working:
                 this.set('buttonText', 'Working');
                 break;
         }
     }.observes('appState').on('init'),
 
     activeClass: Ember.computed('appState', function () {
-        return this.appState === AppStates.active ? true : false;
+        return this.appState === appStates.active ? true : false;
     }),
 
     inactiveClass: Ember.computed('appState', function () {
-        return this.appState === AppStates.inactive ? true : false;
+        return this.appState === appStates.inactive ? true : false;
     }),
 
     actions: {
         toggleApp: function (app) {
             var self = this;
-            this.set('appState', AppStates.working);
-            
+
+            this.set('appState', appStates.working);
+
             app.set('active', !app.get('active'));
-            
+
             app.save().then(function () {
                 self.setAppState();
             })

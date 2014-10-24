@@ -11,7 +11,7 @@ var TransferOwnerController = Ember.Controller.extend({
                 type: 'PUT',
                 data: {
                     owner: [{
-                        'id': user.get('id')
+                        id: user.get('id')
                     }]
                 }
             }).then(function (response) {

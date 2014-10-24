@@ -1,6 +1,8 @@
 var MarkerManager = Ember.Mixin.create({
+    // jscs:disable
     imageMarkdownRegex: /^(?:\{<(.*?)>\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
     markerRegex: /\{<([\w\W]*?)>\}/,
+    // jscs:enable
 
     uploadId: 1,
 
@@ -161,9 +163,12 @@ var MarkerManager = Ember.Mixin.create({
     stripMarkerFromLine: function (line) {
         var editor = this.get('codemirror'),
             ln = editor.getLineNumber(line),
-            markerRegex = /\{<([\w\W]*?)>\}/,
-            markerText = line.text.match(markerRegex);
 
+            // jscs:disable
+            markerRegex = /\{<([\w\W]*?)>\}/,
+            // jscs:enable
+
+            markerText = line.text.match(markerRegex);
 
         if (markerText) {
             editor.replaceRange(
@@ -202,13 +207,13 @@ var MarkerManager = Ember.Mixin.create({
     },
 
     // Find the line with the marker which matches
-    findLine: function (result_id) {
+    findLine: function (resultId) {
         var editor = this.get('codemirror'),
             markers = this.get('markers');
 
         // try to find the right line to replace
-        if (markers.hasOwnProperty(result_id) && markers[result_id].find()) {
-            return editor.getLineHandle(markers[result_id].find().from.line);
+        if (markers.hasOwnProperty(resultId) && markers[resultId].find()) {
+            return editor.getLineHandle(markers[resultId].find().from.line);
         }
 
         return false;

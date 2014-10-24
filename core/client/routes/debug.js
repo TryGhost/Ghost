@@ -14,7 +14,7 @@ var DebugRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBod
     },
 
     model: function () {
-        return this.store.find('setting', { type: 'blog,theme' }).then(function (records) {
+        return this.store.find('setting', {type: 'blog,theme'}).then(function (records) {
             return records.get('firstObject');
         });
     }

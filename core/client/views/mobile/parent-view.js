@@ -1,6 +1,6 @@
 import mobileQuery from 'ghost/utils/mobile';
 
-//A mobile parent view needs to implement three methods,
+// A mobile parent view needs to implement three methods,
 // showContent, showAll, and showMenu
 // Which are called by MobileIndex and MobileContent views
 var MobileParentView = Ember.View.extend({
@@ -12,10 +12,10 @@ var MobileParentView = Ember.View.extend({
         var self = this;
         this.set('changeLayout', function changeLayout() {
             if (mobileQuery.matches) {
-                //transitioned to mobile layout, so show content
+                // transitioned to mobile layout, so show content
                 self.showContent();
             } else {
-                //went from mobile to desktop
+                // went from mobile to desktop
                 self.showAll();
             }
         });

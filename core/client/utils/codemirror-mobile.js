@@ -19,20 +19,21 @@ setupMobileCodeMirror = function setupMobileCodeMirror() {
         return new TouchEditor(el, options);
     };
 
-    CodeMirror.keyMap = { basic: {} };
+    CodeMirror.keyMap = {basic: {}};
 };
 
 init = function init() {
-    //Codemirror does not function on mobile devices,
-    // nor on any iDevice.
+    // Codemirror does not function on mobile devices, or on any iDevice
     if (device.mobile() || (device.tablet() && device.ios())) {
         $('body').addClass('touch-editor');
 
         Ember.touchEditor = true;
-        //initialize FastClick to remove touch delays
+
+        // initialize FastClick to remove touch delays
         Ember.run.scheduleOnce('afterRender', null, function () {
             FastClick.attach(document.body);
         });
+
         TouchEditor = createTouchEditor();
         setupMobileCodeMirror();
     }

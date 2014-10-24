@@ -13,7 +13,7 @@ var AppsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, styleBody
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },
-    
+
     model: function () {
         return this.store.find('app');
     }
