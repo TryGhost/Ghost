@@ -15,7 +15,7 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
 
         // clear the properties that hold the credentials from the controller
         // when we're no longer on the signin screen
-        this.controllerFor('signin').setProperties({ identification: '', password: '' });
+        this.controllerFor('signin').setProperties({identification: '', password: ''});
     }
 });
 

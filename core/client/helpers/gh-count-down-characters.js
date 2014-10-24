@@ -3,6 +3,7 @@ var countDownCharacters = Ember.Handlebars.makeBoundHelper(function (content, ma
         length = content ? content.length : 0;
 
     el.className = 'word-count';
+
     if (length > maxCharacters) {
         el.style.color = '#E25440';
     } else {
