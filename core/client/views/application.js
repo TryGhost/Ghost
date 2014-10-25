@@ -1,4 +1,5 @@
 import mobileQuery from 'ghost/utils/mobile';
+import bind from 'ghost/utils/bind';
 
 var ApplicationView = Ember.View.extend({
     elementId: 'container',
@@ -43,7 +44,7 @@ var ApplicationView = Ember.View.extend({
     }.observes('controller.showGlobalMobileNav'),
 
     setupCloseNavOnDesktop: function () {
-        this.set('closeGlobalMobileNavOnDesktop', _.bind(function closeGlobalMobileNavOnDesktop(mq) {
+        this.set('closeGlobalMobileNavOnDesktop', bind(function closeGlobalMobileNavOnDesktop(mq) {
             if (!mq.matches) {
                 // Is desktop sized
                 this.set('controller.showGlobalMobileNav', false);
