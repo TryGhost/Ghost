@@ -13,11 +13,11 @@ var onChangeHandler = function (cm, changeObj) {
 
     // fill array with a range of numbers
     for (line = changeObj.from.line; line < changeObj.from.line + changeObj.text.length; line += 1) {
-        component.checkLine(line, changeObj.origin);
+        component.checkLine.call(component, line, changeObj.origin);
     }
 
     // Is this a line which may have had a marker on it?
-    component.checkMarkers();
+    component.checkMarkers.call(component);
 
     cm.component.set('value', cm.getValue());
 
@@ -50,7 +50,10 @@ var Codemirror = Ember.TextArea.extend(MarkerManager, {
     },
 
     afterRenderEvent: function () {
-        var initMarkers = _.bind(this.initMarkers, this);
+        var self = this;
+        function initMarkers () {
+          self.initMarkers.apply(self, arguments);
+        }
 
         // replaces CodeMirror with TouchEditor only if we're on mobile
         mobileCodeMirror.createIfMobile();

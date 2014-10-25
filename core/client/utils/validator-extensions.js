@@ -6,7 +6,7 @@ function init() {
     });
 
     validator.extend('notContains', function (str, badString) {
-        return !_.contains(str, badString);
+        return str.indexOf(badString) === -1;
     });
 }
 

@@ -15,7 +15,7 @@ var Markdown = Ember.Component.extend({
     // fire off 'enable' API function from uploadManager
     // might need to make sure markdown has been processed first
     reInitDropzones: function () {
-        Ember.run.scheduleOnce('afterRender', this, function () {
+        function handleDropzoneEvents() {
             var dropzones = $('.js-drop-zone');
 
             uploader.call(dropzones, {
@@ -23,11 +23,13 @@ var Markdown = Ember.Component.extend({
                 fileStorage: this.get('config.fileStorage')
             });
 
-            dropzones.on('uploadstart', _.bind(this.sendAction, this, 'uploadStarted'));
-            dropzones.on('uploadfailure', _.bind(this.sendAction, this, 'uploadFinished'));
-            dropzones.on('uploadsuccess', _.bind(this.sendAction, this, 'uploadFinished'));
-            dropzones.on('uploadsuccess', _.bind(this.sendAction, this, 'uploadSuccess'));
-        });
+            dropzones.on('uploadstart', Ember.run.bind(this, 'sendAction', 'uploadStarted'));
+            dropzones.on('uploadfailure', Ember.run.bind(this, 'sendAction', 'uploadFinished'));
+            dropzones.on('uploadsuccess', Ember.run.bind(this, 'sendAction', 'uploadFinished'));
+            dropzones.on('uploadsuccess', Ember.run.bind(this, 'sendAction', 'uploadSuccess'));
+        }
+
+        Ember.run.scheduleOnce('afterRender', this, handleDropzoneEvents);
     }.observes('markdown')
 });
 
