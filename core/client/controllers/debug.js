@@ -25,6 +25,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
                     self.set('importErrors', response.jqXHR.responseJSON.errors);
                 }
+
                 self.notifications.showError('Import Failed');
             }).finally(function () {
                 self.set('uploadButtonText', 'Import');
@@ -38,7 +39,7 @@ var DebugController = Ember.Controller.extend(Ember.Evented, {
                     '?access_token=' + this.get('session.access_token');
 
             if (iframe.length === 0) {
-                iframe = $('<iframe>', { id: 'iframeDownload' }).hide().appendTo('body');
+                iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
             }
 
             iframe.attr('src', downloadURL);

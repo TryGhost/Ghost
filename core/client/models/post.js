@@ -16,13 +16,15 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     language: DS.attr('string', {defaultValue: 'en_US'}),
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
-    author: DS.belongsTo('user',  { async: true }),
+    author: DS.belongsTo('user',  {async: true}),
     author_id: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     published_at: DS.attr('moment-date'),
-    published_by: DS.belongsTo('user', { async: true }),
-    tags: DS.hasMany('tag', { embedded: 'always' }),
-    //## Computed post properties
+    published_by: DS.belongsTo('user', {async: true}),
+    tags: DS.hasMany('tag', {embedded: 'always'}),
+
+    // Computed post properties
+
     isPublished: Ember.computed.equal('status', 'published'),
     isDraft: Ember.computed.equal('status', 'draft'),
 
@@ -31,7 +33,7 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     // when returned from the server with ids.
     updateTags: function () {
         var tags = this.get('tags'),
-        oldTags = tags.filterBy('id', null);
+            oldTags = tags.filterBy('id', null);
 
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');

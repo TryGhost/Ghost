@@ -1,7 +1,6 @@
 import { getRequestErrorMessage } from 'ghost/utils/ajax';
 
 var PaginationControllerMixin = Ember.Mixin.create({
-
     // set from PaginationRouteMixin
     paginationSettings: null,
 
@@ -13,7 +12,7 @@ var PaginationControllerMixin = Ember.Mixin.create({
 
     /**
      *
-     * @param options: {
+     * @param {object} options: {
      *                      modelType: <String> name of the model that will be paginated
      *                  }
      */
@@ -21,9 +20,9 @@ var PaginationControllerMixin = Ember.Mixin.create({
         this._super();
 
         var metadata = this.store.metadataFor(options.modelType);
+
         this.set('nextPage', metadata.pagination.next);
     },
-
 
     /**
      * Takes an ajax response, concatenates any error messages, then generates an error notification.
@@ -49,7 +48,6 @@ var PaginationControllerMixin = Ember.Mixin.create({
          * @return
          */
         loadNextPage: function () {
-
             var self = this,
                 store = this.get('store'),
                 recordType = this.get('model').get('type'),
@@ -59,6 +57,7 @@ var PaginationControllerMixin = Ember.Mixin.create({
             if (nextPage) {
                 this.set('isLoading', true);
                 this.set('paginationSettings.page', nextPage);
+
                 store.find(recordType, paginationSettings).then(function () {
                     var metadata = store.metadataFor(recordType);
 
@@ -70,7 +69,6 @@ var PaginationControllerMixin = Ember.Mixin.create({
             }
         }
     }
-
 });
 
 export default PaginationControllerMixin;
