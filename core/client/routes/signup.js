@@ -5,7 +5,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
     classNames: ['ghost-signup'],
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.notifications.showWarn('You need to sign out to register as a new user.', { delayed: true });
+            this.notifications.showWarn('You need to sign out to register as a new user.', {delayed: true});
             this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
         }
     },
@@ -19,7 +19,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
 
         return new Ember.RSVP.Promise(function (resolve) {
             if (!re.test(params.token)) {
-                self.notifications.showError('Invalid token.', { delayed: true });
+                self.notifications.showError('Invalid token.', {delayed: true});
 
                 return resolve(self.transitionTo('signin'));
             }
@@ -39,7 +39,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
                 }
             }).then(function (response) {
                 if (response && response.invitation && response.invitation[0].valid === false) {
-                    self.notifications.showError('The invitation does not exist or is no longer valid.', { delayed: true });
+                    self.notifications.showError('The invitation does not exist or is no longer valid.', {delayed: true});
 
                     return resolve(self.transitionTo('signin'));
                 }
@@ -55,7 +55,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
         this._super();
 
         // clear the properties that hold the sensitive data from the controller
-        this.controllerFor('signup').setProperties({ email: '', password: '', token: '' });
+        this.controllerFor('signup').setProperties({email: '', password: '', token: ''});
     }
 });
 

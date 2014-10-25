@@ -15,7 +15,6 @@ var AuthFailedUnsavedController = Ember.Controller.extend({
         },
 
         confirmReject: function () {
-
         }
     },
 

@@ -11,8 +11,7 @@ var NotificationComponent = Ember.Component.extend({
         if (typeof message.toJSON === 'function') {
             type = message.get('type');
             dismissible = message.get('dismissible');
-        }
-        else {
+        } else {
             type = message.type;
             dismissible = message.dismissible;
         }

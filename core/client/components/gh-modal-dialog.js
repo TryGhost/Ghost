@@ -10,7 +10,6 @@ var ModalDialog = Ember.Component.extend({
     },
 
     willDestroyElement: function () {
-
         this.$('.js-modal').removeClass('in');
 
         this.$('.js-modal-background').removeClass('in');

@@ -19,7 +19,6 @@ function publishedAtCompare(item1, item2) {
     return Ember.compare(published1.valueOf(), published2.valueOf());
 }
 
-
 var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     // this will cause the list to re-sort when any of these properties change on any of the models
     sortProperties: ['status', 'published_at', 'updated_at'],
@@ -68,9 +67,9 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     },
 
     init: function () {
-        //let the PaginationControllerMixin know what type of model we will be paginating
-        //this is necesariy because we do not have access to the model inside the Controller::init method
-        this._super({'modelType': 'post'});
+        // let the PaginationControllerMixin know what type of model we will be paginating
+        // this is necesariy because we do not have access to the model inside the Controller::init method
+        this._super({modelType: 'post'});
     }
 });
 

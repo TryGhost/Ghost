@@ -3,15 +3,18 @@ import MarkerManager from 'ghost/mixins/marker-manager';
 import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
+var watchedProps,
+    EditorControllerMixin;
+
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.isDirty`)
-var watchedProps = ['scratch', 'titleScratch', 'model.isDirty', 'tags.[]'];
+watchedProps = ['scratch', 'titleScratch', 'model.isDirty', 'tags.[]'];
 
 PostModel.eachAttribute(function (name) {
     watchedProps.push('model.' + name);
 });
 
-var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
+EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     needs: ['post-tags-input', 'post-settings-menu'],
 
     init: function () {
@@ -23,6 +26,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             return self.get('isDirty') ? self.unloadDirtyMessage() : null;
         };
     },
+
     /**
      * By default, a post will not change its publish state.
      * Only with a user-set value (via setSaveType action)
@@ -80,7 +84,6 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         // it's ok to set isDirty to false
         if (this.get('titleScratch') === model.get('title') &&
             this.get('scratch') === model.get('markdown')) {
-
             this.set('isDirty', false);
         }
     },
@@ -141,8 +144,8 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             '==============================';
     },
 
-    //TODO: This has to be moved to the I18n localization file.
-    //This structure is supposed to be close to the i18n-localization which will be used soon.
+    // TODO: This has to be moved to the I18n localization file.
+    // This structure is supposed to be close to the i18n-localization which will be used soon.
     messageMap: {
         errors: {
             post: {
@@ -175,7 +178,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status];
 
-        this.notifications.showSuccess(message, { delayed: delay });
+        this.notifications.showSuccess(message, {delayed: delay});
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
@@ -183,7 +186,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         message += '<br />' + errors[0].message;
 
-        this.notifications.showError(message, { delayed: delay });
+        this.notifications.showError(message, {delayed: delay});
     },
 
     shouldFocusTitle: Ember.computed.alias('model.isNew'),
@@ -201,7 +204,7 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
             options = options || {};
 
-            if(autoSaveId) {
+            if (autoSaveId) {
                 Ember.run.cancel(autoSaveId);
                 this.set('autoSaveId', null);
             }
@@ -236,12 +239,14 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                     if (!options.silent) {
                         self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
                     }
+
                     return model;
                 });
             }).catch(function (errors) {
                 if (!options.silent) {
                     self.showErrorNotification(prevStatus, self.get('status'), errors);
                 }
+
                 self.set('status', prevStatus);
 
                 return Ember.RSVP.reject(errors);
@@ -283,11 +288,13 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         // Match the uploaded file to a line in the editor, and update that line with a path reference
         // ensuring that everything ends up in the correct place and format.
-        handleImgUpload: function (e, result_src) {
+        handleImgUpload: function (e, resultSrc) {
             var editor = this.get('codemirror'),
                 line = this.findLine(Ember.$(e.currentTarget).attr('id')),
                 lineNumber = editor.getLineNumber(line),
+                // jscs:disable
                 match = line.text.match(/\([^\n]*\)?/),
+                // jscs:enable
                 replacement = '(http://)';
 
             if (match) {
@@ -297,7 +304,9 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                     {line: lineNumber, ch: match.index + match[0].length - 1}
                 );
             } else {
+                // jscs:disable
                 match = line.text.match(/\]/);
+                // jscs:enable
                 if (match) {
                     editor.replaceRange(
                         replacement,
@@ -306,11 +315,12 @@ var EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                     );
                     editor.setSelection(
                         {line: lineNumber, ch: match.index + 2},
-                        {line: lineNumber, ch: match.index + replacement.length }
+                        {line: lineNumber, ch: match.index + replacement.length}
                     );
                 }
             }
-            editor.replaceSelection(result_src);
+
+            editor.replaceSelection(resultSrc);
         },
 
         togglePreview: function (preview) {

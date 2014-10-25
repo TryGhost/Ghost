@@ -9,7 +9,6 @@ var makeRoute = function (root, args) {
     return route;
 };
 
-
 function ghostPaths() {
     var path = window.location.pathname,
         subdir = path.substr(0, path.search('/ghost/')),

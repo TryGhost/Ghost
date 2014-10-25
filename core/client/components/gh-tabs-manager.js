@@ -32,7 +32,6 @@ the second pane within that manager.
   {{/gh-tab-pane}}
 {{/gh-tabs-manager}}
 ```
-
 ## Options:
 
 the tabs-manager will send a "selected" action whenever one of its
@@ -59,19 +58,23 @@ var TabsManager = Ember.Component.extend({
         this.sendAction('selected');
     },
 
-    //Used by children to find this tabsManager
+    // Used by children to find this tabsManager
     isTabsManager: true,
+
     // Register tabs and their panes to allow for
     // interaction between components.
     registerTab: function (tab) {
         this.get('tabs').addObject(tab);
     },
+
     unregisterTab: function (tab) {
         this.get('tabs').removeObject(tab);
     },
+
     registerTabPane: function (tabPane) {
         this.get('tabPanes').addObject(tabPane);
     },
+
     unregisterTabPane: function (tabPane) {
         this.get('tabPanes').removeObject(tabPane);
     }

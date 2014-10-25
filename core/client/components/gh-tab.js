@@ -1,4 +1,4 @@
-//See gh-tabs-manager.js for use
+// See gh-tabs-manager.js for use
 var Tab = Ember.Component.extend({
     tabsManager: Ember.computed(function () {
         return this.nearestWithProperty('isTabsManager');

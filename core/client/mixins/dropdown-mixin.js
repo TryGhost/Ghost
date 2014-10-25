@@ -4,8 +4,10 @@
 var DropdownMixin = Ember.Mixin.create(Ember.Evented, {
     classNameBindings: ['isOpen:open:closed'],
     isOpen: false,
+
     click: function (event) {
         this._super(event);
+
         return event.stopPropagation();
     }
 });

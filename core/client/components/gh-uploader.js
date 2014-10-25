@@ -25,6 +25,7 @@ var PostImageUploader = Ember.Component.extend({
 
     removeListeners: function () {
         var $this = this.$();
+
         $this.off();
         $this.find('.js-cancel').off();
     }.on('willDestroyElement')

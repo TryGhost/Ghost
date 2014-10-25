@@ -10,8 +10,8 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
     },
 
     shortcuts: {
-        'esc': {action: 'closePopups', scope: 'all'},
-        'enter': {action: 'confirmModal', scope: 'modal'}
+        esc: {action: 'closePopups', scope: 'all'},
+        enter: {action: 'confirmModal', scope: 'modal'}
     },
 
     actions: {
@@ -84,6 +84,7 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             key.setScope('modal');
             modalName = 'modals/' + modalName;
             this.set('modalName', modalName);
+
             // We don't always require a modal to have a controller
             // so we're skipping asserting if one exists
             if (this.controllerFor(modalName, true)) {
@@ -101,9 +102,11 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             });
         },
 
-        confirmModal : function () {
+        confirmModal: function () {
             var modalName = this.get('modalName');
+
             this.send('closeModal');
+
             if (this.controllerFor(modalName, true)) {
                 this.controllerFor(modalName).send('confirmAccept');
             }
@@ -114,11 +117,13 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
                 outlet: 'modal',
                 parentView: 'application'
             });
+
             key.setScope('default');
         },
 
         loadServerNotifications: function (isDelayed) {
             var self = this;
+
             if (this.session.isAuthenticated) {
                 this.store.findAll('notification').then(function (serverNotifications) {
                     serverNotifications.forEach(function (notification) {
@@ -130,6 +135,7 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
 
         handleErrors: function (errors) {
             var self = this;
+
             this.notifications.clear();
             errors.forEach(function (errorObj) {
                 self.notifications.showError(errorObj.message || errorObj);

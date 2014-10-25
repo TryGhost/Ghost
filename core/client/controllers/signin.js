@@ -15,7 +15,7 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
         validateAndAuthenticate: function () {
             var self = this;
 
-            this.validate({ format: false }).then(function () {
+            this.validate({format: false}).then(function () {
                 self.notifications.closePassive();
                 self.send('authenticate');
             }).catch(function (errors) {
