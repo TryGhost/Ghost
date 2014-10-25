@@ -6,8 +6,7 @@
 // {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
 import ghostPaths from 'ghost/utils/ghost-paths';
 
-export default function (path, url) {
-
+function ghostPathsHelper(path, url) {
     var base;
 
     switch (path.toString()) {
@@ -30,5 +29,6 @@ export default function (path, url) {
     }
 
     return new Ember.Handlebars.SafeString(base);
-
 }
+
+export default ghostPathsHelper;

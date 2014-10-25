@@ -189,7 +189,8 @@ var _              = require('lodash'),
                     },
                     client: {
                         options: {
-                            config: '.jscsrc'
+                            config: '.jscsrc',
+                            esnext: true
                         }
                     },
                     test: {
@@ -198,12 +199,6 @@ var _              = require('lodash'),
                         }
                     }
                 }, lintFiles);
-
-                // JSCS depends on Esprima which doesn't yet support ES6 module
-                // syntax.  As such we cannot run JSCS on the client code yet.
-                // Related JSCS issue: https://github.com/jscs-dev/node-jscs/issues/561
-                // @TODO(hswolff): remove this once JSCS supports ES6.
-                delete jscsConfig.client;
 
                 return jscsConfig;
             })(),
