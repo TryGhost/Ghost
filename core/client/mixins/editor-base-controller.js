@@ -1,7 +1,7 @@
 /* global console */
-import MarkerManager from 'ghost/mixins/marker-manager';
 import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
+import imageManager from 'ghost/utils/image-manager';
 
 var watchedProps,
     EditorControllerMixin;
@@ -14,7 +14,7 @@ PostModel.eachAttribute(function (name) {
     watchedProps.push('model.' + name);
 });
 
-EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
+EditorControllerMixin = Ember.Mixin.create({
     needs: ['post-tags-input', 'post-settings-menu'],
 
     autoSaveId: null,
@@ -108,7 +108,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             markdown = model.get('markdown'),
             title = model.get('title'),
             titleScratch = model.get('titleScratch'),
-            scratch = this.getMarkdown().withoutMarkers,
+            scratch = this.get('textEditor').getValue(),
             changedAttributes;
 
         if (!this.tagNamesEqual()) {
@@ -241,8 +241,8 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             this.get('controllers.post-tags-input').send('addNewTag');
 
             // Set the properties that are indirected
-            // set markdown equal to what's in the editor, minus the image markers.
-            this.set('model.markdown', this.getMarkdown().withoutMarkers);
+            // set markdown equal to what's in the editor
+            this.set('model.markdown', this.get('textEditor').getValue());
             this.set('model.status', status);
 
             // Set a default title
@@ -295,60 +295,34 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             }
         },
 
-        // set from a `sendAction` on the codemirror component,
+        // set from a `sendAction` on the gh-text-editor component,
         // so that we get a reference for handling uploads.
-        setCodeMirror: function (codemirrorComponent) {
-            var codemirror = codemirrorComponent.get('codemirror');
-
-            this.set('codemirrorComponent', codemirrorComponent);
-            this.set('codemirror', codemirror);
+        setTextEditor: function (textEditor) {
+            this.set('textEditor', textEditor);
         },
 
-        // fired from the gh-markdown component when an image upload starts
-        disableCodeMirror: function () {
-            this.get('codemirrorComponent').disableCodeMirror();
+        // fired from the gh-html-preview component when an image upload starts
+        disableTextEditor: function () {
+            this.get('textEditor').disableTextEditor();
         },
 
-        // fired from the gh-markdown component when an image upload finishes
-        enableCodeMirror: function () {
-            this.get('codemirrorComponent').enableCodeMirror();
+        // fired from the gh-html-preview component when an image upload finishes
+        enableTextEditor: function () {
+            this.get('textEditor').enableTextEditor();
         },
 
         // Match the uploaded file to a line in the editor, and update that line with a path reference
         // ensuring that everything ends up in the correct place and format.
         handleImgUpload: function (e, resultSrc) {
-            var editor = this.get('codemirror'),
-                line = this.findLine(Ember.$(e.currentTarget).attr('id')),
-                lineNumber = editor.getLineNumber(line),
-                // jscs:disable
-                match = line.text.match(/\([^\n]*\)?/),
-                // jscs:enable
-                replacement = '(http://)';
+            var editor = this.get('textEditor'),
+                editorValue = editor.getValue(),
+                replacement = imageManager.getSrcRange(editorValue, e.target),
+                cursorPosition;
 
-            if (match) {
-                // simple case, we have the parenthesis
-                editor.setSelection(
-                    {line: lineNumber, ch: match.index + 1},
-                    {line: lineNumber, ch: match.index + match[0].length - 1}
-                );
-            } else {
-                // jscs:disable
-                match = line.text.match(/\]/);
-                // jscs:enable
-                if (match) {
-                    editor.replaceRange(
-                        replacement,
-                        {line: lineNumber, ch: match.index + 1},
-                        {line: lineNumber, ch: match.index + 1}
-                    );
-                    editor.setSelection(
-                        {line: lineNumber, ch: match.index + 2},
-                        {line: lineNumber, ch: match.index + replacement.length}
-                    );
-                }
+            if (replacement) {
+                cursorPosition = replacement.start + resultSrc.length + 1;
+                editor.replaceSelection(resultSrc, replacement.start, replacement.end, cursorPosition);
             }
-
-            editor.replaceSelection(resultSrc);
         },
 
         togglePreview: function (preview) {

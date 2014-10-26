@@ -174,17 +174,16 @@
 //
 // Editor
 // --------------------------------------------------
-
 .editor {
     .entry-markdown-content {
         textarea {
             border: 0;
             width: 100%;
             min-height: auto;
-            height: 100%;
+            height: calc(100% - 40px);
             max-width: 100%;
             margin: 0;
-            padding: 10px 20px 50px 20px;
+            padding: 22px 20px 35px 20px;
             position: absolute;
             top: 0;
             right: 0;
@@ -192,8 +191,19 @@
             left: 0;
             -webkit-overflow-scrolling: touch;
 
+            font-size: 2rem;
+            line-height: 1.7em;
+            font-family: $font-family-mono;
+            color: lighten($darkgrey, 10%);
+
             &:focus {
                 outline: 0;
+            }
+
+            ::selection {
+                color: $darkgrey;
+                background: lighten($blue, 20%);
+                text-shadow: none;
             }
 
             @media (max-width: 600px) {
@@ -209,79 +219,11 @@
             }
 
             @media (max-height: 560px) {
-                height: calc(100% - 5px);
+                height: calc(100% - 45px);
             }
-        }//textarea
-    }//.entry-markdown-content
+        } // textarea
+    } // .entry-markdown-content
 
-    .CodeMirror {
-        height: auto;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        pre {
-            font-size: 1.6rem;
-            line-height: 1.56em;
-            font-family: $font-family-mono;
-            color: lighten($darkgrey, 10%);
-        }
-
-        .CodeMirror-focused,
-        .CodeMirror-selected {
-            color: $darkgrey;
-            background: lighten($blue, 20%);
-            text-shadow: none;
-        }
-
-        ::selection {
-            color: $darkgrey;
-            background: lighten($blue, 20%);
-            text-shadow: none;
-        }
-    }
-
-    .CodeMirror-lines {
-        padding-top: 65px; /* Vertical padding around content */
-        @media (max-width: 1000px) {padding-top: 25px;}
-        @media (max-width: 400px) {padding: 15px 0;}
-    }
-
-    .CodeMirror pre {
-        padding: 0 40px; /* Horizontal padding of content */
-        @media (max-width: 400px) {padding: 0 15px;}
-    }
-
-    .cm-header {
-        color: #3c4043;
-        font-size: 1.4em;
-        line-height: 1.4em;
-        font-weight: bold;
-    }
-
-    .cm-variable-2,
-    .cm-variable-3,
-    .cm-keyword {
-        color: lighten($darkgrey, 10%);
-    }
-
-
-    .cm-strong,
-    .cm-comment,
-    .cm-quote,
-    .cm-number,
-    .cm-atom,
-    .cm-tag {
-        color: #3c4043;
-        font-weight: bold;
-    }
-
-    .cm-string,
-    .cm-link {
-        color: #3c4043;
-    }
 
     .entry-preview {
         // Align the tab of entry-preview on the right
@@ -328,9 +270,9 @@
                     display: none;
                 }
             }
-
-            .CodeMirror-scroll,
-            .entry-preview-content {
+        }
+        .entry-preview-content {
+            @media (max-width: 1000px) {
                 box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
             }
         }

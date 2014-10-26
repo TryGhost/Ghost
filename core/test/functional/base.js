@@ -127,16 +127,14 @@ screens = {
     }
 };
 
-casper.writeContentToCodeMirror = function (content) {
-    var lines = content.split('\n');
-
+casper.writeContentToTextEditor = function (content) {
     // If we are on a new editor, the autosave is going to get triggered when we try to type, so we need to trigger
     // that and wait for it to sort itself out
     if (/ghost\/editor\/$/.test(casper.getCurrentUrl())) {
-        casper.waitForSelector('.CodeMirror-wrap textarea', function onSuccess() {
-            casper.click('.CodeMirror-wrap textarea');
+        casper.waitForSelector('.entry-markdown-content textarea', function onSuccess() {
+            casper.click('.entry-markdown-content textarea');
         }, function onTimeout() {
-            casper.test.fail('CodeMirror was not found on initial load.');
+            casper.test.fail('Text Editor was not found on initial load.');
         }, 2000);
 
         casper.waitForUrl(/\/ghost\/editor\/\d+\/$/, function onSuccess() {
@@ -146,17 +144,13 @@ casper.writeContentToCodeMirror = function (content) {
         }, 2000);
     }
 
-    casper.waitForSelector('.CodeMirror-wrap textarea', function onSuccess() {
-        casper.each(lines, function (self, line) {
-            self.sendKeys('.CodeMirror-wrap textarea', line, {keepFocus: true});
-            self.sendKeys('.CodeMirror-wrap textarea', casper.page.event.key.Enter, {keepFocus: true});
-        });
-
-        casper.captureScreenshot('CodeMirror-Text.png');
+    casper.waitForSelector('.entry-markdown-content textarea', function onSuccess() {
+        casper.sendKeys('.entry-markdown-content textarea', content, {keepFocus: true});
+        casper.captureScreenshot('Text Editor.png');
 
         return this;
     }, function onTimeout() {
-        casper.test.fail('CodeMirror was not found on main load.');
+        casper.test.fail('Text Editor was not found on main load.');
     }, 2000);
 };
 
@@ -460,7 +454,7 @@ CasperTest.Routines = (function () {
     function createTestPost(publish) {
         casper.thenOpenAndWaitForPageLoad('editor', function createTestPost() {
             casper.sendKeys('#entry-title', testPost.title);
-            casper.writeContentToCodeMirror(testPost.html);
+            casper.writeContentToTextEditor(testPost.html);
             casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
             casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
         });
