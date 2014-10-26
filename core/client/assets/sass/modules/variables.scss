@@ -7,7 +7,10 @@
 // ------------------------------------------------------------
 
 
+//
 // Colours
+// --------------------------------------------------
+
 $darkgrey: #242628;
 $grey: #35393b;
 $midgrey: #7d878a;
@@ -22,6 +25,7 @@ $orange: #F2A925;
 $green: #9FBB58;
 
 
+//
 // Default style values
 // --------------------------------------------------
 
@@ -33,7 +37,10 @@ $font-family: 'Open Sans', sans-serif;
 $font-family-mono: monospace;
 
 
+//
 // Dropdown & Popover triangles
+// --------------------------------------------------
+
 $dropdown_triangle: 8px;
 $popover_triangle: 14px;
 $popover_triangle_shallow_multiplier: 0.8; // Adjusts the height of the triangle relative to its width, so it's 0.8x the height of the width
