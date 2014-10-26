@@ -61,8 +61,9 @@ function urlPathForPost(post, permalinks) {
             year:   function () { return moment(post.published_at).format('YYYY'); },
             month:  function () { return moment(post.published_at).format('MM'); },
             day:    function () { return moment(post.published_at).format('DD'); },
-            slug: function () { return post.slug; },
-            id: function () { return post.id; }
+            author: function () { return post.author.slug; },
+            slug:   function () { return post.slug; },
+            id:     function () { return post.id; }
         };
 
     if (post.page) {
