@@ -15,24 +15,32 @@
 }
 
 
+
+//
+// The Icon (before) Mixin
+// --------------------------------------------------
+
+%icon-base {
+    font-family: "GhostIcons";
+    font-weight: normal;
+    font-style: normal;
+    vertical-align: -7%;
+    text-transform:none;
+    speak: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
 //
 // The Icon (before) Mixin
 // --------------------------------------------------
 
 @mixin icon($char, $size: '', $color: '') {
     &:before {
-        // Base
-        font-family: "GhostIcons";
-        font-weight: normal;
-        font-style: normal;
-        vertical-align: -7%;
-        text-transform:none;
-        speak: none;
-        line-height: 1;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        @extend %icon-base;
 
-        //Function
         content: '#{$char}';
         @if $size != '' {
             font-size: $size;
@@ -54,18 +62,8 @@
 
 @mixin icon-after($char, $size: '', $color: '') {
     &:after {
-        // Base
-        font-family: "GhostIcons";
-        font-weight: normal;
-        font-style: normal;
-        vertical-align: -7%;
-        text-transform:none;
-        speak: none;
-        line-height: 1;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        @extend %icon-base;
 
-        // Function
         content: '#{$char}';
         @if $size != '' {
             font-size: $size;
@@ -89,7 +87,7 @@
 // Private Use Area characters. This means that screen readers won't attempt to
 // read them out loud. For code maintainability, we then store these Unicode
 // references inside Sass variables.
-// 
+//
 
 // Placeholder
 $i:                 \e018;
@@ -168,15 +166,7 @@ $i-code:            \e03e;
 
 [class*=icon-] {
     &:before {
-        // Base
-        font-family: "GhostIcons";
-        font-weight: normal;
-        font-style: normal;
-        vertical-align: -7%;
-        text-transform:none;
-        speak: none;
-        line-height: 1;
-        -webkit-font-smoothing: antialiased;
+        @extend %icon-base;
     }
 
     &:hover {
@@ -188,11 +178,6 @@ $i-code:            \e03e;
 //
 // Icon Classes
 // --------------------------------------------------
-
-[class*='icon-'] {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
 
 .icon-ghost:before {
     content: '#{$i-ghost}';

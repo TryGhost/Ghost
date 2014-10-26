@@ -11,7 +11,7 @@
         left: 0;
         z-index: 980;
         width: 300px;
-        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
         // This selector ends up being `body.settings-menu-expanded .notifications`
         body.settings-menu-expanded & {
@@ -25,7 +25,7 @@
         left: 0;
         right: 0;
         z-index: 9999;
-        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
         // This selector ends up being `body.settings-menu-expanded .notifications`
         body.settings-menu-expanded & {
@@ -62,7 +62,7 @@
     color: rgba(255,255,255,0.9);
     background: $blue;
     position: relative;
-    box-shadow: $shadow;
+    box-shadow: $box-shadow;
     transform: translateZ(0);
 
     @media (max-width: 400px) {

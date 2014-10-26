@@ -1,7 +1,13 @@
+// ------------------------------------------------------------
+// Variables
 //
-// Colours
-// --------------------------------------------------
+// * Colours
+// * Default style values
+// * Dropdown & Popover triangles
+// ------------------------------------------------------------
 
+
+// Colours
 $darkgrey: #242628;
 $grey: #35393b;
 $midgrey: #7d878a;
@@ -15,68 +21,19 @@ $red: #e25440;
 $orange: #F2A925;
 $green: #9FBB58;
 
-$list-colours:
-    ('darkgrey' $darkgrey)
-    ('grey' $grey)
-    ('midgrey' $midgrey)
-    ('lightgrey' $lightgrey)
-    ('brown' $brown)
-    ('midbrown' $midbrown)
-    ('lightbrown' $lightbrown)
-    ('blue' $blue)
-    ('red' $red)
-    ('orange' $orange)
-    ('green' $green);
 
-
-//
-// Styles
+// Default style values
 // --------------------------------------------------
 
-$rounded: 3px;
-$shadow: rgba(0,0,0,0.05) 0 1px 5px;
-$default-transition-duration: 0.3s;
-$side-outlet-transition-duration: 0.4s;
-
+$border-radius: 3px;
+$box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+$settings-menu-transition: 0.4s;
+$settings-menu-bezier: 0.1, 0.7, 0.1, 1;
 $font-family: 'Open Sans', sans-serif;
 $font-family-mono: monospace;
 
-$at2x: 2 device-pixel-ratio;
 
+// Dropdown & Popover triangles
 $dropdown_triangle: 8px;
-
 $popover_triangle: 14px;
-$popover_triangle_shallow_multiplier: 0.8;
-
-
-
-
-
-
-
-$padding-small-horizontal:  10px !default;
-$padding-large-horizontal:  16px !default;
-
-$input-height-base: (20px + (6px * 2) + 2) !default;
-$input-height-small: (floor(12px * 1.5) + (5px * 2) + 2) !default;
-$input-height-large: (ceil(18px * 1.33) + (10px * 2) + 2) !default;
-
-$border-radius-large: 6px !default;
-$border-radius-small: 3px !default;
-
-$state-success-text: #3c763d !default;
-$state-success-bg: #dff0d8 !default;
-
-$state-warning-text: #8a6d3b !default;
-$state-warning-bg: #fcf8e3 !default;
-
-$state-danger-text: #a94442 !default;
-$state-danger-bg: #f2dede !default;
-
-$screen-md: 992px !default;
-$screen-md-min: $screen-md !default;
-
-$screen-sm: 768px !default;
-$screen-sm-min: $screen-sm !default;
-
-$grid-gutter-width: 30px !default;
+$popover_triangle_shallow_multiplier: 0.8; // Adjusts the height of the triangle relative to its width, so it's 0.8x the height of the width
