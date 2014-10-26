@@ -100,30 +100,22 @@
 .scrolling {
 
     .floatingheader {
-        box-shadow:
-            rgba(0,0,0,0.03) 0 1px 3px,
-            rgba(255, 255, 255, 0.5) 0 -1px 0 inset;
+        box-shadow: rgba(0, 0, 0, 0.03) 0 1px 3px;
 
         &:before {
             content: "";
-            height: 40px;
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            height: 5px;
             width: 80%;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
             margin-left: -40%;
-            box-shadow: rgba(0,0,0,0.03) 0 2px 3px;
+            background-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.05) 0%,rgba(0, 0, 0, 0) 75%,rgba(0, 0, 0, 0) 100%);
+            background-position: 0px -5px;
+            background-size: 100% 200%;
+            z-index: -1;
         }
-        &:after {
-            content: "";
-            height: 40px;
-            width: 30%;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            margin-left: -15%;
-            box-shadow: rgba(0,0,0,0.02) 0 3px 4px;
-        }
+
     } // .floatingheader
 
-} // .scrolling
+}//.scrolling
