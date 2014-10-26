@@ -7,7 +7,7 @@
     padding: 0;
     border: 1px solid #E0DFD7;
     max-width: 500px;
-    border-radius: $rounded;
+    border-radius: $border-radius;
     background: #FFF;
 
     &.nav-list-block {
@@ -31,12 +31,12 @@
     }
 
     &:first-of-type {
-        border-top-left-radius: $rounded;
-        border-top-right-radius: $rounded;
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
     }
     &:last-of-type {
-        border-bottom-left-radius: $rounded;
-        border-bottom-right-radius: $rounded;
+        border-bottom-left-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
     }
 
     &:not(:last-of-type) {
