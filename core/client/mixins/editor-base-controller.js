@@ -198,6 +198,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                 prevStatus = this.get('status'),
                 isNew = this.get('isNew'),
                 autoSaveId = this.get('autoSaveId'),
+                timedSaveId = this.get('timedSaveId'),
                 self = this,
                 psmController = this.get('controllers.post-settings-menu'),
                 promise;
@@ -207,6 +208,11 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             if (autoSaveId) {
                 Ember.run.cancel(autoSaveId);
                 this.set('autoSaveId', null);
+            }
+
+            if (timedSaveId) {
+                Ember.run.cancel(timedSaveId);
+                this.set('timedSaveId', null);
             }
 
             self.notifications.closePassive();
@@ -329,10 +335,13 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         autoSave: function () {
             if (this.get('model.isDraft')) {
-                var autoSaveId;
+                var autoSaveId,
+                    timedSaveId;
+
+                timedSaveId = Ember.run.throttle(this, 'send', 'save', {silent: true, disableNProgress: true}, 60000, false);
+                this.set('timedSaveId', timedSaveId);
 
                 autoSaveId = Ember.run.debounce(this, 'send', 'save', {silent: true, disableNProgress: true}, 3000);
-
                 this.set('autoSaveId', autoSaveId);
             }
         },
