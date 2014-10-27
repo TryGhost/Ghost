@@ -32,9 +32,13 @@
     <div class="nav-item user-menu" data-href="#">
         {{#gh-dropdown-button dropdownName="user-menu" tagName="div" classNames="nav-label clearfix"}}
             {{#if session.user.image}}
-            <div class="image"><img {{bind-attr src="session.user.image"}} alt="{{session.user.name}}'s profile picture" /></div>
+                <div class="image" {{bind-attr style="session.user.imageStyle"}}>
+                    <span class="hidden">{{session.user.name}}'s profile picture</span>
+                </div>
             {{else}}
-            <div class="image"><img src="/shared/img/user-image.png" alt="Profile picture" /></div>
+                <div class="image" style="background-image: url({{gh-path 'blog' 'shared/img/user-image.png'}});">
+                    <span class="hidden">Profile picture</span>
+                </div>
             {{/if}}
             <div class="name">
                 {{session.user.name}} <i class="icon-chevron-down"></i>

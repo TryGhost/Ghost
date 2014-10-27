@@ -45,6 +45,10 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     isAdmin: Ember.computed.equal('role.name', 'Administrator'),
     isOwner: Ember.computed.equal('role.name', 'Owner'),
 
+    imageStyle: Ember.computed('image', function () {
+        return 'background-image: url(' + this.get('image') + ')';
+    }),
+
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
 

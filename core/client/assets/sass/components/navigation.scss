@@ -107,13 +107,11 @@
     .image {
         float: left;
         margin: 15px 8px 0 0;
-
-        img {
-            display: block;
-            width: 30px;
-            height: 30px;
-            border-radius: 100%;
-        }
+        width: 30px;
+        height: 30px;
+        border-radius: 100px;
+        background-size: cover;
+        background-position: center center;
     }
 
     // Descriptive label for mobile menu
