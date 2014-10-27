@@ -34,7 +34,7 @@
             {{#if session.user.image}}
             <div class="image"><img {{bind-attr src="session.user.image"}} alt="{{session.user.name}}'s profile picture" /></div>
             {{else}}
-            <div class="image"><img src="/shared/img/user-image.png" alt="Profile picture" /></div>
+            <div class="image"><img src="{{gh-path "blog" "shared/img/user-image.png"}}" alt="Profile picture" /></div>
             {{/if}}
             <div class="name">
                 {{session.user.name}} <i class="icon-chevron-down"></i>
