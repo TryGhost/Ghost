@@ -23,6 +23,7 @@ var api            = require('../api'),
     oauth2orize    = require('oauth2orize'),
     authStrategies = require('./auth-strategies'),
     utils          = require('../utils'),
+    sitemapHandler = require('../data/sitemap/handler'),
 
     blogApp,
     setupMiddleware;
@@ -290,6 +291,9 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+
+    // site map
+    sitemapHandler(blogApp);
 
     // Add in all trailing slashes, properly include the subdir path
     // in the redirect.

@@ -17,6 +17,7 @@ var express     = require('express'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
+    sitemap     = require('./data/sitemap'),
     GhostServer = require('./ghost-server'),
 
 // Variables
@@ -166,7 +167,9 @@ function init(options) {
             // Initialize mail
             mailer.init(),
             // Initialize apps
-            apps.init()
+            apps.init(),
+            // Initialize sitemaps
+            sitemap.init()
         );
     }).then(function () {
         var adminHbs = hbs.create();

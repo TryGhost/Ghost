@@ -1,2 +1,3 @@
 User-agent: *
+Sitemap: /sitemap-index.xml
 Disallow: /ghost/
