@@ -503,6 +503,7 @@ describe('Frontend Controller', function () {
                     author: {
                         id: 1,
                         name: 'Test User',
+                        slug: 'test',
                         email: 'test@ghost.org'
                     }
                 }]
@@ -518,6 +519,7 @@ describe('Frontend Controller', function () {
                     author: {
                         id: 1,
                         name: 'Test User',
+                        slug: 'test',
                         email: 'test@ghost.org'
                     }
                 }]
@@ -533,6 +535,7 @@ describe('Frontend Controller', function () {
                     author: {
                         id: 1,
                         name: 'Test User',
+                        slug: 'test',
                         email: 'test@ghost.org'
                     }
                 }]
@@ -647,6 +650,21 @@ describe('Frontend Controller', function () {
                     });
                 });
 
+                it('will NOT render static page via /:author/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[0].posts[0].slug].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
                 it('will redirect static page to admin edit page via /:slug/edit', function (done) {
                     var req = {
                             path: '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/')
@@ -667,6 +685,23 @@ describe('Frontend Controller', function () {
                 it('will NOT redirect static page to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     var req = {
                             path: '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT redirect static page to admin edit page via /:author/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[0].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
                             locals: {},
@@ -808,6 +843,21 @@ describe('Frontend Controller', function () {
                     });
                 });
 
+                it('will NOT render post via /:author/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[1].posts[0].slug].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
                 // Handle Edit append
                 it('will redirect post to admin edit page via /:slug/edit', function (done) {
                     var req = {
@@ -829,6 +879,23 @@ describe('Frontend Controller', function () {
                 it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     var req = {
                             path: '/' + ['2012/12/30', mockPosts[1].posts[0].slug, 'edit'].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT redirect post to admin edit page via /:author/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },
                         res = {
                             locals: {},
@@ -907,6 +974,21 @@ describe('Frontend Controller', function () {
                     });
                 });
 
+                it('will NOT render post via /:author/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[1].posts[0].slug].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
                 // Handle Edit append
                 it('will redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
                     var dateFormat = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD'),
@@ -927,6 +1009,154 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT redirect post to admin edit page via /:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT redirect post to admin edit page via /:author/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
+                });
+            });
+
+            describe('permalink set to author', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
+                        settings: [{
+                            value: '/:author/:slug'
+                        }]
+                    }));
+                });
+
+                it('will render post via /:author/:slug', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[1].posts[0].slug].join('/'),
+                            route: {
+                                path: '*'
+                            },
+                            params: {}
+                        },
+                        res = {
+                            locals: {},
+                            render: function (view, context) {
+                                assert.equal(view, 'post');
+                                assert(context.post, 'Context object has post attribute');
+                                assert.equal(context.post, mockPosts[1].posts[0]);
+                                assert.equal(context.post.author.email, undefined);
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT render post via /YYYY/MM/DD/:slug', function (done) {
+                    var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD'),
+                        req = {
+                            path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT render post via /:author/:slug when author does not match post author', function (done) {
+                    var req = {
+                            path: '/' + ['test-2', mockPosts[1].posts[0].slug].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT render post via /:slug', function (done) {
+                    var req = {
+                            path: '/' + mockPosts[1].posts[0].slug
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        done();
+                    });
+                });
+
+                // Handle Edit append
+                it('will redirect post to admin edit page via /:author/:slug/edit', function (done) {
+                    var req = {
+                            path: '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: function (arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+
+                it('will NOT redirect post to admin edit page via /YYYY/MM/DD/:slug/edit', function (done) {
+                    var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD'),
+                        req = {
+                            path: '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/')
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('will NOT redirect post to admin edit page /:slug/edit', function (done) {
                     var req = {
                             path: '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/')
                         },

@@ -379,6 +379,15 @@ frontendControllers = {
                 return next();
             }
 
+            // If there is an author parameter in the slug, check that the
+            // post is actually written by the given author\
+            if (params.author) {
+                if (post.author.slug === params.author) {
+                    return render();
+                }
+                return next();
+            }
+
             // If there is any date based paramter in the slug
             // we will check it against the post published date
             // to verify it's correct.
