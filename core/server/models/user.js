@@ -8,6 +8,7 @@ var _              = require('lodash'),
     request        = require('request'),
     validation     = require('../data/validation'),
     config         = require('../config'),
+    sitemap        = require('../data/sitemap'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -41,6 +42,20 @@ function generatePasswordHash(password) {
 User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
+
+    initialize: function () {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
+        this.on('created', function (model) {
+            sitemap.userAdded(model);
+        });
+        this.on('updated', function (model) {
+            sitemap.userEdited(model);
+        });
+        this.on('destroyed', function (model) {
+            sitemap.userDeleted(model);
+        });
+    },
 
     saving: function (newPage, attr, options) {
         /*jshint unused:false*/
