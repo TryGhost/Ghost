@@ -1,6 +1,7 @@
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 import base from 'ghost/mixins/editor-route-base';
 
-var EditorNewRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, base, {
+var EditorNewRoute = AuthenticatedRoute.extend(base, {
     classNames: ['editor'],
 
     model: function () {
