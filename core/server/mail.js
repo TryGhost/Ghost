@@ -76,7 +76,8 @@ GhostMailer.prototype.send = function (message) {
     message = _.extend(message, {
         from: self.from(),
         to: to,
-        generateTextFromHTML: true
+        generateTextFromHTML: true,
+	encoding: 'base64' // Outlook doesn't like default 'quoted-printable' encoding inside links when the url is splited with '='
     });
 
     return new Promise(function (resolve, reject) {
