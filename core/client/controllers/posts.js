@@ -20,6 +20,9 @@ function publishedAtCompare(item1, item2) {
 }
 
 var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
+    // See PostsRoute's shortcuts
+    postListFocused: Ember.computed.equal('keyboardFocus', 'postList'),
+    postContentFocused: Ember.computed.equal('keyboardFocus', 'postContent'),
     // this will cause the list to re-sort when any of these properties change on any of the models
     sortProperties: ['status', 'published_at', 'updated_at'],
 
