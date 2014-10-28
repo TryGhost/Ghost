@@ -1,6 +1,7 @@
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsUserRoute = Ember.Route.extend(styleBody, {
+var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, {
     classNames: ['settings-view-user'],
 
     model: function (params) {
