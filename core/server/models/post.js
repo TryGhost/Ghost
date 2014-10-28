@@ -8,6 +8,7 @@ var _              = require('lodash'),
     converter      = new Showdown.converter({extensions: [ghostgfm]}),
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
+    sitemap        = require('../data/sitemap'),
 
     Post,
     Posts;
@@ -33,6 +34,43 @@ Post = ghostBookshelf.Model.extend({
                 xmlrpc.ping(model.attributes);
             }
             return self.updateTags(model, attributes, options);
+        });
+
+        this.on('created', function (model) {
+            var isPage = !!model.get('page');
+            if (isPage) {
+                sitemap.pageAdded(model);
+            } else {
+                sitemap.postAdded(model);
+            }
+        });
+        this.on('updated', function (model) {
+            var isPage = !!model.get('page'),
+                wasPage = !!model.updated('page');
+
+            if (isPage && wasPage) {
+                // Page value didn't change, remains a page
+                sitemap.pageEdited(model);
+            } else if (!isPage && !wasPage) {
+                // Remains a Post
+                sitemap.postEdited(model);
+            } else if (isPage && !wasPage) {
+                // Switched from Post to Page
+                sitemap.postDeleted(model);
+                sitemap.pageAdded(model);
+            } else if (!isPage && wasPage) {
+                // Switched from Page to Post
+                sitemap.pageDeleted(model);
+                sitemap.postAdded(model);
+            }
+        });
+        this.on('destroyed', function (model) {
+            var isPage = !!model.get('page');
+            if (isPage) {
+                sitemap.pageDeleted(model);
+            } else {
+                sitemap.postDeleted(model);
+            }
         });
     },
 

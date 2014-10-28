@@ -1,6 +1,7 @@
 var _              = require('lodash'),
     errors         = require('../errors'),
     ghostBookshelf = require('./base'),
+    sitemap        = require('../data/sitemap'),
 
     Tag,
     Tags;
@@ -8,6 +9,20 @@ var _              = require('lodash'),
 Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
+
+    initialize: function () {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
+        this.on('created', function (model) {
+            sitemap.tagAdded(model);
+        });
+        this.on('updated', function (model) {
+            sitemap.tagEdited(model);
+        });
+        this.on('destroyed', function (model) {
+            sitemap.tagDeleted(model);
+        });
+    },
 
     saving: function (newPage, attr, options) {
          /*jshint unused:false*/
