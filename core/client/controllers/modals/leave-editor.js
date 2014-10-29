@@ -15,6 +15,7 @@ var LeaveEditorController = Ember.Controller.extend({
             }
 
             if (!transition || !editorController) {
+
                 this.notifications.showError('对不起, 出现应用出错了，请联系我们修复.（ 反馈QQ群: 335978388 ）');
                 return true;
             }
@@ -40,7 +41,6 @@ var LeaveEditorController = Ember.Controller.extend({
         },
 
         confirmReject: function () {
-
         }
     },
 

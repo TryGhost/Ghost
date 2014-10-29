@@ -1,8 +1,8 @@
 /* global key */
 
-//Configure KeyMaster to respond to all shortcuts,
-//even inside of
-//input, textarea, and select.
+// Configure KeyMaster to respond to all shortcuts,
+// even inside of
+// input, textarea, and select.
 key.filter = function () {
     return true;
 };
@@ -57,12 +57,13 @@ var ShortcutsRoute = Ember.Mixin.create({
             }
 
             key(shortcut, scope, function (event) {
-                //stop things like ctrl+s from actually opening a save dialogue
+                // stop things like ctrl+s from actually opening a save dialogue
                 event.preventDefault();
                 self.send(action, options);
             });
         });
     },
+
     removeShortcuts: function () {
         var shortcuts = this.get('shortcuts');
 
@@ -70,13 +71,17 @@ var ShortcutsRoute = Ember.Mixin.create({
             key.unbind(shortcut);
         });
     },
+
     activate: function () {
         this._super();
+
         if (!this.shortcuts) {
             return;
         }
+
         this.registerShortcuts();
     },
+
     deactivate: function () {
         this._super();
         this.removeShortcuts();

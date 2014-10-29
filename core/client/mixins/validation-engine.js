@@ -1,4 +1,4 @@
-import { getRequestErrorMessage } from 'ghost/utils/ajax';
+import {getRequestErrorMessage} from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
 import PostValidator from 'ghost/validators/post';
@@ -14,7 +14,7 @@ import UserValidator from 'ghost/validators/user';
 ValidatorExtensions.init();
 
 // format errors to be used in `notifications.showErrors`.
-// result is [{ message: 'concatenated error messages' }]
+// result is [{message: 'concatenated error messages'}]
 function formatErrors(errors, opts) {
     var message = 'There was an error';
 
@@ -46,11 +46,10 @@ function formatErrors(errors, opts) {
     }
 
     // set format for notifications.showErrors
-    message = [{ message: message }];
+    message = [{message: message}];
 
     return message;
 }
-
 
 /**
 * The class that gets this mixin will receive these properties and functions.
@@ -143,9 +142,9 @@ var ValidationEngine = Ember.Mixin.create({
             return _super.call(self, options);
         }).catch(function (result) {
             // server save failed - validate() would have given back an array
-            if (! Ember.isArray(result)) {
+            if (!Ember.isArray(result)) {
                 if (options.format !== false) {
-                    // concatenate all errors into an array with a single object: [{ message: 'concatted message' }]
+                    // concatenate all errors into an array with a single object: [{message: 'concatted message'}]
                     result = formatErrors(result, options);
                 } else {
                     // return the array of errors from the server

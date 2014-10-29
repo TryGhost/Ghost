@@ -2,8 +2,9 @@ import GhostSelect from 'ghost/components/gh-select';
 
 var RolesSelector = GhostSelect.extend({
     roles: Ember.computed.alias('options'),
+
     options: Ember.computed(function () {
-        var rolesPromise = this.store.find('role', { permissions: 'assign' });
+        var rolesPromise = this.store.find('role', {permissions: 'assign'});
 
         //汉化修改后台角色呈现名称
         this.store.find('role', { permissions: 'assign' }).then(function(item){

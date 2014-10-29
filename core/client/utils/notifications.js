@@ -16,8 +16,7 @@ var Notifications = Ember.ArrayProxy.extend({
             if (object.get('location') === '') {
                 object.set('location', 'bottom');
             }
-        }
-        else {
+        } else {
             if (!object.location) {
                 object.location = 'bottom';
             }
@@ -56,7 +55,7 @@ var Notifications = Ember.ArrayProxy.extend({
         }
 
         for (var i = 0; i < errors.length; i += 1) {
-            this.showError(errors[i].message || errors[i], { doNotClosePassive: true });
+            this.showError(errors[i].message || errors[i], {doNotClosePassive: true});
         }
     },
     showAPIError: function (resp, options) {
@@ -75,7 +74,7 @@ var Notifications = Ember.ArrayProxy.extend({
         } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.message) {
             this.showError(resp.jqXHR.responseJSON.message, options);
         } else {
-            this.showError(options.defaultErrorText, { doNotClosePassive: true });
+            this.showError(options.defaultErrorText, {doNotClosePassive: true});
         }
     },
     showInfo: function (message, options) {
@@ -102,7 +101,6 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         }, options.delayed);
     },
-    // @Todo this function isn't referenced anywhere. Should it be removed?
     showWarn: function (message, options) {
         options = options || {};
 

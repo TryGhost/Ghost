@@ -36,7 +36,6 @@ var EmbeddedRelationAdapter = ApplicationAdapter.extend({
             if (meta.kind === 'hasMany' &&
                 Object.prototype.hasOwnProperty.call(meta.options, 'embedded') &&
                 meta.options.embedded === 'always') {
-
                 toInclude.push(name);
             }
         });
@@ -46,12 +45,11 @@ var EmbeddedRelationAdapter = ApplicationAdapter.extend({
             if (typeof options === 'string' || typeof options === 'number') {
                 query.id = options;
                 query.include = toInclude.join(',');
-            }
-            // If this is a find all (no existing query object) build one and attach
-            // the includes.
-            // If this is a find with an existing query object then merge the includes
-            // into the existing object. Existing properties and includes are preserved. 
-            else if (typeof options === 'object' || Ember.isNone(options)) {
+            } else if (typeof options === 'object' || Ember.isNone(options)) {
+                // If this is a find all (no existing query object) build one and attach
+                // the includes.
+                // If this is a find with an existing query object then merge the includes
+                // into the existing object. Existing properties and includes are preserved.
                 query = options || query;
                 toInclude = toInclude.concat(query.include ? query.include.split(',') : []);
 

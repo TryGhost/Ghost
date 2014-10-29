@@ -1,23 +1,29 @@
-var defaultPaginationSettings = {
+var defaultPaginationSettings,
+    PaginationRoute;
+
+defaultPaginationSettings = {
     page: 1,
     limit: 15
 };
 
-var PaginationRoute = Ember.Mixin.create({
-
+PaginationRoute = Ember.Mixin.create({
     /**
      * Sets up pagination details
-     * @param {settings}: object that specifies additional pagination details
+     * @param {object} settings specifies additional pagination details
      */
     setupPagination: function (settings) {
-
         settings = settings || {};
-        settings = _.defaults(settings, defaultPaginationSettings);
+        for (var key in defaultPaginationSettings) {
+            if (defaultPaginationSettings.hasOwnProperty(key)) {
+                if (!settings.hasOwnProperty(key)) {
+                    settings[key] = defaultPaginationSettings[key];
+                }
+            }
+        }
 
         this.set('paginationSettings', settings);
         this.controller.set('paginationSettings', settings);
     }
-
 });
 
 export default PaginationRoute;

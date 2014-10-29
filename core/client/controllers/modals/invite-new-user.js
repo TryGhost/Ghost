@@ -1,16 +1,19 @@
 var InviteNewUserController = Ember.Controller.extend({
-    //Used to set the initial value for the dropdown
+    // Used to set the initial value for the dropdown
     authorRole: Ember.computed(function () {
         var self = this;
+
         return this.store.find('role').then(function (roles) {
             var authorRole = roles.findBy('name', 'Author');
-            //Initialize role as well.
+
+            // Initialize role as well.
             self.set('role', authorRole);
             self.set('authorRole', authorRole);
+
             return authorRole;
         });
     }),
-    
+
     confirm: {
         accept: {
             text: '立即发送邀请函'
@@ -19,7 +22,7 @@ var InviteNewUserController = Ember.Controller.extend({
             buttonClass: 'hidden'
         }
     },
-        
+
     actions: {
         setRole: function (role) {
             this.set('role', role);
@@ -38,13 +41,13 @@ var InviteNewUserController = Ember.Controller.extend({
 
             this.store.find('user').then(function (result) {
                 var invitedUser = result.findBy('email', email);
+
                 if (invitedUser) {
                     if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
                         self.notifications.showWarn('你已邀请过这个用户。');
                     } else {
                         self.notifications.showWarn('邮箱地址已存在。');
                     }
-                    
                 } else {
                     newUser = self.store.createRecord('user', {
                         email: email,

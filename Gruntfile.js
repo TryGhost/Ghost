@@ -189,7 +189,8 @@ var _              = require('lodash'),
                     },
                     client: {
                         options: {
-                            config: '.jscsrc'
+                            config: '.jscsrc',
+                            esnext: true
                         }
                     },
                     test: {
@@ -198,12 +199,6 @@ var _              = require('lodash'),
                         }
                     }
                 }, lintFiles);
-
-                // JSCS depends on Esprima which doesn't yet support ES6 module
-                // syntax.  As such we cannot run JSCS on the client code yet.
-                // Related JSCS issue: https://github.com/jscs-dev/node-jscs/issues/561
-                // @TODO(hswolff): remove this once JSCS supports ES6.
-                delete jscsConfig.client;
 
                 return jscsConfig;
             })(),
@@ -529,7 +524,6 @@ var _              = require('lodash'),
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
-                        'bower_components/lodash/dist/lodash.js',
                         'bower_components/handlebars/handlebars.js',
                         'bower_components/ember/ember.js',
                         'bower_components/ember-data/ember-data.js',
@@ -566,7 +560,6 @@ var _              = require('lodash'),
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
-                        'bower_components/lodash/dist/lodash.js',
                         'bower_components/handlebars/handlebars.runtime.js',
                         'bower_components/ember/ember.prod.js',
                         'bower_components/ember-data/ember-data.prod.js',
@@ -643,12 +636,12 @@ var _              = require('lodash'),
         // Custom test runner for our Casper.js functional tests
         // This really ought to be refactored into a separate grunt task module
         grunt.registerTask('spawnCasperJS', function (target) {
-            target = _.contains(['client', 'frontend', 'setup'], target) ? target + '/' : undefined;
+            target = _.contains(['client', 'setup'], target) ? target + '/' : undefined;
 
             var done = this.async(),
                 options = ['host', 'noPort', 'port', 'email', 'password'],
                 args = ['test']
-                    .concat(grunt.option('target') || target || ['client/', 'frontend/'])
+                    .concat(grunt.option('target') || target || ['client/'])
                     .concat(['--includes=base.js', '--log-level=debug', '--port=2369']);
 
             // Forward parameters from grunt to casperjs

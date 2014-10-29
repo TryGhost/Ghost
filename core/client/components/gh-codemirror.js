@@ -5,26 +5,30 @@ import mobileCodeMirror from 'ghost/utils/codemirror-mobile';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 import codeMirrorShortcuts from 'ghost/utils/codemirror-shortcuts';
 
+var onChangeHandler,
+    onScrollHandler,
+    Codemirror;
+
 codeMirrorShortcuts.init();
 
-var onChangeHandler = function (cm, changeObj) {
+onChangeHandler = function (cm, changeObj) {
     var line,
         component = cm.component;
 
     // fill array with a range of numbers
     for (line = changeObj.from.line; line < changeObj.from.line + changeObj.text.length; line += 1) {
-        component.checkLine(line, changeObj.origin);
+        component.checkLine.call(component, line, changeObj.origin);
     }
 
     // Is this a line which may have had a marker on it?
-    component.checkMarkers();
+    component.checkMarkers.call(component);
 
     cm.component.set('value', cm.getValue());
 
     component.sendAction('typingPause');
 };
 
-var onScrollHandler = function (cm) {
+onScrollHandler = function (cm) {
     var scrollInfo = cm.getScrollInfo(),
         component = cm.component;
 
@@ -36,7 +40,7 @@ var onScrollHandler = function (cm) {
     }, 10);
 };
 
-var Codemirror = Ember.TextArea.extend(MarkerManager, {
+Codemirror = Ember.TextArea.extend(MarkerManager, {
     focus: true,
 
     setFocus: function () {
@@ -50,7 +54,11 @@ var Codemirror = Ember.TextArea.extend(MarkerManager, {
     },
 
     afterRenderEvent: function () {
-        var initMarkers = _.bind(this.initMarkers, this);
+        var self = this;
+
+        function initMarkers() {
+            self.initMarkers.apply(self, arguments);
+        }
 
         // replaces CodeMirror with TouchEditor only if we're on mobile
         mobileCodeMirror.createIfMobile();

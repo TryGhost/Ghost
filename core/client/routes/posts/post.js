@@ -1,5 +1,7 @@
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import isNumber from 'ghost/utils/isNumber';
+import isFinite from 'ghost/utils/isFinite';
 
 var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, ShortcutsRoute, {
     model: function (params) {
@@ -10,8 +12,7 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
 
         postId = Number(params.post_id);
 
-        if (!_.isNumber(postId) || !_.isFinite(postId) || postId % 1 !== 0 || postId <= 0)
-        {
+        if (!isNumber(postId) || !isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
             return this.transitionTo('error404', params.post_id);
         }
 
@@ -48,6 +49,7 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
             });
         });
     },
+
     setupController: function (controller, model) {
         this._super(controller, model);
 
@@ -58,10 +60,12 @@ var PostsPostRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, load
         'enter, o': 'openEditor',
         'command+backspace, ctrl+backspace': 'deletePost'
     },
+
     actions: {
         openEditor: function () {
             this.transitionTo('editor.edit', this.get('controller.model'));
         },
+
         deletePost: function () {
             this.send('openModal', 'delete-post', this.get('controller.model'));
         }

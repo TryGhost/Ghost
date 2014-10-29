@@ -1,12 +1,17 @@
 /*global Ember */
 
-var trailingHistory = Ember.HistoryLocation.extend({
+var trailingHistory,
+    registerTrailingLocationHistory;
+
+trailingHistory = Ember.HistoryLocation.extend({
     formatURL: function () {
+        // jscs: disable
         return this._super.apply(this, arguments).replace(/\/?$/, '/');
+        // jscs: enable
     }
 });
 
-var registerTrailingLocationHistory = {
+registerTrailingLocationHistory = {
     name: 'registerTrailingLocationHistory',
 
     initialize: function (container, application) {
