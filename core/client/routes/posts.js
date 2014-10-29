@@ -1,3 +1,4 @@
+import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
@@ -12,7 +13,7 @@ paginationSettings = {
     page: 1
 };
 
-PostsRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin, ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
+PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
     classNames: ['manage'],
 
     model: function () {
