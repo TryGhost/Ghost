@@ -2,7 +2,7 @@
 // jscs:disable disallowSpacesInsideParentheses
 
 /** Set up a shortcut function to be called via router actions.
- *  See editor-route-base
+ *  See editor-base-route
  */
 
 import titleize from 'ghost/utils/titleize';

@@ -66,7 +66,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         return hashCurrent === hashPrevious;
     },
 
-    // a hook created in editor-route-base's setupController
+    // a hook created in editor-base-route's setupController
     modelSaved: function () {
         var model = this.get('model');
 
