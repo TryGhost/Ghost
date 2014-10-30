@@ -13,7 +13,7 @@
     right: 0;
     bottom: 0;
     overflow: hidden;
-    transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+    transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
     transform: translate3d(60px, 0px, 0px);
 
     // This selector ends up being `body.settings-menu-expanded .settings-menu-container`
@@ -32,7 +32,7 @@
         -webkit-overflow-scrolling: touch;
 
         @media (min-width: 901px) {
-            transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+            transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
         }
 
         &.settings-menu-pane-out-left {
@@ -164,7 +164,7 @@ body.settings-menu-expanded {
         bottom: 0;
         left: 0;
         z-index: 600;
-        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
         transform: translate3d(-350px, 0px, 0px); // Not off the screen, to give a parallax effect
     }//.editor-cover
 

@@ -22,8 +22,8 @@
     background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
     border: 1px solid transparent;
     white-space: nowrap;
-    border-radius: $rounded;
-    @include user-select(none);
+    border-radius: $border-radius;
+    user-select: none;
 
     &,
     &:active,

@@ -24,10 +24,10 @@
     left: 0;
     overflow: hidden;
     z-index: 500; // Above the .global-nav when collapsed
-    transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+    transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
     @media (max-width: 900px) {
-        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+        transition: transform 0.4s cubic-bezier($settings-menu-bezier);
     }
 
     // This selector ends up being `body.settings-menu-expanded .viewport`
