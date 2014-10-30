@@ -266,7 +266,7 @@ textarea {
 // Select Component
 // ---
 // <span class="gh-select">
-//     {{view Ember.Select
+//     {{view "select"
 //         id="activeTheme"
 //         name="general[activeTheme]"
 //         content=themes
