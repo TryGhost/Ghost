@@ -96,7 +96,8 @@ function forkGhost(newConfig, envName) {
                             /*jshint unused:false*/
                             pingTries = pingTries + 1;
                             // continue checking
-                            if (pingTries >= 20 && pingStop()) {
+                            if (pingTries >= 50 && pingStop()) {
+                                child.kill();
                                 reject(new Error('Timed out waiting for child process'));
                             }
                         });
@@ -105,11 +106,14 @@ function forkGhost(newConfig, envName) {
                     child.on('exit', function (code, signal) {
                         /*jshint unused:false*/
                         child.exited = true;
+
+                        fs.unlink(newConfigFile, function () {
+                            // swallow any errors -- file may not exist if fork() failed
+                        });
+
                         if (pingStop()) {
                             reject(new Error('Child process exit code: ' + code));
                         }
-                        // cleanup the temporary config file
-                        fs.unlink(newConfigFile);
                     });
 
                     // override kill() to have an async callback
