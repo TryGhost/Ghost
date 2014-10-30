@@ -43,7 +43,7 @@
         left: 0;
         color: $brown;
         text-decoration: none;
-        @include user-select(none);
+        user-select: none;
 
         &:hover {
           cursor: pointer;
@@ -189,7 +189,7 @@
         color: #fff;
         text-decoration: none;
         line-height: 0;
-        border-radius: $rounded;
+        border-radius: $border-radius;
         background: rgba(0,0,0,0.6);
         box-shadow: rgba(255,255,255,0.2) 0 0 0 1px;
 
