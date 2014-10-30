@@ -1,21 +1,21 @@
 //
-// Helpers: Sass Utilities
+// Modules: Mixins, variables, and utilities
 // --------------------------------------------------
 
-@import "helpers/variables";
-@import "helpers/mixins";
-@import "helpers/icons";
-@import "helpers/animations";
+@import "modules/variables";
+@import "modules/mixins";
+@import "modules/icons";
+@import "modules/animations";
 
 
 //
-// Libraries: Code by Other Homies
+// Libraries: Code by other Homies
 // --------------------------------------------------
 
 @import "../../../../bower_components/normalize-scss/_normalize"; // via Bower
-@import "lib/nprogress";
-@import "lib/codemirror";
-@import "lib/nanoscroller";
+@import "vendor/nprogress";
+@import "vendor/codemirror";
+@import "vendor/nanoscroller";
 
 
 //

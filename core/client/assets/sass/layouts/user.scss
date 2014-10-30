@@ -51,7 +51,7 @@
     color: rgba(255,255,255,0.8);
     z-index: 2;
     border-width: 0;
-    border-radius: $rounded;
+    border-radius: $border-radius;
     transition: color 0.3s ease, background 0.3s ease;
     @media (max-width: 1000px) {
         right: 15px;
@@ -135,7 +135,7 @@
 .user-image {
     display: block;
     position: absolute;
-    
+
     @media (min-width: 651px) {
         top: -19px;
         left: -98px;
@@ -145,7 +145,7 @@
         top: -159px;
         left: 21px;
     }
-    
+
     width: 126px;
     height: 126px;
     float: left;

@@ -12,7 +12,7 @@
     left: 0;
     z-index: 800;
     background: $darkgrey;
-    transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+    transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
     i:before {
         display: inline-block;
@@ -190,7 +190,7 @@
         -webkit-overflow-scrolling: touch;
 
         transform: translate3d(-60px, 0px, 0px); // Not off the screen, to give a parallax effect
-        transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
         .thing, .thing2 {
             display: block;
@@ -317,7 +317,7 @@
             bottom: 0;
             left: 0;
             z-index: 600;
-            transition: transform $side-outlet-transition-duration cubic-bezier(0.1, 0.7, 0.1, 1);
+            transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
             transform: translate3d(260px, 0px, 0px); // Not off the screen, to give a parallax effect
         }//.nav-cover
     }//body.global-nav-expanded

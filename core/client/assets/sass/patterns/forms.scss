@@ -151,7 +151,7 @@ select {
     padding: 8px 10px;
     width: 100%;
     border: 1px solid #E0DFD7;
-    border-radius: $rounded;
+    border-radius: $border-radius;
 
     font-size: 1.4rem;
     font-weight: normal;
@@ -190,7 +190,7 @@ textarea {
 // </div>
 .for-checkbox {
     .input-toggle-component {
-        border-radius: $rounded;
+        border-radius: $border-radius;
     }
     label {
         .input-toggle-component {
