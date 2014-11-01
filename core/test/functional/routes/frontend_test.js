@@ -707,6 +707,8 @@ describe('Frontend Routing', function () {
         after(function (done) {
             if (forkedGhost) {
                 forkedGhost.kill(done);
+            } else {
+                done(new Error('No forked ghost process exists, test setup must have failed.'));
             }
         });
 
