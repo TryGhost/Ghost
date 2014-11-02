@@ -7,14 +7,14 @@ Ghost bloggin platform.
 
 ## Getting Started
 
-* Clone the GitHub repository;
-* Install Grunt and build assets:
-  1. `npm install -g grunt-cli`
-  1. `npm install`
-  1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
-  1. `npm start`
-* Navigate to `http://localhost:2368/ghost/` and sign up
-* Go to post editing
+1. Clone the GitHub repository;
+1. Install Grunt and build assets:
+  * `npm install -g grunt-cli`
+  * `npm install`
+  * `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
+  * `npm start`
+1. Navigate to `http://localhost:2368/ghost/` and sign up;
+1. Go to post editing.
 
 ## Goal
 
