@@ -48,3 +48,4 @@ so it appears in the text:
 ## Copyright & License
 
 Copyright (c) 2013-2014 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2014 Uploadcare LLC.
