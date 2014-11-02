@@ -24,20 +24,20 @@ See `ghost-uploadcare.js`. This is a draft, and needs to be converted to a prope
 
 User opens a blog post for editing, and clicks on the plugin button (in this screenshot it's in the top menu):
 
-![Edit Post](http://www.ucarecdn.com/435bb206-d828-4abd-8838-22176cc2e487/-/resize/400x/)
+![Edit Post](http://www.ucarecdn.com/435bb206-d828-4abd-8838-22176cc2e487/-/resize/600x/)
 
 Uploadcare widget loads, and user can upload an image from any source:
 
-![Upload an Image](http://www.ucarecdn.com/feb42262-5766-415c-a005-17b416cbe71b/-/resize/400x/)
+![Upload an Image](http://www.ucarecdn.com/feb42262-5766-415c-a005-17b416cbe71b/-/resize/600x/)
 
 Image can be cropped:
 
-![Crop image](http://www.ucarecdn.com/feb42262-5766-415c-a005-17b416cbe71b/-/resize/400x/)
+![Crop image](http://www.ucarecdn.com/04583716-cb85-40c6-8604-f30f3caddba4/-/resize/600x/)
 
 And the link to uploaded and cropped image is pasted to the current cursor position,
 so it appears in the text:
 
-![Image appears in the text](http://www.ucarecdn.com/e462efbc-59a4-4422-9b20-5e240a9762f2/-/resize/400x/)
+![Image appears in the text](http://www.ucarecdn.com/e462efbc-59a4-4422-9b20-5e240a9762f2/-/resize/600x/)
 
 
 ## More info
