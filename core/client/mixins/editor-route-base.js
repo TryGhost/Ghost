@@ -22,7 +22,10 @@ var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
 
         // The actual functionality is implemented in utils/codemirror-shortcuts
         codeMirrorShortcut: function (options) {
-            this.get('controller.codemirror').shortcut(options.type);
+            // Only fire editor shortcuts when the editor has focus.
+            if (Ember.$('.CodeMirror.CodeMirror-focused').length > 0) {
+                this.get('controller.codemirror').shortcut(options.type);
+            }
         }
     },
 
