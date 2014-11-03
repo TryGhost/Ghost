@@ -313,7 +313,7 @@ var _              = require('lodash'),
             sass: {
                 compress: {
                     options: {
-                        style: 'compressed',
+                        outputStyle: 'compressed',
                         sourceMap: true
                     },
                     files: [
