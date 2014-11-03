@@ -177,53 +177,50 @@
 
 .editor {
     .entry-markdown-content {
-        textarea {
-            border: 0;
-            width: 100%;
-            min-height: auto;
-            height: calc(100% - 40px);
-            max-width: 100%;
-            margin: 0;
-            padding: 22px 20px 35px 20px;
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            -webkit-overflow-scrolling: touch;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
 
-            font-size: 2rem;
-            line-height: 1.7em;
-            font-family: $font-family-mono;
-            color: lighten($darkgrey, 10%);
+    .markdown-editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
 
-            &:focus {
-                outline: 0;
-            }
+        height: 100%;
+        max-width: 100%;
 
-            ::selection {
-                color: $darkgrey;
-                background: lighten($blue, 20%);
-                text-shadow: none;
-            }
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
 
-            @media (max-width: 600px) {
-                padding: 10px;
-            }
+        resize: none;
+        border: 0;
 
-            @media (min-width: 601px) and (max-width: 1000px) {
-                padding: 15px;
-            }
+        font-size: 1.6rem;
+        line-height: 2.5rem;
+        font-family: $font-family-mono;
+        color: lighten($darkgrey, 10%);
 
-            @media (min-width: 1001px) {
-                top: 40px;
-            }
+        &:focus {
+            outline: 0;
+        }
 
-            @media (max-height: 560px) {
-                height: calc(100% - 5px);
-            }
-        } // textarea
-    } // .entry-markdown-content
+        @media (max-width: 450px) {
+            padding: 15px;
+        }
+
+        @media (min-width: 451px) and (max-width: 1000px) {
+            padding: 20px;
+        }
+
+        @media (min-width: 1001px) {
+            padding: 62px 20px 36px 20px;
+        }
+    }
 
     .entry-preview {
         // Align the tab of entry-preview on the right
@@ -242,7 +239,7 @@
         right: 0;
         bottom: 0;
         left: 0;
-        padding: 60px 40px 40px 40px;
+        padding: 60px 40px 37px 40px;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
         word-break: break-word;
@@ -279,6 +276,21 @@
         }
     }
 }//.editor
+
+
+
+//
+// Firefox Editor Hacks
+// --------------------------------------------------
+@-moz-document url-prefix() {
+    .editor .markdown-editor {
+        padding-top: 0;
+        padding-bottom: 0;
+        top: 40px;
+        height: calc(100% - 40px);
+    }
+}
+
 
 
 //
@@ -365,7 +377,7 @@
     font-weight: bold;
     font-size: 1.6rem;
     text-align: center;
-}
+}//.entry-preview-content, .content-preview-content
 
 
 //
@@ -549,14 +561,6 @@ body.zen {
         position: absolute;
         bottom: 49px;
         right: 0;
-
-        &.fade-in-scale {
-            animation-duration: 0.1s;
-        }
-
-        &.fade-out {
-            animation-duration: 0.01s;
-        }
 
         .dropdown-menu {
             top: auto;
