@@ -101,8 +101,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             afterSave = this.get('lastPromise'),
             promise;
 
-        // Only set an "untitled" slug once per post
-        if (title === '(Untitled)' && this.get('slug')) {
+        // Don't set a slug for an untitled post
+        if (title === '(Untitled)' || !title) {
             return;
         }
 
