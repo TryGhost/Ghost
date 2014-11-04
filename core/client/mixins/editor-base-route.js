@@ -3,7 +3,9 @@ import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
-var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndicator, {
+var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndicator, {
+    classNames: ['editor'],
+
     actions: {
         save: function () {
             this.get('controller').send('save');
@@ -26,11 +28,47 @@ var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
             if (Ember.$('.CodeMirror.CodeMirror-focused').length > 0) {
                 this.get('controller.codemirror').shortcut(options.type);
             }
+        },
+
+        willTransition: function (transition) {
+            var controller = this.get('controller'),
+                isDirty = controller.get('isDirty'),
+
+                model = controller.get('model'),
+                isNew = model.get('isNew'),
+                isSaving = model.get('isSaving'),
+                isDeleted = model.get('isDeleted'),
+                modelIsDirty = model.get('isDirty');
+
+            this.send('closeSettingsMenu');
+
+            // when `isDeleted && isSaving`, model is in-flight, being saved
+            // to the server. when `isDeleted && !isSaving && !modelIsDirty`,
+            // the record has already been deleted and the deletion persisted.
+            //
+            // in either case  we can probably just transition now.
+            // in the former case the server will return the record, thereby updating it.
+            // @TODO: this will break if the model fails server-side validation.
+            if (!(isDeleted && isSaving) && !(isDeleted && !isSaving && !modelIsDirty) && isDirty) {
+                transition.abort();
+                this.send('openModal', 'leave-editor', [controller, transition]);
+                return;
+            }
+
+            if (isNew) {
+                model.deleteRecord();
+            }
+
+            // since the transition is now certain to complete..
+            window.onbeforeunload = null;
+
+            // remove model-related listeners created in editor-base-route
+            this.detachModelHooks(controller, model);
         }
     },
 
     renderTemplate: function (controller, model) {
-        this._super();
+        this._super(controller, model);
 
         this.render('post-settings-menu', {
             into: 'application',
@@ -59,7 +97,26 @@ var EditorRouteBase = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
     detachModelHooks: function (controller, model) {
         model.off('didCreate', controller, controller.get('modelSaved'));
         model.off('didUpdate', controller, controller.get('modelSaved'));
+    },
+
+    setupController: function (controller, model) {
+        this._super(controller, model);
+        var tags = model.get('tags');
+
+        controller.set('scratch', model.get('markdown'));
+
+        controller.set('titleScratch', model.get('title'));
+
+        if (tags) {
+            // used to check if anything has changed in the editor
+            controller.set('previousTagNames', tags.mapBy('name'));
+        } else {
+            controller.set('previousTagNames', []);
+        }
+
+        // attach model-related listeners created in editor-base-route
+        this.attachModelHooks(controller, model);
     }
 });
 
-export default EditorRouteBase;
+export default EditorBaseRoute;
