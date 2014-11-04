@@ -1,15 +1,26 @@
-//
+// ------------------------------------------------------------
 // Buttons
+//
+// Default button Styles, including sizes & colours
+//
+// * Default styles
+// * Coloured buttons
+// * Link buttons
+// * Minor buttons
+// * Button Sizes
+// * Block button
+// ------------------------------------------------------------
+
+
+//
+// Default styles
 // --------------------------------------------------
 
-
-// Base styles
-// --------------------------------------------------
-
-%button {
+.btn {
     display: inline-block;
-    margin-bottom: 0; // For input.btn
+    margin-bottom: 0;
     padding: 9px 14px;
+
     font-size: 1.1rem;
     line-height: 1.428571429;
     font-weight: 300;
@@ -17,13 +28,15 @@
     text-transform: uppercase;
     text-shadow: none;
     letter-spacing: 1px;
-    vertical-align: middle;
-    cursor: pointer;
-    background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
-    border: 1px solid transparent;
     white-space: nowrap;
+
+    background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+
+    border: 1px solid transparent;
     border-radius: $border-radius;
+
     user-select: none;
+    cursor: pointer;
 
     &,
     &:active,
@@ -54,13 +67,11 @@
         opacity: 0.65;
         box-shadow: none;
     }
-}
-.btn {
-    @extend %button;
-}
+}//.btn
 
 
-// Alternate buttons
+//
+// Coloured buttons
 // --------------------------------------------------
 
 @mixin button-style($color, $background, $border) {
@@ -78,14 +89,17 @@
         background-color: darken($background, 10%);
         border-color: darken($border, 12%);
     }
+
     &:active,
     &.active,
     .open > &.dropdown-toggle {
         background-image: none;
     }
+
     &.disabled,
     &[disabled],
     fieldset[disabled] & {
+
         &,
         &:hover,
         &:focus,
@@ -101,28 +115,31 @@
         background-color: $color;
         box-shadow: 0 0 0 1px $color;
     }
-}
+}//@mixin button-style
 
 .btn-default {
-    font-weight: normal;
+    font-weight: normal; // Increases the font-weight to make text more legible for white BG button
     @include button-style(#666, #fff, lighten($midgrey, 40%));
 }
+
 .btn-alt {
     @include button-style(#fff, #A1ADB3, darken(#A1ADB3, 5%));
 }
+
 .btn-blue {
     @include button-style(#fff, $blue, darken($blue, 5%));
 }
-// Success appears as green
+
 .btn-green {
     @include button-style(#fff, $green, darken($green, 5%));
 }
-// Danger and error appear as red
+
 .btn-red {
     @include button-style(#fff, $red, darken($red, 5%));
 }
 
 
+//
 // Link buttons
 // -------------------------
 
@@ -140,6 +157,7 @@
         background-color: transparent;
         box-shadow: none;
     }
+
     &,
     &:hover,
     &:focus,
@@ -147,22 +165,26 @@
         color: $blue;
         border-color: transparent;
     }
+
     &:hover,
     &:focus {
         text-decoration: underline;
         background-color: transparent;
     }
+
     &[disabled],
     fieldset[disabled] & {
+
         &:hover,
         &:focus {
             color: $midgrey;
             text-decoration: none;
         }
     }
-}
+}//.btn-link
 
 
+//
 // Minor buttons
 // -------------------------
 
@@ -175,6 +197,7 @@
     padding: 8px 14px;
 }
 
+//
 // Button Sizes
 // --------------------------------------------------
 
@@ -193,6 +216,7 @@
 }
 
 
+//
 // Block button
 // --------------------------------------------------
 
@@ -210,6 +234,7 @@
 input[type="submit"],
 input[type="reset"],
 input[type="button"] {
+
     &.btn-block {
         width: 100%;
     }
