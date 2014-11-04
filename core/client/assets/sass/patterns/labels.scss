@@ -1,3 +1,14 @@
+// ------------------------------------------------------------
+// Labels
+//
+// Labels are little bubbles of info.
+// Imagine an unread email counter.
+//
+// * Labels
+// * Colours
+// ------------------------------------------------------------
+
+
 //
 // Labels
 // --------------------------------------------------
@@ -13,8 +24,6 @@
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: .25em;
-
-    // [converter] extracted a& to a.label
 
     // Empty labels collapse automatically (not available in IE8)
     &:empty {
@@ -49,7 +58,10 @@ a.label {
     }
 }
 
-// Colors
+
+//
+// Colours
+// --------------------------------------------------
 
 @mixin label-variant($text-color, $bg-color) {
     background-color: $bg-color;
@@ -67,15 +79,19 @@ a.label {
 .label-default {
     @include label-variant(#fff, #A1ADB3);
 }
+
 .label-alt {
     @include label-variant(#fff, #666);
 }
+
 .label-blue {
     @include label-variant(#fff, $blue);
 }
+
 .label-green {
     @include label-variant(#fff, $green);
 }
+
 .label-red {
     @include label-variant(#fff, $red);
 }

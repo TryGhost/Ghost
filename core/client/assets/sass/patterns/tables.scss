@@ -1,6 +1,16 @@
+// ------------------------------------------------------------
+// Tables
+//
+// Default Styles for HTML tables
+//
+// * Base Table
+// * Default Table
+// ------------------------------------------------------------
+
 //
 // Base Table
 // --------------------------------------------------
+// Minimal styling
 
 table,
 %table {
@@ -23,13 +33,14 @@ table,
 //
 // Default Table
 // --------------------------------------------------
+// Properly styled with colour, spacing, and borders
 
 .table {
 
-    @extend %table;    
+    @extend %table;
 
     th,
-    td {  
+    td {
         border-top: 1px solid $lightbrown;
     }
 
@@ -65,4 +76,4 @@ table,
             background: transparent;
         }
     }
-}
+}//.table
