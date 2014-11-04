@@ -39,6 +39,7 @@ Router.map(function () {
         });
 
         this.route('about');
+        this.route('tags');
     });
 
     this.route('debug');
