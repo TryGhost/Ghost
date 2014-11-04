@@ -66,7 +66,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         return hashCurrent === hashPrevious;
     },
 
-    // a hook created in editor-route-base's setupController
+    // a hook created in editor-base-route's setupController
     modelSaved: function () {
         var model = this.get('model');
 
@@ -231,6 +231,8 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             }
 
             this.set('title', this.get('titleScratch'));
+            this.set('meta_title', psmController.get('metaTitleScratch'));
+            this.set('meta_description', psmController.get('metaDescriptionScratch'));
 
             if (!this.get('slug')) {
                 // Cancel any pending slug generation that may still be queued in the
