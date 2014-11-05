@@ -51,15 +51,6 @@ GhostServer.prototype.logStartMessages = function () {
             config.url,
             '\nCtrl+C to shut down'.grey
         );
-
-        // ensure that Ghost exits correctly on Ctrl+C
-        process.removeAllListeners('SIGINT').on('SIGINT', function () {
-            console.log(
-                '\nGhost has shut down'.red,
-                '\nYour blog is now offline'
-            );
-            process.exit(0);
-        });
     } else {
         console.log(
             ('Ghost is running in ' + process.env.NODE_ENV + '...').green,
@@ -69,17 +60,27 @@ GhostServer.prototype.logStartMessages = function () {
             config.url,
             '\nCtrl+C to shut down'.grey
         );
-        // ensure that Ghost exits correctly on Ctrl+C
-        process.removeAllListeners('SIGINT').on('SIGINT', function () {
+    }
+
+    function shutdown() {
+        console.log('\nGhost has shut down'.red);
+        if (process.env.NODE_ENV === 'production') {
             console.log(
-                '\nGhost has shutdown'.red,
+                '\nYour blog is now offline'
+            );
+        } else {
+            console.log(
                 '\nGhost was running for',
                 Math.round(process.uptime()),
                 'seconds'
             );
-            process.exit(0);
-        });
+        }
+        process.exit(0);
     }
+    // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
+    process.
+        removeAllListeners('SIGINT').on('SIGINT', shutdown).
+        removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
 };
 
 GhostServer.prototype.logShutdownMessages = function () {
