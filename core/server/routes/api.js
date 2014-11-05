@@ -38,6 +38,10 @@ apiRoutes = function (middleware) {
 
     // ## Tags
     router.get('/tags', api.http(api.tags.browse));
+    router.get('/tags/:id', api.http(api.tags.read));
+    router.post('/tags', api.http(api.tags.add));
+    router.put('/tags/:id', api.http(api.tags.edit));
+    router.del('/tags/:id', api.http(api.tags.destroy));
 
     // ## Roles
     router.get('/roles/', api.http(api.roles.browse));
