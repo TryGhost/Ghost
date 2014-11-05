@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/ghost.min.css">
+    <!-- Styles not needed for this. Just to get around various bits that Ember handles for us. -->
+    <style>
+        @media (max-width: 900px) {
+            .settings-nav {
+                top: 0;
+                left: -100%;
+            }
+            .settings-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container"><a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
+        <nav class="global-nav" role="navigation">
+            <a class="nav-item ghost-logo" href="/" title="/">
+                <div class="nav-label"><i class="icon-ghost"></i>
+                    <span>Visit blog</span>
+                </div>
+            </a>
+            <a class="nav-item nav-content js-nav-item active" href="#">
+                <div class="nav-label"><i class="icon-grid"></i> Dashboard</div>
+            </a>
+            <a class="nav-item nav-content js-nav-item" href="#">
+                <div class="nav-label"><i class="icon-content"></i> Content</div>
+            </a>
+            <a class="nav-item nav-new js-nav-item" href="#">
+                <div class="nav-label"><i class="icon-add"></i> New Post</div>
+            </a>
+            <a class="nav-item nav-settings js-nav-item" href="#">
+                <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
+            </a>
+            <div class="nav-item user-menu" data-href="#">
+                <div class=" nav-label">
+                    <div class="image">
+                        <img src="../../../core/shared/img/user-image.png" alt="Paul Davis's profile picture">
+                    </div>
+                    <div class="name">
+                        Paul Davis <i class="icon-chevron-down"></i>
+                        <small>Profile &amp; Settings</small>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main id="gh-main" class="viewport" role="main">
+        <!-- THE IMPORTANT BIT -->
+
+            <div class="dashboard-widgets page-content">
+
+
+                <div class="widget-frame js-widget-frame clearfix">
+
+                    <section class="widget-wrapper js-widget" data-item="1">
+                        <div class="widget-item">
+                            <header class="widget-header js-widget-drag">
+                                <span>Today</span>
+                                <span class="weather">
+                                    <span>12<sup>&deg;</sup> <span class="icon-weather-sun"></span></span>
+                                </span>
+                            </header>
+                            <div class="widget-main">
+                                <h1>12:24<sub>pm</sub></h1>
+                                <p>Monday / March 5 / 2013</p>
+                            </div>
+                            <footer class="widget-toolbar">
+                                <span><!-- Intentionally blank - This element is required to make the button sit on the right --></span>
+                                <button class="widget-settings icon-settings js-toggle-settings">
+                                    <span class="hidden">Location Settings</span>
+                                </button>
+                            </footer>
+                        </div>
+                    </section>
+
+                    <section class="widget-wrapper js-widget" data-item="2">
+                        <div class="widget-item">
+                            <div class="widget-header-phantom js-widget-drag"></div>
+                            <div class="widget-main">
+                                <h1>29,301</h1>
+                                <p>+104 subscribers this month</p>
+                            </div>
+                            <footer class="widget-toolbar">
+                                <span>RSS</span>
+                                <button class="widget-settings icon-settings">
+                                    <span class="hidden">RSS Settings</span>
+                                </button>
+                            </footer>
+                        </div>
+                    </section>
+
+                    <section class="widget-wrapper js-widget" data-item="3">
+                        <div class="widget-item">
+                            <div class="widget-header-phantom js-widget-drag"></div>
+                            <div class="widget-main widget-has-line-graph">
+                                <canvas id="single-canvas"/>
+                            </div>
+                            <footer class="widget-toolbar">
+                                <span>Single Line Graph</span>
+                                <button class="widget-settings icon-settings">
+                                    <span class="hidden">Traffic Source Settings</span>
+                                </button>
+                            </footer>
+                        </div>
+                    </section>
+
+                    <div class="widget-wrapper js-widget" data-item="4">
+                        <div class="widget-item">
+                            <div class="widget-header-phantom js-widget-drag"></div>
+                            <div class="widget-main widget-has-line-graph">
+                                <canvas id="duel-canvas"/>
+                            </div>
+                            <footer class="widget-toolbar">
+                                <span>Dual Line Graph</span>
+                                <button class="widget-settings icon-settings">
+                                    <span class="hidden">Traffic Source Settings</span>
+                                </button>
+                            </footer>
+                        </div>
+                    </div>
+
+                    <div class="widget-wrapper js-widget" data-item="5">
+                        <div class="widget-item">
+                            <div class="widget-header-phantom js-widget-drag"></div>
+                            <div class="widget-main widget-has-pie-chart">
+                                <canvas id="pie-canvas"/>
+                            </div>
+                            <footer class="widget-toolbar">
+                                <span>Pie Chart</span>
+                                <button class="widget-settings icon-settings">
+                                    <span class="hidden">Traffic Source Settings</span>
+                                </button>
+                            </footer>
+                        </div>
+                    </div>
+
+                    <div class="widget-wrapper js-widget" data-item="6">
+                        <div class="widget-item">
+                            <div class="widget-header-phantom js-widget-drag"></div>
+                            <div class="widget-main widget-has-bar-graph">
+                                <canvas id="bar-canvas"/>
+                            </div>
+                            <footer class="widget-toolbar">
+                                <span>Bar Graph</span>
+                                <button class="widget-settings icon-settings">
+                                    <span class="hidden">Traffic Source Settings</span>
+                                </button>
+                            </footer>
+                        </div>
+                    </div>
+
+                    <div class="widget-wrapper js-widget" data-item="7">
+                        <div class="widget-item">
+                            <header class="widget-header js-widget-drag">
+                                <b>Hey 7</b>
+                            </header>
+                            <div class="widget-main">
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Qui repellendus, dignissimos deserunt neque ipsam distinctio inventore nobis laboriosam quas amet!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="widget-wrapper js-widget" data-item="8">
+                        <div class="widget-item">
+                            <header class="widget-header js-widget-drag">
+                                <b>Hey 8</b>
+                            </header>
+                            <div class="widget-main">
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Qui repellendus, dignissimos deserunt neque ipsam distinctio inventore nobis laboriosam quas amet!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="widget-wrapper js-widget" data-item="9">
+                        <div class="widget-item">
+                            <header class="widget-header js-widget-drag">
+                                <b>Hey 9</b>
+                            </header>
+                            <div class="widget-main">
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Qui repellendus, dignissimos deserunt neque ipsam distinctio inventore nobis laboriosam quas amet!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        <!-- END IMPORTANT BIT -->
+        </main>
+    </div>
+</body>
+</html>
+
+<script src="../../../bower_components/jquery/dist/jquery.js"></script>
+<script src="chart.js"></script>
+
+<script>
+    /*
+     * HTML5 Sortable jQuery Plugin
+     * http://farhadi.ir/projects/html5sortable
+     *
+     * Copyright 2012, Ali Farhadi
+     * Released under the MIT license.
+     */
+    (function($) {
+    var dragging, placeholders = $();
+    $.fn.sortable = function(options) {
+        var method = String(options);
+        options = $.extend({
+            connectWith: false
+        }, options);
+        return this.each(function() {
+            if (/^enable|disable|destroy$/.test(method)) {
+                var items = $(this).children($(this).data('items')).attr('draggable', method == 'enable');
+                if (method == 'destroy') {
+                    items.add(this).removeData('connectWith items')
+                        .off('dragstart.h5s dragend.h5s selectstart.h5s dragover.h5s dragenter.h5s drop.h5s');
+                }
+                return;
+            }
+            var isHandle, index, items = $(this).children(options.items);
+            var placeholder = $('<' + (/^ul|ol$/i.test(this.tagName) ? 'li' : 'div') + ' class="sortable-placeholder">');
+            items.find(options.handle).mousedown(function() {
+                isHandle = true;
+            }).mouseup(function() {
+                isHandle = false;
+            });
+            $(this).data('items', options.items)
+            placeholders = placeholders.add(placeholder);
+            if (options.connectWith) {
+                $(options.connectWith).add(this).data('connectWith', options.connectWith);
+            }
+            items.attr('draggable', 'true').on('dragstart.h5s', function(e) {
+                if (options.handle && !isHandle) {
+                    return false;
+                }
+                isHandle = false;
+                var dt = e.originalEvent.dataTransfer;
+                dt.effectAllowed = 'move';
+                dt.setData('Text', 'dummy');
+                index = (dragging = $(this)).addClass('sortable-dragging').index();
+            }).on('dragend.h5s', function() {
+                if (!dragging) {
+                    return;
+                }
+                dragging.removeClass('sortable-dragging').show();
+                placeholders.detach();
+                if (index != dragging.index()) {
+                    dragging.parent().trigger('sortupdate', {item: dragging});
+                }
+                dragging = null;
+            }).not('a[href], img').on('selectstart.h5s', function() {
+                this.dragDrop && this.dragDrop();
+                return false;
+            }).end().add([this, placeholder]).on('dragover.h5s dragenter.h5s drop.h5s', function(e) {
+                if (!items.is(dragging) && options.connectWith !== $(dragging).parent().data('connectWith')) {
+                    return true;
+                }
+                if (e.type == 'drop') {
+                    e.stopPropagation();
+                    placeholders.filter(':visible').after(dragging);
+                    dragging.trigger('dragend.h5s');
+                    return false;
+                }
+                e.preventDefault();
+                e.originalEvent.dataTransfer.dropEffect = 'move';
+                if (items.is(this)) {
+                    if (options.forcePlaceholderSize) {
+                        placeholder.height(dragging.outerHeight());
+                    }
+                    dragging.hide();
+                    $(this)[placeholder.index() < $(this).index() ? 'after' : 'before'](placeholder);
+                    placeholders.not(placeholder).detach();
+                } else if (!placeholders.is(this) && !$(this).children(options.items).length) {
+                    placeholders.detach();
+                    $(this).append(placeholder);
+                }
+                return false;
+            });
+        });
+    };
+    })(jQuery);
+</script>
+
+<script>
+    $(function(){
+
+        // Enable drag & drop
+        $('.js-widget-frame').sortable({
+            items: '.js-widget',
+            handle: '.js-widget-drag'
+        });
+
+        // Get an array of the order after a drop event (sortupdate)
+        $('.js-widget-frame').sortable().bind('sortupdate', function(e, ui) {
+            var order = [];
+            $('.js-widget-frame').find('.js-widget').each(function(){
+                var item = parseInt($(this).attr('data-item'));
+                order.push(item);
+            });
+            console.log(order);
+        });
+
+
+
+
+
+        /*****
+            Charts
+        *****/
+
+        var randomScalingFactor = function(){ return Math.round(Math.random()*100)};
+
+        var singleLineChartData = {
+            legendTemplate: false,
+            labels : ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets : [
+                {
+                    label: 'My Second dataset',
+                    fillColor : 'rgba(151,187,205,0.2)',
+                    strokeColor : 'rgba(151,187,205,1)',
+                    pointColor : 'rgba(151,187,205,1)',
+                    pointStrokeColor : '#fff',
+                    pointHighlightFill : '#fff',
+                    pointHighlightStroke : 'rgba(151,187,205,1)',
+                    data : [27146, 29472, 32385, 28549]
+                }
+            ]
+        }
+
+        var duelLineChartData = {
+            legendTemplate: false,
+            labels : ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets : [
+                {
+                    label: 'My First dataset',
+                    fillColor: 'rgba(220,220,220,0.2)',
+                    strokeColor: 'rgba(220,220,220,1)',
+                    pointColor: 'rgba(220,220,220,1)',
+                    pointStrokeColor: '#fff',
+                    pointHighlightFill: '#fff',
+                    pointHighlightStroke: 'rgba(220,220,220,1)',
+                    data: [34146, 19472, 32385, 39549]
+                },
+                {
+                    label: 'My Second dataset',
+                    fillColor : 'rgba(151,187,205,0.2)',
+                    strokeColor : 'rgba(151,187,205,1)',
+                    pointColor : 'rgba(151,187,205,1)',
+                    pointStrokeColor : '#fff',
+                    pointHighlightFill : '#fff',
+                    pointHighlightStroke : 'rgba(151,187,205,1)',
+                    data : [27146, 29472, 46385, 32549]
+                }
+            ]
+        }
+
+        var pieData = [
+            {
+                value: 200,
+                color:"#9FBB58",
+                highlight: "#9FBB58",
+                label: "Green"
+            },
+            {
+                value: 50,
+                color: "#5BA4E5",
+                highlight: "#5BA4E5",
+                label: "Blue"
+            },
+            {
+                value: 100,
+                color: "#F2A925",
+                highlight: "#F2A925",
+                label: "Orange"
+            },
+            {
+                value: 40,
+                color: "#e25440",
+                highlight: "#e25440",
+                label: "Red"
+            },
+            {
+                value: 120,
+                color: "#35393b",
+                highlight: "#35393b",
+                label: "Grey"
+            }
+        ];
+
+
+        var barChartData = {
+            labels : ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"],
+            datasets : [
+                {
+                    fillColor : "rgba(151,187,205,0.5)",
+                    strokeColor : "rgba(151,187,205,0.8)",
+                    highlightFill : "rgba(151,187,205,0.75)",
+                    highlightStroke : "rgba(151,187,205,1)",
+                    data : [100,110,120,130,140,150,160,170,180,190,200,220,230,240,250,260,270,290,310,330,340,350,360,380,400,390,370,360,340,320]
+                }
+            ]
+        }
+
+        window.onload = function(){
+
+            var s_ctx = document.getElementById('single-canvas').getContext('2d');
+            window.s_myLine = new Chart(s_ctx).Line(singleLineChartData, {
+                responsive: true,
+                showScale: false,
+                maintainAspectRatio: false
+            });
+
+            var d_ctx = document.getElementById('duel-canvas').getContext('2d');
+            window.d_myLine = new Chart(d_ctx).Line(duelLineChartData, {
+                responsive: true,
+                showScale: false,
+                maintainAspectRatio: false
+            });
+
+            var p_ctx = document.getElementById('pie-canvas').getContext('2d');
+            window.myPie = new Chart(p_ctx).Pie(pieData, {
+                responsive: true,
+                segmentStrokeWidth: 0,
+                animationSteps: 20,
+                percentageInnerCutout: 40,
+                animationEasing: 'linear',
+                maintainAspectRatio: false
+            });
+
+            var b_ctx = document.getElementById('bar-canvas').getContext('2d');
+            window.myBar = new Chart(b_ctx).Bar(barChartData, {
+                responsive: true,
+                barShowStroke: false,
+                scaleShowGridLines: false,
+                barValueSpacing: 1,
+                barDatasetSpacing: 0,
+                showScale: false,
+                maintainAspectRatio: false
+            });
+
+        }
+
+    });
+</script>
