@@ -1,5 +1,6 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
+import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
 var paginationSettings,
@@ -11,12 +12,17 @@ paginationSettings = {
     status: 'active'
 };
 
-UsersIndexRoute = AuthenticatedRoute.extend(styleBody, PaginationRouteMixin, {
+UsersIndexRoute = AuthenticatedRoute.extend(styleBody, PaginationRouteMixin, CurrentUserSettings, {
     classNames: ['settings-view-users'],
 
     setupController: function (controller, model) {
         this._super(controller, model);
         this.setupPagination(paginationSettings);
+    },
+
+    afterModel: function () {
+        return this.currentUser()
+            .then(this.transitionAuthor());
     },
 
     model: function () {
