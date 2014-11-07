@@ -12,6 +12,11 @@
                     {{gh-activating-list-item route="settings.general" title="博客选项" classNames="settings-nav-general icon-settings"}}
                 {{/unless}}
 
+                {{! Whilst tag management is still in development only show tags button if there if tagsUI is true in config.js --}}
+                {{#if showTags}}
+                    {{gh-activating-list-item route="settings.tags" title="标签管理" classNames="settings-nav-tags icon-tag"}}
+                {{/if}}
+
                 {{gh-activating-list-item route="settings.users" title="用户管理" classNames="settings-nav-users icon-users"}}
 
             {{/unless}}

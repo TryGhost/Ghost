@@ -28,7 +28,7 @@
                 <label for="author-list">作者</label>
                 <span class="input-icon icon-user">
                     <span class="gh-select" tabindex="0">
-                    {{view Ember.Select
+                    {{view "select"
                         name="post-setting-author"
                         id="author-list"
                         content=authors
@@ -42,10 +42,11 @@
 
             <ul class="nav-list nav-list-block">
                 {{#gh-tab tagName="li" classNames="nav-list-item"}}
-                    <a href="#">
+
+                    <button type="button">
                         <b>搜索引擎优化</b>
                         <span>优化在搜索引擎中的呈现效果，提高访问量。</span>
-                    </a>
+                    </button>
                 {{/gh-tab}}
             </ul>
 

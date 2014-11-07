@@ -39,7 +39,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
 
     // Part 2: Test saving with data
     casper.then(function createTestPost() {
-        casper.sendKeys('#entry-title', testPost.title);
+        casper.sendKeys('#entry-title', testPost.title, {reset: true});
         casper.writeContentToCodeMirror(testPost.html);
     });
 
@@ -625,7 +625,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
 
     // add a new post
     casper.then(function fillContent() {
-        casper.sendKeys('#entry-title', 'post title');
+        casper.sendKeys('#entry-title', 'post title', {reset: true});
         casper.writeContentToCodeMirror('Just a bit of test text');
     });
 
@@ -636,7 +636,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
 
     // change the title
     casper.then(function updateTitle() {
-        casper.sendKeys('#entry-title', 'changed post title');
+        casper.sendKeys('#entry-title', 'changed post title', {reset: true});
         casper.click('#entry-markdown-content');
     });
 

@@ -3,9 +3,9 @@ var _              = require('lodash'),
     errors         = require('../errors'),
     bcrypt         = require('bcryptjs'),
     ghostBookshelf = require('./base'),
-    http           = require('http'),
     crypto         = require('crypto'),
     validator      = require('validator'),
+    request        = require('request'),
     validation     = require('../data/validation'),
     config         = require('../config'),
 
@@ -844,14 +844,16 @@ User = ghostBookshelf.Model.extend({
                 resolve(userData);
             }
 
-            http.get('http:' + gravatarUrl, function (res) {
-                if (res.statusCode !== 404) {
+            request({url: gravatarUrl, timeout: 2000}, function (err, response) {
+                if (err) {
+                    // just resolve with no image url
+                    resolve(userData);
+                }
+
+                if (response.statusCode !== 404) {
                     userData.image = gravatarUrl;
                 }
 
-                resolve(userData);
-            }).on('error', function () {
-                // Error making request just continue.
                 resolve(userData);
             });
         });

@@ -29,10 +29,10 @@
 
     }}
 
-    <div class="nav-item user-menu" data-href="#">
+    <div class="nav-item user-menu">
         {{#gh-dropdown-button dropdownName="user-menu" tagName="div" classNames="nav-label clearfix"}}
             {{#if session.user.image}}
-            <div class="image"><img {{bind-attr src="session.user.image"}} alt="{{session.user.name}}'s profile picture" /></div>
+            <div class="image"><img {{bind-attr src=session.user.image alt=userImageAlt}} /></div>
             {{else}}
             <div class="image"><img src="{{gh-path "blog" "shared/img/user-image.png"}}" alt="Profile picture" /></div>
             {{/if}}
