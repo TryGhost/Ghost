@@ -43,7 +43,7 @@ Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主
 
 ###配置 & 使用 
 
-请参考官方中文版手册。 http://docs.ghost.org/zh/usage/
+请参考官方中文版手册。 http://ghost.diancloud.com/doc/zh/usage/
 
 
 
