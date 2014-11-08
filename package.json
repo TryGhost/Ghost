@@ -65,7 +65,8 @@
         "xml": "0.0.12"
     },
     "optionalDependencies": {
-        "mysql": "2.5.2"
+        "mysql": "2.5.2",
+        "pg": "3.6.2"
     },
     "devDependencies": {
         "blanket": "~1.1.6",
