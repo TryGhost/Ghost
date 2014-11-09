@@ -24,6 +24,8 @@
     "main": "./core/index",
     "scripts": {
         "start": "node index",
+        "grunt-init": "grunt init",
+        "grunt-prod": "grunt prod",
         "test": "./node_modules/.bin/grunt validate --verbose"
     },
     "engines": {
