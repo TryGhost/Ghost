@@ -8,7 +8,8 @@ var Promise = require('bluebird'),
 function GhostServer(rootApp) {
     this.rootApp = rootApp;
     this.httpServer = null;
-    this.connections = [];
+    this.connections = {};
+    this.connectionId = 0;
     this.upgradeWarning = setTimeout(this.logUpgradeWarning.bind(this), 5000);
 
     // Expose config module for use externally.
@@ -16,15 +17,30 @@ function GhostServer(rootApp) {
 }
 
 GhostServer.prototype.connection = function (socket) {
-    this.connections.push(socket);
+    var self = this;
+
+    self.connectionId += 1;
+    socket._ghostId = self.connectionId;
+
+    socket.on('close', function () {
+        delete self.connections[this._ghostId];
+    });
+
+    self.connections[socket._ghostId] = socket;
 };
 
-// Most browsers keep a persistant connection open to the server
+// Most browsers keep a persistent connection open to the server
 // which prevents the close callback of httpServer from returning
 // We need to destroy all connections manually
 GhostServer.prototype.closeConnections = function () {
-    this.connections.forEach(function (socket) {
-        socket.destroy();
+    var self = this;
+
+    Object.keys(self.connections).forEach(function (socketId) {
+        var socket = self.connections[socketId];
+
+        if (socket) {
+            socket.destroy();
+        }
     });
 };
 
