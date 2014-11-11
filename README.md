@@ -1,5 +1,9 @@
 # Uploadcare/Ghost Integration
 
+
+**SEE DETAILED SPECS: https://github.com/uploadcare/uploadcare-ghost/blob/master/SPECS.md**
+
+
 Forked: https://github.com/TryGhost/Ghost
 
 This is **temporary repository** for integrating Uploadcare with
