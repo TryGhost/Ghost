@@ -25,11 +25,7 @@
 
 @font-face {
     font-family: 'GhostIcons';
-    src:url('../fonts/icons.eot');
-    src:url('../fonts/icons.eot?#iefix') format('embedded-opentype'),
-        url('../fonts/icons.woff') format('woff'),
-        url('../fonts/icons.ttf') format('truetype'),
-        url('../fonts/icons.svg#icons') format('svg');
+    src:url('../fonts/icons.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
