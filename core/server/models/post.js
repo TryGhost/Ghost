@@ -248,7 +248,9 @@ Post = ghostBookshelf.Model.extend({
      */
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = _.union(['tags', 'fields'], options.include);
+
+        // fetch relations passed to options.include
+        options.withRelated = options.include;
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
