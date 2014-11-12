@@ -178,6 +178,7 @@ function checkSSL(req, res, next) {
     if (isSSLrequired(res.isAdmin)) {
         if (!req.secure) {
             var forceAdminSSL = config.forceAdminSSL,
+                configUrl,
                 redirectUrl;
 
             // Check if forceAdminSSL: { redirect: false } is set, which means
@@ -186,12 +187,20 @@ function checkSSL(req, res, next) {
                 return res.sendStatus(403);
             }
 
-            redirectUrl = url.parse(config.urlSSL || config.url);
+            configUrl = url.parse(config.urlSSL || config.url);
+
+            redirectUrl = configUrl.path;
+            if (req.url[0] === '/' && redirectUrl[redirectUrl.length - 1] === '/') {
+                redirectUrl += req.url.slice(1);
+            } else {
+                redirectUrl += req.url;
+            }
+
             return res.redirect(301, url.format({
                 protocol: 'https:',
-                hostname: redirectUrl.hostname,
-                port: redirectUrl.port,
-                pathname: req.path,
+                hostname: configUrl.hostname,
+                port: configUrl.port,
+                pathname: redirectUrl,
                 query: req.query
             }));
         }
