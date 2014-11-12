@@ -1,5 +1,5 @@
 // # Content Helper
-// Usage: `{{content}}`, `{{content words="20"}}`, `{{content characters="256"}}`
+// Usage: `{{content}}`, `{{content words="20"}}`, `{{content characters="256"}}`, `{{content characters="256" round="true"}}`
 //
 // Turns content html into a safestring so that the user doesn't have to
 // escape it or tell handlebars to leave it alone with a triple-brace.
@@ -13,22 +13,30 @@ var hbs             = require('express-hbs'),
     content;
 
 content = function (options) {
-    var truncateOptions = (options || {}).hash || {};
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
-    _.keys(truncateOptions).map(function (key) {
-        truncateOptions[key] = parseInt(truncateOptions[key], 10);
+    var inputOptions = (options || {}).hash || {},
+        intOptions,
+        boolOptions;
+
+    intOptions = _.pick(inputOptions, ['words', 'characters']);
+    _.keys(intOptions).map(function (key) {
+        intOptions[key] = parseInt(intOptions[key], 10);
     });
 
-    if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
+    boolOptions = _.pick(inputOptions, ['round']);
+    _.keys(boolOptions).map(function (key) {
+        boolOptions[key] = _.isString(boolOptions[key]) && boolOptions[key].toLowerCase() === 'true' ? true : false;
+    });
+
+    if (intOptions.hasOwnProperty('words') || intOptions.hasOwnProperty('characters')) {
         // Legacy function: {{content words="0"}} should return leading tags.
-        if (truncateOptions.hasOwnProperty('words') && truncateOptions.words === 0) {
+        if (intOptions.hasOwnProperty('words') && intOptions.words === 0) {
             return new hbs.handlebars.SafeString(
                 downzero(this.html)
             );
         }
 
         return new hbs.handlebars.SafeString(
-            downsize(this.html, truncateOptions)
+            downsize(this.html, _.extend(intOptions, boolOptions))
         );
     }
 

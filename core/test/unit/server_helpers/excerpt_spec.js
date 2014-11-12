@@ -40,7 +40,7 @@ describe('{{excerpt}} Helper', function () {
 
     it('can truncate html by word', function () {
         var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
-            expected = 'Hello World',
+            expected = 'Hello World!',
             rendered = (
                 helpers.excerpt.call(
                     {html: html},
