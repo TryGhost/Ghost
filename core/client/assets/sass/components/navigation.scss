@@ -1,8 +1,19 @@
-//
+// ------------------------------------------------------------
 // Global Navigation
+//
+// Styles for the main top bar & mobile navigation
+//
+// * Main wrapper
+// * Ghost branding
+// * Nav Items
+// * User Menu
+// * Mobile
+// ------------------------------------------------------------
+
+//
+// Main wrapper
 // --------------------------------------------------
 
-// The main wrapper, sets position and bg colour.
 .global-nav {
     height: 60px;
     position: fixed;
@@ -23,47 +34,13 @@
     body.settings-menu-expanded & {
         transform: translate3d(-350px, 0px, 0px);
     }
-
-    .thing,
-    .thing2 {
-        display: none; // hide until mobile
-    }
 }
 
-// Wrapper for each item
-.nav-item {
-    position: relative;
-    display: block;
-    float: left;
-    height: 60px;
-    padding-right: 10px;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-    font-weight: 200;
-    line-height: 1.1em;
-}
 
-// Pill shaped background
-.nav-label {
-    height: 33px;
-    margin-top: 14px;
-    padding: 10px 12px;
-    color: rgba(255,255,255,0.7);
-    text-transform: uppercase;
-    border-radius: 4px;
-    white-space: nowrap;
-    transition: color 0.5s, background 0.5s;
-}
-.nav-item.active .nav-label,
-.nav-item:focus .nav-label,
-.nav-item:hover .nav-label,
-.nav-item:active .nav-label {
-    color: #fff;
-    background: darken($darkgrey, 9%);
-    transition: color 0.1s, background 0.1s;
-}
-
+//
 // Ghost branding
+// --------------------------------------------------
+
 .ghost-logo {
     width: 60px;
     padding-right: 0;
@@ -86,6 +63,49 @@
         background: transparent;
     }
 }
+
+
+//
+// Nav Items
+// --------------------------------------------------
+
+// Wrapper for each item <a>
+.nav-item {
+    position: relative;
+    display: block;
+    float: left;
+    height: 60px;
+    padding-right: 10px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    font-weight: 200;
+    line-height: 1.1em;
+}
+
+// What looks like the actual button <div>
+.nav-label {
+    height: 33px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    border-radius: 4px;
+    white-space: nowrap;
+    transition: color 0.5s, background 0.5s;
+}
+.nav-item.active .nav-label,
+.nav-item:focus .nav-label,
+.nav-item:hover .nav-label,
+.nav-item:active .nav-label {
+    color: #fff;
+    background: darken($darkgrey, 9%);
+    transition: color 0.1s, background 0.1s;
+}
+
+
+//
+// User Menu
+// --------------------------------------------------
 
 // Right hand dropdown
 .user-menu {
@@ -167,7 +187,6 @@
             left: auto;
         }
     }
-
 }//.user-menu
 
 
@@ -191,10 +210,6 @@
 
         transform: translate3d(-60px, 0px, 0px); // Not off the screen, to give a parallax effect
         transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
-
-        .thing, .thing2 {
-            display: block;
-        }
 
         body.global-nav-expanded & {
             transform: translate3d(0, 0px, 0px);
@@ -223,7 +238,9 @@
         color: #fff !important;
         background: darken($darkgrey, 4%);
 
-        i { color: #fff; }
+        i {
+            color: #fff;
+        }
     }
     .nav-item:hover .nav-label {
         color: rgba(255,255,255,0.9);
@@ -237,7 +254,9 @@
         line-height: 44px;
         text-align: left;
 
-        span { display: inline; }
+        span {
+            display: inline;
+        }
     }
 
     // Drop it to the bottom of the menu
@@ -277,6 +296,7 @@
             }
         }
 
+        // Hide the user-menu icons
         i {
             display: none;
         }
@@ -304,8 +324,6 @@
                 left: 10px;
             }
         }
-
-
     }//.user-menu
 
     body.global-nav-expanded & {
@@ -322,4 +340,4 @@
         }//.nav-cover
     }//body.global-nav-expanded
 
-}
+}//@media (max-width: 900px)
