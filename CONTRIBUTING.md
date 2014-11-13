@@ -1,7 +1,17 @@
-# Contributing to Ghost
+# Welcome to the contributing guide for Ghost!
 
-So you're interested in giving us a hand? That's awesome! We've put together some brief guidelines that should help
-you get started quickly and easily.
+So you're interested in giving us a hand? That's awesome! We've put together some guidelines that should help
+you get started quickly and easily. If you need help with contributing, visit the #ghost IRC channel on freenode. Thank you for stopping by!
+
+**Quick Links:** [feature roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) - [support forum](https://ghost.org/forum) - [documentation](http://support.ghost.org) - [developer wiki](https://github.com/TryGhost/Ghost/wiki) - [community guidelines](https://ghost.org/about/guidelines/) - [dev blog](http://dev.ghost.org)
+
+
+### TL;DR
+
+If you need help with Ghost or have questions, please use [the forum](https://ghost.org) (documentation is [here](http://support.ghost.org)). If you're [raising a bug](#bugs) please be sure to [include as much info as possible](#bug-template) so that we can fix it! If you've got some code you want to [pull request](#pull-requests) please [squash commits](https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history), use this [commit message format]((https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages)) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+
+
+### Guideline Contents
 
 There are lots and lots of ways to get involved, this document covers:
 
@@ -19,7 +29,7 @@ There are lots and lots of ways to get involved, this document covers:
 <a name="raising-issues"></a>
 ## Reporting An Issue
 
-If you're about to raise an issue because think you've found a problem with Ghost, or you'd like to make a request
+If you're looking to raise an issue because think you've found a problem with Ghost, or you'd like to make a request
 for a new feature in the codebase, or any other reason… please read this first.
 
 The GitHub issue tracker is the preferred channel for [bug reports](#bugs),
@@ -55,12 +65,14 @@ Guidelines for bug reports:
 helpful thing in the world is if we can *see* what you're talking about.
 Use [LICEcap](http://www.cockos.com/licecap/) to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.
 
-5. Use the Bug Report template below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A) to start creating a bug report with the template automatically.
+5. **Include as much info as possible!** Use the **Bug Report template** below or [click this link](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A) to start creating a bug report with the template automatically.
 
 A good bug report shouldn't leave others needing to chase you up for more information. Be sure to include the
 details of your environment.
 
-Here is a [real example](https://github.com/TryGhost/Ghost/issues/413)
+Here is a [real example](https://github.com/TryGhost/Ghost/issues/413) of a great bug report.
+
+<a name="bug-template"></a>
 
 Template Example ([click to use](https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A)):
 ```
@@ -93,16 +105,17 @@ reported. Especially, why do you consider this to be a bug? What do you expect t
 <a name="features"></a>
 ### Feature Requests
 
-Feature requests are welcome. Before you submit one be sure to have:
+Feature requests are very welcome, and you can also suggest roadmap additions via [the forum](https://ghost.org/forum/bugs-suggestions/17479-ghost-roadmap-got-a-great-idea/). Before you make your suggestion, please:
 
-1. Read the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) and
-[Planned Features](https://github.com/TryGhost/Ghost/wiki/Planned-Features) listing, **use the GitHub search** and
-check the feature hasn't already been requested.
-2. Take a moment to think about whether your idea fits with the scope and aims of the project, or if it might
-better fit being an app/plugin.
+1. Visit the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) & **use the GitHub search** to
+see if the feature has already been requested
+
+2. Have a quick read through [What makes it into Ghost core?](https://github.com/TryGhost/Ghost/wiki/What-makes-it-into-Ghost-core%3F) and decide whether your idea fits with the scope and aims of the project
+
 3. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of this
 feature. Please provide as much detail and context as possible, this means explaining the use case and why it is
 likely to be common.
+
 4. Clearly indicate whether this is a feature request for Ghost admin, or for themes or apps.
 
 
@@ -110,30 +123,29 @@ likely to be common.
 ### Change Requests
 
 Change requests cover both architectural and functional changes to how Ghost works. If you have an idea for a
-new or different dependency, a refactor, or an improvement to a feature, etc  - please be sure to:
+new or different dependency, a refactor, or an improvement to a feature, etc - please be sure to:
 
 1. **Use the GitHub search** and check someone else didn't get there first
-2. Take a moment to think about the best way to make a case for, and explain what you're thinking. Are you sure
-this shouldn't really be a [bug report](#bug-reports) or a [feature request](#feature-requests)? Is it really one
-idea or is it many? What's the context? What problem are you solving? Why is what you are suggesting better than
-what's already there? Does it fit with the Roadmap?
 
+2. Take a moment to think about the best way to make a case for, and explain what you're thinking as it's up to you to convince the project's leaders the change is worthwhile. Some questions to consider are:
+	- Is it really one idea or is it many?
+	- What problem are you solving?
+	- Why is what you are suggesting better than what's already there?
 
 <a name="pull-requests"></a>
 ### Submitting Pull Requests
 
-Pull requests are awesome. If you're looking to raise a PR for something which doesn't have an open issue, please think carefully about [raising an issue](#raising-issues) which your PR can close, especially if you're fixing a bug. This makes it more likely that there will be enough information available for your PR to be properly tested and merged. To make sure your PR is accepted as quickly as possible, you should be sure to have read
-all the guidelines on:
+Pull requests are **awesome**. If you're looking to raise a PR for something which doesn't have an open issue, please think carefully about [raising an issue](#raising-issues) which your PR can close, especially if you're fixing a bug. This makes it more likely that there will be enough information available for your PR to be properly tested and merged. To make sure your PR is accepted as quickly as possible, please take a minute to check the guidelines on:
 
-* [code standards](https://github.com/TryGhost/Ghost/wiki/Code-standards)
 * [commit messages](https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages)
 * [cleaning-up history](https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history)
 * [not breaking the build](https://github.com/TryGhost/Ghost/wiki/Git-workflow#check-it-passes-the-tests)
 
+
 ##### Need Help?
 
 If you're not completely clear on how to submit / update / *do* Pull Requests, please check out our in depth
-[Git Workflow guide](https://github.com/TryGhost/Ghost/wiki/Git-Workflow) for Ghost.
+[Git Workflow guide](https://github.com/TryGhost/Ghost/wiki/Git-Workflow) for Ghost, or visit the #ghost IRC channel on freenode.org and we'll help you out.
 
 
 <a name="testing"></a>
@@ -150,25 +162,15 @@ follow the [bug report guidelines](#bug-reports) and let us know!
 
 #### Checking out a Pull Request
 
-These are some [excellent instructions](https://gist.github.com/piscisaureus/3342247) on configuring your GitHub
-repository to allow you to checkout pull requests in the same way as branches:
-<https://gist.github.com/piscisaureus/3342247>.
-
+The dev blog has [detailed instructions](http://dev.ghost.org/easy-git-pr-test/) on configuring your environment
+ to allow you to checkout pull requests with this simple command: `pr #1234`
 
 <a name="documentation"></a>
 ### Documentation
 
-Ghost's user documentation can be found at [support.ghost.org](http://support.ghost.org), if you're interested in submitting user documentation, please let us know by [emailing support](mailto:support@ghost.org).
+Ghost's user documentation can be found at [support.ghost.org](http://support.ghost.org), if you have feedback or would like to write some user documentation, please let us know by [emailing support](mailto:support@ghost.org).
 
-Ghost's developer documentation can be found at [docs.ghost.org](http://docs.ghost.org).
-
-This documentation is written in markdown and generated using jekyll via GitHub pages, meaning the documentation can be found on the  [gh-pages branch](https://github.com/TryGhost/Ghost/tree/gh-pages) of the GitHub repository.
-
-For small changes, it is possible to edit the files directly and submit a PR through GitHub. For larger changes, you can clone the gh-pages branch using the command:
-
-`git clone -b gh-pages git@github.com:TryGhost/Ghost.git`
-
-Please follow the [pull-request](#pull-requests) guidelines for submitting PRs.
+Ghost's developer documentation can be found at [docs.ghost.org](http://docs.ghost.org). These docs are written and hosted on [readme.io](https://readme.io/) which has a suggested edits feature through which you can submit updates. If you'd like to get more involved than just making amendments, [email support](mailto:support@ghost.org) and let us know :)
 
 <a name="translation"></a>
 ### Translation
@@ -178,41 +180,52 @@ Full documentation on contributing translations can be found at <http://docs.gho
 <a name="core"></a>
 ## Working on Ghost Core
 
-**Note:** It is recommended that you use the [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) setup for
-developing Ghost.
+Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://github.com/TryGhost/Ghost-Vagrant) image is a super-easy way to get a ready-made environment for contributing, but if you'd rather install Ghost natively, here's how...
 
-**Pre-requisites:**
+**What you'll need:**
 
-* Node 0.10.x
-* for running functional tests: phantomjs 1.9.x and casperjs 1.1.x
-([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS))
-* for building docs: python and pygments
+- Node version 0.10.x & npm
+- phantomjs 1.9.x and casperjs 1.1.x
+([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running tests
 
 
 ### Installation / Setup Instructions
 
 1. Check you have the pre-requisites listed above!
-1. Clone the git repo
-1. cd into the project folder
-1. Run `npm install -g grunt-cli` - to make it possible to run grunt commands
-1. Run `npm install` - you need all the dependencies, so do not use the `--production` flag mentioned in user install guides
+1. `git clone https://github.com/TryGhost/Ghost.git`- clone the git repo
+1. `cd Ghost` - change into the project folder
+1. `npm install -g grunt-cli` - to make it possible to run grunt commands (see [developer tips](#developer-tips) for more info on Grunt)
+1. `npm install` - you need all the dependencies, so do not use the `--production` flag mentioned in user install guides
 	* If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
 instructions below this list
     * Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen
-1. Run `grunt init` from the root - updates bower dependencies, copies assets and compiles Handlebars templates
+1. `grunt init` - updates bower dependencies, copies assets and compiles Handlebars templates
 1. If you're going to run in production mode, you also need to run `grunt prod`
-1. Run `npm start` from the root to start the server.
+1. `npm start` - starts Ghost or `grunt dev` will start it in watch mode
 
 If something goes wrong, please see the
 [troubleshooting tips](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq) below.
 
+### Looking for something to work on?
+
+If you're interested in contributing to Ghost and don't know where to start, here's a few tips:
+
+- The [beginner label](https://github.com/TryGhost/Ghost/labels/beginner) indicates issues which should be suitable for someone new to the Ghost codebase
+- The [help wanted label](https://github.com/TryGhost/Ghost/labels/help%20wanted) highlights issues that need a champion
+- The [roadmap wiki page](https://github.com/TryGhost/Ghost/wiki/Roadmap#github-backlogs) has details of how we use milestones to prioritise issues
+
+If you're still stuck, please come join us in the #ghost channel in IRC and let us know what you're interested in!
+
+
 ### Developer Tips
-Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebar templates, stylesheets and javascripts. Some useful commands include:
-- `grunt dev` => Automatically compile assets in development environment
-- `grunt prod` => Automatically compile assets for the production environment
-- `grunt watch` => Automatically compile handlebars
+Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebars templates, sass and ember scripts. Some useful commands include:
+
+- `grunt dev` => Watch for changes and automatically rebuild assets
+- `grunt prod` => Build assets for the production environment
+- `grunt validate` => Run the linting and test suite
 
 Addresses for development:
+
 - Front-end => <http://localhost:2368>
 - Admin => <http://localhost:2368/ghost/>
 
@@ -221,10 +234,9 @@ Addresses for development:
 Pulling down the latest changes from master will often require more than just a pull, you may also need to do one
 or more of the following:
 
- * `npm install` - fetch any new dependencies
- * `git submodule update` - fetch the latest changes to Casper (the default theme)
- * `grunt init` - will fetch bower dependencies and recompile handlebars templates for the admin
- * delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
+- `npm install` - fetch any new dependencies
+- `grunt init` - will fetch bower dependencies and recompile handlebars templates for the admin
+- delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures
 
 ### Key Branches & Tags
 
@@ -252,7 +264,7 @@ When cloning from GitHub be sure to use SSH and to run `git submodule update --i
 
 Sounds like you probably didn't run the right grunt command for building assets. You may need to run `grunt init` and if using production mode, `grunt prod` as well.
 
-### SQLite3 doesn't install properly during npm install
+### I get `node-gyp` errors or SQLite3 doesn't install properly during npm install
 
 Ghost depends upon SQLite3, which requires a native binary. These are provided for most major platforms, but if you
 are using a more obscure *nix flavor you may need to follow
