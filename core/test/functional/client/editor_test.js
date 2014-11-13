@@ -459,7 +459,7 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
     casper.waitForOpaque('.js-publish-splitbutton .open');
     casper.thenClick('.js-publish-splitbutton li:nth-child(4) a');
 
-    casper.waitUntilVisible('#modal-container', function onSuccess() {
+    casper.waitUntilVisible('.modal-container', function onSuccess() {
         test.assertSelectorHasText(
             '.modal-content .modal-header',
             'Are you sure you want to delete this post?',
@@ -468,7 +468,7 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
 
     casper.thenClick('.js-button-reject');
 
-    casper.waitWhileVisible('#modal-container', function onSuccess() {
+    casper.waitWhileVisible('.modal-container', function onSuccess() {
         test.assert(true, 'clicking cancel should close the delete post modal');
     });
 
@@ -477,7 +477,7 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
     casper.waitForOpaque('.js-publish-splitbutton .open');
     casper.thenClick('.js-publish-splitbutton li:nth-child(4) a');
 
-    casper.waitForSelector('#modal-container .modal-content', function onSuccess() {
+    casper.waitForSelector('.modal-container .modal-content', function onSuccess() {
         test.assertExists('.modal-content .js-button-accept', 'delete button exists');
 
         // Delete the post
@@ -600,7 +600,7 @@ CasperTest.begin('Markdown help modal', 5, function suite(test) {
     // open markdown help modal
     casper.thenClick('a.markdown-help');
 
-    casper.waitUntilVisible('#modal-container', function onSuccess() {
+    casper.waitUntilVisible('.modal-container', function onSuccess() {
         test.assertSelectorHasText(
             '.modal-content .modal-header',
             'Markdown Help',
@@ -611,7 +611,7 @@ CasperTest.begin('Markdown help modal', 5, function suite(test) {
 
     casper.thenClick('.modal-content .close');
 
-    casper.waitWhileVisible('#modal-container', function onSuccess() {
+    casper.waitWhileVisible('.modal-container', function onSuccess() {
         test.assert(true, 'clicking close should remove the markdown help modal');
     });
 });

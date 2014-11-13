@@ -1,5 +1,16 @@
+// ------------------------------------------------------------
+// Splitbuttons
 //
-// Base Splitbutton
+// Styles for splitbuttons (button + toggle for a popover)
+//
+// * Default
+// * Base Placeholder Styles
+// * Variation Classes
+// ------------------------------------------------------------
+
+
+//
+// Default
 // --------------------------------------------------
 
 .splitbtn {
@@ -12,7 +23,9 @@
         float: left;
 
         // Prevent double border between buttons
-        + .btn { margin-left: -1px; }
+        + .btn {
+            margin-left: -1px;
+        }
 
         // Make sure the hovered element is always on
         // top so overlap from .btn + btn. invisible
@@ -20,17 +33,18 @@
         &:focus,
         &:active,
         &.active {
-          z-index: 2;
+            z-index: 2;
         }
     }
 
     // Flatten out the right side
     .btn:first-child {
-      margin-left: 0;
-      &:not(:last-child):not(.dropdown-toggle) {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-      }
+        margin-left: 0;
+
+        &:not(:last-child):not(.dropdown-toggle) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
     }
 
     // Flatten out the left side
@@ -44,11 +58,11 @@
             padding-left: 10px;
             padding-right: 10px;
         }
+
         &.btn-lg {
             padding-left: 16px;
             padding-right: 16px;
         }
-
 
         // This is the additional dropdown arrow, to the right of the button.
         .options {
@@ -60,23 +74,28 @@
                 display: inline-block;
                 position: relative;
             }
-
         }
 
         &.up .options:before {
             transform: rotate(-360deg);
             transition: transform 0.6s ease, top 0.6s ease;
         }
+
         &.up:hover .options:before,
         &.up.open .options:before {
-            transform: rotate(540deg);
             top: -1px;
+            transform: rotate(540deg);
             transition: transform 0.3s ease, top 0.3s ease;
         }
 
     }
 
-}
+}//.splitbtn
+
+
+//
+// Base Placeholder Styles
+// --------------------------------------------------
 
 %splitbtn {
     display: inline-block;
@@ -107,6 +126,7 @@
             rgba(0,0,0,0.02) 0 1px 0 inset,
             rgba(0,0,0,0.02) -1px 0 0 inset,
             rgba(0,0,0,0.02) 0 -1px 0 inset;
+        transition: background-color 0.3s linear;
 
         @include icon($i-chevron-down, 9px) {
             position: absolute;
@@ -115,15 +135,10 @@
             margin-top: -3px;
             margin-right: -5px;
             transition: margin-top 0.3s ease;
-            /* Transition of transform properties are split out due to a
-                defect in the vendor prefixing of transform transitions.
-                See: http://github.com/thoughtbot/bourbon/pull/86 */
             transition-property: transform;
             transition-duration: 0.3;
             transition-timing-function: ease;
         };
-
-        transition: background-color 0.3s linear;
 
         // Keep the arrow spun when the associated menu is open
         &.active:before {
@@ -158,19 +173,21 @@
                 transition-timing-function: ease;
             };
         }
-    }
-}
+    }//.options
+}//%splitbtn
 
 
 //
-// The Splitbuttons
+// Variation Classes
 // --------------------------------------------------
 
 // The default splitbutton
 .splitbutton {
     @extend %splitbtn;
+
     .options {
         color:#777;
+
         &:hover,
         &:focus {
             box-shadow:
@@ -184,8 +201,10 @@
 // For save/next/continue/confirm actions
 .splitbutton-save {
     @extend %splitbtn;
+
     .options {
         background: darken($blue, 5%);
+
         &:hover,
         &.active,
         &:focus {
@@ -197,8 +216,10 @@
 // For actions which add something
 .splitbutton-add {
     @extend %splitbtn;
+
     .options {
         background: darken($green, 6%);
+
         &:hover,
         &:focus {
             background: darken($green, 8%);
@@ -209,8 +230,10 @@
 // For actions which delete something
 .splitbutton-delete {
     @extend %splitbtn;
+
     .options {
         background: darken($red, 6%);
+
         &:hover,
         &:focus {
             background: darken($red, 10%);
@@ -222,8 +245,10 @@
 // but no extra semantic meaning
 .splitbutton-alt {
     @extend %splitbtn;
+
     .options {
         background: lighten($darkgrey, 4%);
+
         &:hover,
         &:focus {
             background: $darkgrey;
