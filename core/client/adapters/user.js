@@ -38,6 +38,21 @@ var UserAdapter = EmbeddedRelationAdapter.extend({
         var url = this.buildQuery(store, type, id);
         url.status = 'all';
         return this.findQuery(store, type, url);
+    },
+
+    findQuery: function (store, type, query) {
+        var url;
+
+        if (!query.slug) {
+            return this._super(store, type, query);
+        }
+
+        // Get user by slug
+        query = this.buildQuery(store, type, query);
+        url = this.buildURL(type.typeKey) + 'slug/' + query.slug + '/';
+        delete query.slug;
+
+        return this.ajax(url, 'GET', {data: query});
     }
 });
 
