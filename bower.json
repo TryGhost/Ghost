@@ -18,12 +18,12 @@
     "jquery-ui": "1.10.4",
     "keymaster": "git://github.com/madrobby/keymaster#564ea42e07de40da8113a571f17ceae8802672ff",
     "loader.js": "git://github.com/stefanpenner/loader.js#1.0.0",
-    "moment": "2.4.0",
+    "moment": "2.8.3",
     "nanoscroller": "0.8.4",
     "normalize-scss": "~3.0.1",
     "nprogress": "0.1.2",
     "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
-    "validator-js": "3.4.0",
+    "validator-js": "3.22.1",
     "google-caja": "5669.0.0"
   }
 }
