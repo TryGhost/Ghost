@@ -1,4 +1,6 @@
-var ghostBookshelf = require('./base'),
+var _              = require('lodash'),
+    errors         = require('../errors'),
+    ghostBookshelf = require('./base'),
 
     Tag,
     Tags;
@@ -35,6 +37,107 @@ Tag = ghostBookshelf.Model.extend({
         delete attrs.parent_id;
 
         return attrs;
+    }
+}, {
+    permittedOptions: function (methodName) {
+        var options = ghostBookshelf.Model.permittedOptions(),
+
+            // whitelists for the `options` hash argument on methods, by method name.
+            // these are the only options that can be passed to Bookshelf / Knex.
+            validOptions = {
+                findPage: ['page', 'limit']
+            };
+
+        if (validOptions[methodName]) {
+            options = options.concat(validOptions[methodName]);
+        }
+
+        return options;
+    },
+    findPage: function (options) {
+        options = options || {};
+
+        var tagCollection = Tags.forge();
+
+        if (options.limit) {
+            options.limit = parseInt(options.limit, 10) || 15;
+        }
+
+        if (options.page) {
+            options.page = parseInt(options.page, 10) || 1;
+        }
+
+        options = this.filterOptions(options, 'findPage');
+        // Set default settings for options
+        options = _.extend({
+            page: 1, // pagination page
+            limit: 15,
+            where: {}
+        }, options);
+
+        return tagCollection
+            .query('limit', options.limit)
+            .query('offset', options.limit * (options.page - 1))
+            .fetch(_.omit(options, 'page', 'limit'))
+        // Fetch pagination information
+        .then(function () {
+            var qb,
+                tableName = _.result(tagCollection, 'tableName'),
+                idAttribute = _.result(tagCollection, 'idAttribute');
+
+            // After we're done, we need to figure out what
+            // the limits are for the pagination values.
+            qb = ghostBookshelf.knex(tableName);
+
+            if (options.where) {
+                qb.where(options.where);
+            }
+
+            return qb.count(tableName + '.' + idAttribute + ' as aggregate');
+        })
+        // Format response of data
+        .then(function (resp) {
+            var totalTags = parseInt(resp[0].aggregate, 10),
+                calcPages = Math.ceil(totalTags / options.limit),
+                pagination = {},
+                meta = {},
+                data = {};
+
+            pagination.page = options.page;
+            pagination.limit = options.limit;
+            pagination.pages = calcPages === 0 ? 1 : calcPages;
+            pagination.total = totalTags;
+            pagination.next = null;
+            pagination.prev = null;
+
+            data.tags = tagCollection.toJSON();
+            data.meta = meta;
+            meta.pagination = pagination;
+
+            if (pagination.pages > 1) {
+                if (pagination.page === 1) {
+                    pagination.next = pagination.page + 1;
+                } else if (pagination.page === pagination.pages) {
+                    pagination.prev = pagination.page - 1;
+                } else {
+                    pagination.next = pagination.page + 1;
+                    pagination.prev = pagination.page - 1;
+                }
+            }
+
+            return data;
+        })
+        .catch(errors.logAndThrowError);
+    },
+    destroy: function (options) {
+        var id = options.id;
+        options = this.filterOptions(options, 'destroy');
+
+        return this.forge({id: id}).fetch({withRelated: ['posts']}).then(function destroyTagsAndPost(tag) {
+            return tag.related('posts').detach().then(function () {
+                return tag.destroy(options);
+            });
+        });
     }
 });
 
