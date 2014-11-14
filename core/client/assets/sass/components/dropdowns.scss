@@ -1,21 +1,21 @@
-//
+// ------------------------------------------------------------
 // Dropdown menus
+//
+// Styles for the dropdown component
+//
+// * Base Styles
+// * States
+// * Open & Close
+// * Dropdown triangles placeholder styles
+// * Dropdown triangles classes
+// ------------------------------------------------------------
+
+
+//
+// Base Styles
 // --------------------------------------------------
 
-
-// Dropdown arrow/caret
-.caret {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 2px;
-    vertical-align: middle;
-    border-top:   4px solid;
-    border-right: 4px solid transparent;
-    border-left:  4px solid transparent;
-}
-
-// The dropdown wrapper (div)
+// The dropdown wrapper <div>
 .dropdown {
     position: relative;
 }
@@ -25,31 +25,32 @@
     outline: 0;
 }
 
-// The dropdown menu (ul)
+// The dropdown menu <ul>
 .dropdown-menu {
     position: absolute;
     top: 100%;
     left: 0;
     z-index: 1000;
+
     float: left;
     min-width: 220px;
     padding: 5px 0;
     margin: 2px 0 0; // override default ul
-    list-style: none;
-    font-size: 1.4rem;
-    font-weight: normal;
-    text-transform: none;
-    letter-spacing: 0;
-    text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
+
     background-color: #fff;
     border: darken($lightgrey, 15%) 1px solid;
     border-radius: 2px;
     box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
     background-clip: padding-box;
 
+    list-style: none;
+    font-size: 1.4rem;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    text-align: left;
+
     // Aligns the dropdown menu to right
-    //
-    // Deprecated as of 3.1.0 in favor of `.dropdown-menu-[dir]`
     &.pull-right {
         right: 0;
         left: auto;
@@ -70,11 +71,13 @@
         width: 100%;
         padding: 3px 20px;
         clear: both;
+
         font-weight: normal;
         line-height: 1.9em;
         text-align: left;
         color: #333;
-        white-space: nowrap; // prevent links from randomly breaking onto new lines
+        white-space: nowrap;
+
         transition: none;
     }
 
@@ -82,7 +85,12 @@
         font-size: 0.9em;
         margin-right: 0.5rem;
     }
-}
+}//.dropdown-menu
+
+
+//
+// States
+// --------------------------------------------------
 
 // Hover/Focus state
 .dropdown-menu > li > a,
@@ -109,20 +117,21 @@
 }
 
 // Disabled state
-//
 // Gray out text and ensure the hover/focus state remains gray
-
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > button {
+
     &,
     &:hover,
     &:focus {
         color: #777;
     }
 }
+
 // Nuke hover/focus effects
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > button {
+
     &:hover,
     &:focus {
         text-decoration: none;
@@ -132,8 +141,14 @@
     }
 }
 
+
+//
+// Open & Close
+// --------------------------------------------------
+
 // Open state for the dropdown
 .open {
+
     // Show the menu
     > .dropdown-menu {
         display: block;
@@ -152,108 +167,23 @@
     }
 }
 
-// Menu positioning
-//
-// Add extra class to `.dropdown-menu` to flip the alignment of the dropdown
-// menu with the parent.
-.dropdown-menu-right {
-    left: auto; // Reset the default from `.dropdown-menu`
-    right: 0;
-}
-// With v3, we enabled auto-flipping if you have a dropdown within a right
-// aligned nav component. To enable the undoing of that, we provide an override
-// to restore the default dropdown menu alignment.
-//
-// This is only for left-aligning a dropdown menu within a `.navbar-right` or
-// `.pull-right` nav component.
-.dropdown-menu-left {
-    left: 0;
-    right: auto;
-}
-
-// Dropdown section headers
-.dropdown-header {
-    display: block;
-    padding: 3px 20px;
-    font-size: 1.2rem;
-    line-height: 1.428571429;
-    color: #777;
-    white-space: nowrap; // as with > li > a
-}
-
-// Backdrop to catch body clicks on mobile, etc.
-.dropdown-backdrop {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    z-index: 990;
-}
-
-// Right aligned dropdowns
-.pull-right > .dropdown-menu {
-    right: 0;
-    left: auto;
-}
-
-// Allow for dropdowns to go bottom up (aka, dropup-menu)
-//
-// Just add .dropup after the standard .dropdown class and you're set, bro.
-// TODO: abstract this so that the navbar fixed styles are not placed here?
-
-.dropup,
-.navbar-fixed-bottom .dropdown {
-    // Reverse the caret
-    .caret {
-        border-top: 0;
-        border-bottom: 4px solid;
-        content: "";
-    }
-    // Different positioning for bottom up menu
-    .dropdown-menu {
-        top: auto;
-        bottom: 100%;
-        margin-bottom: 1px;
-    }
-}
-
-
-// Component alignment
-//
-// Reiterate per navbar.less and the modified component alignment there.
-
-@media (min-width: 768px) {
-    .navbar-right {
-        .dropdown-menu {
-            right: 0; left: auto;
-        }
-        // Necessary for overrides of the default right aligned menu.
-        // Will remove come v4 in all likelihood.
-        .dropdown-menu-left {
-            left: 0; right: auto;
-        }
-    }
-}
-
 
 //
-// Dropdown triangles
+// Dropdown triangles placeholder styles
 // --------------------------------------------------
 
-// Placeholders
 %dropdown-triangle {
     &:before {
         content: '';
         position: absolute;
         display: block;
-    } // :before
+    }//&:before
 
     &:after {
         content: '';
         position: absolute;
         z-index: -1;
-    } // :after
+    }//&:after
 }
 
 %dropdown-triangle-top {
@@ -287,7 +217,6 @@
     }
 }
 
-// TODO: Make the values here use the $dropdown_triangle var
 %dropdown-triangle-left {
     &:before {
         left: ($dropdown_triangle / 2 + 2);
@@ -307,7 +236,10 @@
     }
 }
 
-// Usable classes
+//
+// Dropdown triangles classes
+// --------------------------------------------------
+
 .dropdown-triangle-top {
     @extend %dropdown-triangle;
     @extend %dropdown-triangle-top;

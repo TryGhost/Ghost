@@ -1,23 +1,18 @@
-//
+// ------------------------------------------------------------
 // Notifications
+//
+// Styles for notifications
+//
+// * Wrapper
+// * Base Notification
+// * Individual Notifications
+// ------------------------------------------------------------
+
+//
+// Wrapper
 // --------------------------------------------------
 
-// Wrapper
 .notifications {
-
-    @media (min-width: 401px) {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        z-index: 980;
-        width: 300px;
-        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
-
-        // This selector ends up being `body.settings-menu-expanded .notifications`
-        body.settings-menu-expanded & {
-            transform: translate3d(350px, 0px, 0px);
-        }
-    }
 
     @media (max-width: 400px) {
         position: fixed;
@@ -32,12 +27,22 @@
             transform: translate3d(100%, 0px, 0px);
         }
     }
-}
 
-// TODO: What is this? Docs plz.
-.js-bb-notification {
-    transform: translateZ(0);
-}
+    @media (min-width: 401px) {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 980;
+        width: 300px;
+        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
+
+        // This selector ends up being `body.settings-menu-expanded .notifications`
+        body.settings-menu-expanded & {
+            transform: translate3d(350px, 0px, 0px);
+        }
+    }
+}//.notifications
+
 
 //
 // Base Notification
@@ -55,6 +60,7 @@
         color: rgba(255,255,255,0.8);
         background: rgba(0,0,0,0.1);
     };
+
     width: 100%;
     min-height: 40px;
     max-height: 253px;
@@ -83,13 +89,14 @@
         right: 0;
         bottom: 0;
         width: 34px;
+        color: rgba(255,255,255,0.6);
         @include icon-after($i-close) {
             padding: 10px;
             position: absolute;
             top: 4px;
             right: 1px;
-        };
-        color: rgba(255,255,255,0.6);
+        }
+
         &:hover {
             color: #fff;
         }
@@ -99,7 +106,7 @@
         color: inherit;
         text-decoration: underline;
     }
-}
+}//%notification
 
 
 //
@@ -128,7 +135,6 @@
     @include icon($i-error);
     background: $red;
 }
-
 
 .notification-warn {
     @extend %notification;
