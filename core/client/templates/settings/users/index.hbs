@@ -1,4 +1,4 @@
-{{#view "settings/users/users-list-view" tagName="section" class="content settings-users" }}
+{{#view "settings/users/users-list-view"}}
     <header class="settings-view-header user-list-header">
         {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
         <h2 class="page-title">Users</h2>
@@ -6,6 +6,8 @@
             <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
         </section>
     </header>
+
+    <section class="content settings-users">
 
     {{#if invitedUsers}}
 
@@ -64,4 +66,7 @@
         {{/each}}
 
     </section>
+
+    </section>{{! .content settings-users }}
+
 {{/view}}
