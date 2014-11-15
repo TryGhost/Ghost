@@ -58,7 +58,7 @@
         "request": "2.47.0",
         "rss": "1.0.0",
         "semver": "4.1.0",
-        "showdown": "https://github.com/ErisDS/showdown/archive/v0.3.2-ghost.tar.gz",
+        "showdown-ghost": "0.3.4",
         "sqlite3": "3.0.2",
         "unidecode": "0.1.3",
         "validator": "3.22.1",
