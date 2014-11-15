@@ -22,7 +22,7 @@
     "nanoscroller": "0.8.4",
     "normalize-scss": "~3.0.1",
     "nprogress": "0.1.2",
-    "showdown": "git://github.com/ErisDS/showdown.git#v0.3.2-ghost",
+    "showdown-ghost": "0.3.4",
     "validator-js": "3.22.1",
     "google-caja": "5669.0.0"
   }
