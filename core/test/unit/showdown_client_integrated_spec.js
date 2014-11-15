@@ -9,7 +9,7 @@
 var should      = require('should'),
 
 // Stuff we are testing
-    Showdown    = require('showdown'),
+    Showdown    = require('showdown-ghost'),
     ghostgfm            = require('../../shared/lib/showdown/extensions/ghostgfm'),
     ghostimagepreview   = require('../../shared/lib/showdown/extensions/ghostimagepreview'),
 
