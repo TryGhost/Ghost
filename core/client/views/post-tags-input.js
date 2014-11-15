@@ -50,10 +50,6 @@ var PostTagsInputView = Ember.View.extend({
 
         focusOut: function () {
             this.get('parentView').set('hasFocus', false);
-
-            // if (!Ember.isEmpty(this.get('value'))) {
-            //     this.get('parentView.controller').send('addNewTag');
-            // }
         },
 
         keyDown: function (event) {
