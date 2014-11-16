@@ -4,6 +4,7 @@
 // Formats a date using moment.js. Formats published_at by default but will also take a date as a parameter
 
 var moment          = require('moment'),
+    config          = require('../config'),
     date;
 
 date = function (context, options) {
@@ -22,13 +23,15 @@ date = function (context, options) {
     context = context === null ? undefined : context;
 
     var f = options.hash.format || 'MMM Do, YYYY',
+        locale = options.hash.locale || config.locale,
         timeago = options.hash.timeago,
+        mdate = moment(context).lang(locale),
         date;
 
     if (timeago) {
-        date = moment(context).fromNow();
+        date = mdate.fromNow();
     } else {
-        date = moment(context).format(f);
+        date = mdate.format(f);
     }
     return date;
 };
