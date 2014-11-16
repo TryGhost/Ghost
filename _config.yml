@@ -26,6 +26,8 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
+    - name: 'Indonesian'
+      key: 'id'
 
 port:         4478
 
@@ -175,6 +177,26 @@ translations:
     help:         'Ajuda'
     upgrading:    'Atualizando'
     troubleshooting: 'Resolução de Problemas'
+  id:
+    site_title:
+    installation:   'Instalasi'
+    usage:          'Penggunaan'
+    email:          'Email'
+    themes:         'Tema'
+    apps:           'Apps'
+    api:            'API'
+    translations:   'Terjemahan'
+    help:           'Bantuan'
+    mac:            'Mac'
+    windows:        'Windows'
+    linux:          'Linux'
+    upgrading:      'Memperbaharui'
+    configuration:  'Konfigurasi'
+    faq:            'FAQ'
+    managing:       'Pengelolaan'
+    settings:       'Pengaturan'
+    writing:        'Penulisan'
+    structure:      'Struktur'
 
 # If running locally, simply comment out the line below to make all urls relative
 
