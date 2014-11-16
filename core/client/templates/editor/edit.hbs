@@ -19,7 +19,7 @@
         <section id="entry-markdown-content" class="entry-markdown-content">
             {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo
             setCodeMirror="setCodeMirror" openModal="openModal" typingPause="autoSave"
-            focus=shouldFocusEditor onFocusIn="autoSaveNew"}}
+            focus=shouldFocusEditor focusCursorAtEnd=model.isDirty onFocusIn="autoSaveNew"}}
         </section>
     </section>
 
