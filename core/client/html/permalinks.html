@@ -128,13 +128,16 @@
 
                                             <div class="permalink-fake-input">
                                                 <span class="permalink-domain">http://myblog.ghost.io</span>
-                                                <span class="permalink-structure">
-                                                    <span class="permalink-parameter label label-default">journal</span>
-                                                    <span class="permalink-parameter label label-default">year</span>
-                                                    <span class="permalink-parameter label label-default">month</span>
-                                                    <span class="permalink-parameter label label-default">day</span>
-                                                    <span class="permalink-parameter label label-default">title</span>
-                                                </span>
+                                                <span class="permalink-parameter label label-default">journal</span>
+                                                <span class="permalink-parameter label label-default">year</span>
+                                                <span class="permalink-parameter label label-default">hello</span>
+                                                <span class="permalink-parameter label label-default">agaian</span>
+                                                <span class="permalink-parameter label label-default">this</span>
+                                                <span class="permalink-parameter label label-default">is</span>
+                                                <span class="permalink-parameter label label-default">nice</span>
+                                                <span class="permalink-parameter label label-default">yo</span>
+                                                <span class="permalink-parameter label label-default">yo</span>
+                                                <span class="permalink-parameter label label-default">yo</span>
                                                 <input id="blog-permalinks" class="permalink-input" type="text" name="general[permalinks]">
                                             </div>
 
@@ -191,23 +194,56 @@
 <script>
     $(function(){
 
-        $("#blog-permalinks").on("focus", function(){
-            $(".permalink-input-wrapper").addClass("focus");
-            $("#blog-permalinks").focus();
-        });
-        $("#blog-permalinks").on("blur", function(){
-            $(".permalink-input-wrapper").removeClass("focus");
+        $('.permalink-input-wrapper').on('click', function(){
+            $(this).addClass('focus');
+            $('#blog-permalinks').focus();
         });
 
-        $(".hover-me").hover(function(){
-            $(this).next(".popover-item").addClass("open fade-in").removeClass("closed fade-out");
+        $('#blog-permalinks').on('blur', function(){
+            $('.permalink-input-wrapper').removeClass('focus');
+        });
+
+        $('.hover-me').hover(function(){
+            $(this).next('.popover-item').addClass('open fade-in').removeClass('closed fade-out');
         }, function(){
-            $(this).next(".popover-item").removeClass("fade-in").addClass("fade-out");
-            $(this).next(".popover-item").on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+            $(this).next('.popover-item').removeClass('fade-in').addClass('fade-out');
+            $(this).next('.popover-item').on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
                 if (event.originalEvent.animationName === 'fade-out') {
-                    $(this).removeClass("open fade-out").addClass("closed");
+                    $(this).removeClass('open fade-out').addClass('closed');
                 }
             });
+        });
+
+
+        function convertToSlug(Text){
+            return Text.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-').trim();
+        }
+
+        $('#blog-permalinks').on('keyup', function(e){
+            // 188 = comma
+            // Append the new parameter when pressing comma
+            if (e.keyCode === 188) {
+                var input_val = convertToSlug($(this).val());
+
+                var the_param = '<span class="permalink-parameter label label-default">' + input_val + '</span>';
+
+                // If a parameter exists, append after it.
+                // Else append after the domain
+                if ($('.permalink-parameter').length) {
+                    $('.permalink-parameter:last').after(the_param);
+                } else {
+                    $('.permalink-domain').after(the_param);
+                }
+
+
+                $(this).val('');
+            }
+
+            // 8 = backspace
+            // When backspace is pressed AND the input is empty, delete the last parameter
+            if (e.keyCode === 8 && $(this).val() == '') {
+                $('.permalink-parameter:last').remove();
+            }
         });
 
     });
