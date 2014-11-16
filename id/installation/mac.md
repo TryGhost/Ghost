@@ -1,47 +1,47 @@
 ---
 lang: id
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Cara menginstall Ghost pada Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menjalankan platform blogging Ghost di lingkungan lokal dan remote.
+heading: Menginstall Ghost &amp; Memulai
+subheading: Langkah awal untuk mengatur blog baru Anda untuk pertamakalinya.
 permalink: /id/installation/mac/
-chapter: installation
+chapter: instalasi
 section: mac
-prev_section: installation
+prev_section: instalasi
 next_section: windows
 ---
 
 
-# Installing on Mac <a id="install-mac"></a>
+# Menginstal pada Mac <a id="install-mac"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Catatan</strong> Ghost membutuhkan Node.js <strong>0.10.x</strong> (versi stabil terakhir). Kami merekomendasikan Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
-To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+Untuk menginstall Node.js dan Ghost pada mac Anda, Anda membutuhkan jendela terminal yang terbuka. Anda dapat membukanya dengan cara membuka spotlight dan mengetik "Terminal".
 
-### Install Node
+### Menginstall Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, a '.pkg' file will be downloaded
-*   Click on the download to open the installer, this is going to install both node and npm.
-*   Click through the installer, finally entering your password and clicking 'install software'.
-*   Once the installer is complete, go into your open Terminal window and type `echo $PATH` to check that '/usr/local/bin/' is in your path.
+*   Pada [http://nodejs.org](http://nodejs.org) tekan install, sebuah file '.pkg' akan di-download
+*   Klik file yang telah di-download untuk membuka installer, installer ini akan menginstall node dan npm.
+*   Klik untuk melalui installer, dan pada akhirnya masukkan password dan klik 'install software'.
+*   Setelah instalasi selesai, klik pada jendela Terminal yang sudah dibuka dan ketik `echo $PATH` untuk mengecek bahwa '/usr/local/bin/' ada dalam Path Anda.
 
-<p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">troubleshooting tips</a> to find out how to add it</p>
+<p class="note"><strong>Catatan:</strong> Jika '/usr/local/bin' tidak muncul dalam $PATH Anda, silahkan lihat <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">troubleshooting tips</a> untuk mengetahui cara menambahkannya.</p>
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
+Jika Anda mengalami masalah, Anda dapat melihat seluruh [proses in-action di sini](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
 
-### Install and Run Ghost
+### Install dan Jalankan Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
-*   In finder, double-click on the downloaded zip file to extract it.
-*   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.
-*   In the new terminal tab type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   Log in ke [http://ghost.org](http://ghost.org), dan klik tombol biru 'Download Ghost Source Code'.
+*   Pada halaman Downloads, klik tombol untuk mengunduh file zip terbaru.
+*   Klik tanda panah next ke file yang telah diunduh dan pilih 'show in finder'.
+*   Di dalam finder, double-click zip file yang telah diunduh untuk mengekstraknya.
+*   Selanjutnya, ambil folder yang baru saja diekstrak 'ghost-#.#.#' dan drag ke tab bar dari jendela terminal yang terbuka, hal ini akan membuat tab terminal baru yang terbuka pada lokasi yang sesuai.
+*   Pada tab terminal yang baru ketik `npm install --production` <span class="note">perhatikan tanda strip ganda</span>
+*   Saat npm sudah selesai diinstall, ketik `npm start` untuk memulai Ghost pada mode Development.
+*   Pada browser, arahkan ke <code class="path">127.0.0.1:2368</code> untuk melihat blog Ghost yang baru di setup.
+*   Ganti url ke <code class="path">127.0.0.1:2368/ghost</code> dan buat admin user Anda untuk log in ke Ghost admin.
+*   Lihat [usage docs](/usage) untuk instruksi selanjutnya.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
 
