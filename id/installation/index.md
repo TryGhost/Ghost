@@ -1,40 +1,40 @@
 ---
 lang: id
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
-chapter: installation
+meta_title: Cara Menginstall Ghost di Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menjalankan platform blogging Ghost di lingkungan lokal dan remote.
+heading: Menginstall Ghost &amp; Memulai
+subheading: Langkah awal untuk mengatur blog baru Anda untuk pertamakalinya.
+chapter: installasi
 next_section: mac
 ---
 
-## Overview <a id="overview"></a>
+## Ikhtisar <a id="overview"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Catatan</strong> Ghost membutuhkan Node.js <strong>0.10.x</strong> (versi stabil terakhir). Kami merekomendasikan Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
-The Ghost documentation is very much a work in progress, it is updated and improved regularly. If you get stuck or have suggestions for improvements, let us know.
+Dokumentasi dari Ghost masih dalam tahap pengembangan dan selalu diperbaharui dan diperbaiki secara berkala. Jika Anda mengalami permasalahan atau mempunyai saran untuk perbaikan, beritahu kami.
 
-Ghost is built on [Node.js](http://nodejs.org), and requires version `0.10.*` (latest stable version).
+Ghost dibangun di atas [Node.js](http://nodejs.org), dan membutuhkan versi `0.10.*` (versi stabil terakhir).
 
-Running Ghost locally on your computer is straight forward, but requires that you install Node.js first.
+Menjalankan Ghost secara lokal pada komputer Anda adalah hal yang mudah, tetapi membutuhkan Anda untuk menginstall Node.js terlebih dahulu.
 
-### What is Node.js?
+### Apa itu Node.js?
 
-[Node.js](http://nodejs.org) is a modern platform for building fast, scalable and efficient web applications.
-    Over the past 20 years, the web has evolved from a collection of static pages into a platform capable of supporting complex web applications like Gmail and facebook.
-    JavaScript is the programming language which has enabled this progress.
+[Node.js](http://nodejs.org) adalah sebuah platform modern untuk membuat aplikasi web yang cepat, <em>scalable</em>, dan efisien.
+    Dalam 20 tahun ke belakang, web telah berevolusi dari koleksi halaman statis menjadi sebuah platform yang mampu untuk mendukung berbagai aplikasi web yang kompleks seperti Gmail dan facebook.
+    JavaScript adalah bahasa pemrograman yang telah memungkinkan perkembangan.
 
-[Node.js](http://nodejs.org) provides us with the ability to write JavaScript on server. In the past JavaScript has only existed in the browser, and a second programming language, such as PHP, was required to do server side programming. Having a web application consist of a single programming language is a great benefit, and this also makes Node.js accessible to developers who might have traditionally stayed on the client side.
+[Node.js](http://nodejs.org) memberikan kita kemampuan untuk menulis JavaScript pada server. Di masa lalu JavaScript hanya ada pada browser, dan bahasa pemrograman kedua, seperti PHP, dibutuhkan untuk melakukan pemrograman pada sisi server. Mempunyai sebuah aplikasi web yang terdiri dari satu bahasa pemrograman adalah sebuah keuntungan yang besar dan hal ini membuat Node.js menarik para developer yang secara tradisional akan tetap tinggal pada sisi klien.
 
-The way that [Node.js](http://nodejs.org) makes this possible, is by wrapping up the JavaScript engine from Google's Chrome browser and making it installable anywhere. This means that you can get Ghost installed on your computer to try it out very quickly and easily.
-    The following sections detail how to install Ghost locally on [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/) or [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) or alternatively will help you get Ghost deployed on a [server or hosting]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy) account.
+Cara [Node.js](http://nodejs.org) membuat hal ini mungkin adalah dengan membungkus JavaScript engine dari browser Google Chrome dan membuatnya dapat di-install di mana saja. Ini berarti Anda dapat menginstall Ghost di komputer Anda untuk mencobanya dengan sangat mudah dan cepat.
+    Bagian berikut menjelaskan cara menginstall Ghost secara lokal pada [Mac]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/),  [Windows]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/windows/) atau [Linux]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/) atau secara alternatif akan membantu Anda menggunakan Ghost pada akun [server or hosting]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy).
 
-### Getting started
+### Memulai
 
-If you don't fancy following instructions on installing Node.js and Ghost manually, the lovely people over at [BitNami](http://bitnami.com/) have created [Ghost installers](http://bitnami.com/stack/ghost) for all major platforms.
+Jika Anda tidak suka mengikuti instruksi untuk menginstall Node.js dan Ghost secara manual, orang-orang di [BitNami](http://bitnami.com/) telah membuat [Ghost installers](http://bitnami.com/stack/ghost) untuk semua platform besar.
 
-I want to install Ghost on:
+Saya ingin menginstall Ghost pada:
 
 <div class="text-center install-ghost">
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/mac/" class="btn btn-success btn-large">Mac</a>
@@ -42,12 +42,12 @@ I want to install Ghost on:
     <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/linux/" class="btn btn-success btn-large">Linux</a>
 </div>
 
-If you've already decided to deploy Ghost to your server or hosting account, that's great news! The following documentation will walk you through various options for deploying Ghost, from manual setups, to one-click installers.
+Kabar baik jika Anda telah menentukan untuk menggunakan Ghost pada server atau akun hosting Anda. Dokumentasi berikut akan menuntun Anda melalui beberapa opsi untuk menggunakan Ghost, mulai dari pengaturan manual sampai instalasi sekali klik.
 
 <div class="text-center install-ghost">
-    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Get Ghost Live</a>
+    <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/deploy/" class="btn btn-success btn-large">Mengudarakan Ghost</a>
 </div>
 
-Remember that Ghost is brand new, and the team are working hard to deliver features at a furious pace. If you need to upgrade Ghost to the latest version, follow our [upgrading documentation](/installation/upgrading/).
-    If you get stuck, checkout the [troubleshooting guide]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), or if that doesn't help, please get in touch via the [Ghost forum](http://ghost.org/forum) where the Ghost staff and community are on hand to help you with any problems.
+Ingatlah bahwa Ghost masih baru, dan tim kami sedang bekerja keras untuk mengantarkan berbagai fitur dalam waktu singkat. Jika anda perlu untuk memperbahario Ghost ke versi terbaru, ikuti [upgrading documentation](/installation/upgrading/) kami.
+    Jika Anda mengalami masalah, lihatlah [troubleshooting guide]({% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting/), atau jika halaman tersebut tidak membantu, Anda dapat menghubungi kami via [Ghost forum](http://ghost.org/forum) dimana staff Ghost dan komunitas kami selalu siap membantu permasalahan Anda.
 
