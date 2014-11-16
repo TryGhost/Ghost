@@ -32,30 +32,39 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
 
         willTransition: function (transition) {
             var controller = this.get('controller'),
-                isDirty = controller.get('isDirty'),
-
+                scratch = controller.get('scratch'),
+                controllerIsDirty = controller.get('isDirty'),
                 model = controller.get('model'),
-                isNew = model.get('isNew'),
-                isSaving = model.get('isSaving'),
-                isDeleted = model.get('isDeleted'),
-                modelIsDirty = model.get('isDirty');
+                state = model.getProperties('isDeleted', 'isSaving', 'isDirty', 'isNew'),
+                fromNewToEdit,
+                deletedWithoutChanges;
+
+            fromNewToEdit = this.get('routeName') === 'editor.new' &&
+                transition.targetName === 'editor.edit' &&
+                transition.intent.contexts &&
+                transition.intent.contexts[0] &&
+                transition.intent.contexts[0].id === model.get('id');
+
+            deletedWithoutChanges = state.isDeleted &&
+                (state.isSaving || !state.isDirty);
 
             this.send('closeSettingsMenu');
 
-            // when `isDeleted && isSaving`, model is in-flight, being saved
-            // to the server. when `isDeleted && !isSaving && !modelIsDirty`,
-            // the record has already been deleted and the deletion persisted.
-            //
-            // in either case  we can probably just transition now.
-            // in the former case the server will return the record, thereby updating it.
-            // @TODO: this will break if the model fails server-side validation.
-            if (!(isDeleted && isSaving) && !(isDeleted && !isSaving && !modelIsDirty) && isDirty) {
+            if (!fromNewToEdit && !deletedWithoutChanges && controllerIsDirty) {
                 transition.abort();
                 this.send('openModal', 'leave-editor', [controller, transition]);
                 return;
             }
 
-            if (isNew) {
+            // The controller may hold model state that will be lost in the transition,
+            // so we need to apply it now.
+            if (fromNewToEdit && controllerIsDirty) {
+                if (scratch !== model.get('markdown')) {
+                    model.set('markdown', scratch);
+                }
+            }
+
+            if (state.isNew) {
                 model.deleteRecord();
             }
 
