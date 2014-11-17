@@ -139,7 +139,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     });
 });
 
-CasperTest.begin('Image Uploads', 20, function suite(test) {
+CasperTest.begin('Image Uploads', 24, function suite(test) {
     test.assertHTMLEquals = function (equals, message) {
         test.assertEvalEquals(function () {
             return document.querySelector('.entry-preview .rendered-markdown').innerHTML
@@ -243,6 +243,33 @@ CasperTest.begin('Image Uploads', 20, function suite(test) {
         var imageJQuerySelector = '.entry-preview img.js-upload-target[src="' + imageURL + '"]';
         test.assertExists(imageJQuerySelector, 'Uploaded image tag properly links to inputted image URL');
     });
+
+    // Save the post with the image
+    casper.thenClick('.js-publish-button');
+
+    casper.waitForSelector('.notification-success', function onSuccess() {
+        test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
+    }, casper.failOnTimeout(test, 'Post was not successfully created'));
+
+    casper.thenTransitionAndWaitForScreenLoad('content', function canTransition() {
+        test.assert(true, 'Can transition to content screen');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'content transitions to correct url');
+    });
+
+    // Edit the draft post we just created
+    casper.thenClick('.content-preview a.post-edit');
+
+    casper.then(function () {
+        casper.writeContentToCodeMirror('abcdefghijklmnopqrstuvwxyz');
+    });
+
+    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
+        test.assertSelectorHasText(
+           '.entry-preview .rendered-markdown',//
+           'abcdefghijklmnopqrstuvwxyz',
+           'Editor HTML preview has correct text after editing.'
+        );
+    }, casper.failOnTimeout(test, 'markdown did not re-render'));
 });
 
 CasperTest.begin('Tag editor', 7, function suite(test) {
