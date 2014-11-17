@@ -42,9 +42,10 @@ onScrollHandler = function (cm) {
 
 Codemirror = Ember.TextArea.extend(MarkerManager, {
     focus: true,
+    focusCursorAtEnd: false,
 
     setFocus: function () {
-        if (this.focus) {
+        if (this.get('focus')) {
             this.$().val(this.$().val()).focus();
         }
     }.on('didInsertElement'),
@@ -54,24 +55,28 @@ Codemirror = Ember.TextArea.extend(MarkerManager, {
     },
 
     afterRenderEvent: function () {
-        var self = this;
-
-        function initMarkers() {
-            self.initMarkers.apply(self, arguments);
-        }
+        var codemirror;
 
         // replaces CodeMirror with TouchEditor only if we're on mobile
         mobileCodeMirror.createIfMobile();
 
-        this.initCodemirror();
-        this.codemirror.eachLine(initMarkers);
+        codemirror = this.initCodemirror();
+        this.set('codemirror', codemirror);
+
         this.sendAction('setCodeMirror', this);
+
+        if (this.get('focus') && this.get('focusCursorAtEnd')) {
+            codemirror.execCommand('goDocEnd');
+        }
     },
 
     // this needs to be placed on the 'afterRender' queue otherwise CodeMirror gets wonky
     initCodemirror: function () {
         // create codemirror
-        var codemirror = CodeMirror.fromTextArea(this.get('element'), {
+        var codemirror,
+            self = this;
+
+        codemirror = CodeMirror.fromTextArea(this.get('element'), {
             mode:           'gfm',
             tabMode:        'indent',
             tabindex:       '2',
@@ -92,7 +97,10 @@ Codemirror = Ember.TextArea.extend(MarkerManager, {
             }
         });
 
-        codemirror.component = this; // save reference to this
+        // Codemirror needs a reference to the component
+        // so that codemirror originating events can propogate
+        // up the ember action pipeline
+        codemirror.component = this;
 
         // propagate changes to value property
         codemirror.on('change', onChangeHandler);
@@ -106,10 +114,14 @@ Codemirror = Ember.TextArea.extend(MarkerManager, {
         }));
 
         codemirror.on('focus', function () {
-            codemirror.component.sendAction('onFocusIn');
+            self.sendAction('onFocusIn');
         });
 
-        this.set('codemirror', codemirror);
+        codemirror.eachLine(function initMarkers() {
+            self.initMarkers.apply(self, arguments);
+        });
+
+        return codemirror;
     },
 
     disableCodeMirror: function () {
