@@ -67,3 +67,44 @@ describe('{{image}} helper', function () {
         }).catch(done);
     });
 });
+
+describe('{{image}} helper when Ghost is running on a sub-directory', function () {
+    var sandbox;
+
+    before(function () {
+        sandbox = sinon.sandbox.create();
+        utils.overrideConfig({url: 'http://testurl.com/blog'});
+        utils.loadHelpers();
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    after(function () {
+        utils.restoreConfig();
+    });
+
+    it('should output relative url of image', function (done) {
+        helpers.image.call({
+            image: '/blog/content/images/image-relative-url.png',
+            author: {
+                image: '/blog/content/images/author-image-relatve-url.png'
+            }
+        }).then(function (rendered) {
+            should.exist(rendered);
+            rendered.should.equal('/blog/content/images/image-relative-url.png');
+            done();
+        }).catch(done);
+    });
+
+    it('should output absolute url of image if the option is present ', function (done) {
+        helpers.image.call({image: '/blog/content/images/image-relative-url.png',
+        author: {image: '/blog/content/images/author-image-relatve-url.png'}},
+        {hash: {absolute: 'true'}}).then(function (rendered) {
+            should.exist(rendered);
+            rendered.should.equal('http://testurl.com/blog/content/images/image-relative-url.png');
+            done();
+        }).catch(done);
+    });
+});
