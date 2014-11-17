@@ -55,7 +55,8 @@ Codemirror = Ember.TextArea.extend(MarkerManager, {
     },
 
     afterRenderEvent: function () {
-        var codemirror;
+        var self = this,
+            codemirror;
 
         // replaces CodeMirror with TouchEditor only if we're on mobile
         mobileCodeMirror.createIfMobile();
@@ -68,6 +69,10 @@ Codemirror = Ember.TextArea.extend(MarkerManager, {
         if (this.get('focus') && this.get('focusCursorAtEnd')) {
             codemirror.execCommand('goDocEnd');
         }
+
+        codemirror.eachLine(function initMarkers() {
+            self.initMarkers.apply(self, arguments);
+        });
     },
 
     // this needs to be placed on the 'afterRender' queue otherwise CodeMirror gets wonky
@@ -115,10 +120,6 @@ Codemirror = Ember.TextArea.extend(MarkerManager, {
 
         codemirror.on('focus', function () {
             self.sendAction('onFocusIn');
-        });
-
-        codemirror.eachLine(function initMarkers() {
-            self.initMarkers.apply(self, arguments);
         });
 
         return codemirror;
