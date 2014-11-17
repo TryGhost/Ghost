@@ -388,7 +388,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save().catch(function (errors) {
+            this.get('model').save().then(function () {
+                self.notifications.closePassive();
+            }, function (errors) {
                 self.showErrors(errors);
             });
         },
@@ -410,7 +412,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 return;
             }
 
-            this.get('model').save().catch(function (errors) {
+            this.get('model').save().then(function () {
+                self.notifications.closePassive();
+            }, function (errors) {
                 self.showErrors(errors);
             });
         },
