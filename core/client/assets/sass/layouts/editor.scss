@@ -567,6 +567,15 @@ body.zen {
         position: absolute;
         bottom: 49px;
         right: 0;
+
+        &.fade-in-scale {
+            animation-duration: 0.1s;
+        }
+
+        &.fade-out {
+            animation-duration: 0.01s;
+        }
+
         .dropdown-menu {
             top: auto;
             left: auto;

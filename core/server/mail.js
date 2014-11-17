@@ -76,7 +76,8 @@ GhostMailer.prototype.send = function (message) {
     message = _.extend(message, {
         from: self.from(),
         to: to,
-        generateTextFromHTML: true
+        generateTextFromHTML: true,
+        encoding: 'base64'
     });
 
     return new Promise(function (resolve, reject) {

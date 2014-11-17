@@ -1,3 +1,13 @@
+// ------------------------------------------------------------
+// Image Uploader
+//
+// Styles for the image uploader
+//
+// * Image Uploader
+// * Pre Image Uploader
+// ------------------------------------------------------------
+
+
 //
 // Image Uploader
 // --------------------------------------------------
@@ -22,9 +32,11 @@
             color: $darkgrey;
         }
     }
+
     .description {
         margin-top: 10px;
     }
+
     .media {
         @include icon($i-image, 60px, darken($lightbrown, 3%)) {
             display: inline-block;
@@ -46,20 +58,20 @@
         user-select: none;
 
         &:hover {
-          cursor: pointer;
+            cursor: pointer;
         }
     }
 
     .image-webcam {
-      @include icon($i-camera, 12px);
+        @include icon($i-camera, 12px);
     }
 
     .image-url {
-      @include icon($i-link, 12px);
+        @include icon($i-link, 12px);
     }
 
     .image-upload {
-      @include icon($i-image, 12px);
+        @include icon($i-image, 12px);
     }
 
     .btn-green {
@@ -68,12 +80,14 @@
         z-index: 700;
         color: #fff;
     }
+
     .btn-blue {
-      margin: 0 0 0 10px;
+        margin: 0 0 0 10px;
     }
 
     input {
-        &.main{
+
+        &.main {
             position: absolute;
             right: 0;
             margin: 0;
@@ -83,13 +97,14 @@
             font-size: 23px;
             direction: ltr;
             cursor: pointer;
+
             &.right {
                 right: 9999px;
                 height: 0;
             }
         }
 
-        &.url{
+        &.url {
             font: -webkit-small-control;
             width: 100%;                // Hacked By Weiping 
             vertical-align: middle;
@@ -137,8 +152,7 @@
             background: $red;
         }
     }
-
-} // .image-uploader
+}//.image-uploader
 
 
 //Hacked by weiping 
@@ -213,5 +227,4 @@
             background: $red;
         }
     }
-
-} // .pre-image-uploader
+}//.pre-image-uploader

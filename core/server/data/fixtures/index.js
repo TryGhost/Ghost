@@ -59,7 +59,6 @@ createOwner = function () {
     return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
         user.roles = [ownerRole.id];
         user.password = utils.uid(50);
-
         logInfo('Creating owner');
         return models.User.add(user, options);
     });

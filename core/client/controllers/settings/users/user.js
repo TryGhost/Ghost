@@ -1,5 +1,6 @@
 import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
+import boundOneWay from 'ghost/utils/bound-one-way';
 
 var SettingsUserController = Ember.ObjectController.extend({
 
@@ -7,7 +8,7 @@ var SettingsUserController = Ember.ObjectController.extend({
 
     email: Ember.computed.readOnly('user.email'),
 
-    slugValue: Ember.computed.oneWay('user.slug'),
+    slugValue: boundOneWay('user.slug'),
 
     lastPromise: null,
 

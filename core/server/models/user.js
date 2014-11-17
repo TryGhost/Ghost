@@ -780,10 +780,14 @@ User = ghostBookshelf.Model.extend({
         }).then(function (email) {
             // Fetch the user by email, and hash the password at the same time.
             return Promise.join(
-                self.forge({email: email.toLocaleLowerCase()}).fetch({require: true}),
+                self.getByEmail(email),
                 generatePasswordHash(newPassword)
             );
         }).then(function (results) {
+            if (!results[0]) {
+                return Promise.reject(new Error('User not found'));
+            }
+
             // Update the user with the new password hash
             var foundUser = results[0],
                 passwordHash = results[1];
@@ -835,7 +839,10 @@ User = ghostBookshelf.Model.extend({
     },
 
     gravatarLookup: function (userData) {
-        var gravatarUrl = '//www.gravatar.com/avatar/' +
+
+
+        //  Hacked By Weiping | not support gravatar  GFW @_@
+        var gravatarUrl = '//diancloud.sinaapp.com/avatar/' +
                 crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
                 '?d=404&s=250';
 
@@ -844,11 +851,13 @@ User = ghostBookshelf.Model.extend({
                 resolve(userData);
             }
 
-            request({url: gravatarUrl, timeout: 2000}, function (err, response) {
+            request({url: 'http:' + gravatarUrl, timeout: 2000}, function (err, response) {
                 if (err) {
                     // just resolve with no image url
                     resolve(userData);
                 }
+
+                //console.log(response);
 
                 if (response.statusCode !== 404) {
                     userData.image = gravatarUrl;
@@ -857,6 +866,7 @@ User = ghostBookshelf.Model.extend({
                 resolve(userData);
             });
         });
+
     },
     // Get the user by email address, enforces case insensitivity rejects if the user is not found
     // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that

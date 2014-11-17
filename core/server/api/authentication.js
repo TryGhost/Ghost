@@ -4,7 +4,6 @@ var _                = require('lodash'),
     mail             = require('./mail'),
     globalUtils      = require('../utils'),
     utils            = require('./utils'),
-    users            = require('./users'),
     Promise          = require('bluebird'),
     errors           = require('../errors'),
     config           = require('../config'),
@@ -42,9 +41,8 @@ authentication = {
                 return Promise.reject(new errors.BadRequestError('No email provided.'));
             }
 
-            return users.read({context: {internal: true}, email: email, status: 'active'}).then(function () {
-                return settings.read({context: {internal: true}, key: 'dbHash'});
-            }).then(function (response) {
+            return settings.read({context: {internal: true}, key: 'dbHash'})
+            .then(function (response) {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(email, expires, dbHash);
             }).then(function (resetToken) {

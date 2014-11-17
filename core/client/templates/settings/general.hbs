@@ -56,7 +56,8 @@
 
             <div class="form-group">
                 <label for="postsPerPage">每页显示博文</label>
-                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=postsPerPage min="1" max="1000" type="number"}}
+                {{! `pattern` brings up numeric keypad allowing any number of digits}}
+                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
                 <p>设置每页显示博文数量。</p>
             </div>
 

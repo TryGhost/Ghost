@@ -31,7 +31,7 @@ UsersIndexRoute = AuthenticatedRoute.extend(styleBody, PaginationRouteMixin, {
 
                 return self.store.filter('user', paginationSettings, function (user) {
                     if (currentUser.get('isEditor')) {
-                        return user.get('isAuthor');
+                        return user.get('isAuthor') || user === currentUser;
                     }
                     return true;
                 });
