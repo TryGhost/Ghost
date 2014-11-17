@@ -94,6 +94,16 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    format: function (options) {
+        if (!_.isEmpty(options.website) &&
+            !validator.isURL(options.website, {
+            require_protocol: true,
+            protocols: ['http', 'https']})) {
+            options.website = 'http://' + options.website;
+        }
+        return options;
+    },
+
     posts: function () {
         return this.hasMany('Posts', 'created_by');
     },
