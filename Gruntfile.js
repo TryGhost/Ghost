@@ -108,6 +108,12 @@ var _              = require('lodash'),
                     options: {
                         node_env: 'testing'
                     }
+                },
+                testMiddleware: {
+                    options: {
+                        script: 'core/test/functional/middleware_test_app.js',
+                        node_env: 'testing'
+                    }
                 }
             },
 
@@ -575,6 +581,14 @@ var _              = require('lodash'),
                 cfg.express.test.options.node_env = process.env.NODE_ENV;
             });
 
+        // #### Set flag in environment to turn on logging outside of normal environments
+        grunt.registerTask('setEnvForMiddlewareTests',
+            'Sets the environment variables ENABLE_GHOST_LOGGING and GHOST_NO_DEFAULT_CONFIG to "true"',
+            function () {
+                process.env.ENABLE_GHOST_LOGGING = 'true';
+                process.env.GHOST_NO_DEFAULT_CONFIG = 'true';
+            });
+
         // #### Ensure Config *(Utility Task)*
         // Make sure that we have a `config.js` file when running tests
         // Ghost requires a `config.js` file to specify the database settings etc. Ghost comes with an example file:
@@ -607,6 +621,21 @@ var _              = require('lodash'),
                 grunt.fail.fatal(err.stack);
             });
         });
+
+        // #### remove our tables from the database *(Utility Task)*
+        grunt.registerTask('emptyDatabase',
+            'Remove all the tables referenced by our schema from the database',
+            function () {
+                var done = this.async(),
+                    migration = require('./core/server/data/migration');
+
+                migration.reset().then(function () {
+                    done();
+                }).catch(function (err) {
+                    grunt.fail.fatal(err.stack);
+                });
+            }
+        );
 
         grunt.registerTask('test', function (test) {
             if (!test) {
@@ -769,6 +798,24 @@ var _              = require('lodash'),
         // the functional tests.
         grunt.registerTask('test-functional-setup', 'Run functional tests for setup',
             ['test-setup', 'cleanDatabase', 'express:test', 'spawnCasperJS:setup', 'express:test:stop']
+        );
+
+        // Same as previous two, except run the integration tests against an instance of Ghost as middleware mounted in another app
+        grunt.registerTask('test-middleware-functional-setup',
+            'Run "setup" functional tests (Casper JS) on Ghost configured as an Express middleware instance',
+            ['clean:test', 'setTestEnv', 'emptyDatabase',
+             'setEnvForMiddlewareTests', 'express:testMiddleware',
+             'spawnCasperJS:setup', 'express:testMiddleware:stop']
+        );
+        grunt.registerTask('test-middleware-functional-client-and-frontend',
+            'Run functional tests (Casper JS) on Ghost configured as an Express middleware instance',
+            ['clean:test', 'setTestEnv', 'emptyDatabase',
+             'setEnvForMiddlewareTests', 'express:testMiddleware',
+             'spawnCasperJS', 'express:testMiddleware:stop']
+        );
+        grunt.registerTask('test-middleware-functional',
+            'Run functional tests (Casper JS) on Ghost configured as an Express middleware instance',
+            ['test-middleware-functional-client-and-frontend', 'test-middleware-functional-setup']
         );
 
         // ### Coverage

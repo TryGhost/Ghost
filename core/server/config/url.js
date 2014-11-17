@@ -37,6 +37,9 @@ function createUrl(urlPath, absolute, secure) {
     // create base of url, always ends without a slash
     if (absolute) {
         baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+        if (!baseUrl) {
+            return false;
+        }
         output += baseUrl.replace(/\/$/, '');
     } else {
         output += ghostConfig.paths.subdir;

@@ -379,55 +379,13 @@ describe('Config', function () {
             // trick bootstrap into thinking that the config file doesn't exist yet
             var existsStub = sandbox.stub(fs, 'stat', function (file, cb) { return cb(true); }),
                 // ensure that the file creation is a stub, the tests shouldn't really create a file
-                writeFileStub = sandbox.stub(config, 'writeFile').returns(Promise.resolve()),
-                validateStub = sandbox.stub(config, 'validate').returns(Promise.resolve());
+                writeFileStub = sandbox.stub(config, 'writeFile').returns(Promise.resolve());
+            readFileStub.returns(defaultConfig);
 
             config.load().then(function () {
                 existsStub.calledOnce.should.be.true;
                 writeFileStub.calledOnce.should.be.true;
-                validateStub.calledOnce.should.be.true;
-                done();
-            }).catch(done);
-        });
-
-        it('accepts urls with a valid scheme', function (done) {
-            // replace the config file with invalid data
-            overrideConfig({url: 'http://testurl.com'});
-
-            config.load().then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com');
-
-                // Next test
-                overrideConfig({url: 'https://testurl.com'});
-                return config.load();
-            }).then(function (localConfig) {
-                localConfig.url.should.equal('https://testurl.com');
-
-                // Next test
-                overrideConfig({url: 'http://testurl.com/blog/'});
-                return config.load();
-            }).then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com/blog/');
-
-                // Next test
-                overrideConfig({url: 'http://testurl.com/ghostly/'});
-                return config.load();
-            }).then(function (localConfig) {
-                localConfig.url.should.equal('http://testurl.com/ghostly/');
-
-                done();
-            }).catch(done);
-        });
-
-        it('rejects a fqdn without a scheme', function (done) {
-            overrideConfig({url: 'example.com'});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
+                readFileStub.calledOnce.should.be.true;
                 done();
             }).catch(done);
         });
@@ -445,210 +403,175 @@ describe('Config', function () {
             }).catch(done);
         });
 
-        it('rejects a hostname with a scheme', function (done) {
-            overrideConfig({url: 'https://example'});
+        describe('accepts a socket in server configuration', function () {
+            it('default permissions if not user-defined', function (done) {
+                overrideConfig({server: {socket: 'test'}});
 
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
+                config.load().then(function () {
+                    var socketConfig = config.getSocket();
 
-                done();
-            }).catch(done);
-        });
+                    socketConfig.should.be.an.Object;
+                    socketConfig.path.should.equal('test');
+                    socketConfig.permissions.should.equal('660');
 
-        it('rejects a url with an unsupported scheme', function (done) {
-            overrideConfig({url: 'ftp://example.com'});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('rejects a url with a protocol relative scheme', function (done) {
-            overrideConfig({url: '//example.com'});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('does not permit the word ghost as a url path', function (done) {
-            overrideConfig({url: 'http://example.com/ghost/'});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('does not permit the word ghost to be a component in a url path', function (done) {
-            overrideConfig({url: 'http://example.com/blog/ghost/'});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('does not permit the word ghost to be a component in a url path', function (done) {
-            overrideConfig({url: 'http://example.com/ghost/blog/'});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('does not permit database config to be falsy', function (done) {
-            // replace the config file with invalid data
-            overrideConfig({database: false});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('does not permit database config to be empty', function (done) {
-            // replace the config file with invalid data
-            overrideConfig({database: {}});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('requires server to be present', function (done) {
-            overrideConfig({server: false});
-
-            config.load().then(function (localConfig) {
-                /*jshint unused:false*/
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('allows server to use a socket', function (done) {
-            overrideConfig({server: {socket: 'test'}});
-
-            config.load().then(function () {
-                var socketConfig = config.getSocket();
-
-                socketConfig.should.be.an.Object;
-                socketConfig.path.should.equal('test');
-                socketConfig.permissions.should.equal('660');
-
-                done();
-            }).catch(done);
-        });
-
-        it('allows server to use a socket and user-defined permissions', function (done) {
-            overrideConfig({
-                server: {
-                    socket: {
-                        path: 'test',
-                        permissions: '666'
-                    }
-                }
+                    done();
+                }).catch(done);
             });
 
-            config.load().then(function () {
-                var socketConfig = config.getSocket();
+            it('supports user-defined permissions', function (done) {
+                overrideConfig({
+                    server: {
+                        socket: {
+                            path: 'test',
+                            permissions: '666'
+                        }
+                    }
+                });
 
-                socketConfig.should.be.an.Object;
-                socketConfig.path.should.equal('test');
-                socketConfig.permissions.should.equal('666');
+                config.load().then(function () {
+                    var socketConfig = config.getSocket();
 
-                done();
-            }).catch(done);
+                    socketConfig.should.be.an.Object;
+                    socketConfig.path.should.equal('test');
+                    socketConfig.permissions.should.equal('666');
+
+                    done();
+                }).catch(done);
+            });
+        });
+    });
+
+    describe('configuration validation', function () {
+        var testConfig, serverSetup;
+
+        describe('for all server setups', function () {
+            beforeEach(function () { serverSetup = 'standalone'; });  // any valid setup value OK
+
+            describe('rejects', function () {
+                afterEach(function () {
+                    config.findErrors(testConfig, serverSetup).should.be.ok;
+                });
+
+                it('if the database config is falsy', function () {
+                    testConfig = _.extend({}, defaultConfig, {database: false});
+                });
+
+                it('if the database config is empty', function () {
+                    testConfig = _.extend({}, defaultConfig, {database: {}});
+                });
+            });
         });
 
-        it('allows server to have a host and a port', function (done) {
-            overrideConfig({server: {host: '127.0.0.1', port: '2368'}});
+        describe('for stand-alone servers', function () {
+            beforeEach(function () { serverSetup = 'standalone'; });
 
-            config.load().then(function (localConfig) {
-                should.exist(localConfig);
-                localConfig.server.host.should.equal('127.0.0.1');
-                localConfig.server.port.should.equal('2368');
+            it('accepts urls with a valid scheme', function () {
+                var validUrls = [
+                    'http://testurl.com',
+                    'https://testurl.com',
+                    'http://testurl.com/blog/',
+                    'http://testurl.com/ghostly/'
+                ];
 
-                done();
-            }).catch(done);
+                _.forEach(validUrls, function (url) {
+                    testConfig = _.extend({}, defaultConfig, {url: url});
+                    should(!!config.findErrors(testConfig, serverSetup)).equal(false, 'Shouldn\'t be any errors in the URL ' + url);
+                });
+            });
+
+            describe('rejects', function () {
+                afterEach(function () {
+                    config.findErrors(testConfig, serverSetup).should.be.ok;
+                });
+
+                it('a fqdn without a scheme', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'example.com'});
+                });
+
+                it('a hostname without a scheme', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'example'});
+                    config.findErrors(testConfig, serverSetup).should.be.ok;
+                });
+
+                it('a hostname with a scheme', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'https://example'});
+                });
+
+                it('a url with an unsupported scheme', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'ftp://example.com'});
+                });
+
+                it('a url with a protocol relative scheme', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: '//example.com'});
+                });
+
+                it('the word ghost as a url path', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'http://example.com/ghost/'});
+                });
+
+                it('the word ghost as a component in a url path', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'http://example.com/blog/ghost/'});
+                });
+
+                it('the word ghost as a component in a url path', function () {
+                    testConfig = _.extend({}, defaultConfig, {url: 'http://example.com/ghost/blog/'});
+                });
+
+                it('unless server is present', function () {
+                    testConfig = _.extend({}, defaultConfig, {server: false});
+                });
+
+                it('server if there is a host but no port', function () {
+                    testConfig = _.extend({}, defaultConfig, {server: {host: '127.0.0.1'}});
+                });
+
+                it('server if there is a port but no host', function () {
+                    testConfig = _.extend({}, defaultConfig, {server: {port: '2368'}});
+                });
+
+                it('server if configuration is empty', function () {
+                    testConfig = _.extend({}, defaultConfig, {server: {}});
+                });
+            });
+
+            describe('allows server to ', function () {
+                afterEach(function () {
+                    should(!!config.findErrors(testConfig, serverSetup)).not.be.ok;
+                });
+
+                it('use a socket', function () {
+                    testConfig = _.extend({}, defaultConfig, {server: {socket: 'test'}});
+                });
+
+                it('have a host and a port', function () {
+                    testConfig = _.extend({}, defaultConfig, {server: {host: '127.0.0.1', port: '2368'}});
+                });
+            });
         });
 
-        it('rejects server if there is a host but no port', function (done) {
-            overrideConfig({server: {host: '127.0.0.1'}});
+        describe('for middleware servers', function () {
+            var defaultMiddlewareConfig;
 
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
+            beforeEach(function () {
+                serverSetup = 'middleware';
+                defaultMiddlewareConfig = {
+                    database: defaultConfig.database
+                };
+            });
 
-                done();
-            }).catch(done);
-        });
+            describe('rejects', function () {
+                afterEach(function () {
+                    config.findErrors(testConfig, serverSetup).should.be.ok;
+                });
 
-        it('rejects server if there is a port but no host', function (done) {
-            overrideConfig({server: {port: '2368'}});
+                it('configurations that contain a "server" key', function () {
+                    testConfig = _.extend({}, defaultMiddlewareConfig, {server: {}});
+                });
 
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
-        });
-
-        it('rejects server if configuration is empty', function (done) {
-            overrideConfig({server: {}});
-
-            config.load().then(function () {
-                done(expectedError);
-            }).catch(function (err) {
-                should.exist(err);
-                err.should.be.an.Error;
-
-                done();
-            }).catch(done);
+                it('configurations that contain a "url" key', function () {
+                    testConfig = _.extend({}, defaultMiddlewareConfig, {url: 'scheme:host/path'});
+                });
+            });
         });
     });
 

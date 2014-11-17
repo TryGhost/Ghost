@@ -15,7 +15,7 @@ var express     = require('express'),
     errors      = require('./errors'),
     helpers     = require('./helpers'),
     mailer      = require('./mail'),
-    middleware  = require('./middleware'),
+    middleware  = require('./middleware/index'),
     migrations  = require('./data/migration'),
     models      = require('./models'),
     permissions = require('./permissions'),
@@ -31,12 +31,16 @@ function doFirstRun() {
         'Welcome to Ghost.',
         'You\'re running under the <strong>',
         process.env.NODE_ENV,
-        '</strong>environment.',
-
-        'Your URL is set to',
-        '<strong>' + config.url + '</strong>.',
-        'See <a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a> for instructions.'
+        '</strong>environment.'
     ];
+
+    if (config.url) {
+        firstRunMessage = firstRunMessage.concat([
+            'Your URL is set to',
+            '<strong>' + config.url + '</strong>.'
+        ]);
+    }
+    firstRunMessage.push('See <a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a> for instructions.');
 
     return api.notifications.add({notifications: [{
         type: 'info',
@@ -135,21 +139,19 @@ function initNotifications() {
     }
 }
 
-// ## Initialise Ghost
-// Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
-// Finally it returns an instance of GhostServer
-function init(options) {
+// ## Initializes the ghost application.
+// * Takes a promise that will resolve when the config object is loaded
+// * Sets up the express server instance.
+// * Instantiates the ghost singleton, helpers, routes, middleware, and apps.
+// * It returns an array containing a promise for an instance of GhostServer and
+// the not-yet-configured top-level (blogApp) Express server instance.
+function setupFromConfigPromise(configurationPromise) {
     // Get reference to an express app instance.
-    var blogApp = express(),
+    var serverPromise,
+        blogApp = express(),
         adminApp = express();
 
-    // ### Initialisation
-    // The server and its dependencies require a populated config
-    // It returns a promise that is resolved when the application
-    // has finished starting up.
-
-    // Load our config.js file from the local file system.
-    return config.load(options.config).then(function () {
+    serverPromise = configurationPromise.then(function () {
         return config.checkDeprecated();
     }).then(function () {
         // Make sure javascript files have been built via grunt concat
@@ -188,13 +190,12 @@ function init(options) {
 
         // Output necessary notifications on init
         initNotifications();
-        // ##Configuration
 
-        // return the correct mime type for woff files
+        // return the correct mime type for woff filess
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         // enabled gzip compression by default
-        if (config.server.compress !== false) {
+        if (config.server && config.server.compress !== false) {
             blogApp.use(compress());
         }
 
@@ -223,6 +224,20 @@ function init(options) {
 
         return new GhostServer(blogApp);
     });
+
+    return [serverPromise, blogApp];
+}
+
+// ## Initialize from a configuration file
+function init(options) {
+    // It returns a promise that is resolved when the application
+    // has finished starting up.
+    return setupFromConfigPromise(
+        // The server and its dependencies require a populated config
+        // Load our config.js file from the local file system.
+        config.load(options.config)
+    )[0];
 }
 
 module.exports = init;
+module.exports.setupMiddleware = setupFromConfigPromise;

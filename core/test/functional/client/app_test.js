@@ -22,7 +22,8 @@ CasperTest.begin('Admin navigation bar is correct', 65, function suite(test) {
 
         // Logo
         test.assertExists('.gh-nav-footer-sitelink', 'Ghost home page link exists in nav footer');
-        test.assertEquals(logoHref, 'http://127.0.0.1:2369/', 'Ghost logo link href is correct');
+        test.assert((logoHref === 'http://127.0.0.1:2369/' || logoHref === 'http://localhost:2369/'),
+            'Ghost logo link href is correct');
 
         // Content
         test.assertExists('.gh-nav-main-content', 'Content nav item exists');

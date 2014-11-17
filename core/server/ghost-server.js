@@ -3,8 +3,6 @@
 var Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
-    semver = require('semver'),
-    packageInfo = require('../../package.json'),
     errors = require('./errors'),
     config = require('./config');
 
@@ -18,7 +16,10 @@ function GhostServer(rootApp) {
     this.httpServer = null;
     this.connections = {};
     this.connectionId = 0;
-    this.upgradeWarning = setTimeout(this.logUpgradeWarning.bind(this), 5000);
+
+    if (config.server) {
+        this.upgradeWarning = setTimeout(this.logUpgradeWarning.bind(this), 5000);
+    }
 
     // Expose config module for use externally.
     this.config = config;
@@ -167,21 +168,6 @@ GhostServer.prototype.closeConnections = function () {
  * ### Log Start Messages
  */
 GhostServer.prototype.logStartMessages = function () {
-    // Tell users if their node version is not supported, and exit
-    if (!semver.satisfies(process.versions.node, packageInfo.engines.node) &&
-        !semver.satisfies(process.versions.node, packageInfo.engines.iojs)) {
-        console.log(
-            chalk.red('\nERROR: Unsupported version of Node'),
-            chalk.red('\nGhost needs Node version'),
-            chalk.yellow(packageInfo.engines.node),
-            chalk.red('you are using version'),
-            chalk.yellow(process.versions.node),
-            chalk.green('\nPlease go to http://nodejs.org to get a supported version')
-        );
-
-        process.exit(0);
-    }
-
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(

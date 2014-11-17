@@ -65,8 +65,12 @@ ConfigManager.prototype.getSocket = function () {
     return false;
 };
 
-ConfigManager.prototype.init = function (rawConfig) {
-    var self = this;
+ConfigManager.prototype.init = function (rawConfig, serverSetup) {
+    var self = this,
+        error = self.findErrors(rawConfig, serverSetup);
+    if (error) {
+        return Promise.reject(error);
+    }
 
     // Cache the config.js object's environment
     // object so we can later refer to it.
@@ -261,9 +265,10 @@ ConfigManager.prototype.load = function (configFilePath) {
             }
 
             Promise.resolve(pendingConfig).then(function () {
-                return self.validate();
+                var envVal = process.env.NODE_ENV || undefined;
+                return self.readFile(envVal);
             }).then(function (rawConfig) {
-                resolve(self.init(rawConfig));
+                resolve(self.init(rawConfig, 'standalone'));
             }).catch(reject);
         });
     });
@@ -322,64 +327,77 @@ ConfigManager.prototype.readFile = function (envVal) {
 };
 
 /**
- * Validates the config object has everything we want and in the form we want.
- * @return {Promise.<Object>} Returns a promise that resolves to the config object.
+ * findErrorss the raw configuration has everything we want and in the form we want.
  */
-ConfigManager.prototype.validate = function () {
+ConfigManager.prototype.findErrors = function (config, serverSetup) {
     var envVal = process.env.NODE_ENV || undefined,
         hasHostAndPort,
         hasSocket,
-        config,
         parsedUrl;
-
-    try {
-        config = this.readFile(envVal);
-    }
-    catch (e) {
-        return Promise.reject(e);
-    }
 
     // Check if we don't even have a config
     if (!config) {
         errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), 'NODE_ENV=' + envVal,
             'Ensure your config.js has a section for the current NODE_ENV value and is formatted properly.');
 
-        return Promise.reject(new Error('Unable to load config for NODE_ENV=' + envVal));
-    }
-
-    // Check that our url is valid
-    if (!validator.isURL(config.url, {protocols: ['http', 'https'], require_protocol: true})) {
-        errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
-
-        return Promise.reject(new Error('invalid site url'));
-    }
-
-    parsedUrl = url.parse(config.url || 'invalid', false, true);
-
-    if (/\/ghost(\/|$)/.test(parsedUrl.pathname)) {
-        errors.logError(new Error('Your site url in config.js cannot contain a subdirectory called ghost.'), config.url, 'Please rename the subdirectory before restarting');
-
-        return Promise.reject(new Error('ghost subdirectory not allowed'));
+        return new Error('Unable to load config for NODE_ENV=' + envVal);
     }
 
     // Check that we have database values
     if (!config.database || !config.database.client) {
         errors.logError(new Error('Your database configuration in config.js is invalid.'), JSON.stringify(config.database), 'Please make sure this is a valid Bookshelf database configuration');
 
-        return Promise.reject(new Error('invalid database configuration'));
+        return new Error('invalid database configuration');
     }
 
-    hasHostAndPort = config.server && !!config.server.host && !!config.server.port;
-    hasSocket = config.server && !!config.server.socket;
+    switch (serverSetup) {
+        case 'standalone':
+            // Check that our url is valid
+            if (!validator.isURL(config.url, {protocols: ['http', 'https'], require_protocol: true})) {
+                errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
 
-    // Check for valid server host and port values
-    if (!config.server || !(hasHostAndPort || hasSocket)) {
-        errors.logError(new Error('Your server values (socket, or host and port) in config.js are invalid.'), JSON.stringify(config.server), 'Please provide them before restarting.');
+                return new Error('invalid site url');
+            }
 
-        return Promise.reject(new Error('invalid server configuration'));
+            parsedUrl = url.parse(config.url || 'invalid', false, true);
+
+            if (/\/ghost(\/|$)/.test(parsedUrl.pathname)) {
+                errors.logError(new Error('Your site url in config.js cannot contain a subdirectory called ghost.'), config.url, 'Please rename the subdirectory before restarting');
+
+                return new Error('ghost subdirectory not allowed');
+            }
+
+            hasHostAndPort = config.server && !!config.server.host && !!config.server.port;
+            hasSocket = config.server && !!config.server.socket;
+
+            // Check for valid server host and port values
+            if (!config.server || !(hasHostAndPort || hasSocket)) {
+                errors.logError(new Error('Your server values (socket, or host and port) in config.js are invalid.'), JSON.stringify(config.server), 'Please provide them before restarting.');
+
+                return new Error('invalid server configuration');
+            }
+
+            break;
+        case 'middleware':
+            if (config.server) {
+                errors.logError(new Error('Your configuration contains a "server" entry which is not allowed in a middleware setup.',
+                    JSON.stringify(config), 'Please remove this before restarting.'));
+
+                return new Error('invalid server configuration for Ghost');
+            }
+
+            if (config.url) {
+                errors.logError(new Error('Your configuration contains a "url" which is not allowed in a middleware setup.',
+                    JSON.stringify(config), 'Please remove this before restarting, and configure the relative path ' +
+                        'handled by the Ghost in your express app\'s ".use()" call.'));
+
+                return new Error('invalid url configuration for Ghost');
+            }
+
+            break;
+        default:
+            return new Error('Don\'t recognize the server setup value "' + serverSetup + '".');
     }
-
-    return Promise.resolve(config);
 };
 
 /**
@@ -429,7 +447,7 @@ ConfigManager.prototype.displayDeprecated = function (item, properties, address)
     }
 };
 
-if (testingEnvs.indexOf(process.env.NODE_ENV) > -1) {
+if (testingEnvs.indexOf(process.env.NODE_ENV) > -1 && process.env.GHOST_NO_DEFAULT_CONFIG !== 'true') {
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 }
 

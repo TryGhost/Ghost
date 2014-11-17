@@ -15,7 +15,7 @@ npm-debug.log
 node_modules
 bower_components
 .bowerrc
-.idea/*
+.idea
 *.iml
 *.sublime-*
 projectFilesBackup
