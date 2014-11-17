@@ -139,6 +139,9 @@ function urlFor(context, data, absolute) {
             imagePathRe = new RegExp('^' + ghostConfig.paths.subdir + '/' + ghostConfig.paths.imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
+
+            // Remove the sub-directory from the URL because createUrl() will add it back.
+            urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
