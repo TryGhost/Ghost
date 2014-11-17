@@ -2,15 +2,14 @@ var TrimFocusInput = Ember.TextField.extend({
     focus: true,
 
     setFocus: function () {
-        if (this.focus) {
-            this.$().val(this.$().val()).focus();
+        if (this.get('focus')) {
+            this.$().focus();
         }
     }.on('didInsertElement'),
 
-    focusOut: function () {
-        var text = this.$().val();
-
-        this.$().val(text.trim());
+    focusOut: function (event) {
+        this._super(event);
+        this.set('value', this.get('value').trim());
     }
 });
 

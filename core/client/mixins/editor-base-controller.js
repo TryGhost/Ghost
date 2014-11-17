@@ -99,6 +99,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             markdown = this.get('markdown'),
             title = this.get('title'),
             titleScratch = this.get('titleScratch'),
+            isDefaultTitleState = (titleScratch === '(Untitled)' && !title),
             scratch = this.getMarkdown().withoutMarkers,
             changedAttributes;
 
@@ -106,7 +107,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             return true;
         }
 
-        if (titleScratch !== title) {
+        if (titleScratch !== title && !isDefaultTitleState) {
             return true;
         }
 
@@ -224,12 +225,6 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('markdown', this.getMarkdown().withoutMarkers);
             this.set('status', status);
-
-            // Set a default title
-            if (!this.get('titleScratch')) {
-                this.set('titleScratch', '(Untitled)');
-            }
-
             this.set('title', this.get('titleScratch'));
             this.set('meta_title', psmController.get('metaTitleScratch'));
             this.set('meta_description', psmController.get('metaDescriptionScratch'));
@@ -345,12 +340,6 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
                 autoSaveId = Ember.run.debounce(this, 'send', 'save', {silent: true, disableNProgress: true}, 3000);
                 this.set('autoSaveId', autoSaveId);
-            }
-        },
-
-        autoSaveNew: function () {
-            if (this.get('isNew')) {
-                this.send('save', {silent: true, disableNProgress: true});
             }
         }
     }
