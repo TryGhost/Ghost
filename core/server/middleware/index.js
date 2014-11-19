@@ -297,8 +297,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use(slashes(true, {
         headers: {
             'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
-        },
-        base: config.paths.subdir
+        }
     }));
     blogApp.use(uncapitalise);
 
