@@ -6,12 +6,10 @@ var PostsView = MobileParentView.extend({
 
     // Mobile parent view callbacks
     showMenu: function () {
-        $('.js-content-list').addClass('show-menu').removeClass('show-content');
-        $('.js-content-preview').addClass('show-menu').removeClass('show-content');
+        $('.js-content-list, .js-content-preview').addClass('show-menu').removeClass('show-content');
     },
     showContent: function () {
-        $('.js-content-list').addClass('show-content').removeClass('show-menu');
-        $('.js-content-preview').addClass('show-content').removeClass('show-menu');
+        $('.js-content-list, .js-content-preview').addClass('show-content').removeClass('show-menu');
     },
     showAll: function () {
         $('.js-content-list, .js-content-preview').removeClass('show-menu show-content');
