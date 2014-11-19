@@ -338,12 +338,14 @@
 
 
 
-// Custom permalink
+//
+// Custom Permalinks
+// --------------------------------------------------
+
 .permalink-input-wrapper {
     position: relative;
     outline: 0; // Kills the blue outline we get by adding tabindex="0"
-    padding-top: 6px;
-    padding-bottom: 6px;
+    padding: 2px 0 2px 6px;
 
     &:focus,
     &.focus {
@@ -359,42 +361,46 @@
     .permalink-fake-input {
         display: flex;
         flex-wrap: wrap;
-        margin-right: 26px;
+        align-items: center;
+        margin-right: 40px;
     }
 
     .permalink-domain {
-        padding-right: 3px;
+        margin: 5px -1px 3px 0;
         color: #7E878B;
     }
 
-    // A collection of labels showing the URL structure
-    .permalink-structure {
+    .permalink-parameter {
+        position: relative;
+        padding: 3px 6px 4px;
+        margin: 4px 0 4px 9px;
+        max-height: 18px;
 
-        .permalink-parameter {
-            position: relative;
-            top: -2px;
-            margin-left: 6px;
+        // Change default label styles
+        background: #E3EDF2;
+        box-shadow: inset 0px 0px 0px 1px #CDD5D9;
+        color: #7E878B;
 
-            // The slash before each parameter
-            &:before {
-                content: "/";
-                position: absolute;
-                top: 4px;
-                left: -8px;
-                font-size: 1.4rem;
-                color: #7E878B;
-            }
+        // The slash before each parameter (using :after)
+        // Using `:before` does funky stuff here in Safari
+        &:after {
+            content: "/";
+            position: absolute;
+            top: 2px;
+            left: -7px;
+            font-size: 1.4rem;
+            color: #7E878B;
         }
     }
 
     // The actual input, which resets some styles inherited from the global input style
     .permalink-input {
         flex: 1 0;
-        margin: -6px 0 -6px -2px;
+        margin: 0;
         padding: 0 4px;
+        margin-right: -4px;
         background: transparent;
         min-width: 60px;
-        min-height: 30px;
         border: 0;
     }
 
@@ -426,5 +432,6 @@
     // Shift the popover (than opens over the top of everything) to the left a bit
     .popover-item {
         margin-left: -5px;
+        min-width: 320px;
     }
 }//.permalink-input-wrapper
