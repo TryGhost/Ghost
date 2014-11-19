@@ -1,0 +1,41 @@
+---
+lang: ar
+layout: usage
+meta_title: How to Use Ghost - Ghost Docs
+meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
+heading: Using Ghost
+subheading: Finding your way around, and getting set up the way you want
+chapter: usage
+next_section: configuration
+---
+
+## Overview <a id="overview"></a>
+
+نأمل ان تكون في هذه المرحلة قد حصلت على Ghost وقمت بتشغيله، وان تكون مستعد للتدوين. في الاقسام القادمة سوف تتعرف على ماتحتاجة حول Ghost لكي تكون على معرفه تامة عن كل شي يحتوية ويقدمة Ghost.
+
+### First run
+
+اذا كنت تقوم بتشغيل Ghost للمره الأولى، فلابد من انشاء حساب الادمن. اتجه لـ مدونتك من اي متصفح وادخل على الرابط التالي <code class="path">&lt;your URL&gt;/ghost/signup/</code>. سوف تشاهد صفحة كما في الصوره التالية:
+
+![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/ghost-signup.png)
+
+*   قم بتعبئة حقل الاسم كامل **Full Name** وهو الاسم اللذي سوف يظهر كااسم الكاتب للموضوع.
+*    ثم ادخل بريدك الإلكتروني **Email Address** - تآكد من انه صحيح وفعال، ومن ثم ادخل كلمة السر **Password** (لابد ان تحتوي على ثمان خانات).
+*   اضغط على الايقونه الزرقاء الكبيره **Sign Up** button,  وسوف يتم تسجيل دخولك على المدونة.
+
+هذا كل شيء، الان يمكنك البدء بالتدوين.
+
+#### Messages
+
+في المره الاولى التي تقوم بها بتفعيل Ghost ستشاهد رساله باللون الازرق في الجهه العلوية من الشاشة، وهي مشابهه للتالي:
+
+![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/first-run-info.png)
+
+وهذه الرسالة تفيد بمعلومات عن طريقة تكوين  Ghost، كا انه في نمط التطوير و الرابط الخاص بالمدونه. اذهب لقسم الـ [configuration](/usage/configuration/) لمعرفة المزيد حول البيئه التي يعمل عليها Ghost حاليا، وكيف يمكن تعديل ملف التكوين. لن تستطيع التخلص من هذه الرساله (وهذه مشكله نعمل على اصلاحها) ولكن يمكنك اغلاقها ولن تظهر مجدداً.
+
+ومن الممكن ان تشاهد رساله تحذير باللون البرتقالي عن البريد الإلكتروني:
+
+![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/email-warning.png)
+
+هذه ليست محرجة ولن تعيقك عن الكتابة في مدونتك، ولكن يفضل ان تذهب لصفحة الـ [email documentation](/mail) وتتعلم كيفية اعداد Ghost ليقوم بإرسال بريد الكتروني. وهي حالياً تقوم بارسال كلمة المرور في حالة فقدتها ولكن ليست مهمة في حالة التدوين!
+

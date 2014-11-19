@@ -26,6 +26,8 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
+    - name: 'العربية'
+      key: 'ar'
 
 port:         4478
 
@@ -175,6 +177,31 @@ translations:
     help:         'Ajuda'
     upgrading:    'Atualizando'
     troubleshooting: 'Resolução de Problemas'
+  ar:
+    installation:     'التنصيب'
+    usage:            'الاستخدام'
+    email:            'البريد الإلكتروني'
+    themes:           'الثيم'
+    apps:             'التطبيقات'
+    api:              'API'
+    translations:     'الترجمة'
+    help:             'مساعدة'
+    mac:              'الماك'
+    windows:          'الويندوز'
+    linux:            'لينكس'
+    deploy:           'نشر'
+    upgrading:        'تحديث'
+    troubleshooting:  'Troubleshooting'
+    configuration:    'Configuration'
+    faq:              'الأسئلة المتكررة'
+    managing:         'الإدارة'
+    settings:         'الإعدادات'
+    writing:          'الكتابة'
+    getting-started:  'البداية'
+    handlebars:       'Handlebars'
+    structure:        'Structure'
+    helpers:          'Helpers'
+    changelog:        'Change Log'
 
 # If running locally, simply comment out the line below to make all urls relative
 
