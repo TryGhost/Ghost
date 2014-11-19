@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,15 +7,15 @@
 
     <!-- Styles not needed for this. Just to get around various bits that Ember handles for us. -->
     <style>
-        @media (max-width: 900px) {
-            .settings-menu {
-                top: 0;
-                left: -100%;
-            }
-            .settings-content {
-                margin-left: 0;
-            }
+    @media (max-width: 900px) {
+        .settings-menu {
+            top: 0;
+            left: -100%;
         }
+        .settings-content {
+            margin-left: 0;
+        }
+    }
     </style>
 </head>
 <body>
@@ -24,13 +23,25 @@
     <div id="container">
         <a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
         <nav class="global-nav" role="navigation">
-            <a class="nav-item ghost-logo" href="/" title="/"><div class="nav-label"><i class="icon-ghost"></i> <span>Visit blog</span> </div></a>
-            <a class="nav-item nav-content" href="/ghost/"><div class="nav-label"><i class="icon-content"></i> Content</div></a>
-            <a class="nav-item nav-new" href="/ghost/editor/"><div class="nav-label"><i class="icon-add"></i> New Post</div></a>
-            <a class="nav-item nav-settings active" href="/ghost/settings/"><div class="nav-label"><i class="icon-settings2"></i> Settings</div></a>
+            <a class="nav-item ghost-logo" href="/" title="/">
+                <div class="nav-label"><i class="icon-ghost"></i>
+                    <span>Visit blog</span>
+                </div>
+            </a>
+            <a class="nav-item nav-content" href="/ghost/">
+                <div class="nav-label"><i class="icon-content"></i> Content</div>
+            </a>
+            <a class="nav-item nav-new" href="/ghost/editor/">
+                <div class="nav-label"><i class="icon-add"></i> New Post</div>
+            </a>
+            <a class="nav-item nav-settings active" href="/ghost/settings/">
+                <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
+            </a>
             <div class="nav-item user-menu" data-href="#">
                 <div class="nav-label">
-                    <div class="image"><img src="../../../core/shared/img/user-image.png"></div>
+                    <div class="image">
+                        <img src="../../../core/shared/img/user-image.png">
+                    </div>
                     <div class="name">
                         Paul Davis <i class="icon-chevron-down"></i>
                         <small>Profile &amp; Settings</small>
@@ -43,16 +54,18 @@
             <aside class="notifications bottom"></aside>
             <div>
                 <header class="page-header">
-                    <a class="menu-button" href="#"><span class="sr-only">Menu</span></a>
+                    <a class="menu-button" href="#">
+                        <span class="sr-only">Menu</span>
+                    </a>
                     <h2 class="page-title">Tags</h2>
                 </header>
                 <div class="page-content">
-                    <nav class="settings-menu">
+                    <nav class="settings-nav">
                         <ul>
-                            <li class="settings-menu-general icon-settings"><a href="#">General</a></li>
-                            <li class="settings-menu-users icon-users"><a href="#">Users</a></li>
-                            <li class="settings-menu-about icon-pacman"><a href="#">About</a></li>
-                            <li class="settings-menu-tags icon-tag active"><a class="active" href="#">Tags</a></li>
+                            <li class="settings-nav-general icon-settings"><a href="#">General</a></li>
+                            <li class="settings-nav-users icon-users"><a href="#">Users</a></li>
+                            <li class="settings-nav-about icon-pacman"><a href="#">About</a></li>
+                            <li class="settings-nav-tags icon-tag active"><a class="active" href="#">Tags</a></li>
                         </ul>
                     </nav>
                     <section class="settings-content fade-in">
@@ -60,7 +73,7 @@
                             <a class="btn btn-default btn-back active" href="/ghost/settings/">Back</a>
                             <h2 class="page-title">Tags</h2>
                             <section class="page-actions">
-                                <button type="button" class="btn btn-green">New Tag</button>
+                                <button type="button" class="js-new-tag btn btn-green">New Tag</button>
                                 <span class="tags-search">
                                     <button href="#" class="btn btn-default">
                                         <i class="icon-search"></i>
@@ -86,7 +99,7 @@
                                     <p class="tag-description">My go-to category when I’m not really sure what else to file news</p>
                                     <span class="tags-count">7</span>
                                 </div>
-                            </div>  
+                            </div>
 
                             <div class="settings-tag">
                                 <a href="#" class="tag-title">Image</a>
@@ -100,12 +113,12 @@
                                 <span class="label label-default">/kittens</span>
                                 <p class="tag-description">My sordid past and wrongdoings</p>
                                 <span class="tags-count">9</span>
-                               
+
                                 <div class="settings-tag">
                                     <a href="#" class="tag-title">A Short History of Nearly Everything</a>
                                     <span class="label label-default">/kittens/a-short-history</span>
                                     <span class="tags-count">4</span>
-                                    
+
                                     <div class="settings-tag">
                                         <a href="#" class="tag-title">In Parts</a>
                                         <span class="label label-default">/kittens/a-short-history/in-parts</span>
@@ -113,7 +126,7 @@
                                         <span class="tags-count">2</span>
                                     </div>
                                 </div>
-                            </div>   
+                            </div>
 
                             <div class="settings-tag">
                                 <a href="#" class="tag-title">Video</a>
@@ -129,67 +142,68 @@
                                 <span class="tags-count">1</span>
                             </div>
 
-                        </section><!-- .content.settings-tags -->
-
+                        </section>
+                        <!-- .content.settings-tags -->
 
                     </section>
                 </div>
             </div>
         </main>
 
-        <div class="right-outlet">
-
-            <div class="post-settings-menu outlet-pane outlet-pane-in">
-                <div class="post-settings-header">
-                    <h4>Edit Tag</h4>
-                    <button class="close icon-x post-settings-header-action"><span class="hidden">Close</span></button>
+        <div class="settings-menu-container">
+            <div class="settings-menu settings-menu-pane settings-menu-pane-in">
+                <div class="settings-menu-header">
+                    <h4>Tag Settings</h4>
+                    <button class="close icon-x settings-menu-header-action">
+                        <span class="hidden">Close</span>
+                    </button>
                 </div>
-                <div class="post-settings-content">
+                <div class="settings-menu-content">
+                    <form>
+                        <section class="image-uploader">
+                            <span class="media">
+                                <span class="hidden">Image Upload</span>
+                            </span>
+                            <img class="js-upload-target" style="display: none;" src="">
+                            <div class="description">Add cover image</div>
+                        </section>
 
-                    <section class="image-uploader">
-                        <span class="media">
-                            <span class="hidden">Image Upload</span>
-                        </span>
-                        <img class="js-upload-target" style="display: none;" src="">
-                        <div class="description">Add cover image</div>
-                    </section>
+                        <div class="form-group">
+                            <label>Tag Name</label>
+                            <!-- <span class="input-icon icon-link"> -->
+                            <input class="js-tag-name" type="text" />
+                            <!-- </span> -->
+                        </div>
 
-                    <div class="form-group">
-                        <label>Tag Name</label>
-                        <!-- <span class="input-icon icon-link"> -->
-                            <input type="text" value="News" />
-                        <!-- </span> -->
-                    </div>
+                        <div class="form-group">
+                            <label>URL</label>
+                            <!-- <span class="input-icon icon-link"> -->
+                            <input class="js-tag-url" type="text" />
+                            <!-- </span> -->
+                        </div>
 
-                    <div class="form-group">
-                        <label>URL</label>
-                        <!-- <span class="input-icon icon-link"> -->
-                            <input type="text" value="yourblog.com/tag/news" />
-                        <!-- </span> -->
-                    </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <!-- <span class="input-icon icon-link"> -->
+                            <textarea class="js-tag-desc"></textarea>
+                            <!-- </span> -->
+                        </div>
 
-                    <div class="form-group">
-                        <label>Description</label>
-                        <!-- <span class="input-icon icon-link"> -->
-                            <textarea>The latest news, reviews and information from around the world</textarea>
-                        <!-- </span> -->
-                    </div>
-
-                    <div class="form-group for-select">
-                        <label for="activeTheme">Visibility</label>
-                        <!-- <span class="input-icon icon-user"> -->
+                        <div class="form-group for-select">
+                            <label for="activeTheme">Visibility</label>
+                            <!-- <span class="input-icon icon-user"> -->
                             <span class="gh-select">
                                 <select>
                                     <option>Public</option>
                                     <option>Private</option>
                                 </select>
                             </span>
-                        <!-- </span> -->
-                    </div>
+                            <!-- </span> -->
+                        </div>
 
-                    <div class="form-group for-select">
-                        <label for="activeTheme">Parent Tag</label>
-                        <!-- <span class="input-icon icon-user"> -->
+                        <div class="form-group for-select">
+                            <label for="activeTheme">Parent Tag</label>
+                            <!-- <span class="input-icon icon-user"> -->
                             <span class="gh-select">
                                 <select>
                                     <option>-</option>
@@ -197,36 +211,54 @@
                                     <option>- News - Local</option>
                                 </select>
                             </span>
-                        <!-- </span> -->
-                    </div>
+                            <!-- </span> -->
+                        </div>
 
-                    <button class="btn btn-red icon-trash">Delete Tag</button>
-
-                </div><!-- .post-settings-content -->
-            </div><!-- .post-settings-menu -->
-
-        </div><!-- .right-outlet -->
+                        <button class="btn btn-red icon-trash">Delete Tag</button>
+                        <button class="btn btn-green tag-save-button">Add Tag</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
     </div>
-        
+
+    <div class="content-cover" data-ember-action="1397"></div>
 
     <script src="../../../bower_components/jquery/dist/jquery.js"></script>
     <script>
-        $(function(){
+    $(function() {
 
-            $(".tags-search .btn").on("click", function(e){
-                e.preventDefault();
-                $(".tags-search").toggleClass("opened");
-                $(this).toggleClass("active");
-            });
-
-            $(".tag-title, .post-settings-header-action.close").on("click", function(e){
-                e.preventDefault();
-                $("body").toggleClass("right-outlet-expanded");
-            });
-
+        $('.tags-search .btn').on('click', function(e) {
+            e.preventDefault();
+            $('.tags-search').toggleClass('opened');
+            $(this).toggleClass('active');
         });
+
+        $(".tag-title, .settings-menu-header-action.close, .content-cover").on("click", function(e) {
+            e.preventDefault();
+            $('body').toggleClass('settings-menu-expanded');
+            $('.settings-menu-header h4').text('Tag Settings');
+            $('.settings-menu .icon-trash').show();
+            $('.settings-menu .tag-save-button').hide();
+            $('.js-tag-name').val('News');
+            $('.js-tag-url').val('yourblog.com/tag/news');
+            $('.js-tag-desc').html('The latest news, reviews and information from around the world');
+        });
+
+        $('.js-new-tag').on('click', function(e){
+            e.preventDefault();
+            $('body').toggleClass('settings-menu-expanded');
+            $('.settings-menu-header h4').text('New Tag');
+            $('.settings-menu .icon-trash').hide();
+            $('.settings-menu .tag-save-button').show();
+            $('.js-tag-name').val('');
+            $('.js-tag-url').val('');
+            $('.js-tag-desc').html('');
+        });
+
+    });
     </script>
-    
+
 </body>
 </html>
