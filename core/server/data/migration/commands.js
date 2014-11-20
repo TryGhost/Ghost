@@ -48,7 +48,7 @@ addColumnCommands = function addColumnCommands(table, columns) {
 modifyUniqueCommands = function modifyUniqueCommands(table, indexes) {
     var columnKeys = _.keys(schema[table]);
     return _.map(columnKeys, function (column) {
-        if (schema[table][column].unique && schema[table][column].unique === true) {
+        if (schema[table][column].unique === true) {
             if (!_.contains(indexes, table + '_' + column + '_unique')) {
                 return function () {
                     logInfo('Adding unique on: ' + table + '.' + column);
