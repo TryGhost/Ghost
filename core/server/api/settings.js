@@ -37,10 +37,10 @@ var _            = require('lodash'),
 updateConfigTheme = function () {
     config.set({
         theme: {
-            title: settingsCache.title.value || '',
-            description: settingsCache.description.value || '',
-            logo: settingsCache.logo.value || '',
-            cover: settingsCache.cover.value || ''
+            title: (settingsCache.title && settingsCache.title.value) || '',
+            description: (settingsCache.description && settingsCache.description.value) || '',
+            logo: (settingsCache.logo && settingsCache.logo.value) || '',
+            cover: (settingsCache.cover && settingsCache.cover.value) || ''
         }
     });
 };
