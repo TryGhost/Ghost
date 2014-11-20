@@ -1,0 +1,14 @@
+.navbar-brand{
+	float: right;
+	margin-right: -15px;
+	margin-left: 10px;
+}
+
+.navbar-nav > li {
+	float: right;
+}
+
+.nav {
+	padding-right: 0;
+}
+

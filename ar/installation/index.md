@@ -3,8 +3,8 @@ lang: ar
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+heading: تنصيب Ghost والبداية
+subheading: الخطوة الآولى لإعداد مدونتك الجديدة
 chapter: installation
 next_section: mac
 ---
@@ -19,7 +19,7 @@ Ghost تم بناءه بواسطة الـ [Node.js](http://nodejs.org), ويتط
 
 الطريقة لكي يعمل Ghost على جهازك هي عملية واضحه وسهلة، ولكن لابد ان تكون قمت بتنصيب Node.js اولاً.
 
-### ماهو الـ Node.js?
+### ماهو الـ Node.js؟
 
 [Node.js](http://nodejs.org) عبارة عن منصة حديثه لبناء تطبيقات ويب سريعه، عملية و قابلة للتطوير. في السنوات العشرين الماضية، المواقع الالكترونية تطورت من محتوى ثابت إلى منصات قادرة على دعم تطبيقات الويب المعقدة كا Gmail و facebook مثلاً.
 الـ JavaScript هي اللغة التي مكنت من كل هذا التطور.

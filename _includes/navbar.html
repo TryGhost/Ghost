@@ -14,7 +14,7 @@
             <span class="icon-bar"></span>
         </button>
         <div class="nav-collapse collapse bs-navbar-collapse">
-            <ul class="nav navbar-nav">
+            <ul class="nav navbar-nav navbar-right">
                 {% if page.lang %}
                 <li {%if page.chapter == 'installation'%}class="active"{% endif %}>
                     <a href="{{ site.url }}/{{page.lang}}/installation/">
@@ -78,7 +78,7 @@
                     </a>
                 </li>
             </ul>
-            <ul class="nav navbar-nav navbar-right">
+            <ul class="nav navbar-nav navbar-left">
                 <li class="dropdown">
                     {% include language_selector.html %}
                 </li>

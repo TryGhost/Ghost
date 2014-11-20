@@ -3,8 +3,8 @@ lang: ar
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+heading: استخدام Ghost
+subheading: إيجاد الطرق المناسبة وضبط الإعدادات المتوافقة معك
 chapter: usage
 section: writing
 permalink: /ar/usage/writing/
@@ -12,19 +12,19 @@ prev_section: managing
 next_section: faq
 ---
 
-##  Writing posts <a id="writing"></a>
+##  كتابة المواضيع <a id="writing"></a>
 
-Blog posts in Ghost are written using Markdown. Markdown is a minimal syntax for marking up documents with formatting using punctuation and special characters. It's syntax is intended to prevent interuptions to the flow of writing, allowing you to focus on your content, rather than how it looks.
+كتابة مواضيع المدونة في  Ghost تتم من خلال استخدام الـMarkdown. وهو عبارة عن كتابة صيغ باستخدام علامات الترقيم وحروف خاصة لتنسيق محتوى الكتابة والغرض منه هو التركيز على الكتابة دون الاهتمام بالتنسيق او كيف يبدو شكل المحتوى، والاهم هو التسريع من طريقة الكتابة.
 
-###  Markdown Guide <a id="markdown"></a>
+###  إرشادات عن الـMarkdown <a id="markdown"></a>
 
-[Markdown](http://daringfireball.net/projects/markdown/) is a markup language designed to improve the efficiency in which you can write, whilst keep the writing as easy-to-read as possible.
+[Markdown](http://daringfireball.net/projects/markdown/) iعبارة عن لغة برمجية تهدف لتحسين كفاءة كتابة المواضيع، في حين تبقى الكتابة سهلة للقراءه على قدر المستطاع.
 
-Ghost uses all the default Markdown shortcuts plus a few of our own additions. The full list of shortcuts is listed below.
+Ghost تستخدم جميع اختصارات الـMarkdown الإفتراضية بالإضافة الى عدد قليل من الإضافات الخاصة بـGhost. وهذا الإختصارات مذكورة في الأسفل.
 
-####  Headers
+####  العناوين
 
-Headers can be set using a hash before the title text. The number of hashes before the title text determines the depth of the header. The headers depths are from 1-6.
+بالنسبة للعناوين يمكن تنسيقها من خلال رمز الـ (#) بحيث تكون قبل العنوان. وعدد تكرار الـ(#) قبل العنوان يحدد سمكه او حجمه ويصل العدد من 1 الى 6.
 
 *   H1 : `# Header 1`
 *   H2 : `## Header 2`
@@ -35,32 +35,30 @@ Headers can be set using a hash before the title text. The number of hashes befo
 
 ####  Text Styling
 
-*   Links : `[Title](URL)`
-*   Bold : `**Bold**`
-*   Italic : `*Italic*`
-*   Paragraphs : Line space inbetween paragraphs
-*   Lists : `* An asterix on every new list item`
-*   Quotes : `> Quote`
-*   Code : `` `code` ``
-*   HR : `==========`
+*   روابط : `[الكلمة](URL)`
+*   التعريض : `**عريض**`
+*   الميلان : `*مائل*`
+*   الفقرات : مسافة بين كل فقره وفقره
+*   القوائم : `* مع كل سطر بالقائمة`
+*   الإقتباس : `> الاقتباس`
+*   الأكواد : `` `كود` ``
+*   سطر : `==========`
 
-####  Images
+####  الصور
 
-To insert an image into your post, you need to first enter `![]()` into the Markdown editor panel.
-This should create an image upload box in your preview panel.
+لإضافة صوره في موضوعك تحتاج لكتابة الاختصار التالي `![]()`  في محرر النصوص Markdown وهذا سوف ينشئ صورة للتحميل فيه نافذة معاينة الموضوع على يمين الشاشة.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.45.08.png)
 
-You can now drag and drop any image (.png, .gif, .jpg) from your Desktop over the image upload box to include it into your post, or alternatively click the image upload box to use a standard image upload popup.
-If you would prefer to include an image url, click the 'link' icon in the bottom left of the image upload box, this will then present you with the ability to insert an image URL.
+يمكنك الآن سحب وإسقاط أي صورة (.png, .gif, .jpg) من سطح المكتب الخاص بك فوق مربع تحميل صورة لإدراجه في رسالتك، أو بدلا من ذلك انقر فوق خانة تحميل الصور لإستخدام طريقة التحميل الإفتراضية. إذا كنت تفضل وضع رابط للصورة، انقر فوق رمز “url” في الجزء السفلي الأيسر من مربع تحميل صورة، وهذا سوف يتيح لك إدراج رابط الصورة.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.34.21.png)
 
-To title your image, all you need to do is place your title text inbetween the square brackets, e.g; `![This is a title]()`. 
+لوضع عنوان للصوره كل ماتحتاج فعله هو وضع العنوان بين الاقواس المربعة، مثل; `![This is a title]()`. 
 
-##### Removing Images
+##### إزالة الصور
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/Screen%20Shot%202013-10-14%20at%2012.56.44.png)
 
-To remove an image click the 'remove' icon, in the top right corner of the currently inserted image. This will present you with the blank image upload box for you to re-insert a new image.
+لإزالة صورة انقر على أيقونة 'remove', في الزاوية اليمنى العليا من الصورة المدرجة حاليا. هذا وسوف يقدم لك مربع تحميل الصور وهي فارغة لإعادة إدراج صورة جديدة.
 

@@ -3,8 +3,8 @@ lang: ar
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+heading: تنصيب Ghost والبداية
+subheading: الخطوة الآولى لإعداد مدونتك الجديدة
 permalink: /ar/installation/mac/
 chapter: installation
 section: mac

@@ -3,21 +3,21 @@ lang: ar
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+heading: تنصيب Ghost والبداية
+subheading: الخطوة الآولى لإعداد مدونتك الجديدة
 permalink: /ar/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
 next_section: upgrading
 ---
-## Getting Ghost Live <a id="deploy"></a>
+## الحصول على Ghost <a id="deploy"></a>
 
 إذن انت على استعداد للحصول على Ghost؟ ممتاز!
 
 القرار الأول الذي تحتاج إليه، هو ما إذا كنت تريد تثبيت وإعداد Ghost بنفسك، أو ما إذا كنت تفضل استخدام المثبت.
 
-### Installers
+### التثبيت
 
 يوجد اكثر من خيار لتنصيب في الوقت الحالي:
 
@@ -25,7 +25,7 @@ next_section: upgrading
 *   إطلاق Ghost مع [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
 *   الحصول عليه وتشغيله مع [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manual Setup
+### الإعدادات اليدوية
 
 سوف تحتاج الى حزمه استضافه توفر لك او سوف توفر تثبيت [Node.js](http://nodejs.org).
     وهذا يعني شي مثل سحابة ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) او حزمه اخرى لديها دخول لـ SSH (terminal) وتسمح لك بتثبيت Node.js. هناك الكثير من الخيارات وايضا رخيصة جداً.
@@ -43,7 +43,7 @@ next_section: upgrading
 *   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - [Gregg Housh](http://0v.org/)
 *   ...او إطلع على [installation forum](https://en.ghost.org/forum/installation) لتفاصيل اكثر ...
 
-## Making Ghost run forever
+## لجعل Ghost يعمل بشكل مستمر - Forever
 
 الطريقة المشروحة سابقا لبدء Ghost وهي `npm start`. هي الوسيلة الجيدة للقيام بتطوير واجراء الاختبارات على جهازك، ولكن إذا كنت تستخدم Ghost من خلال  سطر الأوامر فإنه سيتم ايقافة كلما قمت بإغلاق نافذة terminal أوقمت بتسجيل الخروج من SSH. لمنع ايقاف Ghost لديك يجب تشغيل Ghost كخدمة. وهناك طريقتان لتحقيق ذلك.
 
@@ -143,7 +143,7 @@ next_section: upgrading
 *   اذا قمت بإعادة تشغيل السيرفر الآن يجب ان يكون Ghost قيد التشغيل.
 
 
-## Setting up Ghost with a domain name <a id="nginx-domain"></a>
+## اعداد Ghost ليعمل على عنوان الدومين <a id="nginx-domain"></a>
 
 إذا كنت قمت بإعداد Ghost ليعمل دون توقف يمكنك أيضا إعداد خادم الويب كا بروكسي لخدمة المدونه الخاص بك مع المجال الخاص بك. في هذا المثال افترضنا كنت تستخدم **Ubuntu 12.04** واستخدام **nginx** كا خادم ويب. ويفترض أيضا أن Ghost قيد التشغيل في الخلفية مع واحدة من الطرق المذكورة أعلاه.
 
@@ -187,7 +187,7 @@ next_section: upgrading
     $ sudo service nginx restart
     ```
 
-## Setting up Ghost with SSL <a id="ssl"></a>
+## اعداد Ghost ليعمل مع الـSSL <a id="ssl"></a>
 
 بعد إعداد الدومين الخاص بك، فكرة جيدة ان تقوم بتأمين واجهة الادارة أو ربما المدونة الخاص بك بأكملها باستخدام HTTPS. فإنه من المستحسن لحماية واجهة الادارة مع HTTPS لأن اسم المستخدم وكلمة المرور تنتقل من و إلى كا نص عادي إذا لم تقم بتمكين التشفير.
 

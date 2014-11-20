@@ -3,8 +3,8 @@ lang: ar
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+heading: استخدام Ghost
+subheading: إيجاد الطرق المناسبة وضبط الإعدادات المتوافقة معك
 chapter: usage
 section: configuration
 permalink: /ar/usage/configuration/
@@ -12,27 +12,27 @@ prev_section: usage
 next_section: settings
 ---
 
-## Configuring Ghost <a id="configuration"></a>
+## إعداد تكوين Ghost <a id="configuration"></a>
 
-After you run Ghost for the first time, you'll find a file called `config.js` in the root directory of Ghost, along with the `index.js`. This file allows you to set environment level configuration for things like your URL, database, and mail settings.
+بعد قيامك بتشغيل Ghost للمرة الاولى، ستجد ملف اسمه `config.js` في المجلد الأساسي لـ Ghost، بجانب ملف `index.js`. هذا الملف يسمح لك بضبط تكوين البيئة التي تعمل عليها كا رابط الموقع، قاعدة البيانات واعدادات البريد الالكتروني.
 
-If you haven't yet run Ghost for the first time, you won't have this file yet. You can create one by copying the `config.example.js` file - that's what Ghost does when it starts.
+اذا لم تقم بتشغيل Ghost للمره الاولى، فلن تجد هذا الملف. وبإمكانك انشاء الملف  من خلال نسخ ملف `config.example.js` وهو مايقوم به Ghost عن التشغيل.
 
-To configure your Ghost URL, mail or database settings, open `config.js` in your favourite editor, and start changing the settings for your desired environment. If environments aren't something you've come across yet, read the [documentation](#environments) below.
+لضبط اعدادات تكوين الروابط، والبريد الالكتروني و قاعدة البيانات، افتح ملف `config.js` وابداء بتغيير الاعدادات المناسبة لك. واذا لم تطلع على معلومات بيئة التطوير يمكنك الاطلاع على [documentation](#environments).
 
-## Configuration options
+## خيارات اعداد ملف التكوين
 
-Ghost has a number of configuration options which you can add to change things about how Ghost works.
+لـ Ghost عدة خيارات في اعداد ملف التكوين واللذي يمكنك من اضافة تعديلات على طريقة عمل Ghost
 
-### Email
+### البريد الإلكتروني
 
-Possibly the most important piece of configuration is setting up email so that Ghost can let you reset your password if you forget it. Read the [email documentation]({% if page.lang %}/{{ page.lang }}{% endif %}/mail) for more information.
+من الممكن ان يكون الاكثر اهمية هو ضبط ملف تكوين البريد الالكتروني، واللذي يتيح لـ Ghost من اعادة ضبط كلمة المرور في حالة فقدانها. اطلع على الشرح من هنا [email documentation]({% if page.lang %}/{{ page.lang }}{% endif %}/mail) للمزيد من المعلومات.
 
-### Database
+### قاعدة البيانات
 
-By default, Ghost comes configured to use an SQLite database, which requires no configuration on your part.
+بشكل اساسي Ghost يستخدم قاعدة بيانات SQLite، والتي الاتحتاج لأي اعدادات من قبلك.
 
-If however you would like to use a MySQL database, you can do so by changing the database configuration.  You must create a database and user first, you can then change the existing sqlite3 config to something like:
+في حالة كنت ترغب بتغير نوعية قاعدة البيانات مثل MySQL، بإمكانك التعديل على ملف التكوين حيث يوجد اعدادات قاعدة البيانات. لابد من إنشاء قاعدة بيانات و اسم مستخدم اولاً، ومن ثم يمكنك تعديل تكوين sqlite3 الى شئ مشابهة للتالي:
 
 ```
 database: {
@@ -47,7 +47,7 @@ database: {
 }
 ```
 
-You can also limit the number of simultaneous connections should you wish, by using the `pool` setting.
+ويمكن ايضاً التعديل على عدد مرات الاتصال بقاعدة البيانات - `pool`.
 
 ```
 database: {
@@ -60,11 +60,11 @@ database: {
 }
 ```
 
-### Server
+### السيرفر
 
-The server host and port are the IP address and port number that Ghost should listen on for requests.
+سيرفر الاستضافة و المنفذ - port - هو عنوان الاي بي ورقم المنفذ اللذي يستمع له Ghost عند الطلب.
 
-It is also possible to configure Ghost to listen on a unix socket instead by changing the server config to something like:
+من الممكن ايضا التعديل على ملف التكوين لكي يستمع Ghost على unix socket وذلك من خلال:
 
 ```
 server: {
@@ -72,24 +72,24 @@ server: {
 }
 ```
 
-### Update Check
+### التحديث
 
-Ghost 0.4 introduced an automatic update check service to let you know when a new version of Ghost is available (woo!). Ghost.org collects basic anonymous usage statistics from update check requests. For more more information, see the [update-check.js](https://github.com/TryGhost/Ghost/blob/master/core/server/update-check.js) file in Ghost core.
+منذ الاصدار الرابع لـ Ghost تم تقديم خدمة التحديث الأوتوماتيكي لكي تستطيع معرفة متى ماتم اصدار تحديث جديد! Ghost يقوم بجمع بيانات مجهولة الهوية من خلال طلبات التحقق من التحديث. للاطلاع على معلومات اكثر، اطلع على ملف [update-check.js](https://github.com/TryGhost/Ghost/blob/master/core/server/update-check.js).
 
-It is possible to disable the update checks and anonymous data collection by setting the following option:
+من الممكن تعطيل خاصية التحديث الاوتوماتيكي وجمع البيانات مجهولة الهوية من التعديل علي الخيار التالي:
 
 `updateCheck: false`
 
-Please be sure to subscribe to emails from Ghost, or the [Ghost blog](http://blog.ghost.org), so that you are still informed about new versions. More information about
+الرجاء الاشتراك بالقائمة البريدية للـ Ghost لكي تكون على علم في حالة صدور تحديث جديد. [Ghost blog](http://blog.ghost.org)
 
-### File Storage
+### حفظ الملفات
 
-Some platforms such as Heroku do not have a persistent file system. As a result of this, any uploaded images are likely to go missing at some point.
-It is possible to disable Ghost's file storage features:
+بعض المنصات مثل Heroku لا يوجد لديها نظام حفظ الملفات الثابتة. ونتيجة لذلك، اي صور يتم تحميلها من الممكن فقدها
+ومن الممكن تعطيل ميزات تخزين الملفات في Ghost من:
 
 `fileStorage: false`
 
-When file storage is disabled, Ghost's image upload tools will prompt you to enter a URL by default, thereby preventing you from uploading files that will go missing.
+عندما يتم تعطيل تخزين الملفات، أدوات تحميل الصور في Ghost تطلب منك إدخال رابط الصور، و يمنعك من تحميل الملفات مباشرة.
 
 
 ## About Environments <a id="environments"></a>

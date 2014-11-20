@@ -3,8 +3,8 @@ lang: ar
 layout: usage
 meta_title: How to Use Ghost - Ghost Docs
 meta_description: An in depth guide to using the Ghost blogging platform. Got Ghost but not sure how to get going? Start here!
-heading: Using Ghost
-subheading: Finding your way around, and getting set up the way you want
+heading: استخدام Ghost
+subheading: إيجاد الطرق المناسبة وضبط الإعدادات المتوافقة معك
 chapter: usage
 section: settings
 permalink: /ar/usage/settings/
@@ -12,43 +12,44 @@ prev_section: configuration
 next_section: managing
 ---
 
-##  Ghost Settings <a id="settings"></a>
+##  إعدادات Ghost <a id="settings"></a>
 
-Go to <code class="path">&lt;your URL&gt;/ghost/settings/</code>.
+اذهب لـ <code class="path">&lt;your URL&gt;/ghost/settings/</code>.
 
-After you are finished adjusting the settings the "Save" button *must* be pressed, this will save your changes.
+بعد الإنتهاء من التعديل على الإعدادات لابد من الضغط على ايقونة "Save" لكي يتم حفظ الإعدادات
 
-You can check your changes by visiting the Blog URL.
+وبالإمكان مشاهدة التغييرات التي قمت بحفظها من خلال زيارة رابط المدونة
 
-### Blog Settings (<code class="path">/general/</code>)
+### اعدادات المدونة (<code class="path">/general/</code>)
 
-These are the Blog specific settings.
+وهذه هي الإعدادات المتوفرة.
 
-*   **Blog Title**: Changes your Blog's title. Theme reference `@blog.title`.
-*   **Blog Description**: Changes your Blog's description. Theme reference `@blog.description`.
-*   **Blog Logo**: Upload a Logo for your blog in either '.png', '.jpg' or '.gif'. Theme reference `@blog.logo`.
-*   **Blog Cover**: Upload your blog cover image in either '.png', '.jpg' or '.gif'. Theme reference `@blog.cover`.
-*   **Email Address**: This is the email admin notifications are sent too. It *must* be a valid email.
-*   **Posts per page**: This is how many posts are displayed per page. This should be a numeric value.
-*   **Theme**: This will list all the themes in your <code class="path">content/themes</code> directory. Selecting one from the dropdown will change your blog's look.
+*	**Blog Title**: لتغيير عنوان مدونتك او اسم المدونة. والمرجع في الثيم هو `@blog.title`.
+*	**Blog Description**: لتغيير وصف لمدونتك. والمرجع في الثيم هو `@blog.description`.
+*	**Blog Logo**: رفع او تحميل لوقو للمدونة بإحدى الصيغ التالية '.png', '.jpg', '.gif'. والمرجع في الثيم هو `@blog.logo`.
+*	**Blog Cover**: رفع صورة كخلفية للمدونة بإحدى الصيغ التالية '.png', '.jpg', '.gif'. والمرجع في الثيم هو `@blog.cover`.
+*	**Email Address**: هذا هو البريد الإلكتروني للادمن وجميع التنبيهات ترسل إليه. لابد ان يكون البريد فعال.
+*	**Posts per page**: وهذ الخيار لتحديد عدد المواضيع التي تظهر في الصفحة الواحدة. لابد ان يكون الإدخال عبارة عن رقم.
+*	**Theme**: هنا ستجد عرض لكل الثيم الموجودة في مجلد <code class="path">content/themes</code>. اختيارك لواحدها منها سيتم تغيير شكل الثيم المستخدم.
 
-### User Settings (<code class="path">/user/</code>)
+### إعدادات المستخدم (<code class="path">/user/</code>)
 
-These are the settings that control your user / author profile.
+وهذه الإعدادات للتحكم في بروفايل المستخدم او الكاتب.
 
-*   **Your Name**: This is your name that will be used to credit you when you publish a post. Theme reference (post) `author.name`.
-*   **Cover Image**: Your profile cover image is uploaded here, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.cover`.
-*   **Display Picture**: This is where you upload your personal display picture, in either '.png', '.jpg' or '.gif' format. Theme reference (post) `author.image`.
-*   **Email Address**: This email will be available as your public email and also where you wish to receive notifications. Theme reference (post) `author.email`.
-*   **Location**: This should be your current location. Theme reference (post) `author.location`.
-*   **Website**: This is your personal website URL or even one of your social network URLs. Theme reference (post) `author.website`.
-*   **Bio**: Your bio is where you can enter a 200 charater or less description about yourself. Theme reference (post) `author.bio`.
+*   **Your Name**: هنا اسمك اللذي سيظهر كمرجع لكاتب الموضوع عند نشره. والمرجع في الثيم هو (post) `author.name`.
+*   **Cover Image**: صوره تظهر كخلفية في بروفايل الكاتب، بإحدى الصيغ التالية '.png', '.jpg', '.gif'. والمرجع في الثيم هو (post) `author.cover`.
+*   **Display Picture**: وهنا يمكن وضع صورتك الشخصية كعرض بالمدونة، بإحدى الصيغ التالية '.png', '.jpg', '.gif'. والمرجع في الثيم هو (post) `author.image`.
+*   **Email Address**: هنا بريدك الالكتروني المعروض بالمدونة وايضا تستلم التنبيهات عليه. والمرجع في الثيم هو (post) `author.email`.
+*   **Location**: وهنا يجب ان يكون موقعك الحالي. والمرجع في الثيم هو (post) `author.location`.
+*   **Website**: وهنا يكون موقعك الشخصي او رابط لإحدى حساباتك في مواقع التواصل الإلكتروني. والمرجع في الثيم هو (post) `author.website`.
+*   **Bio**: وهنا نبذه عنك بحيث يكون عدد الاحرف لاتتعدى 200 حرف. والمرجع في الثيم هو (post) `author.bio`.
 
-#### Changing your password
+#### تغيير كلمة المرور
 
 1.  Fill out the input boxes with the appropriate password (current / new password).
-2.  Now click **Change Password**.
+1.  قم بتعبئة الحقول بـ كلمة مرور مناسبة (current / new password).
+2.  الآن انقر على **Change Password**.
 <p class="note">
-    <strong>Note:</strong> For your password to change you must click the "Change Password" button, the "Save" button does not change the password.
+    <strong>تنبية:</strong> لحفظ تغيير كلمة المرور لابد ان تضغط على "Change Password", ايقونة "Save" لاتقوم بحفظ كلمة المرور الجديدة.
 </p>
 

@@ -3,8 +3,8 @@ lang: ar
 layout: installation
 meta_title: How to Install Ghost on Your Server - Ghost Docs
 meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+heading: تنصيب Ghost والبداية
+subheading: الخطوة الآولى لإعداد مدونتك الجديدة
 permalink: /ar/installation/upgrading/
 chapter: installation
 section: upgrading
@@ -12,7 +12,7 @@ prev_section: deploy
 next_section: troubleshooting
 ---
 
-# Upgrading Ghost <a id="upgrade"></a>
+# تحديث Ghost <a id="upgrade"></a>
 
 تحديث Ghost هي عملية مباشرة جداً.
 
@@ -20,7 +20,7 @@ next_section: troubleshooting
 
 <p class="note"><strong>تنبية!</strong> دائماً قم بعمل نسخة احتياطية. اقرأ التالي <a href="#backing-up">backup instructions</a> اولاً!</p>
 
-## Overview
+## نظرة عامة
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/folder-structure.png" style="float:left" />
 
@@ -30,7 +30,7 @@ next_section: troubleshooting
 
 تذكر، Ghost افتراضياً يقوم بجمع البيانات الخاصة بك، والمواضيع، والصور وغيرها في مجلد <code class="path">content</code> لذلك احرص على الحفاظ عليه آمناً! استبدال فقط الملفات في <code class="path">core</code> والجذرية، وسوف تكون على ما يرام.
 
-## Backing Up <a id="backing-up"></a>
+## عمل نسخة احتياطية <a id="backing-up"></a>
 
 <img src="https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/export.png" style="float:right" />
 
@@ -40,7 +40,7 @@ next_section: troubleshooting
 <p class="note"><strong>تنبية:</strong>  بالامكان اخذ نسخه احتياطية من قاعدة بياناتك من مجلد <code class="path">content/data</code> but <strong>be warned</strong> ولكن انتبه يجب ان لاتفعل ذلك و Ghost في مرحلة التشغيل. يجب ايقافه اولاً.</p>
 
 
-## How to Upgrade <a id="how-to"></a>
+## كيفية التحديث <a id="how-to"></a>
 
 كيف يمكن عمل تحديث على جهازك الشخصي
 
@@ -54,11 +54,11 @@ next_section: troubleshooting
 *   قم بعمل `npm install --production`
 *   اخيراً قم بإعادة تشغيل Ghost لتتم عملية التحديث
 
-## Command line only <a id="cli"></a>
+## من خلال سطر الأوامر <a id="cli"></a>
 
 <p class="note"><strong>تنبية!</strong> دائماً قم بعمل نسخة احتياطية. اقرأ التالي <a href="#backing-up">backup instructions</a> اولاً!</p>
 
-### Command line only on mac <a id="cli-mac"></a>
+### من خلال سطر الأوامر على الماك <a id="cli-mac"></a>
 
 الصورة المتحركة بالأسفل توضح خطوات تحديث Ghost، وذلك بعد تحميل الملف المضغوط في <code class="path">~/Downloads</code> Ghost تم تثبيته في <code class="path">~/ghost</code> 
 
