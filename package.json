@@ -1,6 +1,6 @@
 {
     "name"        : "ghost",
-    "version"     : "0.5.3-zh-rc1",
+    "version"     : "0.5.5-zh",
     "description" : "Just a blogging platform.",
     "author"      : "Ghost Foundation & diancloud.com",
     "homepage"    : "http://ghost.diancloud.com",
@@ -65,7 +65,7 @@
         "xml": "0.0.12"
     },
     "optionalDependencies": {
-        "mysql": "2.5.2",
+        "mysql": "2.1.1",
         "pg.js": "3.6.2"
     },
     "devDependencies": {

@@ -53,7 +53,7 @@ var UserValidator = Ember.Object.create({
             }
 
             if (!Ember.isEmpty(website) &&
-                (!validator.isURL(website, {protocols: ['http', 'https'], require_protocol: true}) ||
+                (!validator.isURL(website, {require_protocol: false}) ||
                 !validator.isLength(website, 0, 2000))) {
 
                 validationErrors.push({message: '个人网站地址格式不正确。'});
