@@ -17,7 +17,7 @@ var PaginationControllerMixin = Ember.Mixin.create({
      *                  }
      */
     init: function (options) {
-        this._super();
+        this._super(options);
 
         var metadata = this.store.metadataFor(options.modelType);
 
