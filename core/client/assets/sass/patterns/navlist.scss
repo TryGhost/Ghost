@@ -1,7 +1,16 @@
-//
+// ------------------------------------------------------------
 // Navigation Lists
+//
+// Navigation component used in places like the settings menu
+//
+// * Wrapper
+// * Nav Item
+// ------------------------------------------------------------
+
+
+//
+// Wrapper
 // --------------------------------------------------
-// Mobile style groups of list of links with chevrons
 
 .nav-list {
     padding: 0;
@@ -14,6 +23,12 @@
         max-width: none;
     }
 }
+
+
+//
+// Nav Item
+// --------------------------------------------------
+
 .nav-list-item {
     @include icon($i-chevron, 1.4rem, $midbrown) {
         position: absolute;
@@ -21,6 +36,7 @@
         right: 10px;
         transform: translateY(-50%);
     }
+
     position: relative;
     display: block;
     padding: 8px 40px 8px 12px;
@@ -64,5 +80,4 @@
         color: $midgrey;
         line-height: 1.375;
     }
-
 }//.nav-list-item

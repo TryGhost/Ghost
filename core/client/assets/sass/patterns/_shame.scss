@@ -1,3 +1,15 @@
+// ------------------------------------------------------------
+// Shame
+//
+// A home for Styles that need to die in a fire, but are used
+// in lots of places.
+//
+// * Utilities
+// * Floating Header
+// * Scroll Shadows
+// ------------------------------------------------------------
+
+
 //
 // Utilities
 // --------------------------------------------------
@@ -44,10 +56,8 @@
     font-size: 1.3rem;
     text-transform: uppercase;
     color: $brown;
-    //Transparent gradient to make bg fade out as it goes out the top.
-    background: linear-gradient(to bottom, white 0%, white 25%, rgba(255,255,255,0.9) 100%);
+    background: linear-gradient(to bottom, white 0%, white 25%, rgba(255,255,255,0.9) 100%); //Transparent gradient to make bg fade out as it goes out the top
 
-    // button,
     .button {
         display: inline-block;
         font-size: 10px;
@@ -76,7 +86,7 @@
                 display: inline-block;
             }
         }
-    }
+    }//.button
 
     small {
         font-size: 0.85em;
@@ -85,11 +95,11 @@
     a,
     button {
         color: $brown;
+
         &:hover {
             color: $darkgrey;
         }
     }
-
 } // .floatingheader
 
 
@@ -115,7 +125,5 @@
             background-size: 100% 200%;
             z-index: -1;
         }
-
-    } // .floatingheader
-
-}//.scrolling
+    }
+}

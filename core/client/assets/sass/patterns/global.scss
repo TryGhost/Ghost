@@ -1,5 +1,16 @@
-//
+// ------------------------------------------------------------
 // Globals
+//
+// Where most of the element-selector styling goes, which other
+// elements can inherit from. Sensible defaults.
+//
+// * Global Layout
+// * Text & Type
+// * Utility Classes
+// ------------------------------------------------------------
+
+//
+// Global Layout
 // --------------------------------------------------
 
 *, *:before, *:after {
@@ -28,13 +39,14 @@ body {
     overflow-x: hidden; // Never allow horizontal scrollbars
 }
 
-::-moz-selection {
-    background: lighten($blue, 20%);
-}
-
 ::selection {
     background: lighten($blue, 20%);
 }
+
+
+//
+// Text & Type
+// --------------------------------------------------
 
 h1, h2, h3,
 h4, h5, h6 {
@@ -228,7 +240,7 @@ button {
 
 
 //
-// Utilities
+// Utility Classes
 // --------------------------------------------------
 
 .clearfix {
@@ -276,6 +288,7 @@ button {
 .right {
     float: right;
 }
+
 .left {
     float: left;
 }

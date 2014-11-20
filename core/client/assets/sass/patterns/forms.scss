@@ -1,9 +1,24 @@
-//
+// ------------------------------------------------------------
 // Forms
+//
+// All things form, input, textarea, select, radio and checkbox
+//
+// * Form Wrapper
+// * Form Groups
+// * Input Icons
+// * Radio & Checkbox wrappers
+// * Fieldsets & Legends
+// * Inputs, selects, and textareas
+// * Checkboxes
+// * Radio Buttons
+// * Select Component
+// ------------------------------------------------------------
+
+
+//
+// Form Wrapper
 // --------------------------------------------------
 
-
-// Form Wrapper
 form {
 
     label {
@@ -12,16 +27,19 @@ form {
         font-size: 1.3rem;
         font-weight: bold;
     }
+}
 
-} // form
 
-
+//
 // Form Groups
+// --------------------------------------------------
+
 .form-group {
     position: relative;
     margin-bottom: 1.6em;
     width: 100%;
     max-width: 500px;
+
     p {
         margin: 4px 0 0 0;
         color: #B3B2A8;
@@ -36,12 +54,17 @@ form {
         max-width: 100%;
     }
 
-} // .form-group
+}//.form-group
 
-// If the from group has an icon...
+
+//
+// Input Icons
+// --------------------------------------------------
+
 .input-icon[class*='icon-'] {
     position: relative;
     display: block;
+
     input[type="email"],
     input[type="number"],
     input[type="password"],
@@ -52,11 +75,13 @@ form {
     input[type="date"] {
         padding-left: 3.2rem;
     }
+
     .gh-select {
         select {
             padding-left: 3.2rem;
         }
     }
+
     &:before {
         position: absolute;
         top: 50%;
@@ -65,9 +90,13 @@ form {
         transform: translateY(-52%);
         z-index: 100;
     }
-} // .thing[class*='icon-']
+}//.thing[class*='icon-']
 
-// Wrapper for input[type="radio"] and input[type="checkbox"] elements
+
+//
+// Radio & Checkbox wrappers
+// --------------------------------------------------
+
 .for-radio,
 .for-checkbox {
     @include clearfix;
@@ -75,11 +104,14 @@ form {
     label {
         display: block;
         padding-bottom: 4px;
+
         p {
             font-weight: normal;
             color: #000;
         }
+
         &:hover {
+
             input:not(:checked) + .input-toggle-component {
                 border-color: $midbrown;
             }
@@ -111,18 +143,18 @@ form {
         color: #B3B2A8;
         white-space: nowrap;
     }
-} // .for-radio, .for-checkbox
+}//.for-radio, .for-checkbox
 
+//
+// Fieldsets & Legends
+// --------------------------------------------------
 
-// Fieldsets
 fieldset {
     border: none;
     margin: 0 0 3em 0;
     padding: 0;
-} // fieldset
+}
 
-
-// Legends
 legend {
     display: block;
     width: 100%;
@@ -131,10 +163,13 @@ legend {
     font-size: 1.2em;
     line-height: 2.0em;
     color: $brown;
-} // legend
+}
 
 
-// Input, textarea & select
+//
+// Inputs, selects, and textareas
+// --------------------------------------------------
+
 .input,
 input[type="email"],
 input[type="number"],
@@ -163,7 +198,6 @@ select {
         border-color: $brown;
         outline: 0;
     }
-
 }
 
 textarea {
@@ -177,24 +211,21 @@ textarea {
 }
 
 
+//
 // Checkboxes
-// ---
-// <div class="form-group for-checkbox">
-//     <label for="permalinks">Dated Permalinks</label>
-//     <label class="checkbox" for="thing">
-//         <input id="thing" type="checkbox">
-//         <span class="input-toggle-component"></span>
-//         <p>Include the date in your post URLs</p>
-//     </label>
-//     <p>This is a label</p>
-// </div>
+// --------------------------------------------------
+
 .for-checkbox {
+
     .input-toggle-component {
         border-radius: $border-radius;
     }
+
     label {
+
         .input-toggle-component {
             transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
             &:before {
                 transition: opacity 0.15s ease-in-out;
                 content: '';
@@ -210,35 +241,34 @@ textarea {
                 opacity: 0;
             }
         }
+
         input:checked + .input-toggle-component {
             background: $green;
             border-color: darken($green, 10%);
+
             &:before {
                 opacity: 1;
             }
         }
-    }
-}
+    }//label
+}//.for-checkbox
 
 
+//
 // Radio Buttons
-// ---
-// <div class="form-group for-radio">
-//     <label>The Option Title</label>
-//     <label class="radio">
-//         <input name="testing" type="radio" value="no">
-//         <span class="input-toggle-component"></span>
-//         <p>No</p>
-//     </label>
-//     <p>What does this thing mean?</p>
-// </div>
+// --------------------------------------------------
+
 .for-radio {
+
     .input-toggle-component {
         border-radius: 100px; // Use px to prevent ovals
     }
+
     label {
+
         .input-toggle-component {
             transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
             &:before {
                 transition: opacity 0.15s ease-in-out;
                 content: '';
@@ -252,29 +282,23 @@ textarea {
                 opacity: 0;
             }
         }
+
         input:checked + .input-toggle-component {
             background: $green;
             border-color: darken($green, 10%);
+
             &:before {
                 opacity: 1;
             }
         }
-    }
-}
+    }//label
+}//.for-radio
 
 
+//
 // Select Component
-// ---
-// <span class="gh-select">
-//     {{view "select"
-//         id="activeTheme"
-//         name="general[activeTheme]"
-//         content=themes
-//         optionValuePath="content.name"
-//         optionLabelPath="content.label"
-//         value=activeTheme
-//         selection=selectedTheme}}
-// </span>
+// --------------------------------------------------
+
 .gh-select {
     position: relative;
     display: block;
@@ -313,21 +337,24 @@ textarea {
 
         // This hides focus around selected option in FF
         &:-moz-focusring {
-          color: transparent;
-          text-shadow: 0 0 0 #000;
+            color: transparent;
+            text-shadow: 0 0 0 #000;
         }
-    } // select
-} // .gh-select
+    }//select
+}//.gh-select
 
 // Firefox-specific size fixes
 @-moz-document url-prefix() {
+
     .gh-select {
         border-width: 1px;
+
         select {
             padding: 7px 10px 7px 8px;
         }
+
         &:focus {
             border-color: $brown;
         }
     }
-} // @-moz-document
+}
