@@ -857,6 +857,10 @@ User = ghostBookshelf.Model.extend({
                 '?d=404&s=250';
 
         return new Promise(function (resolve) {
+
+            resolve(userData);
+
+          /*
             if (config.isPrivacyDisabled('useGravatar')) {
                 resolve(userData);
             }
@@ -874,7 +878,7 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 resolve(userData);
-            });
+            }); */
         });
 
     },
