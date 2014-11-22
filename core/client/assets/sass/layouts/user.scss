@@ -1,7 +1,38 @@
+// ------------------------------------------------------------
+// User
 //
-// Users
+// Styles for the Edit User page
+// Slug: /ghost/settings/users/:username/
+//
+// * User Actions
+// * Content Wrapper
+// * Cover Image
+// * Edit User Details
+// * User Image (Avatar)
+// ------------------------------------------------------------
+
+
+//
+// User Actions
 // --------------------------------------------------
-// Slug: /ghost/settings/users/username/
+
+.user-actions-cog {
+    padding: 9px 11px;
+}
+
+.user-actions-menu {
+    left: auto;
+    right: 0;
+    top: calc(100% + 17px);
+
+    &.fade-out {
+        animation-duration: 0.01s;
+    }
+}
+
+
+//
+// Content Wrapper
 // --------------------------------------------------
 
 .content.settings-user {
@@ -12,9 +43,10 @@
     }
 }
 
-.user-actions-cog {
-    padding: 9px 11px;
-}
+
+//
+// Cover Image
+// --------------------------------------------------
 
 .user-cover {
     position: relative;
@@ -37,7 +69,7 @@
         right: 0;
         bottom: 0;
         height: 110px;
-        background: linear-gradient( rgba(0,0,0,0), rgba(0,0,0,0.18) );
+        background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.18));
     }
 }
 
@@ -53,6 +85,7 @@
     border-width: 0;
     border-radius: $border-radius;
     transition: color 0.3s ease, background 0.3s ease;
+
     @media (max-width: 1000px) {
         right: 15px;
     }
@@ -63,62 +96,49 @@
     }
 }
 
-.user-image + .form-group {
+
+//
+// Edit User Details
+// --------------------------------------------------
+
+.first-form-group {
     max-width: 500px;
-    @media (min-width: 651px) and (max-width: 1000px) {
-        width: calc(100% - 201px);
-    }
+
     @media (min-width: 651px) {
         min-width: 285px;
         left: 40px;
     }
+
+    @media (min-width: 651px) and (max-width: 1000px) {
+        width: calc(100% - 201px);
+    }
+
     @media (min-width: 1001px) {
         width: calc(100% - 181px);
     }
 }
 
-.user-profile {
-    position: relative;
-    z-index: 1;
-    @media (min-width: 651px) {
-        padding-left: 143px;
-    }
-
-    fieldset {
-        @media (max-width: 650px) {
-            padding: 0 40px;
-        }
-        @media (max-width: 550px) {
-            padding: 0 15px;
-        }
-    }
-
-    textarea {
-        min-width: 240px;
-    }
-}
-
 .user-details-top {
-
     position: relative;
 
     @media (max-width: 650px) {
         margin-top: 40px;
         margin-bottom: 0;
     }
-    @media (min-width: 651px) {
-        margin-top: -91px;
-    }
 
     @media (min-width: 651px) {
+        margin-top: -91px;
         margin-bottom: 0;
         padding: 0;
+
         p {
             color: #fff;
         }
+
         label[for="user-name"] {
             color: transparent;
         }
+
         .user-name {
             border-color: #fff;
         }
@@ -129,12 +149,50 @@
             width: calc(100% - 20px);
         }
     }
+}//.user-details-top
 
+.user-profile {
+    position: relative;
+    z-index: 1;
+
+    @media (min-width: 651px) {
+        padding-left: 143px;
+    }
+
+    fieldset {
+        @media (max-width: 650px) {
+            padding: 0 40px;
+        }
+
+        @media (max-width: 550px) {
+            padding: 0 15px;
+        }
+    }
+
+    textarea {
+        min-width: 240px;
+    }
 }
+
+
+//
+// User Image (Avatar)
+// --------------------------------------------------
 
 .user-image {
     display: block;
     position: absolute;
+    width: 126px;
+    height: 126px;
+    margin-left: -6px;
+    margin-right: 20px;
+    padding: 3px;
+    float: left;
+    text-align: center;
+    border-radius: 100%;
+    overflow: hidden;
+    background: #fff;
+    z-index: 2;
 
     @media (min-width: 651px) {
         top: -19px;
@@ -145,18 +203,6 @@
         top: -159px;
         left: 21px;
     }
-
-    width: 126px;
-    height: 126px;
-    float: left;
-    margin-left: -6px;
-    margin-right: 20px;
-    text-align: center;
-    border-radius: 100%;
-    overflow: hidden;
-    padding: 3px;
-    background: #fff;
-    z-index: 2;
 
     .img {
         display: block;
@@ -172,7 +218,7 @@
             opacity: 1;
         }
     }
-}
+}//.user-image
 
 .edit-user-image {
     position: absolute;

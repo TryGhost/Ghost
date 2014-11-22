@@ -1,10 +1,18 @@
-//
+// ------------------------------------------------------------
 // Tag Management
-// --------------------------------------------------
-// Slug: /ghost/settings/tags
+//
+// Styles for the Tag Management screen
+// Slug: /ghost/settings/tags/
+//
+// * Tags search
+// * Tag Item
+// ------------------------------------------------------------
+
+
+//
+// Tags search
 // --------------------------------------------------
 
-// Tags search
 .tags-search {
     position: relative;
     display: inline-block;
@@ -16,11 +24,12 @@
         padding-right: 10px;
         transition: padding 0.3s ease-in-out;
 
-        .icon-search:before {
-            font-size: 1.3rem;
-        }
         &.active {
             box-shadow: none;
+        }
+
+        .icon-search:before {
+            font-size: 1.3rem;
         }
     }
 
@@ -40,16 +49,11 @@
     }
 
     &.opened {
-
-        .tags-search-input {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
         @media (max-width: 400px) {
             .btn {
                 padding-left: 120px;
             }
+
             .tags-search-input {
                 width: 110px;
             }
@@ -59,12 +63,23 @@
             .btn {
                 padding-left: 140px;
             }
+
             .tags-search-input {
                 width: 130px;
             }
         }
-    }
+
+        .tags-search-input {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }//&.opened
 }//.tags-search
+
+
+//
+// Tag Item
+// --------------------------------------------------
 
 .settings-tag {
     position: relative;
@@ -94,6 +109,7 @@
         position: relative;
         top: -2px;
     }
+
     .label-alt {
         text-transform: uppercase;
     }
@@ -118,31 +134,3 @@
         color: $midbrown;
     }
 }//.settings-tag
-
-// Tags with a parent get the arrow, and slightly different padding/margin
-// .settings-tag .settings-tag {
-//     margin-left: 36px;
-//     padding-bottom: 0;
-//     border-bottom: 0;
-//     margin-right: -35px;
-
-//     &:before,
-//     &:after {
-//         content: '';
-//         background: $lightbrown;
-//         position: absolute;
-//     }
-
-//     &:before {
-//         width: 1px;
-//         height: 16px;
-//         top: 16px;
-//         left: -34px;
-//     }
-//     &:after {
-//         width: 16px;
-//         height: 1px;
-//         top: 32px;
-//         left: -34px;
-//     }
-// }//.settings-tag .settings-tag
