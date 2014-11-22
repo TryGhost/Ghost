@@ -237,6 +237,13 @@ UploadUi = function ($dropzone, settings) {
             } else {
                 this.initWithImage();
             }
+        },
+
+        reset: function () {
+            $dropzone.find('.js-url').remove();
+            $dropzone.find('.js-fileupload').removeClass('right');
+            this.removeExtras();
+            this.initWithDropzone();
         }
     });
 };
@@ -253,6 +260,7 @@ upload = function (options) {
             ui;
 
         ui = new UploadUi($dropzone, settings);
+        this.uploaderUi = ui;
         ui.init();
     });
 };
