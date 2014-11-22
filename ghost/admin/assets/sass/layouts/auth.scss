@@ -1,10 +1,19 @@
+// ------------------------------------------------------------
+// Authentication
+// Slug: /ghost/[signin/signup/forgotten/reset]
 //
-// Auth
+// Styles for the authentication pages
+//
+// * Auth colours & wrappers
+// * Sign In
+// * Signup & Reset
+// * Forgot Password
+// ------------------------------------------------------------
+
+
+//
+// Auth colours & wrappers
 // --------------------------------------------------
-// Slug: /ghost/signin/
-// --------------------------------------------------
-// Covers styles for all auth screens, login, signup
-// forgot password, and so on.
 
 .ghost-login,
 .ghost-signup,
@@ -28,27 +37,28 @@
         margin: 0;
         position: relative;
         transition: background ease 0.25s;
+
         &:focus {
             border: none;
             background: lighten($darkgrey, 15%);
         }
     }
 
+    // Changes the default Webkit yellow autofill colour to grey
     input:-webkit-autofill {
         -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
     }
-
-}
+}//.ghost-login, .ghost-signup, .ghost-forgotten, .ghost-reset
 
 .login-box,
 .signup-box,
 .forgotten-box,
 .reset-box {
+    display: table;
     max-width: 530px;
     height: 90%;
     margin: 0 auto;
     padding: 0;
-    display: table;
 
     @media (max-width: 630px) {
         max-width: 264px;
@@ -59,6 +69,7 @@
 
 //
 // Sign In
+// Slug: /ghost/signin/
 // --------------------------------------------------
 
 .login-form {
@@ -82,6 +93,14 @@
         }
     }
 
+    .email-wrap {
+        margin-right: 3px;
+
+        @media (max-width: 630px) {
+            margin-right: 0;
+        }
+    }
+
     .email,
     .password {
         display: inline-block;
@@ -91,19 +110,6 @@
 
         @media (max-width: 630px) {
             width: 264px;
-        }
-    } // .email, .password
-
-    .email-wrap {
-        margin-right: 3px;
-        @media (max-width: 630px) {
-            margin-right: 0;
-        }
-    } // .email-wrap
-
-    @media (max-width: 630px) {
-        .email,
-        .password {
             border-radius: 2px;
         }
     }
@@ -119,19 +125,15 @@
 
     button {
         width: 85px;
-        height: 36px;
-        margin:0 0 0 10px;
-        padding: 0.5em 1.37em;
-        min-height: 30px;
-        min-width: 80px;
-        box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
+        height: 37px;
+        margin-left: 10px;
 
         @media (max-width: 630px) {
             margin: 0;
             width: 100%;
             margin-bottom: 1em;
         }
-    } // button
+    }
 
     .meta {
         clear: both;
@@ -146,13 +148,14 @@
             color: lighten($midgrey, 5%);
             text-decoration: none;
         }
-    } // a
-
-} // .login-form
+    }
+}//.login-form
 
 
 //
-// Signup / Reset
+// Signup & Reset
+// Slug: /ghost/signup
+// Slug: /ghost/reset/t0k3n
 // --------------------------------------------------
 
 .signup-form,
@@ -166,8 +169,7 @@
         width: 264px;
     }
 
-    div { // Yes. Really.
-        // TODO: Same here as above
+    .password-wrap {
         position: relative;
         margin: 0 0 1em 0;
         background: lighten($darkgrey, 10%);
@@ -187,28 +189,28 @@
     .name-wrap {
         position: relative;
         border-radius: 2px;
+    }
 
-        .name {
-            border-radius: 2px;
-        }
+    .name {
+        border-radius: 2px;
     }
 
     .email-wrap {
         position: relative;
         border-radius: 2px;
+    }
 
-        .email {
-            border-radius: 2px;
-        }
+    .email {
+        border-radius: 2px;
     }
 
     .password-wrap {
         position: relative;
         border-radius: 2px;
+    }
 
-        .password {
-            border-radius: 2px;
-        }
+    .password {
+        border-radius: 2px;
     }
 
     button {
@@ -220,12 +222,12 @@
         min-width: 80px;
         box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
     }
-
-} // .signup-form, .reset-form
+}//.signup-form, .reset-form
 
 
 //
 // Forgot Password
+// Slug: /ghost/forgotten
 // --------------------------------------------------
 
 .forgotten-form {
@@ -240,21 +242,15 @@
         float: left;
         border-radius: 2px;
         width: 100%;
-    } // .email-wrap
+    }
 
     .email {
         padding: 8px 10px;
         border-radius: 2px;
-    } // .email
+    }
 
     button {
         width: 100%;
-        height: 36px;
-        margin: 0 0 1em 0;
-        padding: 0.5em 1.37em;
-        min-height: 30px;
-        min-width: 80px;
-        box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
-    } // button
-
-} // .forgotten-form
+        height: 37px;
+    }
+}//.forgotten-form
