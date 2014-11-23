@@ -9,7 +9,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
         var self = this,
             post,
             postId,
-            paginationSettings;
+            query;
 
         postId = Number(params.post_id);
 
@@ -18,36 +18,34 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
         }
 
         post = this.store.getById('post', postId);
-
         if (post) {
             return post;
         }
 
-        paginationSettings = {
+        query = {
             id: postId,
             status: 'all',
             staticPages: 'all'
         };
 
-        return this.store.find('user', 'me').then(function (user) {
-            if (user.get('isAuthor')) {
-                paginationSettings.author = user.get('slug');
+        return self.store.find('post', query).then(function (records) {
+            var post = records.get('firstObject');
+
+            if (post) {
+                return post;
             }
 
-            return self.store.find('post', paginationSettings).then(function (records) {
-                var post = records.get('firstObject');
+            return self.replaceWith('posts.index');
+        });
+    },
 
-                if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
-                    // do not show the post if they are an author but not this posts author
-                    post = null;
-                }
+    afterModel: function (post) {
+        var self = this;
 
-                if (post) {
-                    return post;
-                }
-
-                return self.transitionTo('posts.index');
-            });
+        return self.store.find('user', 'me').then(function (user) {
+            if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
+                return self.replaceWith('posts.index');
+            }
         });
     },
 
