@@ -40,6 +40,10 @@
         body.settings-menu-expanded & {
             transform: translate3d(350px, 0px, 0px);
         }
+
+        @media (max-height: 300px) {
+            top: 75px;
+        }
     }
 }//.notifications
 
