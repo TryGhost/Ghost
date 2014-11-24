@@ -3,7 +3,6 @@ import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
 var TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
-
     beforeModel: function () {
         if (!this.get('config.tagsUI')) {
             return this.transitionTo('settings.general');
