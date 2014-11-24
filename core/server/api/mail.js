@@ -5,6 +5,7 @@ var _            = require('lodash'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
     errors       = require('../errors'),
+    mailer       = require('../mail'),
     Models       = require('../models'),
     path         = require('path'),
     fs           = require('fs'),
@@ -29,8 +30,6 @@ mail = {
      * @returns {Promise}
      */
     send: function (object, options) {
-        var mailer = require('../mail');
-
         return canThis(options.context).send.mail().then(function () {
             return mailer.send(object.mail[0].message)
                 .then(function (data) {

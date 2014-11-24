@@ -24,7 +24,7 @@ var _                          = require('lodash'),
 colors.setTheme({silly: 'rainbow'});
 
 // Shim right now to deal with circular dependencies.
-// @TODO: remove circular dependency
+// @TODO(hswolff): remove circular dependency and lazy require.
 function getConfigModule() {
     if (!config) {
         config = require('../config');
