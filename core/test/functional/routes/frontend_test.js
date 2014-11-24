@@ -688,6 +688,154 @@ describe('Frontend Routing', function () {
         });
     });
 
+    describe('Subdirectory (no slash)', function () {
+        var forkedGhost, request;
+        before(function (done) {
+            var configTest = testUtils.fork.config();
+            configTest.url = 'http://localhost/blog';
+
+            testUtils.fork.ghost(configTest, 'testsubdir')
+                .then(function (child) {
+                    forkedGhost = child;
+                    request = require('supertest');
+                    request = request('http://localhost:' + child.port);
+                }).then(done).catch(done);
+        });
+
+        after(function (done) {
+            if (forkedGhost) {
+                forkedGhost.kill(done);
+            } else {
+                done(new Error('No forked ghost process exists, test setup must have failed.'));
+            }
+        });
+
+        it('http://localhost should 404', function (done) {
+            request.get('/')
+                .expect(404)
+                .end(doEnd(done));
+        });
+
+        it('http://localhost/ should 404', function (done) {
+            request.get('/')
+                .expect(404)
+                .end(doEnd(done));
+        });
+
+        it('http://localhost/blog should 303 to  http://localhost/blog/', function (done) {
+            request.get('/blog')
+                .expect(303)
+                .expect('Location', '/blog/')
+                .end(doEnd(done));
+        });
+
+        it('http://localhost/blog/ should 200', function (done) {
+            request.get('/blog/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('http://localhost/blog/welcome-to-ghost should 301 to http://localhost/blog/welcome-to-ghost/', function (done) {
+            request.get('/blog/welcome-to-ghost')
+                .expect(301)
+                .expect('Location', '/blog/welcome-to-ghost/')
+                .end(doEnd(done));
+        });
+
+        it('http://localhost/blog/welcome-to-ghost/ should 200', function (done) {
+            request.get('/blog/welcome-to-ghost/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('/blog/tag/getting-started should 301 to /blog/tag/getting-started/', function (done) {
+            request.get('/blog/tag/getting-started')
+                .expect(301)
+                .expect('Location', '/blog/tag/getting-started/')
+                .end(doEnd(done));
+        });
+
+        it('/blog/tag/getting-started/ should 200', function (done) {
+            request.get('/blog/tag/getting-started/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+    });
+
+    describe('Subdirectory (with slash)', function () {
+        var forkedGhost, request;
+        before(function (done) {
+            var configTest = testUtils.fork.config();
+            configTest.url = 'http://localhost/blog/';
+
+            testUtils.fork.ghost(configTest, 'testsubdir')
+                .then(function (child) {
+                    forkedGhost = child;
+                    request = require('supertest');
+                    request = request('http://localhost:' + child.port);
+                }).then(done).catch(done);
+        });
+
+        after(function (done) {
+            if (forkedGhost) {
+                forkedGhost.kill(done);
+            } else {
+                done(new Error('No forked ghost process exists, test setup must have failed.'));
+            }
+        });
+
+        it('http://localhost should 404', function (done) {
+            request.get('/')
+                .expect(404)
+                .end(doEnd(done));
+        });
+
+        it('http://localhost/ should 404', function (done) {
+            request.get('/')
+                .expect(404)
+                .end(doEnd(done));
+        });
+
+        it('/blog should 303 to /blog/', function (done) {
+            request.get('/blog')
+                .expect(303)
+                .expect('Location', '/blog/')
+                .end(doEnd(done));
+        });
+
+        it('/blog/ should 200', function (done) {
+            request.get('/blog/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('/blog/welcome-to-ghost should 301 to /blog/welcome-to-ghost/', function (done) {
+            request.get('/blog/welcome-to-ghost')
+                .expect(301)
+                .expect('Location', '/blog/welcome-to-ghost/')
+                .end(doEnd(done));
+        });
+
+        it('/blog/welcome-to-ghost/ should 200', function (done) {
+            request.get('/blog/welcome-to-ghost/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('/blog/tag/getting-started should 301 to /blog/tag/getting-started/', function (done) {
+            request.get('/blog/tag/getting-started')
+                .expect(301)
+                .expect('Location', '/blog/tag/getting-started/')
+                .end(doEnd(done));
+        });
+
+        it('/blog/tag/getting-started/ should 200', function (done) {
+            request.get('/blog/tag/getting-started/')
+                .expect(200)
+                .end(doEnd(done));
+        });
+    });
+
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('HTTPS', function () {
         var forkedGhost, request;

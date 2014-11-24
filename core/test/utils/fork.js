@@ -83,6 +83,8 @@ function forkGhost(newConfig, envName) {
                     env.GHOST_CONFIG = newConfigFile;
                     env.NODE_ENV = envName;
                     child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
+                    // return the port to make it easier to do requests
+                    child.port = port;
                     // periodic check until forked Ghost is running and is listening on the port
                     pingCheck = setInterval(function () {
                         var socket = net.connect(port);
