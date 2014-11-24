@@ -7,12 +7,14 @@
 </header>
 
 <section class="content settings-tags">
- {{#each tag in tags}}
-     <div class="settings-tag">
-         <button {{action "editTag" tag}} class="tag-title">{{tag.name}}</button>
-         <span class="label label-default">/{{tag.slug}}</span>
-         <p class="tag-description">{{tag.description}}</p>
-         <span class="tags-count">N/A</span>
-     </div>
- {{/each}}
+    {{#each tag in tags}}
+        <div class="settings-tag">
+            <button class="tag-edit-button" {{action "editTag" tag}}>
+                <span class="tag-title">{{tag.name}}</span>
+                <span class="label label-default">/{{tag.slug}}</span>
+                <p class="tag-description">{{tag.description}}</p>
+                <span class="tags-count">N/A</span>
+            </button>
+        </div>
+    {{/each}}
 </section>

@@ -9,13 +9,13 @@
     position: relative;
     display: inline-block;
     margin-left: 7px;
-    
+
     .btn {
         position: relative;
         padding-left: 10px;
         padding-right: 10px;
         transition: padding 0.3s ease-in-out;
-        
+
         .icon-search:before {
             font-size: 1.3rem;
         }
@@ -40,12 +40,12 @@
     }
 
     &.opened {
-        
+
         .tags-search-input {
             opacity: 1;
             pointer-events: auto;
         }
-        
+
         @media (max-width: 400px) {
             .btn {
                 padding-left: 120px;
@@ -54,7 +54,7 @@
                 width: 110px;
             }
         }
-        
+
         @media (min-width: 401px) {
             .btn {
                 padding-left: 140px;
@@ -68,9 +68,25 @@
 
 .settings-tag {
     position: relative;
-    padding: 20px 35px 20px 0;
+    padding: 0 45px 0 0;
     display: block;
-    border-bottom: 1px solid $lightbrown;
+    border-top: 1px solid $lightbrown;
+
+    .tag-edit-button {
+        width: calc(100% + 45px);
+        padding: 20px 15px;
+        text-align: left;
+
+        &:hover,
+        &:focus,
+        &:active {
+            background: lighten($lightbrown, 5%);
+        }
+    }
+
+    &:last-of-type:hover .tag-edit-button {
+        box-shadow: inset 0px -1px 0px $lightbrown;
+    }
 
     // Permalink/labels
     .label {
@@ -86,11 +102,6 @@
         font-size: 16px;
         color: $darkgrey;
         font-weight: normal;
-        &:hover,
-        &:focus,
-        &:active {
-            color: $blue;
-        }
     }
 
     .tag-description {
@@ -102,36 +113,36 @@
     .tags-count {
         position: absolute;
         top: 20px;
-        right: 2px;
+        right: 12px;
         font-size: 16px;
         color: $midbrown;
     }
 }//.settings-tag
 
 // Tags with a parent get the arrow, and slightly different padding/margin
-.settings-tag .settings-tag {
-    margin-left: 36px;
-    padding-bottom: 0;
-    border-bottom: 0;
-    margin-right: -35px;
+// .settings-tag .settings-tag {
+//     margin-left: 36px;
+//     padding-bottom: 0;
+//     border-bottom: 0;
+//     margin-right: -35px;
 
-    &:before,
-    &:after {
-        content: '';
-        background: $lightbrown;
-        position: absolute;
-    }
+//     &:before,
+//     &:after {
+//         content: '';
+//         background: $lightbrown;
+//         position: absolute;
+//     }
 
-    &:before { 
-        width: 1px;
-        height: 16px;  
-        top: 16px;
-        left: -34px;
-    }
-    &:after {
-        width: 16px;
-        height: 1px;
-        top: 32px;
-        left: -34px;
-    }
-}//.settings-tag .settings-tag
+//     &:before {
+//         width: 1px;
+//         height: 16px;
+//         top: 16px;
+//         left: -34px;
+//     }
+//     &:after {
+//         width: 16px;
+//         height: 1px;
+//         top: 32px;
+//         left: -34px;
+//     }
+// }//.settings-tag .settings-tag
