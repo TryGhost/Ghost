@@ -545,7 +545,7 @@ frontendControllers = {
                         feed.item(item);
                     });
                 }).then(function () {
-                    res.set('Content-Type', 'text/xml; charset=UTF-8');
+                    res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
                     res.send(feed.xml());
                 });
             });
