@@ -156,7 +156,7 @@ ghost_head = function (options) {
 
         head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-            title  + '" href="' + config.urlFor('rss') + '" />');
+            title  + '" href="' + config.urlFor('rss', null, true) + '" />');
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n    ' + item; }, '');
