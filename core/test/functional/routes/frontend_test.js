@@ -376,7 +376,7 @@ describe('Frontend Routing', function () {
 
         it('should respond with xml', function (done) {
             request.get('/rss/')
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(function (err, res) {
@@ -751,7 +751,7 @@ describe('Frontend Routing', function () {
 
         it('should serve RSS with date permalink', function (done) {
             request.get('/rss/')
-                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(function (err, res) {

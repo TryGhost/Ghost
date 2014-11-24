@@ -33,7 +33,7 @@ describe('{{ghost_head}} helper', function () {
             should.exist(rendered);
             rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/" />\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -44,7 +44,7 @@ describe('{{ghost_head}} helper', function () {
             should.exist(rendered);
             rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/" />\n' +
                 '    <meta name="generator" content="Ghost 0.9" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -96,7 +96,7 @@ describe('{{ghost_head}} helper', function () {
                 '    "image": "http://testurl.com/content/images/test-image.png",\n    "keywords": "tag1, tag2, tag3",\n' +
                 '    "description": "blog description..."\n}\n    </script>\n\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -149,7 +149,7 @@ describe('{{ghost_head}} helper', function () {
                 '    "image": "http://testurl.com/content/images/test-image.png",\n    "keywords": "tag1, tag2, tag3",\n' +
                 '    "description": "blog &quot;test&quot; description..."\n}\n    </script>\n\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -198,7 +198,7 @@ describe('{{ghost_head}} helper', function () {
                 '    "image": "http://testurl.com/content/images/test-image.png",\n' +
                 '    "description": "blog description..."\n}\n    </script>\n\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -246,7 +246,7 @@ describe('{{ghost_head}} helper', function () {
                 '    "datePublished": "' + post.published_at + '",\n    "dateModified": "' + post.updated_at + '",\n' +
                 '    "keywords": "tag1, tag2, tag3",\n    "description": "blog description..."\n}\n    </script>\n\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -279,7 +279,7 @@ describe('{{ghost_head}} helper', function () {
             should.exist(rendered);
             rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/post/" />\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -290,7 +290,7 @@ describe('{{ghost_head}} helper', function () {
             should.exist(rendered);
             rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/about/" />\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
 
             done();
         }).catch(done);
@@ -303,7 +303,7 @@ describe('{{ghost_head}} helper', function () {
                 '    <link rel="prev" href="http://testurl.com/page/2/" />\n' +
                 '    <link rel="next" href="http://testurl.com/page/4/" />\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
             done();
         }).catch(done);
     });
@@ -315,7 +315,7 @@ describe('{{ghost_head}} helper', function () {
                 '    <link rel="prev" href="http://testurl.com/" />\n' +
                 '    <link rel="next" href="http://testurl.com/page/3/" />\n' +
                 '    <meta name="generator" content="Ghost 0.3" />\n' +
-                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/rss/" />');
+                '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="http://testurl.com/rss/" />');
             done();
         }).catch(done);
     });
@@ -339,7 +339,8 @@ describe('{{ghost_head}} helper', function () {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/blog/" />\n' +
                     '    <meta name="generator" content="Ghost 0.3" />\n' +
-                    '    <link rel="alternate" type="application/rss+xml" title="Ghost" href="/blog/rss/" />');
+                    '    <link rel="alternate" type="application/rss+xml" title="Ghost" ' +
+                    'href="http://testurl.com/blog/rss/" />');
 
                 done();
             }).catch(done);
