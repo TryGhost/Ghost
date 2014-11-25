@@ -18,6 +18,9 @@ var EditorNewRoute = AuthenticatedRoute.extend(base, {
         // from previous posts
         psm.removeObserver('titleScratch', psm, 'titleObserver');
 
+        // Ensure that the PSM Image Uploader resets
+        psm.send('resetUploader');
+
         this._super(controller, model);
     }
 });
