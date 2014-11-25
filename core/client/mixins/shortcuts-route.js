@@ -74,11 +74,6 @@ var ShortcutsRoute = Ember.Mixin.create({
 
     activate: function () {
         this._super();
-
-        if (!this.shortcuts) {
-            return;
-        }
-
         this.registerShortcuts();
     },
 
