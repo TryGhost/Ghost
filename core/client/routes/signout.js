@@ -3,6 +3,8 @@ import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var SignoutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
+    titleToken: 'Sign Out',
+
     classNames: ['ghost-signout'],
 
     afterModel: function (model, transition) {

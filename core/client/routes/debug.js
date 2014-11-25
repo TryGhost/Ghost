@@ -3,6 +3,8 @@ import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var DebugRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
+    titleToken: 'Debug',
+
     classNames: ['settings'],
 
     beforeModel: function (transition) {

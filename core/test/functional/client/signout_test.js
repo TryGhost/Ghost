@@ -7,7 +7,7 @@ CasperTest.begin('Ghost signout works correctly', 3, function suite(test) {
     CasperTest.Routines.signin.run(test);
 
     casper.thenOpenAndWaitForPageLoad('root', function then() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Content - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL without signing in');
     });
 

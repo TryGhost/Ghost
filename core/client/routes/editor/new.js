@@ -2,6 +2,8 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import base from 'ghost/mixins/editor-base-route';
 
 var EditorNewRoute = AuthenticatedRoute.extend(base, {
+    titleToken: 'Editor',
+
     model: function () {
         var self = this;
         return this.get('session.user').then(function (user) {

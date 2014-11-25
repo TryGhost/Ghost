@@ -4,6 +4,8 @@ import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
 var EditorEditRoute = AuthenticatedRoute.extend(base, {
+    titleToken: 'Editor',
+
     model: function (params) {
         var self = this,
             post,

@@ -12,6 +12,8 @@ paginationSettings = {
 };
 
 UsersIndexRoute = AuthenticatedRoute.extend(styleBody, PaginationRouteMixin, {
+    titleToken: 'Users',
+
     classNames: ['settings-view-users'],
 
     setupController: function (controller, model) {
