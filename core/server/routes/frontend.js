@@ -48,6 +48,11 @@ frontendRoutes = function () {
     router.get('/author/:slug/page/:page/', frontend.author);
     router.get('/author/:slug/', frontend.author);
 
+    // ## check the blog is alive.
+    router.get('/check', function(req, res){
+        res.send(new Date());
+    });
+
     // Default
     router.get('/page/:page/', frontend.homepage);
     router.get('/', frontend.homepage);

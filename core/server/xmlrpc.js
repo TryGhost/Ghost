@@ -8,11 +8,25 @@ var _               = require('lodash'),
 
 // ToDo: Make this configurable
 pingList = [{
-    host: 'blogsearch.google.com',
+//    host: 'blogsearch.google.com',  //google的blog收集国内ping不到
+//    path: '/ping/RPC2'
+    host: 'ping.baidu.com',  //百度
     path: '/ping/RPC2'
 }, {
     host: 'rpc.pingomatic.com',
     path: '/'
+}, {
+    host: 'www.xianguo.com', //鲜果
+    path: '/xmlrpc/ping.php'
+}, {
+    host: 'www.zhuaxia.com', //抓虾
+    path: '/rpc/server.php'
+}, {
+    host: 'www.feedsky.com',
+    path: '/api/RPC2'
+},{
+    host: 'rpc.technorati.com',
+    path: '/rpc/ping'
 }];
 
 function ping(post) {
