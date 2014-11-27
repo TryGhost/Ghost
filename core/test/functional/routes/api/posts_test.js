@@ -175,7 +175,8 @@ describe('Post API', function () {
                     jsonResponse.posts[0].author.should.be.a.Number;
                     testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true;
                     jsonResponse.posts[0].created_by.should.be.a.Number;
-                    jsonResponse.posts[0].tags[0].should.be.a.Number;
+                    // Tags aren't included by default
+                    should.not.exist(jsonResponse.posts[0].tags);
                     done();
                 });
         });
@@ -202,7 +203,8 @@ describe('Post API', function () {
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     jsonResponse.posts[0].author.should.be.a.Number;
                     jsonResponse.posts[0].created_by.should.be.a.Number;
-                    jsonResponse.posts[0].tags[0].should.be.a.Number;
+                    // Tags aren't included by default
+                    should.not.exist(jsonResponse.posts[0].tags);
                     done();
                 });
         });
@@ -222,7 +224,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
-                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post', 'tags');
                     jsonResponse.posts[0].page.should.eql(0);
 
                     jsonResponse.posts[0].author.should.be.an.Object;
@@ -342,7 +344,7 @@ describe('Post API', function () {
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
                     draftPost.posts[0].status = publishedState;
-                    testUtils.API.checkResponse(draftPost.posts[0], 'post');
+                    testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
                     draftPost.posts[0].tags.should.exist;
                     draftPost.posts[0].tags.length.should.be.above(0);
@@ -371,7 +373,7 @@ describe('Post API', function () {
                             publishedPost.posts.length.should.be.above(0);
                             publishedPost.posts[0].title.should.eql(newTitle);
                             publishedPost.posts[0].status.should.eql(publishedState);
-                            testUtils.API.checkResponse(publishedPost.posts[0], 'post');
+                            testUtils.API.checkResponse(publishedPost.posts[0], 'post', 'tags');
 
                             publishedPost.posts[0].tags.should.exist;
                             publishedPost.posts[0].tags.length.should.be.above(0);
@@ -399,7 +401,7 @@ describe('Post API', function () {
                                     updatedPost.posts[0].title.should.eql(newTitle);
                                     testUtils.API.isISO8601(updatedPost.posts[0].created_at).should.be.true;
                                     testUtils.API.isISO8601(updatedPost.posts[0].updated_at).should.be.true;
-                                    testUtils.API.checkResponse(updatedPost.posts[0], 'post');
+                                    testUtils.API.checkResponse(updatedPost.posts[0], 'post', 'tags');
 
                                     updatedPost.posts[0].tags.should.exist;
                                     updatedPost.posts[0].tags.length.should.be.above(0);
@@ -477,7 +479,7 @@ describe('Post API', function () {
                     draftPost.posts.should.exist;
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
-                    testUtils.API.checkResponse(draftPost.posts[0], 'post');
+                    testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
                     draftPost.posts[0].title = 'Vote for Casper in red';
 
@@ -522,7 +524,7 @@ describe('Post API', function () {
                     draftPost.posts.should.exist;
                     draftPost.posts.length.should.be.above(0);
                     draftPost.posts[0].title.should.eql(newTitle);
-                    testUtils.API.checkResponse(draftPost.posts[0], 'post');
+                    testUtils.API.checkResponse(draftPost.posts[0], 'post', 'tags');
 
                     draftPost.posts[0].title = 'Vote for Casper in red';
                     draftPost.posts[0].status = draftState;

@@ -49,7 +49,7 @@ describe('Authentication API', function () {
                     should.exist(result.users);
                     should.not.exist(result.meta);
                     result.users.should.have.length(1);
-                    testUtils.API.checkResponse(result.users[0], 'user', ['roles']);
+                    testUtils.API.checkResponse(result.users[0], 'user');
 
                     var newUser = result.users[0];
 

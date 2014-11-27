@@ -78,21 +78,21 @@ describe('Roles API', function () {
         }
 
         it('Owner can assign all', function (done) {
-            RoleAPI.browse(_.extend(context.owner, {permissions: 'assign'})).then(function (response) {
+            RoleAPI.browse(_.extend({}, context.owner, {permissions: 'assign'})).then(function (response) {
                 checkBrowseResponse(response);
                 done();
             }).catch(done);
         });
 
         it('Admin can assign all', function (done) {
-            RoleAPI.browse(_.extend(context.admin, {permissions: 'assign'})).then(function (response) {
+            RoleAPI.browse(_.extend({}, context.admin, {permissions: 'assign'})).then(function (response) {
                 checkBrowseResponse(response);
                 done();
             }).catch(done);
         });
 
         it('Editor can assign Author', function (done) {
-            RoleAPI.browse(_.extend(context.editor, {permissions: 'assign'})).then(function (response) {
+            RoleAPI.browse(_.extend({}, context.editor, {permissions: 'assign'})).then(function (response) {
                 should.exist(response);
                 should.exist(response.roles);
                 testUtils.API.checkResponse(response, 'roles');
@@ -104,7 +104,7 @@ describe('Roles API', function () {
         });
 
         it('Author CANNOT assign any', function (done) {
-            RoleAPI.browse(_.extend(context.author, {permissions: 'assign'})).then(function (response) {
+            RoleAPI.browse(_.extend({}, context.author, {permissions: 'assign'})).then(function (response) {
                 should.exist(response);
                 should.exist(response.roles);
                 testUtils.API.checkResponse(response, 'roles');
