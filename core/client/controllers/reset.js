@@ -1,5 +1,3 @@
-/*global console*/
-/* jshint unused: false */
 import ajax from 'ghost/utils/ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 

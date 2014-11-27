@@ -1,7 +1,6 @@
-# [Ghost-UI](http://github.com/TryGhost/Ghost-UI)
-[Travis] [SauceLabs]
+# Ghost Admin Client
 
-Ghost-UI is the Ember.js application used as a client-side admin for the [Ghost](http://ghost.org) blogging platform. This readme is a work in progress guide aimed at explaining the specific nuances of the Ghost Ember app to contributors whose main focus is on this side of things.
+Ember.js application used as a client-side admin for the [Ghost](http://ghost.org) blogging platform. This readme is a work in progress guide aimed at explaining the specific nuances of the Ghost Ember app to contributors whose main focus is on this side of things.
 
 
 ## Architecture
