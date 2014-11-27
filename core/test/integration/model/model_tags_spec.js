@@ -134,7 +134,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = existingTagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function (postModel) {
                     var tagNames = postModel.related('tags').models.map(function (t) { return t.attributes.name; });
                     tagNames.sort().should.eql(seededTagNames);
@@ -160,7 +160,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function (postModel) {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -187,7 +187,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function () {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -216,7 +216,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function (postModel) {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -241,7 +241,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function (postModel) {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -272,7 +272,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function () {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -311,7 +311,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function () {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -346,7 +346,7 @@ describe('Tag Model', function () {
                     postModel = postModel.toJSON();
                     postModel.tags = tagData;
 
-                    return PostModel.edit(postModel, _.extend(context, {id: postModel.id, withRelated: ['tags']}));
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
                 }).then(function () {
                     return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
                 }).then(function (reloadedPost) {
@@ -365,7 +365,7 @@ describe('Tag Model', function () {
             });
 
             it('can add a tag to a post on creation', function (done) {
-                var newPost = _.extend(testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]});
+                var newPost = _.extend({}, testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]});
 
                 PostModel.add(newPost, context).then(function (createdPost) {
                     return PostModel.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['tags']});
