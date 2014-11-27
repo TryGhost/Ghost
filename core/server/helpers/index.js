@@ -1,12 +1,7 @@
 var hbs             = require('express-hbs'),
-    _               = require('lodash'),
     Promise         = require('bluebird'),
-
-    config          = require('../config'),
     errors          = require('../errors'),
-
     utils           = require('./utils'),
-
     coreHelpers     = {},
     registerHelpers;
 
@@ -43,70 +38,6 @@ coreHelpers.url = require('./url');
 coreHelpers.image = require('./image');
 
 coreHelpers.ghost_script_tags = require('./ghost_script_tags');
-
-// ### Filestorage helper
-//
-// *Usage example:*
-// `{{file_storage}}`
-//
-// Returns the config value for fileStorage.
-coreHelpers.file_storage = function (context, options) {
-    /*jshint unused:false*/
-    if (config.hasOwnProperty('fileStorage')) {
-        return _.isObject(config.fileStorage) ? 'true' : config.fileStorage.toString();
-    }
-    return 'true';
-};
-
-// ### Apps helper
-//
-// *Usage example:*
-// `{{apps}}`
-//
-// Returns the config value for apps.
-coreHelpers.apps = function (context, options) {
-    /*jshint unused:false*/
-    if (config.hasOwnProperty('apps')) {
-        return config.apps.toString();
-    }
-    return 'false';
-};
-
-// ### TagsUI helper
-//
-// *Usage example:*
-// `{{tags_ui}}`
-//
-// Returns the config value for tagsUI or false if no value present
-coreHelpers.tags_ui = function (context, options) {
-    /*jshint unused:false*/
-    if (config.hasOwnProperty('tagsUI')) {
-        return config.tagsUI.toString();
-    }
-    return 'false';
-};
-
-// ### Blog Url helper
-//
-// *Usage example:*
-// `{{blog_url}}`
-//
-// Returns the config value for url.
-coreHelpers.blog_url = function (context, options) {
-    /*jshint unused:false*/
-    return config.theme.url.toString();
-};
-
-// ### Blog Title helper
-//
-// *Usage example:*
-// `{{blog_title}}`
-//
-// Returns the config value for url.
-coreHelpers.blog_title = function (context, options) {
-    /*jshint unused:false*/
-    return config.theme.title.toString();
-};
 
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
@@ -177,12 +108,6 @@ registerHelpers = function (adminHbs) {
     // Register admin helpers
     registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
     registerAdminHelper('asset', coreHelpers.asset);
-    registerAdminHelper('apps', coreHelpers.apps);
-    registerAdminHelper('file_storage', coreHelpers.file_storage);
-    registerAdminHelper('tags_ui', coreHelpers.tags_ui);
-
-    registerAdminHelper('blog_title', coreHelpers.blog_title);
-    registerAdminHelper('blog_url', coreHelpers.blog_url);
 };
 
 module.exports = coreHelpers;
