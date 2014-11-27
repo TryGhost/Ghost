@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Ghost Admin Tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/bower_components/mocha/mocha.css">
+    <link rel="stylesheet" href="/core/client/assets/css/ghost.min.css">
+    <script>
+      window.disableBoot = true;
+    </script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+
+    <script src="/core/built/scripts/vendor-dev.js"></script>
+    <script src="/core/built/scripts/ghost-dev.js"></script>
+    <script src="/bower_components/mocha/mocha.js"></script>
+    <script src="/testem.js"></script>
+    <script src="/bower_components/chai/chai.js"></script>
+    <script src="/bower_components/ember-cli-shims/app-shims.js"></script>
+    <script src="/bower_components/ember-mocha-adapter/adapter.js"></script>
+    <script src="/bower_components/ember-mocha/ember-mocha.amd.js"></script>
+    <script src="/core/built/scripts/ghost-tests.js"></script>
+    <script src="/bower_components/ember-cli-test-loader/test-loader.js"></script>
+
+    <script>
+      require('ghost/tests/test-helper');
+    </script>
+  </body>
+</html>
