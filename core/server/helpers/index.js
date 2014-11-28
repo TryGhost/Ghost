@@ -97,6 +97,17 @@ coreHelpers.blog_url = function (context, options) {
     return config.theme.url.toString();
 };
 
+// ### Blog Title helper
+//
+// *Usage example:*
+// `{{blog_title}}`
+//
+// Returns the config value for url.
+coreHelpers.blog_title = function (context, options) {
+    /*jshint unused:false*/
+    return config.theme.title.toString();
+};
+
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
         return undefined;
@@ -170,6 +181,7 @@ registerHelpers = function (adminHbs) {
     registerAdminHelper('file_storage', coreHelpers.file_storage);
     registerAdminHelper('tags_ui', coreHelpers.tags_ui);
 
+    registerAdminHelper('blog_title', coreHelpers.blog_title);
     registerAdminHelper('blog_url', coreHelpers.blog_url);
 };
 

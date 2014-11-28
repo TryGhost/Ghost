@@ -2,6 +2,8 @@ import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var SetupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
+    titleToken: 'Setup',
+
     classNames: ['ghost-setup'],
 
     // use the beforeModel hook to check to see whether or not setup has been

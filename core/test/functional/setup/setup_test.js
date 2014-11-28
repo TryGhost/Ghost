@@ -38,7 +38,7 @@ CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
 
 CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Sign In - ghost', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 

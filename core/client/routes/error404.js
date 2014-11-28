@@ -1,6 +1,7 @@
 var Error404Route = Ember.Route.extend({
     controllerName: 'error',
     templateName: 'error',
+    titleToken: 'Error',
 
     model: function () {
         return {

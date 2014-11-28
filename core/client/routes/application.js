@@ -14,6 +14,10 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         enter: {action: 'confirmModal', scope: 'modal'}
     },
 
+    title: function (tokens) {
+        return tokens.join(' - ') + ' - ' + this.get('config.blogTitle');
+    },
+
     actions: {
         authorizationFailed: function () {
             var currentRoute = this.get('controller').get('currentRouteName');
