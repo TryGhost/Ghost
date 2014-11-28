@@ -1,0 +1,18 @@
+// ------------------------------------------------------------
+// URL Preview
+//
+// Styles for the {{url-preview}} component
+//
+// * Overflow Ellipsis
+// ------------------------------------------------------------
+
+//
+// Overflow Ellipsis
+// --------------------------------------------------
+
+.ghost-url-preview {
+    width: 98%; // Makes sure the preview isnt wider than the input
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
