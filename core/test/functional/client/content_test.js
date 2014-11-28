@@ -9,7 +9,7 @@ CasperTest.begin('Content screen is correct', 17, function suite(test) {
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+        test.assertTitle('Content - Test Blog', 'Title is "Content - Test Blog"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -57,7 +57,7 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+        test.assertTitle('Content - Test Blog', 'Title is "Content - Test Blog"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -104,7 +104,7 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
 //    // Placeholder for infinite scrolling/pagination tests (will need to setup 16+ posts).
 //
 //    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-//        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+//        test.assertTitle('Content - Test Blog', 'Title is "Content - Test Blog"');
 //        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
 //    });
 // });
@@ -115,7 +115,7 @@ CasperTest.begin('Posts can be marked as featured', 6, function suite(test) {
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+        test.assertTitle('Content - Test Blog', 'Title is "Content - Test Blog"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 

@@ -5,7 +5,7 @@
 
 CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Content - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -68,7 +68,7 @@ CasperTest.begin('Admin navigation bar is correct', 28, function suite(test) {
 
 CasperTest.begin('Can transition to the editor and back', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Content - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 

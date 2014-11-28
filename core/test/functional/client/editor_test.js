@@ -11,7 +11,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     };
 
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
         test.assertExists('.entry-markdown', 'Ghost editor is present');
         test.assertExists('.entry-preview', 'Ghost preview is present');
@@ -148,7 +148,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     };
 
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -198,7 +198,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
     // Test image source location
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -222,7 +222,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
     // Test image url source location
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -274,7 +274,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
 CasperTest.begin('Tag editor', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -302,7 +302,7 @@ CasperTest.begin('Tag editor', 7, function suite(test) {
 
 CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -353,7 +353,7 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
 CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
     // Create a post, save it and test refreshed editor
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -473,7 +473,7 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
 
     // Begin test
     casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Title is "Ghost Admin"');
+        test.assertTitle('Content - Test Blog', 'Title is "Content - Test Blog"');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
@@ -521,7 +521,7 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
 
 CasperTest.begin('Publish menu - new post status is correct after failed save', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -566,7 +566,7 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
 
 CasperTest.begin('Publish menu - existing post status is correct after failed save', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -620,7 +620,7 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
 // test the markdown help modal
 CasperTest.begin('Markdown help modal', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -646,7 +646,7 @@ CasperTest.begin('Markdown help modal', 5, function suite(test) {
 // test editor title input is correct after changing a post attribute in the post-settings-menu
 CasperTest.begin('Title input is set correctly after using the Post-Settings-Menu', function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
@@ -693,7 +693,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
 // test editor content input is correct after changing a post attribute in the post-settings-menu
 CasperTest.begin('Editor content is set correctly after using the Post-Settings-Menu', function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Ghost Admin', 'Ghost admin has no title');
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
     });
 
