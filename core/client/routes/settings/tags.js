@@ -10,6 +10,8 @@ var TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMi
         }
     },
 
+    titleToken: 'Tags',
+
     beforeModel: function () {
         if (!this.get('config.tagsUI')) {
             return this.transitionTo('settings.general');

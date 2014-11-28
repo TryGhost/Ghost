@@ -1,8 +1,12 @@
 /*global Ember */
+/* jshint unused: false */
 import ghostPaths from 'ghost/utils/ghost-paths';
+import documentTitle from 'ghost/utils/document-title';
 
 // ensure we don't share routes between all Router instances
 var Router = Ember.Router.extend();
+
+documentTitle();
 
 Router.reopen({
     location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs

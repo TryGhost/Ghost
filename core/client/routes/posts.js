@@ -14,6 +14,8 @@ paginationSettings = {
 };
 
 PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, loadingIndicator, PaginationRouteMixin, {
+    titleToken: 'Content',
+
     classNames: ['manage'],
 
     model: function () {
