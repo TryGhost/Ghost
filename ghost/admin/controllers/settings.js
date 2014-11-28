@@ -1,6 +1,25 @@
 var SettingsController = Ember.Controller.extend({
-    showApps: Ember.computed.bool('config.apps'),
-    showTags: Ember.computed.bool('config.tagsUI')
+    showGeneral: Ember.computed('session.user.name', function () {
+        return this.get('session.user.isAuthor') || this.get('session.user.isEditor') ? false : true;
+    }),
+    showUsers: Ember.computed('session.user.name', function () {
+        return this.get('session.user.isAuthor') ? false : true;
+    }),
+    showTags: Ember.computed('session.user.name', 'config.tagsUI', function () {
+        return this.get('session.user.isAuthor') || !this.get('config.tagsUI') ? false : true;
+    }),
+
+    showCodeInjection: Ember.computed('session.user.name', 'config.codeInjectionUI', function () {
+        return this.get('session.user.isAuthor') || this.get('session.user.isEditor') || !this.get('config.codeInjectionUI') ? false : true;
+    }),
+
+    showLabs: Ember.computed('session.user.name', function () {
+        return this.get('session.user.isAuthor')  || this.get('session.user.isEditor') ? false : true;
+    }),
+
+    showAbout: Ember.computed('session.user.name', function () {
+        return this.get('session.user.isAuthor') ? false : true;
+    })
 });
 
 export default SettingsController;
