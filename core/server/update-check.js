@@ -30,12 +30,11 @@ var crypto   = require('crypto'),
     api      = require('./api'),
     config   = require('./config'),
     errors   = require('./errors'),
-    packageInfo = require('../../package.json'),
 
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org',
-    currentVersion = packageInfo.version;
+    currentVersion = config.ghostVersion;
 
 function updateCheckError(error) {
     api.settings.edit(

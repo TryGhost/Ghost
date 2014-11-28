@@ -112,6 +112,7 @@ ConfigManager.prototype.set = function (config) {
         database: {
             knex: knexInstance
         },
+        ghostVersion: packageInfo.version,
         paths: {
             appRoot:          appRoot,
             subdir:           subdir,
