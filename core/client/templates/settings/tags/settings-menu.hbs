@@ -16,8 +16,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Slug</label>{{!--@TODO show full url preview, not just slug--}}
+                    <label>Slug</label>
                     {{gh-input type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                    {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
                 </div>
 
                 <div class="form-group">
