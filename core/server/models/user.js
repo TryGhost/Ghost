@@ -94,6 +94,16 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    format: function (options) {
+        if (!_.isEmpty(options.website) &&
+            !validator.isURL(options.website, {
+            require_protocol: true,
+            protocols: ['http', 'https']})) {
+            options.website = 'http://' + options.website;
+        }
+        return options;
+    },
+
     posts: function () {
         return this.hasMany('Posts', 'created_by');
     },
@@ -781,10 +791,14 @@ User = ghostBookshelf.Model.extend({
         }).then(function (email) {
             // Fetch the user by email, and hash the password at the same time.
             return Promise.join(
-                self.forge({email: email.toLocaleLowerCase()}).fetch({require: true}),
+                self.getByEmail(email),
                 generatePasswordHash(newPassword)
             );
         }).then(function (results) {
+            if (!results[0]) {
+                return Promise.reject(new Error('User not found'));
+            }
+
             // Update the user with the new password hash
             var foundUser = results[0],
                 passwordHash = results[1];
@@ -845,7 +859,7 @@ User = ghostBookshelf.Model.extend({
                 resolve(userData);
             }
 
-            request({url: gravatarUrl, timeout: 2000}, function (err, response) {
+            request({url: 'http:' + gravatarUrl, timeout: 2000}, function (err, response) {
                 if (err) {
                     // just resolve with no image url
                     resolve(userData);
