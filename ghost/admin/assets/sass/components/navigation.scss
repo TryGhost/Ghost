@@ -4,8 +4,8 @@
 // Styles for the main top bar & mobile navigation
 //
 // * Main wrapper
-// * Ghost branding
 // * Nav Items
+// * Ghost branding
 // * User Menu
 // * Mobile
 // ------------------------------------------------------------
@@ -33,34 +33,6 @@
     // This selector ends up being `body.settings-menu-expanded .global-nav`
     body.settings-menu-expanded & {
         transform: translate3d(-350px, 0px, 0px);
-    }
-}
-
-
-//
-// Ghost branding
-// --------------------------------------------------
-
-.ghost-logo {
-    width: 60px;
-    padding-right: 0;
-    text-align: center;
-    color: lighten($grey, 20%);
-    font-size: 1.2rem;
-    line-height: 1em;
-    transition: color 0.5s;
-
-    span {
-        display: none;
-    }
-}
-.ghost-logo:hover,
-.ghost-logo:focus {
-    color: $lightgrey;
-    transition: color 0.1s;
-
-    .nav-label {
-        background: transparent;
     }
 }
 
@@ -100,6 +72,34 @@
     color: #fff;
     background: darken($darkgrey, 9%);
     transition: color 0.1s, background 0.1s;
+}
+
+
+//
+// Ghost branding
+// --------------------------------------------------
+
+.ghost-logo {
+    width: 60px;
+    padding-right: 0;
+    text-align: center;
+    color: lighten($grey, 20%);
+    font-size: 1.2rem;
+    line-height: 1em;
+    transition: color 0.5s;
+
+    span {
+        display: none;
+    }
+}
+.ghost-logo:hover,
+.ghost-logo:focus {
+    color: $lightgrey;
+    transition: color 0.1s;
+
+    .nav-label {
+        background: transparent;
+    }
 }
 
 
