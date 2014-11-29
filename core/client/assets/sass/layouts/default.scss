@@ -23,7 +23,6 @@
     bottom: 0;
     left: 0;
     overflow: hidden;
-    z-index: 500; // Above the .global-nav when collapsed
     transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
     @media (max-width: 900px) {
@@ -54,6 +53,16 @@
             transform: translate3d(-350px, 0px, 0px);
         }
     }
+}
+
+// A <span> that wraps the main {{outlet}} which created a new z-index stack, separate to the nav
+.viewport-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 500; // Above the .global-nav when collapsed
 }
 
 
