@@ -116,6 +116,12 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             return true;
         }
 
+        // if the Adapter failed to save the model isError will be true
+        // and we should consider the model still dirty.
+        if (model.get('isError')) {
+            return true;
+        }
+
         // models created on the client always return `isDirty: true`,
         // so we need to see which properties have actually changed.
         if (model.get('isNew')) {
@@ -182,9 +188,10 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
-        var message = this.messageMap.errors.post[prevStatus][status];
+        var message = this.messageMap.errors.post[prevStatus][status],
+            error = (errors && errors[0] && errors[0].message) || 'Unknown Error';
 
-        message += '<br />' + errors[0].message;
+        message += '<br />' + error;
 
         this.notifications.showError(message, {delayed: delay});
     },
@@ -257,7 +264,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
                 self.set('status', prevStatus);
 
-                return Ember.RSVP.reject(errors);
+                return self.get('model');
             });
 
             psmController.set('lastPromise', promise);
