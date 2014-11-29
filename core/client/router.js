@@ -1,22 +1,17 @@
-/*global Ember */
-/* jshint unused: false */
 import ghostPaths from 'ghost/utils/ghost-paths';
 import documentTitle from 'ghost/utils/document-title';
 
-// ensure we don't share routes between all Router instances
-var Router = Ember.Router.extend();
-
-documentTitle();
-
-Router.reopen({
+var Router = Ember.Router.extend({
     location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
     rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 
-    clearNotifications: function () {
+    clearNotifications: Ember.on('didTransition', function () {
         this.notifications.closePassive();
         this.notifications.displayDelayed();
-    }.on('didTransition')
+    })
 });
+
+documentTitle();
 
 Router.map(function () {
     this.route('setup');
