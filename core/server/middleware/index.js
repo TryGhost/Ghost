@@ -12,7 +12,6 @@ var api            = require('../api'),
     hbs            = require('express-hbs'),
     logger         = require('morgan'),
     middleware     = require('./middleware'),
-    packageInfo    = require('../../../package.json'),
     path           = require('path'),
     routes         = require('../routes'),
     slashes        = require('connect-slashes'),
@@ -36,7 +35,7 @@ var api            = require('../api'),
 function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
-    res.locals.version = packageInfo.version;
+    res.locals.version = config.ghostVersion;
     // relative path from the URL
     res.locals.relativeUrl = req.path;
 
