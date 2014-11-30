@@ -944,7 +944,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT render post via /YYYY/MM/DD/:slug with non-matching date in url', function (done) {
-                    var date = moment(mockPosts[1].published_at).subtract('days', 1).format('YYYY/MM/DD'),
+                    var date = moment(mockPosts[1].published_at).subtract(1, 'days').format('YYYY/MM/DD'),
                         req = {
                             path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
                         },
