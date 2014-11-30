@@ -20,12 +20,16 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
 
     actions: {
         authorizationFailed: function () {
-            var currentRoute = this.get('controller').get('currentRouteName');
+            var currentRoute = this.get('controller').get('currentRouteName'),
+                editorController;
 
             if (currentRoute.split('.')[0] === 'editor') {
-                this.send('openModal', 'auth-failed-unsaved', this.controllerFor(currentRoute));
+                editorController = this.controllerFor(currentRoute);
 
-                return;
+                if (editorController.get('isDirty')) {
+                    this.send('openModal', 'auth-failed-unsaved', editorController);
+                    return;
+                }
             }
 
             this._super();
