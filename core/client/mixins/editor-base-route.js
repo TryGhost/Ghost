@@ -113,8 +113,8 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
         var tags = model.get('tags');
 
         controller.set('scratch', model.get('markdown'));
-
         controller.set('titleScratch', model.get('title'));
+        controller.set('hasShownFirstSaveError', false);
 
         if (tags) {
             // used to check if anything has changed in the editor
