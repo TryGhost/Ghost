@@ -1,9 +1,9 @@
-
-var _ = require('lodash'),
-    xml = require('xml'),
-    moment = require('moment'),
-    api = require('../../api'),
-    config = require('../../config'),
+var _       = require('lodash'),
+    xml     = require('xml'),
+    moment  = require('moment'),
+    api     = require('../../api'),
+    config  = require('../../config'),
+    utils   = require('./utils'),
     Promise = require('bluebird'),
     CHANGE_FREQ = 'weekly',
     XMLNS_DECLS;
@@ -87,9 +87,7 @@ _.extend(BaseSiteMapGenerator.prototype, {
         };
 
         // Return the xml
-        return xml(data, {
-            declaration: true
-        });
+        return utils.getDeclarations() + xml(data);
     },
 
     updateXmlFromNodes: function (urlElements) {
