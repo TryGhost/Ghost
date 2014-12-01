@@ -20,8 +20,9 @@ var EditorNewRoute = AuthenticatedRoute.extend(base, {
         // from previous posts
         psm.removeObserver('titleScratch', psm, 'titleObserver');
 
-        // Ensure that the PSM Image Uploader resets
+        // Ensure that the PSM Image Uploader and Publish Date selector resets
         psm.send('resetUploader');
+        psm.send('resetPubDate');
 
         this._super(controller, model);
     }
