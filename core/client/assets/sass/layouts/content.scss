@@ -60,7 +60,7 @@
 
 .content-list {
     width: 33%;
-    padding: 15px;
+    // padding: 15px;
     position: absolute;
     bottom: 0;
     top: 0;
@@ -103,11 +103,11 @@
         position: absolute;
         top: 0;
         right: 0;
-        bottom: 0;
+        // bottom: 0;
         left: 0;
         padding-top: 40px;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+        // overflow: auto;
+        // -webkit-overflow-scrolling: touch;
     }
 
     .entry-title {
@@ -231,19 +231,23 @@
 
 .content-preview {
     width: 67%;
-    padding: 15px;
+    // padding: 15px;
     position: absolute;
-    bottom: 0;
+    // bottom: 0;
     top: 0;
     right: 0;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
+    // overflow: auto;
+    // -webkit-overflow-scrolling: touch;
     background: #fff;
 
     @media (max-width: 900px) {
         width: 100%;
         border: none;
         overflow: visible;
+    }
+
+    .nano-content {
+        padding: 15px;
     }
 
     .unfeatured {
