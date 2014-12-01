@@ -423,10 +423,10 @@ var _              = require('lodash'),
             docker: {
                 docs: {
                     dest: 'docs',
-                    src: ['.'],
+                    src: ['.' ],
                     options: {
                         onlyUpdated: true,
-                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,' +
+                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*doc*,*vendor,*client,Gruntfile.js,' +
                             'config.js,coverage.html,.travis.yml,*.min.css,screen.css',
                         extras: ['fileSearch']
                     }
