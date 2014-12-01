@@ -451,6 +451,14 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
         closeSubview: function () {
             this.set('isViewingSubview', false);
+        },
+
+        resetUploader: function () {
+            var uploader = this.get('uploaderReference');
+
+            if (uploader && uploader[0]) {
+                uploader[0].uploaderUi.reset();
+            }
         }
     }
 });

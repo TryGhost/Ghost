@@ -2,7 +2,10 @@ import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
 var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
+    titleToken: 'Sign In',
+
     classNames: ['ghost-login'],
+
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
             this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);

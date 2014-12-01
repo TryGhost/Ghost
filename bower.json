@@ -25,5 +25,10 @@
     "showdown-ghost": "0.3.4",
     "validator-js": "3.22.1",
     "google-caja": "5669.0.0"
+  },
+  "devDependencies": {
+    "ember-mocha": "~0.1.4",
+    "ember-cli-test-loader": "dgeb/ember-cli-test-loader#test-agnostic",
+    "ember-cli-shims": "stefanpenner/ember-cli-shims#~0.0.3"
   }
 }

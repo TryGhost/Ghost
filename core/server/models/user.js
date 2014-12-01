@@ -705,7 +705,7 @@ User = ghostBookshelf.Model.extend({
                 text = '';
 
             // Token:
-            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash ))
+            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash )).replace('=', '-')
 
             hash.update(String(expires));
             hash.update(email.toLocaleLowerCase());
@@ -714,13 +714,19 @@ User = ghostBookshelf.Model.extend({
 
             text += [expires, email, hash.digest('base64')].join('|');
 
-            return new Buffer(text).toString('base64');
+            // it's possible that the token might get URI encoded, which breaks it
+            // we replace any `=`s with `-`s as they aren't valid base64 characters
+            // but are valid in a URL, so won't suffer encoding issues
+            return new Buffer(text).toString('base64').replace('=', '-');
         });
     },
 
     validateToken: function (token, dbHash) {
         /*jslint bitwise:true*/
         // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
+        // We replaced `=`s with `-`s when we sent the token via email, so
+        // now we reverse that change to get a valid base64 string to decode
+        token = token.replace('-', '=');
         var tokenText = new Buffer(token, 'base64').toString('ascii'),
             parts,
             expires,
@@ -862,13 +868,13 @@ User = ghostBookshelf.Model.extend({
 
           /*
             if (config.isPrivacyDisabled('useGravatar')) {
-                resolve(userData);
+                return resolve(userData);
             }
 
             request({url: 'http:' + gravatarUrl, timeout: 2000}, function (err, response) {
                 if (err) {
                     // just resolve with no image url
-                    resolve(userData);
+                    return resolve(userData);
                 }
 
                 //console.log(response);

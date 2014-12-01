@@ -1,4 +1,3 @@
-/* jshint unused: false */
 import ajax from 'ghost/utils/ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
@@ -24,7 +23,7 @@ var ForgottenController = Ember.Controller.extend(ValidationEngine, {
                             email: data.email
                         }]
                     }
-                }).then(function (resp) {
+                }).then(function () {
                     self.toggleProperty('submitting');
                     self.notifications.showSuccess('发送成功，请按照邮件提示重置密码。(如未收到，请检查垃圾箱)', {delayed: true});
                     self.set('email', '');

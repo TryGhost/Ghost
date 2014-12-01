@@ -1,7 +1,16 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
+import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
-var TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, {
+var TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
+
+    actions: {
+        willTransition: function () {
+            this.send('closeSettingsMenu');
+        }
+    },
+
+    titleToken: 'Tags',
 
     beforeModel: function () {
         if (!this.get('config.tagsUI')) {
@@ -14,6 +23,20 @@ var TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, {
 
     model: function () {
         return this.store.find('tag');
+    },
+
+    setupController: function (controller, model) {
+        this._super(controller, model);
+        this.setupPagination();
+    },
+
+    renderTemplate: function (controller, model) {
+        this._super(controller, model);
+        this.render('settings/tags/settings-menu', {
+            into: 'application',
+            outlet: 'settings-menu',
+            view: 'settings/tags/settings-menu'
+        });
     }
 });
 

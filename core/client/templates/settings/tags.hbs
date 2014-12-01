@@ -2,84 +2,19 @@
     <a class="btn btn-default btn-back active" href="/ghost/settings/">Back</a>
     <h2 class="page-title">Tags</h2>
     <section class="page-actions">
-        <button type="button" class="btn btn-green">New Tag</button>
-        <span class="tags-search">
-            <button href="#" class="btn btn-default">
-                <i class="icon-search"></i>
-                <span class="hidden">Search Tags</span>
-            </button>
-            <input type="text" class="tags-search-input">
-        </span>
+        <button type="button" class="btn btn-green" {{action "newTag"}}>New Tag</button>
     </section>
 </header>
 
 <section class="content settings-tags">
- {{#each}}
-     <div class="settings-tag">
-         <a href="#" class="tag-title">{{name}}</a>
-         <span class="label label-default">/{{slug}}</span>
-         <p class="tag-description">{{description}}</p>
-         <span class="tags-count">N/A</span>
-     </div>
- {{/each}}
-</section>
-{{!--  This is the example markup
-<section class="content settings-tags">
-
-    <div class="settings-tag">
-        <a href="#" class="tag-title">News</a>
-        <span class="label label-default">/news</span>
-        <p class="tag-description">The latest news, reviews and information from around the world</p>
-        <span class="tags-count">20</span>
-
+    {{#each tag in tags}}
         <div class="settings-tag">
-            <a href="#" class="tag-title">General</a>
-            <span class="label label-default">/news/general</span>
-            <p class="tag-description">My go-to category when I’m not really sure what else to file news</p>
-            <span class="tags-count">7</span>
+            <button class="tag-edit-button" {{action "editTag" tag}}>
+                <span class="tag-title">{{tag.name}}</span>
+                <span class="label label-default">/{{tag.slug}}</span>
+                <p class="tag-description">{{tag.description}}</p>
+                <span class="tags-count">N/A</span>
+            </button>
         </div>
-    </div>
-
-    <div class="settings-tag">
-        <a href="#" class="tag-title">Image</a>
-        <span class="label label-alt">Private</span>
-        <p class="tag-description">All posts with the “image” post format</p>
-        <span class="tags-count">12</span>
-    </div>
-
-    <div class="settings-tag">
-        <a href="#" class="tag-title">Kittens</a>
-        <span class="label label-default">/kittens</span>
-        <p class="tag-description">My sordid past and wrongdoings</p>
-        <span class="tags-count">9</span>
-
-        <div class="settings-tag">
-            <a href="#" class="tag-title">A Short History of Nearly Everything</a>
-            <span class="label label-default">/kittens/a-short-history</span>
-            <span class="tags-count">4</span>
-
-            <div class="settings-tag">
-                <a href="#" class="tag-title">In Parts</a>
-                <span class="label label-default">/kittens/a-short-history/in-parts</span>
-                <p class="tag-description">Lorem ipsum kittens innit</p>
-                <span class="tags-count">2</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="settings-tag">
-        <a href="#" class="tag-title">Video</a>
-        <span class="label label-default">Private</span>
-        <p class="tag-description">All posts containing a YouTube video link</p>
-        <span class="tags-count">6</span>
-    </div>
-
-    <div class="settings-tag">
-        <a href="#" class="tag-title">The End</a>
-        <span class="label label-default">/the-end</span>
-        <p class="tag-description">The final frontier</p>
-        <span class="tags-count">1</span>
-    </div>
-
+    {{/each}}
 </section>
---}}

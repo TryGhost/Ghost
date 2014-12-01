@@ -37,11 +37,11 @@ var _            = require('lodash'),
 updateConfigTheme = function () {
     config.set({
         theme: {
-            title: settingsCache.title.value || '',
-            description: settingsCache.description.value || '',
-            logo: settingsCache.logo.value || '',
-            cover: settingsCache.cover.value || '',
-            tongji: settingsCache.tongji.value || ''
+            title: (settingsCache.title && settingsCache.title.value) || '',
+            description: (settingsCache.description && settingsCache.description.value) || '',
+            logo: (settingsCache.logo && settingsCache.logo.value) || '',
+            cover: (settingsCache.cover && settingsCache.cover.value) || '',
+            tongji: (settingsCache.tongji && settingsCache.tongji.value) || ''
         }
     });
 };

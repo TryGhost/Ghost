@@ -14,6 +14,10 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         enter: {action: 'confirmModal', scope: 'modal'}
     },
 
+    title: function (tokens) {
+        return tokens.join(' - ') + ' - ' + this.get('config.blogTitle');
+    },
+
     actions: {
         authorizationFailed: function () {
             var currentRoute = this.get('controller').get('currentRouteName');
@@ -31,11 +35,14 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
             this.toggleProperty('controller.showGlobalMobileNav');
         },
 
-        toggleSettingsMenu: function () {
-            this.toggleProperty('controller.showSettingsMenu');
+        openSettingsMenu: function () {
+            this.set('controller.showSettingsMenu', true);
         },
         closeSettingsMenu: function () {
             this.set('controller.showSettingsMenu', false);
+        },
+        toggleSettingsMenu: function () {
+            this.toggleProperty('controller.showSettingsMenu');
         },
 
         closePopups: function () {

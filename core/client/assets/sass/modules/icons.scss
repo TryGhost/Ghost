@@ -14,6 +14,7 @@
 // * Icon Variables
 // * Icon Class Styles
 // * Icon Classes
+// * Div-based Icon Classes
 // ------------------------------------------------------------
 
 
@@ -172,6 +173,8 @@ $i-weather-snow:    \e03b;
 $i-weather-cloudy:  \e03c;
 $i-lightning:       \e03d;
 $i-code:            \e03e;
+$i-atom:            \e601;
+$i-compass:         \e602;
 
 
 //
@@ -384,4 +387,29 @@ $i-code:            \e03e;
 }
 .icon-lightning:before {
     content: '#{$i-lightning}';
+}
+.icon-atom:before {
+    content: '#{$i-atom}';
+}
+.icon-compass:before {
+    content: '#{$i-compass}';
+}
+
+
+//
+// Div-based Icon Classes
+// --------------------------------------------------
+
+.icon-grab:before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 15px;
+    background-size: 4px 4px;
+    background-color: $midbrown;
+    background-position: -1px -1px;
+    background-image: linear-gradient(#fff 1px, transparent 1px),
+        linear-gradient(90deg, #fff 1px, transparent 1px),
+        linear-gradient(#fff 1px, transparent 1px),
+        linear-gradient(90deg, #fff 1px, transparent 1px);
 }
