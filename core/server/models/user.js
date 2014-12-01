@@ -1,6 +1,7 @@
 var _              = require('lodash'),
     Promise        = require('bluebird'),
     errors         = require('../errors'),
+    utils          = require('../utils'),
     bcrypt         = require('bcryptjs'),
     ghostBookshelf = require('./base'),
     crypto         = require('crypto'),
@@ -706,28 +707,20 @@ User = ghostBookshelf.Model.extend({
                 text = '';
 
             // Token:
-            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash )).replace('=', '-')
-
+            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash ))
             hash.update(String(expires));
             hash.update(email.toLocaleLowerCase());
             hash.update(foundUser.get('password'));
             hash.update(String(dbHash));
 
             text += [expires, email, hash.digest('base64')].join('|');
-
-            // it's possible that the token might get URI encoded, which breaks it
-            // we replace any `=`s with `-`s as they aren't valid base64 characters
-            // but are valid in a URL, so won't suffer encoding issues
-            return new Buffer(text).toString('base64').replace('=', '-');
+            return new Buffer(text).toString('base64');
         });
     },
 
     validateToken: function (token, dbHash) {
         /*jslint bitwise:true*/
         // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
-        // We replaced `=`s with `-`s when we sent the token via email, so
-        // now we reverse that change to get a valid base64 string to decode
-        token = token.replace('-', '=');
         var tokenText = new Buffer(token, 'base64').toString('ascii'),
             parts,
             expires,
@@ -793,7 +786,7 @@ User = ghostBookshelf.Model.extend({
 
         return validatePasswordLength(newPassword).then(function () {
             // Validate the token; returns the email address from token
-            return self.validateToken(token, dbHash);
+            return self.validateToken(utils.decodeBase64URLsafe(token), dbHash);
         }).then(function (email) {
             // Fetch the user by email, and hash the password at the same time.
             return Promise.join(
