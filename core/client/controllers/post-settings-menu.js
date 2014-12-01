@@ -109,6 +109,10 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         promise = Ember.RSVP.resolve(afterSave).then(function () {
             return self.get('slugGenerator').generateSlug(title).then(function (slug) {
                 self.set(destination, slug);
+            }).catch(function () {
+                // Nothing to do (would be nice to log this somewhere though),
+                // but a rejected promise needs to be handled here so that a resolved
+                // promise is returned.
             });
         });
 
