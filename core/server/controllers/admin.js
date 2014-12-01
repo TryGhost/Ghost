@@ -13,8 +13,15 @@ adminControllers = {
         /*jslint unparam:true*/
 
         function renderIndex() {
-            res.render('default', {
-                skip_google_fonts: config.isPrivacyDisabled('useGoogleFonts')
+            return api.configuration.browse().then(function (data) {
+                var apiConfig = _.omit(data.configuration, function (value) {
+                    return _.contains(['environment', 'database', 'mail', 'version'], value.key);
+                });
+
+                res.render('default', {
+                    skip_google_fonts: config.isPrivacyDisabled('useGoogleFonts'),
+                    configuration: apiConfig
+                });
             });
         }
 
