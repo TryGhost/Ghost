@@ -363,7 +363,7 @@ describe('Post API', function () {
                             var publishedPost = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             res.headers['x-cache-invalidate'].should.eql(
-                                '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /' + publishedPost.posts[0].slug + '/'
+                                '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /sitemap-*.xml, /' + publishedPost.posts[0].slug + '/'
                             );
 
                             publishedPost.should.exist;
@@ -782,7 +782,7 @@ describe('Post API', function () {
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
                     res.headers['x-cache-invalidate'].should.eql(
-                        '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /' + jsonResponse.posts[0].slug + '/'
+                        '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /sitemap-*.xml, /' + jsonResponse.posts[0].slug + '/'
                     );
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].id.should.eql(deletePostId);
