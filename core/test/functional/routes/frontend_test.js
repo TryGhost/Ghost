@@ -925,4 +925,44 @@ describe('Frontend Routing', function () {
                 });
         });
     });
+
+    describe('Site Map', function () {
+        before(function (done) {
+            testUtils.initData().then(function () {
+                return testUtils.fixtures.insertPosts();
+            }).then(function () {
+                done();
+            }).catch(done);
+        });
+
+        it('should redirect for /sitemap.xml', function (done) {
+            request.get('/sitemap.xml')
+                .expect(301)
+                .expect('location', /sitemap-index.xml/)
+                .end(doEnd(done));
+        });
+
+        it('should serve sitemap-index.xml', function (done) {
+            request.get('/sitemap-index.xml')
+                .expect(200)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(doEnd(done));
+        });
+
+        it('should serve sitemap-posts.xml', function (done) {
+            request.get('/sitemap-posts.xml')
+                .expect(200)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(doEnd(done));
+        });
+
+        it('should serve sitemap-pages.xml', function (done) {
+            request.get('/sitemap-posts.xml')
+                .expect(200)
+                .expect('Content-Type', 'text/xml; charset=utf-8')
+                .end(doEnd(done));
+        });
+
+        // TODO: Other pages and verify content
+    });
 });
