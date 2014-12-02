@@ -15,6 +15,7 @@ var Promise         = require('bluebird'),
 function prepareInclude(include) {
     var index;
 
+    include = include || '';
     include = _.intersection(include.split(','), allowedIncludes);
     index = include.indexOf('author');
 

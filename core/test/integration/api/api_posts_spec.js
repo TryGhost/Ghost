@@ -43,7 +43,7 @@ describe('Post API', function () {
             var post;
 
             should.exist(found);
-            testUtils.API.checkResponse(found.posts[0], 'post');
+            testUtils.API.checkResponse(found.posts[0], 'post', 'tags');
 
             post = found.posts[0];
 

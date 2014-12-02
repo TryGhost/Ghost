@@ -174,7 +174,7 @@ User = ghostBookshelf.Model.extend({
      */
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -253,7 +253,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // only include a limit-query if a numeric limit is provided
         if (_.isNumber(options.limit)) {
@@ -372,7 +372,7 @@ User = ghostBookshelf.Model.extend({
         delete data.status;
 
         options = options || {};
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // Support finding by role
         if (data.role) {
@@ -413,7 +413,7 @@ User = ghostBookshelf.Model.extend({
             roleId;
 
         options = options || {};
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         return ghostBookshelf.Model.edit.call(this, data, options).then(function (user) {
             if (data.roles) {
@@ -465,7 +465,7 @@ User = ghostBookshelf.Model.extend({
             roles;
 
         options = this.filterOptions(options, 'add');
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function (authorRole) {
             // Get the role we're going to assign to this user, or the author role if there isn't one
@@ -518,7 +518,7 @@ User = ghostBookshelf.Model.extend({
             userData = this.filterData(data);
 
         options = this.filterOptions(options, 'setup');
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
         options.shortSlug = true;
 
         return validatePasswordLength(userData.password).then(function () {
@@ -545,12 +545,16 @@ User = ghostBookshelf.Model.extend({
             userModel = userModelOrId,
             origArgs;
 
-        // If we passed in an id instead of a model, get the model then check the permissions
+        // If we passed in a model without its related roles, we need to fetch it again
+        if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
+            userModelOrId = userModelOrId.id;
+        }
+        // If we passed in an id instead of a model get the model first
         if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
             // Grab the original args without the first one
             origArgs = _.toArray(arguments).slice(1);
             // Get the actual post model
-            return this.findOne({id: userModelOrId, status: 'all'}).then(function (foundUserModel) {
+            return this.findOne({id: userModelOrId, status: 'all'}, {include: ['roles']}).then(function (foundUserModel) {
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundUserModel].concat(origArgs);
 
@@ -833,18 +837,18 @@ User = ghostBookshelf.Model.extend({
             return ghostBookshelf.model('Role').findOne({name: 'Owner'});
         }).then(function (result) {
             ownerRole = result;
-            return User.findOne({id: options.context.user});
+            return User.findOne({id: options.context.user}, {include: ['roles']});
         }).then(function (ctxUser) {
             // check if user has the owner role
             var currentRoles = ctxUser.toJSON().roles;
-            if (!_.contains(currentRoles, ownerRole.id)) {
+            if (!_.any(currentRoles, {id: ownerRole.id})) {
                 return Promise.reject(new errors.NoPermissionError('Only owners are able to transfer the owner role.'));
             }
             contextUser = ctxUser;
-            return User.findOne({id: object.id});
+            return User.findOne({id: object.id}, {include: ['roles']});
         }).then(function (user) {
             var currentRoles = user.toJSON().roles;
-            if (!_.contains(currentRoles, adminRole.id)) {
+            if (!_.any(currentRoles, {id: adminRole.id})) {
                 return Promise.reject(new errors.ValidationError('Only administrators can be assigned the owner role.'));
             }
 

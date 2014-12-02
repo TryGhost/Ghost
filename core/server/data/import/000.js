@@ -36,7 +36,7 @@ Importer000.prototype.canImport = function (data) {
 Importer000.prototype.loadUsers = function () {
     var users = {all: {}};
 
-    return models.User.findAll({include: 'roles'}).then(function (_users) {
+    return models.User.findAll({include: ['roles']}).then(function (_users) {
         _users.forEach(function (user) {
             users.all[user.get('email')] = {realId: user.get('id')};
             if (user.related('roles').toJSON()[0] && user.related('roles').toJSON()[0].name === 'Owner') {
