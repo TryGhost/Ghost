@@ -43,10 +43,10 @@ describe('Users API', function () {
             testUtils.API.checkResponse(response, 'users');
             should.exist(response.users);
             response.users.should.have.length(count);
-            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-            testUtils.API.checkResponse(response.users[1], 'user', ['roles']);
-            testUtils.API.checkResponse(response.users[2], 'user', ['roles']);
-            testUtils.API.checkResponse(response.users[3], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[0], 'user');
+            testUtils.API.checkResponse(response.users[1], 'user');
+            testUtils.API.checkResponse(response.users[2], 'user');
+            testUtils.API.checkResponse(response.users[3], 'user');
         }
 
         it('Owner can browse', function (done) {
@@ -87,12 +87,12 @@ describe('Users API', function () {
 
         it('Can browse invited/invited-pending (admin)', function (done) {
             testUtils.fixtures.createInvitedUsers().then(function () {
-                UserAPI.browse(_.extend(testUtils.context.admin, {status: 'invited'})).then(function (response) {
+                UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'invited'})).then(function (response) {
                     should.exist(response);
                     testUtils.API.checkResponse(response, 'users');
                     should.exist(response.users);
                     response.users.should.have.length(3);
-                    testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+                    testUtils.API.checkResponse(response.users[0], 'user');
                     response.users[0].status.should.equal('invited-pending');
 
                     done();
@@ -116,8 +116,23 @@ describe('Users API', function () {
         });
 
         it('Can browse all', function (done) {
-            UserAPI.browse(_.extend(testUtils.context.admin, {status: 'all'})).then(function (response) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'all'})).then(function (response) {
                 checkBrowseResponse(response, 7);
+                done();
+            }).catch(done);
+        });
+
+        it('Can browse with roles', function (done) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'all', include: 'roles'})).then(function (response) {
+                should.exist(response);
+                testUtils.API.checkResponse(response, 'users');
+                should.exist(response.users);
+                response.users.should.have.length(7);
+                response.users.should.have.length(7);
+                testUtils.API.checkResponse(response.users[0], 'user', 'roles');
+                testUtils.API.checkResponse(response.users[1], 'user', 'roles');
+                testUtils.API.checkResponse(response.users[2], 'user', 'roles');
+                testUtils.API.checkResponse(response.users[3], 'user', 'roles');
                 done();
             }).catch(done);
         });
@@ -129,7 +144,7 @@ describe('Users API', function () {
             should.not.exist(response.meta);
             should.exist(response.users);
             response.users[0].id.should.eql(1);
-            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[0], 'user');
             response.users[0].created_at.should.be.a.Date;
         }
 
@@ -141,7 +156,8 @@ describe('Users API', function () {
         });
 
         it('Admin can read', function (done) {
-            UserAPI.read(_.extend({}, context.admin, {id: userIdFor.owner})).then(function (response) {
+            var stuff = _.extend({}, context.admin, {id: userIdFor.owner});
+            UserAPI.read(stuff).then(function (response) {
                 checkReadResponse(response);
 
                 done();
@@ -178,7 +194,7 @@ describe('Users API', function () {
             should.not.exist(response.meta);
             should.exist(response.users);
             response.users.should.have.length(1);
-            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[0], 'user');
             response.users[0].name.should.equal(newName);
             response.users[0].updated_at.should.be.a.Date;
         }
@@ -535,7 +551,7 @@ describe('Users API', function () {
             should.exist(response.users);
             should.not.exist(response.meta);
             response.users.should.have.length(1);
-            testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
+            testUtils.API.checkResponse(response.users[0], 'user');
             response.users[0].created_at.should.be.a.Date;
         }
 
