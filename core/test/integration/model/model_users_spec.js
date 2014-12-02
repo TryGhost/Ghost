@@ -317,7 +317,7 @@ describe('User Model', function run() {
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
 
-                return UserModel.add(userData, _.extend({}, context));
+                return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
             }).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);

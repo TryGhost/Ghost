@@ -288,7 +288,7 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
 
         // fetch relations passed to options.include
-        options.withRelated = options.include;
+        options.withRelated = _.union(options.withRelated, options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -361,7 +361,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union(['tags', 'fields'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
@@ -506,7 +506,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union(['tags', 'fields'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         return ghostBookshelf.Model.findOne.call(this, data, options);
     },
