@@ -39,8 +39,10 @@ Router.map(function () {
 
         this.route('about');
         this.route('tags');
+        this.route('labs');
     });
 
+    // Redirect debug to settings labs
     this.route('debug');
 
     // Redirect legacy content to posts

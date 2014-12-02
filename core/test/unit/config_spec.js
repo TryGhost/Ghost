@@ -83,7 +83,6 @@ describe('Config', function () {
                 'helperTemplates',
                 'exportPath',
                 'lang',
-                'debugPath',
                 'availableThemes',
                 'availableApps',
                 'builtScriptPath'
