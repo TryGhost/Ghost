@@ -4,7 +4,7 @@ import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 var showdown,
     formatMarkdown;
 
-showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm']});
+showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes']});
 
 formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
     var escapedhtml = '';
