@@ -429,6 +429,13 @@ describe('Post Model', function () {
             }).then(function (paginationResult) {
                 paginationResult.meta.pagination.pages.should.equal(11);
 
+                return PostModel.findPage({limit: 'all', status: 'all'});
+            }).then(function (paginationResult) {
+                paginationResult.meta.pagination.page.should.equal(1);
+                paginationResult.meta.pagination.limit.should.equal('all');
+                paginationResult.meta.pagination.pages.should.equal(1);
+                paginationResult.posts.length.should.equal(107);
+
                 done();
             }).catch(done);
         });
