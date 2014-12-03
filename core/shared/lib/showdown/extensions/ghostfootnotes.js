@@ -85,7 +85,6 @@ function replaceEndFootnotes(text) {
                         return '{gfm-js-extract-pre-' + hash + '}';
                     }, 'm');
 
-                    console.log(text);
                     text = replaceInlineFootnotes(text);
                     text = replaceEndFootnotes(text);
 
