@@ -309,7 +309,7 @@ User = ghostBookshelf.Model.extend({
             // Format response of data
             .then(function (resp) {
                 var totalUsers = parseInt(resp[0].aggregate, 10),
-                    calcPages = Math.ceil(totalUsers / options.limit),
+                    calcPages = Math.ceil(totalUsers / options.limit) || 0,
                     pagination = {},
                     meta = {},
                     data = {};
