@@ -1,9 +1,9 @@
-<div class="content-cover" {{action "closeTagEditor"}}></div>
+<div class="content-cover" {{action "closeSettingsMenu"}}></div>
 <div class="settings-menu-container">
     <div class="settings-menu settings-menu-pane settings-menu-pane-in">
         <div class="settings-menu-header">
             <h4>Tag Settings</h4>
-            <button class="close icon-x settings-menu-header-action" {{action "closeTagEditor"}}>
+            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}>
                 <span class="hidden">Close</span>
             </button>
         </div>
@@ -11,23 +11,22 @@
             <form>
                 <div class="form-group">
                     <label>Tag Name</label>
-                    {{input type="text" value=activeTag.name}}
+                    {{gh-input type="text" placeholder=activeTag.name value=activeTagNameScratch focus-out="saveActiveTagName"}}
                 </div>
 
                 <div class="form-group">
                     <label>Slug</label>{{!--@TODO show full url preview, not just slug--}}
-                    {{input type="text" value=activeTag.slug}}
+                    {{gh-input type="text" placeholder=activeTag.slug value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
                 </div>
 
                 <div class="form-group">
                     <label>Description</label>
-                    {{textarea value=activeTag.description}}
+                    {{gh-textarea value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
                 </div>
 
                 {{#unless activeTag.isNew}}
-                <button class="btn btn-red icon-trash" {{action "deleteTag" activeTag}}>Delete Tag</button>
+                    <button class="btn btn-red icon-trash" {{action "deleteTag" activeTag}}>Delete Tag</button>
                 {{/unless}}
-                <button class="btn btn-green tag-save-button" {{action "saveTag" activeTag}}>{{view.saveText}}</button>
             </form>
         </div>
     </div>
