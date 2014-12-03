@@ -34,7 +34,7 @@ describe('{{image}} helper', function () {
         helpers.image.call({
             image: '/content/images/image-relative-url.png',
             author: {
-                image: '/content/images/author-image-relatve-url.png'
+                image: '/content/images/author-image-relative-url.png'
             }
         }).then(function (rendered) {
             should.exist(rendered);
@@ -45,7 +45,7 @@ describe('{{image}} helper', function () {
 
     it('should output absolute url of image if the option is present ', function (done) {
         helpers.image.call({image: '/content/images/image-relative-url.png',
-        author: {image: '/content/images/author-image-relatve-url.png'}},
+        author: {image: '/content/images/author-image-relative-url.png'}},
         {hash: {absolute: 'true'}}).then(function (rendered) {
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/content/images/image-relative-url.png');
@@ -89,7 +89,7 @@ describe('{{image}} helper when Ghost is running on a sub-directory', function (
         helpers.image.call({
             image: '/blog/content/images/image-relative-url.png',
             author: {
-                image: '/blog/content/images/author-image-relatve-url.png'
+                image: '/blog/content/images/author-image-relative-url.png'
             }
         }).then(function (rendered) {
             should.exist(rendered);
@@ -104,6 +104,19 @@ describe('{{image}} helper when Ghost is running on a sub-directory', function (
         {hash: {absolute: 'true'}}).then(function (rendered) {
             should.exist(rendered);
             rendered.should.equal('http://testurl.com/blog/content/images/image-relative-url.png');
+            done();
+        }).catch(done);
+    });
+
+    it('should not change output for an external url', function (done) {
+        helpers.image.call({
+            image: 'http://example.com/picture.jpg',
+            author: {
+                image: '/blog/content/images/author-image-relative-url.png'
+            }
+        }).then(function (rendered) {
+            should.exist(rendered);
+            rendered.should.equal('http://example.com/picture.jpg');
             done();
         }).catch(done);
     });
