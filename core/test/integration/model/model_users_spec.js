@@ -260,6 +260,19 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
+        it('can findPage with limit all', function (done) {
+            return testUtils.fixtures.createExtraUsers().then(function () {
+                return UserModel.findPage({limit: 'all'});
+            }).then(function (results) {
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal('all');
+                results.meta.pagination.pages.should.equal(1);
+                results.users.length.should.equal(7);
+
+                done();
+            }).catch(done);
+        });
+
         it('can NOT findPage for a page that overflows the datatype', function (done) {
             UserModel.findPage({page: 5700000000055345439587894375457849375284932759842375894372589243758947325894375894275894275894725897432859724309})
                 .then(function (paginationResult) {

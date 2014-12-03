@@ -23,7 +23,8 @@ _.extend(UserMapGenerator.prototype, {
         return api.users.browse({
             context: {
                 internal: true
-            }
+            },
+            limit: 'all'
         }).then(function (resp) {
             return resp.users;
         });

@@ -22,7 +22,8 @@ _.extend(TagsMapGenerator.prototype, {
         return api.tags.browse({
             context: {
                 internal: true
-            }
+            },
+            limit: 'all'
         }).then(function (resp) {
             return resp.tags;
         });

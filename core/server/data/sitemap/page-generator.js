@@ -25,7 +25,8 @@ _.extend(PageMapGenerator.prototype, {
                 internal: true
             },
             status: 'published',
-            staticPages: true
+            staticPages: true,
+            limit: 'all'
         }).then(function (resp) {
             var homePage = {
                     id: 0,
