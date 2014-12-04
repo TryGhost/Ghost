@@ -7,9 +7,7 @@
 <main id="gh-main" class="viewport" role="main" {{bind-attr data-notification-count=topNotificationCount}}>
     {{gh-notifications location="top" notify="topNotificationChange"}}
     {{gh-notifications location="bottom"}}
-    <span class="viewport-content">
-        {{outlet}}
-    </span>
+    {{outlet}}
 </main>
 
 {{outlet modal}}
