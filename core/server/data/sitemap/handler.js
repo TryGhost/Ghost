@@ -1,5 +1,5 @@
-var _ = require('lodash'),
-    utils = require('../utils'),
+var _       = require('lodash'),
+    utils   = require('../../utils'),
     sitemap = require('./index');
 
 // Responsible for handling requests for sitemap files
@@ -7,7 +7,7 @@ module.exports = function (blogApp) {
     var resourceTypes = ['posts', 'authors', 'tags', 'pages'],
         verifyResourceType = function (req, res, next) {
             if (!_.contains(resourceTypes, req.param('resource'))) {
-                return res.send(404);
+                return res.sendStatus(404);
             }
 
             next();
@@ -19,7 +19,7 @@ module.exports = function (blogApp) {
     // Redirect normal sitemap.xml requests to sitemap-index.xml
     blogApp.get('/sitemap.xml', function (req, res) {
         res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
-        res.redirect(301, '/sitemap-index.xml');
+        res.redirect(301, req.baseUrl + '/sitemap-index.xml');
     });
 
     blogApp.get('/sitemap-index.xml', function (req, res) {
