@@ -74,7 +74,7 @@ Tag = ghostBookshelf.Model.extend({
 
         var tagCollection = Tags.forge();
 
-        if (options.limit) {
+        if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit, 10) || 15;
         }
 
@@ -90,9 +90,14 @@ Tag = ghostBookshelf.Model.extend({
             where: {}
         }, options);
 
+        // only include a limit-query if a numeric limit is provided
+        if (_.isNumber(options.limit)) {
+            tagCollection
+                .query('limit', options.limit)
+                .query('offset', options.limit * (options.page - 1));
+        }
+
         return tagCollection
-            .query('limit', options.limit)
-            .query('offset', options.limit * (options.page - 1))
             .fetch(_.omit(options, 'page', 'limit'))
         // Fetch pagination information
         .then(function () {
@@ -113,7 +118,7 @@ Tag = ghostBookshelf.Model.extend({
         // Format response of data
         .then(function (resp) {
             var totalTags = parseInt(resp[0].aggregate, 10),
-                calcPages = Math.ceil(totalTags / options.limit),
+                calcPages = Math.ceil(totalTags / options.limit) || 0,
                 pagination = {},
                 meta = {},
                 data = {};

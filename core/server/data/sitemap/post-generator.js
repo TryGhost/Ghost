@@ -25,7 +25,8 @@ _.extend(PostMapGenerator.prototype, {
                 internal: true
             },
             status: 'published',
-            staticPages: false
+            staticPages: false,
+            limit: 'all'
         }).then(function (resp) {
             return resp.posts;
         });
