@@ -38,6 +38,25 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(expected);
     });
 
+    it('strips multiple inline footnotes', function () {
+        var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>, my footnotes. And stuff. Footnote<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup><a href="http://google.com">with a link</a> right after.',
+            expected = 'Testing, my footnotes. And stuff. Footnotewith a link right after.',
+            rendered = helpers.excerpt.call({html: html});
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
+    it('strips inline and bottom footnotes', function () {
+        var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> a very short post with a single footnote.</p>\n' +
+            '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>',
+        expected = 'Testing a very short post with a single footnote. ',
+        rendered = helpers.excerpt.call({html: html});
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
     it('can truncate html by word', function () {
         var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
             expected = 'Hello World',
