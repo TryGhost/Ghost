@@ -256,7 +256,7 @@
     }
 
     .cm-header {
-        color: #000;
+        color: #3c4043;
         font-size: 1.4em;
         line-height: 1.4em;
         font-weight: bold;
@@ -268,16 +268,20 @@
         color: lighten($darkgrey, 10%);
     }
 
-    .cm-string,
+
     .cm-strong,
-    .cm-link,
     .cm-comment,
     .cm-quote,
     .cm-number,
     .cm-atom,
     .cm-tag {
-        color: #000;
+        color: #3c4043;
         font-weight: bold;
+    }
+
+    .cm-string,
+    .cm-link {
+        color: #3c4043;
     }
 
     .entry-preview {
@@ -368,6 +372,10 @@
     a {
         color: $blue;
         text-decoration: underline;
+    }
+
+    sup a {
+        text-decoration: none;
     }
 
     .btn {
