@@ -26,8 +26,6 @@ ghost_foot = function (options) {
 
     return api.settings.read({key: 'ghost_foot'}).then(function (response) {
         foot.push(response.settings[0].value);
-        return foot;
-    }).then(function (foot) {
         return filters.doFilter('ghost_foot', foot);
     }).then(function (foot) {
         var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
