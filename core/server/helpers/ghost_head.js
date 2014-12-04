@@ -162,8 +162,6 @@ ghost_head = function (options) {
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {
         head.push(response.settings[0].value);
-        return head;
-    }).then(function (head) {
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n    ' + item; }, '');
