@@ -37,6 +37,19 @@ describe('Tag Model', function () {
         }).catch(done);
     });
 
+    it('can findPage with limit all', function (done) {
+        testUtils.fixtures.insertPosts().then(function () {
+            return TagModel.findPage({limit: 'all'});
+        }).then(function (results) {
+            results.meta.pagination.page.should.equal(1);
+            results.meta.pagination.limit.should.equal('all');
+            results.meta.pagination.pages.should.equal(1);
+            results.tags.length.should.equal(5);
+
+            done();
+        }).catch(done);
+    });
+
     describe('a Post', function () {
         it('can add a tag', function (done) {
             var newPost = testUtils.DataGenerator.forModel.posts[0],
