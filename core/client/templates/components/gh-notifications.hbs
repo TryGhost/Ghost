@@ -1,3 +1,3 @@
-{{#each messages}}
-    {{gh-notification message=this}}
+{{#each message in messages}}
+    {{gh-notification message=message}}
 {{/each}}
