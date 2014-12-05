@@ -143,10 +143,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             return attrs;
         }
 
-        if (options && options.idOnly) {
-            return attrs.id;
-        }
-
         if (options && options.include) {
             this.include = _.union(this.include, options.include);
         }
@@ -154,12 +150,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         _.each(this.relations, function (relation, key) {
             if (key.substring(0, 7) !== '_pivot_') {
                 // if include is set, expand to full object
-                // 'toMany' relationships are included with ids if not expanded
                 var fullKey = _.isEmpty(options.name) ? key : options.name + '.' + key;
                 if (_.contains(self.include, fullKey)) {
                     attrs[key] = relation.toJSON({name: fullKey, include: self.include});
-                } else if (relation.hasOwnProperty('length')) {
-                    attrs[key] = relation.toJSON({idOnly: true});
                 }
             }
         });

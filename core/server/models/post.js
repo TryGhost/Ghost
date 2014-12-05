@@ -5,9 +5,12 @@ var _              = require('lodash'),
     errors         = require('../errors'),
     Showdown       = require('showdown-ghost'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
-    converter      = new Showdown.converter({extensions: [ghostgfm]}),
+    footnotes      = require('../../shared/lib/showdown/extensions/ghostfootnotes'),
+    highlight      = require('../../shared/lib/showdown/extensions/ghosthighlight'),
+    converter      = new Showdown.converter({extensions: [ghostgfm, footnotes, highlight]}),
     ghostBookshelf = require('./base'),
     xmlrpc         = require('../xmlrpc'),
+    sitemap        = require('../data/sitemap'),
 
     Post,
     Posts;
@@ -33,6 +36,43 @@ Post = ghostBookshelf.Model.extend({
                 xmlrpc.ping(model.attributes);
             }
             return self.updateTags(model, attributes, options);
+        });
+
+        this.on('created', function (model) {
+            var isPage = !!model.get('page');
+            if (isPage) {
+                sitemap.pageAdded(model);
+            } else {
+                sitemap.postAdded(model);
+            }
+        });
+        this.on('updated', function (model) {
+            var isPage = !!model.get('page'),
+                wasPage = !!model.updated('page');
+
+            if (isPage && wasPage) {
+                // Page value didn't change, remains a page
+                sitemap.pageEdited(model);
+            } else if (!isPage && !wasPage) {
+                // Remains a Post
+                sitemap.postEdited(model);
+            } else if (isPage && !wasPage) {
+                // Switched from Post to Page
+                sitemap.postDeleted(model);
+                sitemap.pageAdded(model);
+            } else if (!isPage && wasPage) {
+                // Switched from Page to Post
+                sitemap.pageDeleted(model);
+                sitemap.postAdded(model);
+            }
+        });
+        this.on('destroyed', function (model) {
+            var isPage = !!model.get('page');
+            if (isPage) {
+                sitemap.pageDeleted(model);
+            } else {
+                sitemap.postDeleted(model);
+            }
         });
     },
 
@@ -250,7 +290,7 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
 
         // fetch relations passed to options.include
-        options.withRelated = options.include;
+        options.withRelated = _.union(options.withRelated, options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -281,7 +321,7 @@ Post = ghostBookshelf.Model.extend({
             tagInstance = options.tag !== undefined ? ghostBookshelf.model('Tag').forge({slug: options.tag}) : false,
             authorInstance = options.author !== undefined ? ghostBookshelf.model('User').forge({slug: options.author}) : false;
 
-        if (options.limit) {
+        if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit, 10) || 15;
         }
 
@@ -323,7 +363,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union(['tags', 'fields'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // If a query param for a tag is attached
         // we need to fetch the tag model to find its id
@@ -361,9 +401,14 @@ Post = ghostBookshelf.Model.extend({
                     postCollection
                         .query('where', 'author_id', '=', authorInstance.id);
                 }
+
+                if (_.isNumber(options.limit)) {
+                    postCollection
+                        .query('limit', options.limit)
+                        .query('offset', options.limit * (options.page - 1));
+                }
+
                 return postCollection
-                    .query('limit', options.limit)
-                    .query('offset', options.limit * (options.page - 1))
                     .query('orderBy', 'status', 'ASC')
                     .query('orderBy', 'published_at', 'DESC')
                     .query('orderBy', 'updated_at', 'DESC')
@@ -398,7 +443,7 @@ Post = ghostBookshelf.Model.extend({
             // Format response of data
             .then(function (resp) {
                 var totalPosts = parseInt(resp[0].aggregate, 10),
-                    calcPages = Math.ceil(totalPosts / options.limit),
+                    calcPages = Math.ceil(totalPosts / options.limit) || 0,
                     pagination = {},
                     meta = {},
                     data = {};
@@ -468,7 +513,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union(['tags', 'fields'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         return ghostBookshelf.Model.findOne.call(this, data, options);
     },

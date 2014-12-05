@@ -10,6 +10,7 @@ var hbs             = require('express-hbs'),
     _               = require('lodash'),
     config          = require('../config'),
     filters         = require('../filters'),
+    api             = require('../api'),
     utils           = require('./utils'),
     ghost_foot;
 
@@ -23,8 +24,11 @@ ghost_foot = function (options) {
         version: config.assetHash
     }));
 
-    return filters.doFilter('ghost_foot', foot).then(function (foot) {
-        var footString = _.reduce(foot, function (memo, item) { return memo + '\n' + item; }, '\n');
+    return api.settings.read({key: 'ghost_foot'}).then(function (response) {
+        foot.push(response.settings[0].value);
+        return filters.doFilter('ghost_foot', foot);
+    }).then(function (foot) {
+        var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(footString.trim());
     });
 };

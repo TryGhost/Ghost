@@ -596,7 +596,9 @@ var _              = require('lodash'),
                         'bower_components/nanoscroller/bin/javascripts/jquery.nanoscroller.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                        'core/shared/lib/showdown/extensions/ghostgfm.js'
+                        'core/shared/lib/showdown/extensions/ghostgfm.js',
+                        'core/shared/lib/showdown/extensions/ghostfootnotes.js',
+                        'core/shared/lib/showdown/extensions/ghosthighlight.js'
                     ]
                 },
 
@@ -632,7 +634,9 @@ var _              = require('lodash'),
                         'bower_components/nanoscroller/bin/javascripts/jquery.nanoscroller.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
-                        'core/shared/lib/showdown/extensions/ghostgfm.js'
+                        'core/shared/lib/showdown/extensions/ghostgfm.js',
+                        'core/shared/lib/showdown/extensions/ghostfootnotes.js',
+                        'core/shared/lib/showdown/extensions/ghosthighlight.js'
                     ]
                 }
             },
@@ -843,7 +847,7 @@ var _              = require('lodash'),
         //
         // `NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/unit/config_spec.js`
         //
-        // Unit tests are run with [mocha](http://visionmedia.github.io/mocha/) using
+        // Unit tests are run with [mocha](http://mochajs.org/) using
         // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
         // Unit tests do **not** touch the database.
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
@@ -861,7 +865,7 @@ var _              = require('lodash'),
         //
         // `NODE_ENV=testing grunt mochacli:api`
         //
-        // Integration tests are run with [mocha](http://visionmedia.github.io/mocha/) using
+        // Integration tests are run with [mocha](http://mochajs.org/) using
         // [should](https://github.com/visionmedia/should.js) to describe the tests in a highly readable style.
         // Integration tests are different to the unit tests because they make requests to the database.
         //
@@ -887,7 +891,7 @@ var _              = require('lodash'),
         //
         // `NODE_ENV=testing mocha --timeout=15000 --ui=bdd --reporter=spec core/test/functional/routes/admin_test.js`
         //
-        // Route tests are run with [mocha](http://visionmedia.github.io/mocha/) using
+        // Route tests are run with [mocha](http://mochajs.org/) using
         // [should](https://github.com/visionmedia/should.js) and [supertest](https://github.com/visionmedia/supertest)
         // to describe and create the tests.
         //

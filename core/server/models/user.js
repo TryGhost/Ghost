@@ -1,6 +1,7 @@
 var _              = require('lodash'),
     Promise        = require('bluebird'),
     errors         = require('../errors'),
+    utils          = require('../utils'),
     bcrypt         = require('bcryptjs'),
     ghostBookshelf = require('./base'),
     crypto         = require('crypto'),
@@ -8,6 +9,7 @@ var _              = require('lodash'),
     request        = require('request'),
     validation     = require('../data/validation'),
     config         = require('../config'),
+    sitemap        = require('../data/sitemap'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -41,6 +43,20 @@ function generatePasswordHash(password) {
 User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
+
+    initialize: function () {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
+        this.on('created', function (model) {
+            sitemap.userAdded(model);
+        });
+        this.on('updated', function (model) {
+            sitemap.userEdited(model);
+        });
+        this.on('destroyed', function (model) {
+            sitemap.userDeleted(model);
+        });
+    },
 
     saving: function (newPage, attr, options) {
         /*jshint unused:false*/
@@ -158,7 +174,7 @@ User = ghostBookshelf.Model.extend({
      */
     findAll:  function (options) {
         options = options || {};
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
     },
 
@@ -237,7 +253,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         // Add related objects
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // only include a limit-query if a numeric limit is provided
         if (_.isNumber(options.limit)) {
@@ -293,7 +309,7 @@ User = ghostBookshelf.Model.extend({
             // Format response of data
             .then(function (resp) {
                 var totalUsers = parseInt(resp[0].aggregate, 10),
-                    calcPages = Math.ceil(totalUsers / options.limit),
+                    calcPages = Math.ceil(totalUsers / options.limit) || 0,
                     pagination = {},
                     meta = {},
                     data = {};
@@ -356,7 +372,7 @@ User = ghostBookshelf.Model.extend({
         delete data.status;
 
         options = options || {};
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         // Support finding by role
         if (data.role) {
@@ -397,7 +413,7 @@ User = ghostBookshelf.Model.extend({
             roleId;
 
         options = options || {};
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         return ghostBookshelf.Model.edit.call(this, data, options).then(function (user) {
             if (data.roles) {
@@ -449,7 +465,7 @@ User = ghostBookshelf.Model.extend({
             roles;
 
         options = this.filterOptions(options, 'add');
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
 
         return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting')).then(function (authorRole) {
             // Get the role we're going to assign to this user, or the author role if there isn't one
@@ -502,7 +518,7 @@ User = ghostBookshelf.Model.extend({
             userData = this.filterData(data);
 
         options = this.filterOptions(options, 'setup');
-        options.withRelated = _.union(['roles'], options.include);
+        options.withRelated = _.union(options.withRelated, options.include);
         options.shortSlug = true;
 
         return validatePasswordLength(userData.password).then(function () {
@@ -529,12 +545,16 @@ User = ghostBookshelf.Model.extend({
             userModel = userModelOrId,
             origArgs;
 
-        // If we passed in an id instead of a model, get the model then check the permissions
+        // If we passed in a model without its related roles, we need to fetch it again
+        if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
+            userModelOrId = userModelOrId.id;
+        }
+        // If we passed in an id instead of a model get the model first
         if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
             // Grab the original args without the first one
             origArgs = _.toArray(arguments).slice(1);
             // Get the actual post model
-            return this.findOne({id: userModelOrId, status: 'all'}).then(function (foundUserModel) {
+            return this.findOne({id: userModelOrId, status: 'all'}, {include: ['roles']}).then(function (foundUserModel) {
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundUserModel].concat(origArgs);
 
@@ -705,28 +725,20 @@ User = ghostBookshelf.Model.extend({
                 text = '';
 
             // Token:
-            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash )).replace('=', '-')
-
+            // BASE64(TIMESTAMP + email + HASH(TIMESTAMP + email + oldPasswordHash + dbHash ))
             hash.update(String(expires));
             hash.update(email.toLocaleLowerCase());
             hash.update(foundUser.get('password'));
             hash.update(String(dbHash));
 
             text += [expires, email, hash.digest('base64')].join('|');
-
-            // it's possible that the token might get URI encoded, which breaks it
-            // we replace any `=`s with `-`s as they aren't valid base64 characters
-            // but are valid in a URL, so won't suffer encoding issues
-            return new Buffer(text).toString('base64').replace('=', '-');
+            return new Buffer(text).toString('base64');
         });
     },
 
     validateToken: function (token, dbHash) {
         /*jslint bitwise:true*/
         // TODO: Is there a chance the use of ascii here will cause problems if oldPassword has weird characters?
-        // We replaced `=`s with `-`s when we sent the token via email, so
-        // now we reverse that change to get a valid base64 string to decode
-        token = token.replace('-', '=');
         var tokenText = new Buffer(token, 'base64').toString('ascii'),
             parts,
             expires,
@@ -792,7 +804,7 @@ User = ghostBookshelf.Model.extend({
 
         return validatePasswordLength(newPassword).then(function () {
             // Validate the token; returns the email address from token
-            return self.validateToken(token, dbHash);
+            return self.validateToken(utils.decodeBase64URLsafe(token), dbHash);
         }).then(function (email) {
             // Fetch the user by email, and hash the password at the same time.
             return Promise.join(
@@ -824,18 +836,18 @@ User = ghostBookshelf.Model.extend({
             return ghostBookshelf.model('Role').findOne({name: 'Owner'});
         }).then(function (result) {
             ownerRole = result;
-            return User.findOne({id: options.context.user});
+            return User.findOne({id: options.context.user}, {include: ['roles']});
         }).then(function (ctxUser) {
             // check if user has the owner role
             var currentRoles = ctxUser.toJSON().roles;
-            if (!_.contains(currentRoles, ownerRole.id)) {
+            if (!_.any(currentRoles, {id: ownerRole.id})) {
                 return Promise.reject(new errors.NoPermissionError('Only owners are able to transfer the owner role.'));
             }
             contextUser = ctxUser;
-            return User.findOne({id: object.id});
+            return User.findOne({id: object.id}, {include: ['roles']});
         }).then(function (user) {
             var currentRoles = user.toJSON().roles;
-            if (!_.contains(currentRoles, adminRole.id)) {
+            if (!_.any(currentRoles, {id: adminRole.id})) {
                 return Promise.reject(new errors.ValidationError('Only administrators can be assigned the owner role.'));
             }
 

@@ -1,10 +1,25 @@
-//
+// ------------------------------------------------------------
 // Editor
-// --------------------------------------------------
 // Slug: /ghost/editor/
+//
+// Styles for the Editor
+//
+// * Post Title
+// * Container & Floating Headers
+// * Editor
+// * Markdown Help Icon
+// * Post Preview
+// * Zen Mode
+// * Publish Bar
+// * Post Settings Menu meta Data
+// * Markdown Help Modal
+// ------------------------------------------------------------
+
+
+//
+// Post Title
 // --------------------------------------------------
 
- // The main post title
 .entry-container .entry-title {
     height: 60px;
     padding: 0 20px;
@@ -25,7 +40,12 @@
             outline: 0;
         }
     }
-} // .entry-title
+}//.entry-title
+
+
+//
+// Container & Floating Headers
+// --------------------------------------------------
 
 .editor {
 
@@ -41,8 +61,13 @@
     }
 
     // The two content panel wrappers, positioned left/right
-    .entry-markdown { left: 0; }
-    .entry-preview { right: 0; border-left: $lightbrown 1px solid; }
+    .entry-markdown {
+        left: 0;
+    }
+    .entry-preview {
+        right: 0;
+        border-left: $lightbrown 1px solid;
+    }
 
     // The visual styles for both panels
     .entry-markdown,
@@ -55,8 +80,16 @@
         border-top: $lightbrown 1px solid;
         background: #fff;
 
-        // Convert all content areas to small boxes
+        // Hide markdown icon + wordcount when we hit mobile
+        @media (max-width: 400px) {
+            .markdown-help,
+            .entry-word-count {
+                display: none;
+            }
+        }
+
         @media (max-width: 1000px) {
+            // Convert all content areas to small boxes
             top: 100px;
             left: 0;
             right: 0;
@@ -64,13 +97,23 @@
             border: none;
             z-index: 100;
             min-height: 380px;
-            .markdown, .entry-preview-content {
+
+            .markdown,
+            .entry-preview-content {
                 height: 50px;
                 overflow: hidden;
             }
-        }
+
+            // Correctly colour the markdown icon when inactive and hovered
+            &:not(.active) .markdown-help:hover:before {
+                color: #fff;
+            }
+        }//@media (max-width: 1000px)
 
         .floatingheader {
+            a {
+                color: $brown;
+            }
 
             // Turn headers into tabs which act as links
             // both headers set to grey/inactive colour
@@ -90,27 +133,12 @@
                 }
             }
 
-            a {
-                color: $brown;
-            }
-
             .entry-word-count {
                 float: right;
                 position: relative;
                 top: 2px;
             }
-
-        }
-
-        @media (max-width: 1000px) {
-            &:not(.active) {
-                .markdown-help {
-                    &:hover:before {
-                        color: #fff;
-                    }
-                }
-            }
-        }
+        }//.floatingheader
 
         // Give the tab with the .active class the highest z-index
         &.active {
@@ -133,24 +161,23 @@
                 color: $brown;
                 background: #fff;
                 box-shadow: none;
+
                 a {
                     color: $brown;
                 }
             }
         }
+    }//.entry-markdown, .entry-preview
 
-        // Hide markdown icon + wordcount when we hit mobile
-        @media (max-width: 400px) {
-            .markdown-help,
-            .entry-word-count {
-                display: none;
-            }
-        }
+}
 
-    } // .entry-markdown, .entry-preview
 
+//
+// Editor
+// --------------------------------------------------
+
+.editor {
     .entry-markdown-content {
-
         textarea {
             border: 0;
             width: 100%;
@@ -166,25 +193,27 @@
             left: 0;
             -webkit-overflow-scrolling: touch;
 
-            @media (max-width: 600px) {
-                padding: 10px;
-            }
-            @media (min-width: 601px) and (max-width: 1000px) {
-                padding: 15px;
-            }
-            @media (min-width: 1001px) {
-                top: 40px;
-            }
-            @media (max-height: 560px) {
-                height: calc(100% - 5px);
-            }
-
             &:focus {
                 outline: 0;
             }
-        }
 
-    } // .entry-markdown-content
+            @media (max-width: 600px) {
+                padding: 10px;
+            }
+
+            @media (min-width: 601px) and (max-width: 1000px) {
+                padding: 15px;
+            }
+
+            @media (min-width: 1001px) {
+                top: 40px;
+            }
+
+            @media (max-height: 560px) {
+                height: calc(100% - 5px);
+            }
+        }//textarea
+    }//.entry-markdown-content
 
     .CodeMirror {
         height: auto;
@@ -220,13 +249,14 @@
         @media (max-width: 1000px) {padding-top: 25px;}
         @media (max-width: 400px) {padding: 15px 0;}
     }
+
     .CodeMirror pre {
         padding: 0 40px; /* Horizontal padding of content */
         @media (max-width: 400px) {padding: 0 15px;}
     }
 
     .cm-header {
-        color: #000;
+        color: #3c4043;
         font-size: 1.4em;
         line-height: 1.4em;
         font-weight: bold;
@@ -238,16 +268,20 @@
         color: lighten($darkgrey, 10%);
     }
 
-    .cm-string,
+
     .cm-strong,
-    .cm-link,
     .cm-comment,
     .cm-quote,
     .cm-number,
     .cm-atom,
     .cm-tag {
-        color: #000;
+        color: #3c4043;
         font-weight: bold;
+    }
+
+    .cm-string,
+    .cm-link {
+        color: #3c4043;
     }
 
     .entry-preview {
@@ -275,39 +309,39 @@
         user-select: none;
         cursor: default;
 
-        // Tweak padding for smaller screens
-        @media (max-width: 1000px) {
-            padding-top: 20px;
-        }
         @media (max-width: 400px) {
             padding: 15px;
+        }
+
+        @media (max-width: 1000px) {
+            padding-top: 20px;
         }
     }
 
     // Special case, when scrolling, add shadows to content headers.
-    .scrolling {
-
-        .floatingheader {
-            @media (max-width: 1000px) {
+    @media (max-width: 1000px) {
+        .scrolling{
+            .floatingheader {
                 box-shadow: none;
-            }
 
-            &::before,
-            &::after {
-                @media (max-width: 1000px) {
+                &:before,
+                &:after {
                     display: none;
                 }
             }
-        }
-        .CodeMirror-scroll,
-        .entry-preview-content {
-            @media (max-width: 1000px) {
+
+            .CodeMirror-scroll,
+            .entry-preview-content {
                 box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
             }
         }
-    } // .scrolling
+    }
+}//.editor
 
-} // .editor
+
+//
+// Markdown Help Icon
+// --------------------------------------------------
 
 .markdown-help {
     position: relative;
@@ -340,14 +374,20 @@
         text-decoration: underline;
     }
 
+    sup a {
+        text-decoration: none;
+    }
+
     .btn {
         text-decoration: none;
         color: $grey;
     }
+
     .img-placeholder {
         border: 5px dashed $grey;
         height: 100px;
         position: relative;
+
         span {
             display: block;
             height: 30px;
@@ -358,18 +398,19 @@
             text-align: center;
         }
     }
+
     a {
         &.image-edit {
             width: 16px;
             height: 16px;
         }
     }
+
     img {
         max-width: 100%;
         height: auto;
         margin: 0 auto;
     }
-
 }
 
 // Placeholder objects for <script> & <iframe>
@@ -391,9 +432,11 @@
 
 body.zen {
     background: lighten($lightbrown, 3%);
+
     .usermenu {
         display: none;
     }
+
     .global-nav,
     .page-header,
     #publish-bar {
@@ -413,8 +456,7 @@ body.zen {
         bottom: 0;
         transition: all 0.5s ease-out;
     }
-
-}
+}//body.zen
 
 
 //
@@ -456,8 +498,7 @@ body.zen {
             border-top: rgba(255,255,255,0.3) 1px solid;
         }
     }
-
-}
+}//#publish-bar
 
 .extended-tags { // When the tag bar is exapanded
     position: static;
@@ -468,6 +509,7 @@ body.zen {
             right: 10px;
         }
     }
+
     .tags {
         width: 281px;
     }
@@ -488,10 +530,9 @@ body.zen {
     .right {
         display: none;
     }
-}
+}//.extended-tags
 
 #entry-tags {
-
     input[type="text"].tag-input {
         display: inline-block;
         vertical-align: top;
@@ -499,7 +540,6 @@ body.zen {
         font-weight: 300;
         background: transparent;
         border: none;
-
         width: 100%;
         line-height: 1;
         padding: 9px;
@@ -523,26 +563,26 @@ body.zen {
         background: lighten($grey, 15%);
         border-radius: $border-radius;
         box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, #000 0 1px 3px;
-
         user-select: none;
 
         &:hover {
             cursor: pointer;
         }
     }
-}
+}//#entry-tags
 
 .suggestions {
-
     top: auto;
     bottom: calc(100% + 15px);
 
     li.selected {
-        &, a {
+        &,
+        a {
             text-decoration: none;
             color: #fff;
             background: $blue;
         }
+
         mark {
             color: #fff;
         }
@@ -553,7 +593,6 @@ body.zen {
         color: #000;
         font-weight: bold;
     }
-
 }
 
 #entry-actions {
@@ -563,6 +602,7 @@ body.zen {
     align-items: center;
     margin-right: 6px;
     position: relative;
+
     .dropdown {
         position: absolute;
         bottom: 49px;
@@ -591,7 +631,7 @@ body.zen {
             display: none;
         }
     }
-}
+}//#entry-actions
 
 #entry-actions-menu {
     position: absolute;
@@ -601,6 +641,7 @@ body.zen {
 
 .tags-wrapper {
     white-space: nowrap;
+
     span {
         display: inline-block;
         margin-right: 10px;
@@ -612,6 +653,7 @@ body.zen {
     width: 40px;
     height: 40px;
     position: relative;
+
     &:before {
         position: absolute;
         top: 50%;
@@ -621,10 +663,12 @@ body.zen {
         color: #7D878A;
         transition: color 0.15s linear;
     }
+
     &:hover:before {
         color: #fff;
     }
-}//.tag-label
+}
+
 #entry-tags.focused {
     .tag-label:before {
         color: #fff;
@@ -636,10 +680,8 @@ body.zen {
     flex-direction: row;
     flex-wrap: nowrap;
     align-content: space-between;
-
     align-items: center;
     justify-content: center;
-
     height: 100%;
     width: 100%;
 }
@@ -666,8 +708,7 @@ body.zen {
         padding-bottom: 9px;
         height: 70px;
     }
-
-}//.publish-bar-2
+}
 
 .publish-bar-tags-input {
     flex: 1 1 auto;
@@ -694,22 +735,20 @@ body.zen {
     &.active {
         color: $darkgrey;
     }
-} // .post-settings
+}//.post-settings
 
 .post-settings-menu {
-
     .dropdown-menu {
         top: auto;
         bottom: 100%;
         left: auto;
         right: 100%;
     }
-
-} // .post-settings-menu
+}//.post-settings-menu
 
 
 //
-// Post Settings Menu eta Data
+// Post Settings Menu meta Data
 // --------------------------------------------------
 
 // These styles are copied from Google.com

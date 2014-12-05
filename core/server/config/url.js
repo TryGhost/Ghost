@@ -32,7 +32,6 @@ function setConfig(config) {
 function createUrl(urlPath, absolute, secure) {
     urlPath = urlPath || '/';
     absolute = absolute || false;
-
     var output = '', baseUrl;
 
     // create base of url, always ends without a slash
@@ -103,7 +102,7 @@ function urlPathForPost(post, permalinks) {
 function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure, imagePathRe,
-        knownObjects = ['post', 'tag', 'author', 'image'],
+        knownObjects = ['post', 'tag', 'author', 'image'], baseUrl,
 
     // this will become really big
     knownPaths = {
@@ -140,8 +139,18 @@ function urlFor(context, data, absolute) {
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
-            // Remove the sub-directory from the URL because createUrl() will add it back.
-            urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
+            if (absolute) {
+                // Remove the sub-directory from the URL because ghostConfig will add it back.
+                urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
+                baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+                baseUrl = baseUrl.replace(/\/$/, '');
+                urlPath = baseUrl + urlPath;
+            }
+
+            return urlPath;
+        } else if (context === 'sitemap-xsl') {
+            absolute = true;
+            urlPath = '/sitemap.xsl';
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {

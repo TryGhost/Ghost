@@ -6,22 +6,32 @@
 <div class="page-content">
     <nav class="settings-nav js-settings-menu">
         <ul>
-            {{#unless session.user.isAuthor}}
-                {{#unless session.user.isEditor}}
 
-                    {{gh-activating-list-item route="settings.general" title="博客选项" classNames="settings-nav-general icon-settings"}}
-                {{/unless}}
 
-                {{! Whilst tag management is still in development only show tags button if there if tagsUI is true in config.js --}}
-                {{#if showTags}}
-                    {{gh-activating-list-item route="settings.tags" title="标签管理" classNames="settings-nav-tags icon-tag"}}
-                {{/if}}
+            {{#if showGeneral}}
+                {{gh-activating-list-item route="settings.general" title="博客选项" classNames="settings-nav-general icon-settings"}}
+            {{/if}}
 
+            {{#if showUsers}}
                 {{gh-activating-list-item route="settings.users" title="用户管理" classNames="settings-nav-users icon-users"}}
+            {{/if}}
 
-            {{/unless}}
+            {{#if showTags}}
+                {{gh-activating-list-item route="settings.tags" title="Tags" classNames="settings-nav-tags icon-tag"}}
+            {{/if}}
 
-            {{gh-activating-list-item route="settings.about" title="关于我们" classNames="settings-nav-about icon-pacman"}}
+            {{#if showCodeInjection}}
+                {{gh-activating-list-item route="settings.code-injection" title="Code Injection" classNames="settings-nav-code icon-code"}}
+            {{/if}}
+
+            {{#if showLabs}}
+                {{gh-activating-list-item route="settings.labs" title="Labs" classNames="settings-nav-labs icon-atom"}}
+            {{/if}}
+
+            {{#if showAbout}}
+                {{gh-activating-list-item route="settings.about" title="关于我们" classNames="settings-nav-about icon-pacman"}}
+            {{/if}}
+
         </ul>
     </nav>
 

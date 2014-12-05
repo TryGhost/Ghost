@@ -1,4 +1,6 @@
-var Tag = DS.Model.extend({
+import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
+
+var Tag = DS.Model.extend(NProgressSaveMixin, {
     uuid: DS.attr('string'),
     name: DS.attr('string'),
     slug: DS.attr('string'),

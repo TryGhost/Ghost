@@ -19,6 +19,7 @@ var Promise         = require('bluebird'),
 
 // ## Helpers
 function prepareInclude(include) {
+    include = include || '';
     include = _.intersection(include.split(','), allowedIncludes);
     return include;
 }
@@ -46,7 +47,7 @@ sendInviteEmail = function sendInviteEmail(user) {
     }).then(function (resetToken) {
         var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url;
 
-        emailData.resetLink = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + resetToken + '/';
+        emailData.resetLink = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
 
         return mail.generateContent({data: emailData, template: 'invite-user'});
     }).then(function (emailContent) {
@@ -154,7 +155,7 @@ users = {
                         roleId = parseInt(role.id || role, 10);
 
                     return dataProvider.User.findOne(
-                        {id: options.context.user, status: 'all'}, {include: 'roles'}
+                        {id: options.context.user, status: 'all'}, {include: ['roles']}
                     ).then(function (contextUser) {
                         var contextRoleId = contextUser.related('roles').toJSON()[0].id;
 

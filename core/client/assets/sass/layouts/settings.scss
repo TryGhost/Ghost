@@ -1,15 +1,21 @@
-//
+// ------------------------------------------------------------
 // Settings
-// --------------------------------------------------
-// Slug: /ghost/settings/
-// --------------------------------------------------
+// Slug: /ghost/settings/[many]
+//
+// Styles for the content management page, which is where
+// the posts are listed.
+//
+// * Navigation
+// * Content
+// * Headers
+// * Custom Permalinks
+// ------------------------------------------------------------
 
 
 //
-// Sidebar
+// Navigation
 // --------------------------------------------------
 
-// Settings navigation
 .settings-nav {
     width: 25%;
     position: absolute;
@@ -19,11 +25,9 @@
     z-index: 700;
     background: #fff;
     box-shadow: $lightbrown 1px 0 0;
-    @media (max-width: 900px) {
-        width: 100%;
-    }
 
     @media (max-width: 900px) {
+        width: 100%;
         top: 0;
     }
 
@@ -32,12 +36,15 @@
         margin: 0;
         padding: 0;
         border-top: none;
-        @media (max-width: 900px) { border-bottom: #edece4 1px solid; }
+        @media (max-width: 900px) {
+            border-bottom: #edece4 1px solid;
+        }
     }
 
     li {
         border-top: #fff 1px solid;
         position: relative;
+
         @media (max-width: 900px) {
             margin-right: 0;
             border-top: #edece4 1px solid;
@@ -49,7 +56,6 @@
             top: 50%;
             left: 30px;
             transform: translateY(-50%);
-
             transition: color 0.1s;
             color: $brown;
 
@@ -57,6 +63,7 @@
                 left: 15px;
             }
         }
+
         &:hover:before {
             color: $darkgrey;
         }
@@ -86,21 +93,15 @@
             // Make space for icons
             &:before {
                 margin-right: 20px;
+
                 @media (max-width: 900px) {
                     margin-right: 15px;
                 }
             }
-        }
+        }//a
 
         &.active {
             @media (min-width: 900px) {
-                // only apply active styles on larger devices
-
-                // The icon
-                &:before {
-                    color: $darkgrey;
-                }
-
                 margin-right: 0;
                 position: relative;
                 z-index: 300;
@@ -108,28 +109,28 @@
                 box-shadow: #fff 1px 0 0, #edece4 0 1px 0;
                 transition: all 0.15s ease-out 0s;
 
+                // The icon
+                &:before {
+                    color: $darkgrey;
+                }
+
                 a {
                     color: $darkgrey;
                     font-weight: bold;
                     background: #fff;
+
                     &:focus {
                         background: $lightbrown;
                     }
                 }
-
             }
-        } // .active
+        }//.active
 
         &:first-of-type {
             border-top: none;
         }
-        &:first-of-type.active {
-            border-top: none;
-        }
-
-    } // li
-
-} // .settings-nav
+    }//li
+}//.settings-nav
 
 // Special cases for nav items
 .settings-nav-labs .icon-labs:before {
@@ -140,10 +141,9 @@
 //
 // Content
 // --------------------------------------------------
-
 // The main content panel on the right
-.settings-content {
 
+.settings-content {
     @media (max-width: 900px) {
         &.fade-in {
             animation: none;
@@ -156,7 +156,6 @@
         right: 0;
         left: 25%;
         bottom: 0;
-
         overflow: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -170,10 +169,6 @@
     .content {
         padding: 40px;
 
-        @media (max-width: 900px) {
-            padding-left: 15px;
-            padding-right: 15px;
-        }
         @media (max-width: 550px) {
             padding-top: 15px;
         }
@@ -184,22 +179,29 @@
             right: 0;
             bottom: 0;
             left: 0;
+            padding-left: 15px;
+            padding-right: 15px;
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-
-    } // .content
+    }//.content
 
     .word-count {
         float: right;
         font-weight: bold;
     }
-} // .settings-content
+}//.settings-content
 
+
+//
+// Headers
+// --------------------------------------------------
 // This is the header for /ghost/settings/view/
-// It's black and fixed position at the top of the screen
-.settings-view-header {
+// On mobile, it's black and fixed position at the top of the screen
+
+.settings-view-header,
+.settings-subview-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -210,7 +212,6 @@
     text-align: center;
     color: #fff;
     background: #242628;
-    overflow: hidden;
 
     .btn-back {
         position: absolute;
@@ -229,118 +230,58 @@
         position: absolute;
         top: 4px;
         right: 4px;
-
     }
 
-    // Desktop
-    // On larger viewports, make it look like a simple heading
     @media (min-width: 900px) {
         position: static;
         height: auto;
         padding: 30px 40px;
-        text-align: left;
         line-height: 1.15em;
         background: none;
+
+        .btn {
+            vertical-align: middle;
+            line-height: 1.428571429;
+        }
+
+        .page-title {
+            display: inline;
+            padding: 0;
+            font-size: 2.6rem;
+            line-height: 1.3;
+            overflow: visible;
+            color: $darkgrey;
+        }
+
+        .page-actions {
+            position: static;
+            float: right;
+        }
+    }//@media (min-width: 900px)
+}//.settings-view-header, .settings-subview-header
+
+
+.settings-view-header {
+    @media (min-width: 900px) {
+        text-align: left;
 
         .btn-back {
             display: none;
             vertical-align: middle;
             color: #666;
         }
-
-        .btn {
-            vertical-align: middle;
-            line-height: 1.428571429;
-        }
-
-        .page-title {
-            display: inline;
-            padding: 0;
-            font-size: 2.6rem;
-            line-height: 1.3;
-            overflow: visible;
-            color: $darkgrey;
-        }
-
-        .page-actions {
-            position: static;
-            float: right;
-        }
     }
 }
 
-
-// This is the header for /ghost/settings/view/subview/
-// It's black and fixed position at the top of the screen
 .settings-subview-header {
-    @include clearfix;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 3000;
-    height: 44px;
-    line-height: 44px;
-    text-align: center;
-    color: #fff;
-    background: #242628;
-
-    .btn-back {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        color: #fff;
-        background: transparent;
-    }
-
-    .btn {
-        vertical-align: top;
-        line-height: 1.45;
-    }
-
-    .page-actions {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-
-    }
-
-    // Desktop
-    // On larger viewports, make it look like a simple heading
     @media (min-width: 900px) {
-        position: static;
-        height: auto;
-        padding: 30px 40px;
-        line-height: 1.15em;
-        background: none;
-
         .btn-back {
             position: static;
             float:left;
             color: #666;
         }
-
-        .btn {
-            vertical-align: middle;
-            line-height: 1.428571429;
-        }
-
-        .page-title {
-            display: inline;
-            padding: 0;
-            font-size: 2.6rem;
-            line-height: 1.3;
-            overflow: visible;
-            color: $darkgrey;
-        }
-
-        .page-actions {
-            position: static;
-            float: right;
-        }
     }
 }
-
 
 
 //

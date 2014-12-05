@@ -1,14 +1,24 @@
-//
+// ------------------------------------------------------------
 // Setup
-// --------------------------------------------------
+//
+// Styles for the Tag Management screen
 // Slug: /ghost/setup/
+//
+// * Page
+// * Wrapper
+// * Form
+// ------------------------------------------------------------
+
+
+//
+// Page
 // --------------------------------------------------
-// These styles cover /ghost/setup/ which is the first
-// screen that appears on a new Ghost install
+// Applied to the <body> element
 
 .ghost-setup {
     color: $midgrey;
     background: $darkgrey;
+
     @media (max-width: 550px) {
         background: darken($darkgrey, 5%);
     }
@@ -17,13 +27,19 @@
         padding-top: 15px;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
+
         @media (max-width: 550px) {
             top: 0;
         }
     }
 }
 
-// The wrapper to center the form in all ways
+
+//
+// Wrapper
+// --------------------------------------------------
+// Centered in the middle of the screen
+
 .setup-box {
     display: table;
     max-width: 500px;
@@ -32,16 +48,23 @@
     padding: 0;
 }
 
-// The form itself with the dark background
+
+//
+// Form
+// --------------------------------------------------
+
 .setup-form {
     max-width: 530px;
     padding: 40px;
     color: lighten($midgrey, 15%);
-    background: darken($darkgrey, 5%);
     border-radius: 2px;
 
     @media (max-width: 400px) {
         padding: 15px;
+    }
+
+    @media (min-width: 551px) {
+        background: darken($darkgrey, 5%);
     }
 
     header {
@@ -49,7 +72,6 @@
     }
 
     label {
-        // width: 90px;
         color: $lightgrey;
         font-weight: 300;
 
@@ -59,7 +81,6 @@
     }
 
     .form-group input {
-        // width: 300px;
         padding: 7px;
         border: none;
         color: #fff;
@@ -84,6 +105,10 @@
         letter-spacing: 0;
         color: $lightgrey;
 
+        @media (max-width: 400px) {
+            font-size: 18px;
+        }
+
         @media (max-width: 550px) {
             font-size: 20px;
         }
@@ -97,7 +122,10 @@
         font-size: 16px;
         letter-spacing: 0;
         color: $midgrey;
-        white-space: nowrap;
+
+        @media (max-width: 400px) {
+            font-size: 12px;
+        }
 
         @media (max-width: 550px) {
             font-size: 14px;
@@ -119,4 +147,4 @@
         padding: 0.9em 1.8em;
         font-size: 13px;
     }
-}
+}//.setup-form

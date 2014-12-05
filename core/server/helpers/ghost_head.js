@@ -14,6 +14,7 @@ var hbs             = require('express-hbs'),
     config          = require('../config'),
     filters         = require('../filters'),
 
+    api                 = require('../api'),
     urlHelper           = require('./url'),
     meta_description    = require('./meta_description'),
     meta_title          = require('./meta_title'),
@@ -146,7 +147,7 @@ ghost_head = function (options) {
                     });
                     head.push('');
                 } else if (content !== null && content !== undefined) {
-                    type = property.substring(0, 7) === 'twitter' ?  'name' : 'property';
+                    type = property.substring(0, 7) === 'twitter' ? 'name' : 'property';
                     head.push('<meta ' + type + '="' + property + '" content="' + content + '" />');
                 }
             });
@@ -157,6 +158,10 @@ ghost_head = function (options) {
         head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             title  + '" href="' + config.urlFor('rss', null, true) + '" />');
+    }).then(function () {
+        return api.settings.read({key: 'ghost_head'});
+    }).then(function (response) {
+        head.push(response.settings[0].value);
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
         var headString = _.reduce(head, function (memo, item) { return memo + '\n    ' + item; }, '');

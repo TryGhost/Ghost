@@ -2,7 +2,8 @@
     <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
         <div class="email-wrap">
             <span class="input-icon icon-mail">
-                {{gh-trim-focus-input class="email" type="email" placeholder="邮箱" name="identification" autofocus="autofocus" 
+
+                {{gh-trim-focus-input class="email" type="email" placeholder="邮箱" name="identification" 
                 autocapitalize="off" autocorrect="off" value=identification}}
             </span>
         </div>

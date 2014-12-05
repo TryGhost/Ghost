@@ -17,6 +17,7 @@ var express     = require('express'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
+    sitemap     = require('./data/sitemap'),
     GhostServer = require('./ghost-server'),
 
 // Variables
@@ -69,7 +70,7 @@ function builtFilesExist() {
     function checkExist(fileName) {
         var errorMessage = 'Javascript files have not been built.',
             errorHelp = '\nPlease read the getting started instructions at:' +
-                        '\nhttps://github.com/TryGhost/Ghost#getting-started-guide-for-developers';
+                        '\nhttps://github.com/TryGhost/Ghost#getting-started';
 
         return new Promise(function (resolve, reject) {
             fs.exists(fileName, function (exists) {
@@ -161,7 +162,9 @@ function init(options) {
             // Initialize mail
             mailer.init(),
             // Initialize apps
-            apps.init()
+            apps.init(),
+            // Initialize sitemaps
+            sitemap.init()
         );
     }).then(function () {
         var adminHbs = hbs.create();

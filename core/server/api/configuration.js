@@ -12,11 +12,13 @@ function getValidKeys() {
             fileStorage: config.fileStorage === false ? false : true,
             apps: config.apps === true ? true : false,
             tagsUI: config.tagsUI === true ? true : false,
+            codeInjectionUI: config.codeInjectionUI === true ? true : false,
             version: config.ghostVersion,
             environment: process.env.NODE_ENV,
             database: config.database.client,
             mail: _.isObject(config.mail) ? config.mail.transport : '',
-            blogUrl: config.url
+            blogUrl: config.url,
+            blogTitle: config.theme.title
         };
 
     return validKeys;

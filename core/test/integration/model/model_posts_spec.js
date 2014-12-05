@@ -6,6 +6,7 @@ var testUtils       = require('../../utils'),
     _               = require('lodash'),
 
     // Stuff we are testing
+    ghostBookshelf  = require('../../../server/models/base'),
     PostModel       = require('../../../server/models/post').Post,
     DataGenerator   = testUtils.DataGenerator,
     context         = testUtils.context.owner;
@@ -144,7 +145,7 @@ describe('Post Model', function () {
                 post.id.should.equal(firstPost);
                 post.title.should.not.equal('new title');
 
-                return PostModel.edit({title: 'new title'}, _.extend(context, {id: firstPost}));
+                return PostModel.edit({title: 'new title'}, _.extend({}, context, {id: firstPost}));
             }).then(function (edited) {
                 should.exist(edited);
                 edited.attributes.title.should.equal('new title');
@@ -359,26 +360,30 @@ describe('Post Model', function () {
             var firstItemData = {id: 1};
 
             // Test that we have the post we expect, with exactly one tag
-            PostModel.findOne(firstItemData).then(function (results) {
+            PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
                 var post;
                 should.exist(results);
                 post = results.toJSON();
                 post.id.should.equal(firstItemData.id);
                 post.tags.should.have.length(2);
-                post.tags[0].should.equal(firstItemData.id);
+                post.tags[0].id.should.equal(firstItemData.id);
 
                 // Destroy the post
                 return PostModel.destroy(firstItemData);
             }).then(function (response) {
                 var deleted = response.toJSON();
 
-                deleted.tags.should.be.empty;
                 should.equal(deleted.author, undefined);
 
                 // Double check we can't find the post again
                 return PostModel.findOne(firstItemData);
             }).then(function (newResults) {
                 should.equal(newResults, null);
+
+                // Double check we can't find any related tags
+                return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
+            }).then(function (postsTags) {
+                postsTags.should.be.empty;
 
                 done();
             }).catch(done);
@@ -428,6 +433,13 @@ describe('Post Model', function () {
                 return PostModel.findPage({limit: 10, page: 2, status: 'all'});
             }).then(function (paginationResult) {
                 paginationResult.meta.pagination.pages.should.equal(11);
+
+                return PostModel.findPage({limit: 'all', status: 'all'});
+            }).then(function (paginationResult) {
+                paginationResult.meta.pagination.page.should.equal(1);
+                paginationResult.meta.pagination.limit.should.equal('all');
+                paginationResult.meta.pagination.pages.should.equal(1);
+                paginationResult.posts.length.should.equal(107);
 
                 done();
             }).catch(done);

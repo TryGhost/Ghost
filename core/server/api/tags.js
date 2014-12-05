@@ -23,12 +23,6 @@ tags = {
      */
     browse: function browse(options) {
         return canThis(options.context).browse.tag().then(function () {
-            if (options.limit && options.limit === 'all') {
-                return dataProvider.Tag.findAll(options).then(function (result) {
-                    return {tags: result.toJSON()};
-                });
-            }
-
             return dataProvider.Tag.findPage(options);
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to browse tags.'));
