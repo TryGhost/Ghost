@@ -1,7 +1,7 @@
 <header class="settings-view-header">
-    <h2 class="page-title">Labs</h2>
+    <h2 class="page-title">实验室</h2>
     <div class="js-settings-header-inner settings-header-inner">
-        {{#link-to 'settings' class='btn btn-default btn-back'}}Back{{/link-to}}
+        {{#link-to 'settings' class='btn btn-default btn-back'}}返回{{/link-to}}
     </div>
 </header>
 
@@ -10,22 +10,24 @@
     <form id="settings-export">
         <fieldset>
             <div class="form-group">
-                <label>Export</label>
-                <button type="button" class="btn btn-blue" {{action "exportData"}}>Export</button>
-                <p>Export the blog settings and data.</p>
+                <label>数据导出</label>
+                <button type="button" class="btn btn-blue" {{action "exportData"}}>导出</button>
+                <p>导出博客配置和博文数据。</p>
             </div>
         </fieldset>
     </form>
     {{#gh-form id="settings-import" enctype="multipart/form-data"}}
         <fieldset>
             <div class="form-group">
-                <label>Import</label>
+                <label>数据导入</label>
                 {{partial "import-errors"}}
                 {{gh-file-upload id="importfile" uploadButtonText=uploadButtonText}}
-                <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
+                <p>导入博客配置和博文数据。注意：如导入数据中包含用户信息，用户信息会被覆盖，你可能将无法登录。</p>
             </div>
         </fieldset>
     {{/gh-form}}
+
+    <!--
     <form id="settings-resetdb">
         <fieldset>
             <div class="form-group">
@@ -44,4 +46,5 @@
             </div>
         </fieldset>
     </form>
+    -->
 </section>
