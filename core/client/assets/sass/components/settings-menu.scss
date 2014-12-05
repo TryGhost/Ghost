@@ -24,7 +24,7 @@
     overflow: hidden;
 
     transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
-    transform: translate3d(60px, 0px, 0px);
+    transform: translate3d(350px, 0px, 0px);
 
     // This selector ends up being `body.settings-menu-expanded .settings-menu-container`
     body.settings-menu-expanded & {
