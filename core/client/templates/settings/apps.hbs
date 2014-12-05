@@ -10,14 +10,14 @@
             <th>Status</th>
         </thead>
         <tbody>
-        {{#each itemController="settings/app"}}
+        {{#each app in model itemController="settings/app"}}
         <tr>
             <td>
-                {{#if package}}{{package.name}} - {{package.version}}{{else}}{{name}} - package.json missing :({{/if}}
+                {{#if app.package}}{{app.package.name}} - {{app.package.version}}{{else}}{{app.name}} - package.json missing :({{/if}}
             </td>
             <td>
-                <button type="button" {{action toggleApp this}} {{bind-attr class=":btn :js-button-active activeClass:btn-red inactiveClass:btn-green activeClass:js-button-deactivate"}}>
-                    {{buttonText}}
+                <button type="button" {{action toggleApp app}} {{bind-attr class=":btn :js-button-active activeClass:btn-red inactiveClass:btn-green activeClass:js-button-deactivate"}}>
+                    {{app.buttonText}}
                 </button>
             </td>
         </tr>
