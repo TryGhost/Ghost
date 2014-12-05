@@ -66,7 +66,7 @@ config = {
         },
         paths: {
             contentPath: path.join(__dirname, '/content/')
-        }
+        },
 
         codeInjectionUI: true,
     },
