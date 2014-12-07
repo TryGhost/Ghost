@@ -16,13 +16,7 @@ module.exports = function (blogApp) {
             return sitemap.getSiteMapXml(type, page);
         };
 
-    // Redirect normal sitemap.xml requests to sitemap-index.xml
     blogApp.get('/sitemap.xml', function (req, res) {
-        res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
-        res.redirect(301, req.baseUrl + '/sitemap-index.xml');
-    });
-
-    blogApp.get('/sitemap-index.xml', function (req, res) {
         res.set({
             'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
             'Content-Type': 'text/xml'
