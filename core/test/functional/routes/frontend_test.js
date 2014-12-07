@@ -935,15 +935,8 @@ describe('Frontend Routing', function () {
             }).catch(done);
         });
 
-        it('should redirect for /sitemap.xml', function (done) {
+        it('should serve sitemap.xml', function (done) {
             request.get('/sitemap.xml')
-                .expect(301)
-                .expect('location', /sitemap-index.xml/)
-                .end(doEnd(done));
-        });
-
-        it('should serve sitemap-index.xml', function (done) {
-            request.get('/sitemap-index.xml')
                 .expect(200)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
