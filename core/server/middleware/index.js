@@ -262,10 +262,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
         }
     }
 
-    // Favicon
-    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
-
     // Static assets
     blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
     blogApp.use('/content/images', storage.getStorage().serve());
@@ -290,8 +286,10 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     // Theme only config
     blogApp.use(middleware.staticTheme());
 
-    // Serve robots.txt if not found in theme
+    // Serve robots.txt, favicon.ico, and sitemap.xsl if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
+    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
+    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // site map
     sitemapHandler(blogApp);
