@@ -63,7 +63,13 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
         },
 
         sessionAuthenticationSucceeded: function () {
-            var self = this;
+            var appController = this.controllerFor('application'),
+                self = this;
+
+            if (appController && appController.get('skipAuthSuccessHandler')) {
+                return;
+            }
+
             this.store.find('user', 'me').then(function (user) {
                 self.send('signedIn', user);
                 var attemptedTransition = self.get('session').get('attemptedTransition');
