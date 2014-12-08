@@ -15,7 +15,7 @@ AuthenticationInitializer = {
 
         window.ENV['simple-auth'] = {
             authenticationRoute: 'signin',
-            routeAfterAuthentication: 'content',
+            routeAfterAuthentication: 'posts',
             authorizer: 'simple-auth-authorizer:oauth2-bearer',
             localStorageKey: 'ghost' + (Ghost.subdir.indexOf('/') === 0 ? '-' + Ghost.subdir.substr(1) : '') + ':session'
         };
@@ -27,9 +27,9 @@ AuthenticationInitializer = {
         };
 
         SimpleAuth.Session.reopen({
-            user: function () {
+            user: Ember.computed(function () {
                 return container.lookup('store:main').find('user', 'me');
-            }).property()
+            })
         });
 
         SimpleAuth.Authenticators.OAuth2.reopen({
