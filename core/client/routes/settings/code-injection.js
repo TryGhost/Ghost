@@ -2,15 +2,8 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-var shortcuts = {},
-    SettingsCodeInjectionRoute;
-
-shortcuts[ctrlOrCmd + '+s'] = {action: 'save'};
-
-SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUserSettings, ShortcutsRoute, {
+var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUserSettings, {
     classNames: ['settings-view-code'],
 
     beforeModel: function () {
@@ -24,8 +17,6 @@ SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingIndicat
             return records.get('firstObject');
         });
     },
-
-    shortcuts: shortcuts,
 
     actions: {
         save: function () {

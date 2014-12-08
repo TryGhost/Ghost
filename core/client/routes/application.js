@@ -1,17 +1,21 @@
 /* global key */
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+var ApplicationRoute,
+    shortcuts = {};
+
+shortcuts.esc = {action: 'closePopups', scope: 'all'};
+shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
+shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
+
+ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+    shortcuts: shortcuts,
 
     afterModel: function (model, transition) {
         if (this.get('session').isAuthenticated) {
             transition.send('loadServerNotifications');
         }
-    },
-
-    shortcuts: {
-        esc: {action: 'closePopups', scope: 'all'},
-        enter: {action: 'confirmModal', scope: 'modal'}
     },
 
     title: function (tokens) {
@@ -155,7 +159,10 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
                     errorObj.el.addClass('input-error');
                 }
             });
-        }
+        },
+
+        // noop default for unhandled save (used from shortcuts)
+        save: Ember.K
     }
 });
 
