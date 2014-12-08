@@ -1,14 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
-import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-var shortcuts = {},
-    SettingsUserRoute;
-
-shortcuts[ctrlOrCmd + '+s'] = {action: 'save'};
-
-SettingsUserRoute = AuthenticatedRoute.extend(styleBody, ShortcutsRoute, {
+var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, {
     titleToken: 'User',
 
     classNames: ['settings-view-user'],
@@ -54,8 +47,6 @@ SettingsUserRoute = AuthenticatedRoute.extend(styleBody, ShortcutsRoute, {
 
         this._super();
     },
-
-    shortcuts: shortcuts,
 
     actions: {
         save: function () {
