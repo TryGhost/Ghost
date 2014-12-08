@@ -15,7 +15,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
             tokenText,
             email,
             model = {},
-            re = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+            re = /^(?:[A-Za-z0-9_\-]{4})*(?:[A-Za-z0-9_\-]{2}|[A-Za-z0-9_\-]{3})?$/;
 
         return new Ember.RSVP.Promise(function (resolve) {
             if (!re.test(params.token)) {
