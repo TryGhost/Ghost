@@ -15,16 +15,17 @@
 
             <h4 class="user-list-title">已邀请用户</h4>
 
-            {{#each invitedUsers itemController="settings/users/user"}}
+            {{#each user in invitedUsers itemController="settings/users/user"}}
                 <div class="user-list-item">
                     <span class="user-list-item-icon icon-mail">ic</span>
 
                     <div class="user-list-item-body">
-                        <span class="name">{{email}}</span><br>
-                            {{#if pending}}
+
+                        <span class="name">{{user.email}}</span><br>
+                            {{#if user.pending}}
                                 <span class="red">邀请发送失败 - 请重试</span>
                             {{else}}
-                                <span class="description">邀请已发送 @{{created_at}}</span>
+                                <span class="description">邀请已发送: {{user.created_at}}</span>
                             {{/if}}
                     </div>
                     <aside class="user-list-item-aside">
@@ -42,23 +43,25 @@
 
         <h4 class="user-list-title">已注册用户</h4>
 
-        {{#each activeUsers itemController="settings/users/user"}}
-            {{#link-to 'settings.users.user' this class="user-list-item" }}
-                <span class="user-list-item-figure" {{bind-attr style=image}}>
-                    <span class="hidden">{{unbound name}}的头像</span>
+
+        {{#each user in activeUsers itemController="settings/users/user"}}
+            {{#link-to 'settings.users.user' user class="user-list-item" }}
+                <span class="user-list-item-figure" {{bind-attr style=user.image}}>
+                    <span class="hidden">{{unbound user.name}}的头像</span>
                 </span>
 
                 <div class="user-list-item-body">
                     <span class="name">
-                        {{name}}
+                        {{user.name}}
                     </span>
                     <br>
-                    <span class="description">{{unbound last_login}}登录</span>
+
+                    <span class="description">{{unbound user.last_login}}登录</span>
                 </div>
                 <aside class="user-list-item-aside">
-                    {{#unless isAuthor}}
-                        {{#each roles}}
-                            <span class="role-label {{unbound lowerCaseName}}">{{description}}</span>
+                    {{#unless user.isAuthor}}
+                        {{#each role in user.roles}}
+                            <span class="role-label {{unbound role.lowerCaseName}}">{{role.name}}</span>
                         {{/each}}
                     {{/unless}}
                 </aside>

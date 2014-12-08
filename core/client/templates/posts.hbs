@@ -13,17 +13,18 @@
         </header>
         {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content"}}
         <ol class="posts-list">
-            {{#each itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
-            {{#link-to "posts.post" this class="permalink" title="Edit this post"}}
-            <h3 class="entry-title">{{title}}</h3>
+            {{#each post in model itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
+            {{#link-to "posts.post" post class="permalink" title="Edit this post"}}
+            <h3 class="entry-title">{{post.title}}</h3>
             <section class="entry-meta">
                 <span class="status">
-                    {{#if isPublished}}
-                    {{#if page}}
+
+                    {{#if post.isPublished}}
+                    {{#if post.page}}
                     <span class="page">页面</span>
                     {{else}}
-                    <time datetime="{{unbound published_at}}" class="date published">
-                        发布于{{gh-format-timeago published_at}}
+                    <time datetime="{{unbound post.published_at}}" class="date published">
+                        发布于 {{gh-format-timeago post.published_at}}
                     </time>
                     {{/if}}
                     {{else}}
