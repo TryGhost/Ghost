@@ -118,6 +118,10 @@ _.extend(SiteMapManager.prototype, {
             return;
         }
 
+        if (post.get('status') !== 'published') {
+            return;
+        }
+
         this.posts.addUrl(post.toJSON());
     },
 
