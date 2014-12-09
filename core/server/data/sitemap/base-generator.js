@@ -19,6 +19,7 @@ XMLNS_DECLS = {
 function BaseSiteMapGenerator() {
     this.lastModified = 0;
     this.nodeLookup = {};
+    this.nodeTimeLookup = {};
     this.siteMapContent = '';
 }
 
@@ -53,11 +54,11 @@ _.extend(BaseSiteMapGenerator.prototype, {
             return _.map(data, function (datum) {
                 var node = self.createUrlNodeFromDatum(datum, permalinks);
                 self.updateLastModified(datum);
-                self.nodeLookup[datum.id] = node;
+                self.updateLookups(datum, node);
 
                 return node;
             });
-        }).then(self.generateXmlFromNodes);
+        }).then(this.generateXmlFromNodes.bind(this));
     },
 
     getPermalinksValue: function () {
@@ -77,14 +78,28 @@ _.extend(BaseSiteMapGenerator.prototype, {
         this.permalinks = permalinks;
 
         // Re-generate xml with new permalinks values
-        this.updateXmlFromNodes(_.values(this.nodeLookup));
+        this.updateXmlFromNodes();
     },
 
-    generateXmlFromNodes: function (urlElements) {
-        var data = {
-            // Concat the elements to the _attr declaration
-            urlset: [XMLNS_DECLS].concat(urlElements)
-        };
+    generateXmlFromNodes: function () {
+        var self = this,
+            // Get a mapping of node to timestamp
+            timedNodes = _.map(this.nodeLookup, function (node, id) {
+                return {
+                    id: id,
+                    // Using negative here to sort newest to oldest
+                    ts: -(self.nodeTimeLookup[id] || 0),
+                    node: node
+                };
+            }, []),
+            // Sort nodes by timestamp
+            sortedNodes = _.sortBy(timedNodes, 'ts'),
+            // Grab just the nodes
+            urlElements = _.pluck(sortedNodes, 'node'),
+            data = {
+                // Concat the elements to the _attr declaration
+                urlset: [XMLNS_DECLS].concat(urlElements)
+            };
 
         // Return the xml
         return utils.getDeclarations() + xml(data);
@@ -103,19 +118,18 @@ _.extend(BaseSiteMapGenerator.prototype, {
         return this.getPermalinksValue().then(function (permalinks) {
             var node = self.createUrlNodeFromDatum(datum, permalinks);
             self.updateLastModified(datum);
-            self.nodeLookup[datum.id] = node;
+            self.updateLookups(datum, node);
 
-            return self.updateXmlFromNodes(_.values(self.nodeLookup));
+            return self.updateXmlFromNodes();
         });
     },
 
     removeUrl: function (datum) {
-        var lookup = this.nodeLookup;
-        delete lookup[datum.id];
+        this.removeFromLookups(datum);
 
         this.lastModified = Date.now();
 
-        return this.updateXmlFromNodes(_.values(lookup));
+        return this.updateXmlFromNodes();
     },
 
     updateUrl: function (datum) {
@@ -124,9 +138,9 @@ _.extend(BaseSiteMapGenerator.prototype, {
             var node = self.createUrlNodeFromDatum(datum, permalinks);
             self.updateLastModified(datum);
             // TODO: Check if the node values changed, and if not don't regenerate
-            self.nodeLookup[datum.id] = node;
+            self.updateLookups(datum, node);
 
-            return self.updateXmlFromNodes(_.values(self.nodeLookup));
+            return self.updateXmlFromNodes();
         });
     },
 
@@ -142,6 +156,10 @@ _.extend(BaseSiteMapGenerator.prototype, {
         return 1.0;
     },
 
+    getLastModifiedForDatum: function (datum) {
+        return datum.updated_at || datum.published_at || datum.created_at;
+    },
+
     createUrlNodeFromDatum: function (datum, permalinks) {
         var url = this.getUrlForDatum(datum, permalinks),
             priority = this.getPriorityForDatum(datum);
@@ -149,7 +167,7 @@ _.extend(BaseSiteMapGenerator.prototype, {
         return {
             url: [
                 {loc: url},
-                {lastmod: moment(datum.updated_at || datum.published_at || datum.created_at).toISOString()},
+                {lastmod: moment(this.getLastModifiedForDatum(datum)).toISOString()},
                 {changefreq: CHANGE_FREQ},
                 {priority: priority}
             ]
@@ -161,11 +179,24 @@ _.extend(BaseSiteMapGenerator.prototype, {
     },
 
     updateLastModified: function (datum) {
-        var lastModified = datum.updated_at || datum.published_at || datum.created_at;
+        var lastModified = this.getLastModifiedForDatum(datum);
 
         if (lastModified > this.lastModified) {
             this.lastModified = lastModified;
         }
+    },
+
+    updateLookups: function (datum, node) {
+        this.nodeLookup[datum.id] = node;
+        this.nodeTimeLookup[datum.id] = this.getLastModifiedForDatum(datum);
+    },
+
+    removeFromLookups: function (datum) {
+        var lookup = this.nodeLookup;
+        delete lookup[datum.id];
+
+        lookup = this.nodeTimeLookup;
+        delete lookup[datum.id];
     }
 });
 
