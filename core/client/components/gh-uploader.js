@@ -18,7 +18,7 @@ var PostImageUploader = Ember.Component.extend({
             }
         });
 
-        $this.find('.js-cancel').on('click', function () {
+        $this.on('imagecleared', function () {
             self.sendAction('canceled');
         });
     }.on('didInsertElement'),
