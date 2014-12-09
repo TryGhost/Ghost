@@ -157,6 +157,25 @@ describe('Sitemap', function () {
             }).catch(done);
         });
 
+        it('doesn\'t add draft pages', function (done) {
+            var manager = makeStubManager(),
+                fake = {
+                    toJSON: sandbox.stub().returns({
+                        status: 'draft'
+                    }),
+                    get: sandbox.stub().returns('draft'),
+                    updated: sandbox.stub().returns('draft')
+                };
+
+            manager.init().then(function () {
+                manager.pageAdded(fake);
+
+                manager.pages.addUrl.called.should.equal(false);
+
+                done();
+            }).catch(done);
+        });
+
         it('deletes pages that were unpublished', function (done) {
             var manager = makeStubManager(),
                 fake = {
@@ -220,6 +239,24 @@ describe('Sitemap', function () {
 
                 manager.posts.updateUrl.called.should.equal(false);
                 manager.postAdded.called.should.equal(true);
+
+                done();
+            }).catch(done);
+        });
+
+        it('doesn\'t add draft posts', function (done) {
+            var manager = makeStubManager(),
+                fake = {
+                    toJSON: sandbox.stub().returns({
+                        status: 'draft'
+                    }),
+                    get: sandbox.stub().returns('draft'),
+                    updated: sandbox.stub().returns('draft')
+                };
+
+            manager.init().then(function () {
+                manager.postAdded(fake);
+                manager.posts.addUrl.called.should.equal(false);
 
                 done();
             }).catch(done);
