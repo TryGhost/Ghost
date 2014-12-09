@@ -9,19 +9,42 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, {
     activeTagSlugScratch: boundOneWay('activeTag.slug'),
     activeTagDescriptionScratch: boundOneWay('activeTag.description'),
 
+    // Tag properties that should not be set to the empty string
+    requiredTagProperties: ['name', 'slug'],
+
     init: function (options) {
         options = options || {};
         options.modelType = 'tag';
         this._super(options);
     },
 
-    saveActiveTag: function () {
+    saveActiveTagProperty: function (propKey, newValue) {
         var activeTag = this.get('activeTag'),
-            name = activeTag.get('name'),
-            self = this;
+            currentValue = activeTag.get(propKey),
+            requiredTagProps = this.get('requiredTagProperties'),
+            self = this,
+            tagName;
+
+        newValue = newValue.trim();
+        // Quit if value is empty for a required property
+        if (!newValue && requiredTagProps.contains(propKey)) {
+            return;
+        }
+        // Quit if there was no change
+        if (newValue === currentValue) {
+            return;
+        }
+
+        activeTag.set(propKey, newValue);
+
+        tagName = activeTag.get('name');
+        // don't save a new tag until it has a name
+        if (!tagName) {
+            return;
+        }
 
         activeTag.save().then(function () {
-            self.notifications.showSuccess('Saved ' + name);
+            self.notifications.showSuccess('Saved ' + tagName);
         }).catch(function (error) {
             self.notifications.showAPIError(error);
         });
@@ -52,47 +75,15 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, {
         },
 
         saveActiveTagName: function (name) {
-            var activeTag = this.get('activeTag'),
-                currentName = activeTag.get('name');
-
-            name = name.trim();
-            if (!name || name === currentName) {
-                return;
-            }
-
-            // setting all of the properties as they are not saved until name is present
-            activeTag.setProperties({
-                name: name,
-                slug: this.get('activeTagSlugScratch').trim(),
-                description: this.get('activeTagDescriptionScratch').trim()
-            });
-            this.saveActiveTag();
+            this.saveActiveTagProperty('name', name);
         },
 
         saveActiveTagSlug: function (slug) {
-            var name = this.get('activeTag.name'),
-                currentSlug = this.get('activeTag.slug') || '';
-
-            slug = slug.trim();
-            if (!name || !slug || slug === currentSlug) {
-                return;
-            }
-
-            this.set('activeTag.slug', slug);
-            this.saveActiveTag();
+            this.saveActiveTagProperty('slug', slug);
         },
 
         saveActiveTagDescription: function (description) {
-            var name = this.get('activeTag.name'),
-                currentDescription = this.get('activeTag.description') || '';
-
-            description = description.trim();
-            if (!name || description === currentDescription) {
-                return;
-            }
-
-            this.set('activeTag.description', description);
-            this.saveActiveTag();
+            this.saveActiveTagProperty('description', description);
         }
     }
 });
