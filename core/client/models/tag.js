@@ -1,6 +1,9 @@
+import ValidationEngine from 'ghost/mixins/validation-engine';
 import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Tag = DS.Model.extend(NProgressSaveMixin, {
+var Tag = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+    validationType: 'tag',
+
     uuid: DS.attr('string'),
     name: DS.attr('string'),
     slug: DS.attr('string'),
