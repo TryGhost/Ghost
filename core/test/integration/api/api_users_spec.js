@@ -1,20 +1,20 @@
 /*globals describe, before, beforeEach, afterEach, it */
 /*jshint expr:true*/
-var testUtils   = require('../../utils'),
-    should      = require('should'),
-    sinon       = require('sinon'),
-    Promise     = require('bluebird'),
-    _           = require('lodash'),
+var testUtils       = require('../../utils'),
+    should          = require('should'),
+    sinon           = require('sinon'),
+    Promise         = require('bluebird'),
+    _               = require('lodash'),
 
 // Stuff we are testing
-    ModelUser   = require('../../../server/models'),
-    UserAPI     = require('../../../server/api/users'),
-    mail        = require('../../../server/api/mail'),
+    ModelUser       = require('../../../server/models'),
+    UserAPI         = require('../../../server/api/users'),
+    mail            = require('../../../server/api/mail'),
 
-    context     = testUtils.context,
-    userIdFor   = testUtils.users.ids,
-    roleIdFor   = testUtils.roles.ids,
-    sandbox     = sinon.sandbox.create();
+    context         = testUtils.context,
+    userIdFor       = testUtils.users.ids,
+    roleIdFor       = testUtils.roles.ids,
+    sandbox         = sinon.sandbox.create();
 
 describe('Users API', function () {
     // Keep the DB clean
