@@ -9,7 +9,10 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
         authenticate: function () {
             var data = this.getProperties('identification', 'password');
 
-            return this._super(data);
+            this._super(data).catch(function () {
+                // If simple-auth's authenticate rejects we need to catch it
+                // to avoid an unhandled rejection exception.
+            });
         },
 
         validateAndAuthenticate: function () {
