@@ -2,6 +2,7 @@
 // Shared helpers for working with the API
 var Promise = require('bluebird'),
     _       = require('lodash'),
+    path    = require('path'),
     errors  = require('../errors'),
     utils;
 
@@ -28,6 +29,18 @@ utils = {
             }
         }
         return Promise.resolve(object);
+    },
+    checkFileExists: function (options, filename)  {
+        return options[filename] && options[filename].type && options[filename].path;
+    },
+    checkFileIsValid: function (file, types, extensions) {
+        var type = file.type,
+            ext = path.extname(file.name).toLowerCase();
+
+        if (_.contains(types, type) && _.contains(extensions, ext)) {
+            return true;
+        }
+        return false;
     }
 };
 
