@@ -8,7 +8,7 @@ DataImporter = {
         return importData;
     },
     doImport: function (importData) {
-        return importer('003', importData);
+        return importer(importData);
     }
 };
 

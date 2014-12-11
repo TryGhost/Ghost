@@ -4,6 +4,7 @@ var Promise         = require('bluebird'),
     errors          = require('../../errors'),
     uuid            = require('node-uuid'),
     validator       = require('validator'),
+    importer        = require('./data-importer'),
     tables          = require('../schema').tables,
     validate,
     handleErrors,
@@ -184,25 +185,12 @@ validate = function validate(data) {
     });
 };
 
-module.exports = function (version, data) {
-    var importer,
-        sanitizeResults;
-
-    sanitizeResults = sanitize(data);
+module.exports = function (data) {
+    var sanitizeResults = sanitize(data);
 
     data = sanitizeResults.data;
 
     return validate(data).then(function () {
-        try {
-            importer = require('./' + version);
-        } catch (ignore) {
-            // Zero effs given
-        }
-
-        if (!importer) {
-            return Promise.reject('No importer found');
-        }
-
         return importer.importData(data);
     }).then(function () {
         return sanitizeResults;
