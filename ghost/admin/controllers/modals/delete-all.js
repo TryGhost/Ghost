@@ -7,6 +7,8 @@ var DeleteAllController = Ember.Controller.extend({
                 type: 'DELETE'
             }).then(function () {
                 self.notifications.showSuccess('All content deleted from database.');
+                self.store.unloadAll('post');
+                self.store.unloadAll('tag');
             }).catch(function (response) {
                 self.notifications.showErrors(response);
             });
