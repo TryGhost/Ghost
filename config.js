@@ -25,8 +25,8 @@ config = {
             client: 'pg',
             connection: {
                 host     : '127.0.0.1',
-                user     : 'postgres',
-                password : '',
+                user     : 'admin',
+                password : process.env.PGPASSWORD,
                 database : 'blog',
                 charset  : 'utf8'
             },
