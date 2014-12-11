@@ -1019,4 +1019,124 @@ describe('Users API', function () {
             });
         });
     });
+
+    describe('Change Password', function () {
+        it('Owner can change own password', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.owner,
+                    oldPassword: 'Sl1m3rson',
+                    newPassword: 'newSl1m3rson',
+                    ne2Password: 'newSl1m3rson'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function (response) {
+                    response.password[0].message.should.eql('Password changed successfully.');
+                    done();
+                }).catch(done);
+        });
+
+        it('Owner can\'t change password with wrong oldPassword', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.owner,
+                    oldPassword: 'wrong',
+                    newPassword: 'Sl1m3rson',
+                    ne2Password: 'Sl1m3rson'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Password change is not denied.'));
+                }).catch(function (error) {
+                    error.type.should.eql('ValidationError');
+                    done();
+                });
+        });
+
+        it('Owner can\'t change password without matching passwords', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.owner,
+                    oldPassword: 'Sl1m3rson',
+                    newPassword: 'Sl1m3rson1',
+                    ne2Password: 'Sl1m3rson2'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Password change is not denied.'));
+                }).catch(function (error) {
+                    error.type.should.eql('ValidationError');
+                    done();
+                });
+        });
+
+        it('Owner can\'t change editor password without matching passwords', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.editor,
+                    newPassword: 'Sl1m3rson1',
+                    ne2Password: 'Sl1m3rson2'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Password change is not denied.'));
+                }).catch(function (error) {
+                    error.type.should.eql('ValidationError');
+                    done();
+                });
+        });
+
+        it('Owner can\'t change editor password without short passwords', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.editor,
+                    newPassword: 'Sl',
+                    ne2Password: 'Sl'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Password change is not denied.'));
+                }).catch(function (error) {
+                    error.type.should.eql('ValidationError');
+                    done();
+                });
+        });
+
+        it('Owner can change password for editor', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.editor,
+                    newPassword: 'newSl1m3rson',
+                    ne2Password: 'newSl1m3rson'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function (response) {
+                    response.password[0].message.should.eql('Password changed successfully.');
+                    done();
+                }).catch(done);
+        });
+
+        it('Editor can\'t change password for admin', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.admin,
+                    newPassword: 'newSl1m3rson',
+                    ne2Password: 'newSl1m3rson'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.editor, {id: userIdFor.editor}))
+                .then(function () {
+                    done(new Error('Password change is not denied.'));
+                }).catch(function (error) {
+                    error.type.should.eql('NoPermissionError');
+                    done();
+                });
+        });
+    });
 });
