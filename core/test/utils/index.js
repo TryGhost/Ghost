@@ -280,11 +280,15 @@ fixtures = {
         });
     },
 
+    getExportFixturePath: function (filename) {
+        return path.resolve(__dirname + '/fixtures/' + filename + '.json');
+    },
+
     loadExportFixture: function loadExportFixture(filename) {
-        var filepath = path.resolve(__dirname + '/fixtures/' + filename + '.json'),
+        var filePath = this.getExportFixturePath(filename),
             readFile = Promise.promisify(fs.readFile);
 
-        return readFile(filepath).then(function (fileContents) {
+        return readFile(filePath).then(function (fileContents) {
             var data;
 
             // Parse the json data
