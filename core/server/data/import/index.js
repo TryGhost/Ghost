@@ -3,7 +3,6 @@ var Promise         = require('bluebird'),
     validation      = require('../validation'),
     errors          = require('../../errors'),
     uuid            = require('node-uuid'),
-    validator       = require('validator'),
     importer        = require('./data-importer'),
     tables          = require('../schema').tables,
     validate,
@@ -90,14 +89,14 @@ sanitize = function sanitize(data) {
         });
 
     _.each(tableNames, function (tableName) {
-        // Sanitize the table data for duplicates and valid uuid values
+        // Sanitize the table data for duplicates and valid uuid and created_at values
         var sanitizedTableData = _.transform(data.data[tableName], function (memo, importValues) {
             var uuidMissing = (!importValues.uuid && tables[tableName].uuid) ? true : false,
-                uuidMalformed = (importValues.uuid && !validator.isUUID(importValues.uuid)) ? true : false,
+                uuidMalformed = (importValues.uuid && !validation.validator.isUUID(importValues.uuid)) ? true : false,
                 isDuplicate,
                 problemTag;
 
-            // Check for correct UUID and fix if neccessary
+            // Check for correct UUID and fix if necessary
             if (uuidMissing || uuidMalformed) {
                 importValues.uuid = uuid.v4();
             }
