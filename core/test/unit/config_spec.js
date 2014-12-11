@@ -189,10 +189,12 @@ describe('Config', function () {
             config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
         });
 
-        it('should return url for a post when asked for', function () {
+        it('should return url for a post from post object', function () {
             var testContext = 'post',
-                testData = {post: testUtils.DataGenerator.Content.posts[2], permalinks: {value: '/:slug/'}};
+                testData = {post: testUtils.DataGenerator.Content.posts[2]};
 
+            // url is now provided on the postmodel, permalinkSetting tests are in the model_post_spec.js test
+            testData.post.url = '/short-and-sweet/';
             config.set({url: 'http://my-ghost-blog.com'});
             config.urlFor(testContext, testData).should.equal('/short-and-sweet/');
             config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
@@ -200,27 +202,6 @@ describe('Config', function () {
             config.set({url: 'http://my-ghost-blog.com/blog'});
             config.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
             config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
-        });
-
-        it('should return url for a dated post when asked for', function () {
-            var testContext = 'post',
-                testData = {
-                    post: testUtils.DataGenerator.Content.posts[2],
-                    permalinks: {value: '/:year/:month/:day/:slug/'}
-                },
-                today = new Date(),
-                dd = ('0' + today.getDate()).slice(-2),
-                mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                yyyy = today.getFullYear(),
-                postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
-
-            config.set({url: 'http://my-ghost-blog.com'});
-            config.urlFor(testContext, testData).should.equal(postLink);
-            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com' + postLink);
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor(testContext, testData).should.equal('/blog' + postLink);
-            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog' + postLink);
         });
 
         it('should return url for a tag when asked for', function () {
@@ -237,59 +218,19 @@ describe('Config', function () {
         });
     });
 
-    describe('urlForPost', function () {
-        var sandbox;
-
-        beforeEach(function () {
-            sandbox = sinon.sandbox.create();
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-            config.set({url: defaultConfig.url});
-        });
-
-        it('should output correct url for post', function (done) {
-            var settings = {read: function read() {}},
-                settingsStub = sandbox.stub(settings, 'read', function () {
-                    return Promise.resolve({settings: [{value: '/:slug/'}]});
-                }),
+    describe('urlPathForPost', function () {
+        it('should output correct url for post', function () {
+            var permalinkSetting = '/:slug/',
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
                 postLink = '/short-and-sweet/';
 
-            config.set({url: 'http://my-ghost-blog.com'});
-
             // next test
-            config.urlForPost(settings, testData).then(function (url) {
-                url.should.equal(postLink);
-
-                // next test
-                return config.urlForPost(settings, testData, true);
-            }).then(function (url) {
-                url.should.equal('http://my-ghost-blog.com' + postLink);
-
-                return config.set({url: 'http://my-ghost-blog.com/blog'});
-            }).then(function () {
-                // next test
-                return config.urlForPost(settings, testData);
-            }).then(function (url) {
-                url.should.equal('/blog' + postLink);
-
-                // next test
-                return config.urlForPost(settings, testData, true);
-            }).then(function (url) {
-                url.should.equal('http://my-ghost-blog.com/blog' + postLink);
-
-                done();
-            }).catch(done);
+            config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
         });
 
-        it('should output correct url for post with date permalink', function (done) {
-            var settings = {read: function read() {}},
-                settingsStub = sandbox.stub(settings, 'read', function () {
-                    return Promise.resolve({settings: [{value: '/:year/:month/:day/:slug/'}]});
-                }),
+        it('should output correct url for post with date permalink', function () {
+            var permalinkSetting = '/:year/:month/:day/:slug/',
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
                 today = new Date(),
@@ -297,68 +238,17 @@ describe('Config', function () {
                 mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),
                 postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
-
-            config.set({url: 'http://my-ghost-blog.com'});
-
             // next test
-            config.urlForPost(settings, testData).then(function (url) {
-                url.should.equal(postLink);
-
-                // next test
-                return config.urlForPost(settings, testData, true);
-            }).then(function (url) {
-                url.should.equal('http://my-ghost-blog.com' + postLink);
-
-                return config.set({url: 'http://my-ghost-blog.com/blog'});
-            }).then(function () {
-                // next test
-                return config.urlForPost(settings, testData);
-            }).then(function (url) {
-                url.should.equal('/blog' + postLink);
-
-                // next test
-                return config.urlForPost(settings, testData, true);
-            }).then(function (url) {
-                url.should.equal('http://my-ghost-blog.com/blog' + postLink);
-
-                done();
-            }).catch(done);
+            config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
         });
 
-        it('should output correct url for page with date permalink', function (done) {
-            var settings = {read: function read() {}},
-                settingsStub = sandbox.stub(settings, 'read', function () {
-                    return Promise.resolve({settings: [{value: '/:year/:month/:day/:slug/'}]});
-                }),
+        it('should output correct url for page with date permalink', function () {
+            var permalinkSetting = '/:year/:month/:day/:slug/',
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[5],
                 postLink = '/static-page-test/';
-
-            config.set({url: 'http://my-ghost-blog.com'});
-
             // next test
-            config.urlForPost(settings, testData).then(function (url) {
-                url.should.equal(postLink);
-
-                // next test
-                return config.urlForPost(settings, testData, true);
-            }).then(function (url) {
-                url.should.equal('http://my-ghost-blog.com' + postLink);
-
-                return config.set({url: 'http://my-ghost-blog.com/blog'});
-            }).then(function () {
-                // next test
-                return config.urlForPost(settings, testData);
-            }).then(function (url) {
-                url.should.equal('/blog' + postLink);
-
-                // next test
-                return config.urlForPost(settings, testData, true);
-            }).then(function (url) {
-                url.should.equal('http://my-ghost-blog.com/blog' + postLink);
-
-                done();
-            }).catch(done);
+            config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
         });
     });
 
