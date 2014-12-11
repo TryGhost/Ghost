@@ -182,7 +182,8 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
     },
 
     showSaveNotification: function (prevStatus, status, delay) {
-        var message = this.messageMap.success.post[prevStatus][status];
+        var message = this.messageMap.success.post[prevStatus][status] +
+            '&nbsp;<a href="' + this.get('config.blogUrl') + '/' + this.get('slug') + '">View Post</a>';
 
         this.notifications.showSuccess(message, {delayed: delay});
     },
