@@ -52,6 +52,7 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
             type: 'PUT',
             data: {
                 password: [{
+                    user_id: this.get('id'),
                     oldPassword: this.get('password'),
                     newPassword: this.get('newPassword'),
                     ne2Password: this.get('ne2Password')
