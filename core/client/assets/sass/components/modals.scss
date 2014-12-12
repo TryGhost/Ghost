@@ -124,6 +124,7 @@
 
 .modal-header {
     position: relative;
+    margin-bottom: 18px;
 
     h1 {
         display: inline-block;
@@ -136,6 +137,10 @@
 .modal-body {
     position: relative;
     overflow-y: auto;
+
+    .red {
+        color: $red;
+    }
 }
 
 .modal-footer {
