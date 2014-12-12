@@ -233,7 +233,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             this.set('status', status);
 
             // Set a default title
-            if (!this.get('titleScratch')) {
+            if (!this.get('titleScratch').trim()) {
                 this.set('titleScratch', '(Untitled)');
             }
 
