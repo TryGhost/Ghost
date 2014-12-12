@@ -153,6 +153,14 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, {
 
         closeSubview: function () {
             this.set('isViewingSubview', false);
+        },
+
+        setCoverImage: function (image) {
+            this.saveActiveTagProperty('image', image);
+        },
+
+        clearCoverImage: function () {
+            this.saveActiveTagProperty('image', '');
         }
     }
 });
