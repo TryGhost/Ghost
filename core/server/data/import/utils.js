@@ -185,34 +185,25 @@ utils = {
         var ops = [];
 
         tableData = stripProperties(['id'], tableData);
-
         _.each(tableData, function (post) {
              // Validate minimum post fields
             if (areEmpty(post, 'title', 'slug', 'markdown')) {
                 return;
             }
 
-            ops.push(function () {
-                return models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
+             // The post importer has auto-timestamping disabled
+            if (!post.created_at) {
+                post.created_at = Date.now();
+            }
+
+            ops.push(models.Post.add(post, _.extend(internal, {transacting: transaction, importing: true}))
                     .catch(function (error) {
                         return Promise.reject({raw: error, model: 'post', data: post});
-                    });
-            });
+                    })
+            );
         });
 
-        return Promise.reduce(ops, function (results, op) {
-            return op().then(function (result) {
-                results.push(result);
-
-                return results;
-            }).catch(function (error) {
-                if (error) {
-                    results.push(error);
-                }
-
-                return results;
-            });
-        }, []).settle();
+        return Promise.settle(ops);
     },
 
     importUsers: function importUsers(tableData, existingUsers, transaction) {
