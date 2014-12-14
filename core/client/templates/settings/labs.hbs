@@ -44,4 +44,31 @@
             </div>
         </fieldset>
     </form>
+
+    <hr>
+
+    <form>
+        <fieldset>
+            <div class="form-group for-checkbox">
+                <label for="labs-tagsUI">Tag Management</label>
+                <label class="checkbox" for="labs-tagsUI">
+                    {{input id="labs-tagsUI" name="labs[tagsUI]" type="checkbox" checked=useTagsUI}}
+                    <span class="input-toggle-component"></span>
+                    <p>Enable the tag management interface (work in progress)</p>
+                    <p>A settings screen which enables you to add, edit and delete tags</p>
+                </label>
+            </div>
+
+            <div class="form-group for-checkbox">
+                <label for="labs-codeInjectionUI">Code Injection</label>
+                <label class="checkbox" for="labs-codeInjectionUI">
+                    {{input id="labs-codeInjectionUI" name="labs[codeInjectionUI]" type="checkbox" checked=useCodeInjectionUI}}
+                    <span class="input-toggle-component"></span>
+                    <p>Enable the code injection interface (work in progress)</p>
+                    <p>A settings screen which enables you to add code into your theme</p>
+                </label>
+            </div>
+        </fieldset>
+    </form>
+
 </section>

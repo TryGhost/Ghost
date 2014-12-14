@@ -1,6 +1,47 @@
-var LabsController = Ember.Controller.extend(Ember.Evented, {
+var LabsController = Ember.ObjectController.extend(Ember.Evented, {
     uploadButtonText: 'Import',
     importErrors: '',
+
+    saveLabs: function (optionName, optionValue) {
+        var labsConfig = this.get('labs'),
+            labsJSON = (this.get('labs')) ? JSON.parse(labsConfig) : {};
+
+        // Set new value in the JSON object
+        labsJSON[optionName] = optionValue;
+
+        this.set('labs', JSON.stringify(labsJSON));
+
+        this.get('model').save().catch(function (errors) {
+            self.showErrors(errors);
+            self.get('model').rollback();
+        });
+    },
+
+    useTagsUI: Ember.computed('tagsUI', function (key, value) {
+        // setter
+        if (arguments.length > 1) {
+            this.saveLabs('tagsUI', value);
+        }
+
+        // getter
+        var labsConfig = (this.get('labs')) ? JSON.parse(this.get('labs')) : false;
+
+
+        return (labsConfig.tagsUI) ? labsConfig.tagsUI : false;
+    }),
+
+    useCodeInjectionUI: Ember.computed('codeInjectionUI', function (key, value) {
+        // setter
+        if (arguments.length > 1) {
+            this.saveLabs('codeInjectionUI', value);
+        }
+
+        // getter
+        var labsConfig = (this.get('labs')) ? JSON.parse(this.get('labs')) : false;
+
+
+        return (labsConfig.codeInjectionUI) ? labsConfig.codeInjectionUI : false;
+    }),
 
     actions: {
         onUpload: function (file) {
