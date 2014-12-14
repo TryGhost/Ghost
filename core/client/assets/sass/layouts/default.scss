@@ -38,7 +38,6 @@
     bottom: 0;
     left: 0;
     overflow: hidden;
-    z-index: 500; // Above the .global-nav when collapsed
     transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
 
     @media (max-width: 900px) {
