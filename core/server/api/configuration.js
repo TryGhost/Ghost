@@ -17,7 +17,7 @@ function getValidKeys() {
             environment: process.env.NODE_ENV,
             database: config.database.client,
             mail: _.isObject(config.mail) ? config.mail.transport : '',
-            blogUrl: config.url,
+            blogUrl: config.url.replace(/\/$/, ''),
             blogTitle: config.theme.title
         };
 
