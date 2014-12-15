@@ -50,6 +50,29 @@ describe('Tag Model', function () {
         }).catch(done);
     });
 
+    it('can findPage with post_count include', function (done) {
+        testUtils.fixtures.insertPosts().then(function () {
+            return TagModel.findPage({include: 'post_count'});
+        }).then(function (results) {
+            _.each(results.tags, function (tag) { tag.should.have.property('post_count'); });
+            _.findWhere(results.tags, {slug: 'kitchen-sink'}).post_count.should.equal(2);
+            _.findWhere(results.tags, {slug: 'pollo'}).post_count.should.equal(1);
+            _.findWhere(results.tags, {slug: 'injection'}).post_count.should.equal(0);
+
+            done();
+        }).catch(done);
+    });
+
+    it('can findPage with post_count include and limit less then total_tags', function (done) {
+        testUtils.fixtures.insertPosts().then(function () {
+            return TagModel.findPage({include: 'post_count', limit: 2});
+        }).then(function (results) {
+            _.each(results.tags, function (tag) { tag.should.have.property('post_count'); });
+
+            done();
+        }).catch(done);
+    });
+
     describe('a Post', function () {
         it('can add a tag', function (done) {
             var newPost = testUtils.DataGenerator.forModel.posts[0],
