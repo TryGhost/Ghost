@@ -35,7 +35,7 @@
                 </ul>
 
                 {{#unless activeTag.isNew}}
-                    <button type="button" class="btn btn-red icon-trash" {{action "deleteTag" activeTag}}>Delete Tag</button>
+                    <button type="button" class="btn btn-link btn-sm tag-delete-button icon-trash" {{action "openModal" "delete-tag" activeTag}}>Delete Tag</button>
                 {{/unless}}
             </form>
         </div>
