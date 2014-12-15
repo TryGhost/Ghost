@@ -72,7 +72,8 @@ Tag = ghostBookshelf.Model.extend({
     findPage: function (options) {
         options = options || {};
 
-        var tagCollection = Tags.forge();
+        var tagCollection = Tags.forge(),
+        tagTotal;
 
         if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit, 10) || 15;
@@ -115,9 +116,24 @@ Tag = ghostBookshelf.Model.extend({
 
             return qb.count(tableName + '.' + idAttribute + ' as aggregate');
         })
-        // Format response of data
+        // Fetch post count information
         .then(function (resp) {
-            var totalTags = parseInt(resp[0].aggregate, 10),
+            var qb;
+            tagTotal = resp;
+
+            if (options.include) {
+                if (options.include.indexOf('post_count') > -1) {
+                    qb = ghostBookshelf.knex('posts_tags');
+
+                    return qb.select('tag_id').count('* as postCount').groupBy('tag_id');
+                }
+            } else {
+                return null;
+            }
+        })
+        // Format response of data
+        .then(function (postsPerTagCollection) {
+            var totalTags = parseInt(tagTotal[0].aggregate, 10),
                 calcPages = Math.ceil(totalTags / options.limit) || 0,
                 pagination = {},
                 meta = {},
@@ -131,6 +147,19 @@ Tag = ghostBookshelf.Model.extend({
             pagination.prev = null;
 
             data.tags = tagCollection.toJSON();
+
+            if (postsPerTagCollection !== null) {
+                // Merge two result sets
+                _.each(data.tags, function (tag) {
+                    var postsPerTag = _.find(postsPerTagCollection, function (obj) { return obj.tag_id === tag.id; });
+                    if (postsPerTag) {
+                        tag.post_count = parseInt(postsPerTag.postCount, 10);
+                    } else {
+                        tag.post_count = 0;
+                    }
+                });
+            }
+
             data.meta = meta;
             meta.pagination = pagination;
 
