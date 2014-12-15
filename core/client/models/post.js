@@ -22,6 +22,7 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', {async: true}),
     tags: DS.hasMany('tag', {embedded: 'always'}),
+    url: DS.attr('string'),
 
     // Computed post properties
 
