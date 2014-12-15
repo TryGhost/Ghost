@@ -1,7 +1,16 @@
 /* global key */
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+var ApplicationRoute,
+    shortcuts = {};
+
+shortcuts.esc = {action: 'closePopups', scope: 'all'};
+shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
+shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
+
+ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+    shortcuts: shortcuts,
 
     afterModel: function (model, transition) {
         if (this.get('session').isAuthenticated) {
@@ -9,32 +18,11 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         }
     },
 
-    shortcuts: {
-        esc: {action: 'closePopups', scope: 'all'},
-        enter: {action: 'confirmModal', scope: 'modal'}
-    },
-
     title: function (tokens) {
         return tokens.join(' - ') + ' - ' + this.get('config.blogTitle');
     },
 
     actions: {
-        authorizationFailed: function () {
-            var currentRoute = this.get('controller').get('currentRouteName'),
-                editorController;
-
-            if (currentRoute.split('.')[0] === 'editor') {
-                editorController = this.controllerFor(currentRoute);
-
-                if (editorController.get('isDirty')) {
-                    this.send('openModal', 'auth-failed-unsaved', editorController);
-                    return;
-                }
-            }
-
-            this._super();
-        },
-
         toggleGlobalMobileNav: function () {
             this.toggleProperty('controller.showGlobalMobileNav');
         },
@@ -42,9 +30,11 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         openSettingsMenu: function () {
             this.set('controller.showSettingsMenu', true);
         },
+
         closeSettingsMenu: function () {
             this.set('controller.showSettingsMenu', false);
         },
+
         toggleSettingsMenu: function () {
             this.toggleProperty('controller.showSettingsMenu');
         },
@@ -73,7 +63,13 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
         },
 
         sessionAuthenticationSucceeded: function () {
-            var self = this;
+            var appController = this.controllerFor('application'),
+                self = this;
+
+            if (appController && appController.get('skipAuthSuccessHandler')) {
+                return;
+            }
+
             this.store.find('user', 'me').then(function (user) {
                 self.send('signedIn', user);
                 var attemptedTransition = self.get('session').get('attemptedTransition');
@@ -155,7 +151,10 @@ var ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shor
                     errorObj.el.addClass('input-error');
                 }
             });
-        }
+        },
+
+        // noop default for unhandled save (used from shortcuts)
+        save: Ember.K
     }
 });
 

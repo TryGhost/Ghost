@@ -15,8 +15,15 @@ AuthenticationInitializer = {
 
         window.ENV['simple-auth'] = {
             authenticationRoute: 'signin',
-            routeAfterAuthentication: 'content',
-            authorizer: 'simple-auth-authorizer:oauth2-bearer'
+            routeAfterAuthentication: 'posts',
+            authorizer: 'simple-auth-authorizer:oauth2-bearer',
+            localStorageKey: 'ghost' + (Ghost.subdir.indexOf('/') === 0 ? '-' + Ghost.subdir.substr(1) : '') + ':session'
+        };
+
+        window.ENV['simple-auth-oauth2'] = {
+            serverTokenEndpoint: Ghost.apiRoot + '/authentication/token',
+            serverTokenRevocationEndpoint: Ghost.apiRoot + '/authentication/revoke',
+            refreshAccessTokens: true
         };
 
         SimpleAuth.Session.reopen({
@@ -26,17 +33,10 @@ AuthenticationInitializer = {
         });
 
         SimpleAuth.Authenticators.OAuth2.reopen({
-            serverTokenEndpoint: Ghost.apiRoot + '/authentication/token',
-            serverTokenRevocationEndpoint: Ghost.apiRoot + '/authentication/revoke',
-            refreshAccessTokens: true,
             makeRequest: function (url, data) {
                 data.client_id = 'ghost-admin';
                 return this._super(url, data);
             }
-        });
-
-        SimpleAuth.Stores.LocalStorage.reopen({
-            key: 'ghost' + (Ghost.subdir.indexOf('/') === 0 ? '-' + Ghost.subdir.substr(1) : '') + ':session'
         });
     }
 };

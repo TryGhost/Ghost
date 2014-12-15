@@ -317,7 +317,7 @@ var _              = require('lodash'),
                 },
 
                 testem: {
-                    command: path.resolve(cwd + '/node_modules/.bin/testem ci'),
+                    command: path.resolve(cwd + '/node_modules/.bin/testem ci -f core/test/client/testem.json'),
                     options: {
                         stdout: true,
                         stdin: false

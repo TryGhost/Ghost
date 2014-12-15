@@ -36,7 +36,7 @@ describe('{{content}} helper', function () {
                 );
 
         should.exist(rendered);
-        rendered.string.should.equal('<p>Hello <strong>World</strong></p>');
+        rendered.string.should.equal('<p>Hello <strong>World!</strong></p>');
     });
 
     it('can truncate html to 0 words', function () {

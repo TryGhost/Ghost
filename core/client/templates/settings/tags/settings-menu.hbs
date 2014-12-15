@@ -1,6 +1,6 @@
 <div class="content-cover" {{action "closeSettingsMenu"}}></div>
-<div class="settings-menu-container">
-    <div class="settings-menu settings-menu-pane settings-menu-pane-in">
+{{#gh-tabs-manager selected="showSubview" class="settings-menu-container"}}
+    <div {{bind-attr class="isViewingSubview:settings-menu-pane-out-left:settings-menu-pane-in :settings-menu :settings-menu-pane"}}>
         <div class="settings-menu-header">
             <h4>Tag Settings</h4>
             <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}>
@@ -8,15 +8,16 @@
             </button>
         </div>
         <div class="settings-menu-content">
+            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=activeTag.image uploaderReference=uploaderReference tagName="section"}}
             <form>
                 <div class="form-group">
                     <label>Tag Name</label>
-                    {{gh-input type="text" placeholder=activeTag.name value=activeTagNameScratch focus-out="saveActiveTagName"}}
+                    {{gh-input type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
                 </div>
 
                 <div class="form-group">
                     <label>Slug</label>{{!--@TODO show full url preview, not just slug--}}
-                    {{gh-input type="text" placeholder=activeTag.slug value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                    {{gh-input type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
                 </div>
 
                 <div class="form-group">
@@ -24,10 +25,52 @@
                     {{gh-textarea value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
                 </div>
 
+                <ul class="nav-list nav-list-block">
+                    {{#gh-tab tagName="li" classNames="nav-list-item"}}
+                        <button type="button">
+                            <b>Meta Data</b>
+                            <span>Extra content for SEO and social media.</span>
+                        </button>
+                    {{/gh-tab}}
+                </ul>
+
                 {{#unless activeTag.isNew}}
-                    <button class="btn btn-red icon-trash" {{action "deleteTag" activeTag}}>Delete Tag</button>
+                    <button type="button" class="btn btn-red icon-trash" {{action "deleteTag" activeTag}}>Delete Tag</button>
                 {{/unless}}
             </form>
         </div>
-    </div>
-</div>
+    </div>{{! .settings-menu-pane }}
+
+    <div {{bind-attr class="isViewingSubview:settings-menu-pane-in:settings-menu-pane-out-right :settings-menu :settings-menu-pane"}}>
+        {{#gh-tab-pane}}
+            <div class="settings-menu-header subview">
+                <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
+                <h4>Meta Data</h4>
+            </div>
+
+            <div class="settings-menu-content">
+                <form>
+                <div class="form-group">
+                    <label for="meta-title">Meta Title</label>
+                    {{gh-input type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
+                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters activeTagMetaTitleScratch 70}}</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="meta-description">Meta Description</label>
+                    {{gh-textarea value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
+                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters activeTagMetaDescriptionScratch 156}}</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Search Engine Result Preview</label>
+                    <div class="seo-preview">
+                        <div class="seo-preview-title">{{seoTitle}}</div>
+                        <div class="seo-preview-link">{{seoURL}}</div>
+                        <div class="seo-preview-description">{{seoDescription}}</div>
+                    </div>
+                </form>
+            </div>{{! .settings-menu-content }}
+        {{/gh-tab-pane}}
+    </div>{{! .settings-menu-pane }}
+{{/gh-tabs-manager}}
