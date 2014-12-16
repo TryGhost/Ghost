@@ -85,7 +85,7 @@
         "grunt-contrib-uglify": "~0.6.0",
         "grunt-contrib-watch": "~0.6.1",
         "grunt-docker": "~0.0.8",
-        "grunt-ember-templates": "~0.4.23",
+        "grunt-ember-templates": "~0.5.0-alpha",
         "grunt-es6-module-transpiler": "~0.6.0",
         "grunt-express-server": "~0.4.19",
         "grunt-jscs": "~0.8.1",

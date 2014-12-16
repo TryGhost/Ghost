@@ -285,6 +285,10 @@ CasperTest.begin('Tag editor', 7, function suite(test) {
         test.assertExists('#entry-tags', 'should have tag label area');
         test.assertExists('#entry-tags .tag-label', 'should have tag label icon');
         test.assertExists('#entry-tags input.tag-input', 'should have tag input area');
+    });
+
+    casper.thenClick('#entry-tags input.tag-input');
+    casper.then(function () {
         casper.sendKeys('#entry-tags input.tag-input', tagName);
         casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
     });
