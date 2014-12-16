@@ -24,14 +24,14 @@ Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主
 2. **Docker Image** 
 你可以在装有Docker的服务器上，运行docker run 命令即可。[安装文档](https://github.com/diancloud/Ghost/wiki/Docker-Image)
 
-    docker run -d  -p 80:2368 --name=diancloud-ghost  diancloud/ghost:0.5.6-zh
+    docker run -d  -p 80:2368 --name=diancloud-ghost  diancloud/ghost:0.5.7-zh
     
 
 3. **源码安装**
-下载已发布版本的源码包，使用 npm install 命令安装。[立即下载Ghost-0.5.6-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.6-zh.zip)
+下载已发布版本的源码包，使用 npm install 命令安装。[立即下载Ghost-0.5.7-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.7-zh.zip)
 
  * 安装NodeJS。 [安装文档](https://github.com/joyent/node/wiki/Installation)
- * 下载Ghost代码。 [即下载Ghost-0.5.6-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.6-zh.zip)
+ * 下载Ghost代码。 [即下载Ghost-0.5.7-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.7-zh.zip)
  * 解压源码。
  * 进入代码目录运行  `npm install --production`
  * 在代码目录运行 `npm start --production` 
