@@ -11,7 +11,7 @@
             </section>
             {{#link-to "editor.new" class="btn btn-green" title="New Post"}}<span class="hidden">新建博文</span>{{/link-to}}
         </header>
-        {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content"}}
+        {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
         <ol class="posts-list">
             {{#each post in model itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
             {{#link-to "posts.post" post class="permalink" title="Edit this post"}}

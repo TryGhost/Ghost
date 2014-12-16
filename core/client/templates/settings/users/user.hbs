@@ -97,11 +97,12 @@
         </fieldset>
 
         <fieldset>
-
+            {{#unless view.isNotOwnProfile}}
             <div class="form-group">
                 <label for="user-password-old">原密码</label>
                 {{input value=user.password type="password" id="user-password-old"}}
             </div>
+            {{/unless}}
 
             <div class="form-group">
                 <label for="user-password-new">新密码</label>

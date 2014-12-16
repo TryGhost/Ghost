@@ -151,6 +151,10 @@ UploadUi = function ($dropzone, settings) {
 
             $dropzone.find('img.js-upload-target').css({'display': 'none'});
 
+            // This is the start point if no image exists
+            $dropzone.find('img.js-upload-target').css({display: 'none'});
+            $dropzone.find('div.description').show();
+
             $dropzone.removeClass('pre-image-uploader image-uploader-url').addClass('image-uploader');
             this.removeExtras();
             this.buildExtras();
@@ -177,6 +181,7 @@ UploadUi = function ($dropzone, settings) {
             $dropzone.find('.js-cancel').on('click', function () {
                 $dropzone.find('.js-url').remove();
                 $dropzone.find('.js-fileupload').removeClass('right');
+                $dropzone.trigger('imagecleared');
                 self.removeExtras();
                 self.initWithDropzone();
             });
@@ -222,11 +227,14 @@ UploadUi = function ($dropzone, settings) {
 
             // This is the start point if an image already exists
             $dropzone.removeClass('image-uploader image-uploader-url').addClass('pre-image-uploader');
-            //$dropzone.find('div.description').hide();
+
+            $dropzone.find('div.description').hide();
+            $dropzone.find('img.js-upload-target').show();
             $dropzone.append($cancel);
             $dropzone.find('.js-cancel').on('click', function () {
                 $dropzone.find('img.js-upload-target').attr({src: ''});
                 $dropzone.find('div.description').show();
+                $dropzone.trigger('imagecleared');
                 $dropzone.delay(2500).animate({opacity: 100}, 1000, function () {
                     self.init();
                 });

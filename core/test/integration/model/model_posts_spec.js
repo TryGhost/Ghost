@@ -4,12 +4,16 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
     sequence        = require('../../../server/utils/sequence'),
     _               = require('lodash'),
+    Promise         = require('bluebird'),
+    sinon           = require('sinon'),
+    SettingsModel   = require('../../../server/models/settings').Settings,
 
     // Stuff we are testing
     ghostBookshelf  = require('../../../server/models/base'),
     PostModel       = require('../../../server/models/post').Post,
     DataGenerator   = testUtils.DataGenerator,
-    context         = testUtils.context.owner;
+    context         = testUtils.context.owner,
+    sandbox         = sinon.sandbox.create();
 
 describe('Post Model', function () {
     // Keep the DB clean
@@ -17,9 +21,12 @@ describe('Post Model', function () {
     describe('Single author posts', function () {
         before(testUtils.teardown);
         afterEach(testUtils.teardown);
+        afterEach(function () {
+            sandbox.restore();
+        });
         beforeEach(testUtils.setup('owner', 'posts', 'apps'));
 
-        before(function () {
+        beforeEach(function () {
             should.exist(PostModel);
         });
 
@@ -130,6 +137,48 @@ describe('Post Model', function () {
                     firstPost = result.toJSON();
 
                     checkFirstPostData(firstPost);
+
+                    done();
+                }).catch(done);
+        });
+
+        it('can findOne, returning a slug only permalink', function (done) {
+            var firstPost = 1;
+            sandbox.stub(SettingsModel, 'findOne', function () {
+                return Promise.resolve({toJSON: function () {
+                    return {value: '/:slug/'};
+                }});
+            });
+
+            PostModel.findOne({id: firstPost})
+                .then(function (result) {
+                    should.exist(result);
+                    firstPost = result.toJSON();
+                    firstPost.url.should.equal('/html-ipsum/');
+
+                    done();
+                }).catch(done);
+        });
+
+        it('can findOne, returning a dated permalink', function (done) {
+            var firstPost = 1,
+                today = new Date(),
+                dd = ('0' + today.getDate()).slice(-2),
+                mm = ('0' + (today.getMonth() + 1)).slice(-2),
+                yyyy = today.getFullYear(),
+                postLink = '/' + yyyy + '/' + mm + '/' + dd + '/html-ipsum/';
+
+            sandbox.stub(SettingsModel, 'findOne', function () {
+                return Promise.resolve({toJSON: function () {
+                    return {value: '/:year/:month/:day/:slug/'};
+                }});
+            });
+
+            PostModel.findOne({id: firstPost})
+                .then(function (result) {
+                    should.exist(result);
+                    firstPost = result.toJSON();
+                    firstPost.url.should.equal(postLink);
 
                     done();
                 }).catch(done);

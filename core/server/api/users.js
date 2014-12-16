@@ -323,17 +323,23 @@ users = {
     changePassword: function changePassword(object, options) {
         var oldPassword,
             newPassword,
-            ne2Password;
+            ne2Password,
+            userId;
+
         return utils.checkObject(object, 'password').then(function (checkedPasswordReset) {
             oldPassword = checkedPasswordReset.password[0].oldPassword;
             newPassword = checkedPasswordReset.password[0].newPassword;
             ne2Password = checkedPasswordReset.password[0].ne2Password;
-
-            return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, options).then(function () {
-                return Promise.resolve({password: [{message: '密码修改成功。'}]});
-            }).catch(function (error) {
-                return Promise.reject(new errors.ValidationError(error.message));
-            });
+            userId = parseInt(checkedPasswordReset.password[0].user_id);
+        }).then(function () {
+            return canThis(options.context).edit.user(userId);
+        }).then(function () {
+            return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, userId, options);
+        }).then(function () {
+            return Promise.resolve({password: [{message: '密码修改成功。'}]});
+        }).catch(function (error) {
+            // return Promise.reject(new errors.ValidationError(error.message));
+            return errors.handleAPIError(error, '你没有修改这个用户密码的权限。');
         });
     },
 

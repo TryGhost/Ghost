@@ -50,7 +50,7 @@ describe('{{excerpt}} Helper', function () {
     it('strips inline and bottom footnotes', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> a very short post with a single footnote.</p>\n' +
             '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>',
-        expected = 'Testing a very short post with a single footnote. ',
+        expected = 'Testing a very short post with a single footnote.',
         rendered = helpers.excerpt.call({html: html});
 
         should.exist(rendered);
@@ -59,7 +59,7 @@ describe('{{excerpt}} Helper', function () {
 
     it('can truncate html by word', function () {
         var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
-            expected = 'Hello World',
+            expected = 'Hello World!',
             rendered = (
                 helpers.excerpt.call(
                     {html: html},

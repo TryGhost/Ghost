@@ -94,11 +94,11 @@ reported. Especially, why do you consider this to be a bug? What do you expect t
 
 ### Technical details:
 
-* Ghost Version: master (latest commit: 590ba48988b51b9c5e8d99afbb84c997436d7f21)
-* Client OS: Mac OS X 10.8.4
+* Ghost Version: master (latest commit: a761de2079dca4df49567b1bddac492f25033985)
+* Client OS: Mac OS X 10.10.1
 * Server OS: CentOS 6.4
 * Node Version: 0.10.16
-* Browser: Chrome 29.0.1547.57
+* Browser: Chrome 39.0.2171.71
 * Database: SQLite / MySQL / postgres
 ```
 

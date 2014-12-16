@@ -12,8 +12,28 @@ var _              = require('lodash'),
     xmlrpc         = require('../xmlrpc'),
     sitemap        = require('../data/sitemap'),
 
+    config          = require('../config'),
+    permalinkSetting = '',
+    getPermalinkSetting,
     Post,
     Posts;
+
+// Stores model permalink format
+
+getPermalinkSetting = function (model, attributes, options) {
+    /*jshint unused:false*/
+
+    // Transactions are used for bulk deletes and imports which don't need this anyway
+    if (options.transacting) {
+        return Promise.resolve();
+    }
+    return ghostBookshelf.model('Settings').findOne({key: 'permalinks'}).then(function (response) {
+        if (response) {
+            response = response.toJSON();
+            permalinkSetting = response.hasOwnProperty('value') ? response.value : '';
+        }
+    });
+};
 
 Post = ghostBookshelf.Model.extend({
 
@@ -37,6 +57,9 @@ Post = ghostBookshelf.Model.extend({
             }
             return self.updateTags(model, attributes, options);
         });
+
+        // Ensures local copy of permalink setting is kept up to date
+        this.on('fetching', getPermalinkSetting);
 
         this.on('created', function (model) {
             var isPage = !!model.get('page');
@@ -137,7 +160,7 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.creating.call(this, newPage, attr, options);
     },
 
-   /**
+    /**
      * ### updateTags
      * Update tags that are attached to a post.  Create any tags that don't already exist.
      * @param {Object} newPost
@@ -230,11 +253,11 @@ Post = ghostBookshelf.Model.extend({
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs.author = attrs.author || attrs.author_id;
+        attrs.url = config.urlPathForPost(attrs, permalinkSetting);
         delete attrs.author_id;
 
         return attrs;
     }
-
 }, {
 
     /**
@@ -625,7 +648,14 @@ Post = ghostBookshelf.Model.extend({
 });
 
 Posts = ghostBookshelf.Collection.extend({
-    model: Post
+    model: Post,
+
+    initialize: function () {
+        ghostBookshelf.Collection.prototype.initialize.apply(this, arguments);
+
+        // Ensures local copy of permalink setting is kept up to date
+        this.on('fetching', getPermalinkSetting);
+    }
 });
 
 module.exports = {

@@ -7,6 +7,8 @@ var express,
     parentApp,
     errors;
 
+// process.env.NODE_ENV = process.env.NODE_ENV || 'production';  // 4 点云
+
 // Make sure dependencies are installed and file system permissions are correct.
 require('./core/server/utils/startup-check').check();
 

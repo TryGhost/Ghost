@@ -31,7 +31,7 @@ function ConfigManager(config) {
 
     // Allow other modules to be externally accessible.
     this.urlFor = configUrl.urlFor;
-    this.urlForPost = configUrl.urlForPost;
+    this.urlPathForPost = configUrl.urlPathForPost;
 
     // If we're given an initial config object then we can set it.
     if (config && _.isObject(config)) {

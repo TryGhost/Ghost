@@ -1,19 +1,11 @@
-var _       = require('lodash'),
-    config  = require('../config'),
+var config  = require('../config'),
     Promise = require('bluebird'),
-    path    = require('path'),
     fs      = require('fs-extra'),
     storage = require('../storage'),
     errors  = require('../errors'),
+    utils   = require('./utils'),
 
     upload;
-
-function isImage(type, ext) {
-    if (_.contains(config.uploads.contentTypes, type) && _.contains(config.uploads.extensions, ext)) {
-        return true;
-    }
-    return false;
-}
 
 /**
  * ## Upload API Methods
@@ -31,25 +23,21 @@ upload = {
      */
     add: function (options) {
         var store = storage.getStorage(),
-            type,
-            ext,
             filepath;
 
-        if (!options.uploadimage || !options.uploadimage.type || !options.uploadimage.path) {
+        // Check if a file was provided
+        if (!utils.checkFileExists(options, 'uploadimage')) {
             return Promise.reject(new errors.NoPermissionError('Please select an image.'));
         }
 
-        type = options.uploadimage.type;
-        ext = path.extname(options.uploadimage.name).toLowerCase();
+        // Check if the file is valid
+        if (!utils.checkFileIsValid(options.uploadimage, config.uploads.contentTypes, config.uploads.extensions)) {
+            return Promise.reject(new errors.UnsupportedMediaTypeError('Please select a valid image.'));
+        }
+
         filepath = options.uploadimage.path;
 
-        return Promise.resolve(isImage(type, ext)).then(function (result) {
-            if (!result) {
-                return Promise.reject(new errors.UnsupportedMediaTypeError('Please select a valid image.'));
-            }
-        }).then(function () {
-            return store.save(options.uploadimage);
-        }).then(function (url) {
+        return store.save(options.uploadimage).then(function (url) {
             return url;
         }).finally(function () {
             // Remove uploaded file from tmp location

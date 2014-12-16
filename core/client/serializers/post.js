@@ -52,10 +52,14 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
         var root = Ember.String.pluralize(type.typeKey),
             data = this.serialize(record, options);
 
-        // Don't ever pass uuid's
+        // Properties that exist on the model but we don't want sent in the payload
+
         delete data.uuid;
-        // Don't send HTML
         delete data.html;
+        // Inserted locally as a convenience.
+        delete data.author_id;
+        // Read-only virtual property.
+        delete data.url;
 
         hash[root] = [data];
     }

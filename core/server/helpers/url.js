@@ -6,7 +6,6 @@
 
 var Promise         = require('bluebird'),
     config          = require('../config'),
-    api             = require('../api'),
     schema          = require('../data/schema').checks,
     url;
 
@@ -14,7 +13,7 @@ url = function (options) {
     var absolute = options && options.hash.absolute;
 
     if (schema.isPost(this)) {
-        return config.urlForPost(api.settings, this, absolute);
+        return Promise.resolve(config.urlFor('post', {post: this}, absolute));
     }
 
     if (schema.isTag(this)) {

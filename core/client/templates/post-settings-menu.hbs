@@ -7,7 +7,7 @@
             <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}><span class="hidden">关闭</span></button>
         </div>
         <div class="settings-menu-content">
-            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" image=image uploaderReference=uploaderReference tagName="section"}}
+            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add post image" image=image uploaderReference=uploaderReference tagName="section"}}
             <form>
             <div class="form-group">
                 <label for="url">博文地址</label>

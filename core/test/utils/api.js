@@ -13,7 +13,7 @@ var url             = require('url'),
         pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
         post: ['id', 'uuid', 'title', 'slug', 'markdown', 'html', 'meta_title', 'meta_description',
             'featured', 'image', 'status', 'language', 'created_at', 'created_by', 'updated_at',
-            'updated_by', 'published_at', 'published_by', 'page', 'author'
+            'updated_by', 'published_at', 'published_by', 'page', 'author', 'url'
         ],
         settings: ['settings', 'meta'],
         setting: ['id', 'uuid', 'key', 'value', 'type', 'created_at', 'created_by', 'updated_at', 'updated_by'],

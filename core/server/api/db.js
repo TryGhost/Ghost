@@ -7,19 +7,51 @@ var dataExport       = require('../data/export'),
     Promise          = require('bluebird'),
     _                = require('lodash'),
     path             = require('path'),
+    os               = require('os'),
+    glob             = require('glob'),
+    uuid             = require('node-uuid'),
+    extract          = require('extract-zip'),
     errors           = require('../../server/errors'),
     canThis          = require('../permissions').canThis,
+    utils            = require('./utils'),
     api              = {},
-    db;
+    db,
+    types = ['application/octet-stream', 'application/json', 'application/zip', 'application/x-zip-compressed'],
+    extensions = ['.json', '.zip'];
 
 api.settings         = require('./settings');
 
-function isValidFile(ext) {
-    if (ext === '.json') {
-        return true;
-    }
-    return false;
+// TODO refactor this out of here
+function isJSON(ext) {
+    return ext === '.json';
 }
+
+function isZip(ext) {
+    return ext === '.zip';
+}
+
+function getJSONFileContents(filepath, ext) {
+    if (isJSON(ext)) {
+    // if it's just a JSON file, read it
+        return Promise.promisify(fs.readFile)(filepath);
+    } else if (isZip(ext)) {
+        var tmpdir = path.join(os.tmpdir(), uuid.v4());
+
+        return Promise.promisify(extract)(filepath, {dir: tmpdir}).then(function () {
+            return Promise.promisify(glob)('**/*.json', {cwd: tmpdir}).then(function (files) {
+                if (files[0]) {
+                    // @TODO: handle multiple JSON files
+                    return Promise.promisify(fs.readFile)(path.join(tmpdir, files[0]));
+                } else {
+                    return Promise.reject(new errors.UnsupportedMediaTypeError(
+                        'Zip did not include any content to import.'
+                    ));
+                }
+            });
+        });
+    }
+}
+
 /**
  * ## DB API Methods
  *
@@ -59,35 +91,37 @@ db = {
     importContent: function (options) {
         options = options || {};
         var databaseVersion,
-            type,
             ext,
             filepath;
 
+        // Check if a file was provided
+        if (!utils.checkFileExists(options, 'importfile')) {
+            return Promise.reject(new errors.NoPermissionError('Please select a file to import.'));
+        }
+
+        // Check if the file is valid
+        if (!utils.checkFileIsValid(options.importfile, types, extensions)) {
+            return Promise.reject(new errors.UnsupportedMediaTypeError(
+                'Please select either a .json or .zip file to import.'
+            ));
+        }
+
+        // TODO refactor this out of here
+        filepath = options.importfile.path;
+        ext = path.extname(options.importfile.name).toLowerCase();
+
+        // Permissions check
         return canThis(options.context).importContent.db().then(function () {
-            if (!options.importfile || !options.importfile.type || !options.importfile.path) {
-                return Promise.reject(new errors.NoPermissionError('Please select a file to import.'));
-            }
+            return api.settings.read(
+                {key: 'databaseVersion', context: {internal: true}}
+            ).then(function (response) {
+                var setting = response.settings[0];
 
-            type = options.importfile.type;
-            ext = path.extname(options.importfile.name).toLowerCase();
-            filepath = options.importfile.path;
-
-            return Promise.resolve(isValidFile(ext)).then(function (result) {
-                if (!result) {
-                    return Promise.reject(new errors.UnsupportedMediaTypeError('Please select a .json file to import.'));
-                }
-            }).then(function () {
-                return api.settings.read(
-                    {key: 'databaseVersion', context: {internal: true}}
-                ).then(function (response) {
-                    var setting = response.settings[0];
-
-                    return setting.value;
-                });
+                return setting.value;
             }).then(function (version) {
                 databaseVersion = version;
                 // Read the file contents
-                return Promise.promisify(fs.readFile)(filepath);
+                return getJSONFileContents(filepath, ext);
             }).then(function (fileContents) {
                 var importData;
 

@@ -1,7 +1,13 @@
 {{#gh-modal-dialog action="closeModal" showClose=true type="action" style="wide,centered" animation="fade"
     title="真的要删除这个用户吗？" confirm=confirm}}
 
-    <p>该用户发表的博文等信息将一起被删除。 这些数据将无法恢复。
-    </p>
+
+    {{#unless userPostCount.isPending}}
+        {{#if userPostCount.count}}
+            <strong>警告:</strong>该用户发表的博文( <span class="red">{{userPostCount.count}} {{userPostCount.inflection}}.</span> )等信息将一起被删除。 这些数据将无法恢复。
+        {{else}}
+            <strong>警告:</strong> 该用户发表的博文等信息将一起被删除。 这些数据将无法恢复。
+        {{/if}}
+    {{/unless}}
 
 {{/gh-modal-dialog}}

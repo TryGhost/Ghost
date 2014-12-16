@@ -44,7 +44,8 @@ describe('{{url}} helper', function () {
             markdown: 'ff',
             title: 'title',
             slug: 'slug',
-            created_at: new Date(0)
+            created_at: new Date(0),
+            url: '/slug/'
         }).then(function (rendered) {
             should.exist(rendered);
             rendered.should.equal('/slug/');
@@ -54,7 +55,7 @@ describe('{{url}} helper', function () {
 
     it('should output an absolute URL if the option is present', function (done) {
         helpers.url.call(
-            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug', created_at: new Date(0)},
+            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug', url: '/slug/', created_at: new Date(0)},
             {hash: {absolute: 'true'}}
         ).then(function (rendered) {
             should.exist(rendered);

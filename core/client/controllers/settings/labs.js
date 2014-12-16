@@ -8,6 +8,7 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
                 formData = new FormData();
 
             this.set('uploadButtonText', '导入');
+            this.set('importErrors', '');
             this.notifications.closePassive();
 
             formData.append('importfile', file);

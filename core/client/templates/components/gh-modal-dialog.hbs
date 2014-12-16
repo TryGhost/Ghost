@@ -8,11 +8,11 @@
             </section>
             {{#if confirm}}
             <footer class="modal-footer">
-                <button type="button" {{bind-attr class="acceptButtonClass :js-button-accept"}} {{action "confirm" "accept"}}>
-                    {{confirm.accept.text}}
-                </button>
                 <button type="button" {{bind-attr class="rejectButtonClass :js-button-reject"}} {{action "confirm" "reject"}}>
                     {{confirm.reject.text}}
+                </button>
+                <button type="button" {{bind-attr class="acceptButtonClass :js-button-accept"}} {{action "confirm" "accept"}}>
+                    {{confirm.accept.text}}
                 </button>
             </footer>
             {{/if}}

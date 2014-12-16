@@ -157,6 +157,25 @@ describe('Sitemap', function () {
             }).catch(done);
         });
 
+        it('doesn\'t add draft pages', function (done) {
+            var manager = makeStubManager(),
+                fake = {
+                    toJSON: sandbox.stub().returns({
+                        status: 'draft'
+                    }),
+                    get: sandbox.stub().returns('draft'),
+                    updated: sandbox.stub().returns('draft')
+                };
+
+            manager.init().then(function () {
+                manager.pageAdded(fake);
+
+                manager.pages.addUrl.called.should.equal(false);
+
+                done();
+            }).catch(done);
+        });
+
         it('deletes pages that were unpublished', function (done) {
             var manager = makeStubManager(),
                 fake = {
@@ -220,6 +239,24 @@ describe('Sitemap', function () {
 
                 manager.posts.updateUrl.called.should.equal(false);
                 manager.postAdded.called.should.equal(true);
+
+                done();
+            }).catch(done);
+        });
+
+        it('doesn\'t add draft posts', function (done) {
+            var manager = makeStubManager(),
+                fake = {
+                    toJSON: sandbox.stub().returns({
+                        status: 'draft'
+                    }),
+                    get: sandbox.stub().returns('draft'),
+                    updated: sandbox.stub().returns('draft')
+                };
+
+            manager.init().then(function () {
+                manager.postAdded(fake);
+                manager.posts.addUrl.called.should.equal(false);
 
                 done();
             }).catch(done);
@@ -347,6 +384,10 @@ describe('Sitemap', function () {
                 });
 
                 generator.init().then(function () {
+                    var idxFirst,
+                        idxSecond,
+                        idxThird;
+
                     should.exist(generator.siteMapContent);
 
                     // TODO: We should validate the contents against the XSD:
@@ -359,6 +400,14 @@ describe('Sitemap', function () {
                         '<loc>http://my-ghost-blog.com/url/200</loc>').should.equal(true);
                     validator.contains(generator.siteMapContent,
                         '<loc>http://my-ghost-blog.com/url/300</loc>').should.equal(true);
+
+                    // Validate order newest to oldest
+                    idxFirst = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/300</loc>');
+                    idxSecond = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/200</loc>');
+                    idxThird = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/100</loc>');
+
+                    idxFirst.should.be.below(idxSecond);
+                    idxSecond.should.be.below(idxThird);
 
                     done();
                 }).catch(done);
@@ -405,12 +454,15 @@ describe('Sitemap', function () {
                 });
 
                 generator.init().then(function () {
+                    var idxFirst,
+                        idxSecond,
+                        idxThird;
+
                     should.exist(generator.siteMapContent);
 
                     // TODO: We should validate the contents against the XSD:
                     // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    // xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-                    // http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+                    // xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
 
                     validator.contains(generator.siteMapContent,
                         '<loc>http://my-ghost-blog.com/url/100</loc>').should.equal(true);
@@ -429,6 +481,14 @@ describe('Sitemap', function () {
                     validator.contains(generator.siteMapContent,
                         '<image:loc>http://my-ghost-blog.com/images/post-300.jpg</image:loc>')
                         .should.equal(true);
+
+                    // Validate order newest to oldest
+                    idxFirst = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/300</loc>');
+                    idxSecond = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/200</loc>');
+                    idxThird = generator.siteMapContent.indexOf('<loc>http://my-ghost-blog.com/url/100</loc>');
+
+                    idxFirst.should.be.below(idxSecond);
+                    idxSecond.should.be.below(idxThird);
 
                     done();
                 }).catch(done);

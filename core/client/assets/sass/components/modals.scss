@@ -124,6 +124,7 @@
 
 .modal-header {
     position: relative;
+    margin-bottom: 18px;
 
     h1 {
         display: inline-block;
@@ -136,6 +137,10 @@
 .modal-body {
     position: relative;
     overflow-y: auto;
+
+    .red {
+        color: $red;
+    }
 }
 
 .modal-footer {
@@ -160,4 +165,39 @@
 
 .modal-style-centered {
     text-align: center;
+}
+
+// Modal login styles
+.modal-body .login-form {
+    display: block; // Override inherited `display: table-cell;`
+
+    .password-wrap {
+        input {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 900px) {
+        margin: 0 auto;
+        max-width: 264px;
+
+        .password-wrap {
+            width: 100%;
+            margin: 0 auto 1em;
+        }
+
+        .btn {
+            margin: 0;
+            width: 100%;
+            margin-bottom: 1em;
+        }
+    }
+
+    @media (min-width: 901px) {
+        display: flex;
+
+        .password-wrap {
+            flex: 1;
+        }
+    }
 }
