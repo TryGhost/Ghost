@@ -15,6 +15,10 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
         validateAndAuthenticate: function () {
             var self = this;
 
+            // Manually trigger events for input fields, ensuring legacy compatibility with
+            // browsers and password managers that don't send proper events on autofill
+            $('#login').find('input').trigger('change');
+
             this.validate({format: false}).then(function () {
                 self.notifications.closePassive();
                 self.send('authenticate');
