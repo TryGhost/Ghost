@@ -223,7 +223,8 @@ frontendControllers = {
 
                         // Format data for template
                         result = _.extend(formatPageResponse(posts, page), {
-                            tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
+                            tag: page.meta.filters.tags ? page.meta.filters.tags[0] : '',
+                            image: page.meta.filters.tags && page.meta.filters.tags[0].image ? page.meta.filters.tags[0].image : ''
                         });
 
                     // If the resulting tag is '' then 404.
