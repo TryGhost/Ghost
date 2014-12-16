@@ -215,7 +215,9 @@ function serveSharedFile(file, type, maxAge) {
                     if (err) {
                         return next(err);
                     }
-                    buf = buf.toString().replace('{{blog-url}}', config.url.replace(/\/$/, ''));
+                    if (type === 'text/xsl' || type === 'text/plain') {
+                        buf = buf.toString().replace('{{blog-url}}', config.url.replace(/\/$/, ''));
+                    }
                     content = {
                         headers: {
                             'Content-Type': type,
