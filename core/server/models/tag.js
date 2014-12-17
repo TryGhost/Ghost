@@ -1,4 +1,5 @@
 var _              = require('lodash'),
+    Promise        = require('bluebird'),
     errors         = require('../errors'),
     ghostBookshelf = require('./base'),
     sitemap        = require('../data/sitemap'),
@@ -73,7 +74,10 @@ Tag = ghostBookshelf.Model.extend({
         options = options || {};
 
         var tagCollection = Tags.forge(),
-        tagTotal;
+            collectionPromise,
+            totalPromise,
+            countPromise,
+            qb;
 
         if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit, 10) || 15;
@@ -98,43 +102,32 @@ Tag = ghostBookshelf.Model.extend({
                 .query('offset', options.limit * (options.page - 1));
         }
 
-        return tagCollection
-            .fetch(_.omit(options, 'page', 'limit'))
-        // Fetch pagination information
-        .then(function () {
-            var qb,
-                tableName = _.result(tagCollection, 'tableName'),
-                idAttribute = _.result(tagCollection, 'idAttribute');
+        collectionPromise = tagCollection.fetch(_.omit(options, 'page', 'limit'));
 
-            // After we're done, we need to figure out what
-            // the limits are for the pagination values.
-            qb = ghostBookshelf.knex(tableName);
+        // Find total number of tags
 
-            if (options.where) {
-                qb.where(options.where);
+        qb = ghostBookshelf.knex('tags');
+
+        if (options.where) {
+            qb.where(options.where);
+        }
+
+        totalPromise = qb.count('tags.id as aggregate');
+
+         // Fetch post count information
+
+        if (options.include) {
+            if (options.include.indexOf('post_count') > -1) {
+                qb = ghostBookshelf.knex('posts_tags');
+                countPromise = qb.select('tag_id').count('* as postCount').groupBy('tag_id');
             }
+        }
 
-            return qb.count(tableName + '.' + idAttribute + ' as aggregate');
-        })
-        // Fetch post count information
-        .then(function (resp) {
-            var qb;
-            tagTotal = resp;
-
-            if (options.include) {
-                if (options.include.indexOf('post_count') > -1) {
-                    qb = ghostBookshelf.knex('posts_tags');
-
-                    return qb.select('tag_id').count('* as postCount').groupBy('tag_id');
-                }
-            } else {
-                return null;
-            }
-        })
-        // Format response of data
-        .then(function (postsPerTagCollection) {
-            var totalTags = parseInt(tagTotal[0].aggregate, 10),
+        return Promise.join(collectionPromise, totalPromise, countPromise).then(function (results) {
+            var totalTags = results[1][0].aggregate,
                 calcPages = Math.ceil(totalTags / options.limit) || 0,
+                tagCollection = results[0],
+                postsPerTagCollection = results[2],
                 pagination = {},
                 meta = {},
                 data = {};
@@ -148,12 +141,12 @@ Tag = ghostBookshelf.Model.extend({
 
             data.tags = tagCollection.toJSON();
 
-            if (postsPerTagCollection !== null) {
+            if (postsPerTagCollection) {
                 // Merge two result sets
                 _.each(data.tags, function (tag) {
                     var postsPerTag = _.find(postsPerTagCollection, function (obj) { return obj.tag_id === tag.id; });
                     if (postsPerTag) {
-                        tag.post_count = parseInt(postsPerTag.postCount, 10);
+                        tag.post_count = postsPerTag.postCount;
                     } else {
                         tag.post_count = 0;
                     }
