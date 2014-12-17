@@ -203,7 +203,8 @@ function checkSSL(req, res, next) {
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function serveSharedFile(file, type, maxAge) {
     var content,
-        filePath = path.join(config.paths.corePath, 'shared', file);
+        filePath = path.join(config.paths.corePath, 'shared', file),
+        re = /(\{\{blog-url\}\})/g;
 
     return function serveSharedFile(req, res, next) {
         if (req.url === '/' + file) {
@@ -216,7 +217,7 @@ function serveSharedFile(file, type, maxAge) {
                         return next(err);
                     }
                     if (type === 'text/xsl' || type === 'text/plain') {
-                        buf = buf.toString().replace('{{blog-url}}', config.url.replace(/\/$/, ''));
+                        buf = buf.toString().replace(re, config.url.replace(/\/$/, ''));
                     }
                     content = {
                         headers: {
