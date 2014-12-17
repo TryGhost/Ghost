@@ -546,6 +546,8 @@ frontendControllers = {
                     });
                 }).then(function () {
                     res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
+                    res.set('Access-Control-Allow-Origin', '*');
+                    res.set('Access-Control-Allow-Methods', 'GET');
                     res.send(feed.xml());
                 });
             });

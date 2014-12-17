@@ -417,6 +417,14 @@ describe('Frontend Routing', function () {
                 });
         });
 
+        it('should serve RSS with CORS headers', function (done) {
+            request.get('/rss/')
+                .expect('Access-Control-Allow-Origin', '*')
+                .expect('Access-Control-Allow-Methods', 'GET')
+                .expect(200)
+                .end(doEnd(done));
+        });
+
         it('should not have as second page', function (done) {
             request.get('/rss/2/')
                 // TODO this should probably redirect straight to /rss/ with 301?
