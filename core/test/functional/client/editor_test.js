@@ -289,7 +289,7 @@ CasperTest.begin('Tag editor', 7, function suite(test) {
 
     casper.thenClick('#entry-tags input.tag-input');
     casper.then(function () {
-        casper.sendKeys('#entry-tags input.tag-input', tagName);
+        casper.sendKeys('#entry-tags input.tag-input', tagName, {keepFocus: true});
         casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
     });
 
