@@ -8,10 +8,15 @@ var Tag = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     name: DS.attr('string'),
     slug: DS.attr('string'),
     description: DS.attr('string'),
-    parent_id: DS.attr('number'),
+    parent: DS.attr(),
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
-    image: DS.attr('string')
+    image: DS.attr('string'),
+    hidden: DS.attr('boolean'),
+    created_at: DS.attr('moment-date'),
+    updated_at: DS.attr('moment-date'),
+    created_by: DS.attr(),
+    updated_by: DS.attr()
 });
 
 export default Tag;
