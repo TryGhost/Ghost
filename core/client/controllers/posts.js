@@ -36,9 +36,11 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
     //     status: ASC
     //     published_at: DESC
     //     updated_at: DESC
+    //     id: DESC
     orderBy: function (item1, item2) {
         var updated1 = item1.get('updated_at'),
             updated2 = item2.get('updated_at'),
+            idResult,
             statusResult,
             updatedAtResult,
             publishedAtResult;
@@ -53,12 +55,17 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
             return 1;
         }
 
+        idResult = Ember.compare(parseInt(item1.get('id')), parseInt(item2.get('id')));
         statusResult = Ember.compare(item1.get('status'), item2.get('status'));
         updatedAtResult = Ember.compare(updated1.valueOf(), updated2.valueOf());
         publishedAtResult = publishedAtCompare(item1, item2);
 
         if (statusResult === 0) {
             if (publishedAtResult === 0) {
+                if (updatedAtResult === 0) {
+                    // This should be DESC
+                    return idResult * -1;
+                }
                 // This should be DESC
                 return updatedAtResult * -1;
             }
