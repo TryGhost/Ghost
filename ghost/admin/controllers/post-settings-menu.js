@@ -60,8 +60,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
             .create(deferred);
     }),
 
-    publishedAtValue: Ember.computed('published_at', function () {
+    /*jshint unused:false */
+    publishedAtValue: Ember.computed('published_at', function (key, value) {
         var pubDate = this.get('published_at');
+
+        // We're using a fake setter to reset
+        // the cache for this property
+        if (arguments.length > 1) {
+            return formatDate(moment());
+        }
 
         if (pubDate) {
             return formatDate(pubDate);
@@ -69,6 +76,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
 
         return formatDate(moment());
     }),
+    /*jshint unused:true */
 
     slugValue: boundOneWay('slug'),
 
@@ -441,6 +449,10 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
             if (uploader && uploader[0]) {
                 uploader[0].uploaderUi.reset();
             }
+        },
+
+        resetPubDate: function () {
+            this.set('publishedAtValue', '');
         }
     }
 });
