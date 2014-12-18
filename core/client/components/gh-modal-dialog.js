@@ -13,9 +13,10 @@ var ModalDialog = Ember.Component.extend({
         this.$('.js-modal-background').on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
             if (event.originalEvent.animationName === 'fade-out') {
                 self.$('.js-modal, .js-modal-background').removeClass('open');
-                self.sendAction();
             }
         });
+
+        this.sendAction();
     },
 
     confirmaccept: 'confirmAccept',
