@@ -27,6 +27,8 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         };
     },
 
+    hasShownFirstSaveError: false,
+
     /**
      * By default, a post will not change its publish state.
      * Only with a user-set value (via setSaveType action)
@@ -266,6 +268,12 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                     self.showErrorNotification(prevStatus, self.get('status'), errors);
                 }
 
+                // This is an additional error message which triggers only when we're trying to do an initial save
+                if (options.silent && options.firstSave && !self.get('hasShownFirstSaveError')) {
+                    self.set('hasShownFirstSaveError', true);
+                    self.notifications.showError('Warning: autosave failed. Please save manually.');
+                }
+
                 self.set('status', prevStatus);
 
                 return self.get('model');
@@ -361,7 +369,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         autoSaveNew: function () {
             if (this.get('isNew')) {
-                this.send('save', {silent: true, disableNProgress: true});
+                this.send('save', {silent: true, disableNProgress: true, firstSave: true});
             }
         }
     }
