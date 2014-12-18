@@ -1,26 +1,12 @@
 /* global moment */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
+import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-var PostSettingsMenuController = Ember.ObjectController.extend({
-    // State for if the user is viewing a tab's pane.
-    needs: 'application',
-
+var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin, {
     lastPromise: null,
-
-    isViewingSubview: Ember.computed('controllers.application.showSettingsMenu', function (key, value) {
-        // Not viewing a subview if we can't even see the PSM
-        if (!this.get('controllers.application.showSettingsMenu')) {
-            return false;
-        }
-        if (arguments.length > 1) {
-            return value;
-        }
-
-        return false;
-    }),
 
     selectedAuthor: null,
     initializeSelectedAuthor: function () {
@@ -447,14 +433,6 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
-        },
-
-        showSubview: function () {
-            this.set('isViewingSubview', true);
-        },
-
-        closeSubview: function () {
-            this.set('isViewingSubview', false);
         },
 
         resetUploader: function () {
