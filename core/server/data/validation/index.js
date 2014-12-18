@@ -27,9 +27,8 @@ validator.extend('isEmptyOrURL', function (str) {
     return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
 });
 
-// Validation validation against schema attributes
-// values are checked against the validation objects
-// form schema.js
+// Validation against schema attributes
+// values are checked against the validation objects from schema.js
 validateSchema = function (tableName, model) {
     var columns = _.keys(schema[tableName]),
         validationErrors = [];
@@ -163,6 +162,7 @@ validate = function (value, key, validations) {
 };
 
 module.exports = {
+    validator: validator,
     validateSchema: validateSchema,
     validateSettings: validateSettings,
     validateActiveTheme: validateActiveTheme
