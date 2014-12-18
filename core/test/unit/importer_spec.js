@@ -1,9 +1,10 @@
 /*globals describe, afterEach, it*/
 /*jshint expr:true*/
-var should  = require('should'),
-    sinon   = require('sinon'),
-    Promise = require('bluebird'),
-    _       = require('lodash'),
+var should    = require('should'),
+    sinon     = require('sinon'),
+    Promise   = require('bluebird'),
+    _         = require('lodash'),
+    testUtils = require('../utils'),
 
     // Stuff we are testing
     ImportManager = require('../../server/data/importer'),
@@ -178,6 +179,32 @@ describe('Importer', function () {
             JSONHandler.types.should.containEql('application/octet-stream');
             JSONHandler.types.should.containEql('application/json');
             JSONHandler.loadFile.should.be.instanceof(Function);
+        });
+
+        it('correctly handles a valid db api wrapper', function (done) {
+            var file = [{
+                path: testUtils.fixtures.getExportFixturePath('export-003-api-wrapper'),
+                name: 'export-003-api-wrapper.json'
+            }];
+            JSONHandler.loadFile(file).then(function (result) {
+                _.keys(result).should.containEql('meta');
+                _.keys(result).should.containEql('data');
+                done();
+            });
+        });
+
+        it('correctly errors when given a bad db api wrapper', function (done) {
+            var file = [{
+                path: testUtils.fixtures.getExportFixturePath('export-003-api-wrapper-bad'),
+                name: 'export-003-api-wrapper-bad.json'
+            }];
+
+            JSONHandler.loadFile(file).then(function () {
+                done(new Error('Didn\'t error for bad db api wrapper'));
+            }).catch(function (response) {
+                response.type.should.equal('BadRequestError');
+                done();
+            });
         });
     });
 
