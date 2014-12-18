@@ -47,6 +47,7 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
 
     serializeIntoHash: function (hash, type, record, options) {
         options = options || {};
+        options.includeId = true;
 
         // We have a plural root in the API
         var root = Ember.String.pluralize(type.typeKey),
