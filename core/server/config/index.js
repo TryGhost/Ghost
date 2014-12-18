@@ -65,6 +65,25 @@ ConfigManager.prototype.init = function (rawConfig) {
     });
 };
 
+function configureDriver(client) {
+    var pg;
+
+    if (client === 'pg' || client === 'postgres' || client === 'postgresql') {
+        try {
+            pg = require('pg');
+        } catch (e) {
+            pg = require('pg.js');
+        }
+
+        // By default PostgreSQL returns data as strings along with an OID that identifies
+        // its type.  We're setting the parser to convert OID 20 (int8) into a javascript
+        // integer.
+        pg.types.setTypeParser(20, function (val) {
+            return val === null ? null : parseInt(val, 10);
+        });
+    }
+}
+
 /**
  * Allows you to set the config object.
  * @param {Object} config Only accepts an object at the moment.
@@ -105,6 +124,7 @@ ConfigManager.prototype.set = function (config) {
         (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
     if (!knexInstance && this._config.database && this._config.database.client) {
+        configureDriver(this._config.database.client);
         knexInstance = knex(this._config.database);
     }
 

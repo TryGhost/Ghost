@@ -68,7 +68,7 @@
     },
     "optionalDependencies": {
         "mysql": "2.1.1",
-        "pg.js": "3.6.2"
+        "pg": "4.1.1"
     },
     "devDependencies": {
         "blanket": "~1.1.6",
