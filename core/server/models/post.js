@@ -340,8 +340,7 @@ Post = ghostBookshelf.Model.extend({
     findPage: function (options) {
         options = options || {};
 
-        var postCollection = Posts.forge(),
-            tagInstance = options.tag !== undefined ? ghostBookshelf.model('Tag').forge({slug: options.tag}) : false,
+        var tagInstance = options.tag !== undefined ? ghostBookshelf.model('Tag').forge({slug: options.tag}) : false,
             authorInstance = options.author !== undefined ? ghostBookshelf.model('User').forge({slug: options.author}) : false;
 
         if (options.limit && options.limit !== 'all') {
@@ -379,12 +378,6 @@ Post = ghostBookshelf.Model.extend({
             options.where.status = options.status;
         }
 
-        // If there are where conditionals specified, add those
-        // to the query.
-        if (options.where) {
-            postCollection.query('where', options.where);
-        }
-
         // Add related objects
         options.withRelated = _.union(options.withRelated, options.include);
 
@@ -405,12 +398,21 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return Promise.join(fetchTagQuery(), fetchAuthorQuery())
-
             // Set the limit & offset for the query, fetching
             // with the opts (to specify any eager relations, etc.)
             // Omitting the `page`, `limit`, `where` just to be sure
             // aren't used for other purposes.
             .then(function () {
+                var postCollection = Posts.forge(),
+                    collectionPromise,
+                    countPromise,
+                    qb;
+
+                // If there are where conditionals specified, add those
+                // to the query.
+                if (options.where) {
+                    postCollection.query('where', options.where);
+                }
                 // If we have a tag instance we need to modify our query.
                 // We need to ensure we only select posts that contain
                 // the tag given in the query param.
@@ -431,23 +433,16 @@ Post = ghostBookshelf.Model.extend({
                         .query('offset', options.limit * (options.page - 1));
                 }
 
-                return postCollection
+                collectionPromise = postCollection
                     .query('orderBy', 'status', 'ASC')
                     .query('orderBy', 'published_at', 'DESC')
                     .query('orderBy', 'updated_at', 'DESC')
                     .query('orderBy', 'id', 'DESC')
                     .fetch(_.omit(options, 'page', 'limit'));
-            })
 
-            // Fetch pagination information
-            .then(function () {
-                var qb,
-                    tableName = _.result(postCollection, 'tableName'),
-                    idAttribute = _.result(postCollection, 'idAttribute');
+                // Find the total number of posts
 
-                // After we're done, we need to figure out what
-                // the limits are for the pagination values.
-                qb = ghostBookshelf.knex(tableName);
+                qb = ghostBookshelf.knex('posts');
 
                 if (options.where) {
                     qb.where(options.where);
@@ -461,13 +456,13 @@ Post = ghostBookshelf.Model.extend({
                     qb.where('author_id', '=', authorInstance.id);
                 }
 
-                return qb.count(tableName + '.' + idAttribute + ' as aggregate');
-            })
+                countPromise = qb.count('posts.id as aggregate');
 
-            // Format response of data
-            .then(function (resp) {
-                var totalPosts = parseInt(resp[0].aggregate, 10),
+                return Promise.join(collectionPromise, countPromise);
+            }).then(function (results) {
+                var totalPosts = parseInt(results[1][0].aggregate, 10),
                     calcPages = Math.ceil(totalPosts / options.limit) || 0,
+                    postCollection = results[0],
                     pagination = {},
                     meta = {},
                     data = {};
