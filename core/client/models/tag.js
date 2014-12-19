@@ -16,7 +16,8 @@ var Tag = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     created_at: DS.attr('moment-date'),
     updated_at: DS.attr('moment-date'),
     created_by: DS.attr(),
-    updated_by: DS.attr()
+    updated_by: DS.attr(),
+    post_count: DS.attr('number')
 });
 
 export default Tag;
