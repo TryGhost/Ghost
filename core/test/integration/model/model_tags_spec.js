@@ -37,40 +37,46 @@ describe('Tag Model', function () {
         }).catch(done);
     });
 
-    it('can findPage with limit all', function (done) {
+    it('returns post_count if include post_count', function (done) {
         testUtils.fixtures.insertPosts().then(function () {
-            return TagModel.findPage({limit: 'all'});
-        }).then(function (results) {
-            results.meta.pagination.page.should.equal(1);
-            results.meta.pagination.limit.should.equal('all');
-            results.meta.pagination.pages.should.equal(1);
-            results.tags.length.should.equal(5);
+            TagModel.findOne({slug: 'kitchen-sink'}, {include: 'post_count'}).then(function (tag) {
+                should.exist(tag);
+                tag.get('post_count').should.equal(2);
 
-            done();
-        }).catch(done);
+                done();
+            }).catch(done);
+        });
     });
 
-    it('can findPage with post_count include', function (done) {
-        testUtils.fixtures.insertPosts().then(function () {
-            return TagModel.findPage({include: 'post_count'});
-        }).then(function (results) {
-            _.each(results.tags, function (tag) { tag.should.have.property('post_count'); });
-            _.findWhere(results.tags, {slug: 'kitchen-sink'}).post_count.should.equal(2);
-            _.findWhere(results.tags, {slug: 'pollo'}).post_count.should.equal(1);
-            _.findWhere(results.tags, {slug: 'injection'}).post_count.should.equal(0);
+    describe('findPage', function () {
+        beforeEach(function (done) {
+            testUtils.fixtures.insertPosts().then(function () {
+                done();
+            }).catch(done);
+        });
 
-            done();
-        }).catch(done);
-    });
+        it('with limit all', function (done) {
+            TagModel.findPage({limit: 'all'}).then(function (results) {
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal('all');
+                results.meta.pagination.pages.should.equal(1);
+                results.tags.length.should.equal(5);
 
-    it('can findPage with post_count include and limit less then total_tags', function (done) {
-        testUtils.fixtures.insertPosts().then(function () {
-            return TagModel.findPage({include: 'post_count', limit: 2});
-        }).then(function (results) {
-            _.each(results.tags, function (tag) { tag.should.have.property('post_count'); });
+                done();
+            }).catch(done);
+        });
 
-            done();
-        }).catch(done);
+        it('with include post_count', function (done) {
+            TagModel.findPage({limit: 'all', include: 'post_count'}).then(function (results) {
+                results.meta.pagination.page.should.equal(1);
+                results.meta.pagination.limit.should.equal('all');
+                results.meta.pagination.pages.should.equal(1);
+                results.tags.length.should.equal(5);
+                should.exist(results.tags[0].post_count);
+
+                done();
+            }).catch(done);
+        });
     });
 
     describe('a Post', function () {
