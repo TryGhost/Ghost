@@ -435,6 +435,7 @@ Post = ghostBookshelf.Model.extend({
                     .query('orderBy', 'status', 'ASC')
                     .query('orderBy', 'published_at', 'DESC')
                     .query('orderBy', 'updated_at', 'DESC')
+                    .query('orderBy', 'id', 'DESC')
                     .fetch(_.omit(options, 'page', 'limit'));
             })
 
