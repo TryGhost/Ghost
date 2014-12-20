@@ -191,7 +191,7 @@ ghost_head = function (options) {
 
         head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-            title  + '" href="' + config.urlFor('rss', null, true) + '" />');
+            title  + '" href="' + config.urlFor('rss', this, true) + '" />');
     }).then(function () {
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {
