@@ -7,6 +7,17 @@ var _              = require('lodash'),
     Tag,
     Tags;
 
+function addPostCount(options, obj) {
+    if (options.include && options.include.indexOf('post_count') > -1) {
+        obj.query('select', 'tags.*');
+        obj.query('count', 'posts_tags.id as post_count');
+        obj.query('leftJoin', 'posts_tags', 'tag_id', 'tags.id');
+        obj.query('groupBy', 'tag_id', 'tags.id');
+
+        options.include = _.pull([].concat(options.include), 'post_count');
+    }
+}
+
 Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
@@ -70,13 +81,32 @@ Tag = ghostBookshelf.Model.extend({
 
         return options;
     },
+
+    /**
+     * ### Find One
+     * @overrides ghostBookshelf.Model.findOne
+     */
+    findOne: function (data, options) {
+        options = options || {};
+
+        options = this.filterOptions(options, 'findOne');
+        data = this.filterData(data, 'findOne');
+
+        var tag = this.forge(data);
+
+        addPostCount(options, tag);
+
+        // Add related objects
+        options.withRelated = _.union(options.withRelated, options.include);
+
+        return tag.fetch(options);
+    },
+
     findPage: function (options) {
         options = options || {};
 
         var tagCollection = Tags.forge(),
             collectionPromise,
-            totalPromise,
-            countPromise,
             qb;
 
         if (options.limit && options.limit !== 'all') {
@@ -102,6 +132,8 @@ Tag = ghostBookshelf.Model.extend({
                 .query('offset', options.limit * (options.page - 1));
         }
 
+        addPostCount(options, tagCollection);
+
         collectionPromise = tagCollection.fetch(_.omit(options, 'page', 'limit'));
 
         // Find total number of tags
@@ -112,22 +144,10 @@ Tag = ghostBookshelf.Model.extend({
             qb.where(options.where);
         }
 
-        totalPromise = qb.count('tags.id as aggregate');
-
-         // Fetch post count information
-
-        if (options.include) {
-            if (options.include.indexOf('post_count') > -1) {
-                qb = ghostBookshelf.knex('posts_tags');
-                countPromise = qb.select('tag_id').count('* as postCount').groupBy('tag_id');
-            }
-        }
-
-        return Promise.join(collectionPromise, totalPromise, countPromise).then(function (results) {
+        return Promise.join(collectionPromise, qb.count('tags.id as aggregate')).then(function (results) {
             var totalTags = results[1][0].aggregate,
                 calcPages = Math.ceil(totalTags / options.limit) || 0,
                 tagCollection = results[0],
-                postsPerTagCollection = results[2],
                 pagination = {},
                 meta = {},
                 data = {};
@@ -140,19 +160,6 @@ Tag = ghostBookshelf.Model.extend({
             pagination.prev = null;
 
             data.tags = tagCollection.toJSON();
-
-            if (postsPerTagCollection) {
-                // Merge two result sets
-                _.each(data.tags, function (tag) {
-                    var postsPerTag = _.find(postsPerTagCollection, function (obj) { return obj.tag_id === tag.id; });
-                    if (postsPerTag) {
-                        tag.post_count = postsPerTag.postCount;
-                    } else {
-                        tag.post_count = 0;
-                    }
-                });
-            }
-
             data.meta = meta;
             meta.pagination = pagination;
 
