@@ -21,8 +21,12 @@ meta_description = function () {
             description = blog.description;
         } else if (this.author) {
             description = /\/page\//.test(this.relativeUrl) ? '' : this.author.bio;
-        } else if (this.tag || /\/page\//.test(this.relativeUrl)) {
-            description = '';
+        } else if (this.tag) {
+            if (/\/page\//.test(this.relativeUrl)) {
+                description = '';
+            } else {
+                description = _.isEmpty(this.tag.meta_description) ? '' : this.tag.meta_description;
+            }
         } else if (this.post) {
             description = _.isEmpty(this.post.meta_description) ? '' : this.post.meta_description;
         }
