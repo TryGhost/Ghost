@@ -92,7 +92,7 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
 
     actions: {
         newTag: function () {
-            this.set('activeTag', this.store.createRecord('tag'));
+            this.set('activeTag', this.store.createRecord('tag', {post_count: 0}));
             this.send('openSettingsMenu');
         },
 
