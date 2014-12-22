@@ -64,6 +64,26 @@ describe('{{meta_description}} helper', function () {
         }).catch(done);
     });
 
+    it('returns tag meta_description if present for a tag page', function (done) {
+        var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}};
+        helpers.meta_description.call(tag).then(function (rendered) {
+            should.exist(rendered);
+            String(rendered).should.equal('Rasper is the Cool Red Casper');
+
+            done();
+        }).catch(done);
+    });
+
+    it('returns empty description on paginated tag page that has meta data', function (done) {
+        var tag = {relativeUrl: '/tag/rasper-red/page/2/', tag: {name: 'Rasper Red', meta_description: 'Rasper is the Cool Red Casper'}};
+        helpers.meta_description.call(tag).then(function (rendered) {
+            should.exist(rendered);
+            String(rendered).should.equal('');
+
+            done();
+        }).catch(done);
+    });
+
     it('returns correct description for an author page', function (done) {
         var author = {relativeUrl: '/author/donald', author: {bio: 'I am a Duck.'}};
         helpers.meta_description.call(author).then(function (rendered) {
