@@ -1,6 +1,8 @@
 <header class="settings-view-header">
-    <a class="btn btn-default btn-back active" href="/ghost/settings/">Back</a>
     <h2 class="page-title">Tags</h2>
+    <div class="js-settings-header-inner settings-header-inner">
+        {{#link-to 'settings' class='btn btn-default btn-back'}}Back{{/link-to}}
+    </div>
     <section class="page-actions">
         <button type="button" class="btn btn-green" {{action "newTag"}}>New Tag</button>
     </section>
