@@ -4,25 +4,8 @@ var PaginationControllerMixin = Ember.Mixin.create({
     // set from PaginationRouteMixin
     paginationSettings: null,
 
-    // holds the next page to load during infinite scroll
-    nextPage: null,
-
     // indicates whether we're currently loading the next page
     isLoading: null,
-
-    /**
-     *
-     * @param {object} options: {
-     *                      modelType: <String> name of the model that will be paginated
-     *                  }
-     */
-    init: function (options) {
-        this._super(options);
-
-        var metadata = this.store.metadataFor(options.modelType);
-
-        this.set('nextPage', metadata.pagination.next);
-    },
 
     /**
      * Takes an ajax response, concatenates any error messages, then generates an error notification.
@@ -51,7 +34,8 @@ var PaginationControllerMixin = Ember.Mixin.create({
             var self = this,
                 store = this.get('store'),
                 recordType = this.get('model').get('type'),
-                nextPage = this.get('nextPage'),
+                metadata = this.store.metadataFor(recordType),
+                nextPage = metadata.pagination && metadata.pagination.next,
                 paginationSettings = this.get('paginationSettings');
 
             if (nextPage) {
@@ -59,14 +43,16 @@ var PaginationControllerMixin = Ember.Mixin.create({
                 this.set('paginationSettings.page', nextPage);
 
                 store.find(recordType, paginationSettings).then(function () {
-                    var metadata = store.metadataFor(recordType);
-
-                    self.set('nextPage', metadata.pagination.next);
                     self.set('isLoading', false);
                 }, function (response) {
                     self.reportLoadError(response);
                 });
             }
+        },
+
+        resetPagination: function () {
+            this.set('paginationSettings.page', 1);
+            this.store.metaForType('tag', {pagination: undefined});
         }
     }
 });
