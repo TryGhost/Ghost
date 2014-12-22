@@ -2,6 +2,7 @@
 var _              = require('lodash'),
     uuid           = require('node-uuid'),
     Promise        = require('bluebird'),
+    sequence       = require('../utils/sequence'),
     errors         = require('../errors'),
     Showdown       = require('showdown-ghost'),
     ghostgfm       = require('../../shared/lib/showdown/extensions/ghostgfm'),
@@ -51,11 +52,11 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
-        this.on('saved', function (model, attributes, options) {
+        this.on('saved', function (model, response, options) {
             if (model.get('status') === 'published') {
-                xmlrpc.ping(model.attributes);
+                xmlrpc.ping(model.toJSON());
             }
-            return self.updateTags(model, attributes, options);
+            return self.updateTags(model, response, options);
         });
 
         // Ensures local copy of permalink setting is kept up to date
@@ -99,8 +100,7 @@ Post = ghostBookshelf.Model.extend({
         });
     },
 
-    saving: function (newPage, attr, options) {
-        /*jshint unused:false*/
+    saving: function (model, attr, options) {
         var self = this,
             tagsToCheck,
             i;
@@ -120,7 +120,7 @@ Post = ghostBookshelf.Model.extend({
             self.myTags.push(item);
         });
 
-        ghostBookshelf.Model.prototype.saving.call(this, newPage, attr, options);
+        ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
         this.set('html', converter.makeHtml(this.get('markdown')));
 
@@ -148,8 +148,7 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
-    creating: function (newPage, attr, options) {
-        /*jshint unused:false*/
+    creating: function (model, attr, options) {
         options = options || {};
 
         // set any dynamic default properties
@@ -157,18 +156,18 @@ Post = ghostBookshelf.Model.extend({
             this.set('author_id', this.contextUser(options));
         }
 
-        ghostBookshelf.Model.prototype.creating.call(this, newPage, attr, options);
+        ghostBookshelf.Model.prototype.creating.call(this, model, attr, options);
     },
 
     /**
      * ### updateTags
      * Update tags that are attached to a post.  Create any tags that don't already exist.
-     * @param {Object} newPost
-     * @param {Object} attr
+     * @param {Object} savedModel
+     * @param {Object} response
      * @param {Object} options
      * @return {Promise(ghostBookshelf.Models.Post)} Updated Post model
      */
-    updateTags: function (newPost, attr, options) {
+    updateTags: function (savedModel, response, options) {
         var self = this;
         options = options || {};
 
@@ -176,7 +175,7 @@ Post = ghostBookshelf.Model.extend({
             return;
         }
 
-        return Post.forge({id: newPost.id}).fetch({withRelated: ['tags'], transacting: options.transacting}).then(function (post) {
+        return Post.forge({id: savedModel.id}).fetch({withRelated: ['tags'], transacting: options.transacting}).then(function (post) {
             var tagOps = [];
 
             // remove all existing tags from the post
@@ -190,7 +189,7 @@ Post = ghostBookshelf.Model.extend({
 
             return ghostBookshelf.collection('Tags').forge().query('whereIn', 'name', _.pluck(self.myTags, 'name')).fetch(options).then(function (existingTags) {
                 var doNotExist = [],
-                    createAndAttachOperation;
+                    sequenceTasks = [];
 
                 existingTags = existingTags.toJSON();
 
@@ -202,15 +201,18 @@ Post = ghostBookshelf.Model.extend({
 
                 // Create tags that don't exist and attach to post
                 _.each(doNotExist, function (tag) {
-                    createAndAttachOperation = ghostBookshelf.model('Tag').add({name: tag.name}, options).then(function (createdTag) {
-                        createdTag = createdTag.toJSON();
-                        // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
-                        // (https://github.com/tgriesser/bookshelf/issues/294)
-                        return post.tags().attach(createdTag.id, _.omit(options, 'query'));
-                    });
+                    var createAndAttachOperation = function () {
+                        return ghostBookshelf.model('Tag').add({name: tag.name}, options).then(function (createdTag) {
+                            // _.omit(options, 'query') is a fix for using bookshelf 0.6.8
+                            // (https://github.com/tgriesser/bookshelf/issues/294)
+                            return post.tags().attach(createdTag.id, _.omit(options, 'query'));
+                        });
+                    };
 
-                    tagOps.push(createAndAttachOperation);
+                    sequenceTasks.push(createAndAttachOperation);
                 });
+
+                tagOps = tagOps.concat(sequence(sequenceTasks));
 
                 // attach the tags that already existed
                 _.each(existingTags, function (tag) {
