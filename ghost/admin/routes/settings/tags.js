@@ -22,7 +22,7 @@ var TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMi
     },
 
     model: function () {
-        return this.store.find('tag');
+        return this.store.find('tag', {include: 'post_count'});
     },
 
     setupController: function (controller, model) {
