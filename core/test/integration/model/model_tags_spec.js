@@ -371,6 +371,36 @@ describe('Tag Model', function () {
                 }).catch(done);
             });
 
+            it('attaches two new tags and resolves conflicting slugs', function (done) {
+                var tagData = [];
+
+                // Add the tags that don't exist in the database and have potentially
+                // conflicting slug names
+                tagData.push({id: 1, name: 'C'});
+                tagData.push({id: 2, name: 'C++'});
+
+                PostModel.add(testUtils.DataGenerator.forModel.posts[0], context).then(function (postModel) {
+                    postModel = postModel.toJSON();
+                    postModel.tags = tagData;
+
+                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id})).then(function () {
+                        return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
+                    }).then(function (reloadedPost) {
+                        var tagModels = reloadedPost.related('tags').models,
+                            tagNames = tagModels.map(function (t) { return t.get('name'); }),
+                            tagIds = _.pluck(tagModels, 'id');
+
+                        tagNames.sort().should.eql(['C', 'C++']);
+
+                        // make sure it hasn't just added a new tag with the same name
+                        // Don't expect a certain order in results - check for number of items!
+                        Math.max.apply(Math, tagIds).should.eql(2);
+
+                        done();
+                    });
+                }).catch(done);
+            });
+
             it('correctly creates non-conflicting slugs', function (done) {
                 var seededTagNames = ['tag1'],
                     postModel;
