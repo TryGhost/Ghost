@@ -1,4 +1,8 @@
 var DeleteTagController = Ember.Controller.extend({
+    inflection: function () {
+        return this.get('model').get('post_count') > 1 ? 'posts' : 'post';
+    }.property('model'),
+
     actions: {
         confirmAccept: function () {
             var tag = this.get('model'),
