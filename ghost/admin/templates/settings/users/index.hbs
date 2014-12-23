@@ -1,6 +1,11 @@
 {{#view "settings/users/users-list-view" class="users-list-wrapper js-users-list-view"}}
     <header class="settings-view-header user-list-header">
-        {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+        {{#if session.user.isEditor}}
+            {{#link-to "content" class="btn btn-default btn-back"}}Back{{/link-to}}
+        {{else}}
+            {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+        {{/if}}
+
         <h2 class="page-title">Users</h2>
         <section class="page-actions">
             <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
