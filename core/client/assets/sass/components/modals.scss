@@ -21,9 +21,11 @@
     position: fixed;
     top: 0;
     bottom: 0;
-    left: 10px;
-    right: 10px;
+    left: 0;
+    right: 0;
     z-index: 1040;
+    padding-left: 10px;
+    padding-right: 10px;
     overflow-x: auto;
     overflow-y: scroll;
     transition: all 0.15s linear 0s;
