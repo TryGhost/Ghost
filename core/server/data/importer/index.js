@@ -9,8 +9,10 @@ var _            = require('lodash'),
     uuid         = require('node-uuid'),
     extract      = require('extract-zip'),
     errors       = require('../../errors'),
-    JSONHandler  = require('./handlers/json'),
-    DataImporter = require('./importers/data'),
+    ImageHandler  = require('./handlers/image'),
+    JSONHandler   = require('./handlers/json'),
+    ImageImporter = require('./importers/image'),
+    DataImporter  = require('./importers/data'),
 
     defaults;
 
@@ -20,8 +22,8 @@ defaults = {
 };
 
 function ImportManager() {
-    this.importers = [DataImporter];
-    this.handlers = [JSONHandler];
+    this.importers = [ImageImporter, DataImporter];
+    this.handlers = [ImageHandler, JSONHandler];
 }
 
 /**

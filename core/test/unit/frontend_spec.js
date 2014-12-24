@@ -10,8 +10,11 @@ var assert   = require('assert'),
 
 // Stuff we are testing
     api      = require('../../server/api'),
-    config   = rewire('../../server/config'),
-    frontend = rewire('../../server/controllers/frontend');
+
+    frontend = rewire('../../server/controllers/frontend'),
+    config   = require('../../server/config'),
+    origConfig = _.cloneDeep(config),
+    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -19,7 +22,11 @@ should.equal(true, true);
 describe('Frontend Controller', function () {
     var sandbox,
         apiSettingsStub,
-        adminEditPagePath = '/ghost/editor/';
+        adminEditPagePath = '/ghost/editor/',
+
+        resetConfig = function () {
+            config.set(_.merge({}, origConfig, defaultConfig));
+        };
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
@@ -29,6 +36,7 @@ describe('Frontend Controller', function () {
     });
 
     afterEach(function () {
+        resetConfig();
         sandbox.restore();
     });
 
@@ -61,6 +69,12 @@ describe('Frontend Controller', function () {
                     value: 5
                 }]
             }));
+        });
+
+        afterEach(function () {
+            config.set({paths: origConfig.paths});
+            frontend.__set__('config', {paths: origConfig.paths});
+            sandbox.restore();
         });
 
         it('Redirects to home if page number is -1', function () {
@@ -1294,11 +1308,7 @@ describe('Frontend Controller', function () {
 
     describe('rss redirects', function () {
         var res,
-            apiUsersStub,
-            overwriteConfig = function (newConfig) {
-                var existingConfig = frontend.__get__('config');
-                config.set(_.extend(existingConfig, newConfig));
-            };
+            apiUsersStub;
 
         beforeEach(function () {
             res = {
@@ -1365,7 +1375,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            overwriteConfig({paths: {subdir: '/blog'}});
+            config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
 
@@ -1377,7 +1387,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            overwriteConfig({paths: {subdir: '/blog'}});
+            config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
 
@@ -1389,7 +1399,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big', function (done) {
-            overwriteConfig({paths: {subdir: ''}});
+            config.set({url: 'http://testurl.com/'});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 
@@ -1402,7 +1412,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            overwriteConfig({paths: {subdir: '/blog'}});
+            config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 
