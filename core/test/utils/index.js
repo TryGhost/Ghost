@@ -280,8 +280,12 @@ fixtures = {
         });
     },
 
+    getImportFixturePath: function (filename) {
+        return path.resolve(__dirname + '/fixtures/import/' + filename);
+    },
+
     getExportFixturePath: function (filename) {
-        return path.resolve(__dirname + '/fixtures/' + filename + '.json');
+        return path.resolve(__dirname + '/fixtures/export/' + filename + '.json');
     },
 
     loadExportFixture: function loadExportFixture(filename) {
