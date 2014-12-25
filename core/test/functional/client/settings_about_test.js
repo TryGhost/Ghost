@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper */
 
-CasperTest.begin('About screen is correct', 10, function suite(test) {
+CasperTest.begin('About screen is correct', 9, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.about', function testTitleAndUrl() {
         test.assertTitle('Settings - About - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/about\/$/, 'Landed on the correct URL');
@@ -19,10 +19,8 @@ CasperTest.begin('About screen is correct', 10, function suite(test) {
         test.assertMatch(databaseTypeText, /sqlite3|mysql|pg/gi, 'Database is an allowed type');
     });
 
-    casper.then(function testContributors() {
+    casper.waitForSelector('.top-contributors li', function testContributors() {
         var firstContribImageSrc = casper.getElementAttribute('.top-contributors li:nth-child(1) a img', 'src');
-
-        test.assertElementCount('.top-contributors li', 20, '20 contributors are shown');
 
         // Check first contributor image tag is on the page
         test.assertExist('.top-contributors li:nth-child(1) img', 'First contributor image is in place');
