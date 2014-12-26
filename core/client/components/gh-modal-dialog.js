@@ -29,7 +29,8 @@ var ModalDialog = Ember.Component.extend({
         confirm: function (type) {
             this.sendAction('confirm' + type);
             this.close();
-        }
+        },
+        noBubble: Ember.K
     },
 
     klass: Ember.computed('type', 'style', function () {
