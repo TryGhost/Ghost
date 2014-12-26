@@ -299,13 +299,11 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     // site map
     sitemapHandler(blogApp);
 
-    // Add in all trailing slashes, properly include the subdir path
-    // in the redirect.
+    // Add in all trailing slashes
     blogApp.use(slashes(true, {
         headers: {
             'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S
-        },
-        base: config.paths.subdir
+        }
     }));
     blogApp.use(uncapitalise);
 
