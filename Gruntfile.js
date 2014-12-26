@@ -1024,6 +1024,7 @@ var _              = require('lodash'),
         grunt.registerTask('buildAboutPage', 'Compile assets for the About Ghost page', function () {
             var done = this.async(),
                 templatePath = 'core/client/templates/-contributors.hbs',
+                imagePath = 'core/client/assets/img/contributors/',
                 ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90);
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
@@ -1033,15 +1034,29 @@ var _              = require('lodash'),
             }
 
             grunt.verbose.writeln('Downloading release and contributor information from GitHub');
-            getTopContribs({
-                user: 'tryghost',
-                repo: 'ghost',
-                releaseDate: ninetyDaysAgo,
-                count: 20
-            }).then(function makeContributorTemplate(contributors) {
-                var contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
+
+            return Promise.join(
+                Promise.promisify(fs.mkdirs)(imagePath),
+                getTopContribs({
+                    user: 'tryghost',
+                    repo: 'ghost',
+                    releaseDate: ninetyDaysAgo,
+                    count: 20
+                })
+            ).then(function (results) {
+                var contributors = results[1],
+                    contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
                     '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>">\n' +
-                    '    </a>\n</li>';
+                    '    </a>\n</li>',
+
+                    downloadImagePromise = function (url, name) {
+                        return new Promise(function (resolve, reject) {
+                            request(url)
+                            .pipe(fs.createWriteStream(imagePath + name))
+                            .on('close', resolve)
+                            .on('error', reject);
+                        });
+                    };
 
                 grunt.verbose.writeln('Creating contributors template.');
                 grunt.file.write(templatePath,
@@ -1052,25 +1067,15 @@ var _              = require('lodash'),
                             .replace(/<%name%>/g, contributor.name);
                     }).join('\n')
                 );
+
                 grunt.verbose.writeln('Downloading images for top contributors');
-                return Promise.promisify(fs.mkdirs)('core/client/assets/img/contributors').then(function () {
-                    return contributors;
-                });
-            }).then(function downloadContributorImages(contributors) {
-                var downloadImagePromise = function (url, name) {
-                    return new Promise(function (resolve, reject) {
-                        request(url)
-                        .pipe(fs.createWriteStream('core/client/assets/img/contributors/' + name))
-                        .on('close', resolve)
-                        .on('error', reject);
-                    });
-                };
                 return Promise.all(_.map(contributors, function (contributor) {
                     return downloadImagePromise(contributor.avatarUrl + '&s=60', contributor.name);
                 }));
-            }).catch(function (error) {
-                grunt.log.error(error);
-            }).finally(done);
+            }).then(done).catch(function (error) {
+                grunt.log.error(error.stack || error);
+                done(false);
+            });
         });
         // ### Init assets
         // `grunt init` - will run an initial asset build for you
