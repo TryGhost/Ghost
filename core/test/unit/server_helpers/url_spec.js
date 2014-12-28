@@ -38,62 +38,59 @@ describe('{{url}} helper', function () {
         should.exist(handlebars.helpers.url);
     });
 
-    it('should return the slug with a prefix slash if the context is a post', function (done) {
-        helpers.url.call({
+    it('should return the slug with a prefix slash if the context is a post', function () {
+        var rendered = helpers.url.call({
             html: 'content',
             markdown: 'ff',
             title: 'title',
             slug: 'slug',
             created_at: new Date(0),
             url: '/slug/'
-        }).then(function (rendered) {
-            should.exist(rendered);
-            rendered.should.equal('/slug/');
-            done();
-        }).catch(done);
+        });
+
+        should.exist(rendered);
+        rendered.should.equal('/slug/');
     });
 
-    it('should output an absolute URL if the option is present', function (done) {
-        helpers.url.call(
+    it('should output an absolute URL if the option is present', function () {
+        var rendered = helpers.url.call(
             {html: 'content', markdown: 'ff', title: 'title', slug: 'slug', url: '/slug/', created_at: new Date(0)},
             {hash: {absolute: 'true'}}
-        ).then(function (rendered) {
-            should.exist(rendered);
-            rendered.should.equal('http://testurl.com/slug/');
-            done();
-        }).catch(done);
+        );
+
+        should.exist(rendered);
+        rendered.should.equal('http://testurl.com/slug/');
     });
 
-    it('should return the slug with a prefixed /tag/ if the context is a tag', function (done) {
-        helpers.url.call({
+    it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
+        var rendered = helpers.url.call({
             name: 'the tag',
             slug: 'the-tag',
             description: null,
             parent: null
-        }).then(function (rendered) {
-            should.exist(rendered);
-            rendered.should.equal('/tag/the-tag/');
-            done();
-        }).catch(done);
+        });
+
+        should.exist(rendered);
+        rendered.should.equal('/tag/the-tag/');
     });
 
-    it('should return / if not a post or tag', function (done) {
-        helpers.url.call({markdown: 'ff', title: 'title', slug: 'slug'}).then(function (rendered) {
-            rendered.should.equal('/');
-        }).then(function () {
-            return helpers.url.call({html: 'content', title: 'title', slug: 'slug'}).then(function (rendered) {
-                rendered.should.equal('/');
-            });
-        }).then(function () {
-            return helpers.url.call({html: 'content', markdown: 'ff', slug: 'slug'}).then(function (rendered) {
-                rendered.should.equal('/');
-            });
-        }).then(function () {
-            helpers.url.call({html: 'content', markdown: 'ff', title: 'title'}).then(function (rendered) {
-                rendered.should.equal('/');
+    it('should return / if not a post or tag', function () {
+        var rendered;
 
-                done();
-            });
-        }).catch(done);
+        rendered = helpers.url.call({markdown: 'ff', title: 'title', slug: 'slug'});
+        should.exist(rendered);
+        rendered.should.equal('/');
+
+        rendered = helpers.url.call({html: 'content', title: 'title', slug: 'slug'});
+        should.exist(rendered);
+        rendered.should.equal('/');
+
+        rendered = helpers.url.call({html: 'content', markdown: 'ff', slug: 'slug'});
+        should.exist(rendered);
+        rendered.should.equal('/');
+
+        rendered = helpers.url.call({html: 'content', markdown: 'ff', title: 'title'});
+        should.exist(rendered);
+        rendered.should.equal('/');
     });
 });
