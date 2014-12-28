@@ -5,7 +5,6 @@
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
 var _              = require('lodash'),
-    Promise        = require('bluebird'),
     config         = require('../config'),
     // Include Endpoints
     configuration  = require('./configuration'),
@@ -52,7 +51,7 @@ init = function () {
  * @private
  * @param {Express.request} req Original HTTP Request
  * @param {Object} result API method result
- * @return {Promise(String)} Resolves to header string
+ * @return {String} Resolves to header string
  */
 cacheInvalidationHeader = function (req, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
@@ -89,7 +88,7 @@ cacheInvalidationHeader = function (req, result) {
         }
     }
 
-    return Promise.resolve(cacheInvalidate);
+    return cacheInvalidate;
 };
 
 /**
@@ -101,7 +100,7 @@ cacheInvalidationHeader = function (req, result) {
  * @private
  * @param {Express.request} req Original HTTP Request
  * @param {Object} result API method result
- * @return {Promise(String)} Resolves to header string
+ * @return {String} Resolves to header string
  */
 locationHeader = function (req, result) {
     var apiRoot = config.urlFor('api'),
@@ -114,14 +113,17 @@ locationHeader = function (req, result) {
             location = apiRoot + '/posts/' + newObject.id + '/?status=' + newObject.status;
         } else if (result.hasOwnProperty('notifications')) {
             newObject = result.notifications[0];
-            location = apiRoot + '/notifications/' + newObject.id;
+            location = apiRoot + '/notifications/' + newObject.id + '/';
         } else if (result.hasOwnProperty('users')) {
             newObject = result.users[0];
-            location = apiRoot + '/users/' + newObject.id;
+            location = apiRoot + '/users/' + newObject.id + '/';
+        } else if (result.hasOwnProperty('tags')) {
+            newObject = result.tags[0];
+            location = apiRoot + '/tags/' + newObject.id + '/';
         }
     }
 
-    return Promise.resolve(location);
+    return location;
 };
 
 /**
@@ -176,31 +178,23 @@ formatHttpErrors = function (error) {
 };
 
 addHeaders = function (apiMethod, req, res, result) {
-    var ops = [],
-        cacheInvalidation,
+    var cacheInvalidation,
         location,
         contentDisposition;
 
-    cacheInvalidation = cacheInvalidationHeader(req, result)
-        .then(function addCacheHeader(header) {
-            if (header) {
-                res.set({'X-Cache-Invalidate': header});
-            }
-        });
-
-    ops.push(cacheInvalidation);
+    cacheInvalidation = cacheInvalidationHeader(req, result);
+    if (cacheInvalidation) {
+        res.set({'X-Cache-Invalidate': cacheInvalidation});
+    }
 
     if (req.method === 'POST') {
-        location = locationHeader(req, result)
-            .then(function addLocationHeader(header) {
-                if (header) {
-                    res.set({Location: header});
-                    // The location header indicates that a new object was created.
-                    // In this case the status code should be 201 Created
-                    res.status(201);
-                }
-            });
-        ops.push(location);
+        location = locationHeader(req, result);
+        if (location) {
+            res.set({Location: location});
+            // The location header indicates that a new object was created.
+            // In this case the status code should be 201 Created
+            res.status(201);
+        }
     }
 
     if (apiMethod === db.exportContent) {
@@ -213,10 +207,9 @@ addHeaders = function (apiMethod, req, res, result) {
                     });
                 }
             });
-        ops.push(contentDisposition);
     }
 
-    return Promise.all(ops);
+    return contentDisposition;
 };
 
 /**
@@ -233,7 +226,6 @@ http = function (apiMethod) {
     return function (req, res) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
-            response,
             options = _.extend({}, req.files, req.query, req.params, {
                 context: {
                     user: (req.user && req.user.id) ? req.user.id : null
@@ -247,23 +239,18 @@ http = function (apiMethod) {
             options = {};
         }
 
-        return apiMethod(object, options)
-            // Handle adding headers
-            .then(function onSuccess(result) {
-                response = result;
-                // Add X-Cache-Invalidate header
-                return addHeaders(apiMethod, req, res, result);
-            }).then(function () {
-                // #### Success
-                // Send a properly formatting HTTP response containing the data with correct headers
-                res.json(response || {});
-            }).catch(function onError(error) {
-                errors.logError(error);
-                // #### Error
-                var httpErrors = formatHttpErrors(error);
-                // Send a properly formatted HTTP response containing the errors
-                res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
-            });
+        return apiMethod(object, options).tap(function onSuccess(response) {
+            // Add X-Cache-Invalidate, Location, and Content-Disposition headers
+            return addHeaders(apiMethod, req, res, response);
+        }).then(function (response) {
+            // Send a properly formatting HTTP response containing the data with correct headers
+            res.json(response || {});
+        }).catch(function onError(error) {
+            errors.logError(error);
+            var httpErrors = formatHttpErrors(error);
+            // Send a properly formatted HTTP response containing the errors
+            res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
+        });
     };
 };
 
