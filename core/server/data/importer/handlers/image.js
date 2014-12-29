@@ -10,24 +10,25 @@ ImageHandler = {
     type: 'images',
     extensions: config.uploads.extensions,
     types: config.uploads.contentTypes,
+    directories: ['images', 'content'],
 
-    loadFile: function (files, startDir) {
+    loadFile: function (files, baseDir) {
         var store = storage.getStorage(),
-            startDirRegex = startDir ? new RegExp('^' + startDir + '/') : new RegExp(''),
+            baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp(''),
             imageFolderRegexes = _.map(config.paths.imagesRelPath.split('/'), function (dir) {
                 return new RegExp('^' + dir + '/');
             });
 
         // normalize the directory structure
         files = _.map(files, function (file) {
-            var noStartDir = file.name.replace(startDirRegex, ''),
-                noGhostDirs = noStartDir;
+            var noBaseDir = file.name.replace(baseDirRegex, ''),
+                noGhostDirs = noBaseDir;
 
             _.each(imageFolderRegexes, function (regex) {
                 noGhostDirs = noGhostDirs.replace(regex, '');
             });
 
-            file.originalPath = noStartDir;
+            file.originalPath = noBaseDir;
             file.name = noGhostDirs;
             file.targetDir = path.join(config.paths.imagesPath, path.dirname(noGhostDirs));
             return file;

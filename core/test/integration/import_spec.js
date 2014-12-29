@@ -47,7 +47,7 @@ describe('Import', function () {
                 }),
                 fakeData = {test: true};
 
-            importer(fakeData).then(function () {
+            importer.doImport(fakeData).then(function () {
                 importStub.calledWith(fakeData).should.equal(true);
 
                 importStub.restore();
@@ -68,7 +68,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult);
                 should.exist(importResult.data);
@@ -83,7 +83,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-duplicate-posts').then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult.data.data.posts);
 
@@ -100,7 +100,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-duplicate-tags').then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function (importResult) {
                 should.exist(importResult.data.data.tags);
                 should.exist(importResult.data.data.posts_tags);
@@ -135,7 +135,7 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-000').then(function (exported) {
                 exportData = exported;
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -182,7 +182,7 @@ describe('Import', function () {
                 exportData.data.posts[0].updated_at = timestamp;
                 exportData.data.posts[0].published_at = timestamp;
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -252,7 +252,7 @@ describe('Import', function () {
                 // change title to 151 characters
                 exportData.data.posts[0].title = new Array(152).join('a');
                 exportData.data.posts[0].tags = 'Tag';
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -297,7 +297,7 @@ describe('Import', function () {
                 exportData = exported;
                 // change to blank settings key
                 exportData.data.settings[3].key = null;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -354,7 +354,7 @@ describe('Import', function () {
                 exportData.data.posts[0].updated_at = timestamp;
                 exportData.data.posts[0].published_at = timestamp;
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -424,7 +424,7 @@ describe('Import', function () {
                 // change title to 151 characters
                 exportData.data.posts[0].title = new Array(152).join('a');
                 exportData.data.posts[0].tags = 'Tag';
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -468,7 +468,7 @@ describe('Import', function () {
                 exportData = exported;
                 // change to blank settings key
                 exportData.data.settings[3].key = null;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
@@ -517,7 +517,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003').then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return Promise.all([
@@ -562,7 +562,7 @@ describe('Import', function () {
 
             testUtils.fixtures.loadExportFixture('export-003-badValidation').then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
@@ -585,7 +585,7 @@ describe('Import', function () {
             var exportData;
             testUtils.fixtures.loadExportFixture('export-003-dbErrors').then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
@@ -601,7 +601,7 @@ describe('Import', function () {
             testUtils.fixtures.loadExportFixture('export-003-mu-unknownAuthor').then(function (exported) {
                 exportData = exported;
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of unknown author'));
             }).catch(function (response) {
@@ -622,7 +622,7 @@ describe('Import', function () {
                 exportData.data.tags.length.should.be.above(1);
                 exportData.data.posts_tags.length.should.be.above(1);
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
@@ -643,7 +643,7 @@ describe('Import', function () {
 
                 exportData.data.posts.length.should.be.above(1);
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
@@ -660,7 +660,7 @@ describe('Import', function () {
 
                 exportData.data.posts.length.should.be.above(0);
 
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 // Grab the data from tables
                 return knex('posts').select();
@@ -693,7 +693,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
@@ -920,7 +920,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner');
             }).then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
@@ -1148,7 +1148,7 @@ describe('Import (new test structure)', function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
                 exportData = exported;
-                return importer(exportData);
+                return importer.doImport(exportData);
             }).then(function () {
                 done();
             }).catch(done);
