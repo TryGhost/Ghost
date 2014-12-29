@@ -20,7 +20,7 @@ There are a few different ways to install Ghost, take care to use the method whi
 
 If you just want to get a Ghost blog running in the fastest time possible, this method is for you.
 
-For detailed instructions for various platforms, visit the [Ghost Installation Guide](http://support.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
+For detailed instructions on various platforms, visit the [Ghost Installation Guide](http://support.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
 
 1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
@@ -49,7 +49,7 @@ Please do **NOT** use the master branch of Ghost in production. If you are using
 1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
 1. `npm start`
 
-Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
+Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)."
 
 Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
@@ -59,7 +59,7 @@ If you want to build Ghost into a larger node app, or are familiar with using `n
 
 `npm install ghost`
 
-Further setup instructions can be found in the [using Ghost as an NPM module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-NPM-module) wiki entry.
+Further setup instructions can be found in the [using Ghost as an npm module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-npm-module) wiki entry.
 
 
 ### Upgrading to The Latest Version
