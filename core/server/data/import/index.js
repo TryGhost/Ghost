@@ -9,7 +9,8 @@ var Promise         = require('bluebird'),
     handleErrors,
     checkDuplicateAttributes,
     sanitize,
-    cleanError;
+    cleanError,
+    doImport;
 
 cleanError = function cleanError(error) {
     var temp,
@@ -184,7 +185,7 @@ validate = function validate(data) {
     });
 };
 
-module.exports = function (data) {
+doImport = function (data) {
     var sanitizeResults = sanitize(data);
 
     data = sanitizeResults.data;
@@ -197,3 +198,5 @@ module.exports = function (data) {
         return handleErrors(result);
     });
 };
+
+module.exports.doImport = doImport;
