@@ -6,15 +6,18 @@ Ghost is a free, open, simple blogging platform that's available to anyone who w
 
 Visit the project's website at <http://ghost.org> &bull; docs on <http://support.ghost.org>.
 
+
 ## Getting Involved
 
 Want to report a bug, request a feature, contribute or translate Ghost? Check out our in-depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
+
 
 ## Getting Started
 
 There are a few different ways to install Ghost, take care to use the method which best suits your needs.
 
 **Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download), the [GitHub releases page](https://github.com/TryGhost/Ghost/releases), and via npm are pre-built packages designed for getting setup quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
+
 
 ### Install from zip (fastest & best for bloggers)
 
@@ -33,7 +36,6 @@ For detailed instructions on various platforms, visit the [Ghost Installation Gu
 Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
 
 
-
 ### Install from git
 
 If you're a developer or someone comfortable getting up and running from a `git clone`, this method is for you.
@@ -42,6 +44,8 @@ If you clone the GitHub repository, you will need to build a number of assets us
 
 Please do **NOT** use the master branch of Ghost in production. If you are using git to deploy to production, please use the latest [release](https://github.com/TryGhost/Ghost/releases) or the [stable](https://github.com/TryGhost/Ghost/tree/stable) branch which contains the latest release.
 
+Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core).
+
 #### Quickstart:
 
 1. `npm install -g grunt-cli`
@@ -49,9 +53,8 @@ Please do **NOT** use the master branch of Ghost in production. If you are using
 1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
 1. `npm start`
 
-Full instructions & troubleshooting tips can be found in the [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md) under the heading "[Working on Ghost Core](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#working-on-ghost-core)".
-
 Check out the [Documentation](http://support.ghost.org/) for more detailed instructions, or get in touch via the [forum](http://ghost.org/forum) if you get stuck.
+
 
 ### Install from npm
 
@@ -65,6 +68,7 @@ Further setup instructions can be found in the [using Ghost as an npm module](ht
 ### Upgrading to The Latest Version
 
 Upgrade instructions can be found on the [Ghost Support Site](http://support.ghost.org/how-to-upgrade/)
+
 
 ### Logging in For The First Time
 
