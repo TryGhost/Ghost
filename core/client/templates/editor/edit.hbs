@@ -6,7 +6,7 @@
 <div class="page-content">
     <header>
         <section class="box entry-title">
-            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=titleScratch
+            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch
             tabindex="1" focus=shouldFocusTitle}}
         </section>
     </header>
@@ -17,7 +17,7 @@
             <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-codemirror value=scratch scrollInfo=view.markdownScrollInfo
+            {{gh-codemirror value=model.scratch scrollInfo=view.markdownScrollInfo
             setCodeMirror="setCodeMirror" openModal="openModal" typingPause="autoSave"
             focus=shouldFocusEditor focusCursorAtEnd=model.isDirty onFocusIn="autoSaveNew"}}
         </section>
@@ -25,11 +25,11 @@
 
     <section {{bind-attr class=":entry-preview :js-entry-preview isPreview:active"}}>
         <header {{action "togglePreview" true}} class="floatingheader">
-            <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words scratch}}</span></small>
+            <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words model.scratch}}</span></small>
         </header>
         <section class="entry-preview-content js-entry-preview-content">
             {{gh-markdown classNames="rendered-markdown js-rendered-markdown"
-            markdown=scratch scrollPosition=view.scrollPosition
+            markdown=model.scratch scrollPosition=view.scrollPosition
             uploadStarted="disableCodeMirror" uploadFinished="enableCodeMirror" uploadSuccess="handleImgUpload"}}
         </section>
     </section>

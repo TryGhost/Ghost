@@ -1,5 +1,5 @@
 Ember.LinkView.reopen({
-    active: Ember.computed('resolvedParams', 'routeArgs', function () {
+    active: Ember.computed('loadedParams', 'resolvedParams', 'routeArgs', function () {
         var isActive = this._super();
 
         Ember.set(this, 'alternateActive', isActive);

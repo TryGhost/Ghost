@@ -4,7 +4,7 @@
 
         <div class="publish-bar-actions">
             <button type="button" class="post-settings" {{action "toggleSettingsMenu"}}></button>
-            {{view "editor-save-button" id="entry-actions" classNameBindings="isNew:unsaved"}}
+            {{view "editor-save-button" id="entry-actions" classNameBindings="model.isNew:unsaved"}}
         </div>
     </div>
 </footer>
