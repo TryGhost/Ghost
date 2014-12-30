@@ -1,7 +1,7 @@
 import ajax from 'ghost/utils/ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var SetupController = Ember.ObjectController.extend(ValidationEngine, {
+var SetupController = Ember.Controller.extend(ValidationEngine, {
     blogTitle: null,
     name: null,
     email: null,
