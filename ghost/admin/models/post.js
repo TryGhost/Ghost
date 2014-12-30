@@ -27,6 +27,9 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     tags: DS.hasMany('tag', {embedded: 'always'}),
     url: DS.attr('string'),
 
+    scratch: null,
+    titleScratch: null,
+
     // Computed post properties
 
     isPublished: Ember.computed.equal('status', 'published'),

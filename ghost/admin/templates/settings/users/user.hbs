@@ -35,7 +35,7 @@
         <fieldset class="user-details-top">
 
             <figure class="user-image">
-                <div id="user-image" class="img" {{bind-attr style=image}} href="#"><span class="hidden">{{name}}"s Picture</span></div>
+                <div id="user-image" class="img" {{bind-attr style=image}} href="#"><span class="hidden">{{user.name}}"s Picture</span></div>
                 <button type="button" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</button>
             </figure>
 

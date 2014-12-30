@@ -12,17 +12,17 @@
             </header>
             <div class="form-group">
                 <label for="email">Email Address</label>
-                {{input type="email" name="email" autocorrect="off" value=email }}
+                {{input type="email" name="email" autocorrect="off" value=model.email }}
                 <p>Used for important notifications</p>
             </div>
             <div class="form-group">
                 <label for="name">Full Name</label>
-                {{gh-trim-focus-input type="text" name="name" autofocus="autofocus" autocorrect="off" value=name }}
+                {{gh-trim-focus-input type="text" name="name" autofocus="autofocus" autocorrect="off" value=model.name }}
                 <p>The name that you will sign your posts with</p>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=password }}
+                {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=model.password }}
                 <p>Must be at least 8 characters</p>
             </div>
             <footer>
