@@ -1,8 +1,8 @@
-var DeleteUserController = Ember.ObjectController.extend({
-    userPostCount: Ember.computed('id', function () {
+var DeleteUserController = Ember.Controller.extend({
+    userPostCount: Ember.computed('model.id', function () {
         var promise,
             query = {
-                author: this.get('slug'),
+                author: this.get('model.slug'),
                 status: 'all'
             };
 
