@@ -138,8 +138,15 @@ function init(options) {
     // It returns a promise that is resolved when the application
     // has finished starting up.
 
-    // Load our config.js file from the local file system.
+    // Load our config.js file from the local file system and merge with default config.
     return config.load(options.config).then(function () {
+        // If no config filepath was provided as an option. Assume options is a config object.
+        if (typeof options.config !== 'undefined') {
+            return this;
+        }
+
+        return config.set(options);
+    }).then(function () {
         return config.checkDeprecated();
     }).then(function () {
         // Make sure javascript files have been built via grunt concat

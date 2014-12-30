@@ -56,5 +56,20 @@ describe('Module', function () {
                 done(e);
             });
         });
+
+        it('should accept config object in init', function (done) {
+            var config = {
+                server: {
+                    port: 9000
+                }
+            };
+
+            ghost(config).then(function (ghostServer) {
+                should.equal(ghostServer.config.server.port, 9000);
+                done();
+            }).catch(function (e) {
+                done(e);
+            });
+        });
     });
 });
