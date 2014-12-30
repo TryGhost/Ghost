@@ -8,7 +8,9 @@
 var should      = require('should'),
 
     // Stuff we are testing
-    ghostfootnotes    = require('../../shared/lib/showdown/extensions/ghostfootnotes');
+    ghostfootnotes = require('../../shared/lib/showdown/extensions/ghostfootnotes'),
+    Showdown       = require('showdown-ghost'),
+    converter      = new Showdown.converter({extensions: []});
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -23,7 +25,7 @@ function _ExecuteExtension(ext, text) {
 }
 
 function _ConvertPhrase(testPhrase) {
-    return ghostfootnotes().reduce(function (text, ext) {
+    return ghostfootnotes(converter).reduce(function (text, ext) {
         return _ExecuteExtension(ext, text);
     }, testPhrase);
 }
@@ -55,6 +57,15 @@ describe('Ghost footnotes showdown extension', function () {
         var testPhrase = {
             input: '[^1]: foo bar',
             output: /<div class="footnotes"><ol><li class="footnote" id="fn:1"><p>foo bar <a href="#fnref:1" title="return to article">↩<\/a><\/p><\/li><\/ol><\/div>/
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should expand Markdown inside footnotes', function () {
+        var testPhrase = {
+            input: '[^1]: *foo*',
+            output: /<em>foo<\/em>/
         }, processedMarkup = _ConvertPhrase(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
