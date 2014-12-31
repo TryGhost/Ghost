@@ -47,18 +47,6 @@
 
     <form>
         <fieldset>
-            {{#unless tagsUIFlag}}
-            <div class="form-group for-checkbox">
-                <label for="labs-tagsUI">Tag Management</label>
-                <label class="checkbox" for="labs-tagsUI">
-                    {{input id="labs-tagsUI" name="labs[tagsUI]" type="checkbox" checked=useTagsUI}}
-                    <span class="input-toggle-component"></span>
-                    <p>Enable the tag management interface</p>
-                </label>
-                <p>A settings screen which enables you to add, edit and delete tags  (work in progress)</p>
-            </div>
-            {{/unless}}
-
             {{#unless codeUIFlag}}
             <div class="form-group for-checkbox">
                 <label for="labs-codeInjectionUI">Code Injection</label>
