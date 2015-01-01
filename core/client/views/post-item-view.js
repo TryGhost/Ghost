@@ -1,7 +1,7 @@
-import itemView from 'ghost/views/item-view';
+var PostItemView = Ember.View.extend({
+    classNameBindings: ['active', 'isFeatured:featured', 'isPage:page'],
 
-var PostItemView = itemView.extend({
-    classNameBindings: ['isFeatured:featured', 'isPage:page'],
+    active: null,
 
     isFeatured: Ember.computed.alias('controller.model.featured'),
 
