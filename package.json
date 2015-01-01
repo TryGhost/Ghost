@@ -94,12 +94,12 @@
         "grunt-shell": "~1.1.1",
         "grunt-update-submodules": "~0.4.1",
         "matchdep": "~0.3.0",
-        "nock": "0.47.0",
+        "nock": "0.52.4",
         "require-dir": "~0.1.0",
         "rewire": "~2.1.0",
-        "should": "~4.0.4",
-        "sinon": "~1.10.3",
-        "supertest": "~0.13.0",
+        "should": "~4.4.2",
+        "sinon": "~1.12.2",
+        "supertest": "~0.15.0",
         "testem": "^0.6.23",
         "top-gh-contribs": "0.0.2"
     }
