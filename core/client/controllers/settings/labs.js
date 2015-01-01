@@ -1,21 +1,27 @@
-var LabsController = Ember.ObjectController.extend(Ember.Evented, {
+var LabsController = Ember.Controller.extend(Ember.Evented, {
     uploadButtonText: 'Import',
     importErrors: '',
+    labsJSON: Ember.computed('model.labs', function () {
+        return JSON.parse(this.get('model.labs') || {});
+    }),
 
     saveLabs: function (optionName, optionValue) {
-        var labsConfig = this.get('labs'),
-            labsJSON = (this.get('labs')) ? JSON.parse(labsConfig) : {};
+        var self = this,
+            labsJSON =  this.get('labsJSON');
 
         // Set new value in the JSON object
         labsJSON[optionName] = optionValue;
 
-        this.set('labs', JSON.stringify(labsJSON));
+        this.set('model.labs', JSON.stringify(labsJSON));
 
         this.get('model').save().catch(function (errors) {
             self.showErrors(errors);
             self.get('model').rollback();
         });
     },
+
+    tagsUIFlag: Ember.computed.alias('config.tagsUI'),
+    codeUIFlag: Ember.computed.alias('config.codeInjectionUI'),
 
     useTagsUI: Ember.computed('tagsUI', function (key, value) {
         // setter
@@ -24,10 +30,7 @@ var LabsController = Ember.ObjectController.extend(Ember.Evented, {
         }
 
         // getter
-        var labsConfig = (this.get('labs')) ? JSON.parse(this.get('labs')) : false;
-
-
-        return (labsConfig.tagsUI) ? labsConfig.tagsUI : false;
+        return this.get('feature.tagsUI') || false;
     }),
 
     useCodeInjectionUI: Ember.computed('codeInjectionUI', function (key, value) {
@@ -37,10 +40,7 @@ var LabsController = Ember.ObjectController.extend(Ember.Evented, {
         }
 
         // getter
-        var labsConfig = (this.get('labs')) ? JSON.parse(this.get('labs')) : false;
-
-
-        return (labsConfig.codeInjectionUI) ? labsConfig.codeInjectionUI : false;
+        return this.get('feature.codeInjectionUI') || false;
     }),
 
     actions: {
