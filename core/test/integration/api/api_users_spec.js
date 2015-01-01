@@ -343,6 +343,18 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        it('CANNOT set same email', function (done) {
+            var newEmail = testUtils.DataGenerator.forModel.users[3].email;
+            UserAPI.edit(
+                {users: [{email: newEmail}]}, _.extend({}, context.owner, {id: userIdFor.admin})
+            ).then(function () {
+                done(new Error('Email must be unique'));
+            }).catch(function (error) {
+                error.type.should.eql('BadRequestError');
+                done();
+            });
+        });
     });
 
     describe('Add', function () {
