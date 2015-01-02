@@ -111,6 +111,104 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
         });
 
         this.set('lastPromise', promise);
+        return promise;
+    },
+
+    setSlug: function (newSlug) {
+        var slug = this.get('slug'),
+            self = this,
+            afterSave = this.get('lastPromise'),
+            promise;
+
+        newSlug = newSlug || slug;
+
+        newSlug = newSlug && newSlug.trim();
+
+        // Ignore unchanged slugs or candidate slugs that are empty
+        if (!newSlug || slug === newSlug) {
+            // reset the input to its previous state
+            this.set('slugValue', slug);
+
+            return;
+        }
+
+        promise = Ember.RSVP.resolve(afterSave).then(function () {
+            return self.get('slugGenerator').generateSlug(newSlug).then(function (serverSlug) {
+                // If after getting the sanitized and unique slug back from the API
+                // we end up with a slug that matches the existing slug, abort the change
+                if (serverSlug === slug) {
+                    return;
+                }
+
+                // Because the server transforms the candidate slug by stripping
+                // certain characters and appending a number onto the end of slugs
+                // to enforce uniqueness, there are cases where we can get back a
+                // candidate slug that is a duplicate of the original except for
+                // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
+
+                // get the last token out of the slug candidate and see if it's a number
+                var slugTokens = serverSlug.split('-'),
+                    check = Number(slugTokens.pop());
+
+                // if the candidate slug is the same as the existing slug except
+                // for the incrementor then the existing slug should be used
+                if (isNumber(check) && check > 0) {
+                    if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
+                        self.set('slugValue', slug);
+
+                        return;
+                    }
+                }
+
+                self.set('slug', serverSlug);
+
+                if (self.hasObserverFor('titleScratch')) {
+                    self.removeObserver('titleScratch', self, 'titleObserver');
+                }
+            });
+        });
+
+        this.set('lastPromise', promise);
+        return promise;
+    },
+
+    setPublishedAtValue: function (userInput) {
+        var errMessage = '',
+            newPublishedAt = parseDateString(userInput),
+            publishedAt = this.get('published_at');
+
+        if (!userInput) {
+            // Clear out the published_at field for a draft
+            if (this.get('isDraft')) {
+                this.set('published_at', null);
+            }
+
+            return;
+        }
+
+        // Validate new Published date
+        if (!newPublishedAt.isValid()) {
+            errMessage = 'Published Date must be a valid date with format: ' +
+            'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
+        }
+        if (newPublishedAt.diff(new Date(), 'h') > 0) {
+            errMessage = 'Published Date cannot currently be in the future.';
+        }
+
+        // If errors, notify and exit.
+        if (errMessage) {
+            this.showErrors(errMessage);
+
+            return;
+        }
+
+        // Do nothing if the user didn't actually change the date
+        if (publishedAt && publishedAt.isSame(newPublishedAt)) {
+            return;
+        }
+
+        // Validation complete
+        this.set('published_at', newPublishedAt);
     },
 
     metaTitleScratch: boundOneWay('meta_title'),
@@ -214,6 +312,27 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
         this.notifications.showSuccess(message);
     },
 
+    setValues: function () {
+        var self = this,
+            promise;
+
+        this.set('meta_title', this.get('metaTitleScratch'));
+        this.set('meta_description', this.get('metaDescriptionScratch'));
+
+        self.setPublishedAtValue(self.get('publishedAtValue'));
+
+        if (!this.get('slug')) {
+            // Cancel any pending slug generation that may still be queued in the
+            // run loop because we need to run it before the post is saved.
+            Ember.run.cancel(this.get('debounceId'));
+            promise = this.generateAndSetSlug('slug');
+        } else {
+            promise =  this.setSlug(this.get('slugValue'));
+        }
+
+        return promise;
+    },
+
     actions: {
         togglePage: function () {
             var self = this;
@@ -252,60 +371,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
          * triggered by user manually changing slug
          */
         updateSlug: function (newSlug) {
-            var slug = this.get('slug'),
+            var afterSetSlug = this.setSlug(newSlug),
                 self = this;
 
-            newSlug = newSlug || slug;
-
-            newSlug = newSlug && newSlug.trim();
-
-            // Ignore unchanged slugs or candidate slugs that are empty
-            if (!newSlug || slug === newSlug) {
-                // reset the input to its previous state
-                this.set('slugValue', slug);
-
-                return;
-            }
-
-            this.get('slugGenerator').generateSlug(newSlug).then(function (serverSlug) {
-                // If after getting the sanitized and unique slug back from the API
-                // we end up with a slug that matches the existing slug, abort the change
-                if (serverSlug === slug) {
-                    return;
-                }
-
-                // Because the server transforms the candidate slug by stripping
-                // certain characters and appending a number onto the end of slugs
-                // to enforce uniqueness, there are cases where we can get back a
-                // candidate slug that is a duplicate of the original except for
-                // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
-
-                // get the last token out of the slug candidate and see if it's a number
-                var slugTokens = serverSlug.split('-'),
-                    check = Number(slugTokens.pop());
-
-                // if the candidate slug is the same as the existing slug except
-                // for the incrementor then the existing slug should be used
-                if (isNumber(check) && check > 0) {
-                    if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
-                        self.set('slugValue', slug);
-
-                        return;
-                    }
-                }
-
-                self.set('slug', serverSlug);
-
-                if (self.hasObserverFor('titleScratch')) {
-                    self.removeObserver('titleScratch', self, 'titleObserver');
-                }
-
+            Ember.RSVP.resolve(afterSetSlug).then(function () {
                 // If this is a new post.  Don't save the model.  Defer the save
                 // to the user pressing the save button
                 if (self.get('isNew')) {
                     return;
                 }
-
                 return self.get('model').save();
             }).catch(function (errors) {
                 self.showErrors(errors);
@@ -319,49 +393,8 @@ var PostSettingsMenuController = Ember.ObjectController.extend(SettingsMenuMixin
          * (#1351)
          */
         setPublishedAt: function (userInput) {
-            var errMessage = '',
-                newPublishedAt = parseDateString(userInput),
-                publishedAt = this.get('published_at'),
-                self = this;
-
-            if (!userInput) {
-                // Clear out the published_at field for a draft
-                if (this.get('isDraft')) {
-                    this.set('published_at', null);
-                }
-
-                return;
-            }
-
-            // Validate new Published date
-            if (!newPublishedAt.isValid()) {
-                errMessage = 'Published Date must be a valid date with format: ' +
-                    'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
-            }
-            if (newPublishedAt.diff(new Date(), 'h') > 0) {
-                errMessage = 'Published Date cannot currently be in the future.';
-            }
-
-            // If errors, notify and exit.
-            if (errMessage) {
-                this.showErrors(errMessage);
-
-                return;
-            }
-
-            // Do nothing if the user didn't actually change the date
-            if (publishedAt && publishedAt.isSame(newPublishedAt)) {
-                return;
-            }
-
-            // Validation complete
-            this.set('published_at', newPublishedAt);
-
-            // If this is a new post.  Don't save the model.  Defer the save
-            // to the user pressing the save button
-            if (this.get('isNew')) {
-                return;
-            }
+            var self = this;
+            this.setPublishedAtValue(userInput);
 
             this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);

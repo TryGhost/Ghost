@@ -242,18 +242,8 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             }
 
             this.set('title', this.get('titleScratch'));
-            this.set('meta_title', psmController.get('metaTitleScratch'));
-            this.set('meta_description', psmController.get('metaDescriptionScratch'));
 
-            if (!this.get('slug')) {
-                // Cancel any pending slug generation that may still be queued in the
-                // run loop because we need to run it before the post is saved.
-                Ember.run.cancel(psmController.get('debounceId'));
-
-                psmController.generateAndSetSlug('slug');
-            }
-
-            promise = Ember.RSVP.resolve(psmController.get('lastPromise')).then(function () {
+            promise = Ember.RSVP.resolve(psmController.setValues()).then(function () {
                 return self.get('model').save(options).then(function (model) {
                     if (!options.silent) {
                         self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
