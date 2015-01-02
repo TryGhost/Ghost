@@ -380,6 +380,8 @@ var _              = require('lodash'),
             emberTemplates: {
                 dev: {
                     options: {
+                        templateCompilerPath: 'bower_components/ember/ember-template-compiler.js',
+                        handlebarsPath: 'bower_components/handlebars/handlebars.js',
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
