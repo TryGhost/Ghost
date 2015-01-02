@@ -2,13 +2,13 @@ import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-var SettingsUserController = Ember.ObjectController.extend({
+var SettingsUserController = Ember.Controller.extend({
 
     user: Ember.computed.alias('model'),
 
-    email: Ember.computed.readOnly('user.email'),
+    email: Ember.computed.readOnly('model.email'),
 
-    slugValue: boundOneWay('user.slug'),
+    slugValue: boundOneWay('model.slug'),
 
     lastPromise: null,
 
@@ -74,7 +74,7 @@ var SettingsUserController = Ember.ObjectController.extend({
 
             // reload the model to get the most up-to-date user information
             model.reload().then(function () {
-                if (self.get('invited')) {
+                if (model.get('invited')) {
                     model.destroyRecord().then(function () {
                         var notificationText = 'Invitation revoked. (' + email + ')';
                         self.notifications.showSuccess(notificationText, false);
@@ -178,7 +178,7 @@ var SettingsUserController = Ember.ObjectController.extend({
                 promise;
 
             promise = Ember.RSVP.resolve(afterSave).then(function () {
-                var slug = self.get('slug');
+                var slug = self.get('model.slug');
 
                 newSlug = newSlug || slug;
 
