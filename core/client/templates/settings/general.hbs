@@ -12,16 +12,16 @@
 
             <div class="form-group">
                 <label for="blog-title">Blog Title</label>
-                {{input id="blog-title" name="general[title]" type="text" value=title}}
+                {{input id="blog-title" name="general[title]" type="text" value=model.title}}
                 <p>The name of your blog</p>
             </div>
 
             <div class="form-group description-container">
                 <label for="blog-description">Blog Description</label>
-                {{textarea id="blog-description" name="general[description]" value=description}}
+                {{textarea id="blog-description" name="general[description]" value=model.description}}
                 <p>
                     Describe what your blog is about
-                    {{gh-count-characters description}}
+                    {{gh-count-characters model.description}}
                 </p>
 
             </div>
@@ -29,8 +29,8 @@
 
         <div class="form-group">
             <label for="blog-logo">Blog Logo</label>
-            {{#if logo}}
-                <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
+            {{#if model.logo}}
+                <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=model.logo}} alt="logo"></button>
             {{else}}
                 <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
             {{/if}}
@@ -39,8 +39,8 @@
 
         <div class="form-group">
             <label for="blog-cover">Blog Cover</label>
-            {{#if cover}}
-                <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
+            {{#if model.cover}}
+                <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=model.cover}} alt="cover photo"></button>
             {{else}}
                 <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
             {{/if}}
@@ -50,14 +50,14 @@
         <fieldset>
             <div class="form-group">
                 <label for="email-address">Email Address</label>
-                {{input id="email-address" name="general[email-address]" type="email" value=email autocapitalize="off" autocorrect="off"}}
+                {{input id="email-address" name="general[email-address]" type="email" value=model.email autocapitalize="off" autocorrect="off"}}
                 <p>Address to use for admin notifications</p>
             </div>
 
             <div class="form-group">
                 <label for="postsPerPage">Posts per page</label>
                 {{! `pattern` brings up numeric keypad allowing any number of digits}}
-                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
+                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
                 <p>How many posts should be displayed on each page</p>
             </div>
 
@@ -79,7 +79,7 @@
                        content=themes
                        optionValuePath="content.name"
                        optionLabelPath="content.label"
-                       value=activeTheme
+                       value=model.activeTheme
                        selection=selectedTheme}}
                </span>
                 <p>Select a theme for your blog</p>

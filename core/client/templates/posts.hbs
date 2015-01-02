@@ -15,15 +15,15 @@
         <ol class="posts-list">
             {{#each post in model itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
                 {{#link-to "posts.post" post class="permalink" alternateActive=view.active title="Edit this post"}}
-                    <h3 class="entry-title">{{post.title}}</h3>
+                    <h3 class="entry-title">{{post.model.title}}</h3>
                     <section class="entry-meta">
                         <span class="status">
                             {{#if post.isPublished}}
-                                {{#if post.page}}
+                                {{#if post.model.page}}
                                     <span class="page">Page</span>
                                 {{else}}
-                                    <time datetime="{{unbound post.published_at}}" class="date published">
-                                        Published {{gh-format-timeago post.published_at}}
+                                    <time datetime="{{unbound post.model.published_at}}" class="date published">
+                                        Published {{gh-format-timeago post.model.published_at}}
                                     </time>
                                 {{/if}}
                             {{else}}

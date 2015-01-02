@@ -32,7 +32,7 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
 
         willTransition: function (transition) {
             var controller = this.get('controller'),
-                scratch = controller.get('scratch'),
+                scratch = controller.get('model.scratch'),
                 controllerIsDirty = controller.get('isDirty'),
                 model = controller.get('model'),
                 state = model.getProperties('isDeleted', 'isSaving', 'isDirty', 'isNew'),
@@ -112,9 +112,9 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
         this._super(controller, model);
         var tags = model.get('tags');
 
-        controller.set('scratch', model.get('markdown'));
+        controller.set('model.scratch', model.get('markdown'));
 
-        controller.set('titleScratch', model.get('title'));
+        controller.set('model.titleScratch', model.get('title'));
 
         if (tags) {
             // used to check if anything has changed in the editor

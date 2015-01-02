@@ -1,9 +1,9 @@
 var PostTagsInputController = Ember.Controller.extend({
     tagEnteredOrder: Ember.A(),
 
-    tags: Ember.computed('parentController.tags', function () {
+    tags: Ember.computed('parentController.model.tags', function () {
         var proxyTags = Ember.ArrayProxy.create({
-            content: this.get('parentController.tags')
+            content: this.get('parentController.model.tags')
         }),
         temp = proxyTags.get('arrangedContent').slice();
 

@@ -1,18 +1,20 @@
-var SettingsGeneralController = Ember.ObjectController.extend({
-    isDatedPermalinks: Ember.computed('permalinks', function (key, value) {
+var SettingsGeneralController = Ember.Controller.extend({
+    selectedTheme: null,
+
+    isDatedPermalinks: Ember.computed('model.permalinks', function (key, value) {
         // setter
         if (arguments.length > 1) {
-            this.set('permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
+            this.set('model.permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
         }
 
         // getter
-        var slugForm = this.get('permalinks');
+        var slugForm = this.get('model.permalinks');
 
         return slugForm !== '/:slug/';
     }),
 
     themes: Ember.computed(function () {
-        return this.get('availableThemes').reduce(function (themes, t) {
+        return this.get('model.availableThemes').reduce(function (themes, t) {
             var theme = {};
 
             theme.name = t.name;
@@ -40,8 +42,10 @@ var SettingsGeneralController = Ember.ObjectController.extend({
         },
 
         checkPostsPerPage: function () {
-            if (this.get('postsPerPage') < 1 || this.get('postsPerPage') > 1000 || isNaN(this.get('postsPerPage'))) {
-                this.set('postsPerPage', 5);
+            var postsPerPage = this.get('model.postsPerPage');
+
+            if (postsPerPage < 1 || postsPerPage > 1000 || isNaN(postsPerPage)) {
+                this.set('model.postsPerPage', 5);
             }
         }
     }

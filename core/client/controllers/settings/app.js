@@ -9,7 +9,7 @@ appStates = {
     inactive: 'inactive'
 };
 
-SettingsAppController = Ember.ObjectController.extend({
+SettingsAppController = Ember.Controller.extend({
     appState: appStates.active,
     buttonText: '',
 

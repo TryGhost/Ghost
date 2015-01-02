@@ -18,13 +18,13 @@
             <div class="form-group">
                 <label for="ghost-head">Blog Header</label>
                 <p>Code here will be injected to the \{{ghost_head}} helper at the top of your page</p>
-                {{textarea id="ghost-head" name="codeInjection[ghost_head]" type="text" value=ghost_head}}
+                {{textarea id="ghost-head" name="codeInjection[ghost_head]" type="text" value=model.ghost_head}}
             </div>
 
             <div class="form-group">
                 <label for="ghost-foot">Blog Footer</label>
                 <p>Code here will be injected to the \{{ghost_foot}} helper at the bottom of your page</p>
-                {{textarea id="ghost-foot" name="codeInjection[ghost_foot]" type="text" value=ghost_foot}}
+                {{textarea id="ghost-foot" name="codeInjection[ghost_foot]" type="text" value=model.ghost_foot}}
             </div>
         </fieldset>
     </form>
