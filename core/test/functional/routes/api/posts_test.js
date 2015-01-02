@@ -169,7 +169,7 @@ describe('Post API', function () {
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].id.should.equal(1);
-                    jsonResponse.posts[0].page.should.eql(0);
+                    jsonResponse.posts[0].page.should.not.be.ok;
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     jsonResponse.posts[0].author.should.be.a.Number;
@@ -198,7 +198,7 @@ describe('Post API', function () {
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].slug.should.equal('welcome-to-ghost');
-                    jsonResponse.posts[0].page.should.eql(0);
+                    jsonResponse.posts[0].page.should.not.be.ok;
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     jsonResponse.posts[0].author.should.be.a.Number;
@@ -225,7 +225,7 @@ describe('Post API', function () {
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post', 'tags');
-                    jsonResponse.posts[0].page.should.eql(0);
+                    jsonResponse.posts[0].page.should.not.be.ok;
 
                     jsonResponse.posts[0].author.should.be.an.Object;
                     testUtils.API.checkResponse(jsonResponse.posts[0].author, 'user');
@@ -251,7 +251,7 @@ describe('Post API', function () {
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].page.should.eql(true);
+                    jsonResponse.posts[0].page.should.be.ok;
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     done();
                 });
@@ -557,11 +557,11 @@ describe('Post API', function () {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body,
-                        changedValue = true;
+                    var jsonResponse = res.body;
+
                     jsonResponse.should.exist;
-                    jsonResponse.posts[0].page.should.eql(0);
-                    jsonResponse.posts[0].page = changedValue;
+                    jsonResponse.posts[0].page.should.not.be.ok;
+                    jsonResponse.posts[0].page = true;
 
                     request.put(testUtils.API.getApiQuery('posts/1/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
@@ -577,7 +577,7 @@ describe('Post API', function () {
                             var putBody = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             putBody.should.exist;
-                            putBody.posts[0].page.should.eql(changedValue);
+                            putBody.posts[0].page.should.be.ok;
 
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
                             done();
@@ -595,11 +595,11 @@ describe('Post API', function () {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body,
-                        changedValue = false;
+                    var jsonResponse = res.body;
+
                     jsonResponse.should.exist;
-                    jsonResponse.posts[0].page.should.eql(true);
-                    jsonResponse.posts[0].page = changedValue;
+                    jsonResponse.posts[0].page.should.be.ok;
+                    jsonResponse.posts[0].page = false;
 
                     request.put(testUtils.API.getApiQuery('posts/7/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
@@ -616,7 +616,7 @@ describe('Post API', function () {
 
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
                             putBody.should.exist;
-                            putBody.posts[0].page.should.eql(changedValue);
+                            putBody.posts[0].page.should.not.be.ok;
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
                             done();
                         });
@@ -932,7 +932,7 @@ describe('Post API', function () {
                     jsonResponse.posts.should.exist;
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].slug.should.not.match(/^\/[0-9]{4}\/[0-9]{2}\/[0-9]{2}/);
-                    jsonResponse.posts[0].page.should.eql(0);
+                    jsonResponse.posts[0].page.should.not.be.ok;
                     done();
                 });
         });
