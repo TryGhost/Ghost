@@ -41,11 +41,29 @@ function ConfigManager(config) {
 
 // Are we using sockets? Custom socket or the default?
 ConfigManager.prototype.getSocket = function () {
+    var socketConfig,
+        values = {
+            path: path.join(this._config.paths.contentPath, process.env.NODE_ENV + '.socket'),
+            permissions: '660'
+        };
+
     if (this._config.server.hasOwnProperty('socket')) {
-        return _.isString(this._config.server.socket) ?
-            this._config.server.socket :
-            path.join(this._config.paths.contentPath, process.env.NODE_ENV + '.socket');
+        socketConfig = this._config.server.socket;
+
+        if (_.isString(socketConfig)) {
+            values.path = socketConfig;
+
+            return values;
+        }
+
+        if (_.isObject(socketConfig)) {
+            values.path = socketConfig.path || values.path;
+            values.permissions = socketConfig.permissions || values.permissions;
+
+            return values;
+        }
     }
+
     return false;
 };
 
