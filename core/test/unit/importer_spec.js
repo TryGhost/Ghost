@@ -7,6 +7,7 @@ var should    = require('should'),
     testUtils = require('../utils'),
     config    = require('../../server/config'),
     path      = require('path'),
+    errors    = require('../../server/errors'),
 
     // Stuff we are testing
     ImportManager = require('../../server/data/importer'),
@@ -83,7 +84,7 @@ describe('Importer', function () {
                     zipSpy.calledOnce.should.be.false;
                     fileSpy.calledOnce.should.be.true;
                     done();
-                });
+                }).catch(done);
             });
 
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
@@ -96,7 +97,7 @@ describe('Importer', function () {
                     zipSpy.calledOnce.should.be.true;
                     fileSpy.calledOnce.should.be.false;
                     done();
-                });
+                }).catch(done);
             });
 
             it('has same result for zips and files', function (done) {
@@ -104,7 +105,8 @@ describe('Importer', function () {
                     testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'},
                     // need to stub out the extract and glob function for zip
                     extractSpy = sandbox.stub(ImportManager, 'extractZip').returns(Promise.resolve('/tmp/dir/')),
-                    validSpy = sandbox.stub(ImportManager, 'isValidZip').returns(Promise.resolve()),
+                    validSpy = sandbox.stub(ImportManager, 'isValidZip').returns(true),
+                    baseDirSpy = sandbox.stub(ImportManager, 'getBaseDirectory').returns(),
                     getFileSpy = sandbox.stub(ImportManager, 'getFilesFromZip'),
                     jsonSpy = sandbox.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []})),
                     imageSpy = sandbox.stub(ImageHandler, 'loadFile');
@@ -115,6 +117,7 @@ describe('Importer', function () {
                 ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true;
                     validSpy.calledOnce.should.be.true;
+                    baseDirSpy.calledOnce.should.be.true;
                     getFileSpy.calledTwice.should.be.true;
                     jsonSpy.calledOnce.should.be.true;
                     imageSpy.called.should.be.false;
@@ -128,72 +131,52 @@ describe('Importer', function () {
                         zipResult.should.eql(fileResult);
                         done();
                     });
-                });
+                }).catch(done);
             });
 
             describe('Validate Zip', function () {
-                it('accepts a zip with a base directory', function (done) {
+                it('accepts a zip with a base directory', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-base-dir');
-                    ImportManager.isValidZip(testDir).then(function (isValid) {
-                        isValid.should.be.ok;
-                        done();
-                    });
+
+                    ImportManager.isValidZip(testDir).should.be.ok;
                 });
 
-                it('accepts a zip without a base directory', function (done) {
+                it('accepts a zip without a base directory', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-without-base-dir');
-                    ImportManager.isValidZip(testDir).then(function (isValid) {
-                        isValid.should.be.ok;
-                        done();
-                    });
+
+                    ImportManager.isValidZip(testDir).should.be.ok;
                 });
 
-                it('accepts a zip with an image directory', function (done) {
+                it('accepts a zip with an image directory', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-image-dir');
-                    ImportManager.isValidZip(testDir).then(function (isValid) {
-                        isValid.should.be.ok;
-                        done();
-                    });
+
+                    ImportManager.isValidZip(testDir).should.be.ok;
                 });
 
-                it('fails a zip with two base directories', function (done) {
+                it('fails a zip with two base directories', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-double-base-dir');
-                    ImportManager.isValidZip(testDir).then(function () {
-                        done(new Error('Double base directory did not throw error'));
-                    }).catch(function (err) {
-                        err.message.should.equal('Invalid zip file structure.');
-                        err.type.should.equal('UnsupportedMediaTypeError');
-                        done();
-                    });
+
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
                 });
 
-                it('fails a zip with no content', function (done) {
+                it('fails a zip with no content', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-invalid');
-                    ImportManager.isValidZip(testDir).then(function () {
-                        done(new Error('Double base directory did not throw error'));
-                    }).catch(function (err) {
-                        err.message.should.equal('Zip did not include any content to import.');
-                        err.type.should.equal('UnsupportedMediaTypeError');
-                        done();
-                    });
+
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
                 });
             });
 
             describe('Get Base Dir', function () {
-                it('returns string for base directory', function (done) {
+                it('returns string for base directory', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-with-base-dir');
-                    ImportManager.getBaseDirectory(testDir).then(function (baseDir) {
-                        baseDir.should.equal('basedir');
-                        done();
-                    });
+
+                    ImportManager.getBaseDirectory(testDir).should.equal('basedir');
                 });
 
-                it('returns empty for no base directory', function (done) {
+                it('returns empty for no base directory', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-without-base-dir');
-                    ImportManager.getBaseDirectory(testDir).then(function (baseDir) {
-                        should.not.exist(baseDir);
-                        done();
-                    });
+
+                    should.not.exist(ImportManager.getBaseDirectory(testDir));
                 });
             });
         });
@@ -219,7 +202,7 @@ describe('Importer', function () {
                     output.should.have.property('preProcessedByData', true);
                     output.should.have.property('preProcessedByImage', true);
                     done();
-                });
+                }).catch(done);
             });
         });
 
@@ -253,7 +236,7 @@ describe('Importer', function () {
                     // we stubbed this as a noop but ImportManager calls with sequence, so we should get an array
                     output.should.eql([expectedImages, expectedData]);
                     done();
-                });
+                }).catch(done);
             });
         });
 
@@ -266,7 +249,7 @@ describe('Importer', function () {
                 ImportManager.generateReport(input).then(function (output) {
                     output.should.equal(input);
                     done();
-                });
+                }).catch(done);
             });
         });
 
@@ -287,7 +270,7 @@ describe('Importer', function () {
                     sinon.assert.callOrder(loadFileSpy, preProcessSpy, doImportSpy, generateReportSpy, cleanupSpy);
 
                     done();
-                });
+                }).catch(done);
             });
         });
     });
@@ -312,7 +295,7 @@ describe('Importer', function () {
                 _.keys(result).should.containEql('meta');
                 _.keys(result).should.containEql('data');
                 done();
-            });
+            }).catch(done);
         });
 
         it('correctly errors when given a bad db api wrapper', function (done) {
@@ -326,7 +309,7 @@ describe('Importer', function () {
             }).catch(function (response) {
                 response.type.should.equal('BadRequestError');
                 done();
-            });
+            }).catch(done);
         });
     });
 
@@ -372,7 +355,7 @@ describe('Importer', function () {
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/test-image.jpeg');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can load a single file, maintaining structure', function (done) {
@@ -392,7 +375,7 @@ describe('Importer', function () {
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/photos/my-cat.jpeg');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can load a single file, removing ghost dirs', function (done) {
@@ -412,7 +395,7 @@ describe('Importer', function () {
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/my-cat.jpeg');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can load a file (subdirectory)', function (done) {
@@ -434,7 +417,7 @@ describe('Importer', function () {
                 storeSpy.firstCall.args[1].newPath.should.eql('/subdir/content/images/test-image.jpeg');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can load multiple files', function (done) {
@@ -474,7 +457,7 @@ describe('Importer', function () {
                 storeSpy.lastCall.args[1].newPath.should.eql('/content/images/puppy.jpg');
 
                 done();
-            });
+            }).catch(done);
         });
     });
 

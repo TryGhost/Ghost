@@ -143,16 +143,14 @@ _.extend(ImportManager.prototype, {
 
         // If this folder contains importable files or a content or images directory
         if (extMatchesBase.length > 0 || (dirMatches.length > 0 && extMatchesAll.length > 0)) {
-            return Promise.resolve(true);
+            return true;
         }
 
         if (extMatchesAll.length < 1) {
-            return Promise.reject(new errors.UnsupportedMediaTypeError(
-                'Zip did not include any content to import.'
-            ));
+            throw new errors.UnsupportedMediaTypeError('Zip did not include any content to import.');
         }
 
-        return Promise.reject(new errors.UnsupportedMediaTypeError('Invalid zip file structure.'));
+        throw new errors.UnsupportedMediaTypeError('Invalid zip file structure.');
     },
     /**
      * Use the extract module to extract the given zip file to a temp directory & return the temp directory path
@@ -192,18 +190,17 @@ _.extend(ImportManager.prototype, {
 
         // There is no base directory
         if (extMatches.length > 0 || dirMatches.length > 0) {
-            return Promise.resolve();
+            return;
         }
-
         // There is a base directory, grab it from any ext match
         extMatchesAll = glob.sync(
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
         );
         if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
-            return Promise.resolve(new errors.ValidationError('Invalid zip file: base directory read failed'));
+            throw new errors.ValidationError('Invalid zip file: base directory read failed');
         }
 
-        return Promise.resolve(extMatchesAll[0].split('/')[0]);
+        return extMatchesAll[0].split('/')[0];
     },
     /**
      * Process Zip
@@ -215,16 +212,15 @@ _.extend(ImportManager.prototype, {
      * @returns {Promise(ImportData)}
      */
     processZip: function (file) {
-        var self = this,
-            directory;
+        var self = this;
+
         return this.extractZip(file.path).then(function (zipDirectory) {
-            directory = zipDirectory;
-            return self.isValidZip(directory);
-        }).then(function () {
-            return self.getBaseDirectory(directory);
-        }).then(function (baseDir) {
             var ops = [],
-                importData = {};
+                importData = {},
+                baseDir;
+
+            self.isValidZip(zipDirectory);
+            baseDir = self.getBaseDirectory(zipDirectory);
 
             _.each(self.handlers, function (handler) {
                 if (importData.hasOwnProperty(handler.type)) {
@@ -234,7 +230,7 @@ _.extend(ImportManager.prototype, {
                     ));
                 }
 
-                var files = self.getFilesFromZip(handler, directory);
+                var files = self.getFilesFromZip(handler, zipDirectory);
 
                 if (files.length > 0) {
                     ops.push(function () {
@@ -290,15 +286,7 @@ _.extend(ImportManager.prototype, {
 
         this.filesToDelete.push(file.path);
 
-        return Promise.resolve(this.isZip(ext)).then(function (isZip) {
-            if (isZip) {
-                // If it's a zip, process the zip file
-                return self.processZip(file);
-            } else {
-                // Else process the file
-                return self.processFile(file, ext);
-            }
-        });
+        return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
     },
     /**
      * Import Step 2:
