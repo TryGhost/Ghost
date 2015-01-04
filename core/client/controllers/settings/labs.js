@@ -1,4 +1,6 @@
 var LabsController = Ember.Controller.extend(Ember.Evented, {
+    needs: ['feature'],
+
     uploadButtonText: 'Import',
     importErrors: '',
     labsJSON: Ember.computed('model.labs', function () {
@@ -23,24 +25,24 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
     tagsUIFlag: Ember.computed.alias('config.tagsUI'),
     codeUIFlag: Ember.computed.alias('config.codeInjectionUI'),
 
-    useTagsUI: Ember.computed('tagsUI', function (key, value) {
+    useTagsUI: Ember.computed('controllers.feature.tagsUI', function (key, value) {
         // setter
         if (arguments.length > 1) {
             this.saveLabs('tagsUI', value);
         }
 
         // getter
-        return this.get('feature.tagsUI') || false;
+        return this.get('controllers.feature.tagsUI') || false;
     }),
 
-    useCodeInjectionUI: Ember.computed('codeInjectionUI', function (key, value) {
+    useCodeInjectionUI: Ember.computed('controllers.feature.tagsUI', function (key, value) {
         // setter
         if (arguments.length > 1) {
             this.saveLabs('codeInjectionUI', value);
         }
 
         // getter
-        return this.get('feature.codeInjectionUI') || false;
+        return this.get('controllers.feature.codeInjectionUI') || false;
     }),
 
     actions: {

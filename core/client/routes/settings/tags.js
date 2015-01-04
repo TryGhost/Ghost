@@ -12,7 +12,6 @@ paginationSettings = {
 };
 
 TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
-
     actions: {
         willTransition: function () {
             this.send('closeSettingsMenu');
@@ -22,12 +21,23 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
     titleToken: 'Tags',
 
     beforeModel: function () {
-        if (!this.get('feature.tagsUI')) {
-            return this.transitionTo('settings.general');
+        var feature = this.controllerFor('feature'),
+            self = this;
+
+        if (!feature) {
+            this.generateController('feature');
+            feature = this.controllerFor('feature');
         }
 
         return this.currentUser()
-            .then(this.transitionAuthor());
+            .then(this.transitionAuthor())
+            .then(function () {
+                return feature.then(function () {
+                    if (!feature.get('tagsUI')) {
+                        return self.transitionTo('settings.general');
+                    }
+                });
+            });
     },
 
     model: function () {
