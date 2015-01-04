@@ -22,7 +22,7 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
     titleToken: 'Tags',
 
     beforeModel: function () {
-        if (!this.get('config.tagsUI')) {
+        if (!this.get('feature.tagsUI')) {
             return this.transitionTo('settings.general');
         }
 
