@@ -18,6 +18,7 @@ var _              = require('lodash'),
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
+    mochaPath      = path.resolve(cwd + '/node_modules/grunt-mocha-cli/node_modules/mocha/bin/mocha'),
 
     // ## Build File Patterns
     // A list of files and patterns to include when creating a release zip.
@@ -329,19 +330,15 @@ var _              = require('lodash'),
 
                 test: {
                     command: function (test) {
-                        var mochaPath = path.resolve(cwd + '/node_modules/grunt-mocha-cli/node_modules/mocha/bin/mocha');
-                        return mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec core/test/' + test;
+                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec core/test/' + test;
                     }
                 },
 
                 // #### Generate coverage report
                 // See the `grunt test-coverage` task in the section on [Testing](#testing) for more information.
                 coverage: {
-                    command: path.resolve(cwd  + '/node_modules/mocha/bin/mocha  --timeout 15000 --reporter' +
-                    ' html-cov > coverage.html ./core/test/blanket_coverage.js'),
-                    execOptions: {
-                        env: 'NODE_ENV=' + process.env.NODE_ENV
-                    }
+                    command: 'node ' + mochaPath + ' --timeout 15000 --reporter html-cov > coverage.html ' +
+                    path.resolve(cwd + '/core/test/blanket_coverage.js')
                 }
             },
 
