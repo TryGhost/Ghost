@@ -8,6 +8,7 @@ JSONHandler = {
     type: 'data',
     extensions: ['.json'],
     types: ['application/octet-stream', 'application/json'],
+    directories: [],
 
     loadFile: function (files, startDir) {
         /*jshint unused:false */
