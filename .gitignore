@@ -62,11 +62,11 @@ CHANGELOG.md
 /core/client/config.js
 
 # Built asset files
-/core/built
-/core/client/assets/css
-/core/client/assets/img/contributors/
-/core/client/docs/dist/css
-/core/client/templates/-contributors.hbs
+#/core/built
+#/core/client/assets/css
+#/core/client/assets/img/contributors/
+#/core/client/docs/dist/css
+#/core/client/templates/-contributors.hbs
 
 # Coverage reports
 coverage.html
