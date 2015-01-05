@@ -1,7 +1,6 @@
 /*globals describe, beforeEach, afterEach, it*/
 /*jshint expr:true*/
-var assert   = require('assert'),
-    moment   = require('moment'),
+var moment   = require('moment'),
     should   = require('should'),
     sinon    = require('sinon'),
     Promise  = require('bluebird'),
@@ -218,7 +217,7 @@ describe('Frontend Controller', function () {
                 res = {
                     locals: {},
                     render: function (view) {
-                        assert.equal(view, 'home');
+                        view.should.equal('home');
                         done();
                     }
                 };
@@ -237,7 +236,7 @@ describe('Frontend Controller', function () {
                 res = {
                     locals: {},
                     render: function (view) {
-                        assert.equal(view, 'index');
+                        view.should.equal('index');
                         done();
                     }
                 };
@@ -269,7 +268,7 @@ describe('Frontend Controller', function () {
                 res = {
                     locals: {},
                     render: function (view) {
-                        assert.equal(view, 'index');
+                        view.should.equal('index');
                         done();
                     }
                 };
@@ -385,9 +384,9 @@ describe('Frontend Controller', function () {
                     res = {
                         locals: {},
                         render: function (view, context) {
-                            assert.equal(view, 'tag');
-                            assert.equal(context.tag, mockTags[0]);
-                            assert.equal(context.posts[0].author.email, undefined);
+                            view.should.equal('tag');
+                            context.tag.should.equal(mockTags[0]);
+                            should.not.exist(context.posts[0].author.email);
                             done();
                         }
                     };
@@ -609,9 +608,9 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'page-' + mockPosts[2].posts[0].slug);
-                                assert.equal(context.post, mockPosts[2].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('page-' + mockPosts[2].posts[0].slug);
+                                context.post.should.equal(mockPosts[2].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -639,9 +638,9 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'page');
-                                assert.equal(context.post, mockPosts[0].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('page');
+                                context.post.should.equal(mockPosts[0].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -751,8 +750,8 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'page');
-                                assert.equal(context.post, mockPosts[0].posts[0]);
+                                view.should.equal('page');
+                                context.post.should.equal(mockPosts[0].posts[0]);
                                 done();
                             }
                         };
@@ -831,10 +830,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                context.post.should.exist;
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -946,10 +945,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                context.post.should.exist;
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1077,10 +1076,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                should.exist(context.post);
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1209,10 +1208,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                should.exist(context.post);
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1237,7 +1236,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT render post via /:year/slug when year does not match post year', function (done) {
-                    var date = moment(mockPosts[1].posts[0].published_at).subtract('years', 1).format('YYYY'),
+                    var date = moment(mockPosts[1].posts[0].published_at).subtract(1, 'years').format('YYYY'),
                         req = {
                             path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
                         },
