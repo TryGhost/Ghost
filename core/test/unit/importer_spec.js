@@ -351,7 +351,7 @@ describe('Importer', function () {
                 storageSpy.calledOnce.should.be.true;
                 storeSpy.calledOnce.should.be.true;
                 storeSpy.firstCall.args[1].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/\/content\/images$/);
+                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/test-image.jpeg');
 
                 done();
@@ -371,7 +371,7 @@ describe('Importer', function () {
                 storageSpy.calledOnce.should.be.true;
                 storeSpy.calledOnce.should.be.true;
                 storeSpy.firstCall.args[1].originalPath.should.equal('photos/my-cat.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/\/content\/images\/photos$/);
+                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/photos/my-cat.jpeg');
 
                 done();
@@ -391,7 +391,7 @@ describe('Importer', function () {
                 storageSpy.calledOnce.should.be.true;
                 storeSpy.calledOnce.should.be.true;
                 storeSpy.firstCall.args[1].originalPath.should.equal('content/images/my-cat.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/\/content\/images$/);
+                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/my-cat.jpeg');
 
                 done();
@@ -413,7 +413,7 @@ describe('Importer', function () {
                 storageSpy.calledOnce.should.be.true;
                 storeSpy.calledOnce.should.be.true;
                 storeSpy.firstCall.args[1].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[1].targetDir.should.match(/\/content\/images$/);
+                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/subdir/content/images/test-image.jpeg');
 
                 done();
@@ -444,16 +444,16 @@ describe('Importer', function () {
                 storageSpy.calledOnce.should.be.true;
                 storeSpy.callCount.should.eql(4);
                 storeSpy.firstCall.args[1].originalPath.should.equal('testing.png');
-                storeSpy.firstCall.args[1].targetDir.should.match(/\/content\/images$/);
+                storeSpy.firstCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.firstCall.args[1].newPath.should.eql('/content/images/testing.png');
                 storeSpy.secondCall.args[1].originalPath.should.equal('photo/kitten.jpg');
-                storeSpy.secondCall.args[1].targetDir.should.match(/\/content\/images\/photo$/);
+                storeSpy.secondCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photo$/);
                 storeSpy.secondCall.args[1].newPath.should.eql('/content/images/photo/kitten.jpg');
                 storeSpy.thirdCall.args[1].originalPath.should.equal('content/images/animated/bunny.gif');
-                storeSpy.thirdCall.args[1].targetDir.should.match(/\/content\/images\/animated$/);
+                storeSpy.thirdCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)animated$/);
                 storeSpy.thirdCall.args[1].newPath.should.eql('/content/images/animated/bunny.gif');
                 storeSpy.lastCall.args[1].originalPath.should.equal('images/puppy.jpg');
-                storeSpy.lastCall.args[1].targetDir.should.match(/\/content\/images$/);
+                storeSpy.lastCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.lastCall.args[1].newPath.should.eql('/content/images/puppy.jpg');
 
                 done();
