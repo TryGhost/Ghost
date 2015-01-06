@@ -22,20 +22,9 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
         });
     },
 
-    tagsUIFlag: Ember.computed.alias('config.tagsUI'),
     codeUIFlag: Ember.computed.alias('config.codeInjectionUI'),
 
-    useTagsUI: Ember.computed('controllers.feature.tagsUI', function (key, value) {
-        // setter
-        if (arguments.length > 1) {
-            this.saveLabs('tagsUI', value);
-        }
-
-        // getter
-        return this.get('controllers.feature.tagsUI') || false;
-    }),
-
-    useCodeInjectionUI: Ember.computed('controllers.feature.tagsUI', function (key, value) {
+    useCodeInjectionUI: Ember.computed('controllers.feature.codeInjectionUI', function (key, value) {
         // setter
         if (arguments.length > 1) {
             this.saveLabs('codeInjectionUI', value);
