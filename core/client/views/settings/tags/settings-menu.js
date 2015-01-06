@@ -15,7 +15,7 @@ var TagsSettingsMenuView = Ember.View.extend({
             if (image) {
                 uploader[0].uploaderUi.initWithImage();
             } else {
-                uploader[0].uploaderUi.initWithDropzone();
+                uploader[0].uploaderUi.reset();
             }
         }
     })
