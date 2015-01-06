@@ -25,10 +25,6 @@ var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
         return value;
     }),
 
-    tagsUI: Ember.computed('config.tagsUI', 'labs.tagsUI', function () {
-        return this.get('config.tagsUI') || this.get('labs.tagsUI');
-    }),
-
     codeInjectionUI: Ember.computed('config.codeInjectionUI', 'labs.codeInjectionUI', function () {
         return this.get('config.codeInjectionUI') || this.get('labs.codeInjectionUI');
     })
