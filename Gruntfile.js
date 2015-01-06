@@ -8,6 +8,7 @@
 var _              = require('lodash'),
     colors         = require('colors'),
     fs             = require('fs-extra'),
+    moment         = require('moment'),
     getTopContribs = require('top-gh-contribs'),
     path           = require('path'),
     Promise        = require('bluebird'),
@@ -1075,7 +1076,16 @@ var _              = require('lodash'),
                     return downloadImagePromise(contributor.avatarUrl + '&s=60', contributor.name);
                 }));
             }).then(done).catch(function (error) {
-                grunt.log.error(error.stack || error);
+                grunt.log.error(error);
+
+                if (error.http_status) {
+                    grunt.log.writeln('GitHub API request returned status: ' + error.http_status);
+                }
+
+                if (error.ratelimit_limit) {
+                    grunt.log.writeln('Rate limit data: limit: %d, remaining: %d, reset: %s', error.ratelimit_limit, error.ratelimit_remaining, moment.unix(error.ratelimit_reset).fromNow());
+                }
+
                 done(false);
             });
         });
