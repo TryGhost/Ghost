@@ -1028,7 +1028,8 @@ var _              = require('lodash'),
             var done = this.async(),
                 templatePath = 'core/client/templates/-contributors.hbs',
                 imagePath = 'core/client/assets/img/contributors/',
-                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90);
+                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90),
+                oauthKey = process.env.GITHUB_OAUTH_KEY;
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
                 grunt.log.writeln('Contributors template already exists.');
@@ -1043,6 +1044,7 @@ var _              = require('lodash'),
                 getTopContribs({
                     user: 'tryghost',
                     repo: 'ghost',
+                    oauthKey: oauthKey,
                     releaseDate: ninetyDaysAgo,
                     count: 20
                 })
