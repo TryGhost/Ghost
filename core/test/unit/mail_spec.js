@@ -71,57 +71,57 @@ describe('Mail', function () {
     it('should use from address as configured in config.js', function () {
         config.set({
             mail: {
-                from: 'Blog Title <static@example.com>'
+                from: '"Blog Title" <static@example.com>'
             }
         });
-        mailer.from().should.equal('Blog Title <static@example.com>');
+        mailer.from().should.equal('"Blog Title" <static@example.com>');
     });
 
     it('should fall back to [blog.title] <ghost@[blog.url]> as from address', function () {
         // Standard domain
         config.set({url: 'http://default.com', mail: {from: null}, theme: {title: 'Test'}});
-        mailer.from().should.equal('Test <ghost@default.com>');
+        mailer.from().should.equal('"Test" <ghost@default.com>');
 
         // Trailing slash
         config.set({url: 'http://default.com/', mail: {from: null}, theme: {title: 'Test'}});
-        mailer.from().should.equal('Test <ghost@default.com>');
+        mailer.from().should.equal('"Test" <ghost@default.com>');
 
         // Strip Port
         config.set({url: 'http://default.com:2368/', mail: {from: null}, theme: {title: 'Test'}});
-        mailer.from().should.equal('Test <ghost@default.com>');
+        mailer.from().should.equal('"Test" <ghost@default.com>');
     });
 
     it('should use mail.from if both from and fromaddress are present', function () {
         // Standard domain
-        config.set({mail: {from: 'bar <from@default.com>', fromaddress: 'Qux <fa@default.com>'}});
-        mailer.from().should.equal('bar <from@default.com>');
+        config.set({mail: {from: '"bar" <from@default.com>', fromaddress: '"Qux" <fa@default.com>'}});
+        mailer.from().should.equal('"bar" <from@default.com>');
     });
 
     it('should attach blog title if from or fromaddress are only email addresses', function () {
         // from and fromaddress are both set
         config.set({mail: {from: 'from@default.com', fromaddress: 'fa@default.com'}, theme: {title: 'Test'}});
-        mailer.from().should.equal('Test <from@default.com>');
+        mailer.from().should.equal('"Test" <from@default.com>');
 
         // only from set
         config.set({mail: {from: 'from@default.com', fromaddress: null}, theme: {title: 'Test'}});
-        mailer.from().should.equal('Test <from@default.com>');
+        mailer.from().should.equal('"Test" <from@default.com>');
 
         // only fromaddress set
         config.set({mail: {from: null, fromaddress: 'fa@default.com'}, theme: {title: 'Test'}});
-        mailer.from().should.equal('Test <fa@default.com>');
+        mailer.from().should.equal('"Test" <fa@default.com>');
     });
 
     it('should ignore theme title if from address is Title <email@address.com> format', function () {
         // from and fromaddress are both set
-        config.set({mail: {from: 'R2D2 <from@default.com>', fromaddress: 'C3PO <fa@default.com>'}, theme: {title: 'Test'}});
-        mailer.from().should.equal('R2D2 <from@default.com>');
+        config.set({mail: {from: '"R2D2" <from@default.com>', fromaddress: '"C3PO" <fa@default.com>'}, theme: {title: 'Test'}});
+        mailer.from().should.equal('"R2D2" <from@default.com>');
 
         // only from set
-        config.set({mail: {from: 'R2D2 <from@default.com>', fromaddress: null}, theme: {title: 'Test'}});
-        mailer.from().should.equal('R2D2 <from@default.com>');
+        config.set({mail: {from: '"R2D2" <from@default.com>', fromaddress: null}, theme: {title: 'Test'}});
+        mailer.from().should.equal('"R2D2" <from@default.com>');
 
         // only fromaddress set
-        config.set({mail: {from: null, fromaddress: 'C3PO <fa@default.com>'}, theme: {title: 'Test'}});
-        mailer.from().should.equal('C3PO <fa@default.com>');
+        config.set({mail: {from: null, fromaddress: '"C3PO" <fa@default.com>'}, theme: {title: 'Test'}});
+        mailer.from().should.equal('"C3PO" <fa@default.com>');
     });
 });

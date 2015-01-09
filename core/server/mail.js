@@ -43,7 +43,7 @@ GhostMailer.prototype.from = function () {
         if (!config.theme.title) {
             config.theme.title = 'Ghost at ' + this.getDomain();
         }
-        from = config.theme.title + ' <' + from + '>';
+        from = '"' + config.theme.title + '" <' + from + '>';
     }
 
     return from;
