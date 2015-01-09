@@ -876,20 +876,21 @@ User = ghostBookshelf.Model.extend({
     gravatarLookup: function (userData) {
         var gravatarUrl = '//www.gravatar.com/avatar/' +
                 crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
-                '?d=404&s=250';
+                '?s=250';
 
         return new Promise(function (resolve) {
             if (config.isPrivacyDisabled('useGravatar')) {
                 return resolve(userData);
             }
 
-            request({url: 'http:' + gravatarUrl, timeout: 2000}, function (err, response) {
+            request({url: 'http:' + gravatarUrl + '&d=404&r=x', timeout: 2000}, function (err, response) {
                 if (err) {
                     // just resolve with no image url
                     return resolve(userData);
                 }
 
                 if (response.statusCode !== 404) {
+                    gravatarUrl += '&d=mm&r=x';
                     userData.image = gravatarUrl;
                 }
 
