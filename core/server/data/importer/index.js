@@ -9,10 +9,11 @@ var _            = require('lodash'),
     uuid         = require('node-uuid'),
     extract      = require('extract-zip'),
     errors       = require('../../errors'),
-    ImageHandler  = require('./handlers/image'),
-    JSONHandler   = require('./handlers/json'),
-    ImageImporter = require('./importers/image'),
-    DataImporter  = require('./importers/data'),
+    ImageHandler    = require('./handlers/image'),
+    JSONHandler     = require('./handlers/json'),
+    MarkdownHandler = require('./handlers/markdown'),
+    ImageImporter   = require('./importers/image'),
+    DataImporter    = require('./importers/data'),
 
     // Glob levels
     ROOT_ONLY = 0,
@@ -29,7 +30,7 @@ defaults = {
 
 function ImportManager() {
     this.importers = [ImageImporter, DataImporter];
-    this.handlers = [ImageHandler, JSONHandler];
+    this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
     // Keep track of files to cleanup at the end
     this.filesToDelete = [];
 }
@@ -139,7 +140,16 @@ _.extend(ImportManager.prototype, {
             ),
             dirMatches = glob.sync(
                 this.getDirectoryGlob(this.getDirectories(), ROOT_OR_SINGLE_DIR), {cwd: directory}
+            ),
+            oldRoonMatches = glob.sync(this.getDirectoryGlob(['drafts', 'published', 'deleted'], ROOT_OR_SINGLE_DIR),
+                {cwd: directory});
+
+        // This is a temporary extra message for the old format roon export which doesn't work with Ghost
+        if (oldRoonMatches.length > 0) {
+            throw new errors.UnsupportedMediaTypeError(
+                'Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.'
             );
+        }
 
         // If this folder contains importable files or a content or images directory
         if (extMatchesBase.length > 0 || (dirMatches.length > 0 && extMatchesAll.length > 0)) {

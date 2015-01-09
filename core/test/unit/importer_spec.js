@@ -5,16 +5,18 @@ var should    = require('should'),
     Promise   = require('bluebird'),
     _         = require('lodash'),
     testUtils = require('../utils'),
+    moment    = require('moment'),
     config    = require('../../server/config'),
     path      = require('path'),
     errors    = require('../../server/errors'),
 
     // Stuff we are testing
-    ImportManager = require('../../server/data/importer'),
-    JSONHandler   = require('../../server/data/importer/handlers/json'),
-    ImageHandler   = require('../../server/data/importer/handlers/image'),
-    DataImporter  = require('../../server/data/importer/importers/data'),
-    ImageImporter  = require('../../server/data/importer/importers/image'),
+    ImportManager   = require('../../server/data/importer'),
+    JSONHandler     = require('../../server/data/importer/handlers/json'),
+    ImageHandler    = require('../../server/data/importer/handlers/image'),
+    MarkdownHandler = require('../../server/data/importer/handlers/markdown'),
+    DataImporter    = require('../../server/data/importer/importers/data'),
+    ImageImporter   = require('../../server/data/importer/importers/image'),
 
     storage = require('../../server/storage'),
     sandbox = sinon.sandbox.create();
@@ -29,7 +31,7 @@ describe('Importer', function () {
 
     describe('ImportManager', function () {
         it('has the correct interface', function () {
-            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(2);
+            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(3);
             ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(2);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
@@ -38,18 +40,20 @@ describe('Importer', function () {
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(8);
+            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(10);
             ImportManager.getExtensions().should.containEql('.json');
             ImportManager.getExtensions().should.containEql('.zip');
             ImportManager.getExtensions().should.containEql('.jpg');
+            ImportManager.getExtensions().should.containEql('.md');
         });
 
         it('gets the correct types', function () {
-            ImportManager.getTypes().should.be.instanceof(Array).and.have.lengthOf(8);
+            ImportManager.getTypes().should.be.instanceof(Array).and.have.lengthOf(10);
             ImportManager.getTypes().should.containEql('application/octet-stream');
             ImportManager.getTypes().should.containEql('application/json');
             ImportManager.getTypes().should.containEql('application/zip');
             ImportManager.getTypes().should.containEql('application/x-zip-compressed');
+            ImportManager.getTypes().should.containEql('text/plain');
         });
 
         it('gets the correct directories', function () {
@@ -59,18 +63,30 @@ describe('Importer', function () {
         });
 
         it('globs extensions correctly', function () {
-            ImportManager.getGlobPattern(ImportManager.getExtensions()).should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.zip)');
-            ImportManager.getGlobPattern(ImportManager.getDirectories()).should.equal('+(images|content)');
-            ImportManager.getGlobPattern(JSONHandler.extensions).should.equal('+(.json)');
-            ImportManager.getGlobPattern(ImageHandler.extensions).should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz)');
-            ImportManager.getExtensionGlob(ImportManager.getExtensions()).should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.zip)');
-            ImportManager.getDirectoryGlob(ImportManager.getDirectories()).should.equal('+(images|content)');
-            ImportManager.getExtensionGlob(ImportManager.getExtensions(), 0).should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.zip)');
-            ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 0).should.equal('+(images|content)');
-            ImportManager.getExtensionGlob(ImportManager.getExtensions(), 1).should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.zip)');
-            ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 1).should.equal('{*/,}+(images|content)');
-            ImportManager.getExtensionGlob(ImportManager.getExtensions(), 2).should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.zip)');
-            ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 2).should.equal('**/+(images|content)');
+            ImportManager.getGlobPattern(ImportManager.getExtensions())
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.md|.markdown|.zip)');
+            ImportManager.getGlobPattern(ImportManager.getDirectories())
+                .should.equal('+(images|content)');
+            ImportManager.getGlobPattern(JSONHandler.extensions)
+                .should.equal('+(.json)');
+            ImportManager.getGlobPattern(ImageHandler.extensions)
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz)');
+            ImportManager.getExtensionGlob(ImportManager.getExtensions())
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.md|.markdown|.zip)');
+            ImportManager.getDirectoryGlob(ImportManager.getDirectories())
+                .should.equal('+(images|content)');
+            ImportManager.getExtensionGlob(ImportManager.getExtensions(), 0)
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.md|.markdown|.zip)');
+            ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 0)
+                .should.equal('+(images|content)');
+            ImportManager.getExtensionGlob(ImportManager.getExtensions(), 1)
+                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.md|.markdown|.zip)');
+            ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 1)
+                .should.equal('{*/,}+(images|content)');
+            ImportManager.getExtensionGlob(ImportManager.getExtensions(), 2)
+                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.json|.md|.markdown|.zip)');
+            ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 2)
+                .should.equal('**/+(images|content)');
         });
 
         // Step 1 of importing is loadFile
@@ -109,18 +125,21 @@ describe('Importer', function () {
                     baseDirSpy = sandbox.stub(ImportManager, 'getBaseDirectory').returns(),
                     getFileSpy = sandbox.stub(ImportManager, 'getFilesFromZip'),
                     jsonSpy = sandbox.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []})),
-                    imageSpy = sandbox.stub(ImageHandler, 'loadFile');
+                    imageSpy = sandbox.stub(ImageHandler, 'loadFile'),
+                    mdSpy = sandbox.stub(MarkdownHandler, 'loadFile');
 
                 getFileSpy.withArgs(JSONHandler).returns(['/tmp/dir/myFile.json']);
                 getFileSpy.withArgs(ImageHandler).returns([]);
+                getFileSpy.withArgs(MarkdownHandler).returns([]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true;
                     validSpy.calledOnce.should.be.true;
                     baseDirSpy.calledOnce.should.be.true;
-                    getFileSpy.calledTwice.should.be.true;
+                    getFileSpy.calledThrice.should.be.true;
                     jsonSpy.calledOnce.should.be.true;
                     imageSpy.called.should.be.false;
+                    mdSpy.called.should.be.false;
 
                     ImportManager.processFile(testFile, '.json').then(function (fileResult) {
                         jsonSpy.calledTwice.should.be.true;
@@ -163,6 +182,15 @@ describe('Importer', function () {
                     var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-invalid');
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                });
+
+                it('shows a special error for old Roon exports', function () {
+                    var testDir = path.resolve('core/test/utils/fixtures/import/zips/zip-old-roon-export'),
+                        msg = 'Your zip file looks like an old format Roon export, ' +
+                            'please re-export your Roon blog and try again.';
+
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(msg);
                 });
             });
 
@@ -455,6 +483,148 @@ describe('Importer', function () {
                 storeSpy.lastCall.args[1].originalPath.should.equal('images/puppy.jpg');
                 storeSpy.lastCall.args[1].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
                 storeSpy.lastCall.args[1].newPath.should.eql('/content/images/puppy.jpg');
+
+                done();
+            });
+        });
+    });
+
+    describe('MarkdownHandler', function () {
+        it('has the correct interface', function () {
+            MarkdownHandler.type.should.eql('data');
+            MarkdownHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(2);
+            MarkdownHandler.extensions.should.containEql('.md');
+            MarkdownHandler.extensions.should.containEql('.markdown');
+            MarkdownHandler.types.should.be.instanceof(Array).and.have.lengthOf(2);
+            MarkdownHandler.types.should.containEql('application/octet-stream');
+            MarkdownHandler.types.should.containEql('text/plain');
+            MarkdownHandler.loadFile.should.be.instanceof(Function);
+        });
+
+        it('does convert a markdown file into a post object', function (done) {
+            var filename = 'draft-2014-12-19-test-1.md',
+                file = [{
+                    path: testUtils.fixtures.getImportFixturePath(filename),
+                    name: filename
+                }];
+
+            MarkdownHandler.loadFile(file).then(function (result) {
+                result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
+                result.data.posts[0].status.should.eql('draft');
+                result.data.posts[0].slug.should.eql('test-1');
+                result.data.posts[0].title.should.eql('test-1');
+                result.data.posts[0].created_at.should.eql(1418990400000);
+                moment(result.data.posts[0].created_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
+                result.data.posts[0].should.not.have.property('image');
+
+                done();
+            });
+        });
+
+        it('can parse a title from a markdown file', function (done) {
+            var filename = 'draft-2014-12-19-test-2.md',
+                file = [{
+                    path: testUtils.fixtures.getImportFixturePath(filename),
+                    name: filename
+                }];
+
+            MarkdownHandler.loadFile(file).then(function (result) {
+                result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
+                result.data.posts[0].status.should.eql('draft');
+                result.data.posts[0].slug.should.eql('test-2');
+                result.data.posts[0].title.should.eql('Welcome to Ghost');
+                result.data.posts[0].created_at.should.eql(1418990400000);
+                result.data.posts[0].should.not.have.property('image');
+
+                done();
+            });
+        });
+
+        it('can parse a featured image from a markdown file if there is a title', function (done) {
+            var filename = 'draft-2014-12-19-test-3.md',
+                file = [{
+                    path: testUtils.fixtures.getImportFixturePath(filename),
+                    name: filename
+                }];
+
+            MarkdownHandler.loadFile(file).then(function (result) {
+                result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
+                result.data.posts[0].status.should.eql('draft');
+                result.data.posts[0].slug.should.eql('test-3');
+                result.data.posts[0].title.should.eql('Welcome to Ghost');
+                result.data.posts[0].created_at.should.eql(1418990400000);
+                result.data.posts[0].image.should.eql('/images/kitten.jpg');
+
+                done();
+            });
+        });
+
+        it('can import a published post', function (done) {
+            var filename = 'published-2014-12-19-test-1.md',
+                file = [{
+                    path: testUtils.fixtures.getImportFixturePath(filename),
+                    name: filename
+                }];
+
+            MarkdownHandler.loadFile(file).then(function (result) {
+                result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
+                result.data.posts[0].status.should.eql('published');
+                result.data.posts[0].slug.should.eql('test-1');
+                result.data.posts[0].title.should.eql('Welcome to Ghost');
+                result.data.posts[0].published_at.should.eql(1418990400000);
+                moment(result.data.posts[0].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
+                result.data.posts[0].should.not.have.property('image');
+
+                done();
+            });
+        });
+
+        it('does not import deleted posts', function (done) {
+            var filename = 'deleted-2014-12-19-test-1.md',
+                file = [{
+                    path: testUtils.fixtures.getImportFixturePath(filename),
+                    name: filename
+                }];
+
+            MarkdownHandler.loadFile(file).then(function (result) {
+                result.data.posts.should.be.empty;
+
+                done();
+            });
+        });
+
+        it('can import multiple files', function (done) {
+            var files = [{
+                    path: testUtils.fixtures.getImportFixturePath('deleted-2014-12-19-test-1.md'),
+                    name: 'deleted-2014-12-19-test-1.md'
+                }, {
+                    path: testUtils.fixtures.getImportFixturePath('published-2014-12-19-test-1.md'),
+                    name: 'published-2014-12-19-test-1.md'
+                }, {
+                    path: testUtils.fixtures.getImportFixturePath('draft-2014-12-19-test-3.md'),
+                    name: 'draft-2014-12-19-test-3.md'
+                }];
+
+            MarkdownHandler.loadFile(files).then(function (result) {
+                // deleted-2014-12-19-test-1.md
+                // doesn't get imported ;)
+
+                // published-2014-12-19-test-1.md
+                result.data.posts[0].markdown.should.eql('You\'re live! Nice.');
+                result.data.posts[0].status.should.eql('published');
+                result.data.posts[0].slug.should.eql('test-1');
+                result.data.posts[0].title.should.eql('Welcome to Ghost');
+                result.data.posts[0].published_at.should.eql(1418990400000);
+                moment(result.data.posts[0].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
+                result.data.posts[0].should.not.have.property('image');
+
+                // draft-2014-12-19-test-3.md
+                result.data.posts[1].markdown.should.eql('You\'re live! Nice.');
+                result.data.posts[1].status.should.eql('draft');
+                result.data.posts[1].slug.should.eql('test-3');
+                result.data.posts[1].title.should.eql('Welcome to Ghost');
+                result.data.posts[1].created_at.should.eql(1418990400000);
+                result.data.posts[1].image.should.eql('/images/kitten.jpg');
 
                 done();
             }).catch(done);
