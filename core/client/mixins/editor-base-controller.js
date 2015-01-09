@@ -50,6 +50,10 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         return this.get('model.tags').mapBy('name');
     }),
 
+    postOrPage: Ember.computed('model.page', function () {
+        return this.get('model.page') ? 'Page' : 'Post';
+    }),
+
     // compares previousTagNames to tagNames
     tagNamesEqual: function () {
         var tagNames = this.get('tagNames'),
@@ -191,7 +195,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             path = this.get('ghostPaths.url').join(this.get('config.blogUrl'), this.get('model.url'));
 
         if (status === 'published') {
-            message += '&nbsp;<a href="' + path + '">View Post</a>';
+            message += '&nbsp;<a href="' + path + '">View ' + this.get('postOrPage') + '</a>';
         }
         this.notifications.showSuccess(message, {delayed: delay});
     },
