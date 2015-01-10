@@ -161,7 +161,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -218,7 +218,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
@@ -283,7 +283,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -328,7 +328,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -390,7 +390,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
@@ -454,7 +454,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -498,7 +498,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -551,7 +551,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -745,7 +745,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -972,7 +972,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -1211,7 +1211,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
