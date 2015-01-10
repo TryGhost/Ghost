@@ -678,7 +678,7 @@ var _              = require('lodash'),
             // ### grunt-retire
             // Grunt task to check for security fixes in dependencies
             retire : {
-                js      : ['index.js', 'Gruntfile.js', 'content/themes/**/.js', 'core/*.js', 'core/**/*.js'],
+                js      : ['index.js', 'Gruntfile.js', 'content/themes/**/*.js', 'core/*.js', 'core/**/*.js'],
                 node    : ['./'],
                 options : {
                     verbose        : true,
@@ -687,7 +687,7 @@ var _              = require('lodash'),
                     nodeRepository : 'https://raw.github.com/bekk/retire.js/master/repository/npmrepository.json'
                 }
             }
-            
+
         };
 
         // Load the configuration
