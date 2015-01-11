@@ -13,7 +13,7 @@
         </header>
         {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
         <ol class="posts-list">
-            {{#each post in model itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
+            {{#each post in controller itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
                 {{#link-to "posts.post" post class="permalink" alternateActive=view.active title="Edit this post"}}
                     <h3 class="entry-title">{{post.model.title}}</h3>
                     <section class="entry-meta">
