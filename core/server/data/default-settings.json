@@ -70,6 +70,9 @@
         },
         "labs": {
             "defaultValue": "{}"
+        },
+        "navigation": {
+            "defaultValue": "[{\"id\": 1, \"label\":\"Home\", \"url\":\"http://my-ghost-blog.com/\"},{\"id\": 2, \"label\":\"About\", \"url\":\"http://my-ghost-blog.com/about/\"},{\"id\": 3, \"label\":\"Links\", \"url\":\"http://my-ghost-blog.com/links/\"},{\"id\": 4, \"label\":\"External\", \"url\":\"https://ghost.org\"}]"
         }
     },
     "theme": {
