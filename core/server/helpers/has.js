@@ -25,7 +25,7 @@ has = function (options) {
             return p || (_.findIndex(tags, function (item) {
                 // Escape regex special characters
                 item = item.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, '\\$&');
-                item = new RegExp(item, 'i');
+                item = new RegExp('^' + item + '$', 'i');
                 return item.test(c);
             }) !== -1);
         }, false);
