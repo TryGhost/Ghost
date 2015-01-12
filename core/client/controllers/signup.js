@@ -10,7 +10,8 @@ var SignupController = Ember.Controller.extend(ValidationEngine, {
     actions: {
         signup: function () {
             var self = this,
-                data = self.getProperties('model.name', 'model.email', 'model.password', 'model.token');
+                model = this.get('model'),
+                data = model.getProperties('name', 'email', 'password', 'token');
 
             self.notifications.closePassive();
 

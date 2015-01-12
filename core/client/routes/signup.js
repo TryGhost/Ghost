@@ -14,7 +14,7 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
         var self = this,
             tokenText,
             email,
-            model = {},
+            model = Ember.Object.create(),
             re = /^(?:[A-Za-z0-9_\-]{4})*(?:[A-Za-z0-9_\-]{2}|[A-Za-z0-9_\-]{3})?$/;
 
         return new Ember.RSVP.Promise(function (resolve) {
@@ -27,8 +27,8 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
             tokenText = atob(params.token);
             email = tokenText.split('|')[1];
 
-            model.email = email;
-            model.token = params.token;
+            model.set('email', email);
+            model.set('token', params.token);
 
             return ic.ajax.request({
                 url: self.get('ghostPaths.url').api('authentication', 'invitation'),
