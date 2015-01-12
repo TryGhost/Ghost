@@ -1,6 +1,11 @@
-{{#view "settings/users/users-list-view"}}
+{{#view "settings/users/users-list-view" class="users-list-wrapper js-users-list-view"}}
     <header class="settings-view-header user-list-header">
-        {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+        {{#if session.user.isEditor}}
+            {{#link-to "content" class="btn btn-default btn-back"}}Back{{/link-to}}
+        {{else}}
+            {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+        {{/if}}
+
         <h2 class="page-title">Users</h2>
         <section class="page-actions">
             <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >New&nbsp;User</button>
@@ -21,10 +26,10 @@
 
                     <div class="user-list-item-body">
                         <span class="name">{{user.email}}</span><br>
-                            {{#if user.pending}}
+                            {{#if user.model.pending}}
                                 <span class="red">Invitation not sent - please try again</span>
                             {{else}}
-                                <span class="description">Invitation sent: {{user.created_at}}</span>
+                                <span class="description">Invitation sent: {{user.model.created_at}}</span>
                             {{/if}}
                     </div>
                     <aside class="user-list-item-aside">
@@ -45,19 +50,19 @@
         {{#each user in activeUsers itemController="settings/users/user"}}
             {{#link-to 'settings.users.user' user class="user-list-item" }}
                 <span class="user-list-item-figure" {{bind-attr style=user.image}}>
-                    <span class="hidden">Photo of {{unbound user.name}}</span>
+                    <span class="hidden">Photo of {{unbound user.model.name}}</span>
                 </span>
 
                 <div class="user-list-item-body">
                     <span class="name">
-                        {{user.name}}
+                        {{user.model.name}}
                     </span>
                     <br>
                     <span class="description">Last seen: {{unbound user.last_login}}</span>
                 </div>
                 <aside class="user-list-item-aside">
-                    {{#unless user.isAuthor}}
-                        {{#each role in user.roles}}
+                    {{#unless user.model.isAuthor}}
+                        {{#each role in user.model.roles}}
                             <span class="role-label {{unbound role.lowerCaseName}}">{{role.name}}</span>
                         {{/each}}
                     {{/unless}}

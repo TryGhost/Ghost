@@ -1,4 +1,4 @@
-/*globals describe, it, before, beforeEach, afterEach */
+/*globals describe, it, before, beforeEach, afterEach, after */
 /*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
@@ -13,13 +13,22 @@ var should         = require('should'),
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
     config         = require('../../server/config'),
+    origConfig     = _.cloneDeep(config),
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
 
 // To stop jshint complaining
 should.equal(true, true);
 
+function resetConfig() {
+    config.set(_.merge({}, origConfig, defaultConfig));
+}
+
 describe('Config', function () {
+    after(function () {
+        resetConfig();
+    });
+
     describe('Theme', function () {
         beforeEach(function () {
             config.set({
@@ -34,7 +43,7 @@ describe('Config', function () {
         });
 
         afterEach(function () {
-            config.set(_.merge({}, defaultConfig));
+            resetConfig();
         });
 
         it('should have exactly the right keys', function () {
@@ -61,7 +70,7 @@ describe('Config', function () {
             // Make a copy of the default config file
             // so we can restore it after every test.
             // Using _.merge to recursively apply every property.
-            config.set(_.merge({}, config));
+            resetConfig();
         });
 
         it('should have exactly the right keys', function () {
@@ -140,11 +149,11 @@ describe('Config', function () {
 
     describe('urlFor', function () {
         before(function () {
-            config.set(_.merge({}, defaultConfig));
+            resetConfig();
         });
 
         afterEach(function () {
-            config.set({url: defaultConfig.url});
+            resetConfig();
         });
 
         it('should return the home url with no options', function () {
@@ -274,6 +283,7 @@ describe('Config', function () {
 
         afterEach(function () {
             config = rewire('../../server/config');
+            resetConfig();
             sandbox.restore();
         });
 
@@ -509,9 +519,33 @@ describe('Config', function () {
         it('allows server to use a socket', function (done) {
             overrideConfig({server: {socket: 'test'}});
 
-            config.load().then(function (localConfig) {
-                should.exist(localConfig);
-                localConfig.server.socket.should.equal('test');
+            config.load().then(function () {
+                var socketConfig = config.getSocket();
+
+                socketConfig.should.be.an.Object;
+                socketConfig.path.should.equal('test');
+                socketConfig.permissions.should.equal('660');
+
+                done();
+            }).catch(done);
+        });
+
+        it('allows server to use a socket and user-defined permissions', function (done) {
+            overrideConfig({
+                server: {
+                    socket: {
+                        path: 'test',
+                        permissions: '666'
+                    }
+                }
+            });
+
+            config.load().then(function () {
+                var socketConfig = config.getSocket();
+
+                socketConfig.should.be.an.Object;
+                socketConfig.path.should.equal('test');
+                socketConfig.permissions.should.equal('666');
 
                 done();
             }).catch(done);

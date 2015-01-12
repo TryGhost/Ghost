@@ -5,15 +5,16 @@
 // Styles for the content management page, which is where
 // the posts are listed.
 //
-// * Navigation
+// * Settings Navigation
 // * Content
 // * Headers
 // * Custom Permalinks
+// * Navigation
 // ------------------------------------------------------------
 
 
 //
-// Navigation
+// Settings Navigation
 // --------------------------------------------------
 
 .settings-nav {
@@ -381,3 +382,101 @@
         min-width: 320px;
     }
 }//.permalink-input-wrapper
+
+
+//
+// Navigation
+// --------------------------------------------------
+
+.settings-navigation {}
+
+.navigation-item {
+    display: flex;
+
+    @media (max-width: 600px) {
+        margin-bottom: 20px;
+    }
+    @media (min-width: 601px) {
+        margin-bottom: 10px;
+    }
+}
+
+.navigation-item-drag-handle {
+    padding-left: 10px;
+    padding-right: 17px;
+    width: 27px;
+    cursor: move;
+}
+
+.navigation-inputs {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .navigation-item-label {
+        margin-bottom: 5px;
+    }
+
+    .navigation-item-label,
+    .navigation-item-url {
+        display: block;
+        width: 100%;
+    }
+}
+
+@media (min-width: 601px) {
+    .navigation-inputs {
+        display: flex;
+    }
+
+    .navigation-item-label {
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+
+    .navigation-item-url {
+        flex-grow: 3;
+    }
+}
+
+.navigation-item-action {
+    padding-left: 10px;
+    width: 40px;
+    position: relative;
+
+    button {
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-top: -2px;
+    }
+
+    .icon-trash {
+        &:before {
+            color: $midbrown;
+            font-size: 16px;
+            transition: color 0.1s linear;
+        }
+
+        &:hover:before {
+            color: $red;
+        }
+    }
+
+    .icon-add {
+        &:before {
+            background: $green;
+            color: #fff;
+            font-size: 12px;
+            padding: 3px;
+            border-radius: 2px;
+            transition: background 0.1s linear;
+        }
+
+        &:hover:before {
+            background: darken($green, 10%);
+        }
+    }
+}

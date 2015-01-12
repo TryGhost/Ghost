@@ -1,10 +1,9 @@
 import PaginationMixin from 'ghost/mixins/pagination-controller';
+import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-var TagsController = Ember.ArrayController.extend(PaginationMixin, {
+var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuMixin, {
     tags: Ember.computed.alias('model'),
-
-    needs: 'application',
 
     activeTag: null,
     activeTagNameScratch: boundOneWay('activeTag.name'),
@@ -18,18 +17,6 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, {
         options.modelType = 'tag';
         this._super(options);
     },
-
-    isViewingSubview: Ember.computed('controllers.application.showSettingsMenu', function (key, value) {
-        // Not viewing a subview if we can't even see the PSM
-        if (!this.get('controllers.application.showSettingsMenu')) {
-            return false;
-        }
-        if (arguments.length > 1) {
-            return value;
-        }
-
-        return false;
-    }),
 
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
@@ -105,26 +92,13 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, {
 
     actions: {
         newTag: function () {
-            this.set('activeTag', this.store.createRecord('tag'));
+            this.set('activeTag', this.store.createRecord('tag', {post_count: 0}));
             this.send('openSettingsMenu');
         },
 
         editTag: function (tag) {
             this.set('activeTag', tag);
             this.send('openSettingsMenu');
-        },
-
-        deleteTag: function (tag) {
-            var name = tag.get('name'),
-                self = this;
-
-            this.send('closeSettingsMenu');
-
-            tag.destroyRecord().then(function () {
-                self.notifications.showSuccess('Deleted ' + name);
-            }).catch(function (error) {
-                self.notifications.showAPIError(error);
-            });
         },
 
         saveActiveTagName: function (name) {
@@ -145,14 +119,6 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, {
 
         saveActiveTagMetaDescription: function (metaDescription) {
             this.saveActiveTagProperty('meta_description', metaDescription);
-        },
-
-        showSubview: function () {
-            this.set('isViewingSubview', true);
-        },
-
-        closeSubview: function () {
-            this.set('isViewingSubview', false);
         },
 
         setCoverImage: function (image) {

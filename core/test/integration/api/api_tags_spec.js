@@ -13,7 +13,7 @@ describe('Tags API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'tag', 'perms:tag', 'perms:init'));
+    beforeEach(testUtils.setup('users:roles', 'perms:tag', 'perms:init', 'posts'));
 
     should.exist(TagAPI);
 
@@ -157,6 +157,35 @@ describe('Tags API', function () {
                 results.tags.length.should.be.above(0);
                 testUtils.API.checkResponse(results.tags[0], 'tag');
                 results.tags[0].created_at.should.be.an.instanceof(Date);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with include post_count', function (done) {
+            TagAPI.browse({context: {user: 1}, include: 'post_count'}).then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+
+                testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
+                should.exist(results.tags[0].post_count);
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('Read', function () {
+        it('returns post_count with include post_count', function (done) {
+            TagAPI.read({context: {user: 1}, include: 'post_count', slug: 'kitchen-sink'}).then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+
+                testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
+                should.exist(results.tags[0].post_count);
+                results.tags[0].post_count.should.equal(2);
 
                 done();
             }).catch(done);

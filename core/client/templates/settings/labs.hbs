@@ -1,8 +1,6 @@
 <header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="page-title">Labs</h2>
-    <div class="js-settings-header-inner settings-header-inner">
-        {{#link-to 'settings' class='btn btn-default btn-back'}}Back{{/link-to}}
-    </div>
 </header>
 
 
@@ -44,4 +42,24 @@
             </div>
         </fieldset>
     </form>
+
+    <hr>
+
+    <form>
+        <fieldset>
+            {{#unless codeUIFlag}}
+            <div class="form-group for-checkbox">
+                <label for="labs-codeInjectionUI">Code Injection</label>
+                <label class="check box" for="labs-codeInjectionUI">
+                    {{input id="labs-codeInjectionUI" name="labs[codeInjectionUI]" type="checkbox"
+                    checked=useCodeInjectionUI}}
+                    <span class="input-toggle-component"></span>
+                    <p>Enable the code injection interface</p>
+                </label>
+                <p>A settings screen which enables you to add code into your theme (work in progress)</p>
+            </div>
+            {{/unless}}
+        </fieldset>
+    </form>
+
 </section>

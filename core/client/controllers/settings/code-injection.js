@@ -1,4 +1,4 @@
-var SettingsCodeInjectionController = Ember.ObjectController.extend({
+var SettingsCodeInjectionController = Ember.Controller.extend({
     actions: {
         save: function () {
             var self = this;

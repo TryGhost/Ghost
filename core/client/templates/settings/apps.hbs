@@ -1,5 +1,5 @@
 <header class="settings-view-header">
-    {{#link-to 'settings' class='btn btn-default'}}Back{{/link-to}}
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="title">Apps</h2>
 </header>
 
@@ -10,14 +10,14 @@
             <th>Status</th>
         </thead>
         <tbody>
-        {{#each app in model itemController="settings/app"}}
+        {{#each appController in model itemController="settings/app"}}
         <tr>
             <td>
-                {{#if app.package}}{{app.package.name}} - {{app.package.version}}{{else}}{{app.name}} - package.json missing :({{/if}}
+                {{#if appController.model.package}}{{appController.model.package.name}} - {{appController.model.package.version}}{{else}}{{appController.model.name}} - package.json missing :({{/if}}
             </td>
             <td>
-                <button type="button" {{action toggleApp app}} {{bind-attr class=":btn :js-button-active activeClass:btn-red inactiveClass:btn-green activeClass:js-button-deactivate"}}>
-                    {{app.buttonText}}
+                <button type="button" {{action toggleApp appController}} {{bind-attr class=":btn :js-button-active activeClass:btn-red inactiveClass:btn-green activeClass:js-button-deactivate"}}>
+                    {{appController.buttonText}}
                 </button>
             </td>
         </tr>

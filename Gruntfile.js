@@ -8,6 +8,7 @@
 var _              = require('lodash'),
     colors         = require('colors'),
     fs             = require('fs-extra'),
+    moment         = require('moment'),
     getTopContribs = require('top-gh-contribs'),
     path           = require('path'),
     Promise        = require('bluebird'),
@@ -17,6 +18,7 @@ var _              = require('lodash'),
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
+    mochaPath      = path.resolve(cwd + '/node_modules/grunt-mocha-cli/node_modules/mocha/bin/mocha'),
 
     // ## Build File Patterns
     // A list of files and patterns to include when creating a release zip.
@@ -203,13 +205,15 @@ var _              = require('lodash'),
                     client: {
                         options: {
                             config: '.jscsrc',
-                            esnext: true
+                            esnext: true,
+                            disallowObjectController: true
                         }
                     },
                     clientTests: {
                         options: {
                             config: '.jscsrc',
-                            esnext: true
+                            esnext: true,
+                            disallowObjectController: true
                         }
                     },
                     test: {
@@ -324,14 +328,17 @@ var _              = require('lodash'),
                     }
                 },
 
+                test: {
+                    command: function (test) {
+                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec core/test/' + test;
+                    }
+                },
+
                 // #### Generate coverage report
                 // See the `grunt test-coverage` task in the section on [Testing](#testing) for more information.
                 coverage: {
-                    command: path.resolve(cwd  + '/node_modules/mocha/bin/mocha  --timeout 15000 --reporter' +
-                    ' html-cov > coverage.html ./core/test/blanket_coverage.js'),
-                    execOptions: {
-                        env: 'NODE_ENV=' + process.env.NODE_ENV
-                    }
+                    command: 'node ' + mochaPath + ' --timeout 15000 --reporter html-cov > coverage.html ' +
+                    path.resolve(cwd + '/core/test/blanket_coverage.js')
                 }
             },
 
@@ -798,6 +805,14 @@ var _              = require('lodash'),
             });
         });
 
+        grunt.registerTask('test', function (test) {
+            if (!test) {
+                grunt.log.write('no test provided');
+            }
+
+            grunt.task.run('setTestEnv', 'shell:test:' + test);
+        });
+
         // ### Validate
         // **Main testing task**
         //
@@ -808,7 +823,7 @@ var _              = require('lodash'),
         //
         // `grunt validate` is called by `npm test` and is used by Travis.
         grunt.registerTask('validate', 'Run tests and lint code',
-            ['init', 'test']);
+            ['init', 'test-all']);
 
         // ### Test
         // **Main testing task**
@@ -818,7 +833,7 @@ var _              = require('lodash'),
         // `grunt test` runs jshint and jscs as well as the 4 test suites. See the individual sub tasks below for
         // details of each of the test suites.
         //
-        grunt.registerTask('test', 'Run tests and lint code',
+        grunt.registerTask('test-all', 'Run tests and lint code',
             ['jshint', 'jscs', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'test-functional', 'shell:testem']);
 
         // ### Lint
@@ -1009,7 +1024,9 @@ var _              = require('lodash'),
         grunt.registerTask('buildAboutPage', 'Compile assets for the About Ghost page', function () {
             var done = this.async(),
                 templatePath = 'core/client/templates/-contributors.hbs',
-                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90);
+                imagePath = 'core/client/assets/img/contributors/',
+                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90),
+                oauthKey = process.env.GITHUB_OAUTH_KEY;
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
                 grunt.log.writeln('Contributors template already exists.');
@@ -1018,15 +1035,30 @@ var _              = require('lodash'),
             }
 
             grunt.verbose.writeln('Downloading release and contributor information from GitHub');
-            getTopContribs({
-                user: 'tryghost',
-                repo: 'ghost',
-                releaseDate: ninetyDaysAgo,
-                count: 20
-            }).then(function makeContributorTemplate(contributors) {
-                var contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
+
+            return Promise.join(
+                Promise.promisify(fs.mkdirs)(imagePath),
+                getTopContribs({
+                    user: 'tryghost',
+                    repo: 'ghost',
+                    oauthKey: oauthKey,
+                    releaseDate: ninetyDaysAgo,
+                    count: 20
+                })
+            ).then(function (results) {
+                var contributors = results[1],
+                    contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
                     '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>">\n' +
-                    '    </a>\n</li>';
+                    '    </a>\n</li>',
+
+                    downloadImagePromise = function (url, name) {
+                        return new Promise(function (resolve, reject) {
+                            request(url)
+                            .pipe(fs.createWriteStream(imagePath + name))
+                            .on('close', resolve)
+                            .on('error', reject);
+                        });
+                    };
 
                 grunt.verbose.writeln('Creating contributors template.');
                 grunt.file.write(templatePath,
@@ -1037,25 +1069,24 @@ var _              = require('lodash'),
                             .replace(/<%name%>/g, contributor.name);
                     }).join('\n')
                 );
+
                 grunt.verbose.writeln('Downloading images for top contributors');
-                return Promise.promisify(fs.mkdirs)('core/client/assets/img/contributors').then(function () {
-                    return contributors;
-                });
-            }).then(function downloadContributorImages(contributors) {
-                var downloadImagePromise = function (url, name) {
-                    return new Promise(function (resolve, reject) {
-                        request(url)
-                        .pipe(fs.createWriteStream('core/client/assets/img/contributors/' + name))
-                        .on('close', resolve)
-                        .on('error', reject);
-                    });
-                };
                 return Promise.all(_.map(contributors, function (contributor) {
                     return downloadImagePromise(contributor.avatarUrl + '&s=60', contributor.name);
                 }));
-            }).catch(function (error) {
+            }).then(done).catch(function (error) {
                 grunt.log.error(error);
-            }).finally(done);
+
+                if (error.http_status) {
+                    grunt.log.writeln('GitHub API request returned status: ' + error.http_status);
+                }
+
+                if (error.ratelimit_limit) {
+                    grunt.log.writeln('Rate limit data: limit: %d, remaining: %d, reset: %s', error.ratelimit_limit, error.ratelimit_remaining, moment.unix(error.ratelimit_reset).fromNow());
+                }
+
+                done(false);
+            });
         });
         // ### Init assets
         // `grunt init` - will run an initial asset build for you

@@ -9,9 +9,12 @@ cache:
 addons:
   postgresql: "9.3"
 env:
-  - DB=sqlite3 NODE_ENV=testing
-  - DB=mysql NODE_ENV=testing-mysql
-  - DB=pg NODE_ENV=testing-pg
+  global:
+    - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
+  matrix:
+    - DB=sqlite3 NODE_ENV=testing
+    - DB=mysql NODE_ENV=testing-mysql
+    - DB=pg NODE_ENV=testing-pg
 before_install:
   - git clone git://github.com/n1k0/casperjs.git ~/casperjs
   - cd ~/casperjs

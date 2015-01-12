@@ -22,9 +22,14 @@ var PaginationViewInfiniteScrollMixin = Ember.Mixin.create({
      * Bind to the scroll event once the element is in the DOM
      */
     attachCheckScroll: function () {
-        var el = this.$();
+        var el = this.$(),
+            controller = this.get('controller');
 
         el.on('scroll', Ember.run.bind(this, this.checkScroll));
+
+        if (this.element.scrollHeight <= this.element.clientHeight) {
+            controller.send('loadNextPage');
+        }
     }.on('didInsertElement'),
 
     /**

@@ -1,5 +1,5 @@
 <header class="settings-view-header">
-    <a class="btn btn-default btn-back active" href="/ghost/settings/">Back</a>
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="page-title">Tags</h2>
     <section class="page-actions">
         <button type="button" class="btn btn-green" {{action "newTag"}}>New Tag</button>
@@ -13,7 +13,7 @@
                 <span class="tag-title">{{tag.name}}</span>
                 <span class="label label-default">/{{tag.slug}}</span>
                 <p class="tag-description">{{tag.description}}</p>
-                <span class="tags-count">N/A</span>
+                <span class="tags-count">{{tag.post_count}}</span>
             </button>
         </div>
     {{/each}}

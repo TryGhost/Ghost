@@ -1,39 +1,27 @@
 /* global moment */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
+import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-var PostSettingsMenuController = Ember.ObjectController.extend({
-    // State for if the user is viewing a tab's pane.
-    needs: 'application',
-
+var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
+    debounceId: null,
     lastPromise: null,
-
-    isViewingSubview: Ember.computed('controllers.application.showSettingsMenu', function (key, value) {
-        // Not viewing a subview if we can't even see the PSM
-        if (!this.get('controllers.application.showSettingsMenu')) {
-            return false;
-        }
-        if (arguments.length > 1) {
-            return value;
-        }
-
-        return false;
-    }),
-
     selectedAuthor: null,
+    uploaderReference: null,
+
     initializeSelectedAuthor: function () {
         var self = this;
 
-        return this.get('author').then(function (author) {
+        return this.get('model.author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
         });
     }.observes('model'),
 
     changeAuthor: function () {
-        var author = this.get('author'),
+        var author = this.get('model.author'),
             selectedAuthor = this.get('selectedAuthor'),
             model = this.get('model'),
             self = this;
@@ -46,7 +34,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         model.set('author', selectedAuthor);
 
         // if this is a new post (never been saved before), don't try to save it
-        if (this.get('isNew')) {
+        if (this.get('model.isNew')) {
             return;
         }
 
@@ -74,8 +62,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             .create(deferred);
     }),
 
-    publishedAtValue: Ember.computed('published_at', function () {
-        var pubDate = this.get('published_at');
+    /*jshint unused:false */
+    publishedAtValue: Ember.computed('model.published_at', function (key, value) {
+        var pubDate = this.get('model.published_at');
+
+        // We're using a fake setter to reset
+        // the cache for this property
+        if (arguments.length > 1) {
+            return formatDate(moment());
+        }
 
         if (pubDate) {
             return formatDate(pubDate);
@@ -83,8 +78,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
         return formatDate(moment());
     }),
+    /*jshint unused:true */
 
-    slugValue: boundOneWay('slug'),
+    slugValue: boundOneWay('model.slug'),
 
     // Lazy load the slug generator
     slugGenerator: Ember.computed(function () {
@@ -97,12 +93,12 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     // Requests slug from title
     generateAndSetSlug: function (destination) {
         var self = this,
-            title = this.get('titleScratch'),
+            title = this.get('model.titleScratch'),
             afterSave = this.get('lastPromise'),
             promise;
 
         // Only set an "untitled" slug once per post
-        if (title === '(Untitled)' && this.get('slug')) {
+        if (title === '(Untitled)' && this.get('model.slug')) {
             return;
         }
 
@@ -119,13 +115,13 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         this.set('lastPromise', promise);
     },
 
-    metaTitleScratch: boundOneWay('meta_title'),
-    metaDescriptionScratch: boundOneWay('meta_description'),
+    metaTitleScratch: boundOneWay('model.meta_title'),
+    metaDescriptionScratch: boundOneWay('model.meta_description'),
 
-    seoTitle: Ember.computed('titleScratch', 'metaTitleScratch', function () {
+    seoTitle: Ember.computed('model.titleScratch', 'metaTitleScratch', function () {
         var metaTitle = this.get('metaTitleScratch') || '';
 
-        metaTitle = metaTitle.length > 0 ? metaTitle : this.get('titleScratch');
+        metaTitle = metaTitle.length > 0 ? metaTitle : this.get('model.titleScratch');
 
         if (metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
@@ -136,7 +132,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         return metaTitle;
     }),
 
-    seoDescription: Ember.computed('scratch', 'metaDescriptionScratch', function () {
+    seoDescription: Ember.computed('model.scratch', 'metaDescriptionScratch', function () {
         var metaDescription = this.get('metaDescriptionScratch') || '',
             el,
             html = '',
@@ -172,9 +168,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         return placeholder;
     }),
 
-    seoURL: Ember.computed('slug', function () {
+    seoURL: Ember.computed('model.slug', function () {
         var blogUrl = this.get('config').blogUrl,
-            seoSlug = this.get('slug') ? this.get('slug') : '',
+            seoSlug = this.get('model.slug') ? this.get('model.slug') : '',
             seoURL = blogUrl + '/' + seoSlug;
 
         // only append a slash to the URL if the slug exists
@@ -193,18 +189,18 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
     // observe titleScratch, keeping the post's slug in sync
     // with it until saved for the first time.
     addTitleObserver: function () {
-        if (this.get('isNew') || this.get('title') === '(Untitled)') {
-            this.addObserver('titleScratch', this, 'titleObserver');
+        if (this.get('model.isNew') || this.get('model.title') === '(Untitled)') {
+            this.addObserver('model.titleScratch', this, 'titleObserver');
         }
     }.observes('model'),
 
     titleObserver: function () {
         var debounceId,
-            title = this.get('title');
+            title = this.get('model.title');
 
         // generate a slug if a post is new and doesn't have a title yet or
         // if the title is still '(Untitled)' and the slug is unaltered.
-        if ((this.get('isNew') && !title) || title === '(Untitled)') {
+        if ((this.get('model.isNew') && !title) || title === '(Untitled)') {
             debounceId = Ember.run.debounce(this, 'generateAndSetSlug', ['slug'], 700);
         }
 
@@ -224,10 +220,10 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         togglePage: function () {
             var self = this;
 
-            this.toggleProperty('page');
+            this.toggleProperty('model.page');
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -240,11 +236,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         toggleFeatured: function () {
             var self = this;
 
-            this.toggleProperty('featured');
+            this.toggleProperty('model.featured');
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -258,7 +254,7 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
          * triggered by user manually changing slug
          */
         updateSlug: function (newSlug) {
-            var slug = this.get('slug'),
+            var slug = this.get('model.slug'),
                 self = this;
 
             newSlug = newSlug || slug;
@@ -300,15 +296,15 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
                     }
                 }
 
-                self.set('slug', serverSlug);
+                self.set('model.slug', serverSlug);
 
-                if (self.hasObserverFor('titleScratch')) {
-                    self.removeObserver('titleScratch', self, 'titleObserver');
+                if (self.hasObserverFor('model.titleScratch')) {
+                    self.removeObserver('model.titleScratch', self, 'titleObserver');
                 }
 
                 // If this is a new post.  Don't save the model.  Defer the save
                 // to the user pressing the save button
-                if (self.get('isNew')) {
+                if (self.get('model.isNew')) {
                     return;
                 }
 
@@ -327,13 +323,13 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         setPublishedAt: function (userInput) {
             var errMessage = '',
                 newPublishedAt = parseDateString(userInput),
-                publishedAt = this.get('published_at'),
+                publishedAt = this.get('model.published_at'),
                 self = this;
 
             if (!userInput) {
                 // Clear out the published_at field for a draft
-                if (this.get('isDraft')) {
-                    this.set('published_at', null);
+                if (this.get('model.isDraft')) {
+                    this.set('model.published_at', null);
                 }
 
                 return;
@@ -361,11 +357,11 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             }
 
             // Validation complete
-            this.set('published_at', newPublishedAt);
+            this.set('model.published_at', newPublishedAt);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -377,18 +373,18 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
         setMetaTitle: function (metaTitle) {
             var self = this,
-                currentTitle = this.get('meta_title') || '';
+                currentTitle = this.get('model.meta_title') || '';
 
             // Only update if the title has changed
             if (currentTitle === metaTitle) {
                 return;
             }
 
-            this.set('meta_title', metaTitle);
+            this.set('model.meta_title', metaTitle);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -399,18 +395,18 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
 
         setMetaDescription: function (metaDescription) {
             var self = this,
-                currentDescription = this.get('meta_description') || '';
+                currentDescription = this.get('model.meta_description') || '';
 
             // Only update if the description has changed
             if (currentDescription === metaDescription) {
                 return;
             }
 
-            this.set('meta_description', metaDescription);
+            this.set('model.meta_description', metaDescription);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -422,9 +418,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         setCoverImage: function (image) {
             var self = this;
 
-            this.set('image', image);
+            this.set('model.image', image);
 
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -437,9 +433,9 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
         clearCoverImage: function () {
             var self = this;
 
-            this.set('image', '');
+            this.set('model.image', '');
 
-            if (this.get('isNew')) {
+            if (this.get('model.isNew')) {
                 return;
             }
 
@@ -449,20 +445,16 @@ var PostSettingsMenuController = Ember.ObjectController.extend({
             });
         },
 
-        showSubview: function () {
-            this.set('isViewingSubview', true);
-        },
-
-        closeSubview: function () {
-            this.set('isViewingSubview', false);
-        },
-
         resetUploader: function () {
             var uploader = this.get('uploaderReference');
 
             if (uploader && uploader[0]) {
                 uploader[0].uploaderUi.reset();
             }
+        },
+
+        resetPubDate: function () {
+            this.set('publishedAtValue', '');
         }
     }
 });

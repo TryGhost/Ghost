@@ -1,13 +1,13 @@
 <header class="post-preview-header clearfix">
     {{#link-to "posts" tagName="button" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="page-title">Preview</h2>
-    <button type="button" {{bind-attr class="featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
+    <button type="button" {{bind-attr class="model.featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
         <span class="hidden">Star</span>
     </button>
     <small class="post-published-by">
         <span class="status">{{#if isPublished}}Published{{else}}Written{{/if}}</span>
         <span class="normal">by</span>
-        <span class="author">{{#if author.name}}{{author.name}}{{else}}{{author.email}}{{/if}}</span>
+        <span class="author">{{#if model.author.name}}{{model.author.name}}{{else}}{{model.author.email}}{{/if}}</span>
     </small>
     <section class="post-controls">
         {{#link-to "editor.edit" this class="btn btn-default post-edit"}} Edit{{/link-to}}
@@ -16,7 +16,7 @@
 
 {{#view "content-preview-content-view" tagName="section"}}
     <div class="wrapper">
-        <h1>{{title}}</h1>
-        {{gh-format-html html}}
+        <h1>{{model.title}}</h1>
+        {{gh-format-html model.html}}
     </div>
 {{/view}}

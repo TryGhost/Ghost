@@ -1,20 +1,22 @@
 var ModalDialog = Ember.Component.extend({
     didInsertElement: function () {
-        this.$('.js-modal-container').fadeIn(50);
-
-        this.$('.js-modal-background').show().fadeIn(10, function () {
-            $(this).addClass('in');
-        });
-
-        this.$('.js-modal').addClass('in');
+        this.$('.js-modal-container, .js-modal-background').addClass('fade-in open');
+        this.$('.js-modal').addClass('open');
     },
 
-    willDestroyElement: function () {
-        this.$('.js-modal').removeClass('in');
+    close: function () {
+        var self = this;
 
-        this.$('.js-modal-background').removeClass('in');
+        this.$('.js-modal, .js-modal-background').removeClass('fade-in').addClass('fade-out');
 
-        return this._super();
+        // The background should always be the last thing to fade out, so check on that instead of the content
+        this.$('.js-modal-background').on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+            if (event.originalEvent.animationName === 'fade-out') {
+                self.$('.js-modal, .js-modal-background').removeClass('open');
+            }
+        });
+
+        this.sendAction();
     },
 
     confirmaccept: 'confirmAccept',
@@ -22,15 +24,16 @@ var ModalDialog = Ember.Component.extend({
 
     actions: {
         closeModal: function () {
-            this.sendAction();
+            this.close();
         },
         confirm: function (type) {
             this.sendAction('confirm' + type);
-            this.sendAction();
-        }
+            this.close();
+        },
+        noBubble: Ember.K
     },
 
-    klass: Ember.computed('type', 'style', 'animation', function () {
+    klass: Ember.computed('type', 'style', function () {
         var classNames = [];
 
         classNames.push(this.get('type') ? 'modal-' + this.get('type') : 'modal');
@@ -40,8 +43,6 @@ var ModalDialog = Ember.Component.extend({
                 classNames.push('modal-style-' + style);
             });
         }
-
-        classNames.push(this.get('animation'));
 
         return classNames.join(' ');
     }),
