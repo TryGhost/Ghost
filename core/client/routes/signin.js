@@ -12,13 +12,22 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
         }
     },
 
+    model: function () {
+        return Ember.Object.create({
+            identification: '',
+            password: ''
+        });
+    },
+
     // the deactivate hook is called after a route has been exited.
     deactivate: function () {
         this._super();
 
-        // clear the properties that hold the credentials from the controller
-        // when we're no longer on the signin screen
-        this.controllerFor('signin').setProperties({identification: '', password: ''});
+        var controller = this.controllerFor('signin');
+
+        // clear the properties that hold the credentials when we're no longer on the signin screen
+        controller.set('model.identification', '');
+        controller.set('model.password', '');
     }
 });
 

@@ -89,11 +89,24 @@ var ValidationEngine = Ember.Mixin.create({
     *                   the class that mixes in this mixin.
     */
     validate: function (opts) {
-        var model = opts.model || this,
-            type = this.get('validationType'),
-            validator = this.get('validators.' + type);
-
+        // jscs:disable safeContextKeyword
         opts = opts || {};
+
+        var model = this,
+            type,
+            validator;
+
+        if (opts.model) {
+            model = opts.model;
+        } else if (this instanceof DS.Model) {
+            model = this;
+        } else if (this.get('model')) {
+            model = this.get('model');
+        }
+
+        type = this.get('validationType') || model.get('validationType');
+        validator = this.get('validators.' + type) || model.get('validators.' + type);
+
         opts.validationType = type;
 
         return new Ember.RSVP.Promise(function (resolve, reject) {

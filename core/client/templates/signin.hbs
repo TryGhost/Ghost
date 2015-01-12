@@ -2,12 +2,12 @@
     <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
         <div class="email-wrap">
             <span class="input-icon icon-mail">
-                {{gh-trim-focus-input class="email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" value=identification}}
+                {{gh-trim-focus-input class="email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" value=model.identification}}
             </span>
         </div>
         <div class="password-wrap">
             <span class="input-icon icon-lock">
-                {{input class="password" type="password" placeholder="Password" name="password" value=password}}
+                {{input class="password" type="password" placeholder="Password" name="password" value=model.password}}
             </span>
         </div>
         <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>Log in</button>
