@@ -41,6 +41,7 @@ Router.map(function () {
         this.route('tags');
         this.route('labs');
         this.route('code-injection');
+        this.route('navigation');
     });
 
     // Redirect debug to settings labs
