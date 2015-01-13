@@ -2,8 +2,9 @@
     title="请确认删除这个标签?" confirm=confirm}}
 
     {{#if model.post_count}}
-        <strong>警告:</strong> <span class="red">这个标签被 {{model.post_count}} {{postInflection}} 使用。</span> You're about to delete "<strong>{{model.name}}</strong>". This is permanent! No backups, no restores, no magic undo button. We warned you, ok?
+        <strong>警告:</strong> <span class="red">这个标签被 {{model.post_count}} {{postInflection}} 使用。</span> 
+        		你将删除 "<strong>{{model.name}}</strong>" 标签. 此操作不可恢复，请确认。
     {{else}}
-        <strong>WARNING:</strong> You're about to delete "<strong>{{model.name}}</strong>". This is permanent! No backups, no restores, no magic undo button. We warned you, ok?
+        <strong>警告:</strong> 你将删除 "<strong>{{model.name}}</strong>" 标签. 此操作不可恢复，请确认。
     {{/if}}
 {{/gh-modal-dialog}}

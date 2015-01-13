@@ -6,7 +6,7 @@ var DeleteAllController = Ember.Controller.extend({
             ic.ajax.request(this.get('ghostPaths.url').api('db'), {
                 type: 'DELETE'
             }).then(function () {
-                self.notifications.showSuccess('All content deleted from database.');
+                self.notifications.showSuccess('删除成功');
                 self.store.unloadAll('post');
                 self.store.unloadAll('tag');
             }).catch(function (response) {

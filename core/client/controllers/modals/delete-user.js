@@ -14,7 +14,7 @@ var DeleteUserController = Ember.Controller.extend({
             count: Ember.computed.alias('content'),
 
             inflection: Ember.computed('count', function () {
-                return this.get('count') > 1 ? 'posts' : 'post';
+                return this.get('count') > 1 ? '博文' : '博文';
             })
         }).create({promise: promise});
     }),
@@ -27,9 +27,9 @@ var DeleteUserController = Ember.Controller.extend({
             user.destroyRecord().then(function () {
                 self.store.unloadAll('post');
                 self.transitionToRoute('settings.users');
-                self.notifications.showSuccess('The user has been deleted.', {delayed: true});
+                self.notifications.showSuccess('删除用户成功', {delayed: true});
             }, function () {
-                self.notifications.showError('The user could not be deleted. Please try again.');
+                self.notifications.showError('删除用户失败，请重试');
             });
         },
 
