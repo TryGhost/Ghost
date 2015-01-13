@@ -1,8 +1,6 @@
 <header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}返回{{/link-to}}
     <h2 class="page-title">实验室</h2>
-    <div class="js-settings-header-inner settings-header-inner">
-        {{#link-to 'settings' class='btn btn-default btn-back'}}返回{{/link-to}}
-    </div>
 </header>
 
 
@@ -45,6 +43,25 @@
                 <p>Sends a test email to your address.</p>
             </div>
         </fieldset>
+    </form> -->
+
+    <hr>
+
+    <form>
+        <fieldset>
+            {{#unless codeUIFlag}}
+            <div class="form-group for-checkbox">
+                <label for="labs-codeInjectionUI">自定义代码</label>
+                <label class="check box" for="labs-codeInjectionUI">
+                    {{input id="labs-codeInjectionUI" name="labs[codeInjectionUI]" type="checkbox"
+                    checked=useCodeInjectionUI}}
+                    <span class="input-toggle-component"></span>
+                    <p>开启自定义代码功能</p>
+                </label>
+                <p> 开启后可以自定义网页头部和尾部代码。(预览版)</p>
+            </div>
+            {{/unless}}
+        </fieldset>
     </form>
-    -->
+
 </section>

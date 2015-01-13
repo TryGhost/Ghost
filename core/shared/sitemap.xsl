@@ -95,7 +95,7 @@
                         </table>
                     </xsl:if>
                     <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &lt; 1">
-                        <p class="desc"><a href="/sitemap.xml" class="back-link">&#8592; Back to index</a></p>
+                        <p class="desc"><a href="{{blog-url}}/sitemap.xml" class="back-link">&#8592; Back to index</a></p>
                         <table id="sitemap" cellpadding="3">
                             <thead>
                                 <tr>
@@ -135,23 +135,9 @@
                                 </xsl:for-each>
                             </tbody>
                         </table>
-                        <p class="desc"><a href="/sitemap.xml" class="back-link">&#8592; Back to index</a></p>
+                        <p class="desc"><a href="{{blog-url}}/sitemap.xml" class="back-link">&#8592; Back to index</a></p>
                     </xsl:if>
                 </div>
-                <script type="text/javascript">
-                    <![CDATA[
-                    window.onload = function() {
-                        var sitemapIndex = window.location.href.replace(/sitemap-.*\.xml$/, 'sitemap.xml'),
-                            links = document.querySelectorAll('.back-link'),
-                            i;
-                        if (links.length > 0) {
-                            for (i = 0; i < links.length; ++i) {
-                                links[i].href = sitemapIndex;
-                            }
-                        }
-                    };
-                    ]]>
-                </script>
             </body>
         </html>
 

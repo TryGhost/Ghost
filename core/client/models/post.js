@@ -19,10 +19,16 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     author: DS.belongsTo('user',  {async: true}),
     author_id: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
+    updated_by: DS.attr(),
     published_at: DS.attr('moment-date'),
     published_by: DS.belongsTo('user', {async: true}),
+    created_at: DS.attr('moment-date'),
+    created_by: DS.attr(),
     tags: DS.hasMany('tag', {embedded: 'always'}),
     url: DS.attr('string'),
+
+    scratch: null,
+    titleScratch: null,
 
     // Computed post properties
 

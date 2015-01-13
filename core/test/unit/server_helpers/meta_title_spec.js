@@ -84,6 +84,26 @@ describe('{{meta_title}} helper', function () {
         }).catch(done);
     });
 
+    it('uses tag meta_title to override default response on tag page', function (done) {
+        var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}};
+        helpers.meta_title.call(tag).then(function (rendered) {
+            should.exist(rendered);
+            String(rendered).should.equal('Sasper Red');
+
+            done();
+        }).catch(done);
+    });
+
+    it('uses tag meta_title to override default response on paginated tag page', function (done) {
+        var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}};
+        helpers.meta_title.call(tag).then(function (rendered) {
+            should.exist(rendered);
+            String(rendered).should.equal('Sasper Red');
+
+            done();
+        }).catch(done);
+    });
+
     it('returns correct title for an author page', function (done) {
         var author = {relativeUrl: '/author/donald', author: {name: 'Donald Duck'}};
         helpers.meta_title.call(author).then(function (rendered) {

@@ -1,6 +1,12 @@
-{{#view "settings/users/users-list-view"}}
+{{#view "settings/users/users-list-view" class="users-list-wrapper js-users-list-view"}}
     <header class="settings-view-header user-list-header">
-        {{#link-to "settings" class="btn btn-default btn-back"}}返回{{/link-to}}
+
+        {{#if session.user.isEditor}}
+            {{#link-to "content" class="btn btn-default btn-back"}}返回{{/link-to}}
+        {{else}}
+            {{#link-to "settings" class="btn btn-default btn-back"}}返回{{/link-to}}
+        {{/if}}
+
         <h2 class="page-title">用户列表</h2>
         <section class="page-actions">
             <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >邀请用户</button>
@@ -22,10 +28,11 @@
                     <div class="user-list-item-body">
 
                         <span class="name">{{user.email}}</span><br>
-                            {{#if user.pending}}
+
+                            {{#if user.model.pending}}
                                 <span class="red">邀请发送失败 - 请重试</span>
                             {{else}}
-                                <span class="description">邀请已发送: {{user.created_at}}</span>
+                                <span class="description">邀请已发送: {{user.model.created_at}}</span>
                             {{/if}}
                     </div>
                     <aside class="user-list-item-aside">
@@ -47,20 +54,20 @@
         {{#each user in activeUsers itemController="settings/users/user"}}
             {{#link-to 'settings.users.user' user class="user-list-item" }}
                 <span class="user-list-item-figure" {{bind-attr style=user.image}}>
-                    <span class="hidden">{{unbound user.name}}的头像</span>
+                    <span class="hidden">{{unbound user.model.name}}的头像</span>
                 </span>
 
                 <div class="user-list-item-body">
                     <span class="name">
-                        {{user.name}}
+                        {{user.model.name}}
                     </span>
                     <br>
 
                     <span class="description">{{unbound user.last_login}}登录</span>
                 </div>
                 <aside class="user-list-item-aside">
-                    {{#unless user.isAuthor}}
-                        {{#each role in user.roles}}
+                    {{#unless user.model.isAuthor}}
+                        {{#each role in user.model.roles}}
                             <span class="role-label {{unbound role.lowerCaseName}}">{{role.name}}</span>
                         {{/each}}
                     {{/unless}}

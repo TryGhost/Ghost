@@ -1,0 +1,31 @@
+{"db":[{
+    "meta": {
+        "exported_on": 1388318311015,
+        "version": "003"
+    },
+    "data": {
+        "posts": [
+            {
+                "id": 1,
+                "title": "Welcome to Ghost",
+                "slug": "welcome-to-ghost",
+                "markdown": "You're live! Nice.",
+                "html": "<p>You're live! Nice.</p>",
+                "image": null,
+                "featured": 0,
+                "page": 0,
+                "status": "published",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "author_id": 2,
+                "created_at": 1388318310782,
+                "created_by": 1,
+                "updated_at": 1388318310782,
+                "updated_by": 1,
+                "published_at": 1388318310783,
+                "published_by": 2
+            }
+        ]
+    }
+}]}

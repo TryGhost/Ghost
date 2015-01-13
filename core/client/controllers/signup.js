@@ -1,7 +1,7 @@
 import ajax from 'ghost/utils/ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var SignupController = Ember.ObjectController.extend(ValidationEngine, {
+var SignupController = Ember.Controller.extend(ValidationEngine, {
     submitting: false,
 
     // ValidationEngine settings
@@ -10,7 +10,8 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
     actions: {
         signup: function () {
             var self = this,
-                data = self.getProperties('name', 'email', 'password', 'token');
+                model = this.get('model'),
+                data = model.getProperties('name', 'email', 'password', 'token');
 
             self.notifications.closePassive();
 
@@ -30,8 +31,8 @@ var SignupController = Ember.ObjectController.extend(ValidationEngine, {
                     }
                 }).then(function () {
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
-                        identification: self.get('email'),
-                        password: self.get('password')
+                        identification: self.get('model.email'),
+                        password: self.get('model.password')
                     });
                 }, function (resp) {
                     self.toggleProperty('submitting');

@@ -11,13 +11,14 @@
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=activeTag.image uploaderReference=uploaderReference tagName="section"}}
             <form>
                 <div class="form-group">
-                    <label>Tag Name</label>
+                    <label>Name</label>
                     {{gh-input type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
                 </div>
 
                 <div class="form-group">
-                    <label>Slug</label>{{!--@TODO show full url preview, not just slug--}}
+                    <label>URL</label>
                     {{gh-input type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                    {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
                 </div>
 
                 <div class="form-group">
@@ -35,7 +36,7 @@
                 </ul>
 
                 {{#unless activeTag.isNew}}
-                    <button type="button" class="btn btn-red icon-trash" {{action "deleteTag" activeTag}}>Delete Tag</button>
+                    <button type="button" class="btn btn-link btn-sm tag-delete-button icon-trash" {{action "openModal" "delete-tag" activeTag}}>Delete Tag</button>
                 {{/unless}}
             </form>
         </div>
@@ -69,6 +70,7 @@
                         <div class="seo-preview-link">{{seoURL}}</div>
                         <div class="seo-preview-description">{{seoDescription}}</div>
                     </div>
+                </div>
                 </form>
             </div>{{! .settings-menu-content }}
         {{/gh-tab-pane}}

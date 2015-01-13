@@ -4,11 +4,22 @@
 // Styles for the Users list page
 // Slug: /ghost/settings/users/
 //
+// * Container
 // * Users List
 // * Role Labels
 // * User Actions
 // * Invite User Modal
 // ------------------------------------------------------------
+
+
+//
+// Wrapper
+// --------------------------------------------------
+
+.users-list-wrapper {
+    overflow: auto;
+    height: 100%;
+}
 
 
 //
@@ -204,10 +215,6 @@ a.user-list-item {
 
     .modal-body {
         @include clearfix;
-
-        fieldset {
-            margin: 1em 0 0 0;
-        }
     }
 
     .form-group {

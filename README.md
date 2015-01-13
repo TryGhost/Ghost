@@ -7,9 +7,11 @@ Ghost是迄今为止最好用的开源博客平台。Ghost博客由前WordPress�
 
 Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主导开发和在中国区推广。中文版代码将在与官方版保持一致的前提下，加入一些特有功能。 比如：可以将博文转换成长微博，自动发布到用户绑定的微博上； 可以与用户的公众账号关联，自动生成图文消息并推送等等。
 
+
 如果你是NodeJS开发者，并热衷于开源软件，欢迎与我们一起共同改进、推广Ghost，让Ghost在中国落地，让更多人可以享受写作的乐趣。
 
 [欢迎访问Ghost中文版官方网站](http://ghost.diancloud.com)
+
 
 
 
@@ -24,14 +26,14 @@ Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主
 2. **Docker Image** 
 你可以在装有Docker的服务器上，运行docker run 命令即可。[安装文档](https://github.com/diancloud/Ghost/wiki/Docker-Image)
 
-    docker run -d  -p 80:2368 --name=diancloud-ghost  diancloud/ghost:0.5.7-zh
+    docker run -d  -p 80:2368 --name=diancloud-ghost  diancloud/ghost:0.5.8-zh
     
 
 3. **源码安装**
-下载已发布版本的源码包，使用 npm install 命令安装。[立即下载Ghost-0.5.7-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.7-zh.zip)
+下载已发布版本的源码包，使用 npm install 命令安装。[立即下载Ghost-0.5.8-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.8-zh.zip)
 
  * 安装NodeJS。 [安装文档](https://github.com/joyent/node/wiki/Installation)
- * 下载Ghost代码。 [即下载Ghost-0.5.7-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.7-zh.zip)
+ * 下载Ghost代码。 [即下载Ghost-0.5.8-zh](http://cdn.diancloud.com/ghost/releases/Ghost-0.5.8-zh.zip)
  * 解压源码。
  * 进入代码目录运行  `npm install --production`
  * 在代码目录运行 `npm start --production` 
@@ -46,12 +48,10 @@ Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主
 请参考官方中文版手册。 http://ghost.diancloud.com/doc/zh/usage/
 
 
-
 ## 参与改进
 ( 中文版计划, 如何参与改进等 待完善 ）
 
 
 ## Copyright & License
 
-Copyright (c) 2013-2014 Ghost Foundation - Released under the [MIT license](LICENSE).
-
+Copyright (c) 2013-2015 Ghost Foundation - Released under the [MIT license](LICENSE).

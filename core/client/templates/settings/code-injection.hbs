@@ -18,13 +18,13 @@
             <div class="form-group">
                 <label for="ghost-head">网页头部</label>
                 <p>这部分代码将插入到 &lt;head&gt; &lt;/head&gt; 标签之间</p>
-                {{textarea id="ghost-head" name="codeInjection[ghost_head]" type="text" value=ghost_head}}
+                {{textarea id="ghost-head" name="codeInjection[ghost_head]" type="text" value=model.ghost_head}}
             </div>
 
             <div class="form-group">
                 <label for="ghost-foot">网页尾部</label>
-                <p>这部分代码将插入到页尾</p>
-                {{textarea id="ghost-foot" name="codeInjection[ghost_foot]" type="text" value=ghost_foot}}
+                <p>这部分代码将插入到 &lt;head&gt; &lt;/head&gt; 标签之间</p>
+                {{textarea id="ghost-foot" name="codeInjection[ghost_foot]" type="text" value=model.ghost_foot}}
             </div>
         </fieldset>
     </form>

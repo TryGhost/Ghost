@@ -143,6 +143,23 @@
         height: 108px;
     }
 
+    .tag-delete-button {
+        padding-left: 0;
+        color: $red;
+
+        &:before {
+            margin-right: 4px;
+            top: -1px;
+            position: relative;
+        }
+
+        &:hover {
+            &, &:before {
+                color: darken($red, 10%);
+            }
+        }
+    }
+
     .nav-list {
         margin-top: 3rem;
     }

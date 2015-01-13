@@ -1,6 +1,38 @@
 var LabsController = Ember.Controller.extend(Ember.Evented, {
+
+    needs: ['feature'],
     uploadButtonText: '导入',
     importErrors: '',
+    labsJSON: Ember.computed('model.labs', function () {
+        return JSON.parse(this.get('model.labs') || {});
+    }),
+
+    saveLabs: function (optionName, optionValue) {
+        var self = this,
+            labsJSON =  this.get('labsJSON');
+
+        // Set new value in the JSON object
+        labsJSON[optionName] = optionValue;
+
+        this.set('model.labs', JSON.stringify(labsJSON));
+
+        this.get('model').save().catch(function (errors) {
+            self.showErrors(errors);
+            self.get('model').rollback();
+        });
+    },
+
+    codeUIFlag: Ember.computed.alias('config.codeInjectionUI'),
+
+    useCodeInjectionUI: Ember.computed('controllers.feature.codeInjectionUI', function (key, value) {
+        // setter
+        if (arguments.length > 1) {
+            this.saveLabs('codeInjectionUI', value);
+        }
+
+        // getter
+        return this.get('controllers.feature.codeInjectionUI') || false;
+    }),
 
     actions: {
         onUpload: function (file) {
@@ -21,7 +53,16 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
                 contentType: false,
                 processData: false
             }).then(function () {
+
+                // Clear the store, so that all the new data gets fetched correctly.
+                self.store.unloadAll('post');
+                self.store.unloadAll('tag');
+                self.store.unloadAll('user');
+                self.store.unloadAll('role');
+                self.store.unloadAll('setting');
+                self.store.unloadAll('notification');
                 self.notifications.showSuccess('导入成功');
+
             }).catch(function (response) {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
                     self.set('importErrors', response.jqXHR.responseJSON.errors);

@@ -11,17 +11,18 @@
         <fieldset>
 
             <div class="form-group">
+
                 <label for="blog-title">博客名称</label>
-                {{input id="blog-title" name="general[title]" type="text" value=title}}
+                {{input id="blog-title" name="general[title]" type="text" value=model.title}}
                 <p>为你的博客取一个好听的名字</p>
             </div>
 
             <div class="form-group description-container">
                 <label for="blog-description">博客简介</label>
-                {{textarea id="blog-description" name="general[description]" value=description}}
+                {{textarea id="blog-description" name="general[description]" value=model.description}}
                 <p>
                     简单介绍一下你的博客
-                    {{gh-count-characters description}}
+                    {{gh-count-characters model.description}}
                 </p>
 
             </div>
@@ -29,8 +30,8 @@
 
         <div class="form-group">
             <label for="blog-logo">博客 LOGO</label>
-            {{#if logo}}
-                <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=logo}} alt="logo"></button>
+            {{#if model.logo}}
+                <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=model.logo}} alt="logo"></button>
             {{else}}
                 <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>上传图片</button>
             {{/if}}
@@ -38,9 +39,10 @@
         </div>
 
         <div class="form-group">
+
             <label for="blog-cover">博客封面</label>
-            {{#if cover}}
-                <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=cover}} alt="cover photo"></button>
+            {{#if model.cover}}
+                <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=model.cover}} alt="封面图片"></button>
             {{else}}
                 <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>上传图片</button>
             {{/if}}
@@ -49,15 +51,17 @@
 
         <fieldset>
             <div class="form-group">
+
                 <label for="email-address">邮箱</label>
-                {{input id="email-address" name="general[email-address]" type="email" value=email autocapitalize="off" autocorrect="off"}}
+                {{input id="email-address" name="general[email-address]" type="email" value=model.email autocapitalize="off" autocorrect="off"}}
                 <p>用来接收Ghost博客发出的重要通知</p>
             </div>
 
             <div class="form-group">
                 <label for="postsPerPage">每页显示博文</label>
                 {{! `pattern` brings up numeric keypad allowing any number of digits}}
-                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
+
+                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
                 <p>设置每页显示博文数量。</p>
             </div>
 
@@ -79,7 +83,7 @@
                        content=themes
                        optionValuePath="content.name"
                        optionLabelPath="content.label"
-                       value=activeTheme
+                       value=model.activeTheme
                        selection=selectedTheme}}
                </span>
                 <p>选择一个你喜欢的博客主题</p>

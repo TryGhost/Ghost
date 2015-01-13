@@ -44,6 +44,32 @@ describe('{{#has}} helper', function () {
         inverse.called.should.be.false;
     });
 
+    it('should match exact tags, not superstrings', function () {
+        var fn = sinon.spy(),
+            inverse = sinon.spy();
+
+        helpers.has.call(
+            {tags: [{name: 'magical'}]},
+            {hash: {tag: 'magic'}, fn: fn, inverse: inverse}
+        );
+
+        fn.called.should.be.false;
+        inverse.called.should.be.true;
+    });
+
+    it('should match exact tags, not substrings', function () {
+        var fn = sinon.spy(),
+            inverse = sinon.spy();
+
+        helpers.has.call(
+            {tags: [{name: 'magic'}]},
+            {hash: {tag: 'magical'}, fn: fn, inverse: inverse}
+        );
+
+        fn.called.should.be.false;
+        inverse.called.should.be.true;
+    });
+
     it('should handle tag list that validates false', function () {
         var fn = sinon.spy(),
             inverse = sinon.spy();
