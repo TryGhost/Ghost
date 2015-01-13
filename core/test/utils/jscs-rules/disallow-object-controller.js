@@ -22,7 +22,7 @@ module.exports.prototype = {
         var lines = file.getLines();
 
         lines.forEach(function (line, index) {
-            var location = line.indexOf(/ObjectController.extend/);
+            var location = line.indexOf('ObjectController.extend');
 
             if (location !== -1) {
                 errors.add('Ember.ObjectController is deprecated, please use Ember.Controller and access model properties directly.', index + 1, location + 1);
