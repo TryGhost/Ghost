@@ -1,0 +1,40 @@
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">Navigation</h2>
+    <section class="page-actions">
+        <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
+    </section>
+</header>
+
+<section class="content settings-navigation">
+    <form id="settings-navigation" novalidate="novalidate">
+
+        {{#each navItem in navigationJSON}}
+            <div class="navigation-item">
+                <button type="button" class="navigation-item-drag-handle icon-grab">
+                    <span class="hidden">Reorder</span>
+                </button>
+                <div class="navigation-inputs">
+                    <span class="navigation-item-label">
+                        <input type="text" {{bind-attr value=navItem.label}} placeholder="Label">
+                    </span>
+                    <span class="navigation-item-url">
+                        <input type="text" {{bind-attr value=navItem.url}} placeholder="http://my-ghost-blog.com/">
+                    </span>
+                </div>
+                <span class="navigation-item-action">
+                    {{#if navItem.last}}
+                        <button type="button" class="add-navigation-link icon-add" {{action 'addItem'}}>
+                            <span class="hidden">Add</span>
+                        </button>
+                    {{else}}
+                        <button type="button" class="navigation-delete icon-trash" {{action 'deleteItem' navItem}}>
+                            <span class="hidden">Delete</span>
+                        </button>
+                    {{/if}}
+                </span>
+            </div>
+        {{/each}}
+
+    </form>
+</section>

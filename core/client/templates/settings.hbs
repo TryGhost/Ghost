@@ -19,6 +19,10 @@
                 {{gh-activating-list-item route="settings.tags" title="Tags" classNames="settings-nav-tags icon-tag"}}
             {{/if}}
 
+            {{#if showNavigation}}
+                {{gh-activating-list-item route="settings.navigation" title="Navigation" classNames="settings-nav-navigation icon-compass"}}
+            {{/if}}
+
             {{#if showCodeInjection}}
                 {{gh-activating-list-item route="settings.code-injection" title="Code Injection" classNames="settings-nav-code icon-code"}}
             {{/if}}

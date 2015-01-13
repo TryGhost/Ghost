@@ -17,7 +17,8 @@ var Setting = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     availableThemes: DS.attr(),
     ghost_head: DS.attr('string'),
     ghost_foot: DS.attr('string'),
-    labs: DS.attr('string')
+    labs: DS.attr('string'),
+    navigation: DS.attr('string')
 });
 
 export default Setting;
