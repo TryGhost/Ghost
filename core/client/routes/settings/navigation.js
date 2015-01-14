@@ -19,8 +19,10 @@ var NavigationRoute = AuthenticatedRoute.extend(CurrentUserSettings, {
         });
     },
 
-    setupController: function (controller, model) {
-        this._super(controller, model);
+    actions: {
+        save: function () {
+            this.get('controller').send('save');
+        }
     }
 });
 
