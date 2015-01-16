@@ -492,6 +492,27 @@ describe('Users API', function () {
                         done();
                     }).catch(done);
             });
+
+            it('Can add two users with the same local-part in their email addresses', function (done) {
+                newUser.roles = [roleIdFor.author];
+
+                UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                    .then(function (response) {
+                        checkAddResponse(response);
+                        response.users[0].id.should.eql(8);
+                        response.users[0].roles[0].name.should.equal('Author');
+                    }).then(function () {
+                        newUser.email = newUser.email.split('@')[0] + '@someotherdomain.com';
+                        return UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
+                            .then(function (response) {
+                                checkAddResponse(response);
+                                response.users[0].id.should.eql(9);
+                                response.users[0].roles[0].name.should.equal('Author');
+
+                                done();
+                            });
+                    }).catch(done);
+            });
         });
 
         describe('Editor', function () {
