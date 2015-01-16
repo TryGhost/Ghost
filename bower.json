@@ -1,7 +1,6 @@
 {
   "name": "ghost",
   "dependencies": {
-    "codemirror": "4.0.1",
     "Countable": "2.0.2",
     "device": "git://github.com/matthewhudson/device.js#5347a275b66020a0d4dfe9aad81a488f8cce448d",
     "ember": "1.9.0",
@@ -10,6 +9,7 @@
     "ember-resolver": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git#181251821cf513bb58d3e192faa13245a816f75e",
     "ember-simple-auth": "0.7.2",
     "fastclick": "1.0.0",
+    "google-caja": "5669.0.0",
     "handlebars": "2.0.0",
     "ic-ajax": "1.0.1",
     "jquery": "1.11.0",
@@ -22,9 +22,9 @@
     "nanoscroller": "0.8.4",
     "normalize-scss": "~3.0.1",
     "nprogress": "0.1.2",
+    "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.4",
-    "validator-js": "3.26.0",
-    "google-caja": "5669.0.0"
+    "validator-js": "3.26.0"
   },
   "devDependencies": {
     "ember-mocha": "~0.1.4",

@@ -174,113 +174,51 @@
 //
 // Editor
 // --------------------------------------------------
-
 .editor {
     .entry-markdown-content {
-        textarea {
-            border: 0;
-            width: 100%;
-            min-height: auto;
-            height: 100%;
-            max-width: 100%;
-            margin: 0;
-            padding: 10px 20px 50px 20px;
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            -webkit-overflow-scrolling: touch;
-
-            &:focus {
-                outline: 0;
-            }
-
-            @media (max-width: 600px) {
-                padding: 10px;
-            }
-
-            @media (min-width: 601px) and (max-width: 1000px) {
-                padding: 15px;
-            }
-
-            @media (min-width: 1001px) {
-                top: 40px;
-            }
-
-            @media (max-height: 560px) {
-                height: calc(100% - 5px);
-            }
-        }//textarea
-    }//.entry-markdown-content
-
-    .CodeMirror {
-        height: auto;
         position: absolute;
         top: 0;
-        left: 0;
         right: 0;
         bottom: 0;
-
-        pre {
-            font-size: 1.6rem;
-            line-height: 1.56em;
-            font-family: $font-family-mono;
-            color: lighten($darkgrey, 10%);
-        }
-
-        .CodeMirror-focused,
-        .CodeMirror-selected {
-            color: $darkgrey;
-            background: lighten($blue, 20%);
-            text-shadow: none;
-        }
-
-        ::selection {
-            color: $darkgrey;
-            background: lighten($blue, 20%);
-            text-shadow: none;
-        }
+        left: 0;
     }
 
-    .CodeMirror-lines {
-        padding-top: 65px; /* Vertical padding around content */
-        @media (max-width: 1000px) {padding-top: 25px;}
-        @media (max-width: 400px) {padding: 15px 0;}
-    }
+    .markdown-editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
 
-    .CodeMirror pre {
-        padding: 0 40px; /* Horizontal padding of content */
-        @media (max-width: 400px) {padding: 0 15px;}
-    }
+        height: 100%;
+        max-width: 100%;
 
-    .cm-header {
-        color: #3c4043;
-        font-size: 1.4em;
-        line-height: 1.4em;
-        font-weight: bold;
-    }
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
 
-    .cm-variable-2,
-    .cm-variable-3,
-    .cm-keyword {
+        resize: none;
+        border: 0;
+
+        font-size: 1.6rem;
+        line-height: 2.5rem;
+        font-family: $font-family-mono;
         color: lighten($darkgrey, 10%);
-    }
 
+        &:focus {
+            outline: 0;
+        }
 
-    .cm-strong,
-    .cm-comment,
-    .cm-quote,
-    .cm-number,
-    .cm-atom,
-    .cm-tag {
-        color: #3c4043;
-        font-weight: bold;
-    }
+        @media (max-width: 450px) {
+            padding: 15px;
+        }
 
-    .cm-string,
-    .cm-link {
-        color: #3c4043;
+        @media (min-width: 451px) and (max-width: 1000px) {
+            padding: 20px;
+        }
+
+        @media (min-width: 1001px) {
+            padding: 62px 20px 36px 20px;
+        }
     }
 
     .entry-preview {
@@ -300,7 +238,7 @@
         right: 0;
         bottom: 0;
         left: 0;
-        padding: 60px 40px 40px 40px;
+        padding: 60px 40px 37px 40px;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
         word-break: break-word;
@@ -328,14 +266,29 @@
                     display: none;
                 }
             }
-
-            .CodeMirror-scroll,
-            .entry-preview-content {
+        }
+        .entry-preview-content {
+            @media (max-width: 1000px) {
                 box-shadow: 0 5px 5px rgba(0,0,0,0.05) inset;
             }
         }
     }
 }//.editor
+
+
+
+//
+// Firefox Editor Hacks
+// --------------------------------------------------
+@-moz-document url-prefix() {
+    .editor .markdown-editor {
+        padding-top: 0;
+        padding-bottom: 0;
+        top: 40px;
+        height: calc(100% - 40px);
+    }
+}
+
 
 
 //
@@ -422,7 +375,7 @@
     font-weight: bold;
     font-size: 1.6rem;
     text-align: center;
-}
+}//.entry-preview-content, .content-preview-content
 
 
 //
@@ -606,14 +559,6 @@ body.zen {
         position: absolute;
         bottom: 49px;
         right: 0;
-
-        &.fade-in-scale {
-            animation-duration: 0.1s;
-        }
-
-        &.fade-out {
-            animation-duration: 0.01s;
-        }
 
         .dropdown-menu {
             top: auto;

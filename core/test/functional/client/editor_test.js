@@ -40,7 +40,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     // Part 2: Test saving with data
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title, {reset: true});
-        casper.writeContentToCodeMirror(testPost.html);
+        casper.writeContentToTextEditor(testPost.html);
     });
 
     // TODO: Expand markdown tests to cover more markdown, and keyboard shortcuts
@@ -70,9 +70,10 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
         trimmedTitle = 'test title';
 
     casper.then(function populateTitle() {
-        // Clear element
+        // Clear elements
         casper.evaluate(function () {
             $('#entry-title').val('');
+            $('.entry-markdown-content textarea').val('');
         });
         casper.sendKeys('#entry-title', untrimmedTitle);
         casper.click('#entry-markdown-content');
@@ -88,7 +89,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     });
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('test');
+        casper.writeContentToTextEditor('test');
     });
 
     casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
@@ -96,7 +97,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     });
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('test'); // append another word, assumes newline
+        casper.writeContentToTextEditor('\ntest'); // append another word
     });
 
     casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
@@ -104,7 +105,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     });
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('even **more** words'); // append another word, assumes newline
+        casper.writeContentToTextEditor('\neven **more** words'); // append another word
     });
 
     casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
@@ -154,15 +155,15 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
     // Test standard image upload modal
     casper.then(function testImage() {
-        casper.writeContentToCodeMirror('![some text]()');
+        casper.writeContentToTextEditor('![some text]()');
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
         test.assertEvalEquals(function () {
-            return document.querySelector('.CodeMirror-wrap textarea').value;
+            return document.querySelector('.entry-markdown-content textarea').value;
         }, '![some text]()', 'Editor value is correct');
 
-        test.assertHTMLEquals('<section id=\"image_upload_1\" class=\"js-drop-zone image-uploader\">' +
+        test.assertHTMLEquals('<section class=\"js-drop-zone image-uploader\">' +
         '<span class=\"media\"><span class=\"hidden\">Image Upload</span></span>' +
         '<img class=\"js-upload-target\" style=\"display: none; \" src=\"\">' +
         '<div class=\"description\">Add image of <strong>some text</strong></div>' +
@@ -207,7 +208,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
     casper.then(function () {
         var markdownImageString = '![](' + testFileLocation + ')';
-        casper.writeContentToCodeMirror(markdownImageString);
+        casper.writeContentToTextEditor(markdownImageString);
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
@@ -227,7 +228,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     });
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('![]()');
+        casper.writeContentToTextEditor('![]()');
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.image-uploader', function onSuccess() {
@@ -239,7 +240,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
         casper.thenClick('.js-button-accept.btn-blue');
     });
 
-    casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
+    casper.waitForSelector('.entry-preview .js-drop-zone.image-uploader', function onSuccess() {
         var imageJQuerySelector = '.entry-preview img.js-upload-target[src="' + imageURL + '"]';
         test.assertExists(imageJQuerySelector, 'Uploaded image tag properly links to inputted image URL');
     });
@@ -260,7 +261,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     casper.thenClick('.content-preview a.post-edit');
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('abcdefghijklmnopqrstuvwxyz');
+        casper.writeContentToTextEditor('abcdefghijklmnopqrstuvwxyz');
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
@@ -323,7 +324,7 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     // Fill headline and content
     casper.then(function fillContent() {
         casper.sendKeys('#entry-title', 'Headline');
-        casper.writeContentToCodeMirror('Just a bit of test text');
+        casper.writeContentToTextEditor('Just a bit of test text');
     });
 
     casper.then(function switchMenuToPublish() {
@@ -374,7 +375,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
 
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
-        casper.writeContentToCodeMirror(testPost.html);
+        casper.writeContentToTextEditor(testPost.html);
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
@@ -579,7 +580,7 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
     // Fill title and content
     casper.then(function writePost() {
         casper.sendKeys('#entry-title', 'a valid title');
-        casper.writeContentToCodeMirror('body content');
+        casper.writeContentToTextEditor('body content');
     });
 
     // save
@@ -659,7 +660,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
     // add a new post
     casper.then(function fillContent() {
         casper.sendKeys('#entry-title', 'post title', {reset: true});
-        casper.writeContentToCodeMirror('Just a bit of test text');
+        casper.writeContentToTextEditor('Just a bit of test text');
     });
 
     // save draft
@@ -706,7 +707,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
     // add a new post
     casper.then(function fillContent() {
         casper.sendKeys('#entry-title', 'post title');
-        casper.writeContentToCodeMirror('Just a bit of test text');
+        casper.writeContentToTextEditor('Just a bit of test text');
     });
 
     // save draft
@@ -716,7 +717,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
 
     // change the content
     casper.then(function updateContent() {
-        casper.writeContentToCodeMirror('updated content');
+        casper.writeContentToTextEditor('updated content');
         casper.click('#entry-title');
     });
 

@@ -22,11 +22,11 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
             Ember.$('body').toggleClass('zen');
         },
 
-        // The actual functionality is implemented in utils/codemirror-shortcuts
-        codeMirrorShortcut: function (options) {
+        // The actual functionality is implemented in utils/text-editor-shortcuts
+        textEditorShortcut: function (options) {
             // Only fire editor shortcuts when the editor has focus.
-            if (Ember.$('.CodeMirror.CodeMirror-focused').length > 0) {
-                this.get('controller.codemirror').shortcut(options.type);
+            if (this.get('controller.textEditor').$().is(':focus')) {
+                this.get('controller.textEditor').shortcut(options.type);
             }
         },
 
