@@ -58,7 +58,7 @@ describe('Import', function () {
     });
 
     describe('Sanitizes', function () {
-        before(function ()  {
+        before(function () {
             knex = config.database.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
@@ -122,7 +122,7 @@ describe('Import', function () {
     });
 
     describe('DataImporter', function () {
-        before(function ()  {
+        before(function () {
             knex = config.database.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
@@ -337,7 +337,7 @@ describe('Import', function () {
     });
 
     describe('002', function () {
-        before(function ()  {
+        before(function () {
             knex = config.database.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
@@ -507,7 +507,7 @@ describe('Import', function () {
     });
 
     describe('003', function () {
-        before(function ()  {
+        before(function () {
             knex = config.database.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));

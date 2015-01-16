@@ -1,8 +1,6 @@
 var MarkerManager = Ember.Mixin.create({
-    // jscs:disable
     imageMarkdownRegex: /^(?:\{<(.*?)>\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
     markerRegex: /\{<([\w\W]*?)>\}/,
-    // jscs:enable
 
     uploadId: 1,
 
@@ -164,9 +162,7 @@ var MarkerManager = Ember.Mixin.create({
         var editor = this.get('codemirror'),
             ln = editor.getLineNumber(line),
 
-            // jscs:disable
             markerRegex = /\{<([\w\W]*?)>\}/,
-            // jscs:enable
 
             markerText = line.text.match(markerRegex);
 

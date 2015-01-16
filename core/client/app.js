@@ -8,7 +8,7 @@ Ember.MODEL_FACTORY_INJECTIONS = true;
 
 var App = Ember.Application.extend({
     modulePrefix: 'ghost',
-    Resolver: Resolver['default']
+    Resolver: Resolver.default
 });
 
 // Runtime configuration of Ember.Application
