@@ -9,12 +9,10 @@ var url,
  * URLs are allowed if they start with http://, https://, or /.
  */
 url = function (url) {
-    // jscs:disable
     url = url.toString().replace(/['"]+/g, '');
     if (/^https?:\/\//.test(url) || /^\//.test(url)) {
         return url;
     }
-    // jscs:enable
 };
 
 /**

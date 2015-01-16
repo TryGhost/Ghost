@@ -320,9 +320,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             var editor = this.get('codemirror'),
                 line = this.findLine(Ember.$(e.currentTarget).attr('id')),
                 lineNumber = editor.getLineNumber(line),
-                // jscs:disable
                 match = line.text.match(/\([^\n]*\)?/),
-                // jscs:enable
                 replacement = '(http://)';
 
             if (match) {
@@ -332,9 +330,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                     {line: lineNumber, ch: match.index + match[0].length - 1}
                 );
             } else {
-                // jscs:disable
                 match = line.text.match(/\]/);
-                // jscs:enable
                 if (match) {
                     editor.replaceRange(
                         replacement,
