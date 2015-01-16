@@ -5,12 +5,10 @@ var formatHTML = Ember.Handlebars.makeBoundHelper(function (html) {
     var escapedhtml = html || '';
 
     // replace script and iFrame
-    // jscs:disable
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
         '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
     escapedhtml = escapedhtml.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
         '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
-    // jscs:enable
 
     // sanitize HTML
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers

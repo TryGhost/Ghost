@@ -30,7 +30,7 @@ utils = {
         }
         return Promise.resolve(object);
     },
-    checkFileExists: function (options, filename)  {
+    checkFileExists: function (options, filename) {
         return options[filename] && options[filename].type && options[filename].path;
     },
     checkFileIsValid: function (file, types, extensions) {
