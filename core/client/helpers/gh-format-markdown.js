@@ -13,12 +13,10 @@ formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
     escapedhtml = showdown.makeHtml(markdown || '');
 
     // replace script and iFrame
-    // jscs:disable
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
         '<pre class="js-embed-placeholder">Embedded JavaScript</pre>');
     escapedhtml = escapedhtml.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
         '<pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
-    // jscs:enable
 
     // sanitize html
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
