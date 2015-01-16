@@ -49,9 +49,7 @@ function init() {
 
             hashPrefix = new Array(currentHeaderLevel + 2).join('#');
 
-            // jscs:disable
             replacementLine = hashPrefix + ' ' + line.replace(/^#* /, '');
-            // jscs:enable
 
             this.replaceRange(replacementLine, fromLineStart, toLineEnd);
             this.setCursor(cursor.line, cursor.ch + replacementLine.length);
@@ -86,9 +84,7 @@ function init() {
             return;
 
         case 'list':
-            // jscs:disable
             md = text.replace(/^(\s*)(\w\W*)/gm, '$1* $2');
-            // jscs:enable
             this.replaceSelection(md, 'end');
             return;
 
