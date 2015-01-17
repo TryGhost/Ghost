@@ -25,7 +25,28 @@ config = {
             host: '127.0.0.1',
             // Port to be passed to node's `net.Server#listen()`, for iisnode set this to `process.env.PORT`
             port: '2368'
-        }
+        },
+        routes: {
+            rss: {path: '/rss', controller: 'rss'},
+            pageRss: {path: '/rss/:page/', controller: 'rss'},
+            authorRss: {path: '/author/:slug/rss/', controller: 'rss'},
+            authorPageRss: {path: '/author/:slug/rss/:page/', controller: 'rss'},
+            tagPage: {path: '/tag/:slug/page/:page/', controller: 'tag'},
+            tagRss: {path: '/tag/:slug/rss/', controller: 'rss'},
+            tagPageRss: {path: '/tag/:slug/rss/:page', controller: 'rss'},
+            tag: {path: '/tag/:slug/', controller: 'tag'},
+            authorPage: {path: '/author/:slug/page/:page/', controller: 'author'},
+            author: {path: '/author/:slug/', controller: 'author'},
+            page: {path: '/page/:page/', controller: 'homepage'},
+            homepage: {path: '/', controller: 'homepage'},
+            single: {path: '*', controller: 'single'}
+        },
+        aliases: [
+            {reqPath: '/feed/', resPath: '/rss/', status: 301},
+            {reqPath: '/feed/:page/', resPath: '/rss/:page/', status: 301},
+            {reqPath: '/author/:slug/feed/', resPath: '/author/:slug/rss/', status: 301},
+            {reqPath: '/author/:slug/feed/:page/', resPath: '/author/:slug/rss/:page/', status: 301}
+        ]
     },
 
     // ### Development **(default)**
@@ -64,7 +85,30 @@ config = {
         },
         paths: {
             contentPath: path.join(__dirname, '/content/')
-        }
+        },
+        // Routes to map URL paths to controllers that handle requests
+        routes: {
+            rss: {path: '/rss', controller: 'rss'},
+            pageRss: {path: '/rss/:page/', controller: 'rss'},
+            authorRss: {path: '/author/:slug/rss/', controller: 'rss'},
+            authorPageRss: {path: '/author/:slug/rss/:page/', controller: 'rss'},
+            tagPage: {path: '/tag/:slug/page/:page/', controller: 'tag'},
+            tagRss: {path: '/tag/:slug/rss/', controller: 'rss'},
+            tagPageRss: {path: '/tag/:slug/rss/:page', controller: 'rss'},
+            tag: {path: '/tag/:slug/', controller: 'tag'},
+            authorPage: {path: '/author/:slug/page/:page/', controller: 'author'},
+            author: {path: '/author/:slug/', controller: 'author'},
+            page: {path: '/page/:page/', controller: 'homepage'},
+            homepage: {path: '/', controller: 'homepage'},
+            single: {path: '*', controller: 'single'}
+        },
+        // Aliases to redirect alternative paths
+        aliases: [
+            {reqPath: '/feed/', resPath: '/rss/', status: 301},
+            {reqPath: '/feed/:page/', resPath: '/rss/:page/', status: 301},
+            {reqPath: '/author/:slug/feed/', resPath: '/author/:slug/rss/', status: 301},
+            {reqPath: '/author/:slug/feed/:page/', resPath: '/author/:slug/rss/:page/', status: 301}
+        ]
     },
 
     // **Developers only need to edit below here**
@@ -84,7 +128,28 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        routes: {
+            rss: {path: '/rss', controller: 'rss'},
+            pageRss: {path: '/rss/:page/', controller: 'rss'},
+            authorRss: {path: '/author/:slug/rss/', controller: 'rss'},
+            authorPageRss: {path: '/author/:slug/rss/:page/', controller: 'rss'},
+            tagPage: {path: '/tag/:slug/page/:page/', controller: 'tag'},
+            tagRss: {path: '/tag/:slug/rss/', controller: 'rss'},
+            tagPageRss: {path: '/tag/:slug/rss/:page', controller: 'rss'},
+            tag: {path: '/tag/:slug/', controller: 'tag'},
+            authorPage: {path: '/author/:slug/page/:page/', controller: 'author'},
+            author: {path: '/author/:slug/', controller: 'author'},
+            page: {path: '/page/:page/', controller: 'homepage'},
+            homepage: {path: '/', controller: 'homepage'},
+            single: {path: '*', controller: 'single'}
+        },
+        aliases: [
+            {reqPath: '/feed/', resPath: '/rss/', status: 301},
+            {reqPath: '/feed/:page/', resPath: '/rss/:page/', status: 301},
+            {reqPath: '/author/:slug/feed/', resPath: '/author/:slug/rss/', status: 301},
+            {reqPath: '/author/:slug/feed/:page/', resPath: '/author/:slug/rss/:page/', status: 301}
+        ]
     },
 
     // ### Testing MySQL
@@ -105,7 +170,28 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        routes: {
+            rss: {path: '/rss', controller: 'rss'},
+            pageRss: {path: '/rss/:page/', controller: 'rss'},
+            authorRss: {path: '/author/:slug/rss/', controller: 'rss'},
+            authorPageRss: {path: '/author/:slug/rss/:page/', controller: 'rss'},
+            tagPage: {path: '/tag/:slug/page/:page/', controller: 'tag'},
+            tagRss: {path: '/tag/:slug/rss/', controller: 'rss'},
+            tagPageRss: {path: '/tag/:slug/rss/:page', controller: 'rss'},
+            tag: {path: '/tag/:slug/', controller: 'tag'},
+            authorPage: {path: '/author/:slug/page/:page/', controller: 'author'},
+            author: {path: '/author/:slug/', controller: 'author'},
+            page: {path: '/page/:page/', controller: 'homepage'},
+            homepage: {path: '/', controller: 'homepage'},
+            single: {path: '*', controller: 'single'}
+        },
+        aliases: [
+            {reqPath: '/feed/', resPath: '/rss/', status: 301},
+            {reqPath: '/feed/:page/', resPath: '/rss/:page/', status: 301},
+            {reqPath: '/author/:slug/feed/', resPath: '/author/:slug/rss/', status: 301},
+            {reqPath: '/author/:slug/feed/:page/', resPath: '/author/:slug/rss/:page/', status: 301}
+        ]
     },
 
     // ### Testing pg
@@ -126,7 +212,28 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        routes: {
+            rss: {path: '/rss', controller: 'rss'},
+            pageRss: {path: '/rss/:page/', controller: 'rss'},
+            authorRss: {path: '/author/:slug/rss/', controller: 'rss'},
+            authorPageRss: {path: '/author/:slug/rss/:page/', controller: 'rss'},
+            tagPage: {path: '/tag/:slug/page/:page/', controller: 'tag'},
+            tagRss: {path: '/tag/:slug/rss/', controller: 'rss'},
+            tagPageRss: {path: '/tag/:slug/rss/:page', controller: 'rss'},
+            tag: {path: '/tag/:slug/', controller: 'tag'},
+            authorPage: {path: '/author/:slug/page/:page/', controller: 'author'},
+            author: {path: '/author/:slug/', controller: 'author'},
+            page: {path: '/page/:page/', controller: 'homepage'},
+            homepage: {path: '/', controller: 'homepage'},
+            single: {path: '*', controller: 'single'}
+        },
+        aliases: [
+            {reqPath: '/feed/', resPath: '/rss/', status: 301},
+            {reqPath: '/feed/:page/', resPath: '/rss/:page/', status: 301},
+            {reqPath: '/author/:slug/feed/', resPath: '/author/:slug/rss/', status: 301},
+            {reqPath: '/author/:slug/feed/:page/', resPath: '/author/:slug/rss/:page/', status: 301}
+        ]
     }
 };
 

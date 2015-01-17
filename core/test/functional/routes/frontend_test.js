@@ -450,6 +450,14 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should redirect /feed/1/ to /rss/1/', function (done) {
+                request.get('/feed/1/')
+                    .expect('Location', '/rss/1/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
             it('should respond with xml', function (done) {
                 request.get('/rss/2/')
                     .expect('Content-Type', /xml/)
@@ -552,11 +560,25 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should redirect /author/ghost-owner/feed/ to /author/ghost-owner/rss/', function (done) {
+                request.get('/author/ghost-owner/feed/')
+                    .expect('Location', '/author/ghost-owner/rss/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
             it('should respond with xml', function (done) {
                 request.get('/author/ghost-owner/rss/')
                     .expect('Content-Type', /xml/)
                     .expect('Cache-Control', testUtils.cacheRules['public'])
                     .expect(200)
+                    .end(doEnd(done));
+            });
+
+            it('should redirect /author/ghost-owner/feed/1/ to /author/ghost-owner/rss/1/', function (done) {
+                request.get('/author/ghost-owner/feed/1/')
+                    .expect('Location', '/author/ghost-owner/rss/1/')
                     .end(doEnd(done));
             });
 
@@ -685,6 +707,36 @@ describe('Frontend Routing', function () {
                     .expect(302)
                     .end(doEnd(done));
             });
+        });
+    });
+
+    describe('Route aliases', function () {
+        before(function (done) {
+            testUtils.initData().then(function () {
+                return testUtils.fixtures.overrideOwnerUser();
+            }).then(function () {
+                done();
+            });
+        });
+
+        after(testUtils.teardown);
+
+        it('should redirect an alias to its destination path', function (done) {
+            request.get('/feed/')
+                .expect('Location', '/rss/')
+                .end(doEnd(done));
+        });
+
+        it('should redirect using status code configuration when set', function (done) {
+            request.get('/feed/')
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should substitute parameters from request paths to response paths', function (done) {
+            request.get('/feed/1/')
+                .expect('Location', '/rss/1/')
+                .end(doEnd(done));
         });
     });
 

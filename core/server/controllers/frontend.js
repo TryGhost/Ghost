@@ -90,23 +90,26 @@ function handleError(next) {
 
 function setResponseContext(req, res, data) {
     var contexts = [],
-        pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+        pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+        routes = config.routes;
 
     // paged context
     if (!isNaN(pageParam) && pageParam > 1) {
         contexts.push('paged');
     }
 
-    if (req.route.path === '/page/:page/') {
+    if (req.route.path === routes.page.path) {
         contexts.push('index');
-    } else if (req.route.path === '/') {
+    } else if (req.route.path === routes.homepage.path) {
         contexts.push('home');
         contexts.push('index');
-    } else if (/\/rss\/(:page\/)?$/.test(req.route.path)) {
+    } else if (_.has([routes.rss.path, routes.pageRss.path], req.route.path)) {
         contexts.push('rss');
-    } else if (/^\/tag\//.test(req.route.path)) {
+    } else if (_.has([routes.tag.path, routes.tagPage.path], req.route.path)) {
         contexts.push('tag');
-    } else if (/^\/author\//.test(req.route.path)) {
+    } else if (
+        _.has([routes.author.path, routes.authorPage.path, routes.authorPageRss.path], req.route.path)
+    ) {
         contexts.push('author');
     } else if (data && data.post && data.post.page) {
         contexts.push('page');

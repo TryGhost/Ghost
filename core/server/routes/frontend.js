@@ -2,6 +2,7 @@ var frontend    = require('../controllers/frontend'),
     config      = require('../config'),
     express     = require('express'),
     utils       = require('../utils'),
+    _           = require('lodash'),
 
     frontendRoutes;
 
@@ -28,30 +29,32 @@ frontendRoutes = function () {
     });
 
     // ### Frontend routes
-    router.get('/rss/', frontend.rss);
-    router.get('/rss/:page/', frontend.rss);
-    router.get('/feed/', function redirect(req, res) {
-        /*jshint unused:true*/
-        res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
-        res.redirect(301, subdir + '/rss/');
+    _.forOwn(config.routes, function configureRoute(route) {
+        router.get(route.path, frontend[route.controller]);
     });
 
-    // Tags
-    router.get('/tag/:slug/rss/', frontend.rss);
-    router.get('/tag/:slug/rss/:page/', frontend.rss);
-    router.get('/tag/:slug/page/:page/', frontend.tag);
-    router.get('/tag/:slug/', frontend.tag);
+    // ### Frontend aliases
+    _.forOwn(config.aliases, function configureAlias(aliasConfig) {
+        router.get(aliasConfig.reqPath, function redirect(req, res) {
+            // Get response path from config
+            var aliasConfig = _.find(config.aliases, function isPath(alias) {
+                    return alias.reqPath === this.path;
+                }, req.route),
+                path = aliasConfig.resPath;
 
-    // Authors
-    router.get('/author/:slug/rss/', frontend.rss);
-    router.get('/author/:slug/rss/:page/', frontend.rss);
-    router.get('/author/:slug/page/:page/', frontend.author);
-    router.get('/author/:slug/', frontend.author);
+            // Substitute route params
+            _.forOwn(req.params, function (value, key) {
+                path = path.replace(':' + key, value);
+            });
 
-    // Default
-    router.get('/page/:page/', frontend.homepage);
-    router.get('/', frontend.homepage);
-    router.get('*', frontend.single);
+            if (_.has(aliasConfig, 'status')) {
+                res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
+                res.redirect(aliasConfig.status, subdir + path);
+            } else {
+                res.redirect(subdir + path);
+            }
+        });
+    });
 
     return router;
 };
