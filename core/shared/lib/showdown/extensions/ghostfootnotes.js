@@ -15,7 +15,7 @@
 
 function replaceInlineFootnotes(text) {
     // Inline footnotes e.g. "foo[^1]"
-    var inlineRegex = /(?!^)\[\^(\d|n)\]/gim,
+    var inlineRegex = /(?!^)\[\^(\d+|n)\]/gim,
         i = 0;
 
     return text.replace(inlineRegex, function (match, n) {
@@ -34,7 +34,7 @@ function replaceInlineFootnotes(text) {
 
 function replaceEndFootnotes(text, converter) {
     // Expanded footnotes at the end e.g. "[^1]: cool stuff"
-    var endRegex = /\[\^(\d|n)\]: ([\s\S]*?)$(?!    )/gim,
+    var endRegex = /\[\^(\d+|n)\]: ([\s\S]*?)$(?!    )/gim,
         m = text.match(endRegex),
         total = m ? m.length : 0,
         i = 0;
