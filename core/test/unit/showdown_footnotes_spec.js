@@ -53,6 +53,15 @@ describe('Ghost footnotes showdown extension', function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it('should handle n-digit footnotes', function () {
+        var testPhrase = {
+            input: 'foo_bar[^42]',
+            output: /<sup id="fnref:42"><a href="#fn:42" rel="footnote">42<\/a><\/sup>/
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
     it('should replace end footnotes with the right html', function () {
         var testPhrase = {
             input: '[^1]: foo bar',
