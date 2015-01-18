@@ -770,6 +770,9 @@ var _              = require('lodash'),
             function () {
                 process.env.NODE_ENV = process.env.TRAVIS ? process.env.NODE_ENV : 'testing';
                 cfg.express.test.options.node_env = process.env.NODE_ENV;
+
+                // Always run tests in the UTC time zone for consistent results
+                process.env.TZ = 'UTC';
             });
 
         // #### Ensure Config *(Utility Task)*
