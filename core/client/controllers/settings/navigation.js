@@ -5,13 +5,19 @@ NavItem = Ember.Object.extend({
     label: '',
     url: '',
 
-    isBlank: Ember.computed('label', 'url', function () {
-        return Ember.isBlank(this.get('label')) && Ember.isBlank(this.get('url'));
+    isComplete: Ember.computed('label', 'url', function () {
+        return !(Ember.isBlank(this.get('label')) || Ember.isBlank(this.get('url')));
     })
 });
 
 NavigationController = Ember.Controller.extend({
-     navigationItems: Ember.computed('model.navigation', function () {
+    blogUrl: Ember.computed('config.blogUrl', function () {
+        var url = this.get('config.blogUrl');
+
+        return url.slice(-1) !== '/' ? url + '/' : url;
+    }),
+
+    navigationItems: Ember.computed('model.navigation', function () {
         var navItems,
             lastItem;
 
@@ -26,7 +32,7 @@ NavigationController = Ember.Controller.extend({
         });
 
         lastItem = navItems.get('lastObject');
-        if (!lastItem || !lastItem.get('isBlank')) {
+        if (!lastItem || lastItem.get('isComplete')) {
             navItems.addObject(NavItem.create());
         }
 
@@ -50,7 +56,7 @@ NavigationController = Ember.Controller.extend({
             var navItems = this.get('navigationItems'),
                 lastItem = navItems.get('lastObject');
 
-            if (lastItem && !lastItem.get('isBlank')) {
+            if (lastItem && lastItem.get('isComplete')) {
                 navItems.addObject(NavItem.create());
             }
         },
@@ -61,6 +67,20 @@ NavigationController = Ember.Controller.extend({
             }
 
             this.get('navigationItems').removeObject(item);
+        },
+
+        updateUrl: function (url, navItem) {
+            if (!navItem) {
+                return;
+            }
+
+            if (Ember.isBlank(url)) {
+                navItem.set('url', this.get('blogUrl'));
+
+                return;
+            }
+
+            navItem.set('url', url);
         },
 
         save: function () {
@@ -74,7 +94,7 @@ NavigationController = Ember.Controller.extend({
                 var label,
                     url;
 
-                if (!item || item.get('isBlank')) {
+                if (!item || !item.get('isComplete')) {
                     return;
                 }
 
@@ -91,6 +111,11 @@ NavigationController = Ember.Controller.extend({
                     }
                 } else if (!validator.isURL(url) && url !== '' && url[0] !== '/') {
                     url = '/' + url;
+                }
+
+                // if navItem label is empty and URL is still the default, don't save
+                if (!label && url === '/') {
+                    return;
                 }
 
                 return {label: label, url: url};
