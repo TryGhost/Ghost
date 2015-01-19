@@ -16,7 +16,7 @@ var _       = require('lodash'),
 // Takes a date from the filename in y-m-d-h-m form, and converts it into a Date ready to import
 processDateTime = function (post, datetime) {
     var format = 'YYYY-MM-DD-HH-mm';
-    datetime = moment(datetime, format).valueOf();
+    datetime = moment.utc(datetime, format).valueOf();
 
     if (post.status && post.status === 'published') {
         post.published_at = datetime;
