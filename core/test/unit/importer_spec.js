@@ -485,7 +485,7 @@ describe('Importer', function () {
                 storeSpy.lastCall.args[1].newPath.should.eql('/content/images/puppy.jpg');
 
                 done();
-            });
+            }).catch(done);
         });
     });
 
@@ -514,11 +514,11 @@ describe('Importer', function () {
                 result.data.posts[0].slug.should.eql('test-1');
                 result.data.posts[0].title.should.eql('test-1');
                 result.data.posts[0].created_at.should.eql(1418990400000);
-                moment(result.data.posts[0].created_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
+                moment.utc(result.data.posts[0].created_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
                 result.data.posts[0].should.not.have.property('image');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can parse a title from a markdown file', function (done) {
@@ -537,7 +537,7 @@ describe('Importer', function () {
                 result.data.posts[0].should.not.have.property('image');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can parse a featured image from a markdown file if there is a title', function (done) {
@@ -556,7 +556,7 @@ describe('Importer', function () {
                 result.data.posts[0].image.should.eql('/images/kitten.jpg');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can import a published post', function (done) {
@@ -572,11 +572,11 @@ describe('Importer', function () {
                 result.data.posts[0].slug.should.eql('test-1');
                 result.data.posts[0].title.should.eql('Welcome to Ghost');
                 result.data.posts[0].published_at.should.eql(1418990400000);
-                moment(result.data.posts[0].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
+                moment.utc(result.data.posts[0].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
                 result.data.posts[0].should.not.have.property('image');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('does not import deleted posts', function (done) {
@@ -590,7 +590,7 @@ describe('Importer', function () {
                 result.data.posts.should.be.empty;
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can import multiple files', function (done) {
@@ -619,7 +619,7 @@ describe('Importer', function () {
                 result.data.posts[one].slug.should.eql('test-1');
                 result.data.posts[one].title.should.eql('Welcome to Ghost');
                 result.data.posts[one].published_at.should.eql(1418990400000);
-                moment(result.data.posts[one].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
+                moment.utc(result.data.posts[one].published_at).format('DD MM YY HH:mm').should.eql('19 12 14 12:00');
                 result.data.posts[one].should.not.have.property('image');
 
                 // draft-2014-12-19-test-3.md
