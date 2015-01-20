@@ -8,33 +8,8 @@
 
 <section class="content settings-navigation">
     <form id="settings-navigation" novalidate="novalidate">
-
         {{#each navItem in navigationItems}}
-            <div class="navigation-item">
-                <button type="button" class="navigation-item-drag-handle icon-grab">
-                    <span class="hidden">Reorder</span>
-                </button>
-                <div class="navigation-inputs">
-                    <span class="navigation-item-label">
-                        {{gh-trim-focus-input focus=navItem.last placeholder="Label" value=navItem.label}}
-                    </span>
-                    <span class="navigation-item-url">
-                        {{gh-trim-focus-input focus=false placeholder="http://my-ghost-blog.com/" value=navItem.url}}
-                    </span>
-                </div>
-                <span class="navigation-item-action">
-                    {{#if navItem.last}}
-                        <button type="button" class="add-navigation-link icon-add" {{action "addItem"}}>
-                            <span class="hidden">Add</span>
-                        </button>
-                    {{else}}
-                        <button type="button" class="navigation-delete icon-trash" {{action "deleteItem" navItem}}>
-                            <span class="hidden">Delete</span>
-                        </button>
-                    {{/if}}
-                </span>
-            </div>
+            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addItem" deleteItem="deleteItem" updateUrl="updateUrl"}}
         {{/each}}
-
     </form>
 </section>

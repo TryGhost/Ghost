@@ -21,6 +21,10 @@ var NavigationRoute = AuthenticatedRoute.extend(CurrentUserSettings, {
 
     actions: {
         save: function () {
+            // since shortcuts are run on the route, we have to signal to the components
+            // on the page that we're about to save.
+            $('.page-actions .btn-blue').focus();
+
             this.get('controller').send('save');
         }
     }
