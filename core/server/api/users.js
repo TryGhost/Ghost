@@ -138,14 +138,22 @@ users = {
         return utils.checkObject(object, docName).then(function (data) {
             // Edit operation
             editOperation = function () {
-                return dataProvider.User.edit(data.users[0], options)
-                    .then(function (result) {
-                        if (result) {
-                            return {users: [result.toJSON()]};
-                        }
+                return dataProvider.User.getByEmail(
+                    data.users[0].email
+                ).then(function (foundUser) {
+                    if (foundUser && foundUser.id !== parseInt(data.users[0].id)) {
+                        return Promise.reject(new errors.BadRequestError('User with that email is already registered.'));
+                    }
 
-                        return Promise.reject(new errors.NotFoundError('User not found.'));
-                    });
+                    return dataProvider.User.edit(data.users[0], options)
+                        .then(function (result) {
+                            if (result) {
+                                return {users: [result.toJSON()]};
+                            }
+
+                            return Promise.reject(new errors.NotFoundError('User not found.'));
+                        });
+                });
             };
 
             // Check permissions
