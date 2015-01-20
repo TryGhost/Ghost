@@ -301,6 +301,29 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
+        it('can findOne by role name', function (done) {
+            return testUtils.fixtures.createExtraUsers().then(function () {
+                return Promise.join(UserModel.findOne({role: 'Owner'}), UserModel.findOne({role: 'Editor'}));
+            }).then(function (results) {
+                var owner = results[0],
+                    editor = results[1];
+
+                should.exist(owner);
+                should.exist(editor);
+
+                owner = owner.toJSON();
+                editor = editor.toJSON();
+
+                should.exist(owner.roles);
+                should.exist(editor.roles);
+
+                owner.roles[0].name.should.equal('Owner');
+                editor.roles[0].name.should.equal('Editor');
+
+                done();
+            }).catch(done);
+        });
+
         it('can edit', function (done) {
             var firstUser = 1;
 
