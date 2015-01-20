@@ -412,6 +412,12 @@
     width: 100%;
 }
 
+.navigation-item-url {
+    .fake-placeholder {
+        color: lightgrey
+    }
+}
+
 @media (max-width: 600px) {
     .navigation-item-label {
         margin-bottom: 5px;
