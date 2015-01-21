@@ -3,15 +3,25 @@ var packages = require('../../../package.json'),
     crypto = require('crypto'),
     fs = require('fs'),
     mode = process.env.NODE_ENV === undefined ? 'development' : process.env.NODE_ENV,
+    likelyValidModes = ["development", "production"],
     appRoot = path.resolve(__dirname, '../../../'),
     configFilePath = process.env.GHOST_CONFIG || path.join(appRoot, 'config.js'),
     checks;
 
 checks = {
     check: function check() {
+        this.nodeEnvironment();
         this.packages();
         this.contentPath();
         this.sqlite();
+    },
+
+    // Warn if we're starting with an unconventional node environment
+    nodeEnvironment: function nodeEnvironment () {
+        if (likelyValidModes.indexOf(mode) === -1) {
+            console.warn('\x1B[33mGhost is starting with an unconventional NODE_ENV:\033[0m ' + mode);
+            console.warn('\x1B[33mThings may not work as expected.\033[0m\n');
+        }
     },
 
     // Make sure package.json dependencies have been installed.
