@@ -193,6 +193,15 @@ errors = {
             return this.rejectError(error);
         }
 
+        // handle database errors
+        if (error.code && (error.errno || error.detail)) {
+            error.db_error_code = error.code;
+            error.type = 'DatabaseError';
+            error.code = 500;
+
+            return this.rejectError(error);
+        }
+
         return this.rejectError(new this.InternalServerError(error));
     },
 
