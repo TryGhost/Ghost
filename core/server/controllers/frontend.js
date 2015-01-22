@@ -15,34 +15,13 @@ var moment      = require('moment'),
     template    = require('../helpers/template'),
     errors      = require('../errors'),
     cheerio     = require('cheerio'),
+    routeMatch  = require('path-match')(),
 
     frontendControllers,
     staticPostPermalink,
-    oldRoute,
-    dummyRouter = require('express').Router();
-
-// Overload this dummyRouter as we only want the layer object.
-// We don't want to keep in memory many items in an array so we
-// clear the stack array after every invocation.
-oldRoute = dummyRouter.route;
-dummyRouter.route = function () {
-    var layer;
-
-    // Apply old route method
-    oldRoute.apply(dummyRouter, arguments);
-
-    // Grab layer object
-    layer = dummyRouter.stack[0];
-
-    // Reset stack array for memory purposes
-    dummyRouter.stack = [];
-
-    // Return layer
-    return layer;
-};
 
 // Cache static post permalink regex
-staticPostPermalink = dummyRouter.route('/:slug/:edit?');
+staticPostPermalink = routeMatch('/:slug/:edit?');
 
 function getPostPage(options) {
     return api.settings.read('postsPerPage').then(function (response) {
@@ -296,38 +275,40 @@ frontendControllers = {
     single: function (req, res, next) {
         var path = req.path,
             params,
-            editFormat,
             usingStaticPermalink = false;
 
         api.settings.read('permalinks').then(function (response) {
             var permalink = response.settings[0],
-                postLookup;
+                editFormat,
+                postLookup,
+                match;
 
             editFormat = permalink.value[permalink.value.length - 1] === '/' ? ':edit?' : '/:edit?';
 
-            // Convert saved permalink into an express Route object
-            permalink = dummyRouter.route(permalink.value + editFormat);
+            // Convert saved permalink into a path-match function
+            permalink = routeMatch(permalink.value + editFormat);
+            match = permalink(path);
 
             // Check if the path matches the permalink structure.
             //
             // If there are no matches found we then
             // need to verify it's not a static post,
             // and test against that permalink structure.
-            if (permalink.match(path) === false) {
+            if (match === false) {
+                match = staticPostPermalink(path);
                 // If there are still no matches then return.
-                if (staticPostPermalink.match(path) === false) {
+                if (match === false) {
                     // Reject promise chain with type 'NotFound'
                     return Promise.reject(new errors.NotFoundError());
                 }
 
-                permalink = staticPostPermalink;
                 usingStaticPermalink = true;
             }
 
-            params = permalink.params;
+            params = match;
 
             // Sanitize params we're going to use to lookup the post.
-            postLookup = _.pick(permalink.params, 'slug', 'id');
+            postLookup = _.pick(params, 'slug', 'id');
             // Add author, tag and fields
             postLookup.include = 'author,tags,fields';
 
