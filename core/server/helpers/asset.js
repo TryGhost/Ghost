@@ -26,11 +26,21 @@ asset = function (context, options) {
     context = context.replace(/^\//, '');
     output += context;
 
-    if (!context.match(/^favicon\.ico$/)) {
+
+    // cdn assets option
+    // 如果设置了CDN，那么使用CDN配置项目中的路径进行资源替换
+    if (!isAdmin && config['cdn'] && config['cdn']['assets']) {
         output = utils.assetTemplate({
-            source: output,
+            source : config['cdn']['assets'] + output,
             version: config.assetHash
         });
+    } else {
+        if (!context.match(/^favicon\.ico$/)) {
+            output = utils.assetTemplate({
+                source : output,
+                version: config.assetHash
+            });
+        }
     }
 
     return new hbs.handlebars.SafeString(output);
