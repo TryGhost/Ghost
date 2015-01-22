@@ -72,7 +72,8 @@ form {
     input[type="tel"],
     input[type="text"],
     input[type="url"],
-    input[type="date"] {
+    input[type="date"],
+    input[type="datetime-local"] {
         padding-left: 3.2rem;
     }
 
@@ -179,6 +180,7 @@ input[type="tel"],
 input[type="text"],
 input[type="url"],
 input[type="date"],
+input[type="datetime-local"],
 textarea,
 .gh-select,
 select {
@@ -198,6 +200,11 @@ select {
         border-color: $brown;
         outline: 0;
     }
+}
+
+// Fix for iOS where this element _looks_ like a <select> element
+input[type="datetime-local"] {
+    -webkit-appearance: none;
 }
 
 textarea {
