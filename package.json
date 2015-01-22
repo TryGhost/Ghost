@@ -63,7 +63,7 @@
         "showdown-ghost": "0.3.4",
         "sqlite3": "3.0.4",
         "unidecode": "0.1.3",
-        "validator": "3.26.0",
+        "validator": "3.28.0",
         "xml": "0.0.12"
     },
     "optionalDependencies": {
@@ -101,6 +101,6 @@
         "sinon": "~1.12.2",
         "supertest": "~0.15.0",
         "testem": "^0.6.23",
-        "top-gh-contribs": "0.0.5"
+        "top-gh-contribs": "0.0.6"
     }
 }
