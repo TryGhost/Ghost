@@ -32,7 +32,9 @@ url = function (options) {
                 if (uri.indexOf(config['url']) === 0) {
                     return src.replace(config['url'], config['url'].split('://')[0] + ':' + config['cdn']['assets']);
                 } else {
-                    return src.replace(uri, config['cdn']['assets'] + uri);
+                    if (uri.indexOf('://') === -1) {
+                        return src.replace(uri, config['cdn']['assets'] + uri);
+                    }
                 }
             }
         });
