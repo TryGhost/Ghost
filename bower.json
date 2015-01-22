@@ -23,7 +23,7 @@
     "normalize-scss": "~3.0.1",
     "nprogress": "0.1.2",
     "showdown-ghost": "0.3.4",
-    "validator-js": "3.26.0",
+    "validator-js": "3.28.0",
     "google-caja": "5669.0.0"
   },
   "devDependencies": {
