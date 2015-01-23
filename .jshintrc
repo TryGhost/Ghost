@@ -1,7 +1,6 @@
 {
       "node": true,
       "browser": false,
-      "nomen": false,
       "strict": false,
       "sub": true,
       "eqeqeq": true,
@@ -19,9 +18,6 @@
       "regexp": true,
       "undef": true,
       "unused": true,
-      "trailing": true,
       "indent": 4,
-      "onevar": true,
-      "white": true,
       "predef": [ "-Promise" ]
 }
