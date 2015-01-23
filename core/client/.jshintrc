@@ -1,7 +1,6 @@
 {
     "node": false,
     "browser": true,
-    "nomen": false,
     "bitwise": true,
     "curly": true,
     "eqeqeq": true,
@@ -16,11 +15,8 @@
     "regexp": true,
     "undef": true,
     "unused": true,
-    "trailing": true,
     "indent": 4,
     "esnext": true,
-    "onevar": true,
-    "white": true,
     "quotmark": "single",
     "globals": {
         "Ember": true,
@@ -32,5 +28,6 @@
         "ic": true,
         "NProgress": true,
         "moment": true
-    }
+    },
+    "predef": ["-Notification"]
 }
