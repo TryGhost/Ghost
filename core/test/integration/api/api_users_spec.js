@@ -219,7 +219,7 @@ describe('Users API', function () {
                 }).catch(done);
         });
 
-        it('Admin can edit all roles', function (done) {
+        it('Admin can edit all users in all roles', function (done) {
             UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
                 .then(function (response) {
                     checkEditResponse(response);
@@ -232,6 +232,26 @@ describe('Users API', function () {
                     checkEditResponse(response);
 
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.author}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+
+                    done();
+                }).catch(done);
+        });
+
+        it('Admin can edit all users in all roles with roles in payload', function (done) {
+            UserAPI.edit({users: [{name: newName, roles: [roleIdFor.owner]}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
+                .then(function (response) {
+                    checkEditResponse(response);
+
+                    return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.admin]}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+                    return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.editor]}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
+                }).then(function (response) {
+                    checkEditResponse(response);
+
+                    return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.author]}]}, _.extend({}, context.admin, {id: userIdFor.author}));
                 }).then(function (response) {
                     checkEditResponse(response);
 
@@ -889,7 +909,7 @@ describe('Users API', function () {
                     }).catch(function (error) {
                         error.type.should.eql('NoPermissionError');
                         done();
-                    });
+                    }).catch(done);
                 });
             });
         });
