@@ -123,4 +123,14 @@ describe('{{meta_description}} helper', function () {
             done();
         }).catch(done);
     });
+
+    it('returns meta_description when used within {{#foreach posts}}', function (done) {
+        var post = {meta_description: 'Nice post with nice content.'};
+        helpers.meta_description.call(post).then(function (rendered) {
+            should.exist(rendered);
+            String(rendered).should.equal('Nice post with nice content.');
+
+            done();
+        }).catch(done);
+    });
 });
