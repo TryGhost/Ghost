@@ -30,21 +30,6 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
         return this._super.apply(this, arguments);
     },
 
-    keyForAttribute: function (attr) {
-        return attr;
-    },
-
-    keyForRelationship: function (relationshipName) {
-        // this is a hack to prevent Ember-Data from deleting our `tags` reference.
-        // ref: https://github.com/emberjs/data/issues/2051
-        // @TODO: remove this once the situation becomes clearer what to do.
-        if (relationshipName === 'tags') {
-            return 'tag';
-        }
-
-        return relationshipName;
-    },
-
     serializeIntoHash: function (hash, type, record, options) {
         options = options || {};
         options.includeId = true;
