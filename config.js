@@ -22,12 +22,12 @@ config = {
             port: process.env.POSTGRES_PORT
           }
         },
-        aws: {
-          accessKeyId: process.env.AWS_ACCESS_ID,
-          secretAccessKey: process.env.AWS_ACCESS_SECRET,
-          bucket: process.env.AWS_BUCKET_NAME,
-          region: process.env.AWS_BUCKET_REGION
-        },
+        //aws: {
+          //accessKeyId: process.env.AWS_ACCESS_ID,
+          //secretAccessKey: process.env.AWS_ACCESS_SECRET,
+          //bucket: process.env.AWS_BUCKET_NAME,
+          //region: process.env.AWS_BUCKET_REGION
+       //},
         server: {
           host: '0.0.0.0'
           port: process.env.PORT
