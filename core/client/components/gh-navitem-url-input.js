@@ -58,8 +58,23 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
         }
     },
 
+    keyPress: function (event) {
+        // enter key
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            this.notifyUrlChanged();
+        }
+
+        return true;
+    },
+
     focusOut: function () {
         this.set('hasFocus', false);
+
+        this.notifyUrlChanged();
+    },
+
+    notifyUrlChanged: function () {
         this.set('value', this.get('value').trim());
 
         var url = this.get('value'),
