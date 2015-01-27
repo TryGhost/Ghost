@@ -17,6 +17,8 @@
                 {{#link-to "posts.post" post class="permalink" alternateActive=view.active title="Edit this post"}}
                     <h3 class="entry-title">{{post.model.title}}</h3>
                     <section class="entry-meta">
+                        <img class="avatar" {{bind-attr src="post.authorAvatar" title="post.authorName"}}>
+                        <span class="author">{{post.authorName}}</span>
                         <span class="status">
                             {{#if post.isPublished}}
                                 {{#if post.model.page}}
