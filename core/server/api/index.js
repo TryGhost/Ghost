@@ -66,7 +66,7 @@ cacheInvalidationHeader = function (req, result) {
         wasPublishedUpdated;
 
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
-        if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db') {
+        if (endpoint === 'settings' || endpoint === 'users' || endpoint === 'db' || endpoint === 'tags') {
             cacheInvalidate = '/*';
         } else if (endpoint === 'posts') {
             post = jsonResult.posts[0];
