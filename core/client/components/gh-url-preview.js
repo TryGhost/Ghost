@@ -18,7 +18,7 @@ var urlPreview = Ember.Component.extend({
             slug = this.get('slug') ? this.get('slug') : '',
 
             // Join parts of the URL together with slashes
-            theUrl = noSchemeBlogUrl + '/' + prefix + slug;
+            theUrl = noSchemeBlogUrl + '/' + prefix + (slug ? slug + '/' : '');
 
         this.set('the-url', theUrl);
     }.on('didInsertElement').observes('slug')
