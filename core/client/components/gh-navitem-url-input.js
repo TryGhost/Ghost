@@ -27,13 +27,13 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
         var url = this.get('url'),
             baseUrl = this.get('baseUrl');
 
+        this.set('value', url);
+
         // if we have a relative url, create the absolute url to be displayed in the input
         if (this.get('isRelative')) {
             url = joinUrlParts(baseUrl, url);
+            this.set('value', url);
         }
-
-        this.set('value', url);
-        this.sendAction('change', this.get('value'));
     },
 
     focusIn: function (event) {
