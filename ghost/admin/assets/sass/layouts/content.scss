@@ -122,12 +122,10 @@
     }
 
     .avatar {
-        width: 18px;
-        height: 18px;
-        border-radius: 18px;
-        margin-right: 14px;
-        float: left; // Used instead of `display: block;` to remove the stupid space under the image.
-        object-fit: cover; // Like using 'background-size: cover;', but on an img tag - https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit
+        @include circular-image(18px) {
+            float: left; // Used instead of `display: block;` to remove the stupid space under the image.
+            margin-right: 14px;
+        }
     }
 
     .status,
