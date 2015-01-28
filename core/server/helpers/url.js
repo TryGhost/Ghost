@@ -23,6 +23,10 @@ url = function (options) {
         return config.urlFor('author', {author: this}, absolute);
     }
 
+    if (schema.isNav(this)) {
+        return config.urlFor('nav', {nav: this}, absolute);
+    }
+
     return config.urlFor(this, absolute);
 };
 
