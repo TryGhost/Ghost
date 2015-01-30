@@ -69,23 +69,25 @@ function handleError(next) {
 
 function setResponseContext(req, res, data) {
     var contexts = [],
-        pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1;
+        pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+        tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/'),
+        authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/');
 
     // paged context
     if (!isNaN(pageParam) && pageParam > 1) {
         contexts.push('paged');
     }
 
-    if (req.route.path === '/page/:page/') {
+    if (req.route.path === '/' + config.routeKeywords.page + '/:page/') {
         contexts.push('index');
     } else if (req.route.path === '/') {
         contexts.push('home');
         contexts.push('index');
     } else if (/\/rss\/(:page\/)?$/.test(req.route.path)) {
         contexts.push('rss');
-    } else if (/^\/tag\//.test(req.route.path)) {
+    } else if (tagPattern.test(req.route.path)) {
         contexts.push('tag');
-    } else if (/^\/author\//.test(req.route.path)) {
+    } else if (authorPattern.test(req.route.path)) {
         contexts.push('author');
     } else if (data && data.post && data.post.page) {
         contexts.push('page');
@@ -170,7 +172,7 @@ frontendControllers = {
 
         // Get url for tag page
         function tagUrl(tag, page) {
-            var url = config.paths.subdir + '/tag/' + tag + '/';
+            var url = config.paths.subdir + '/' + config.routeKeywords.tag  + '/' + tag + '/';
 
             if (page && page > 1) {
                 url += 'page/' + page + '/';
@@ -225,10 +227,10 @@ frontendControllers = {
 
         // Get url for tag page
         function authorUrl(author, page) {
-            var url = config.paths.subdir + '/author/' + author + '/';
+            var url = config.paths.subdir + '/' + config.routeKeywords.author + '/' + author + '/';
 
             if (page && page > 1) {
-                url += 'page/' + page + '/';
+                url += config.routeKeywords.page + '/' + page + '/';
             }
 
             return url;
@@ -416,11 +418,11 @@ frontendControllers = {
         }
 
         function isTag() {
-            return req.route.path.indexOf('/tag/') !== -1;
+            return req.route.path.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
         }
 
         function isAuthor() {
-            return req.route.path.indexOf('/author/') !== -1;
+            return req.route.path.indexOf('/' + config.routeKeywords.author + '/') !== -1;
         }
 
         // Initialize RSS
@@ -429,9 +431,9 @@ frontendControllers = {
             baseUrl = config.paths.subdir;
 
         if (isTag()) {
-            baseUrl += '/tag/' + slugParam + '/rss/';
+            baseUrl += '/' + config.routeKeywords.tag + '/' + slugParam + '/rss/';
         } else if (isAuthor()) {
-            baseUrl += '/author/' + slugParam + '/rss/';
+            baseUrl += '/' + config.routeKeywords.author + '/' + slugParam + '/rss/';
         } else {
             baseUrl += '/rss/';
         }
@@ -470,14 +472,14 @@ frontendControllers = {
                 if (isTag()) {
                     if (page.meta.filters.tags) {
                         title = page.meta.filters.tags[0].name + ' - ' + title;
-                        feedUrl = siteUrl + 'tag/' + page.meta.filters.tags[0].slug + '/rss/';
+                        feedUrl = siteUrl + config.routeKeywords.tag + '/' + page.meta.filters.tags[0].slug + '/rss/';
                     }
                 }
 
                 if (isAuthor()) {
                     if (page.meta.filters.author) {
                         title = page.meta.filters.author.name + ' - ' + title;
-                        feedUrl = siteUrl + 'author/' + page.meta.filters.author.slug + '/rss/';
+                        feedUrl = siteUrl + config.routeKeywords.author + '/' + page.meta.filters.author.slug + '/rss/';
                     }
                 }
 

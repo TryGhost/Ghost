@@ -177,6 +177,11 @@ ConfigManager.prototype.set = function (config) {
             // normalise the URL by removing any trailing slash
             url: this._config.url ? this._config.url.replace(/\/$/, '') : ''
         },
+        routeKeywords: {
+            tag: 'tag',
+            author: 'author',
+            page: 'page'
+        },
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..
             // reserved slugs are reserved but can be extended/removed by apps

@@ -128,10 +128,10 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = '/tag/' + data.tag.slug + '/';
+            urlPath = '/' + ghostConfig.routeKeywords.tag + '/' + data.tag.slug + '/';
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = '/author/' + data.author.slug + '/';
+            urlPath = '/' + ghostConfig.routeKeywords.author  + '/' + data.author.slug + '/';
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
