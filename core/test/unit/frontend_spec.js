@@ -204,6 +204,11 @@ describe('Frontend Controller', function () {
                             'tag.hbs': '/content/themes/casper/tag.hbs'
                         }
                     }
+                },
+                routeKeywords: {
+                    page: 'page',
+                    tag: 'tag',
+                    author: 'author'
                 }
             });
         });
@@ -257,6 +262,11 @@ describe('Frontend Controller', function () {
                             'tag.hbs': '/content/themes/casper/tag.hbs'
                         }
                     }
+                },
+                routeKeywords: {
+                    page: 'page',
+                    tag: 'tag',
+                    author: 'author'
                 }
             });
 
@@ -359,6 +369,11 @@ describe('Frontend Controller', function () {
                             'tag.hbs': '/content/themes/casper/tag.hbs'
                         }
                     }
+                },
+                routeKeywords: {
+                    page: 'page',
+                    tag: 'tag',
+                    author: 'author'
                 }
             });
         });
@@ -450,7 +465,8 @@ describe('Frontend Controller', function () {
 
         it('Redirects to base tag page if page number is 0 with subdirectory', function () {
             frontend.__set__('config', {
-                paths: {subdir: '/blog'}
+                paths: {subdir: '/blog'},
+                routeKeywords: {tag: 'tag'}
             });
 
             var req = {params: {page: 0, slug: 'pumpkin'}};
@@ -464,7 +480,8 @@ describe('Frontend Controller', function () {
 
         it('Redirects to base tag page if page number is 1 with subdirectory', function () {
             frontend.__set__('config', {
-                paths: {subdir: '/blog'}
+                paths: {subdir: '/blog'},
+                routeKeywords: {tag: 'tag'}
             });
 
             var req = {params: {page: 1, slug: 'pumpkin'}};
@@ -489,7 +506,8 @@ describe('Frontend Controller', function () {
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
             frontend.__set__('config', {
-                paths: {subdir: '/blog'}
+                paths: {subdir: '/blog'},
+                routeKeywords: {tag: 'tag'}
             });
 
             var req = {params: {page: 4, slug: 'pumpkin'}};
@@ -583,6 +601,11 @@ describe('Frontend Controller', function () {
                             'post.hbs': '/content/themes/casper/post.hbs'
                         }
                     }
+                },
+                routeKeywords: {
+                    page: 'page',
+                    tag: 'tag',
+                    author: 'author'
                 }
             });
         });
