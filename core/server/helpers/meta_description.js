@@ -13,16 +13,17 @@ var _           = require('lodash'),
 
 meta_description = function () {
     var description,
-        blog;
+        blog,
+        pagePattern = new RegExp('\\/page\\/');
 
     if (_.isString(this.relativeUrl)) {
         blog = config.theme;
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
             description = blog.description;
         } else if (this.author) {
-            description = /\/page\//.test(this.relativeUrl) ? '' : this.author.bio;
+            description = pagePattern.test(this.relativeUrl) ? '' : this.author.bio;
         } else if (this.tag) {
-            if (/\/page\//.test(this.relativeUrl)) {
+            if (pagePattern.test(this.relativeUrl)) {
                 description = '';
             } else {
                 description = _.isEmpty(this.tag.meta_description) ? '' : this.tag.meta_description;
