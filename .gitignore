@@ -70,3 +70,6 @@ config.js
 
 # Coverage reports
 coverage.html
+
+# Nodeclipse project file
+.project
