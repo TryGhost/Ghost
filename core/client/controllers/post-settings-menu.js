@@ -201,7 +201,7 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
         // generate a slug if a post is new and doesn't have a title yet or
         // if the title is still '(Untitled)' and the slug is unaltered.
         if ((this.get('model.isNew') && !title) || title === '(Untitled)') {
-            debounceId = Ember.run.debounce(this, 'generateAndSetSlug', ['slug'], 700);
+            debounceId = Ember.run.debounce(this, 'generateAndSetSlug', 'model.slug', 700);
         }
 
         this.set('debounceId', debounceId);
