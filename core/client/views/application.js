@@ -4,6 +4,30 @@ import bind from 'ghost/utils/bind';
 var ApplicationView = Ember.View.extend({
     elementId: 'container',
 
+    setupNanoScroller: function () {
+        $('.nano').nanoScroller({
+            iOSNativeScrolling: true,
+            preventPageScrolling: true
+        });
+
+        $('.nano').on('mouseenter', function () {
+            var nano = $(this);
+            nano.addClass('nano-show-scroll-bar');
+            setTimeout(function () {
+                nano.removeClass('nano-show-scroll-bar');
+            }, 850);
+        });
+
+        $('.nano-content').on('scroll', function () {
+            var nano = $(this).parent('.nano');
+            nano.addClass('nano-show-scroll-bar');
+            clearTimeout($.data(this, 'scrollTimer'));
+            $.data(this, 'scrollTimer', setTimeout(function () {
+                nano.removeClass('nano-show-scroll-bar');
+            }, 850));
+        });
+    }.on('didInsertElement'),
+
     setupGlobalMobileNav: function () {
         // #### Navigating within the sidebar closes it.
         var self = this;

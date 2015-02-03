@@ -11,34 +11,38 @@
             </section>
             {{#link-to "editor.new" class="btn btn-green" title="New Post"}}<span class="hidden">New Post</span>{{/link-to}}
         </header>
-        {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
-        <ol class="posts-list">
-            {{#each post in controller itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
-                {{#link-to "posts.post" post class="permalink" alternateActive=view.active title="Edit this post"}}
-                    <h3 class="entry-title">{{post.model.title}}</h3>
-                    <section class="entry-meta">
-                        <img class="avatar" {{bind-attr src="post.authorAvatar" title="post.authorName"}}>
-                        <span class="author">{{post.authorName}}</span>
-                        <span class="status">
-                            {{#if post.isPublished}}
-                                {{#if post.model.page}}
-                                    <span class="page">Page</span>
-                                {{else}}
-                                    <time datetime="{{unbound post.model.published_at}}" class="date published">
-                                        Published {{gh-format-timeago post.model.published_at}}
-                                    </time>
-                                {{/if}}
-                            {{else}}
-                                <span class="draft">Draft</span>
-                            {{/if}}
-                        </span>
-                    </section>
-                {{/link-to}}
-            {{/each}}
-        </ol>
-        {{/view}}
+        <div class="nano">
+            {{#view "paginated-scroll-box" tagName="section" classNames="nano-content content-list-content js-content-scrollbox"}}
+                <ol class="posts-list">
+                    {{#each post in controller itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
+                        {{#link-to "posts.post" post class="permalink" alternateActive=view.active title="Edit this post"}}
+                            <h3 class="entry-title">{{post.model.title}}</h3>
+                            <section class="entry-meta">
+                                <img class="avatar" {{bind-attr src="post.authorAvatar" title="post.authorName"}}>
+                                <span class="author">{{post.authorName}}</span>
+                                <span class="status">
+                                    {{#if post.isPublished}}
+                                        {{#if post.model.page}}
+                                            <span class="page">Page</span>
+                                        {{else}}
+                                            <time datetime="{{unbound post.model.published_at}}" class="date published">
+                                                Published {{gh-format-timeago post.model.published_at}}
+                                            </time>
+                                        {{/if}}
+                                    {{else}}
+                                        <span class="draft">Draft</span>
+                                    {{/if}}
+                                </span>
+                            </section>
+                        {{/link-to}}
+                    {{/each}}
+                </ol>
+            {{/view}}
+        </div>
     </section>
-    <section {{bind-attr class=":content-preview :js-content-preview postContentFocused:keyboard-focused"}}>
-        {{outlet}}
+    <section {{bind-attr class=":nano :content-preview :js-content-preview postContentFocused:keyboard-focused"}}>
+        <div class="nano-content">
+            {{outlet}}
+        </div>
     </section>
-</div>
+</div>{{! .page-content }}

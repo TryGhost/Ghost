@@ -35,11 +35,12 @@
 }
 .nano > .nano-pane > .nano-slider {
     background: #444;
-    background: rgba(0,0,0,0.35);
+    // background: rgba(0,0,0,0.35);
+    background: rgba($red, 0.6); // Not the real colours
     position: relative;
     border-radius: 10px;
 }
-.nano.nanoShowScrollBar > .nano-pane,
+.nano.nano-show-scroll-bar > .nano-pane,
 .nano-pane.active,
 .nano-pane.flashed {
     opacity: 1;
@@ -47,7 +48,8 @@
 .nano > .nano-pane:hover,
 .nano > .nano-pane.active {
     width: 10px;
-    background: rgba(0, 0, 0, .15);
+    // background: rgba(0, 0, 0, .15);
+    background: rgba($red, 0.4); // Not the real colours
     opacity: 1;
     transition: 0.15s;
 }
