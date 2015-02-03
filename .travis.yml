@@ -1,6 +1,8 @@
 language: node_js
 node_js:
   - "0.10"
+  - "0.12"
+  - "iojs-v1.2.0"
 sudo: false
 cache:
   directories:

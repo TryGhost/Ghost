@@ -46,7 +46,8 @@ GhostServer.prototype.closeConnections = function () {
 
 GhostServer.prototype.logStartMessages = function () {
     // Tell users if their node version is not supported, and exit
-    if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+    if (!semver.satisfies(process.versions.node, packageInfo.engines.node) &&
+        !semver.satisfies(process.versions.node, packageInfo.engines.iojs)) {
         console.log(
             '\nERROR: Unsupported version of Node'.red,
             '\nGhost needs Node version'.red,
