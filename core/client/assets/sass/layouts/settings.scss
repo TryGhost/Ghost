@@ -394,18 +394,33 @@
     display: flex;
 
     @media (max-width: 600px) {
+        position: relative;
         margin-bottom: 20px;
     }
     @media (min-width: 601px) {
         margin-bottom: 10px;
     }
+
+    // &.last-navigation-item {
+    &:last-child {
+        padding-left: 27px; // .navigation-item-drag-handle width + horizontal padding
+    }
 }
 
 .navigation-item-drag-handle {
-    padding-left: 10px;
-    padding-right: 17px;
+    padding: 6px 17px 0 10px;
     width: 27px;
     cursor: move;
+
+    @media (max-width: 600px) {
+        &:before {
+            position: absolute;
+            top: 50%;
+            left: 4px;
+            margin-top: -9px;
+            z-index: 20;
+        }
+    }
 }
 
 .navigation-inputs {
@@ -449,6 +464,7 @@
     padding-left: 10px;
     width: 40px;
     position: relative;
+    z-index: 10;
 
     button {
         width: 30px;

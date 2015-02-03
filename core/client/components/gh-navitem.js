@@ -1,6 +1,9 @@
 var NavItemComponent = Ember.Component.extend({
     classNames: 'navigation-item',
 
+    attributeBindings: ['order:data-order'],
+    order: Ember.computed.readOnly('navItem.order'),
+
     keyPress: function (event) {
         // enter key
         if (event.keyCode === 13) {
