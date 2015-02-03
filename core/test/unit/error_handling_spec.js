@@ -326,16 +326,17 @@ describe('Error handling', function () {
                 options.code.should.equal(404);
                 this.statusCode.should.equal(404);
 
-                // Test that the headers are correct
-                this._headers['cache-control'].should.equal(
-                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                );
-
                 done();
             });
 
             sandbox.stub(express.response, 'status', function (status) {
                 res.statusCode = status;
+                return res;
+            });
+
+            sandbox.stub(res, 'set', function (value) {
+                // Test that the headers are correct
+                value['Cache-Control'].should.eql('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                 return res;
             });
 
@@ -356,16 +357,17 @@ describe('Error handling', function () {
                 options.code.should.equal(404);
                 this.statusCode.should.equal(404);
 
-                // Test that the headers are correct
-                this._headers['cache-control'].should.equal(
-                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                );
-
                 done();
             });
 
             sandbox.stub(express.response, 'status', function (status) {
                 res.statusCode = status;
+                return res;
+            });
+
+            sandbox.stub(res, 'set', function (value) {
+                // Test that the headers are correct
+                value['Cache-Control'].should.eql('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                 return res;
             });
 
@@ -387,12 +389,13 @@ describe('Error handling', function () {
                 options.code.should.equal(500);
                 this.statusCode.should.equal(500);
 
-                // Test that the headers are correct
-                this._headers['cache-control'].should.equal(
-                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                );
-
                 done();
+            });
+
+            sandbox.stub(res, 'set', function (value) {
+                // Test that the headers are correct
+                value['Cache-Control'].should.eql('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                return res;
             });
 
             sandbox.stub(express.response, 'status', function (status) {
@@ -417,16 +420,17 @@ describe('Error handling', function () {
                 options.code.should.equal(500);
                 this.statusCode.should.equal(500);
 
-                // Test that the headers are correct
-                this._headers['cache-control'].should.equal(
-                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                );
-
                 done();
             });
 
             sandbox.stub(express.response, 'status', function (status) {
                 res.statusCode = status;
+                return res;
+            });
+
+            sandbox.stub(res, 'set', function (value) {
+                // Test that the headers are correct
+                value['Cache-Control'].should.eql('no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                 return res;
             });
 
