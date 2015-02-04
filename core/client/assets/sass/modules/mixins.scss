@@ -8,6 +8,7 @@
 // * tab-focus()
 // * triangle()
 // * set-triangle-color()
+// * circular-image()
 // ------------------------------------------------------------
 
 
@@ -98,5 +99,30 @@
         @return $color
     } @else {
         @return "transparent";
+    }
+}
+
+
+//
+// Reusable styles for creating a circular image which is cropped properly, with the image inside it
+// Example: @circular-image(35px);
+// --------------------------------------------------
+
+@mixin circular-image($widthandheight: 20px) {
+    @content;
+    width: $widthandheight;
+    height: $widthandheight;
+    border-radius: $widthandheight;
+    background-size: cover;
+    background-position: center center;
+    position: relative;
+
+    img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
     }
 }

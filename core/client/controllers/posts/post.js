@@ -10,6 +10,10 @@ var PostController = Ember.Controller.extend({
         return this.get('model.author.image') || this.get('ghostPaths.url').asset('/shared/img/user-image.png');
     }),
 
+    authorAvatarBackground: Ember.computed('authorAvatar', function () {
+        return 'background-image: url(' + this.get('authorAvatar') + ')';
+    }),
+
     actions: {
         toggleFeatured: function () {
             var options = {disableNProgress: true},

@@ -125,14 +125,9 @@
 
     // Profile picture
     .image {
-        float: left;
-        margin: 15px 8px 0 0;
-
-        img {
-            display: block;
-            width: 30px;
-            height: 30px;
-            border-radius: 100%;
+        @include circular-image(30px) {
+            float: left;
+            margin: 15px 14px 0 0;
         }
     }
 

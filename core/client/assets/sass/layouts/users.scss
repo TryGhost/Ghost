@@ -97,13 +97,9 @@ a.user-list-item {
 }
 
 .user-list-item-figure {
-    width: 35px;
-    height: 35px;
-    display: block;
-    border: 1px solid #979797;
-    border-radius: 100%;
-    background-size: cover;
-    background-position: center center;
+    @include circular-image(35px) {
+        display: block;
+    }
 }
 
 .user-list-item-icon,
