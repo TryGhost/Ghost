@@ -23,6 +23,20 @@ var hbs             = require('express-hbs'),
     imageHelper         = require('./image'),
     ghost_head;
 
+function getImage(ops, context, contextObject) {
+    if (context === 'home' || context === 'author') {
+        contextObject.image = contextObject.cover;
+    }
+
+    ops.push(imageHelper.call(contextObject, {hash: {absolute:true}}));
+
+    if (context === 'post' && contextObject.author) {
+        ops.push(imageHelper.call(contextObject.author, {hash: {absolute:true}}));
+    }
+
+    return ops;
+}
+
 ghost_head = function (options) {
     /*jshint unused:false*/
     var self = this,
@@ -35,22 +49,19 @@ ghost_head = function (options) {
         trimmedUrl, next, prev, tags,
         ops = [],
         structuredData,
-        coverImage, authorImage, keywords,
+        keywords,
         schema,
-        title = hbs.handlebars.Utils.escapeExpression(blog.title);
+        title = hbs.handlebars.Utils.escapeExpression(blog.title),
+        context = self.context[0],
+        contextObject = self[context] || blog;
 
     trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
     // Push Async calls to an array of promises
     ops.push(urlHelper.call(self, {hash: {absolute: true}}));
     ops.push(meta_description.call(self));
     ops.push(meta_title.call(self));
-    if (self.post) {
-        ops.push(imageHelper.call(self.post, {hash: {absolute:true}}));
 
-        if (self.post.author) {
-            ops.push(imageHelper.call(self.post.author, {hash: {absolute:true}}));
-        }
-    }
+    ops = getImage(ops, context, contextObject);
 
     // Resolves promises then push pushes meta data into ghost_head
     return Promise.settle(ops).then(function (results) {
@@ -62,9 +73,10 @@ ghost_head = function (options) {
             publishedDate, modifiedDate,
             tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(','),
             card = 'summary',
-            type, authorUrl;
+            type, authorUrl, ogType = 'website',
+            createStructuredData, createSchema;
 
-        if (!metaDescription) {
+        if (!metaDescription && self.post) {
             metaDescription = excerpt.call(self.post, {hash: {words: '40'}}).string;
         }
         if (tags[0] !== '') {
@@ -87,55 +99,75 @@ ghost_head = function (options) {
         }
 
         // Test to see if we are on a post page and that Structured data has not been disabled in config.js
-        if (self.post && useStructuredData) {
-            publishedDate = moment(self.post.published_at).toISOString();
-            modifiedDate = moment(self.post.updated_at).toISOString();
+        if (context !== 'paged' && useStructuredData) {
+            createStructuredData = function () {
+                if (context === 'author') {
+                    ogType = 'profile';
+                } else if (context === 'post') {
+                    publishedDate = moment(self.post.published_at).toISOString();
+                    modifiedDate = moment(self.post.updated_at).toISOString();
+                    authorUrl = hbs.handlebars.Utils.escapeExpression(blog.url + '/author/' + self.post.author.slug);
+                    ogType = 'article';
+                }
 
+                structuredData = {
+                    'og:site_name': title,
+                    'og:type': ogType,
+                    'og:title': metaTitle,
+                    'og:description': metaDescription,
+                    'og:url': url,
+                    'og:image': coverImage,
+                    'article:published_time': publishedDate,
+                    'article:modified_time': modifiedDate,
+                    'article:tag': tags,
+                    'twitter:card': card,
+                    'twitter:title': metaTitle,
+                    'twitter:description': metaDescription,
+                    'twitter:url': url,
+                    'twitter:image:src': coverImage
+                };
+            };
+
+            createSchema = function () {
+                schema = {
+                    '@context': 'http://schema.org',
+                    '@type': 'Article',
+                    publisher: title,
+                    author: {
+                        '@type': 'Person',
+                        name: self.post.author.name,
+                        image: authorImage,
+                        url: authorUrl,
+                        sameAs: self.post.author.website
+                    },
+                    headline: metaTitle,
+                    url: url,
+                    datePublished: publishedDate,
+                    dateModified: modifiedDate,
+                    image: coverImage,
+                    keywords: keywords,
+                    description: metaDescription
+                };
+            };
+
+            // escaped data
+            metaTitle = hbs.handlebars.Utils.escapeExpression(metaTitle);
+
+            metaDescription = metaDescription ? hbs.handlebars.Utils.escapeExpression(metaDescription + '...') : null;
+
+            // tag, author and post page use coverImage so we can set twitter card for these
             if (coverImage) {
                 card = 'summary_large_image';
             }
 
-            // escaped data
-            metaTitle = hbs.handlebars.Utils.escapeExpression(metaTitle);
-            metaDescription = hbs.handlebars.Utils.escapeExpression(metaDescription + '...');
-            authorUrl = hbs.handlebars.Utils.escapeExpression(blog.url + '/author/' + self.post.author.slug);
+            // Create structured data for home, post, tag or author page
+            createStructuredData();
 
-            schema = {
-                '@context': 'http://schema.org',
-                '@type': 'Article',
-                publisher: title,
-                author: {
-                    '@type': 'Person',
-                    name: self.post.author.name,
-                    image: authorImage,
-                    url: authorUrl,
-                    sameAs: self.post.author.website
-                },
-                headline: metaTitle,
-                url: url,
-                datePublished: publishedDate,
-                dateModified: modifiedDate,
-                image: coverImage,
-                keywords: keywords,
-                description: metaDescription
-            };
+            // Create schema only on post page
+            if (context === 'post') {
+                createSchema();
+            }
 
-            structuredData = {
-                'og:site_name': title,
-                'og:type': 'article',
-                'og:title': metaTitle,
-                'og:description': metaDescription,
-                'og:url': url,
-                'og:image': coverImage,
-                'article:published_time': publishedDate,
-                'article:modified_time': modifiedDate,
-                'article:tag': tags,
-                'twitter:card': card,
-                'twitter:title': metaTitle,
-                'twitter:description': metaDescription,
-                'twitter:url': url,
-                'twitter:image:src': coverImage
-            };
             head.push('');
             _.each(structuredData, function (content, property) {
                 if (property === 'article:tag') {
@@ -152,7 +184,9 @@ ghost_head = function (options) {
                 }
             });
             head.push('');
-            head.push('<script type="application/ld+json">\n' + JSON.stringify(schema, null, '    ') + '\n    </script>\n');
+            if (context === 'post') {
+                head.push('<script type="application/ld+json">\n' + JSON.stringify(schema, null, '    ') + '\n    </script>\n');
+            }
         }
 
         head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
