@@ -1043,7 +1043,8 @@ var _              = require('lodash'),
                     repo: 'ghost',
                     oauthKey: oauthKey,
                     releaseDate: ninetyDaysAgo,
-                    count: 20
+                    count: 20,
+                    retry: true
                 })
             ).then(function (results) {
                 var contributors = results[1],
