@@ -1,10 +1,10 @@
 ---
 lang: vi
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Làm sao để cài đặt Ghost lên server của bạn - Tài liệu về Ghost
+meta_description: Tất cả mọi thứ bạn cần làm để sử dụng nền tảng blog Ghost trên môi trường thử nghiệm hoặc thực tế.
+heading: Cài đặt Ghost &amp; Cùng bắt đầu
+subheading: Những bước cơ bản để cài đặt blog mới của bạn lần đầu tiên.
 permalink: /vi/installation/windows/
 chapter: installation
 section: windows
@@ -12,36 +12,36 @@ prev_section: mac
 next_section: linux
 ---
 
-# Installing on Windows <a id="install-windows"></a>
+# Cài đặt trên Windows <a id="install-windows"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Lưu ý</strong> Ghost yêu cầu Node.js <strong>0.10.x</strong> (phiên bản ổn định mới nhất). Chúng tôi khuyến khích sử dụng Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
-### Install Node
+### Cài đặt Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, an '.msi' file will be downloaded
-*   Click on the download to open the installer, this is going to install both Node and npm.
-*   Click through the installer, until you get to the screen telling you Node.js is installed.
+*   Trên trang [http://nodejs.org](http://nodejs.org) nhấp install, một tập tin '.msi' sẽ được tải về.
+*   Nhấp vào phần download để mở bộ cài đặt, bộ cài đặt sẽ cài cả node và npm.
+*   Nhấp theo lựa chọn trên bộ cài đặt đến khi cửa sổ thông báo Node.js đã được cài đặt.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Install node on Windows").
+Nếu bạn không hiểu được phần hướng dẫn bạn có thể xem [hướng dẫn từng bước cài đặt](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-win.gif "Cài đặt Node trên Windows").
 
-### Download & Extract Ghost
+### Tải về và giải nén Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in folder'.
-*   When the folder opens, right click on the downloaded zip file and choose 'Extract all'.
+*   Vào trang [http://ghost.org](http://ghost.org), và nhấp vào nút màu xanh dương 'Download Ghost Source Code'.
+*   Trên trang tải về, nhấp nút 'Download Ghost' để tải về tập tin zip phiên bản mới nhất.
+*   Nhấp vào mũi tên cạnh tập tin vừa tải về rồi chọn 'Show in Folder'.
+*   Sau khi thư mục được mở, nhấp phải vào tập tin zip được tải về và chọn 'Extract all'.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Install Ghost on Windows Part 1").
+Nếu bạn không hiểu được phần hướng dẫn bạn có thể xem [hướng dẫn từng bước cài đặt](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win.gif "Cài đặt Ghost trên Windows - Phần 1").
 
-### Install and Run Ghost
+### Cài đặt và chạy Ghost
 
-*   In your start menu, find 'Node.js' and then choose 'Node.js Command Prompt'
-*   In the Node command prompt, you need to change directory to where you extracted Ghost. Type: `cd Downloads/ghost-#.#.#` (replace hashes with the version of Ghost you downloaded).
-*   Next, in the command prompt type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   Trên start menu của bạn, tìm 'Node.js' sau đó chọn 'Node.js Command Prompt'.
+*   Trên cửa sổ dòng lệnh của Node, bạn cần thay đổi đường dẫn đến thư mục vừa giải nén Ghost. Gõ: `cd Downloads/ghost-#.#.#` (thay thế dấu thăng với phiên bản Ghost bạn vừa tải về).
+*   Sau đó trong cửa sổ dòng lệnh, gõ `npm install --production` <span class="note">với hai dấu gạch ngang</span>.
+*   Sau khi npm kết thúc quá trình cài đặt, gõ `npm start` để chạy Ghost ở chế độ phát triển.
+*   Trên trình duyệt, truy cập vào <code class="path">127.0.0.1:2368</code> để thấy được blog Ghost vừa mới cài đặt của bạn.
+*   Thay đổi địa chỉ đến <code class="path">127.0.0.1:2368/ghost</code> tạo tài khoản quản trị mới để đăng nhập vào phần quản trị của Ghost.
+*   Xem qua phần [tài liệu sử dụng](/usage) để xem hướng dẫn những bước tiếp theo.
 
-![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Install Ghost on Windows - Part 2")
+![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-win-2.gif "Cài đặt Ghost trên Windows - Phần 2")
 
