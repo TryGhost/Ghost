@@ -26,6 +26,8 @@ languages:
       key: 'zh_TW'
     - name: 'Português'
       key: 'pt-BR'
+    - name: 'Tiếng Việt'
+      key: 'vi'
 
 port:         4478
 
@@ -175,6 +177,24 @@ translations:
     help:         'Ajuda'
     upgrading:    'Atualizando'
     troubleshooting: 'Resolução de Problemas'
+  vi:
+    site_title:   'Hướng dẫn về Ghost'
+    installation: 'Cài đặt'
+    usage:        'Sử dụng'
+    email:        'Thư điện tử'
+    themes:       'Giao diện'
+    translations: 'Bản dịch'
+    help:         'Trợ giúp'
+    deploy:       'Triển khai'
+    upgrading:    'Nâng cấp'
+    troubleshooting: 'Xử lý sự cố'
+    configuration: 'Cấu hình'
+    faq:          'Hỏi đáp'
+    managing:     'Quản lý'
+    settings:     'Thiết lập'
+    writing:      'Viết bài'
+    back:         'Trang Trước'
+    next:         'Trang Sau'
 
 # If running locally, simply comment out the line below to make all urls relative
 
