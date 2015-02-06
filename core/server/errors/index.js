@@ -261,7 +261,7 @@ errors = {
                 // And then try to explain things to the user...
                 // Cheat and output the error using handlebars escapeExpression
                 return res.status(500).send(
-                    '<h1>Oops, seems there is an an error in the error template.</h1>' +
+                    '<h1>Oops, seems there is an error in the error template.</h1>' +
                     '<p>Encountered the error: </p>' +
                     '<pre>' + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + '</pre>' +
                     '<br ><p>whilst trying to render an error page for the error: </p>' +
