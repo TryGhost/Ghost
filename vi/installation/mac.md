@@ -1,10 +1,10 @@
 ---
 lang: vi
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Làm sao để cài đặt Ghost lên server của bạn - Tài liệu về Ghost
+meta_description: Tất cả mọi thứ bạn cần làm để sử dụng nền tảng blog Ghost trên môi trường thử nghiệm hoặc thực tế.
+heading: Cài đặt Ghost &amp; Cùng bắt đầu
+subheading: Những bước cơ bản để cài đặt blog mới của bạn lần đầu tiên.
 permalink: /vi/installation/mac/
 chapter: installation
 section: mac
@@ -13,35 +13,35 @@ next_section: windows
 ---
 
 
-# Installing on Mac <a id="install-mac"></a>
+# Cài đặt trên Mac <a id="install-mac"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Lưu ý</strong> Ghost yêu cầu Node.js <strong>0.10.x</strong> (phiên bản ổn định mới nhất). Chúng tôi khuyến khích sử dụng Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
-To install Node.js and Ghost on your mac you'll need an open terminal window. You can get one by opening spotlight and typing "Terminal".
+Để cài đặt Node.js và Ghost trên máy tính Mac của bạn, bạn cần mở cửa sổ Terminal. Bạn có thể mở spotlight và gõ "Terminal" để thực hiện điều này.
 
-### Install Node
+### Cài đặt Node
 
-*   On [http://nodejs.org](http://nodejs.org) press install, a '.pkg' file will be downloaded
-*   Click on the download to open the installer, this is going to install both node and npm.
-*   Click through the installer, finally entering your password and clicking 'install software'.
-*   Once the installer is complete, go into your open Terminal window and type `echo $PATH` to check that '/usr/local/bin/' is in your path.
+*   Trên trang [http://nodejs.org](http://nodejs.org) nhấp install, một tập tin '.pkg' sẽ được tải về.
+*   Nhấp vào phần download để mở bộ cài đặt, bộ cài đặt sẽ cài cả node và npm.
+*   Nhấp theo lựa chọn trên bộ cài đặt, cuối cùng nhập vào mật khẩu của bạn và nhấp 'install software'.
+*   Sau khi quá trình cài đặt hoàn tất, mở cửa sổ Terminal và gõ `echo $PATH` để kiểm tra giá trị '/usr/local/bin/' có tồn tại trong đường dẫn của bạn không.
 
-<p class="note"><strong>Note:</strong> If '/usr/local/bin' does not appear in your $PATH, see the <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">troubleshooting tips</a> to find out how to add it</p>
+<p class="note"><strong>Lưu ý</strong> Nếu đường dẫn '/usr/local/bin' không xuất hiện trong $PATH, xem qua <a href="{% if page.lang %}/{{ page.lang }}{% endif %}/installation/troubleshooting#export-path">hướng dẫn xử lý sự cố</a> để tìm cách thêm nó vào</p>.
 
-If you get stuck you can watch the whole [process in action here](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Install Node on Mac").
+Nếu bạn không hiểu được phần hướng dẫn bạn có thể xem [hướng dẫn từng bước cài đặt](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-node-mac.gif "Cài đặt Node trên Mac").
 
-### Install and Run Ghost
+### Cài đặt và chạy Ghost
 
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button.
-*   On the downloads page, press the button to download the latest zip file.
-*   Click on the arrow next to the newly downloaded file, and choose 'show in finder'.
-*   In finder, double-click on the downloaded zip file to extract it.
-*   Next, grab the newly extracted 'ghost-#.#.#' folder and drag it onto the tab bar of your open terminal window, this will make a new terminal tab which is open at the correct location.
-*   In the new terminal tab type `npm install --production` <span class="note">note the two dashes</span>
-*   When npm is finished installing, type `npm start` to start Ghost in development mode
-*   In a browser, navigate to <code class="path">127.0.0.1:2368</code> to see your newly setup Ghost blog
-*   Change the url to <code class="path">127.0.0.1:2368/ghost</code> and create your admin user to login to the Ghost admin.
-*   See the [usage docs](/usage) for instructions on the next steps
+*   Vào trang [http://ghost.org](http://ghost.org), và nhấp vào nút màu xanh dương 'Download Ghost Source Code'.
+*   Trên trang tải về, nhấp nút 'Download Ghost' để tải về tập tin zip phiên bản mới nhất.
+*   Nhấp vào mũi tên cạnh tập tin vừa tải về rồi chọn 'Show in Finder'.
+*   Trong finder, nhấp đôi vào tập tin zip được vừa được tải về để giải nén nó.
+*   Tiếp theo, kéo và thả thư mục 'ghost-#.#.#' vào thanh tab của cửa sổ Terminal để tạo cửa tab mới ở đường dẫn đúng.
+*   Trong tab terminal mới gõ `npm install --production` <span class="note">với hai dấu gạch ngang</span>.
+*   Sau khi npm kết thúc quá trình cài đặt, gõ `npm start` để chạy Ghost ở chế độ phát triển.
+*   Trên trình duyệt, truy cập vào <code class="path">127.0.0.1:2368</code> để thấy được blog Ghost vừa mới cài đặt của bạn.
+*   Thay đổi địa chỉ đến <code class="path">127.0.0.1:2368/ghost</code> tạo tài khoản quản trị mới để đăng nhập vào phần quản trị của Ghost.
+*   Xem qua phần [tài liệu sử dụng](/usage) để xem hướng dẫn những bước tiếp theo.
 
 ![](https://s3-eu-west-1.amazonaws.com/ghost-website-cdn/install-ghost-mac.gif)
 
