@@ -47,7 +47,6 @@ Session.vim
 /content/tmp/*
 /content/data/*
 /content/apps/**/*
-/content/themes/**/*
 /content/images/**/*
 !/content/themes/casper/**
 !/README.md
@@ -58,12 +57,7 @@ CHANGELOG.md
 # Casper generated files
 /core/test/functional/*.png
 
-config.js
-/core/client/config.js
-
 # Built asset files
-/core/built
-/core/client/assets/css
 /core/client/assets/img/contributors/
 /core/client/docs/dist/css
 /core/client/templates/-contributors.hbs
