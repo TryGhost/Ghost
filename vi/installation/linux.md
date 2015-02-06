@@ -1,10 +1,10 @@
 ---
 lang: vi
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Làm sao để cài đặt Ghost lên server của bạn - Tài liệu về Ghost
+meta_description: Tất cả mọi thứ bạn cần làm để sử dụng nền tảng blog Ghost trên môi trường thử nghiệm hoặc thực tế.
+heading: Cài đặt Ghost &amp; Cùng bắt đầu
+subheading: Những bước cơ bản để cài đặt blog mới của bạn lần đầu tiên.
 permalink: /vi/installation/linux/
 chapter: installation
 section: linux
@@ -13,62 +13,62 @@ next_section: deploy
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# Cài đặt trên Linux <a id="install-linux"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Lưu ý</strong> Ghost yêu cầu Node.js <strong>0.10.x</strong> (phiên bản ổn định mới nhất). Chúng tôi khuyến khích sử dụng Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
-### Install Node
+### Cài đặt Node
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   Bạn có thể tải về tập tin `.tar.gz` từ [http://nodejs.org](http://nodejs.org), hoặc bạn có thể xem qua hướng dẫn [cài đặt với trình quản lý gói](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
+*   Kiểm tra lại một lần nữa Node và npm đã được cài đặt chưa bằng cách gõ lệnh `node -v` và `npm -v` trên cửa sổ dòng lệnh.
 
-### Install and Run Ghost
-
-
-**If you are using Linux on your desktop follow these steps:**
-
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+### Cài đặt và chạy Ghost
 
 
-**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
+**Nếu bạn sử dụng Linux trên nền tảng desktop có thể làm theo những bước sau:**
 
-*   Use the following command to download the latest release of Ghost:
+*   Vào trang [http://ghost.org](http://ghost.org), và nhấp vào nút màu xanh dương 'Download Ghost Source Code'.
+*   Trên trang tải về, nhấp nút 'Download Ghost' để tải về tập tin zip phiên bản mới nhất và giải nén tập tin đến đường dẫn bạn chạy Ghost.
+
+
+** Nếu bạn sử dụng Linux như một hệ điều hành phụ hoặc bạn kết nối thông qua giao thức SSH và chỉ có thể sử dụng dòng lệnh:**
+
+*   Sử dụng lệnh sau để tải Ghost phiên bản mới nhất:
 
     ```
     $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
     ```
 
-*   Unzip the archive and change into the directory using the following:
+*   Giải nén tập tin trên với lệnh sau:
 
     ```
     $ unzip -uo ghost.zip -d ghost
     ```
 
 
-**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+**Sau khi bạn giải nén Ghost mở cửa sổ dòng lệnh và làm những bước tiếp theo:**
 
-*   Change into the directory you extracted Ghost to with the following command:
+*   Thay đổi đường dẫn hiện tại đến thư mục mà bạn vừa giâi nén Ghost với lệnh sau:
 
     ```
     $ cd /path/to/ghost
     ```
 
-*   To install Ghost type:
+*   Để cài đặt Ghost gõ:
 
     ```
     npm install --production
     ```
-    <span class="note">note the two dashes</span>
+    <span class="note">với hai dấu gạch ngang</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode:
+*   Sau khi npm kết thúc quá trình cài đặt, gõ lệnh sau để chạy Ghost ở chế độ phát triển:
 
     ```
     $ npm start
     ```
 
-*   Ghost will now be running on **127.0.0.1:2368**<br />
-    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+*   Ghost sẽ chạy ở địa chỉ **127.0.0.1:2368**<br />
+    <span class="note">Bạn có thể thay đổi địa chỉ IP và cổng trong tập tin **config.js**</span>
 
-*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
-*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
+*   Trên trình duyệt, truy cập vào [http://127.0.0.1:2368](http://127.0.0.1:2368) để thấy được blog Ghost vừa mới cài đặt của bạn.
+*   Thay đổi địa chỉ đến [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) tạo tài khoản quản trị mới để đăng nhập vào phần quản trị của Ghost.
