@@ -1,5 +1,5 @@
-var blogUrl = Ember.Handlebars.makeBoundHelper(function () {
-    return new Ember.Handlebars.SafeString(this.get('config.blogUrl'));
+var blogUrl = Ember.HTMLBars.makeBoundHelper(function () {
+    return Ember.String.htmlSafe(this.get('config.blogUrl'));
 });
 
 export default blogUrl;

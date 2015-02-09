@@ -52,7 +52,7 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
             metaTitle = Ember.Handlebars.Utils.escapeExpression(metaTitle);
-            metaTitle = new Ember.Handlebars.SafeString(metaTitle + '&hellip;');
+            metaTitle = Ember.String.htmlSafe(metaTitle + '&hellip;');
         }
 
         return metaTitle;
@@ -70,7 +70,7 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
-            seoURL = new Ember.Handlebars.SafeString(seoURL + '&hellip;');
+            seoURL = Ember.String.htmlSafe(seoURL + '&hellip;');
         }
 
         return seoURL;
@@ -84,7 +84,7 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
         if (metaDescription && metaDescription.length > 156) {
             metaDescription = metaDescription.substring(0, 156).trim();
             metaDescription = Ember.Handlebars.Utils.escapeExpression(metaDescription);
-            metaDescription = new Ember.Handlebars.SafeString(metaDescription + '&hellip;');
+            metaDescription = Ember.String.htmlSafe(metaDescription + '&hellip;');
         }
 
         return metaDescription;
