@@ -47,7 +47,7 @@ function ghostPathsHelper(path, url) {
         base = base + url;
     }
 
-    return new Ember.Handlebars.SafeString(base);
+    return Ember.String.htmlSafe(base);
 }
 
 export default ghostPathsHelper;

@@ -1,6 +1,14 @@
-var countCharacters = Ember.Handlebars.makeBoundHelper(function (content) {
+var countCharacters = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
     var el = document.createElement('span'),
-        length = content ? content.length : 0;
+        length,
+        content;
+
+    if (!arr || !arr.length) {
+        return;
+    }
+
+    content = arr[0] || '';
+    length = content.length;
 
     el.className = 'word-count';
 
@@ -12,7 +20,7 @@ var countCharacters = Ember.Handlebars.makeBoundHelper(function (content) {
 
     el.innerHTML = 200 - length;
 
-    return new Ember.Handlebars.SafeString(el.outerHTML);
+    return Ember.String.htmlSafe(el.outerHTML);
 });
 
 export default countCharacters;
