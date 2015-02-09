@@ -126,7 +126,7 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
         if (metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
             metaTitle = Ember.Handlebars.Utils.escapeExpression(metaTitle);
-            metaTitle = new Ember.Handlebars.SafeString(metaTitle + '&hellip;');
+            metaTitle = Ember.String.htmlSafe(metaTitle + '&hellip;');
         }
 
         return metaTitle;
@@ -162,7 +162,7 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
             // Limit to 156 characters
             placeholder = placeholder.substring(0, 156).trim();
             placeholder = Ember.Handlebars.Utils.escapeExpression(placeholder);
-            placeholder = new Ember.Handlebars.SafeString(placeholder + '&hellip;');
+            placeholder = Ember.String.htmlSafe(placeholder + '&hellip;');
         }
 
         return placeholder;
@@ -180,7 +180,7 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
-            seoURL = new Ember.Handlebars.SafeString(seoURL + '&hellip;');
+            seoURL = Ember.String.htmlSafe(seoURL + '&hellip;');
         }
 
         return seoURL;
