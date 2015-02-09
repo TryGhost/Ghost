@@ -234,7 +234,7 @@ var PostTagsInputController = Ember.Controller.extend({
             suggestion = Ember.Object.create();
 
         highlightedName = tagName.replace(regex, '<mark>$1</mark>');
-        highlightedName = new Ember.Handlebars.SafeString(highlightedName);
+        highlightedName = Ember.String.htmlSafe(highlightedName);
 
         suggestion.set('tag', matchingTag);
         suggestion.set('highlightedName', highlightedName);
