@@ -1,4 +1,4 @@
-/* global Showdown, Handlebars, html_sanitize*/
+/* global Showdown, html_sanitize*/
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
 var showdown,
@@ -6,11 +6,16 @@ var showdown,
 
 showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
-formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
-    var escapedhtml = '';
+formatMarkdown = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+    if (!arr || !arr.length) {
+        return;
+    }
+
+    var escapedhtml = '',
+        markdown = arr[0] || '';
 
     // convert markdown to HTML
-    escapedhtml = showdown.makeHtml(markdown || '');
+    escapedhtml = showdown.makeHtml(markdown);
 
     // replace script and iFrame
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
@@ -23,7 +28,7 @@ formatMarkdown = Ember.Handlebars.makeBoundHelper(function (markdown) {
     escapedhtml = html_sanitize(escapedhtml, cajaSanitizers.url, cajaSanitizers.id);
     // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 
-    return new Handlebars.SafeString(escapedhtml);
+    return Ember.String.htmlSafe(escapedhtml);
 });
 
 export default formatMarkdown;
