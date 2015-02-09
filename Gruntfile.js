@@ -380,6 +380,9 @@ var _              = require('lodash'),
             emberTemplates: {
                 dev: {
                     options: {
+                        templateCompilerPath: 'bower_components/ember/ember-template-compiler.js',
+                        handlebarsPath: 'bower_components/handlebars/handlebars.js',
+                        templateNamespace: 'HTMLBars',
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
@@ -395,6 +398,9 @@ var _              = require('lodash'),
 
                 prod: {
                     options: {
+                        templateCompilerPath: 'bower_components/ember/ember-template-compiler.js',
+                        handlebarsPath: 'bower_components/handlebars/handlebars.js',
+                        templateNamespace: 'HTMLBars',
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
@@ -571,8 +577,7 @@ var _              = require('lodash'),
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
-                        'bower_components/handlebars/handlebars.js',
-                        'bower_components/ember/ember.js',
+                        'bower_components/ember/ember.debug.js',
                         'bower_components/ember-data/ember-data.js',
                         'bower_components/ember-resolver/dist/ember-resolver.js',
                         'bower_components/ic-ajax/dist/globals/main.js',
@@ -608,7 +613,6 @@ var _              = require('lodash'),
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
-                        'bower_components/handlebars/handlebars.runtime.js',
                         'bower_components/ember/ember.prod.js',
                         'bower_components/ember-data/ember-data.prod.js',
                         'bower_components/ember-resolver/dist/ember-resolver.js',
