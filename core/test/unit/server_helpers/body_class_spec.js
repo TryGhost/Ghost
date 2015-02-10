@@ -77,11 +77,11 @@ describe('{{body_class}} helper', function () {
 
             rendered[0].string.should.equal('home-template');
             rendered[1].string.should.equal('post-template');
-            rendered[2].string.should.equal('paged archive-template');
+            rendered[2].string.should.equal('paged');
             rendered[3].string.should.equal('tag-template tag-foo');
-            rendered[4].string.should.equal('tag-template tag-foo paged archive-template');
+            rendered[4].string.should.equal('tag-template tag-foo paged');
             rendered[5].string.should.equal('author-template author-bar');
-            rendered[6].string.should.equal('author-template author-bar paged archive-template');
+            rendered[6].string.should.equal('author-template author-bar paged');
 
             done();
         }).catch(done);
@@ -95,7 +95,7 @@ describe('{{body_class}} helper', function () {
             }
         }).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.equal('home-template page-template page');
+            rendered.string.should.equal('home-template page');
 
             done();
         }).catch(done);
@@ -111,7 +111,7 @@ describe('{{body_class}} helper', function () {
             }
         }).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.equal('post-template page-template page page-about page-template-about');
+            rendered.string.should.equal('post-template page-template page page-about');
 
             done();
         }).catch(done);

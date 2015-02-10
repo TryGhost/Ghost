@@ -32,8 +32,6 @@ body_class = function () {
 
     if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
         classes.push('paged');
-        // To be removed from pages by #2597 when we're ready to deprecate this
-        classes.push('archive-template');
     } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
     } else if (post) {
