@@ -50,6 +50,7 @@ Full instructions & troubleshooting tips can be found in the [Contributing Guide
 
 1. `npm install -g grunt-cli`
 1. `npm install`
+1. `bower install`
 1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
 1. `npm start`
 
