@@ -161,16 +161,17 @@ function urlFor(context, data, absolute) {
                 // mismatch in http/https etc, force absolute
                 urlPath = '/' + urlPath.split(hostname)[1];
                 absolute = true;
-            } else { // not hosted on this ghost instance, so
-                     // urls with protocols are already absolute
-                     // and otherwise respect the passed in value
-                absolute = (urlPath.indexOf('://') === -1) && absolute;
             }
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
         urlPath = knownPaths[context] || '/';
+    }
+
+    // This url already has a protocol so is likely an external url to be returned
+    if (urlPath && urlPath.indexOf('://') !== -1) {
+        return urlPath;
     }
 
     return createUrl(urlPath, absolute, secure);
