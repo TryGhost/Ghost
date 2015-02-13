@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var Error404Route = Ember.Route.extend({
     controllerName: 'error',
     templateName: 'error',

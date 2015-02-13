@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // SelectiveSaveMixin adds a saveOnly method to a DS.Model.
 //
 // saveOnly provides a way to save one or more properties of a model while

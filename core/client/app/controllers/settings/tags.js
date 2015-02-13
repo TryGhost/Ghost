@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import PaginationMixin from 'ghost/mixins/pagination-controller';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import boundOneWay from 'ghost/utils/bound-one-way';

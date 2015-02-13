@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var UserValidator = Ember.Object.create({
     check: function (model) {
         var validator = this.validators[model.get('status')];

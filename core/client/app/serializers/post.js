@@ -1,3 +1,5 @@
+import Ember from 'ember';
+import DS from 'ember-data';
 import ApplicationSerializer from 'ghost/serializers/application';
 
 var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {

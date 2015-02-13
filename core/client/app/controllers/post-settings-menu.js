@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /* global moment */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';

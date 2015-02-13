@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var SettingsUserView = Ember.View.extend({
     currentUser: Ember.computed.alias('controller.session.user'),
 

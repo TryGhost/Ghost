@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var NavItemComponent = Ember.Component.extend({
     classNames: 'navigation-item',
 

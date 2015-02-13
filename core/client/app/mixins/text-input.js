@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var BlurField = Ember.Mixin.create({
     selectOnClick: false,
     stopEnterKeyDownPropagation: false,

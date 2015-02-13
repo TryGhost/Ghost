@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /*global CodeMirror */
 
 import MarkerManager from 'ghost/mixins/marker-manager';

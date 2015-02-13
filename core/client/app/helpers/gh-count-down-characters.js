@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var countDownCharacters = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
     var el = document.createElement('span'),
         content,

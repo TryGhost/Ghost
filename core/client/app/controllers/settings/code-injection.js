@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var SettingsCodeInjectionController = Ember.Controller.extend({
     actions: {
         save: function () {

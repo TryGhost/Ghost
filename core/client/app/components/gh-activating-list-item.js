@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var ActivatingListItem = Ember.Component.extend({
     tagName: 'li',
     classNameBindings: ['active'],

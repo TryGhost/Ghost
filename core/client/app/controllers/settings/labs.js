@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var LabsController = Ember.Controller.extend(Ember.Evented, {
     needs: ['feature'],
 

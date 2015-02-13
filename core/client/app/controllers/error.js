@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var ErrorController = Ember.Controller.extend({
     code: Ember.computed('content.status', function () {
         return this.get('content.status') > 200 ? this.get('content.status') : 500;

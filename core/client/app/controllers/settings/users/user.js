@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';

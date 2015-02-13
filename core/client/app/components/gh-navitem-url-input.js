@@ -1,3 +1,4 @@
+import Ember from 'ember';
 function joinUrlParts(url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {
         path = '/' + path;

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 
 var UploadController = Ember.Controller.extend({
     acceptEncoding: 'image/*',

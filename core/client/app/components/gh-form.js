@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var Form = Ember.View.extend({
     tagName: 'form',
     attributeBindings: ['enctype'],

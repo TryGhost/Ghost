@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var documentTitle = function () {
     Ember.Route.reopen({
         // `titleToken` can either be a static string or a function

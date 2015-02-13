@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // Handlebars Helper {{gh-path}}
 // Usage: Assume 'http://www.myghostblog.org/myblog/'
 // {{gh-path}} or {{gh-path ‘blog’}} for Ghost’s root (/myblog/)

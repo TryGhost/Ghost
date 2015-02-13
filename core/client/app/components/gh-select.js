@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // GhostSelect is a solution to Ember.Select being evil and worthless.
 // (Namely, this solves problems with async data in Ember.Select)
 // Inspired by (that is, totally ripped off from) this JSBin

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 
 // Code modified from Addepar/ember-widgets
 // https://github.com/Addepar/ember-widgets/blob/master/src/mixins.coffee#L39

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import DropdownButton from 'ghost/components/gh-dropdown-button';
 
 var PopoverButton = DropdownButton.extend({

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
 var Markdown = Ember.Component.extend({

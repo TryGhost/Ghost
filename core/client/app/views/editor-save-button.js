@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var EditorSaveButtonView = Ember.View.extend({
     templateName: 'editor-save-button',
     tagName: 'section',

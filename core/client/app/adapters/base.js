@@ -1,3 +1,4 @@
+import DS from 'ember-data';
 import ghostPaths from 'ghost/utils/ghost-paths';
 
 var BaseAdapter = DS.RESTAdapter.extend({

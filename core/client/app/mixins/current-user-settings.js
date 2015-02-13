@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var CurrentUserSettings = Ember.Mixin.create({
     currentUser: function () {
         return this.store.find('user', 'me');

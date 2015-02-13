@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var formatTimeago = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
     if (!arr || !arr.length) {
         return;

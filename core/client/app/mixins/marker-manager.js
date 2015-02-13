@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var MarkerManager = Ember.Mixin.create({
     imageMarkdownRegex: /^(?:\{<(.*?)>\})?!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim,
     markerRegex: /\{<([\w\W]*?)>\}/,

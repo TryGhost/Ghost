@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import counter from 'ghost/utils/word-count';
 
 var countWords = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {

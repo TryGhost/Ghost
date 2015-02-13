@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import mobileQuery from 'ghost/utils/mobile';
 
 // A mobile parent view needs to implement three methods,

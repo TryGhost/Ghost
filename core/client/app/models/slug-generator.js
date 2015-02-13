@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var SlugGenerator = Ember.Object.extend({
     ghostPaths: null,
     slugType: null,

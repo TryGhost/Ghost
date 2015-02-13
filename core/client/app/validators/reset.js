@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var ResetValidator = Ember.Object.create({
     check: function (model) {
         var p1 = model.get('newPassword'),

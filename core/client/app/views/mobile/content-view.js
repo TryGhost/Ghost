@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import mobileQuery from 'ghost/utils/mobile';
 
 var MobileContentView = Ember.View.extend({

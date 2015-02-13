@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 var NotificationComponent = Ember.Component.extend({
     classNames: ['js-bb-notification'],
 

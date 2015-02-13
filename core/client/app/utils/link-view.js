@@ -1,3 +1,4 @@
+import Ember from 'ember';
 Ember.LinkView.reopen({
     active: Ember.computed('loadedParams', 'resolvedParams', 'routeArgs', function () {
         var isActive = this._super();

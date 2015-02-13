@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // This is used by the dropdown initializer (and subsequently popovers) to manage closing & toggling
 import BodyEventListener from 'ghost/mixins/body-event-listener';
 

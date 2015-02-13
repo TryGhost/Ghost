@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var DeleteTagController = Ember.Controller.extend({
     postInflection: Ember.computed('model.post_count', function () {
         return this.get('model.post_count') > 1 ? 'posts' : 'post';

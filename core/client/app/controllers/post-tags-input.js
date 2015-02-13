@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var PostTagsInputController = Ember.Controller.extend({
     tagEnteredOrder: Ember.A(),
 
