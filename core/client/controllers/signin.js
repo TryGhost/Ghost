@@ -11,8 +11,9 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
                 data = model.getProperties('identification', 'password');
 
             this._super(data).catch(function () {
-                // If simple-auth's authenticate rejects we need to catch it
-                // to avoid an unhandled rejection exception.
+                // if authentication fails a rejected promise will be returned.
+                // it needs to be caught so it doesn't generate an exception in the console,
+                // but it's actually "handled" by the sessionAuthenticationFailed action handler.
             });
         },
 
