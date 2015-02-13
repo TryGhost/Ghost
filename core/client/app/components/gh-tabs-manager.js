@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /**
 Heavily inspired by ic-tabs (https://github.com/instructure/ic-tabs)
 

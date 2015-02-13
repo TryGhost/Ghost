@@ -1,3 +1,5 @@
+import Ember from 'ember';
+import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 import SelectiveSaveMixin from 'ghost/mixins/selective-save';

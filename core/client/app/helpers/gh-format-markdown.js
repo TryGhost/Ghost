@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /* global Showdown, html_sanitize*/
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 

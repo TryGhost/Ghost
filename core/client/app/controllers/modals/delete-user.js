@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var DeleteUserController = Ember.Controller.extend({
     userPostCount: Ember.computed('model.id', function () {
         var promise,

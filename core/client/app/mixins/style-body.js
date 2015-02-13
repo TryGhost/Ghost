@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // mixin used for routes that need to set a css className on the body tag
 
 var styleBody = Ember.Mixin.create({

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /**
  * Defines a property similarly to `Ember.computed.oneway`,
  * save that while a `oneway` loses its binding upon being set,

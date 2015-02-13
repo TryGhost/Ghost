@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';

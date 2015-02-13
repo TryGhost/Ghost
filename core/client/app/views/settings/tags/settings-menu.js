@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var TagsSettingsMenuView = Ember.View.extend({
     saveText: Ember.computed('controller.model.isNew', function () {
         return this.get('controller.model.isNew') ?

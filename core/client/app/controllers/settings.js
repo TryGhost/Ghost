@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var SettingsController = Ember.Controller.extend({
     needs: ['feature'],
 

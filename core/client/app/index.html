@@ -7,6 +7,8 @@
 
     <title>Ghost Admin</title>
 
+    {{content-for 'head'}}
+
     <meta name="HandheldFriendly" content="True" />
     <meta name="MobileOptimized" content="320" />
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1, minimal-ui" />
@@ -36,11 +38,19 @@
     {{#unless skip_google_fonts}}
         <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" />
     {{/unless}}
-    <link rel="stylesheet" href="{{asset "css/ghost.min.css" ghost="true"}}" />
+    
+    <link rel="stylesheet" href="{{asset "css/vendor.css" ghost="true"}}" />
+    <link rel="stylesheet" href="{{asset "css/ghost.css" ghost="true"}}" />
+    {{content-for 'head-footer'}}
 </head>
 <body>
+    {{content-for 'body'}}
 
     {{{ghost_script_tags}}}
+    <script src="assets/vendor.js"></script>
+    <script src="assets/ghost.js"></script>
+
+    {{content-for 'body-footer'}}
 
 </body>
 </html>

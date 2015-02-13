@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import ApplicationSerializer from 'ghost/serializers/application';
 
 var SettingSerializer = ApplicationSerializer.extend({

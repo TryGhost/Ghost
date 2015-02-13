@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
     init: function () {
         var promise;

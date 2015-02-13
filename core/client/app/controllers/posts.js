@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import PaginationControllerMixin from 'ghost/mixins/pagination-controller';
 
 function publishedAtCompare(item1, item2) {

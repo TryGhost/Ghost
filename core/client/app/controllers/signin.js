@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControllerMixin, ValidationEngine, {

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import BaseAdapter from 'ghost/adapters/base';
 
 // EmbeddedRelationAdapter will augment the query object in calls made to

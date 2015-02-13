@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var PostItemView = Ember.View.extend({
     classNameBindings: ['active', 'isFeatured:featured', 'isPage:page'],
 

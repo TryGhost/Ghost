@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var ForgotValidator = Ember.Object.create({
     check: function (model) {
         var data = model.getProperties('email'),
