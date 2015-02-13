@@ -72,7 +72,7 @@
             "defaultValue": "{}"
         },
         "navigation": {
-            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
+            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\", \"order\":0}]"
         }
     },
     "theme": {
