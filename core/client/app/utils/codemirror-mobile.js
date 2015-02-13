@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /*global CodeMirror, device, FastClick*/
 import createTouchEditor from 'ghost/assets/lib/touch-editor';
 

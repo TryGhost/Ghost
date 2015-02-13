@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import ajax from 'ghost/utils/ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 

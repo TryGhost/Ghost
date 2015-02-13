@@ -1,3 +1,5 @@
+import Ember from 'ember';
+import DS from 'ember-data';
 var Role = DS.Model.extend({
     uuid: DS.attr('string'),
     name: DS.attr('string'),

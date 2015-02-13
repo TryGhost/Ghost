@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /*global device*/
 var TrimFocusInput = Ember.TextField.extend({
     focus: true,

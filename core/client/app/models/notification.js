@@ -1,3 +1,4 @@
+import DS from 'ember-data';
 var Notification = DS.Model.extend({
     dismissible: DS.attr('boolean'),
     location: DS.attr('string'),

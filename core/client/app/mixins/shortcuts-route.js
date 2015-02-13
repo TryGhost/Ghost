@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /* global key */
 
 // Configure KeyMaster to respond to all shortcuts,

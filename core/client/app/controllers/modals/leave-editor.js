@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var LeaveEditorController = Ember.Controller.extend({
     args: Ember.computed.alias('model'),
 

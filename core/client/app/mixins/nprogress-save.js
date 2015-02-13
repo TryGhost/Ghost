@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var NProgressSaveMixin = Ember.Mixin.create({
     save: function (options) {
         if (options && options.disableNProgress) {

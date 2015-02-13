@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // See gh-tabs-manager.js for use
 var Tab = Ember.Component.extend({
     tabsManager: Ember.computed(function () {

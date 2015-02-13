@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /* global key */
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';

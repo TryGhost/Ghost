@@ -1,3 +1,4 @@
+import Ember from 'ember';
 // See gh-tabs-manager.js for use
 var TabPane = Ember.Component.extend({
     classNameBindings: ['active'],

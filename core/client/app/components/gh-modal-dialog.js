@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var ModalDialog = Ember.Component.extend({
     didInsertElement: function () {
         this.$('.js-modal-container, .js-modal-background').addClass('fade-in open');
