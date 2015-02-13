@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import GhostSelect from 'ghost/components/gh-select';
 
 var RolesSelector = GhostSelect.extend({

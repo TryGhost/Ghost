@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /*global alert */
 
 var appStates,

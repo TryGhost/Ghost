@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var InviteNewUserController = Ember.Controller.extend({
     // Used to set the initial value for the dropdown
     authorRole: Ember.computed(function () {

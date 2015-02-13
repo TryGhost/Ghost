@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var FileUpload = Ember.Component.extend({
     _file: null,
 

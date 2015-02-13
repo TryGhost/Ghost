@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import Notification from 'ghost/models/notification';
 
 var Notifications = Ember.ArrayProxy.extend({

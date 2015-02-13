@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import DropdownMixin from 'ghost/mixins/dropdown-mixin';
 
 var DropdownButton = Ember.Component.extend(DropdownMixin, {

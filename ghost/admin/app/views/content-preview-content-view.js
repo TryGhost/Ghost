@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 
 var PostContentView = Ember.View.extend({

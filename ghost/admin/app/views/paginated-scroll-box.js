@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 import PaginationViewMixin from 'ghost/mixins/pagination-view-infinite-scroll';
 

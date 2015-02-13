@@ -1,3 +1,5 @@
+import Ember from 'ember';
+import DS from 'ember-data';
 var ApplicationSerializer = DS.RESTSerializer.extend({
     serializeIntoHash: function (hash, type, record, options) {
         // Our API expects an id on the posted object

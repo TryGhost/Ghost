@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var PostController = Ember.Controller.extend({
     isPublished: Ember.computed.equal('model.status', 'published'),
     classNameBindings: ['model.featured'],

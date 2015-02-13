@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /*
   Dropdowns and their buttons are evented and do not propagate clicks.
 */

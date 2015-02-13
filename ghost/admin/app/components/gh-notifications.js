@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var NotificationsComponent = Ember.Component.extend({
     tagName: 'aside',
     classNames: 'notifications',

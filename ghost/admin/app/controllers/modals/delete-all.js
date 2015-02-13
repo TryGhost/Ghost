@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var DeleteAllController = Ember.Controller.extend({
     actions: {
         confirmAccept: function () {

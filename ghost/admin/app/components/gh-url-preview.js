@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /*
 Example usage:
 {{gh-url-preview prefix="tag" slug=theSlugValue tagName="p" classNames="description"}}

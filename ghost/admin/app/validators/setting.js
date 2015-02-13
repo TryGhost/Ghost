@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var SettingValidator = Ember.Object.create({
     check: function (model) {
         var validationErrors = [],

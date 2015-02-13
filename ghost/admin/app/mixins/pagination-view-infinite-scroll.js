@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var PaginationViewInfiniteScrollMixin = Ember.Mixin.create({
 
     /**

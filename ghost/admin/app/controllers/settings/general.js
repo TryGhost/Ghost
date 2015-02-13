@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var SettingsGeneralController = Ember.Controller.extend({
     selectedTheme: null,
 

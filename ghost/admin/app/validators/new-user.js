@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var NewUserValidator = Ember.Object.extend({
     check: function (model) {
         var data = model.getProperties('name', 'email', 'password'),

@@ -1,3 +1,5 @@
+import Ember from 'ember';
+import DS from 'ember-data';
 import {getRequestErrorMessage} from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';

@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var TagSettingsValidator = Ember.Object.create({
     check: function (model) {
         var validationErrors = [],

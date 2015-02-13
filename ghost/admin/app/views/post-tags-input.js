@@ -1,3 +1,4 @@
+import Ember from 'ember';
 var PostTagsInputView = Ember.View.extend({
     tagName: 'section',
     elementId: 'entry-tags',

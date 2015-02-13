@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';

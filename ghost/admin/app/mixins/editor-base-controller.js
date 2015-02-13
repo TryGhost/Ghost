@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /* global console */
 import MarkerManager from 'ghost/mixins/marker-manager';
 import PostModel from 'ghost/models/post';

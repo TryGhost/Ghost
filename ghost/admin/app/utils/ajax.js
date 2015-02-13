@@ -1,3 +1,4 @@
+import Ember from 'ember';
 /* global ic */
 
 var ajax = function () {
