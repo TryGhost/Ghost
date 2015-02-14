@@ -510,6 +510,11 @@ frontendControllers = {
                             },
                             htmlContent = cheerio.load(post.html, {decodeEntities: false});
 
+                        if (post.image) {
+                            htmlContent('p').first().before('<img src="' + post.image + '" />');
+                            htmlContent('img').attr('alt', post.title);
+                        }
+
                         // convert relative resource urls to absolute
                         ['href', 'src'].forEach(function (attributeName) {
                             htmlContent('[' + attributeName + ']').each(function (ix, el) {
