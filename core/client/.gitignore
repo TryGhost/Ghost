@@ -18,4 +18,4 @@ testem.log
 
 # built by grunt
 public/assets/img/contributors/
-templates/-contributors.hbs
+app/templates/-contributors.hbs
