@@ -67,9 +67,7 @@ function initDbHashAndFirstRun() {
 function builtFilesExist() {
     var deferreds = [],
         location = config.paths.builtScriptPath,
-
-        fileNames = process.env.NODE_ENV === 'production' ?
-            helpers.scriptFiles.production : helpers.scriptFiles.development;
+        fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
 
     function checkExist(fileName) {
         var errorMessage = 'Javascript files have not been built.',

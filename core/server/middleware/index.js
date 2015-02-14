@@ -235,7 +235,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     // Static assets
     blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
     blogApp.use('/content/images', storage.getStorage().serve());
-    blogApp.use('/ghost/scripts', express['static'](path.join(corePath, '/built/scripts'), {maxAge: utils.ONE_YEAR_MS}));
     blogApp.use('/public', express['static'](path.join(corePath, '/built/public'), {maxAge: utils.ONE_YEAR_MS}));
 
     // First determine whether we're serving admin or theme content
@@ -244,7 +243,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use(configHbsForContext);
 
     // Admin only config
-    blogApp.use('/ghost', express['static'](path.join(corePath, '/client/assets'), {maxAge: utils.ONE_YEAR_MS}));
+    blogApp.use('/ghost', express['static'](path.join(corePath, '/client/dist/assets'), {maxAge: utils.ONE_YEAR_MS}));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
