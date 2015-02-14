@@ -79,7 +79,20 @@ function replaceEndFootnotes(text, converter) {
                     }
 
                     // Extract pre blocks
+                    text = text.replace(/<(pre|code)>[\s\S]*?<\/(\1)>/gim, function (x) {
+                        var hash = hashId();
+                        preExtractions[hash] = x;
+                        return '{gfm-js-extract-pre-' + hash + '}';
+                    }, 'm');
+
                     text = text.replace(/```[\s\S]*?\n```/gim, function (x) {
+                        var hash = hashId();
+                        preExtractions[hash] = x;
+                        return '{gfm-js-extract-pre-' + hash + '}';
+                    }, 'm');
+
+                    // Extract code blocks
+                    text = text.replace(/`[\s\S]*?`/gim, function (x) {
                         var hash = hashId();
                         preExtractions[hash] = x;
                         return '{gfm-js-extract-pre-' + hash + '}';
