@@ -197,7 +197,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         if (status === 'published') {
             message += '&nbsp;<a href="' + path + '">View ' + this.get('postOrPage') + '</a>';
         }
-        this.notifications.showSuccess(message, {delayed: delay});
+        this.notifications.showSuccess(message.htmlSafe(), {delayed: delay});
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
@@ -206,7 +206,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         message += '<br />' + error;
 
-        this.notifications.showError(message, {delayed: delay});
+        this.notifications.showError(message.htmlSafe(), {delayed: delay});
     },
 
     shouldFocusTitle: Ember.computed.alias('model.isNew'),
