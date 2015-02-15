@@ -45,14 +45,10 @@ function inPublicPaths(req){
     ApiRouteBase = ApiRouteBase.substring(0, ApiRouteBase.length - 1);
 
     var defaultPublicApi = {
-        '*': [
-            '/authentication/'
-        ],
         'GET': [
             '/posts/',
             '/posts/:id',
             '/posts/slug/:slugId',
-            '/users/:id',
             '/users/slug/:slug',
         ],
     };
@@ -90,8 +86,8 @@ middleware = {
             return a;
         });
 
-        if (subPath.indexOf('/ghost/api/') === 0
-            && !inPublicPaths(req)) {
+        if(subPath.indexOf('/ghost/api/') === 0
+            && path.indexOf('/ghost/api/v0.1/authentication/') !== 0 && !inPublicPaths(req)) {
             return passport.authenticate('bearer', {session: false, failWithError: true},
                 function (err, user, info) {
                     if (err) {
