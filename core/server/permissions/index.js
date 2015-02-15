@@ -55,7 +55,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         role:       Models.Role,
         user:       Models.User,
         permission: Models.Permission,
-        setting:    Models.Settings
+        setting:    Models.Settings,
+        tag:        Models.Tag
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
@@ -111,7 +112,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     };
                 // Check user permissions for matching action, object and id.
 
-                if (_.any(loadedPermissions.user.roles, {name: 'Owner'})) {
+                if (userPermissions && _.any(loadedPermissions.user.roles, {name: 'Owner'})) {
                     hasUserPermission = true;
                 } else if (!_.isEmpty(userPermissions)) {
                     hasUserPermission = _.any(userPermissions, checkPermission);

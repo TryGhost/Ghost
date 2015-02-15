@@ -3,6 +3,7 @@
 // middleware_spec.js
 
 var _           = require('lodash'),
+    parse       = require('url').parse,
     express     = require('express'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),
@@ -11,6 +12,11 @@ var _           = require('lodash'),
     passport    = require('passport'),
     errors      = require('../errors'),
     utils       = require('../utils'),
+    pathMatch   = require('path-match')({
+        sensitive: false,
+        strict: false,
+        end: true,
+    }),
 
     middleware,
     blogApp,
@@ -32,6 +38,38 @@ function cacheOauthServer(server) {
     oauthServer = server;
 }
 
+function inPublicPaths(req){
+    var path,
+        subPath,
+        ApiRouteBase = '/ghost/api/v0.1/';
+    ApiRouteBase = ApiRouteBase.substring(0, ApiRouteBase.length - 1);
+
+    var defaultPublicApi = {
+        'GET': [
+            '/posts/',
+            '/posts/:id',
+            '/posts/slug/:slugId',
+            '/users/slug/:slug',
+            '/configuration/',
+            '/settings/',
+        ],
+    };
+    var publicPaths = _.extend({}, defaultPublicApi, config._config.publicApi);
+
+    // SubPath is the url path starting after any default subdirectories
+    // it is stripped of anything after the two levels `/ghost/.*?/` as the reset link has an argument
+    path = req.path;
+    /*jslint regexp:true, unparam:true*/
+    subPath = path.replace(/^(\/.*?\/.*?\/)(.*)?/, function (match, a) {
+        return a;
+    });
+
+    function passes(allowedPath){
+        return pathMatch(ApiRouteBase + allowedPath)(parse(req.url).pathname) !== false;
+    }
+    return _.any(publicPaths[req.method], passes) || _.any(publicPaths['*'], passes);
+}
+
 middleware = {
 
     // ### Authenticate Middleware
@@ -50,15 +88,21 @@ middleware = {
             return a;
         });
 
-        if (subPath.indexOf('/ghost/api/') === 0
+        if(subPath.indexOf('/ghost/api/') === 0
             && path.indexOf('/ghost/api/v0.1/authentication/') !== 0) {
             return passport.authenticate('bearer', {session: false, failWithError: true},
                 function (err, user, info) {
                     if (err) {
+                        if(inPublicPaths(req)){
+                            return next();
+                        }
                         return next(err); // will generate a 500 error
                     }
                     // Generate a JSON response reflecting authentication status
                     if (!user) {
+                        if(inPublicPaths(req)){
+                            return next();
+                        }
                         var msg = {
                             type: 'error',
                             message: 'Please Sign In',
