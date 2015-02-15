@@ -10,22 +10,22 @@ var _               = require('lodash'),
 
 navigation = function (options) {
     /*jshint unused:false*/
-    var nav,
+    var navigation,
         context,
         currentUrl = this.relativeUrl;
 
-    if (!_.isObject(this.nav) || _.isFunction(this.nav)) {
+    if (!_.isObject(this.navigation) || _.isFunction(this.navigation)) {
         return errors.logAndThrowError('navigation data is not an object or is a function');
     }
 
-    if (this.nav.filter(function (e) {
-            return (_.isUndefined(e.label) || _.isUndefined(e.url));
-        }).length > 0) {
-            return errors.logAndThrowError('All values must be defined for label, url and current');
-        }
+    if (this.navigation.filter(function (e) {
+        return (_.isUndefined(e.label) || _.isUndefined(e.url));
+    }).length > 0) {
+        return errors.logAndThrowError('All values must be defined for label, url and current');
+    }
 
     // check for non-null string values
-    if (this.nav.filter(function (e) {
+    if (this.navigation.filter(function (e) {
         return ((!_.isNull(e.label) && !_.isString(e.label)) ||
             (!_.isNull(e.url) && !_.isString(e.url)));
     }).length > 0) {
@@ -37,11 +37,11 @@ navigation = function (options) {
     }
 
     // {{navigation}} should no-op if no data passed in
-    if (this.nav.length === 0) {
+    if (this.navigation.length === 0) {
         return new hbs.SafeString('');
     }
 
-    nav = this.nav.map(function (e) {
+    navigation = this.navigation.map(function (e) {
         var out = {};
         out.current = e.url === currentUrl;
         out.label = e.label;
@@ -50,7 +50,7 @@ navigation = function (options) {
         return out;
     });
 
-    context = _.merge({}, {nav: nav});
+    context = _.merge({}, {navigation: navigation});
 
     return template.execute('navigation', context);
 };
