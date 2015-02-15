@@ -72,7 +72,7 @@ function formatPageResponse(posts, page, extraValues) {
         var resp = {
             posts: posts,
             pagination: page.meta.pagination,
-            nav: navigation || {}
+            navigation: navigation || {}
         };
         return _.extend(resp, extraValues);
     });
@@ -93,7 +93,7 @@ function formatResponse(post) {
     return getSiteNavigation().then(function (navigation) {
         return {
             post: post,
-            nav: navigation
+            navigation: navigation
         };
     });
 }
