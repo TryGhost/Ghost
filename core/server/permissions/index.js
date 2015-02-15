@@ -111,7 +111,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     };
                 // Check user permissions for matching action, object and id.
 
-                if (_.any(loadedPermissions.user.roles, {name: 'Owner'})) {
+                if (userPermissions && _.any(loadedPermissions.user.roles, {name: 'Owner'})) {
                     hasUserPermission = true;
                 } else if (!_.isEmpty(userPermissions)) {
                     hasUserPermission = _.any(userPermissions, checkPermission);
