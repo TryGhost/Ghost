@@ -31,12 +31,12 @@ describe('{{navigation}} helper', function () {
         runHelper('not an object').should.throwError('navigation data is not an object or is a function');
         runHelper(function () {}).should.throwError('navigation data is not an object or is a function');
 
-        runHelper({nav: [{label: 1, url: 'bar'}]}).should.throwError('Invalid value, Url and Label must be strings');
-        runHelper({nav: [{label: 'foo', url: 1}]}).should.throwError('Invalid value, Url and Label must be strings');
+        runHelper({navigation: [{label: 1, url: 'bar'}]}).should.throwError('Invalid value, Url and Label must be strings');
+        runHelper({navigation: [{label: 'foo', url: 1}]}).should.throwError('Invalid value, Url and Label must be strings');
     });
 
     it('can render empty nav', function () {
-        var navigation = {nav:[]},
+        var navigation = {navigation:[]},
             rendered = helpers.navigation.call(navigation);
 
         should.exist(rendered);
@@ -45,26 +45,29 @@ describe('{{navigation}} helper', function () {
 
     it('can render one item', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
-            navigation = {nav: [singleItem]},
-            rendered = helpers.navigation.call(navigation);
+            navigation = {navigation: [singleItem]},
+            rendered = helpers.navigation.call(navigation),
+            testUrl = 'href="' + utils.config.url + '/foo"';
 
         should.exist(rendered);
         rendered.string.should.containEql('li');
         rendered.string.should.containEql('nav-foo');
-        rendered.string.should.containEql('href="/foo"');
+        rendered.string.should.containEql(testUrl);
     });
 
     it('can render multiple items', function () {
         var firstItem = {label: 'Foo', url: '/foo'},
             secondItem = {label: 'Bar Baz Qux', url: '/qux'},
-            navigation = {nav: [firstItem, secondItem]},
-            rendered = helpers.navigation.call(navigation);
+            navigation = {navigation: [firstItem, secondItem]},
+            rendered = helpers.navigation.call(navigation),
+            testUrl = 'href="' + utils.config.url + '/foo"',
+            testUrl2 = 'href="' + utils.config.url + '/qux"';
 
         should.exist(rendered);
         rendered.string.should.containEql('nav-foo');
         rendered.string.should.containEql('nav-bar-baz-qux');
-        rendered.string.should.containEql('href="/foo"');
-        rendered.string.should.containEql('href="/qux"');
+        rendered.string.should.containEql(testUrl);
+        rendered.string.should.containEql(testUrl2);
     });
 
     it('can annotate the current url', function () {
@@ -72,7 +75,7 @@ describe('{{navigation}} helper', function () {
             secondItem = {label: 'Bar', url: '/qux'},
             navigation = {
                 relativeUrl: '/foo',
-                nav: [firstItem, secondItem]
+                navigation: [firstItem, secondItem]
             },
             rendered = helpers.navigation.call(navigation);
 
@@ -80,6 +83,6 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.containEql('nav-foo');
         rendered.string.should.containEql('nav-current');
         rendered.string.should.containEql('nav-foo nav-current');
-        rendered.string.should.containEql('nav-bar "');
+        rendered.string.should.containEql('nav-bar"');
     });
 });
