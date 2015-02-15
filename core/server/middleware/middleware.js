@@ -55,7 +55,7 @@ function inPublicPaths(req){
             '/users/:id',
             '/users/slug/:slug',
         ],
-    }
+    };
     var publicPaths = _.extend({}, defaultPublicApi, config._config.publicApi);
 
     // SubPath is the url path starting after any default subdirectories
