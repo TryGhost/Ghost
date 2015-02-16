@@ -142,4 +142,13 @@ describe('{{url}} helper', function () {
         should.exist(rendered);
         rendered.should.equal('http://testurl.com/blog/xyzzy');
     });
+
+    it('external urls should be retained in a nav context with subdir', function () {
+        utils.overrideConfig({url: 'http://testurl.com/blog'});
+        var rendered = helpers.url.call(
+            {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://casper.website/baz');
+    });
 });
