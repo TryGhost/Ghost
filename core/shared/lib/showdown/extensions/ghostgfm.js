@@ -114,7 +114,7 @@
                     }
 
                     // Extract pre blocks
-                    text = text.replace(/<(pre|code)>[\s\S]*?<\/(\1)>/gim, function (x) {
+                    text = text.replace(/<(pre|code|script)>[\s\S]*?<\/(\1)>/gim, function (x) {
                         var hash = hashId();
                         preExtractions[hash] = x;
                         return '{gfm-js-extract-pre-' + hash + '}';
