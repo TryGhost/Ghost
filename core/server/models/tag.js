@@ -187,7 +187,13 @@ Tag = ghostBookshelf.Model.extend({
                 return tag.destroy(options);
             });
         });
-    }
+    },
+    permissible: function (modelId, actType/*, context, loadedPermissions, hasUserPermission, hasAppPermission*/) {
+        if(actType === "browse"){
+            return Promise.resolve();
+        }
+        return Promise.reject();
+    },
 });
 
 Tags = ghostBookshelf.Collection.extend({

@@ -293,7 +293,7 @@ settings = {
         var result = settingsResult(settingsCache, options.type);
 
         // If there is no context, return only blog settings
-        if (!options.context) {
+        if (!options.context || options.context.user === null) {
             return Promise.resolve(_.filter(result.settings, function (setting) { return setting.type === 'blog'; }));
         }
 
