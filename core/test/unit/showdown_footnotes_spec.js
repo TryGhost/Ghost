@@ -103,4 +103,40 @@ describe('Ghost footnotes showdown extension', function () {
 
         processedMarkup.should.match(testPhrase.output);
     });
+
+    it('should show markdown inside code block', function () {
+        var testPhrase = {
+            input: '<code>[^n]<\/code>',
+            output: '<code>[^n]<\/code>'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside pre block', function () {
+        var testPhrase = {
+            input: '<pre>[^n]<\/pre>',
+            output: '<pre>[^n]<\/pre>'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside single tick', function () {
+        var testPhrase = {
+            input: '`[^n]`',
+            output: '`[^n]`'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside triple tick', function () {
+        var testPhrase = {
+            input: '```[^n]```',
+            output: '```[^n]```'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
 });
