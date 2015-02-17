@@ -415,10 +415,20 @@ describe('Sitemap', function () {
         });
 
         describe('PostGenerator', function () {
-            it('uses 0.8 priority for all posts', function () {
+            it('uses 0.9 priority for featured posts', function () {
                 var generator = new PostGenerator();
 
-                generator.getPriorityForDatum({}).should.equal(0.8);
+                generator.getPriorityForDatum({
+                    featured: true
+                }).should.equal(0.9);
+            });
+
+            it('uses 0.8 priority for all other (non-featured) posts', function () {
+                var generator = new PostGenerator();
+
+                generator.getPriorityForDatum({
+                    featured: false
+                }).should.equal(0.8);
             });
 
             it('adds an image:image element if post has a cover image', function () {
