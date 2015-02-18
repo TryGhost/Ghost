@@ -1,5 +1,3 @@
-/* jshint expr:true */
-
 import ghostPaths from 'ghost/utils/ghost-paths';
 
 describe('ghost-paths', function () {
