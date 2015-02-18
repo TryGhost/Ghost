@@ -27,6 +27,7 @@ coreHelpers.is = require('./is');
 coreHelpers.has = require('./has');
 coreHelpers.meta_description = require('./meta_description');
 coreHelpers.meta_title = require('./meta_title');
+coreHelpers.navigation = require('./navigation');
 coreHelpers.page_url = require('./page_url');
 coreHelpers.pageUrl = require('./page_url').deprecated;
 coreHelpers.pagination = require('./pagination');
@@ -89,6 +90,7 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('foreach', coreHelpers.foreach);
     registerThemeHelper('is', coreHelpers.is);
     registerThemeHelper('has', coreHelpers.has);
+    registerThemeHelper('navigation', coreHelpers.navigation);
     registerThemeHelper('page_url', coreHelpers.page_url);
     registerThemeHelper('pageUrl', coreHelpers.pageUrl);
     registerThemeHelper('pagination', coreHelpers.pagination);
