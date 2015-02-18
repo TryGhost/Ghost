@@ -125,13 +125,16 @@ NavigationController = Ember.Controller.extend({
                 url = item.get('url').trim();
                 order = item.get('order');
 
+                // is this an internal URL?
                 match = url.match(blogUrlRegex);
 
                 if (match) {
-                    if (match[1] === '') {
-                        url = '/';
-                    } else {
-                        url = match[1];
+                    url = match[1];
+
+                    // if the last char is not a slash, then add one,
+                    // this also handles the empty case for the homepage
+                    if (url[url.length - 1] !== '/') {
+                        url += '/';
                     }
                 } else if (!validator.isURL(url) && url !== '' && url[0] !== '/') {
                     url = '/' + url;
