@@ -21,8 +21,10 @@
     "andThen",
     "currentURL",
     "currentPath",
-    "currentRouteName"
+    "currentRouteName",
+    "expect"
   ],
+  "mocha": true,
   "node": false,
   "browser": false,
   "boss": true,
@@ -31,6 +33,7 @@
   "devel": false,
   "eqeqeq": true,
   "evil": true,
+  "expr": true,
   "forin": false,
   "immed": false,
   "laxbreak": false,
