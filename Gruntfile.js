@@ -319,6 +319,11 @@ var _              = require('lodash'),
                                 return './node_modules/.bin/ember build --environment=production --silent'
 
                             case 'dev':
+                                return './node_modules/.bin/ember build --silent';
+
+                            case 'test':
+                                return './node_modules/.bin/ember test --silent';
+
                             default:
                                 return './node_modules/.bin/ember build --silent';
                         }
@@ -335,14 +340,6 @@ var _              = require('lodash'),
                 // information.
                 bower: {
                     command: path.resolve(cwd + '/node_modules/.bin/bower --allow-root install'),
-                    options: {
-                        stdout: true,
-                        stdin: false
-                    }
-                },
-
-                testem: {
-                    command: path.resolve(cwd + '/node_modules/.bin/testem ci -f core/test/client/testem.json'),
                     options: {
                         stdout: true,
                         stdin: false
@@ -631,8 +628,12 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
+<<<<<<< HEAD
             ['lint', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'test-functional', 'shell:testem']
         );
+=======
+            ['jshint', 'jscs', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'shell:ember:test', 'test-functional']);
+>>>>>>> Set up tests for ember-cli
 
         // ### Lint
         //
