@@ -20,7 +20,8 @@ NavigationController = Ember.Controller.extend({
 
     navigationItems: Ember.computed('model.navigation', function () {
         var navItems,
-            lastItem;
+            lastItem,
+            order = 0;
 
         try {
             navItems = JSON.parse(this.get('model.navigation') || [{}]);
@@ -29,6 +30,8 @@ NavigationController = Ember.Controller.extend({
         }
 
         navItems = navItems.map(function (item) {
+            item.order = order;
+            order = order + 1;
             return NavItem.create(item);
         });
 
@@ -86,8 +89,10 @@ NavigationController = Ember.Controller.extend({
                 order = 0;
 
             navItems.forEach(function (item) {
-                item.set('order', order);
-                order = order + 1; // Increment order order by one
+                if (!item.last) { // Make sure we never apply an `order` attr to the last item
+                    item.set('order', order);
+                    order = order + 1; // Increment order order by one
+                }
             });
         },
 
