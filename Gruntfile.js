@@ -34,51 +34,6 @@ var _              = require('lodash'),
         });
     }()),
 
-    // ## List of files we want to lint through jshint and jscs to make sure
-    // they conform to our desired code styles.
-    lintFiles = {
-        // Linting files for server side or shared javascript code.
-        server: {
-            files: {
-                src: [
-                    '*.js',
-                    '!config*.js', // note: i added this, do we want this linted?
-                    'core/*.js',
-                    'core/server/**/*.js',
-                    'core/shared/**/*.js',
-                    '!core/shared/vendor/**/*.js'
-                ]
-            }
-        },
-        // Linting files for client side javascript code.
-        client: {
-            files: {
-                src: [
-                    'core/client/**/*.js',
-                    '!core/client/docs/js/*.js',
-                    '!core/client/bower_components/**/*.js',
-                    '!core/client/node_modules/**/*.js'
-                ]
-            }
-        },
-        clientTests: {
-            files: {
-                src: [
-                    'core/test/client/**/*.js'
-                ]
-            }
-        },
-        // Linting files for test code.
-        test: {
-            files: {
-                src: [
-                    'core/test/**/*.js',
-                    '!core/test/client/**/*.js'
-                ]
-            }
-        }
-    },
-
     // ## Grunt configuration
 
     configureGrunt = function (grunt) {
@@ -150,64 +105,68 @@ var _              = require('lodash'),
             // ### grunt-contrib-jshint
             // Linting rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
             // more information.
-            jshint: (function () {
-                return _.merge({
-                    server: {
-                        options: {
-                            jshintrc: '.jshintrc'
-                        }
-                    },
-                    client: {
-                        options: {
-                            jshintrc: 'core/client/.jshintrc'
-                        }
-                    },
-                    clientTests: {
-                        options: {
-                            jshintrc: 'core/test/client/.jshintrc'
-                        }
-                    },
-                    test: {
-                        options: {
-                            jshintrc: 'core/test/.jshintrc'
-                        }
-                    }
-                }, lintFiles);
-            })(),
+            jshint: {
+                options: {
+                    jshintrc: true
+                },
 
-            // ### grunt-jscs
-            // Code style rules, run as part of `grunt validate`. See [grunt validate](#validate) and its subtasks for
-            // more information.
-            jscs: (function () {
-                var jscsConfig = _.merge({
-                    server: {
-                        options: {
-                            config: '.jscsrc'
-                        }
-                    },
-                    client: {
-                        options: {
-                            config: '.jscsrc',
-                            esnext: true,
-                            disallowObjectController: true
-                        }
-                    },
-                    clientTests: {
-                        options: {
-                            config: '.jscsrc',
-                            esnext: true,
-                            disallowObjectController: true
-                        }
-                    },
-                    test: {
-                        options: {
-                            config: '.jscsrc'
-                        }
-                    }
-                }, lintFiles);
+                client: [
+                    'core/client/**/*.js',
+                    '!core/client/node_modules/**/*.js',
+                    '!core/client/bower_components/**/*.js',
+                    '!core/client/tmp/**/*.js',
+                    '!core/client/dist/**/*.js',
+                    '!core/client/vendor/**/*.js'
+                ],
 
-                return jscsConfig;
-            })(),
+                server: [
+                    '*.js',
+                    '!config*.js', // note: i added this, do we want this linted?
+                    'core/*.js',
+                    'core/server/**/*.js',
+                    'core/shared/**/*.js',
+                    'core/test/**/*.js',
+                    '!core/shared/vendor/**/*.js'
+                ]
+            },
+
+            jscs: {
+                options: {
+                    config: true
+                },
+
+                client: {
+                    options: {
+                        esnext: true,
+                        disallowObjectController: true
+                    },
+
+                    files: {
+                        src: [
+                            'core/client/**/*.js',
+                            '!core/client/node_modules/**/*.js',
+                            '!core/client/bower_components/**/*.js',
+                            '!core/client/tmp/**/*.js',
+                            '!core/client/dist/**/*.js',
+                            '!core/client/vendor/**/*.js'
+                        ]
+                    }
+                },
+
+                server: {
+                    files: {
+                        src: [
+                            '*.js',
+                            '!config*.js', // note: i added this, do we want this linted?
+                            'core/*.js',
+                            'core/server/**/*.js',
+                            'core/shared/**/*.js',
+                            'core/test/**/*.js',
+                            '!core/shared/vendor/**/*.js'
+                        ]
+                    }
+                }
+            },
 
             // ### grunt-mocha-cli
             // Configuration for the mocha test runner, used to run unit, integration and route tests as part of
@@ -316,7 +275,7 @@ var _              = require('lodash'),
                                 return 'echo Installing client dependencies... && npm install';
 
                             case 'prod':
-                                return './node_modules/.bin/ember build --environment=production --silent'
+                                return './node_modules/.bin/ember build --environment=production --silent';
 
                             case 'dev':
                                 return './node_modules/.bin/ember build --silent';
@@ -906,7 +865,7 @@ var _              = require('lodash'),
         // ### Basic Asset Building
         // Builds and moves necessary client assets. Prod additionally builds the ember app.
         grunt.registerTask('assets', 'Basic asset building & moving',
-            ['clean:tmp', 'buildAboutPage', 'copy:jquery'])
+            ['clean:tmp', 'buildAboutPage', 'copy:jquery']);
 
         // ### Default asset build
         // `grunt` - default grunt task
