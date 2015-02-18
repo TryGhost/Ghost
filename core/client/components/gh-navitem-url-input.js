@@ -16,7 +16,7 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
     }),
 
     fakePlaceholder: Ember.computed('isBaseUrl', 'hasFocus', function () {
-        return this.get('isBaseUrl') && !this.get('hasFocus');
+        return this.get('isBaseUrl') && this.get('last') && !this.get('hasFocus');
     }),
 
     isRelative: Ember.computed('value', function () {
