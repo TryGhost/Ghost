@@ -3,6 +3,7 @@
     "document",
     "window",
     "-Promise",
+    "-Notification",
     "$",
     "validator",
     "ic",
