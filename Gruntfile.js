@@ -589,12 +589,7 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
-<<<<<<< HEAD
-            ['lint', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'test-functional', 'shell:testem']
-        );
-=======
-            ['jshint', 'jscs', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'shell:ember:test', 'test-functional']);
->>>>>>> Set up tests for ember-cli
+            ['lint', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'shell:ember:test', 'test-functional']);
 
         // ### Lint
         //
