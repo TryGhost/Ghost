@@ -30,6 +30,6 @@
   "devDependencies": {
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",
     "ember-cli-test-loader": "ember-cli/ember-cli-test-loader#0.1.1",
-    "ember-mocha": "~0.3.0"
+    "ember-mocha": "~0.4.2"
   }
 }

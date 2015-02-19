@@ -217,7 +217,7 @@ describe('Frontend Routing', function () {
             });
 
             it('should retrieve built assets', function (done) {
-                request.get('/ghost/scripts/vendor-dev.js')
+                request.get('/ghost/vendor.js')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(200)
                     .end(doEnd(done));
