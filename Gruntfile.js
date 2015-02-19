@@ -116,7 +116,8 @@ var _              = require('lodash'),
                     '!core/client/bower_components/**/*.js',
                     '!core/client/tmp/**/*.js',
                     '!core/client/dist/**/*.js',
-                    '!core/client/vendor/**/*.js'
+                    '!core/client/vendor/**/*.js',
+                    '!core/client/app/docs/**/*.js'
                 ],
 
                 server: [
@@ -148,7 +149,8 @@ var _              = require('lodash'),
                             '!core/client/bower_components/**/*.js',
                             '!core/client/tmp/**/*.js',
                             '!core/client/dist/**/*.js',
-                            '!core/client/vendor/**/*.js'
+                            '!core/client/vendor/**/*.js',
+                            '!core/client/app/docs/**/*.js'
                         ]
                     }
                 },
