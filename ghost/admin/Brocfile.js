@@ -1,12 +1,11 @@
 /* global require, module */
 
-var EmberApp = require('ember-cli/lib/broccoli/ember-app');
+var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
 
-var app = new EmberApp(
-  {
-    sourcemaps: {enabled: false} //see https://github.com/ember-cli/ember-cli/issues/2912
-  }
-);
+    app = new EmberApp({
+        hinting: false,
+        sourcemaps: {enabled: false} // see https://github.com/ember-cli/ember-cli/issues/2912
+    });
 
 app.import('bower_components/loader.js/loader.js');
 app.import('bower_components/jquery/dist/jquery.js');
