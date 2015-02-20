@@ -195,6 +195,10 @@ select {
 
     transition: border-color 0.15s linear;
 
+    &.error {
+        border-color: $red;
+    }
+
     &:focus {
         border-color: $brown;
         outline: 0;
