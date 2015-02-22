@@ -160,7 +160,6 @@
             "slug": "all",
             "tag": "all",
             "user": "all",
-            "setting": ["browse", "read"],
             "role": "all"
         },
         "Author": {
@@ -169,7 +168,6 @@
             "slug": "all",
             "tag": ["browse", "read", "add"],
             "user": ["browse", "read"],
-            "setting": ["browse", "read"],
             "role": ["browse"]
         }
     }
