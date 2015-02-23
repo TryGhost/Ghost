@@ -403,7 +403,11 @@
 
     // &.last-navigation-item {
     &:last-child {
-        padding-left: 27px; // .navigation-item-drag-handle width + horizontal padding
+        padding-left: 27px; // simulate .navigation-item-drag-handle width + horizontal padding
+
+        .navigation-item-drag-handle {
+            display: none;
+        }
     }
 }
 
