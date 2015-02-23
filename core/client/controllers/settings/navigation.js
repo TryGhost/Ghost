@@ -5,9 +5,10 @@ NavItem = Ember.Object.extend({
     label: '',
     url: '',
     order: '',
+    last: false,
 
     isComplete: Ember.computed('label', 'url', function () {
-        return !(Ember.isBlank(this.get('label')) || Ember.isBlank(this.get('url')));
+        return !(Ember.isBlank(this.get('label').trim()) || Ember.isBlank(this.get('url')));
     })
 });
 
@@ -116,9 +117,21 @@ NavigationController = Ember.Controller.extend({
                 navSetting,
                 blogUrl = this.get('config').blogUrl,
                 blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
+                navItems = this.get('navigationItems'),
+                lastItem = navItems.get('lastObject'),
                 match;
-
-            navSetting = this.get('navigationItems').map(function (item) {
+            // Don't save if there's a blank label.
+            if (navItems.find(function (item) { return !item.get('isComplete') && !item.get('last');})) {
+                self.notifications.showErrors(['One of your navigation items has an empty label.<br>Please enter a new label or delete the item before saving.']);
+                return;
+            }
+            // The last item is typically ignored in ordering, give it
+            // the last spot in case it has a label & url and hasn't been
+            // added yet.
+            if (lastItem.get('order') !== 0 && !lastItem.get('order')) {
+                lastItem.set('order', navItems.length);
+            }
+            navSetting = navItems.map(function (item) {
                 var label,
                     url,
                     order;
@@ -146,14 +159,8 @@ NavigationController = Ember.Controller.extend({
                     url = '/' + url;
                 }
 
-                // if navItem label is empty and URL is still the default, don't save
-                if (!label && url === '/') {
-                    return;
-                }
-
                 return {label: label, url: url, order: order};
             }).compact();
-
             // Sort JSON so nav items are stored in the correct order
             navSetting.sort(function (a, b) {
                 return a.order - b.order;
