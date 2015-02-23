@@ -356,13 +356,13 @@ Post = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'findPage');
 
         // Set default settings for options
-        options = _.extend({
+        options = _.extend(options, {
             page: 1, // pagination page
             limit: 15,
             staticPages: false, // include static pages
             status: 'published',
             where: {}
-        }, options);
+        });
 
         if (options.staticPages !== 'all') {
             // convert string true/false to boolean
