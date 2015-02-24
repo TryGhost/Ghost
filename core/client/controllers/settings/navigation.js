@@ -18,11 +18,13 @@ NavigationController = Ember.Controller.extend({
         return url.slice(-1) !== '/' ? url + '/' : url;
     }),
 
-    navigationItems: Ember.computed('model.navigation', function () {
-        var navItems,
-            lastItem,
-            order = 0;
-
+    navigationItems: Ember.computed('model.navigation', function (key, value) {
+        if (arguments.length > 1) {
+            return value.sortBy('order');
+        }
+        var order = 0,
+            navItems,
+            lastItem;
         try {
             navItems = JSON.parse(this.get('model.navigation') || [{}]);
         } catch (e) {
@@ -45,7 +47,7 @@ NavigationController = Ember.Controller.extend({
         return navItems;
     }),
 
-    navigationItemsObserver: Ember.observer('navigationItems.[]', function () {
+    updateLastNavItem: Ember.observer('navigationItems.[]', function () {
         var navItems = this.get('navigationItems');
 
         navItems.forEach(function (item, index, items) {
@@ -57,13 +59,12 @@ NavigationController = Ember.Controller.extend({
         });
     }),
 
+    // called by the view after items have been rearranged
     updateOrder: function (indexes) {
-        var navItems = this.get('navigationItems'),
-            order = 0;
+        var navItems = this.get('navigationItems');
 
-        indexes.forEach(function (index) {
-            navItems[index].set('order', order);
-            order = order + 1; // Increment order order by one
+        indexes.forEach(function (index, newOrder) {
+            navItems.objectAt(index).set('order', newOrder);
         });
     },
 
@@ -82,18 +83,18 @@ NavigationController = Ember.Controller.extend({
             if (!item) {
                 return;
             }
+            var deletedItemOrder = item.get('order'),
+                navItems = this.get('navigationItems');
 
-            this.get('navigationItems').removeObject(item);
-
-            var navItems = this.get('navigationItems'),
-                order = 0;
+            navItems.removeAt(navItems.indexOf(item));
 
             navItems.forEach(function (item) {
-                if (!item.last) { // Make sure we never apply an `order` attr to the last item
-                    item.set('order', order);
-                    order = order + 1; // Increment order order by one
+                if (!item.last && item.get('order') > deletedItemOrder) {
+                    item.decrementProperty('order');
                 }
             });
+
+            this.set('navigationItems', navItems);
         },
 
         updateUrl: function (url, navItem) {
@@ -153,7 +154,7 @@ NavigationController = Ember.Controller.extend({
                 return {label: label, url: url, order: order};
             }).compact();
 
-            // Sort JSON so nav items are stored in the correct order order
+            // Sort JSON so nav items are stored in the correct order
             navSetting.sort(function (a, b) {
                 return a.order - b.order;
             });
