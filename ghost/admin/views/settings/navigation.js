@@ -3,21 +3,25 @@ import BaseView from 'ghost/views/settings/content-base';
 var SettingsNavigationView = BaseView.extend({
 
     didInsertElement: function () {
-        var controller = this.get('controller'),
-            navContainer = Ember.$('.js-settings-navigation'),
-            navElements = '.navigation-item:not(.navigation-item:last-child)';
+        var navContainer = Ember.$('.js-settings-navigation'),
+            navElements = '.navigation-item:not(.navigation-item:last-child)',
+            self = this;
 
         navContainer.sortable({
             handle: '.navigation-item-drag-handle',
             items: navElements,
 
-            update: function () {
-                var indexes = [];
-                navContainer.find(navElements).each(function () {
-                    var order = Ember.$(this).data('order');
-                    indexes.push(order);
+            start: function (event, ui) {
+                Ember.run(function () {
+                    ui.item.data('start-index', ui.item.index());
                 });
-                controller.updateOrder(indexes);
+            },
+
+            update: function (event, ui) {
+                Ember.run(function () {
+                    self.get('controller').send('moveItem', ui.item.data('start-index'), ui.item.index());
+                    ui.item.remove();
+                });
             }
         });
     },
