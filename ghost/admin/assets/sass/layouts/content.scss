@@ -90,7 +90,7 @@
     }
 
     .btn-green {
-        @include icon($i-add);
+        @include icon('add');
         position: absolute;
         top: 9px;
         right: 20px;
@@ -161,7 +161,7 @@
     }
 
     .featured {
-        @include icon($i-featured, 11px) {
+        @include icon('featured', 11px) {
             vertical-align: 7%;
             position: absolute;
             bottom: 25px;
@@ -187,7 +187,7 @@
             padding: 19px 20px 22px 24px;
             color: rgba(0,0,0,0.5);
 
-            @include icon-after($i-chevron) {
+            @include icon-after('chevron') {
                 position: absolute;
                 top: 50%;
                 margin-top: -6px;
@@ -245,14 +245,14 @@
     }
 
     .unfeatured {
-        @include icon($i-unfeatured, 14px);
+        @include icon('unfeatured', 14px);
         vertical-align: -6%;
         margin: 0 7px 0 -5px;
         padding: 3px;
     }
 
     .featured {
-        @include icon($i-featured, 14px);
+        @include icon('featured', 14px);
         vertical-align: -6%;
         margin: 0 7px 0 -5px;
         padding: 3px;
@@ -297,7 +297,7 @@
     }
 
     .post-edit {
-        @include icon($i-edit, 14px);
+        @include icon('edit', 14px);
     }
 
     img {
