@@ -313,7 +313,7 @@ textarea {
     padding: 0;
     border-width: 0;
 
-    @include icon-after($i-chevron-down, 0.85em, $midbrown) {
+    @include icon-after('chevron-down', 0.85em, $midbrown) {
         position: absolute;
         top: 50%;
         right: 0.8em;
