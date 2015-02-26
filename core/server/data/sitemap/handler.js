@@ -6,7 +6,7 @@ var _       = require('lodash'),
 module.exports = function (blogApp) {
     var resourceTypes = ['posts', 'authors', 'tags', 'pages'],
         verifyResourceType = function (req, res, next) {
-            if (!_.contains(resourceTypes, req.param('resource'))) {
+            if (!_.contains(resourceTypes, req.params.resource)) {
                 return res.sendStatus(404);
             }
 
@@ -25,7 +25,7 @@ module.exports = function (blogApp) {
     });
 
     blogApp.get('/sitemap-:resource.xml', verifyResourceType, function (req, res) {
-        var type = req.param('resource'),
+        var type = req.params.resource,
             page = 1,
             siteMapXml = getResourceSiteMapXml(type, page);
 
