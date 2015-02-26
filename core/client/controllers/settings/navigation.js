@@ -4,7 +4,6 @@ var NavigationController,
 NavItem = Ember.Object.extend({
     label: '',
     url: '',
-    order: '',
     last: false,
 
     isComplete: Ember.computed('label', 'url', function () {
@@ -19,13 +18,10 @@ NavigationController = Ember.Controller.extend({
         return url.slice(-1) !== '/' ? url + '/' : url;
     }),
 
-    navigationItems: Ember.computed('model.navigation', function (key, value) {
-        if (arguments.length > 1) {
-            return value.sortBy('order');
-        }
-        var order = 0,
-            navItems,
+    navigationItems: Ember.computed('model.navigation', function () {
+        var navItems,
             lastItem;
+
         try {
             navItems = JSON.parse(this.get('model.navigation') || [{}]);
         } catch (e) {
@@ -33,16 +29,12 @@ NavigationController = Ember.Controller.extend({
         }
 
         navItems = navItems.map(function (item) {
-            item.order = order;
-            order = order + 1;
             return NavItem.create(item);
         });
 
-        navItems.sortBy('order');
-
         lastItem = navItems.get('lastObject');
         if (!lastItem || lastItem.get('isComplete')) {
-            navItems.addObject(NavItem.create());
+            navItems.addObject(NavItem.create({last: true}));
         }
 
         return navItems;
@@ -60,23 +52,13 @@ NavigationController = Ember.Controller.extend({
         });
     }),
 
-    // called by the view after items have been rearranged
-    updateOrder: function (indexes) {
-        var navItems = this.get('navigationItems');
-
-        indexes.forEach(function (index, newOrder) {
-            navItems.objectAt(index).set('order', newOrder);
-        });
-    },
-
     actions: {
         addItem: function () {
             var navItems = this.get('navigationItems'),
                 lastItem = navItems.get('lastObject');
 
             if (lastItem && lastItem.get('isComplete')) {
-                lastItem.set('order', (navItems.length - 1)); // -1 because order is 0-index, length is 1-index
-                navItems.addObject(NavItem.create()); // Adds new blank navItem
+                navItems.addObject(NavItem.create({last: true})); // Adds new blank navItem
             }
         },
 
@@ -84,18 +66,18 @@ NavigationController = Ember.Controller.extend({
             if (!item) {
                 return;
             }
-            var deletedItemOrder = item.get('order'),
-                navItems = this.get('navigationItems');
 
-            navItems.removeAt(navItems.indexOf(item));
+            var navItems = this.get('navigationItems');
 
-            navItems.forEach(function (item) {
-                if (!item.last && item.get('order') > deletedItemOrder) {
-                    item.decrementProperty('order');
-                }
-            });
+            navItems.removeObject(item);
+        },
 
-            this.set('navigationItems', navItems);
+        moveItem: function (index, newIndex) {
+            var navItems = this.get('navigationItems'),
+                item = navItems.objectAt(index);
+
+            navItems.removeAt(index);
+            navItems.insertAt(newIndex, item);
         },
 
         updateUrl: function (url, navItem) {
@@ -118,23 +100,17 @@ NavigationController = Ember.Controller.extend({
                 blogUrl = this.get('config').blogUrl,
                 blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
                 navItems = this.get('navigationItems'),
-                lastItem = navItems.get('lastObject'),
                 match;
+
             // Don't save if there's a blank label.
             if (navItems.find(function (item) { return !item.get('isComplete') && !item.get('last');})) {
                 self.notifications.showErrors(['One of your navigation items has an empty label.<br>Please enter a new label or delete the item before saving.']);
                 return;
             }
-            // The last item is typically ignored in ordering, give it
-            // the last spot in case it has a label & url and hasn't been
-            // added yet.
-            if (lastItem.get('order') !== 0 && !lastItem.get('order')) {
-                lastItem.set('order', navItems.length);
-            }
+
             navSetting = navItems.map(function (item) {
                 var label,
-                    url,
-                    order;
+                    url;
 
                 if (!item || !item.get('isComplete')) {
                     return;
@@ -142,7 +118,6 @@ NavigationController = Ember.Controller.extend({
 
                 label = item.get('label').trim();
                 url = item.get('url').trim();
-                order = item.get('order');
 
                 // is this an internal URL?
                 match = url.match(blogUrlRegex);
@@ -159,12 +134,8 @@ NavigationController = Ember.Controller.extend({
                     url = '/' + url;
                 }
 
-                return {label: label, url: url, order: order};
+                return {label: label, url: url};
             }).compact();
-            // Sort JSON so nav items are stored in the correct order
-            navSetting.sort(function (a, b) {
-                return a.order - b.order;
-            });
 
             this.set('model.navigation', JSON.stringify(navSetting));
 
