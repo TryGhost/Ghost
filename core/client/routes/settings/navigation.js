@@ -9,10 +9,6 @@ var NavigationRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, 
     classNames: ['settings-view-navigation'],
 
     beforeModel: function () {
-        if (!this.get('config.navigationUI')) {
-            return this.transitionTo('settings.general');
-        }
-
         return this.currentUser().then(this.transitionAuthor());
     },
 
