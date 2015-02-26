@@ -714,6 +714,36 @@ describe('Post API', function () {
                 });
         });
 
+        it('throws an error if there is an id mismatch', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/1/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body;
+                    jsonResponse.should.exist;
+
+                    request.put(testUtils.API.getApiQuery('posts/2/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send(jsonResponse)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect(400)
+                        .end(function (err, res) {
+                            /*jshint unused:false*/
+                            if (err) {
+                                return done(err);
+                            }
+
+                            done();
+                        });
+                });
+        });
+
         it('published_at = null', function (done) {
             request.get(testUtils.API.getApiQuery('posts/1/?include=tags'))
                 .set('Authorization', 'Bearer ' + accesstoken)

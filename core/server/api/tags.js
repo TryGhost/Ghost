@@ -113,7 +113,7 @@ tags = {
                 options.include = prepareInclude(options.include);
             }
 
-            return utils.checkObject(object, docName).then(function (checkedTagData) {
+            return utils.checkObject(object, docName, options.id).then(function (checkedTagData) {
                 return dataProvider.Tag.edit(checkedTagData.tags[0], options);
             }).then(function (result) {
                 if (result) {
