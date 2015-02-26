@@ -135,7 +135,7 @@ users = {
             options.include = prepareInclude(options.include);
         }
 
-        return utils.checkObject(object, docName).then(function (data) {
+        return utils.checkObject(object, docName, options.id).then(function (data) {
             // Edit operation
             editOperation = function () {
                 return dataProvider.User.edit(data.users[0], options)
