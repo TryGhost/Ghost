@@ -339,6 +339,10 @@ var _              = require('lodash'),
                 coverage: {
                     command: 'node ' + mochaPath + ' --timeout 15000 --reporter html-cov > coverage.html ' +
                     path.resolve(cwd + '/core/test/blanket_coverage.js')
+                },
+
+                shrinkwrap: {
+                    command: 'npm shrinkwrap'
                 }
             },
 
@@ -1167,7 +1171,8 @@ var _              = require('lodash'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['init', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify:release', 'clean:release', 'copy:release', 'compress:release']);
+            ['init', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify:release', 'clean:release',
+                'shell:shrinkwrap', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration
