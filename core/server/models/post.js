@@ -132,8 +132,9 @@ Post = ghostBookshelf.Model.extend({
             if (!this.get('published_at')) {
                 this.set('published_at', new Date());
             }
-            // This will need to go elsewhere in the API layer.
-            if (!this.get('published_by')) {
+
+            // unless published_by is set and we're importing, set published_by to contextUser
+            if (!(this.get('published_by') && options.importing)) {
                 this.set('published_by', this.contextUser(options));
             }
         }
