@@ -199,6 +199,17 @@ describe('Users API', function () {
             response.users[0].updated_at.should.be.a.Date;
         }
 
+        it('throws an error if there is an id mismatch', function (done) {
+            var options = _.extend({}, context.author, {id: userIdFor.author});
+            UserAPI.edit({users: [{id: userIdFor.owner, name: 'Override'}]}, options)
+                .then(function () {
+                    done(new Error('ID mismatches should not be permitted'));
+                }).catch(function (error) {
+                    error.type.should.eql('BadRequestError');
+                    done();
+                });
+        });
+
         it('Owner can edit all roles', function (done) {
             UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function (response) {
@@ -772,6 +783,17 @@ describe('Users API', function () {
             response.users[0].name.should.equal(newName);
             response.users[0].updated_at.should.be.a.Date;
         }
+
+        it('throws an error if there is an id mismatch', function (done) {
+            var options = _.extend({}, context.author, {id: userIdFor.author});
+            UserAPI.edit({users: [{id: userIdFor.owner, name: 'Override', roles: [roleIdFor.author]}]}, options)
+                .then(function () {
+                    done(new Error('ID mismatches should not be permitted'));
+                }).catch(function (error) {
+                    error.type.should.eql('BadRequestError');
+                    done();
+                });
+        });
 
         describe('Owner', function () {
             it('Can assign Admin role', function (done) {
