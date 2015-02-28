@@ -1,3 +1,5 @@
+Attention: Ghost is not compatible with Node.js v0.12. Please use Node.js v.0.10 until we release a compatible version. Thanks.
+
 # [Ghost](https://github.com/TryGhost/Ghost) [![Build Status](https://travis-ci.org/TryGhost/Ghost.svg?branch=master)](https://travis-ci.org/TryGhost/Ghost)
 
 ![Ghost Screenshot](https://cloud.githubusercontent.com/assets/120485/4828504/9e832764-5f80-11e4-8ac1-0332bcc67a35.png)
