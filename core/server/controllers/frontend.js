@@ -38,24 +38,9 @@ function getPostPage(options) {
 }
 
 /**
- * returns a promise with an array of values used in {{navigation}}
- * TODO(nsfmc): should this be in the 'prePostsRender' pipeline?
- * @return {Promise} containing an array of navigation items
- */
-function getSiteNavigation() {
-    return Promise.resolve(api.settings.read('navigation')).then(function (result) {
-        if (result && result.settings && result.settings.length) {
-            return JSON.parse(result.settings[0].value) || [];
-        }
-        return [];
-    });
-}
-
-/**
  * formats variables for handlebars in multi-post contexts.
  * If extraValues are available, they are merged in the final value
- * TODO(nsfmc): should this be in the 'prePostsRender' pipeline?
- * @return {Promise} containing page variables
+ * @return {Object} containing page variables
  */
 function formatPageResponse(posts, page, extraValues) {
     // Delete email from author for frontend output
@@ -68,20 +53,16 @@ function formatPageResponse(posts, page, extraValues) {
     });
     extraValues = extraValues || {};
 
-    return getSiteNavigation().then(function (navigation) {
-        var resp = {
-            posts: posts,
-            pagination: page.meta.pagination,
-            navigation: navigation || {}
-        };
-        return _.extend(resp, extraValues);
-    });
+    var resp = {
+        posts: posts,
+        pagination: page.meta.pagination
+    };
+    return _.extend(resp, extraValues);
 }
 
 /**
  * similar to formatPageResponse, but for single post pages
- * TODO(nsfmc): should this be in the 'prePostsRender' pipeline?
- * @return {Promise} containing page variables
+ * @return {Object} containing page variables
  */
 function formatResponse(post) {
     // Delete email from author for frontend output
@@ -90,12 +71,9 @@ function formatResponse(post) {
         delete post.author.email;
     }
 
-    return getSiteNavigation().then(function (navigation) {
-        return {
-            post: post,
-            navigation: navigation
-        };
-    });
+    return {
+        post: post
+    };
 }
 
 function handleError(next) {
@@ -192,9 +170,7 @@ frontendControllers = {
                     }
 
                     setResponseContext(req, res);
-                    formatPageResponse(posts, page).then(function (result) {
-                        res.render(view, result);
-                    });
+                    res.render(view, formatPageResponse(posts, page));
                 });
             });
         }).catch(handleError(next));
@@ -237,19 +213,18 @@ frontendControllers = {
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 getActiveThemePaths().then(function (paths) {
-                    var view = template.getThemeViewForTag(paths, options.tag);
+                    var view = template.getThemeViewForTag(paths, options.tag),
+                    // Format data for template
+                        result = formatPageResponse(posts, page, {
+                            tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
+                        });
 
-                        // Format data for template
-                    formatPageResponse(posts, page, {
-                        tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
-                    }).then(function (result) {
-                        // If the resulting tag is '' then 404.
-                        if (!result.tag) {
-                            return next();
-                        }
-                        setResponseContext(req, res);
-                        res.render(view, result);
-                    });
+                    // If the resulting tag is '' then 404.
+                    if (!result.tag) {
+                        return next();
+                    }
+                    setResponseContext(req, res);
+                    res.render(view, result);
                 });
             });
         }).catch(handleError(next));
@@ -292,20 +267,19 @@ frontendControllers = {
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 getActiveThemePaths().then(function (paths) {
-                    var view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index';
-
+                    var view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index',
                         // Format data for template
-                    formatPageResponse(posts, page, {
-                        author: page.meta.filters.author ? page.meta.filters.author : ''
-                    }).then(function (result) {
-                        // If the resulting author is '' then 404.
-                        if (!result.author) {
-                            return next();
-                        }
+                        result = formatPageResponse(posts, page, {
+                            author: page.meta.filters.author ? page.meta.filters.author : ''
+                        });
 
-                        setResponseContext(req, res);
-                        res.render(view, result);
-                    });
+                    // If the resulting author is '' then 404.
+                    if (!result.author) {
+                        return next();
+                    }
+
+                    setResponseContext(req, res);
+                    res.render(view, result);
                 });
             });
         }).catch(handleError(next));
@@ -378,13 +352,12 @@ frontendControllers = {
 
                 filters.doFilter('prePostsRender', post).then(function (post) {
                     getActiveThemePaths().then(function (paths) {
-                        var view = template.getThemeViewForPost(paths, post);
+                        var view = template.getThemeViewForPost(paths, post),
+                            response = formatResponse(post);
 
-                        return formatResponse(post).then(function (response) {
-                            setResponseContext(req, res, response);
+                        setResponseContext(req, res, response);
 
-                            res.render(view, response);
-                        });
+                        res.render(view, response);
                     });
                 });
             }
