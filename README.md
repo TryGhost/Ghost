@@ -18,6 +18,11 @@ There are a few different ways to install Ghost, take care to use the method whi
 
 **Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download), the [GitHub releases page](https://github.com/TryGhost/Ghost/releases), and via npm are pre-built packages designed for getting setup quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
 
+### Compatibility
+
+Ghost is currently compatible with **Node v0.10.x** only. 
+
+Support for [v0.12.x](https://github.com/TryGhost/Ghost/issues/4240) and [io.js](https://github.com/TryGhost/Ghost/issues/4811) is a work in progress (click the versions for more info on each). 
 
 ### Install from zip (fastest & best for bloggers)
 
