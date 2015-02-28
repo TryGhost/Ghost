@@ -1,6 +1,54 @@
-<span class="media">
-    <span class="hidden">Image Upload</span>
-</span>
-<img class="js-upload-target" {{bind-attr src=imageSource}} />
-<div class="description">{{description}}<strong></strong></div>
-<input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage">
+<div {{bind-attr class="uploaderClass :js-post-image-upload"}} >
+    {{#if enableExtras}}
+    <span class="media">
+        <span class="hidden">Image Upload</span>
+    </span>
+    {{/if}}
+
+    {{#if loading}}
+        <img {{bind-attr class=":fileupload-loading editor::fileupload-loading-standalone" src=loadingCat}} />
+    {{/if}}
+
+    <img {{bind-attr class=":js-upload-target showImage::hidden" src=image style=imgStyle }} />
+
+    {{#if urlUi}}
+        <div class="js-url">
+            {{input value=imageUrl class="url js-upload-url" type="url" placeholder="http://"}}
+            {{#if editor}}
+                <button {{action "confirmUrl"}} class="btn btn-blue js-button-accept" {{bind-attr disabled=saveButtonDisabled}}>Save</button>
+            {{/if}}
+        </div>
+    {{/if}}
+
+    <div class="description">
+        {{#if description}}
+            {{description}}
+        {{else}}
+            <span>Add image</span>
+        {{/if}}
+    </div>
+
+    <input data-url="upload" {{bind-attr class=":js-fileupload :main :fileupload rightClass:right"}} type="file" name="uploadimage">
+    {{#if enableExtras}}
+        {{#if error}}
+            <div class="js-fail failed">{{errorText}}</div>
+        {{/if}}
+
+        {{#if progressbar}}
+            <div class="js-upload-progress progress progress-success active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                <div {{bind-attr style=progressBarStyle class=":js-upload-progress-bar :bar error:fail"}}></div>
+            </div>
+        {{/if}}
+
+        <button class="js-fail btn btn-green" style="display: none">Try Again</button>
+        <a {{action "initUrl"}}class="image-url" title="Add image from URL">
+            <span class="hidden">URL</span>
+        </a>
+    {{/if}}
+    {{#if cancelMode}}
+        {{#if cancelUrl}}
+            <a {{action "initWithDropzone"}} class="image-upload" title="Add image"><span class="hidden">Upload</span></a>
+        {{/if}}
+        <a {{action "cancel"}} class="image-cancel js-cancel" title="Delete"><span class="hidden">Delete</span></a>
+    {{/if}}
+</div>

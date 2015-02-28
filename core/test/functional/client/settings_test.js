@@ -51,7 +51,7 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
     });
 
     function assertImageUploaderModalThenClose() {
-        test.assertSelectorHasText('.description', 'Add image');
+        test.assertSelectorHasText('.description span', 'Add image');
         casper.click('.modal-container .js-button-accept');
         casper.waitForSelector('.notification-success', function onSuccess() {
             test.assert(true, 'Got success notification');
@@ -65,7 +65,7 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
         casper.click('.js-modal-logo');
     });
 
-    casper.waitForSelector('.modal-container .modal-content .js-drop-zone .description',
+    casper.waitForSelector('.modal-container .modal-content .image-uploader .description',
         assertImageUploaderModalThenClose, casper.failOnTimeout(test, 'No upload logo modal container appeared'));
 
     // Test Blog Cover Upload Button
@@ -73,7 +73,7 @@ CasperTest.begin('General settings pane is correct', 8, function suite(test) {
         casper.click('.js-modal-cover');
     });
 
-    casper.waitForSelector('.modal-container .modal-content .js-drop-zone .description',
+    casper.waitForSelector('.modal-container .modal-content .image-uploader .description',
         assertImageUploaderModalThenClose, casper.failOnTimeout(test, 'No upload cover modal container appeared'));
 
     function handleSettingsRequest(requestData) {
