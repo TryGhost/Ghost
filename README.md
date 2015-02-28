@@ -9,7 +9,7 @@ Visit the project's website at <http://ghost.org> &bull; docs on <http://support
 
 ## Getting Involved
 
-Want to report a bug, request a feature, contribute or translate Ghost? Check out our in-depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
+Want to report a bug, request a feature, contribute, or translate Ghost? Check out our in-depth guide to [Contributing to Ghost](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md). We need all the help we can get! You can also join in with our [community](https://github.com/TryGhost/Ghost#community) to keep up-to-date and meet other Ghosters.
 
 
 ## Getting Started
@@ -18,6 +18,11 @@ There are a few different ways to install Ghost, take care to use the method whi
 
 **Please note** - the downloadable zip files we provide on [Ghost.org](http://ghost.org/download), the [GitHub releases page](https://github.com/TryGhost/Ghost/releases), and via npm are pre-built packages designed for getting setup quickly. Cloning from the git repository requires you to install several dependencies and build the assets yourself. 
 
+### Compatibility
+
+Ghost is currently compatible with **Node v0.10.x** only. 
+
+Support for [v0.12.x](https://github.com/TryGhost/Ghost/issues/4240) and [io.js](https://github.com/TryGhost/Ghost/issues/4811) is a work in progress (click the versions for more info on each). 
 
 ### Install from zip (fastest & best for bloggers)
 
@@ -87,7 +92,7 @@ Keep track of Ghost development and Ghost community activity.
 
 ## Versioning
 
-For transparency and insight into our release cycle, and for striving to maintain backward compatibility, Ghost will be maintained according to the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
+For transparency and insight into our release cycle, along with striving to maintain backward compatibility, Ghost will be maintained according to the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
 
 Releases will be numbered with the following format:
 

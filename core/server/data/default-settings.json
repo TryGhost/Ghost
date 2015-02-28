@@ -70,6 +70,9 @@
         },
         "labs": {
             "defaultValue": "{}"
+        },
+        "navigation": {
+            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
         }
     },
     "theme": {

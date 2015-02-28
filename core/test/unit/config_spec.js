@@ -242,7 +242,7 @@ describe('Config', function () {
             var permalinkSetting = '/:year/:month/:day/:slug/',
                 /*jshint unused:false*/
                 testData = testUtils.DataGenerator.Content.posts[2],
-                today = new Date(),
+                today = testData.published_at,
                 dd = ('0' + today.getDate()).slice(-2),
                 mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),

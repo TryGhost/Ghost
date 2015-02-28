@@ -1,0 +1,24 @@
+{{#unless navItem.last}}
+    <span class="navigation-item-drag-handle icon-grab">
+        <span class="hidden">Reorder</span>
+    </span>
+{{/unless}}
+<div class="navigation-inputs">
+    <span class="navigation-item-label">
+        {{gh-trim-focus-input focus=navItem.last placeholder="Label" value=navItem.label}}
+    </span>
+    <span class="navigation-item-url">
+        {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url last=navItem.last change="updateUrl"}}
+    </span>
+</div>
+<span class="navigation-item-action">
+    {{#if navItem.last}}
+        <button type="button" class="add-navigation-link icon-add" {{action "addItem"}}>
+            <span class="hidden">Add</span>
+        </button>
+    {{else}}
+        <button type="button" class="navigation-delete icon-trash" {{action "deleteItem" navItem}}>
+            <span class="hidden">Delete</span>
+        </button>
+    {{/if}}
+</span>

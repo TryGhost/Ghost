@@ -1,4 +1,4 @@
-<header class="settings-subview-header">
+<header class="settings-subview-header clearfix">
     {{#unless session.user.isAuthor}}
         {{#link-to "settings.users" class="btn btn-default btn-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
     {{/unless}}
@@ -64,7 +64,7 @@
             <div class="form-group">
                 <label for="user-role">Role</label>
                 {{gh-role-selector
-                    initialValue=role
+                    initialValue=user.role
                     onChange="changeRole"
                     selectId="user-role"}}
                 <p>What permissions should this user have?</p>

@@ -227,16 +227,14 @@ var PostTagsInputController = Ember.Controller.extend({
 
     makeSuggestionObject: function (matchingTag, _searchTerm) {
         var searchTerm = Ember.Handlebars.Utils.escapeExpression(_searchTerm),
-            // jscs:disable
             regexEscapedSearchTerm = searchTerm.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'),
-            // jscs:enable
             tagName = Ember.Handlebars.Utils.escapeExpression(matchingTag.get('name')),
             regex = new RegExp('(' + regexEscapedSearchTerm + ')', 'gi'),
             highlightedName,
             suggestion = Ember.Object.create();
 
         highlightedName = tagName.replace(regex, '<mark>$1</mark>');
-        highlightedName = new Ember.Handlebars.SafeString(highlightedName);
+        highlightedName = Ember.String.htmlSafe(highlightedName);
 
         suggestion.set('tag', matchingTag);
         suggestion.set('highlightedName', highlightedName);

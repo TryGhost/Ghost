@@ -93,4 +93,62 @@ describe('{{url}} helper', function () {
         should.exist(rendered);
         rendered.should.equal('/');
     });
+
+    it('should return a relative url if passed through a nav context', function () {
+        var rendered = helpers.url.call(
+            {url: '/foo', label: 'Foo', slug: 'foo', current: true});
+        should.exist(rendered);
+        rendered.should.equal('/foo');
+    });
+
+    it('should return an absolute url if passed through a nav context', function () {
+        var rendered = helpers.url.call(
+            {url: '/bar', label: 'Bar', slug: 'bar', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://testurl.com/bar');
+    });
+
+    it('external urls should be retained in a nav context', function () {
+        var rendered = helpers.url.call(
+            {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://casper.website/baz');
+    });
+
+    it('should handle hosted urls in a nav context', function () {
+        var rendered = helpers.url.call(
+            {url: 'http://testurl.com/qux', label: 'Qux', slug: 'qux', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://testurl.com/qux');
+    });
+
+    it('should handle hosted urls with the wrong protocol in a nav context', function () {
+        var rendered = helpers.url.call(
+            {url: 'https://testurl.com/quux', label: 'Quux', slug: 'quux', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://testurl.com/quux');
+    });
+
+    it('should handle subdir being set in nav context', function () {
+        utils.overrideConfig({url: 'http://testurl.com/blog'});
+
+        var rendered = helpers.url.call(
+            {url: '/xyzzy', label: 'xyzzy', slug: 'xyzzy', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://testurl.com/blog/xyzzy');
+    });
+
+    it('external urls should be retained in a nav context with subdir', function () {
+        utils.overrideConfig({url: 'http://testurl.com/blog'});
+        var rendered = helpers.url.call(
+            {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('http://casper.website/baz');
+    });
 });

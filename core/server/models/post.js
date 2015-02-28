@@ -132,8 +132,9 @@ Post = ghostBookshelf.Model.extend({
             if (!this.get('published_at')) {
                 this.set('published_at', new Date());
             }
-            // This will need to go elsewhere in the API layer.
-            if (!this.get('published_by')) {
+
+            // unless published_by is set and we're importing, set published_by to contextUser
+            if (!(this.get('published_by') && options.importing)) {
                 this.set('published_by', this.contextUser(options));
             }
         }
@@ -525,6 +526,9 @@ Post = ghostBookshelf.Model.extend({
     findOne: function (data, options) {
         options = options || {};
 
+        var withNext = _.contains(options.include, 'next'),
+            withPrev = _.contains(options.include, 'previous');
+
         data = _.extend({
             status: 'published'
         }, data || {});
@@ -533,10 +537,50 @@ Post = ghostBookshelf.Model.extend({
             delete data.status;
         }
 
-        // Add related objects
-        options.withRelated = _.union(options.withRelated, options.include);
+        // Add related objects, excluding next and previous as they are not real db objects
+        options.withRelated = _.union(options.withRelated, _.pull([].concat(options.include), 'next', 'previous'));
 
-        return ghostBookshelf.Model.findOne.call(this, data, options);
+        return ghostBookshelf.Model.findOne.call(this, data, options).then(function (post) {
+            if ((withNext || withPrev) && post && !post.page) {
+                var postData = post.toJSON(),
+                    publishedAt = postData.published_at,
+                    prev,
+                    next;
+
+                if (withNext) {
+                    next = Post.forge().query(function (qb) {
+                        qb.where('status', '=', 'published')
+                            .andWhere('page', '=', 0)
+                            .andWhere('published_at', '>', publishedAt)
+                            .orderBy('published_at', 'asc')
+                            .limit(1);
+                    }).fetch();
+                }
+
+                if (withPrev) {
+                    prev = Post.forge().query(function (qb) {
+                        qb.where('status', '=', 'published')
+                            .andWhere('page', '=', 0)
+                            .andWhere('published_at', '<', publishedAt)
+                            .orderBy('published_at', 'desc')
+                            .limit(1);
+                    }).fetch();
+                }
+
+                return Promise.join(next, prev)
+                    .then(function (nextAndPrev) {
+                        if (nextAndPrev[0]) {
+                            post.relations.next = nextAndPrev[0];
+                        }
+                        if (nextAndPrev[1]) {
+                            post.relations.previous = nextAndPrev[1];
+                        }
+                        return post;
+                    });
+            }
+
+            return post;
+        });
     },
 
     /**

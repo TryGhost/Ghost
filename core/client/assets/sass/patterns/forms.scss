@@ -187,12 +187,17 @@ select {
     width: 100%;
     border: 1px solid #E0DFD7;
     border-radius: $border-radius;
+    -webkit-appearance: none;
 
     font-size: 1.4rem;
     font-weight: normal;
     color: $darkgrey;
 
     transition: border-color 0.15s linear;
+
+    &.error {
+        border-color: $red;
+    }
 
     &:focus {
         border-color: $brown;

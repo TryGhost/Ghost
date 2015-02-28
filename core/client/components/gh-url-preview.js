@@ -6,22 +6,21 @@ var urlPreview = Ember.Component.extend({
     classNames: 'ghost-url-preview',
     prefix: null,
     slug: null,
-    theUrl: null,
 
-    generateUrl: function () {
+    url: Ember.computed('slug', function () {
         // Get the blog URL and strip the scheme
         var blogUrl = this.get('config').blogUrl,
             noSchemeBlogUrl = blogUrl.substr(blogUrl.indexOf('://') + 3), // Remove `http[s]://`
 
             // Get the prefix and slug values
             prefix = this.get('prefix') ? this.get('prefix') + '/' : '',
-            slug = this.get('slug') ? this.get('slug') : '',
+            slug = this.get('slug') ? this.get('slug') + '/' : '',
 
             // Join parts of the URL together with slashes
             theUrl = noSchemeBlogUrl + '/' + prefix + slug;
 
-        this.set('the-url', theUrl);
-    }.on('didInsertElement').observes('slug')
+        return theUrl;
+    })
 });
 
 export default urlPreview;

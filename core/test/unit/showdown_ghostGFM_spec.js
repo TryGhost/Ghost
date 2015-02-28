@@ -153,6 +153,10 @@ describe('Ghost GFM showdown extension', function () {
                 output: /^<script type=\"text\/javascript\" src=\"http:\/\/google.co.uk\"><\/script>$/
             },
             {
+                input: '<script>var url = "http://google.co.uk"</script>',
+                output: /^<script>var url = \"http:\/\/google.co.uk\"<\/script>$/
+            },
+            {
                 input: '<a href="http://facebook.com">http://google.co.uk</a>',
                 output: /^<a href=\"http:\/\/facebook.com\">http:\/\/google.co.uk<\/a>$/
             },

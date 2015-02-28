@@ -20,26 +20,14 @@
         left: 0;
         right: 0;
         z-index: 9999;
-        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
-
-        // This selector ends up being `body.settings-menu-expanded .notifications`
-        body.settings-menu-expanded & {
-            transform: translate3d(100%, 0px, 0px);
-        }
     }
 
     @media (min-width: 401px) {
         position: absolute;
         bottom: 0;
         left: 0;
-        z-index: 980;
+        z-index: 800;
         width: 300px;
-        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
-
-        // This selector ends up being `body.settings-menu-expanded .notifications`
-        body.settings-menu-expanded & {
-            transform: translate3d(350px, 0px, 0px);
-        }
     }
 }//.notifications
 

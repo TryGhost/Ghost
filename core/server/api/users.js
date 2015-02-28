@@ -135,7 +135,7 @@ users = {
             options.include = prepareInclude(options.include);
         }
 
-        return utils.checkObject(object, docName).then(function (data) {
+        return utils.checkObject(object, docName, options.id).then(function (data) {
             // Edit operation
             editOperation = function () {
                 return dataProvider.User.edit(data.users[0], options)
@@ -150,35 +150,40 @@ users = {
 
             // Check permissions
             return canThis(options.context).edit.user(options.id).then(function () {
-                if (data.users[0].roles && data.users[0].roles[0]) {
-                    var role = data.users[0].roles[0],
-                        roleId = parseInt(role.id || role, 10);
+                // if roles aren't in the payload, proceed with the edit
+                if (!(data.users[0].roles && data.users[0].roles[0])) {
+                    return editOperation();
+                }
 
-                    return dataProvider.User.findOne(
-                        {id: options.context.user, status: 'all'}, {include: ['roles']}
-                    ).then(function (contextUser) {
-                        var contextRoleId = contextUser.related('roles').toJSON()[0].id;
+                var role = data.users[0].roles[0],
+                    roleId = parseInt(role.id || role, 10),
+                    editedUserId = parseInt(options.id, 10);
 
-                        if (roleId !== contextRoleId &&
-                                parseInt(options.id, 10) === parseInt(options.context.user, 10)) {
-                            return Promise.reject(new errors.NoPermissionError('You cannot change your own role.'));
-                        } else if (roleId !== contextRoleId) {
-                            return dataProvider.User.findOne({role: 'Owner'}).then(function (result) {
-                                if (parseInt(result.id, 10) !== parseInt(options.id, 10)) {
-                                    return canThis(options.context).assign.role(role).then(function () {
-                                        return editOperation();
-                                    });
-                                } else {
-                                    return Promise.reject(new errors.NoPermissionError('There has to be one owner.'));
+                return dataProvider.User.findOne(
+                    {id: options.context.user, status: 'all'}, {include: ['roles']}
+                ).then(function (contextUser) {
+                    var contextRoleId = contextUser.related('roles').toJSON()[0].id;
+
+                    if (roleId !== contextRoleId && editedUserId === contextUser.id) {
+                        return Promise.reject(new errors.NoPermissionError('You cannot change your own role.'));
+                    }
+
+                    return dataProvider.User.findOne({role: 'Owner'}).then(function (owner) {
+                        if (contextUser.id !== owner.id) {
+                            if (editedUserId === owner.id) {
+                                if (owner.related('roles').at(0).id !== roleId) {
+                                    return Promise.reject(new errors.NoPermissionError('Cannot change Owner\'s role.'));
                                 }
-                            });
+                            } else if (roleId !== contextRoleId) {
+                                return canThis(options.context).assign.role(role).then(function () {
+                                    return editOperation();
+                                });
+                            }
                         }
 
                         return editOperation();
                     });
-                }
-
-                return editOperation();
+                });
             });
         }).catch(function (error) {
             return errors.handleAPIError(error, 'You do not have permission to edit this user');

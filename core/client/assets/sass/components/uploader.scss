@@ -106,16 +106,16 @@
 
         &.url {
             font: -webkit-small-control;
-            width: 276px;
             vertical-align: middle;
             padding: 9px 7px;
             margin: 10px 0;
             outline: 0;
             font-size: 1.1em;
             background: #fff;
-            border: #e3e1d5 1px solid;
-            border-radius: 4px;
-            transition: all 0.15s ease-in-out;
+
+            + .btn.btn-blue {
+                color: #fff;
+            }
         }
     }
 
