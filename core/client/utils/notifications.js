@@ -25,8 +25,19 @@ var Notifications = Ember.ArrayProxy.extend({
         this._super(object);
     },
     handleNotification: function (message, delayed) {
-        if (!message.status) {
-            message.status = 'passive';
+        if (typeof message.toJSON === 'function') {
+            // If this is a persistent message from the server, treat it as html safe
+            if (message.get('status') === 'persistent') {
+                message.set('message', message.get('message').htmlSafe());
+            }
+
+            if (!message.get('status')) {
+                message.set('status', 'passive');
+            }
+        } else {
+            if (!message.status) {
+                message.status = 'passive';
+            }
         }
 
         if (!delayed) {
