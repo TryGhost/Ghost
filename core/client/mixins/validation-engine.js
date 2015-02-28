@@ -29,12 +29,15 @@ function formatErrors(errors, opts) {
         // get the validator's error messages from the array.
         // normalize array members to map to strings.
         message = errors.map(function (error) {
+            var errorMessage;
             if (typeof error === 'string') {
-                return error;
+                errorMessage = error;
+            } else {
+                errorMessage = error.message;
             }
 
-            return error.message;
-        }).join('<br />');
+            return Ember.Handlebars.Utils.escapeExpression(errorMessage);
+        }).join('<br />').htmlSafe();
     } else if (errors instanceof Error) {
         message += errors.message || '.';
     } else if (typeof errors === 'object') {
