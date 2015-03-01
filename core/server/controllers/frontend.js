@@ -561,20 +561,6 @@ frontendControllers = {
                                     attributeValue = attributeValue.substr(1);
                                 }
 
-                                // make sure URL has a trailing slash
-                                try {
-                                    parsed = url.parse(attributeValue);
-
-                                    if (parsed.pathname && parsed.pathname.slice(-1) !== '/') {
-                                        parsed.pathname += '/';
-
-                                        attributeValue = url.format(parsed);
-                                    }
-                                } catch (e) {
-                                    // if the URL we've built cannot be parsed, fall back to the unprocessed URL
-                                    return;
-                                }
-
                                 attributeValue = baseUrl + attributeValue;
                                 el.attr(attributeName, attributeValue);
                             });
