@@ -55,6 +55,11 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
 
         sessionAuthenticationFailed: function (error) {
             if (error.errors) {
+                // These are server side errors, which can be marked as htmlSafe
+                error.errors.forEach(function (err) {
+                    err.message = err.message.htmlSafe();
+                });
+
                 this.notifications.showErrors(error.errors);
             } else {
                 // connection errors don't return proper status message, only req.body
