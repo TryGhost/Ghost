@@ -100,11 +100,13 @@ NavigationController = Ember.Controller.extend({
                 blogUrl = this.get('config').blogUrl,
                 blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
                 navItems = this.get('navigationItems'),
+                message = 'One of your navigation items has an empty label. ' +
+                    '<br /> Please enter a new label or delete the item before saving.',
                 match;
 
             // Don't save if there's a blank label.
             if (navItems.find(function (item) { return !item.get('isComplete') && !item.get('last');})) {
-                self.notifications.showErrors(['One of your navigation items has an empty label.<br>Please enter a new label or delete the item before saving.']);
+                self.notifications.showErrors([message.htmlSafe()]);
                 return;
             }
 
