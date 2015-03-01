@@ -8,7 +8,7 @@ var Promise         = require('bluebird'),
     utils           = require('./utils'),
 
     docName         = 'posts',
-    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields'],
+    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'next', 'previous'],
     posts;
 
 // ## Helpers
@@ -104,7 +104,7 @@ posts = {
      */
     edit: function edit(object, options) {
         return canThis(options.context).edit.post(options.id).then(function () {
-            return utils.checkObject(object, docName).then(function (checkedPostData) {
+            return utils.checkObject(object, docName, options.id).then(function (checkedPostData) {
                 if (options.include) {
                     options.include = prepareInclude(options.include);
                 }

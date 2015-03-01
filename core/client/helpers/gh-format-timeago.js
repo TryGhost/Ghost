@@ -1,7 +1,12 @@
-/* global moment */
-var formatTimeago = Ember.Handlebars.makeBoundHelper(function (timeago) {
 
-	moment.locale('zh-cn'); //hacked by weiping
+var formatTimeago = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+    if (!arr || !arr.length) {
+        return;
+    }
+
+    var timeago = arr[0];
+    moment.locale('zh-cn'); //hacked by weiping
+    
     return moment(timeago).fromNow();
     // stefanpenner says cool for small number of timeagos.
     // For large numbers moment sucks => single Ember.Object based clock better

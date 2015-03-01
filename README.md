@@ -17,6 +17,7 @@ Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主
 
 ## 使用Ghost
 
+
 ###安装
 你可以使用三种方式安装Ghost中文版。
 
@@ -50,8 +51,3 @@ Ghost中文版由云应用托管服务商 [点云](http://www.diancloud.com) 主
 
 ## 参与改进
 ( 中文版计划, 如何参与改进等 待完善 ）
-
-
-## Copyright & License
-
-Copyright (c) 2013-2015 Ghost Foundation - Released under the [MIT license](LICENSE).

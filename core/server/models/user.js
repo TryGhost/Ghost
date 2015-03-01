@@ -62,7 +62,7 @@ User = ghostBookshelf.Model.extend({
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Generating a slug requires a db call to look for conflicting slugs
             return ghostBookshelf.Model.generateSlug(User, this.get('slug') || this.get('name'),
-                {transacting: options.transacting, shortSlug: !this.get('slug')})
+                {status: 'all', transacting: options.transacting, shortSlug: !this.get('slug')})
                 .then(function (slug) {
                     self.set({slug: slug});
                 });
@@ -358,7 +358,10 @@ User = ghostBookshelf.Model.extend({
      */
     findOne: function (data, options) {
         var query,
-            status;
+            status,
+            lookupRole = data.role;
+
+        delete data.role;
 
         data = _.extend({
             status: 'active'
@@ -371,17 +374,19 @@ User = ghostBookshelf.Model.extend({
         options.withRelated = _.union(options.withRelated, options.include);
 
         // Support finding by role
-        if (data.role) {
-            options.withRelated = [{
-                roles: function (qb) {
-                    qb.where('name', data.role);
-                }
-            }];
-            delete data.role;
-        }
+        if (lookupRole) {
+            options.withRelated = _.union(options.withRelated, ['roles']);
+            options.include = _.union(options.include, ['roles']);
 
-        // We pass include to forge so that toJSON has access
-        query = this.forge(data, {include: options.include});
+            query = this.forge(data, {include: options.include});
+
+            query.query('join', 'roles_users', 'users.id', '=', 'roles_users.id');
+            query.query('join', 'roles', 'roles_users.role_id', '=', 'roles.id');
+            query.query('where', 'roles.name', '=', lookupRole);
+        } else {
+            // We pass include to forge so that toJSON has access
+            query = this.forge(data, {include: options.include});
+        }
 
         data = this.filterData(data);
 

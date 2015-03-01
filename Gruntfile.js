@@ -339,6 +339,10 @@ var _              = require('lodash'),
                 coverage: {
                     command: 'node ' + mochaPath + ' --timeout 15000 --reporter html-cov > coverage.html ' +
                     path.resolve(cwd + '/core/test/blanket_coverage.js')
+                },
+
+                shrinkwrap: {
+                    command: 'npm shrinkwrap'
                 }
             },
 
@@ -347,7 +351,7 @@ var _              = require('lodash'),
             sass: {
                 compress: {
                     options: {
-                        outputStyle: 'nested', // TODO: Set back to 'compressed' working correctly with our dependencies
+                        outputStyle: 'compressed',
                         sourceMap: true
                     },
                     files: [
@@ -380,7 +384,10 @@ var _              = require('lodash'),
             emberTemplates: {
                 dev: {
                     options: {
-                        precompile: true,
+
+                        templateCompilerPath: 'bower_components/ember/ember-template-compiler.js',
+                        handlebarsPath: 'bower_components/handlebars/handlebars.js',
+                        templateNamespace: 'HTMLBars',
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
@@ -401,6 +408,9 @@ var _              = require('lodash'),
 
                 prod: {
                     options: {
+                        templateCompilerPath: 'bower_components/ember/ember-template-compiler.js',
+                        handlebarsPath: 'bower_components/handlebars/handlebars.js',
+                        templateNamespace: 'HTMLBars',
                         templateBasePath: /core\/client\//,
                         templateFileExtensions: /\.hbs/,
                         templateRegistration: function (name, template) {
@@ -577,8 +587,7 @@ var _              = require('lodash'),
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
-                        'bower_components/handlebars/handlebars.js',
-                        'bower_components/ember/ember.js',
+                        'bower_components/ember/ember.debug.js',
                         'bower_components/ember-data/ember-data.js',
                         'bower_components/ember-resolver/dist/ember-resolver.js',
                         'bower_components/ic-ajax/dist/globals/main.js',
@@ -601,6 +610,7 @@ var _              = require('lodash'),
                         'bower_components/ember-simple-auth/simple-auth-oauth2.js',
                         'bower_components/google-caja/html-css-sanitizer-bundle.js',
                         'bower_components/nanoscroller/bin/javascripts/jquery.nanoscroller.js',
+                        'bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                         'core/shared/lib/showdown/extensions/ghostgfm.js',
@@ -615,7 +625,6 @@ var _              = require('lodash'),
                     src: [
                         'bower_components/loader.js/loader.js',
                         'bower_components/jquery/dist/jquery.js',
-                        'bower_components/handlebars/handlebars.runtime.js',
                         'bower_components/ember/ember.prod.js',
                         'bower_components/ember-data/ember-data.prod.js',
                         'bower_components/ember-resolver/dist/ember-resolver.js',
@@ -639,6 +648,7 @@ var _              = require('lodash'),
                         'bower_components/ember-simple-auth/simple-auth-oauth2.js',
                         'bower_components/google-caja/html-css-sanitizer-bundle.js',
                         'bower_components/nanoscroller/bin/javascripts/jquery.nanoscroller.js',
+                        'bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.js',
 
                         'core/shared/lib/showdown/extensions/ghostimagepreview.js',
                         'core/shared/lib/showdown/extensions/ghostgfm.js',
@@ -818,7 +828,7 @@ var _              = require('lodash'),
                 grunt.log.write('no test provided');
             }
 
-            grunt.task.run('setTestEnv', 'shell:test:' + test);
+            grunt.task.run('test-setup', 'shell:test:' + test);
         });
 
         // ### Validate
@@ -833,21 +843,30 @@ var _              = require('lodash'),
         grunt.registerTask('validate', 'Run tests and lint code',
             ['init', 'test-all']);
 
-        // ### Test
+        // ### Test-All
         // **Main testing task**
         //
-        // `grunt test` will lint and test your pre-built local Ghost codebase.
+        // `grunt test-all` will lint and test your pre-built local Ghost codebase.
         //
-        // `grunt test` runs jshint and jscs as well as the 4 test suites. See the individual sub tasks below for
+        // `grunt test-all` runs jshint and jscs as well as all 6 test suites. See the individual sub tasks below for
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
-            ['jshint', 'jscs', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'test-functional', 'shell:testem']);
+            ['lint', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'test-functional', 'shell:testem']
+        );
 
         // ### Lint
         //
         // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
-        grunt.registerTask('lint', 'Run the code style checks and linter', ['jshint', 'jscs']);
+        grunt.registerTask('lint', 'Run the code style checks and linter',
+            ['jshint', 'jscs']
+        );
+
+        // ### test-setup *(utility)(
+        // `grunt test-setup` will run all the setup tasks required for running tests
+        grunt.registerTask('test-setup', 'Setup ready to run tests',
+            ['clean:test', 'setTestEnv', 'ensureConfig']
+        );
 
         // ### Unit Tests *(sub task)*
         // `grunt test-unit` will run just the unit tests
@@ -867,7 +886,8 @@ var _              = require('lodash'),
         // Unit tests do **not** touch the database.
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-unit', 'Run unit tests (mocha)',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:unit']);
+            ['test-setup', 'mochacli:unit']
+        );
 
         // ### Integration tests *(sub task)*
         // `grunt test-integration` will run just the integration tests
@@ -896,7 +916,8 @@ var _              = require('lodash'),
         //
         // A coverage report can be generated for these tests using the `grunt test-coverage` task.
         grunt.registerTask('test-integration', 'Run integration tests (mocha + db access)',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:integration']);
+            ['test-setup', 'mochacli:integration']
+        );
 
         // ### Route tests *(sub task)*
         // `grunt test-routes` will run just the route tests
@@ -917,7 +938,8 @@ var _              = require('lodash'),
         // are working as expected, including checking the headers and status codes received. It is very easy and
         // quick to test many permutations of routes / urls in the system.
         grunt.registerTask('test-routes', 'Run functional route tests (mocha)',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:routes']);
+            ['test-setup', 'mochacli:routes']
+        );
 
         // ### Module tests *(sub task)*
         // `grunt test-module` will run just the module tests
@@ -925,16 +947,13 @@ var _              = require('lodash'),
         // The purpose of the module tests is to ensure that Ghost can be used as an npm module and exposes all
         // required methods to interact with it.
         grunt.registerTask('test-module', 'Run functional module tests (mocha)',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'mochacli:module']);
+            ['test-setup', 'mochacli:module']
+        );
 
-        // ### Functional tests for the setup process
-        // `grunt test-functional-setup will run just the functional tests for the setup page.
-        //
-        // Setup only works with a brand new database, so it needs to run isolated from the rest of
-        // the functional tests.
-        grunt.registerTask('test-functional-setup', 'Run functional tests for setup',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'cleanDatabase', 'express:test',
-            'spawnCasperJS:setup', 'express:test:stop']
+        // ### Ember unit tests *(sub task)*
+        // `grunt testem` will run just the ember unit tests
+        grunt.registerTask('testem', 'Run the ember unit tests',
+            ['test-setup', 'shell:testem']
         );
 
         // ### Functional tests *(sub task)*
@@ -956,8 +975,16 @@ var _              = require('lodash'),
         // The purpose of the functional tests is to ensure that Ghost is working as is expected from a user perspective
         // including buttons and other important interactions in the admin UI.
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop',
-            'test-functional-setup']
+            ['test-setup', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop', 'test-functional-setup']
+        );
+
+        // ### Functional tests for the setup process
+        // `grunt test-functional-setup will run just the functional tests for the setup page.
+        //
+        // Setup only works with a brand new database, so it needs to run isolated from the rest of
+        // the functional tests.
+        grunt.registerTask('test-functional-setup', 'Run functional tests for setup',
+            ['test-setup', 'cleanDatabase', 'express:test', 'spawnCasperJS:setup', 'express:test:stop']
         );
 
         // ### Coverage
@@ -970,7 +997,8 @@ var _              = require('lodash'),
         //
         // Key areas for coverage are: helpers and theme elements, apps / GDK, the api and model layers.
         grunt.registerTask('test-coverage', 'Generate unit and integration (mocha) tests coverage report',
-            ['clean:test', 'setTestEnv', 'ensureConfig', 'shell:coverage']);
+            ['test-setup', 'shell:coverage']
+        );
 
         // ## Building assets
         //
@@ -1051,7 +1079,8 @@ var _              = require('lodash'),
                     repo: 'ghost',
                     oauthKey: oauthKey,
                     releaseDate: ninetyDaysAgo,
-                    count: 20
+                    count: 20,
+                    retry: true
                 })
             ).then(function (results) {
                 var contributors = results[1],
@@ -1150,7 +1179,8 @@ var _              = require('lodash'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['init', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify:release', 'clean:release', 'copy:release', 'compress:release']);
+            ['init', 'concat:prod', 'copy:prod', 'emberBuildProd', 'uglify:release', 'clean:release',
+                'shell:shrinkwrap', 'copy:release', 'compress:release']);
     };
 
 // Export the configuration

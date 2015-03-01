@@ -1,6 +1,14 @@
 var SettingsGeneralController = Ember.Controller.extend({
     selectedTheme: null,
 
+    logoImageSource: Ember.computed('model.logo', function () {
+        return this.get('model.logo') || '';
+    }),
+
+    coverImageSource: Ember.computed('model.cover', function () {
+        return this.get('model.cover') || '';
+    }),
+
     isDatedPermalinks: Ember.computed('model.permalinks', function (key, value) {
         // setter
         if (arguments.length > 1) {

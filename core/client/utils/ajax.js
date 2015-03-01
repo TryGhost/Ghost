@@ -1,6 +1,6 @@
 /* global ic */
 
-var ajax = window.ajax = function () {
+var ajax = function () {
     return ic.ajax.request.apply(null, arguments);
 };
 

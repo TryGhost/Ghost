@@ -197,8 +197,8 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
         if (status === 'published') {
             message += '&nbsp;<a href="' + path + '">查看' + this.get('postOrPage') + '</a>';
         }
-        
-        this.notifications.showSuccess(message, {delayed: delay});
+
+        this.notifications.showSuccess(message.htmlSafe(), {delayed: delay});
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
@@ -207,7 +207,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
 
         message += '<br />' + error;
 
-        this.notifications.showError(message, {delayed: delay});
+        this.notifications.showError(message.htmlSafe(), {delayed: delay});
     },
 
     shouldFocusTitle: Ember.computed.alias('model.isNew'),
@@ -321,9 +321,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
             var editor = this.get('codemirror'),
                 line = this.findLine(Ember.$(e.currentTarget).attr('id')),
                 lineNumber = editor.getLineNumber(line),
-                // jscs:disable
                 match = line.text.match(/\([^\n]*\)?/),
-                // jscs:enable
                 replacement = '(http://)';
 
             if (match) {
@@ -333,9 +331,7 @@ EditorControllerMixin = Ember.Mixin.create(MarkerManager, {
                     {line: lineNumber, ch: match.index + match[0].length - 1}
                 );
             } else {
-                // jscs:disable
                 match = line.text.match(/\]/);
-                // jscs:enable
                 if (match) {
                     editor.replaceRange(
                         replacement,

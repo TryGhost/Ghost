@@ -118,6 +118,11 @@ ConfigManager.prototype.set = function (config) {
     // local copy with properties that have been explicitly set.
     _.merge(this._config, config);
 
+    // Special case for the them.navigation JSON object, which should be overridden not merged
+    if (config && config.theme && config.theme.navigation) {
+        this._config.theme.navigation = config.theme.navigation;
+    }
+
     // Protect against accessing a non-existant object.
     // This ensures there's always at least a paths object
     // because it's referenced in multiple places.

@@ -1,4 +1,4 @@
-<header class="settings-subview-header">
+<header class="settings-subview-header clearfix">
     {{#unless session.user.isAuthor}}
         {{#link-to "settings.users" class="btn btn-default btn-back" tagName="button"}}<i class="icon-chevron-left"></i>用户列表{{/link-to}}
     {{/unless}}
@@ -65,7 +65,7 @@
             <div class="form-group">
                 <label for="user-role">角色</label>
                 {{gh-role-selector
-                    initialValue=role
+                    initialValue=user.role
                     onChange="changeRole"
                     selectId="user-role"}}
                 <p>选择用户角色, 不同角色拥有不同权限</p>

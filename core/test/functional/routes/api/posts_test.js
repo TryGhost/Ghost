@@ -235,6 +235,32 @@ describe('Post API', function () {
                 });
         });
 
+        it('can retrieve next and previous posts', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/3/?include=next,previous'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    var jsonResponse = res.body;
+                    jsonResponse.should.exist;
+                    jsonResponse.posts.should.exist;
+                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post', ['next', 'previous']);
+                    jsonResponse.posts[0].page.should.not.be.ok;
+
+                    jsonResponse.posts[0].next.should.be.an.Object;
+                    testUtils.API.checkResponse(jsonResponse.posts[0].next, 'post');
+                    jsonResponse.posts[0].previous.should.be.an.Object;
+                    testUtils.API.checkResponse(jsonResponse.posts[0].previous, 'post');
+                    done();
+                });
+        });
+
         it('can retrieve a static page', function (done) {
             request.get(testUtils.API.getApiQuery('posts/7/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
@@ -677,6 +703,36 @@ describe('Post API', function () {
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules['private'])
                         .expect(401)
+                        .end(function (err, res) {
+                            /*jshint unused:false*/
+                            if (err) {
+                                return done(err);
+                            }
+
+                            done();
+                        });
+                });
+        });
+
+        it('throws an error if there is an id mismatch', function (done) {
+            request.get(testUtils.API.getApiQuery('posts/1/'))
+                .set('Authorization', 'Bearer ' + accesstoken)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    var jsonResponse = res.body;
+                    jsonResponse.should.exist;
+
+                    request.put(testUtils.API.getApiQuery('posts/2/'))
+                        .set('Authorization', 'Bearer ' + accesstoken)
+                        .send(jsonResponse)
+                        .expect('Content-Type', /json/)
+                        .expect('Cache-Control', testUtils.cacheRules['private'])
+                        .expect(400)
                         .end(function (err, res) {
                             /*jshint unused:false*/
                             if (err) {

@@ -2,5 +2,5 @@
 /*global require */
 
 if (!window.disableBoot) {
-    window.App = require('ghost/app')['default'].create();
+    window.App = require('ghost/app').default.create();
 }

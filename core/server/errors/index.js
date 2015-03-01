@@ -193,6 +193,15 @@ errors = {
             return this.rejectError(error);
         }
 
+        // handle database errors
+        if (error.code && (error.errno || error.detail)) {
+            error.db_error_code = error.code;
+            error.type = 'DatabaseError';
+            error.code = 500;
+
+            return this.rejectError(error);
+        }
+
         return this.rejectError(new this.InternalServerError(error));
     },
 
@@ -252,7 +261,7 @@ errors = {
                 // And then try to explain things to the user...
                 // Cheat and output the error using handlebars escapeExpression
                 return res.status(500).send(
-                    '<h1>Oops, seems there is an an error in the error template.</h1>' +
+                    '<h1>Oops, seems there is an error in the error template.</h1>' +
                     '<p>Encountered the error: </p>' +
                     '<pre>' + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + '</pre>' +
                     '<br ><p>whilst trying to render an error page for the error: </p>' +
