@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+	<metadata>
+		<id>handlebars.js</id>
+		<version>2.0.0</version>
+		<authors>handlebars.js Authors</authors>
+		<licenseUrl>https://github.com/wycats/handlebars.js/blob/master/LICENSE</licenseUrl>
+		<projectUrl>https://github.com/wycats/handlebars.js/</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>Extension of the Mustache logicless template language</description>
+		<releaseNotes></releaseNotes>
+		<tags>handlebars mustache template html</tags>
+	</metadata>
+	<files>
+		<file src="handlebars.js" target="Content\Scripts" />
+	</files>
+</package>

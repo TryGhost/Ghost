@@ -1,0 +1,40 @@
+{
+  "name": "ember-jj-abrams-resolver",
+  "main": [
+    "dist/ember-resolver.js",
+    "dist/ember-resolver.prod.js",
+    "dist/ember-resolver.min.js"
+  ],
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt",
+    ".gitignore",
+    ".jshintrc",
+    ".travis.yml",
+    "Assetfile",
+    "Gemfile",
+    "Gemfile.lock",
+    "LICENSE",
+    "README.md",
+    "Rakefile",
+    "VERSION",
+    "bower.json",
+    "config.ru",
+    "ember-dev.yml",
+    "generators",
+    "packages",
+    "tests"
+  ],
+  "dependencies": {
+    "ember": " > 1.5.0-beta.3"
+  },
+  "homepage": "https://github.com/stefanpenner/ember-jj-abrams-resolver",
+  "_release": "181251821c",
+  "_resolution": {
+    "type": "commit",
+    "commit": "181251821cf513bb58d3e192faa13245a816f75e"
+  },
+  "_source": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git",
+  "_target": "181251821cf513bb58d3e192faa13245a816f75e",
+  "_originalSource": "git://github.com/stefanpenner/ember-jj-abrams-resolver.git"
+}

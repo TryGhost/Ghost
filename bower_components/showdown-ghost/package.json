@@ -1,0 +1,46 @@
+{
+  "name": "showdown-ghost",
+  "version": "0.3.4",
+  "descriotion": "Slightly updated version of showdown used in Ghost",
+  "author": "John Fraser",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "contributors": [
+    "Hannah Wolfe",
+    "John Gruber",
+    "John Fraser",
+    "Corey Innis",
+    "Remy Sharp",
+    "Konstantin Käfer",
+    "Roger Braun",
+    "Dominic Tarr",
+    "Cat Chen",
+    "Titus Stone",
+    "Rob Sutherland",
+    "Pavel Lang",
+    "Ben Combee",
+    "Adam Backstrom",
+    "Pascal Deschênes"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erisds/showdown.git#ghost",
+    "web": "https://github.com/coreyti/showdown"
+  },
+  "devDependencies": {
+    "mocha": "1.3.0",
+    "grunt": "0.4.2",
+    "grunt-simple-mocha": "*",
+    "grunt-mocha": "~0.4.7",
+    "should": "1.2.0",
+    "grunt-contrib-jshint": "0.10.0"
+  },
+  "licenses": [
+    {
+      "type": "BSD",
+      "url": "https://github.com/coreyti/showdown/raw/master/license.txt"
+    }
+  ],
+  "main": "./src/showdown"
+}

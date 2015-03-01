@@ -1,0 +1,12 @@
+{
+  "name": "device",
+  "homepage": "https://github.com/matthewhudson/device.js",
+  "_release": "5347a275b6",
+  "_resolution": {
+    "type": "commit",
+    "commit": "5347a275b66020a0d4dfe9aad81a488f8cce448d"
+  },
+  "_source": "git://github.com/matthewhudson/device.js.git",
+  "_target": "5347a275b66020a0d4dfe9aad81a488f8cce448d",
+  "_originalSource": "git://github.com/matthewhudson/device.js"
+}

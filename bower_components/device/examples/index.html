@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Matthew Hudson / Device.js</title>
+    <style>
+      html, body {
+        min-height:100%;
+        height:100%;
+      }
+          
+            html {
+                padding: 30px 10px;
+                font-size: 20px;
+                line-height: 1.4;
+                color: #737373;
+                background: #f0f0f0;
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+            }
+
+            html,
+            input {
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            }
+
+            body {
+                padding: 30px 20px 50px;
+                margin: 0 auto;
+            }
+
+            h1 {
+                margin: 10px 0px;
+                font-size: 50px;
+                text-align: center;
+        color:#222;
+            }
+      
+      h4 {
+        text-align: center;
+        color: #333;
+      }
+      
+            p {
+                margin: 1em 0;
+            }
+
+      .container-outer {
+        width: 100%;
+        padding: 0;
+        display: table;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+      }
+      
+      .container-middle {
+        padding: 0;
+        vertical-align: middle;
+        display: table-cell;
+        margin: 0;
+      }
+      
+      .container-inner {
+        width: 500px;
+        margin: 0 auto;
+      }
+      
+      .content {
+        text-align: left;
+        padding: 10px 35px;
+        border: 1px solid #b3b3b3;
+        border-radius: 4px;
+        box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
+        background-color:#fafafa;
+        background-image: -moz-radial-gradient(50% 35%, ellipse cover, #FAF7F7, #fffde8 100%);
+        background-image: -webkit-radial-gradient(50% 35%, ellipse cover, #FAF7F7, #fffde8 100%);
+        background-image: -o-radial-gradient(50% 35%, ellipse cover, #FAF7F7, #fffde8 100%);
+        background-image: -ms-radial-gradient(50% 35%, ellipse cover, #FAF7F7, #fffde8 100%);
+        background-image: radial-gradient(50% 35%, ellipse cover, #FAF7F7, #fffde8 100%);
+      }
+      
+      p.footer {
+        text-align:center;
+        font-size:0.75em;
+      }
+      
+      p.footer a, 
+      p.footer a:visited 
+      p.footer a:active {
+        color:#424242;
+        text-decoration:none;
+        font-weight:bold;
+      }
+      
+      p.footer a:hover {
+        text-decoration:underline;
+      }
+      .mobile .mobile,
+      .tablet .tablet,
+      .desktop .desktop,
+      .portrait .portrait,
+      .landscape .landscape,
+      .ios .ios,
+      .iphone .iphone,
+      .ipad .ipad,
+      .ipod .ipod,
+      .android .android,
+      .blackberry .blackberry,
+      .windows .windows,
+      .fxos .fxos {
+        background: green;
+        color: #FFF;
+      }
+      span {
+        display: block;
+        padding: 2px 15px;
+      }
+      h2 {
+        margin: 0;
+      }
+      .content {
+        padding: 25px 35px;
+      }
+      iframe {
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 1em;
+        width: 270px !important;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container-outer">
+      <div class="container-middle"> 
+        <div class="container-inner"> 
+          <div class="content">
+            <h2>Device Type</h2>
+            <span class="mobile">.mobile</span>
+            <span class="tablet">.tablet</span>
+            <span class="desktop">.desktop</span>
+
+
+            <h2>Orientation</h2>
+            <span class="portrait">.portrait</span>
+            <span class="landscape">.landscape</span>
+
+            <h2>Device OS</h2>
+            <span class="ios">.ios</span>
+            <span class="iphone">.iphone</span>
+            <span class="ipad">.ipad</span>
+            <span class="ipod">.ipod</span>
+            <span class="android">.android</span>
+            <span class="blackberry">.blackberry</span>
+            <span class="windows">.windows</span>
+            <span class="fxos">.fxos</span>
+          </div>
+          <p class="footer">
+          Created by <a href="http://www.matthewhudson.me/">Matthew Hudson</a> &mdash; 
+          Download <a href="http://github.com/matthewhudson/device.js">device.js on Github</a>
+          <a href="https://twitter.com/matthewgh" class="twitter-follow-button" data-show-count="true" data-size="large" data-dnt="true">Follow @matthewgh</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      // Dummy value for demonstrating device.noConflict()
+      window.device = "Hello World!";
+    </script>
+
+    <script src="../lib/device.js"></script>
+
+    <script type="text/javascript">
+      console.log("device.portrait() === %s", device.portrait());
+      console.log("device.landscape() === %s", device.landscape());
+      console.log("device.mobile() === %s", device.mobile());
+      console.log("device.tablet() === %s", device.tablet());
+      console.log("device.ipad() === %s", device.ipad());
+      console.log("device.ipod() === %s", device.ipod());
+      console.log("device.iphone() === %s", device.iphone());
+      console.log("device.android() === %s", device.android());
+      console.log("device.androidTablet() === %s", device.androidTablet());
+      console.log("device.blackberryTablet() === %s", device.blackberryTablet());
+      console.log("device.fxos() === %s", device.fxos());
+      console.log("device.fxosPhone() === %s", device.fxosPhone());
+      console.log("device.fxosTablet() === %s", device.fxosTablet());
+
+      var devicejs = device.noConflict();
+
+      console.log ("device.noConflict() [previous]", window.device);
+      console.log ("device.noConflict() [device.js]", devicejs.iphone());
+    </script>
+
+  </body>
+</html>

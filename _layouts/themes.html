@@ -1,0 +1,64 @@
+---
+layout: default
+chapter_title: Overview
+nav_items:
+    - key: getting-started
+    - key: handlebars
+    - key: structure
+    - key: helpers
+      sub_items:
+        - key: asset
+        - key: author
+        - key: body_class
+        - key: content
+        - key: date
+        - key: encode
+        - key: excerpt
+        - key: foreach
+        - key: ghost_head
+        - key: ghost_foot
+        - key: has
+        - key: is
+        - key: log
+        - key: meta_title
+        - key: meta_description
+        - key: plural
+        - key: post_class
+        - key: tags
+        - key: title
+        - key: url
+
+    - key: changelog
+    - key: troubleshooting
+---
+
+
+<div class="container">
+    <div class="row">
+
+        {% if page.lang == nil or page.lang == "example_translation" %}
+            {% include subnav.html %}
+        {% else %}
+            <aside id="sidebar" class="col-lg-3">
+                <nav class="bs-sidebar">
+                    <ul class="nav bs-sidenav">
+                        <li class="active"><a href="#about">About Ghost themes</a></li>
+                        <li><a href="#what-is-handlebars">What is Handlebars?</a></li>
+                        <li><a href="#file-structure">File Structure</a></li>
+                        <li><a href="#create-your-own">Create your own</a></li>
+                        <li><a href="#helpers">Built-in Helpers</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting Themes</a></li>
+                    </ul>
+                </nav>
+            </aside>
+        {% endif %}
+
+        <section id="content" class="col-lg-9 {{ page.section }}">
+            {{ content }}
+
+            {% if page.next_section or page.prev_section %}
+            {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>

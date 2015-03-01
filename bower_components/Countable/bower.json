@@ -1,0 +1,17 @@
+{
+  "name": "Countable",
+  "description": "Countable is a JavaScript function to add live paragraph-, word- and character-counting to an HTML element.",
+  "version": "2.0.2",
+  "main": "Countable.js",
+  "ignore": [
+    "test",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "karma.conf.js",
+    "package.json",
+    ".travis.yml"
+  ],
+  "devDependencies": {
+    "chai": "~1.7.2"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "ember-mocha-adapter",
+  "version": "0.2.1",
+  "main": "adapter.js",
+  "description": "An adapter that makes ember-testing with Mocha easier",
+  "keywords": [
+    "ember",
+    "ember.js",
+    "emberjs",
+    "testing",
+    "mocha"
+  ],
+  "ignore": [],
+  "dependencies": {}
+}

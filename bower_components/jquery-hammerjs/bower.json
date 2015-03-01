@@ -1,0 +1,15 @@
+{
+    "name": "jquery-hammerjs",
+    "version": "1.0.1",
+    "main": ["jquery.hammer.js"],
+    "dependencies": {
+      "hammerjs": "1.0.x"
+    },
+    "ignore": [
+        "tests",
+        "component.json",
+        "package.json",
+        "examples",
+        "src"
+    ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "nprogress",
+  "author": "Rico Sta. Cruz <hi@ricostacruz.com>",
+  "version": "0.1.2",
+  "repository": {
+     "type": "git",
+     "url": "https://github.com/rstacruz/nprogress.git"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -R spec"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "chai": "~1.6.1",
+    "mocha": "~1.11.0",
+    "jsdom": "~0.6.5"
+  }
+}

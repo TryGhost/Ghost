@@ -1,0 +1,21 @@
+{
+  "name": "nanoscroller",
+  "version": "0.0.0-ignored",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.4.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt": "~0.4.2",
+    "grunt-sizediff": "~0.3.3",
+    "grunt-contrib-coffee": "~0.10.1",
+    "grunt-shell": "~0.6.4",
+    "grunt-contrib-yuidoc": "~0.5.1",
+    "marked": "~0.3.1",
+    "grunt-contrib-jasmine": "~0.6.1",
+    "grunt-contrib-csslint": "~0.2.0",
+    "grunt-contrib-connect": "~0.7.1"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "ember-cli-test-loader",
+  "main": "test-loader.js",
+  "version": "0.0.4",
+  "homepage": "https://github.com/rjackson/ember-cli-test-loader",
+  "description": "Test loader for Ember CLI projects.",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "authors": [
+    "Robert Jackson <robert.w.jackson@me.com>"
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "ember-cli"
+  ]
+}

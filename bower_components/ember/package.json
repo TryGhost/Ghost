@@ -1,0 +1,11 @@
+{
+  "name": "components-ember",
+  "version": "1.9.0",
+  "description": "Ember Application Framework",
+  "keywords": ["ember"],
+  "main": "./ember.js",
+  "dependencies": {
+    "jquery": ">=1.7.0 < 2.2.0",
+    "handlebars": ">= 2.0.0 < 3.0.0"
+  }
+}

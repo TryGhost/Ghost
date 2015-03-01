@@ -1,0 +1,15 @@
+{
+  "name": "CodeMirror",
+  "main": ["lib/codemirror.js", "lib/codemirror.css"],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components",
+    "bin",
+    "demo",
+    "doc",
+    "test",
+    "index.html",
+    "package.json"
+  ]
+}

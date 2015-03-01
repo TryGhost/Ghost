@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>index.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "", thisFile = "index.js", defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+  <script src="fileSearch.js"></script>
+  <link rel="stylesheet" href="fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h1">
+        <a href="#ghost%20bootloader">Ghost bootloader</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="ghost%20bootloader">
+  <h1>
+    <a href="#ghost%20bootloader" name="ghost%20bootloader" class="pilcrow">&#182;</a>
+    Ghost bootloader
+  </h1>
+</div>
+
+
+<p>Orchestrates the loading of Ghost
+When run from command line.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">express</span><span class="p">,</span>
+    <span class="nx">ghost</span><span class="p">,</span>
+    <span class="nx">parentApp</span><span class="p">,</span>
+    <span class="nx">errors</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>Make sure dependencies are installed and file system permissions are correct.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./core/server/utils/startup-check&#39;</span><span class="p">).</span><span class="nx">check</span><span class="p">();</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>Proceed with startup</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;express&#39;</span><span class="p">);</span>
+<span class="nx">ghost</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./core&#39;</span><span class="p">);</span>
+<span class="nx">errors</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./core/server/errors&#39;</span><span class="p">);</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>Create our parent express app instance.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">parentApp</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+
+<span class="nx">ghost</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">ghostServer</span><span class="p">)</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>Mount our ghost instance on our desired subdirectory path if it exists.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">parentApp</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">ghostServer</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">paths</span><span class="p">.</span><span class="nx">subdir</span><span class="p">,</span> <span class="nx">ghostServer</span><span class="p">.</span><span class="nx">rootApp</span><span class="p">);</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>Let ghost handle starting our server instance.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">ghostServer</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">parentApp</span><span class="p">);</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">errors</span><span class="p">.</span><span class="nx">logErrorAndExit</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">context</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">help</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="{% if page.lang %}{{page.lang}}{% else %}en{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  {% if page.meta_title %}
+  <title>{{ page.meta_title }}</title>
+  {% else %}
+  <title>Ghost Guide</title>
+  {% endif %}
+
+  {% if page.meta_description %}
+  <meta name="description" content="{{ page.meta_description }}" />
+  {% endif %}
+
+  {% if page.canonical %}
+  <link rel="canonical" href="{{ page.canonical }}" />
+  <link rel="alternate" href="{{ site.url }}/{% if page.lang %}{{ page.lang }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}" />
+
+  {% else %}
+  <link rel="canonical" href="{{ site.url }}/{% if page.lang %}{{ page.lang }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}" />
+  {% endif %}
+
+  {% for lang in site.languages %}
+  <link rel="alternate" hreflang="{{ lang.key }}" href="{{ site.url }}/{% if lang.key != 'en' %}{{ lang.key }}/{% endif %}{% if page.chapter %}{{ page.chapter }}/{% endif %}{% if page.section %}{{ page.section }}/{% endif %}" />
+  {% endfor %}
+
+  <link rel="stylesheet" href="{{ site.url }}/assets/css/bootstrap.css" >
+  <link rel="stylesheet" href="{{ site.url }}/assets/css/main.css?v=0.1">
+
+  <!--[if lt IE 9]>
+    <script src="{{ site.url }}/assets/js/html5shiv.js"></script>
+    <script src="{{ site.url }}/assets/js/respond.min.js"></script>
+  <![endif]-->
+
+  <link rel="shortcut icon" href="{{ site.url }}/assets/img/favicon.ico">
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+
+  {% if page.canonical and page.redirectToCanonical %}
+    <script type="text/javascript">
+      window.location.href = '{{ page.canonical }}';
+    </script>
+  {% endif %}
+
+  <script type="text/javascript">
+    var analytics=analytics||[];(function(){var e=["identify","track","trackLink","trackForm","trackClick","trackSubmit","page","pageview","ab","alias","ready","group"],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"===document.location.protocol?"https://":"http://")+"d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/"+e+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};
+    analytics.load("uj8ix0aatc");
+  </script>
+
+</head>
+<body>
+
+{% include navbar.html %}
+
+<main id="main" role="main">
+
+  {% if page.heading %}
+  <header class="bs-header">
+      <div class="container">
+          <h1>{{ page.heading }}</h1>
+          {% if page.subheading %}
+          <p>{{ page.subheading }}</p>
+          {% endif %}
+      </div>
+  </header>
+  {% endif %}
+
+  {{ content }}
+
+
+</main>
+
+<footer id="global-footer">
+  <p>Lovingly created and maintained by <a href="http://john.onolan.org">John O'Nolan</a> + <a href="http://erisds.co.uk">Hannah Wolfe</a> + an amazing group of <a href="https://github.com/TryGhost/Ghost/contributors">contributors</a>.</p>
+    <hr>
+  <p>All code copyright (C) 2014 The Ghost Foundation - Released under the <a href="http://tryghost.org/about/license.html">MIT</a> License.<br />
+    All documentation is released under the Creative Commons <a href="http://creativecommons.org/licenses/by/3.0/">By-3.0</a> License.</p>
+</footer>
+
+<script src="{{ site.url }}/assets/js/jquery.js"></script>
+<script src="{{ site.url }}/assets/js/bootstrap.min.js"></script>
+<script src="{{ site.url }}/assets/js/anchor.min.js"></script>
+<script src="{{ site.url }}/assets/js/main.js"></script>
+
+
+</body>
+</html>

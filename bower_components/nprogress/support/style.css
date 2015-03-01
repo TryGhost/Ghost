@@ -1,0 +1,211 @@
+i, b {
+  font-style: normal;
+  font-weight: 400;
+}
+
+body {
+  background: white;
+}
+
+body, td, input, textarea {
+  font-family: source sans pro, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #222;
+}
+
+button {
+  cursor: pointer;
+}
+
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.nprogress-logo {
+  display: inline-block;
+
+  width: 100px;
+  height: 20px;
+  border: solid 4px #2d9;
+  border-radius: 10px;
+
+  position: relative;
+}
+.nprogress-logo:after {
+  content: '';
+  display: block;
+
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  bottom: 4px;
+  width: 40%;
+
+  background: #2d9;
+  border-radius: 3px;
+}
+
+.fade {
+  transition: all 300ms linear 700ms;
+  -webkit-transform: translate3d(0,0,0);
+  -moz-transform: translate3d(0,0,0);
+  -ms-transform: translate3d(0,0,0);
+  -o-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  opacity: 1;
+}
+
+.fade.out {
+  opacity: 0;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+}
+
+.button {
+  display: inline-block;
+  text-decoration: none;
+
+  background: #eee;
+  color: #777;
+  border-radius: 2px;
+
+  padding: 8px 10px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.button.play:before {
+  content: '\25b6';
+}
+
+.button:hover {
+  background: #2d9;
+  color: #fff;
+}
+
+.button.primary {
+  background: #2d9;
+  color: #fff;
+}
+.button.primary:hover {
+  background: #1c8;
+}
+
+.button:active {
+  background: #2d9;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
+.controls {
+  text-align: left;
+  margin: 0 auto;
+  max-width: 300px;
+  color: #666;
+}
+
+.controls .button {
+  width: 40px;
+  margin-right: 10px;
+  text-align: center;
+}
+
+.controls i {
+  color: #999;
+}
+
+.controls b {
+  color: #29d;
+  font-weight: 700;
+}
+
+.controls {
+  font-size: 0.9em;
+}
+
+.page-header {
+  margin: 1.5em auto;
+  text-align: center;
+  max-width: 400px;
+  padding: 0 20px;
+  margin: 3em auto;
+}
+
+.page-header h1 {
+  font-size: 2.0em;
+  text-align: center;
+  font-weight: 200;
+  line-height: 1.3;
+  color: #333;
+  margin: 0;
+}
+
+p.brief {
+  line-height: 1.4;
+  font-style: italic;
+  color: #888;
+}
+
+p.brief.big {
+  font-size: 1.1em;
+}
+
+@media (min-width: 480px) {
+  .page-header h1 {
+    margin-top: 1em;
+    margin-bottom: 0.4em;
+  }
+}
+
+.page-header h1 i {
+  color: #aaa;
+  font-style: normal;
+  font-weight: 200;
+}
+
+@media (min-width: 480px) {
+  .page-header h1 {
+    font-size: 3em; }
+  .page-header {
+    margin: 4.5em auto 3.5em auto;
+  }
+}
+
+/* --- */
+
+.actions {
+  text-align: center;
+  margin: 2em 0;
+}
+
+@media (min-width: 480px) {
+  .actions {
+    margin: 4.5em 0 3.5em 0;
+  }
+}
+
+.big.button {
+  padding-left: 30px;
+  padding-right: 30px;
+  font-size: 1.1em;
+}
+
+
+/* ---- */
+
+div.hr-rule {
+  height: 1px;
+  width: 100px;
+  margin: 40px auto;
+  background: #ddd;
+}
+.share-buttons {
+  margin: 0 auto;
+  text-align: center;
+}

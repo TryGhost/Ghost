@@ -1,0 +1,22 @@
+{
+  "name": "ic-ajax",
+  "version": "1.0.1",
+  "authors": [
+    "Ryan Florence <rpflorence@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "bower_components",
+    "node_modules",
+    "package.json",
+    "testem.json",
+    "test.js",
+    "**/.*"
+  ],
+  "dependencies": {
+    "ember": ">=1.2 <2"
+  },
+  "devDependencies": {
+    "sinon": "http://sinonjs.org/releases/sinon-1.7.3.js"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "showdown-ghost",
+  "version": "0.3.4",
+  "homepage": "https://github.com/erisds/showdown",
+  "authors": [
+    "John Fraser",
+    "Hannah Wolfe"
+  ],
+  "description": "Slightly updated version of showdown used in Ghost",
+  "main": "src/showdown.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "license": "license.txt",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "_release": "0.3.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.3.4",
+    "commit": "62d92c18faf53d81c75dbc1be9fa800dd9bb037a"
+  },
+  "_source": "git://github.com/erisds/showdown.git",
+  "_target": "0.3.4",
+  "_originalSource": "showdown-ghost"
+}

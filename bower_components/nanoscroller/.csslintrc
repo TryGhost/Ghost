@@ -1,0 +1,10 @@
+{
+    "fallback-colors": false,
+    "known-properties": false,
+    "compatible-vendor-prefixes": false,
+    "adjoining-classes": false,
+    "empty-rules": true,
+    "zero-units": true,
+    "ids": true,
+    "important": true
+}

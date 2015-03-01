@@ -1,0 +1,37 @@
+{
+  "name": "nprogress",
+  "repo": "rstacruz/nprogress",
+  "description": "slim progress bar",
+  "version": "0.1.2",
+  "keywords": [
+    "progress",
+    "bar",
+    "spinner"
+  ],
+  "dependencies": {
+    "jquery": "*"
+  },
+  "license": "MIT",
+  "main": "nprogress.js",
+  "scripts": [
+    "nprogress.js"
+  ],
+  "styles": [
+    "nprogress.css"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components"
+  ],
+  "homepage": "https://github.com/rstacruz/nprogress",
+  "_release": "0.1.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.2",
+    "commit": "87b935a316518cee83f30899d7be2af8cd5cf018"
+  },
+  "_source": "git://github.com/rstacruz/nprogress.git",
+  "_target": "0.1.2",
+  "_originalSource": "nprogress"
+}

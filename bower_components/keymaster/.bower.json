@@ -1,0 +1,12 @@
+{
+  "name": "keymaster",
+  "homepage": "https://github.com/madrobby/keymaster",
+  "_release": "564ea42e07",
+  "_resolution": {
+    "type": "commit",
+    "commit": "564ea42e07de40da8113a571f17ceae8802672ff"
+  },
+  "_source": "git://github.com/madrobby/keymaster.git",
+  "_target": "564ea42e07de40da8113a571f17ceae8802672ff",
+  "_originalSource": "git://github.com/madrobby/keymaster"
+}

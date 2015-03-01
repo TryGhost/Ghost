@@ -1,0 +1,79 @@
+{
+  "name": "device.js",
+  "version": "0.1.59",
+  "homepage": "https://github.com/matthewhudson/device.js",
+  "description": "Device.js makes it easy to write conditional CSS _and/or_ JavaScript based on device operating system (iOS, Android, Blackberry, Windows, Firefox OS, MeeGo), orientation (Portrait vs. Landscape), and type (Tablet vs. Mobile).",
+  "author": {
+    "name": "Matthew Hudson",
+    "email": "matthud@gmail.com",
+    "url": "https://matthewhudson.me"
+  },
+  "contributors": [
+    {
+      "name": "Mike Taylor",
+      "email": "miket@mozilla.com",
+      "url": "https://miketaylr.com"
+    }, {
+      "name": "Patrick",
+      "email": "github@gdi2290.com",
+      "url": "http://www.gdi2290.com"
+    }, {
+      "name": "Steven Masala"
+    }, {
+      "name": "Jérôme Steunou",
+      "url": "http://jeromesteunou.net"
+    }, {
+      "name": "André Tarnowsky",
+      "url": "http://lotterfriends.net"
+    }, {
+      "name": "Athou"
+    }, {
+      "name": "Mark Marijnissen",
+      "email": "markmarijnissen@gmail.com",
+      "url": "http://www.madebymark.nl"
+    }, {
+      "name": "Markus Kaiserswerth"
+    }, {
+      "name": "Bohdan Zhuravel",
+      "email": "bohdan@zhuravel.bz",
+      "url": "http://zhuravel.bz"
+    }, {
+      "name": "Guilherme Simões",
+      "email": "guilherme.rdems@gmail.com",
+      "url": "http://stackoverflow.com/users/1160916/ashitaka"
+    }, {
+      "name": "Jonas Jonny",
+      "email": "jkxxx@centrum.cz",
+      "url": "http://jonny.cz"
+    }, {
+      "name": "Andrey",
+      "email": "andrey.skladchikov@gmail.com",
+      "url": "http://brainstorage.me/Houston"
+    }, {
+      "name": "Evan Hahn",
+      "email": "me@evanhahn.com",
+      "url": "http://evanhahn.com"
+    }, {
+      "name": "Philip Karpiak",
+      "email": "operations@eswat.ca",
+      "url": "http://eswat.ca"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/matthewhudson/device.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matthewhudson/device.js/issues"
+  },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-bumpup": "~0.2.0",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-contrib-uglify": "~0.2.2"
+  },
+  "license": "MIT"
+}

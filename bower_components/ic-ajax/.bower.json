@@ -1,0 +1,32 @@
+{
+  "name": "ic-ajax",
+  "version": "1.0.1",
+  "authors": [
+    "Ryan Florence <rpflorence@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "bower_components",
+    "node_modules",
+    "package.json",
+    "testem.json",
+    "test.js",
+    "**/.*"
+  ],
+  "dependencies": {
+    "ember": ">=1.2 <2"
+  },
+  "devDependencies": {
+    "sinon": "http://sinonjs.org/releases/sinon-1.7.3.js"
+  },
+  "homepage": "https://github.com/instructure/ic-ajax",
+  "_release": "1.0.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.1",
+    "commit": "43bc8e46a68e86e0f836d3b6317f15187ff9f322"
+  },
+  "_source": "git://github.com/instructure/ic-ajax.git",
+  "_target": "1.0.1",
+  "_originalSource": "ic-ajax"
+}

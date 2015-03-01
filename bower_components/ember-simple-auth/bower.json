@@ -1,0 +1,21 @@
+{
+  "name": "ember-simple-auth",
+  "version": "0.7.2",
+  "main": [
+    "./simple-auth.js",
+    "./simple-auth.amd.js",
+    "./simple-auth-cookie-store.js",
+    "./simple-auth-cookie-store.amd.js",
+    "./simple-auth-devise.js",
+    "./simple-auth-devise.amd.js",
+    "./simple-auth-oauth2.js",
+    "./simple-auth-oauth2.amd.js",
+    "./simple-auth-torii.js",
+    "./simple-auth-torii.amd.js",
+    "./simple-auth-testing.js",
+    "./simple-auth-testing.amd.js"
+  ],
+  "dependencies": {
+    "ember": ">=1.2"
+  }
+}

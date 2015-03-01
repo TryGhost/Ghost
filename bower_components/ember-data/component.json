@@ -1,0 +1,16 @@
+{
+  "name": "ember-data",
+  "repo": "components/ember-data",
+  "description": "A data persistence library for Ember.js.",
+  "version": "1.0.0-beta.12",
+  "main": "ember-data.js",
+  "scripts": [
+    "ember-data.js",
+    "ember-data.min.js",
+    "ember-data.prod.js"
+  ],
+  "dependencies": {
+    "components/ember": "~1.0"
+  },
+  "license": "MIT"
+}

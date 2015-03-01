@@ -1,0 +1,22 @@
+@charset "UTF-8";
+/*
+ * jQuery File Upload Plugin NoScript CSS 1.2.0
+ * https://github.com/blueimp/jQuery-File-Upload
+ *
+ * Copyright 2013, Sebastian Tschan
+ * https://blueimp.net
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+
+.fileinput-button input {
+  position: static;
+  opacity: 1;
+  filter: none;
+  font-size: inherit;
+  direction: inherit;
+}
+.fileinput-button span {
+  display: none;
+}

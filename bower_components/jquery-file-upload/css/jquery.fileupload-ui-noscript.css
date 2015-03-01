@@ -1,0 +1,17 @@
+@charset "UTF-8";
+/*
+ * jQuery File Upload UI Plugin NoScript CSS 8.8.5
+ * https://github.com/blueimp/jQuery-File-Upload
+ *
+ * Copyright 2012, Sebastian Tschan
+ * https://blueimp.net
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+
+.fileinput-button i,
+.fileupload-buttonbar .delete,
+.fileupload-buttonbar .toggle {
+  display: none;
+}

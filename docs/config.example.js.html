@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>config.example.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "", thisFile = "config.example.js", defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+  <script src="fileSearch.js"></script>
+  <link rel="stylesheet" href="fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h1">
+        <a href="#ghost%20configuration">Ghost Configuration</a>
+      </div>
+      <div class="heading h3">
+        <a href="#production">Production</a>
+      </div>
+      <div class="heading h3">
+        <a href="#development%20(default)">Development (default)</a>
+      </div>
+      <div class="heading h3">
+        <a href="#testing">Testing</a>
+      </div>
+      <div class="heading h3">
+        <a href="#testing%20mysql">Testing MySQL</a>
+      </div>
+      <div class="heading h3">
+        <a href="#testing%20pg">Testing pg</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="ghost%20configuration">
+  <h1>
+    <a href="#ghost%20configuration" name="ghost%20configuration" class="pilcrow">&#182;</a>
+    Ghost Configuration
+  </h1>
+</div>
+
+
+<p>Setup your Ghost install for various environments
+Documentation can be found at <a href='http://support.ghost.org/config/'>http://support.ghost.org/config/</a></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">),</span>
+    <span class="nx">config</span><span class="p">;</span>
+
+<span class="nx">config</span> <span class="o">=</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="production">
+  <h3>
+    <a href="#production" name="production" class="pilcrow">&#182;</a>
+    Production
+  </h3>
+</div>
+
+
+<p>When running Ghost in the wild, use the production environment
+Configure your URL and mail settings here</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">production</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://my-ghost-blog.com&#39;</span><span class="p">,</span>
+        <span class="nx">mail</span><span class="o">:</span> <span class="p">{},</span>
+        <span class="nx">database</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">client</span><span class="o">:</span> <span class="s1">&#39;sqlite3&#39;</span><span class="p">,</span>
+            <span class="nx">connection</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">filename</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/content/data/ghost.db&#39;</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="nx">debug</span><span class="o">:</span> <span class="kc">false</span>
+        <span class="p">},</span>
+
+        <span class="nx">server</span><span class="o">:</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>Host to be passed to node's <code>net.Server#listen()</code></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+            <span class="nx">host</span><span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>Port to be passed to node's <code>net.Server#listen()</code>, for iisnode set this to <code>process.env.PORT</code></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+            <span class="nx">port</span><span class="o">:</span> <span class="s1">&#39;2368&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="development%20(default)">
+  <h3>
+    <a href="#development%20(default)" name="development%20(default)" class="pilcrow">&#182;</a>
+    Development <strong>(default)</strong>
+  </h3>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">development</span><span class="o">:</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>The url to use when providing links to the site, E.g. in RSS and email.
+Change this to your Ghost blogs published URL.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+        <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://localhost:2368&#39;</span><span class="p">,</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>Example mail config
+Visit <a href='http://support.ghost.org/mail'>http://support.ghost.org/mail</a> for instructions</p>
+
+<div class='highlight'><pre><code language=''> mail: {
+     transport: 'SMTP',
+     options: {
+         service: 'Mailgun',
+         auth: {
+             user: '', // mailgun username
+             pass: ''  // mailgun password
+         }
+     }
+ },
+</code></pre></div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+        <span class="nx">database</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">client</span><span class="o">:</span> <span class="s1">&#39;sqlite3&#39;</span><span class="p">,</span>
+            <span class="nx">connection</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">filename</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/content/data/ghost-dev.db&#39;</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="nx">debug</span><span class="o">:</span> <span class="kc">false</span>
+        <span class="p">},</span>
+        <span class="nx">server</span><span class="o">:</span> <span class="p">{</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>Host to be passed to node's <code>net.Server#listen()</code></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+            <span class="nx">host</span><span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>Port to be passed to node's <code>net.Server#listen()</code>, for iisnode set this to <code>process.env.PORT</code></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+            <span class="nx">port</span><span class="o">:</span> <span class="s1">&#39;2368&#39;</span>
+        <span class="p">},</span>
+        <span class="nx">paths</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">contentPath</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/content/&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+</div>
+<p><strong>Developers only need to edit below here</strong></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="testing">
+  <h3>
+    <a href="#testing" name="testing" class="pilcrow">&#182;</a>
+    Testing
+  </h3>
+</div>
+
+
+<p>Used when developing Ghost to run tests and check the health of Ghost
+Uses a different port number</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">testing</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://127.0.0.1:2369&#39;</span><span class="p">,</span>
+        <span class="nx">database</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">client</span><span class="o">:</span> <span class="s1">&#39;sqlite3&#39;</span><span class="p">,</span>
+            <span class="nx">connection</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">filename</span><span class="o">:</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">__dirname</span><span class="p">,</span> <span class="s1">&#39;/content/data/ghost-test.db&#39;</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nx">server</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">host</span><span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+            <span class="nx">port</span><span class="o">:</span> <span class="s1">&#39;2369&#39;</span>
+        <span class="p">},</span>
+        <span class="nx">logging</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">},</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="testing%20mysql">
+  <h3>
+    <a href="#testing%20mysql" name="testing%20mysql" class="pilcrow">&#182;</a>
+    Testing MySQL
+  </h3>
+</div>
+
+
+<p>Used by Travis - Automated testing run through GitHub</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="s1">&#39;testing-mysql&#39;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://127.0.0.1:2369&#39;</span><span class="p">,</span>
+        <span class="nx">database</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">client</span><span class="o">:</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
+            <span class="nx">connection</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">host</span>     <span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+                <span class="nx">user</span>     <span class="o">:</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+                <span class="nx">password</span> <span class="o">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="nx">database</span> <span class="o">:</span> <span class="s1">&#39;ghost_testing&#39;</span><span class="p">,</span>
+                <span class="nx">charset</span>  <span class="o">:</span> <span class="s1">&#39;utf8&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nx">server</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">host</span><span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+            <span class="nx">port</span><span class="o">:</span> <span class="s1">&#39;2369&#39;</span>
+        <span class="p">},</span>
+        <span class="nx">logging</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">},</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="testing%20pg">
+  <h3>
+    <a href="#testing%20pg" name="testing%20pg" class="pilcrow">&#182;</a>
+    Testing pg
+  </h3>
+</div>
+
+
+<p>Used by Travis - Automated testing run through GitHub</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="s1">&#39;testing-pg&#39;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://127.0.0.1:2369&#39;</span><span class="p">,</span>
+        <span class="nx">database</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">client</span><span class="o">:</span> <span class="s1">&#39;pg&#39;</span><span class="p">,</span>
+            <span class="nx">connection</span><span class="o">:</span> <span class="p">{</span>
+                <span class="nx">host</span>     <span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+                <span class="nx">user</span>     <span class="o">:</span> <span class="s1">&#39;postgres&#39;</span><span class="p">,</span>
+                <span class="nx">password</span> <span class="o">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="nx">database</span> <span class="o">:</span> <span class="s1">&#39;ghost_testing&#39;</span><span class="p">,</span>
+                <span class="nx">charset</span>  <span class="o">:</span> <span class="s1">&#39;utf8&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nx">server</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">host</span><span class="o">:</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span>
+            <span class="nx">port</span><span class="o">:</span> <span class="s1">&#39;2369&#39;</span>
+        <span class="p">},</span>
+        <span class="nx">logging</span><span class="o">:</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+</div>
+<p>Export config</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">config</span><span class="p">;</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

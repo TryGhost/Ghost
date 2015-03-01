@@ -1,0 +1,85 @@
+{
+  "name": "blueimp-file-upload",
+  "version": "9.5.6",
+  "title": "jQuery File Upload",
+  "description": "File Upload widget with multiple file selection, drag&amp;drop support, progress bar, validation and preview images, audio and video for jQuery. Supports cross-domain, chunked and resumable file uploads. Works with any server-side platform (Google App Engine, PHP, Python, Ruby on Rails, Java, etc.) that supports standard HTML form file uploads.",
+  "keywords": [
+    "jquery",
+    "file",
+    "upload",
+    "widget",
+    "multiple",
+    "selection",
+    "drag",
+    "drop",
+    "progress",
+    "preview",
+    "cross-domain",
+    "cross-site",
+    "chunk",
+    "resume",
+    "gae",
+    "go",
+    "python",
+    "php",
+    "bootstrap"
+  ],
+  "homepage": "https://github.com/blueimp/jQuery-File-Upload",
+  "author": {
+    "name": "Sebastian Tschan",
+    "url": "https://blueimp.net"
+  },
+  "maintainers": [
+    {
+      "name": "Sebastian Tschan",
+      "url": "https://blueimp.net"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/blueimp/jQuery-File-Upload.git"
+  },
+  "bugs": "https://github.com/blueimp/jQuery-File-Upload/issues",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": ">=1.6",
+    "blueimp-tmpl": ">=2.5.3",
+    "blueimp-load-image": ">=1.11.0",
+    "blueimp-canvas-to-blob": ">=2.1.0"
+  },
+  "main": [
+    "css/jquery.fileupload.css",
+    "css/jquery.fileupload-ui.css",
+    "css/jquery.fileupload-noscript.css",
+    "css/jquery.fileupload-ui-noscript.css",
+    "js/cors/jquery.postmessage-transport.js",
+    "js/cors/jquery.xdr-transport.js",
+    "js/vendor/jquery.ui.widget.js",
+    "js/jquery.fileupload.js",
+    "js/jquery.fileupload-process.js",
+    "js/jquery.fileupload-validate.js",
+    "js/jquery.fileupload-image.js",
+    "js/jquery.fileupload-audio.js",
+    "js/jquery.fileupload-video.js",
+    "js/jquery.fileupload-ui.js",
+    "js/jquery.fileupload-jquery-ui.js",
+    "js/jquery.fileupload-angular.js",
+    "js/jquery.iframe-transport.js"
+  ],
+  "ignore": [
+    "/*.*",
+    "/cors",
+    "css/demo-ie8.css",
+    "css/demo.css",
+    "css/style.css",
+    "js/app.js",
+    "js/main.js",
+    "server",
+    "test"
+  ]
+}

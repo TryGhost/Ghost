@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name='viewport' content='width=device-width,initial-scale=1.0'>
+  <title>Tests</title>
+  <link rel='stylesheet' href='../vendor/mocha.css'>
+
+  <!-- mocha -->
+  <script src='../vendor/jquery-1.10.js'></script>
+  <script src='../vendor/mocha.js'></script>
+  <script>mocha.ignoreLeaks(); mocha.setup('bdd');</script>
+  <script src='../vendor/chai.js'></script>
+  <script>should = chai.should()</script>
+  <script>assert = chai.assert</script>
+  <script>testSuite = describe;</script>
+
+  <!-- simpletap -->
+  <script src='../nprogress.js'></script>
+
+  <!-- tests -->
+  <script src="test.js"></script>  
+  <script>onload = function() { mocha.run(); }</script>
+</head>
+<body>
+  <div id="mocha"></div>
+</body>
+</html>

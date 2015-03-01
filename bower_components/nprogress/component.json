@@ -1,0 +1,22 @@
+{
+  "name": "nprogress",
+  "repo": "rstacruz/nprogress",
+  "description": "slim progress bar",
+  "version": "0.1.2",
+  "keywords": ["progress","bar","spinner"],
+  "dependencies": {
+    "component/jQuery": "*"
+  },
+  "development": {
+    "chaijs/chai": "*",
+    "visionmedia/mocha": "*"
+  },
+  "license": "MIT",
+  "main": "nprogress.js",
+  "scripts": [
+    "nprogress.js"
+  ],
+  "styles": [
+    "nprogress.css"
+  ]
+}

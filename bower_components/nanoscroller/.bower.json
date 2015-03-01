@@ -1,0 +1,41 @@
+{
+  "name": "nanoscroller",
+  "version": "0.8.4",
+  "description": "A jQuery plugin that offers a simplistic way of implementing Lion OS scrollbars.",
+  "homepage": "http://jamesflorentino.github.com/nanoScrollerJS/",
+  "main": [
+    "./bin/css/nanoscroller.css",
+    "./bin/javascripts/jquery.nanoscroller.js"
+  ],
+  "keywords": [],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://jamesflorentino.github.com/nanoScrollerJS/blob/master/LICENSE-MIT"
+    }
+  ],
+  "author": {
+    "name": "James Florentino",
+    "email": "j@jamesflorentino.com",
+    "url": "http://www.jamesflorentino.com"
+  },
+  "dependencies": {
+    "jquery": ">= 1.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamesflorentino/nanoScrollerJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jamesflorentino/nanoScrollerJS/issues"
+  },
+  "_release": "0.8.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.8.4",
+    "commit": "63c681e9fe75324c6969dd3d691c1bc3400b8b33"
+  },
+  "_source": "git://github.com/jamesflorentino/nanoScrollerJS.git",
+  "_target": "0.8.4",
+  "_originalSource": "nanoscroller"
+}

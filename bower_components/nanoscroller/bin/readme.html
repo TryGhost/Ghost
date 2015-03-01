@@ -1,0 +1,228 @@
+<h1 id="nanoscroller-js">nanoScroller.js</h1>
+<p><a href="https://github.com/jamesflorentino/nanoScrollerJS">nanoScroller.js</a> is a jQuery plugin that offers a simplistic way of implementing Mac OS X Lion-styled scrollbars for your website.
+It uses minimal HTML markup being <code>.nano &gt; .nano-content</code>. The other scrollbar div elements <code>.pane &gt; .nano-slider</code> are added during run time to prevent clutter in templating. The latest version utilizes native scrolling and works with the iPad, iPhone, and some Android Tablets.</p>
+<h3 id="downloads">Downloads</h3>
+<ul>
+<li><a href="https://raw.github.com/jamesflorentino/nanoScrollerJS/master/bin/javascripts/jquery.nanoscroller.min.js">Production version</a></li>
+<li><a href="https://raw.github.com/jamesflorentino/nanoScrollerJS/master/bin/javascripts/jquery.nanoscroller.js">Development version</a></li>
+<li><a href="https://raw.github.com/jamesflorentino/nanoScrollerJS/master/bin/css/nanoscroller.css">Default stylesheet</a></li>
+</ul>
+<p>To start using, you need three basic things:</p>
+<h3 id="1-markup">1. Markup</h3>
+<p>The following type of markup structure is needed to make the plugin work:</p>
+<pre><code class="lang-html">&lt;div id=&quot;about&quot; class=&quot;nano&quot;&gt;
+    &lt;div class=&quot;nano-content&quot;&gt; ... content here ...  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Copy the HTML markup. Change <code>.nano</code> into something related to your content. Though you can also remove that attribute as long as you have a parent div with an ID reference. e.g. <code>#parent &gt; .nano</code>. <code>nano</code> and <code>nano-content</code> classnames can be customized via plugin options (<em>in that case you must rename them inside the plugin&#39;s CSS file as well</em>).</p>
+<h3 id="2-css">2. CSS</h3>
+<p>Link to the <code>nanoscroller.css</code> file inside your page&#39;s <code>&lt;head&gt;</code> section (...or copy the contents from it to your page&#39;s main stylesheet file).</p>
+<pre><code class="lang-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;nanoscroller.css&quot;&gt;
+</code></pre>
+<p>You should specify a width and a height to your container, and apply some custom styling for your scrollbar. Here&#39;s an example:</p>
+<pre><code class="lang-css">.nano { background: #bba; width: 500px; height: 500px; }
+.nano .nano-content { padding: 10px; }
+.nano .nano-pane   { background: #888; }
+.nano .nano-slider { background: #111; }
+</code></pre>
+<h3 id="3-javascript">3. JavaScript</h3>
+<p>Running this script will apply the nanoScroller plugin to all DOM elements with a <code>.nano</code> className.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller();
+</code></pre>
+<h3 id="advanced-methods">Advanced methods</h3>
+<h3 id="scroll">scroll</h3>
+<p>To scroll at the top:</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ scroll: &#39;top&#39; });
+</code></pre>
+<p>To scroll at the bottom:</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ scroll: &#39;bottom&#39; });
+</code></pre>
+<p>To scroll at the top with an offset value:</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ scrollTop: value });
+</code></pre>
+<p>To scroll at the bottom with an offset value:</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ scrollBottom: value });
+</code></pre>
+<p>To scroll to an element:</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ scrollTo: $(&#39;#a_node&#39;) });
+</code></pre>
+<h4 id="stop-">stop:</h4>
+<p>To stop the operation. This option will tell the plugin to disable all event bindings and hide the gadget scrollbar from the UI.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ stop: true });
+</code></pre>
+<h4 id="destroy-">destroy:</h4>
+<p>Destroys nanoScroller and restores browser&#39;s native scrollbar.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ destroy: true });
+</code></pre>
+<h4 id="flash-">flash:</h4>
+<p>To flash the scrollbar gadget for an amount of time defined in plugin settings (<em>defaults to 1,5s</em>). Useful if you want to show the user (e.g. on pageload) that there is more content waiting for him.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ flash: true });
+</code></pre>
+<h4 id="nanoscroller-">nanoScroller();</h4>
+<p>Refresh the scrollbar. This simply re-calculates the position and height of the scrollbar gadget.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller();
+</code></pre>
+<h3 id="custom-events">Custom events</h3>
+<h4 id="-scrollend-">&#39;scrollend&#39;</h4>
+<p>A custom <code>&#39;scrollend&#39;</code> event is triggered on the element every time the user has scrolled to the end of the content element (does <em>not</em> get triggered more than once when user tries to scroll down and has already reached the end of scrollable content).</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).bind(&quot;scrollend&quot;, function(e){
+    console.log(&quot;current HTMLDivElement&quot;, e.currentTarget);
+});
+</code></pre>
+<p>Some browsers trigger this event more than once each time, so to listen to the custom event, instead of using jQuery&#39;s normal <code>.bind</code> or <code>.on</code>, you most likely want to use <a href="https://github.com/diaspora/jquery-debounce">this tiny jQuery debounce plugin</a> to prevent browsers from firing your function more than once every 100ms.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).debounce(&quot;scrollend&quot;, function() {
+    alert(&quot;The end&quot;);
+}, 100);
+</code></pre>
+<h4 id="-scrolltop-">&#39;scrolltop&#39;</h4>
+<p>Same as the <code>&#39;scrollend&#39;</code> event, but it is triggered every time the user has scrolled to the top of the content element.</p>
+<h4 id="-update-">&#39;update&#39;</h4>
+<p>Same as the <code>&#39;scrolltop&#39;</code> and <code>&#39;scrollend&#39;</code> events, but it&#39;s triggered every time the user scrolls. It also carries a JavaScript object with the current position, the maximum height and the direction (<code>up</code> or <code>down</code>).</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).on(&quot;update&quot;, function(event, values){ 
+    console.debug( values );
+});
+</code></pre>
+<h3 id="plugin-options">Plugin Options</h3>
+<p>There are a few options that you can change when running nanoScroller, e.g. <code>$(&quot;.nano&quot;).nanoScroller({ paneClass: &#39;myclass&#39; });</code></p>
+<h4 id="iosnativescrolling">iOSNativeScrolling</h4>
+<p>Set to true if you want to use native scrolling in iOS 5+. This will disable your custom nanoScroller scrollbar in iOS 5+ and use the native one instead. While the native iOS scrollbar usually works much better, <a href="http://github.com/scottjehl/Device-Bugs/issues">there could possibly be bugs</a> in certain situations.</p>
+<p>Notice that <code>.pane</code> and <code>.slider</code> elements are <em>not generated/added</em> for devices that support iOS native scrolling when <code>iOSNativeScrolling</code> option is enabled.</p>
+<p><strong>Default:</strong> false</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ iOSNativeScrolling: true });
+</code></pre>
+<h4 id="sliderminheight">sliderMinHeight</h4>
+<p>Sets the minimum height of the slider element.</p>
+<p><strong>Default:</strong> 20</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ sliderMinHeight: 40 });
+</code></pre>
+<h4 id="slidermaxheight">sliderMaxHeight</h4>
+<p>Sets the maximum height of the slider element.</p>
+<p><strong>Default:</strong> null</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ sliderMaxHeight: 200 });
+</code></pre>
+<h4 id="preventpagescrolling">preventPageScrolling</h4>
+<p>Set to true to prevent page scrolling when top or bottom inside the content div is reached.</p>
+<p><strong>Default:</strong> false</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ preventPageScrolling: true });
+</code></pre>
+<h4 id="disableresize">disableResize</h4>
+<p>Set to true to disable the resize from nanoscroller. Useful if you want total control of the resize event. If you set this option to true remember to call the reset method so that the scroll don&#39;t have strange behavior.</p>
+<p><strong>Default:</strong> false</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ disableResize: true });
+</code></pre>
+<h4 id="alwaysvisible">alwaysVisible</h4>
+<p>Set to true to stop the scrollbar from auto-hiding itself.</p>
+<p><strong>Default:</strong> false</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ alwaysVisible: true });
+</code></pre>
+<h4 id="flashdelay-">flashDelay:</h4>
+<p>Use this setting to specify the scrollbar hide delay in milliseconds if you have enabled the <code>flash</code> option.</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ flashDelay: 1000 });
+</code></pre>
+<p><strong>Default:</strong> 1500</p>
+<h4 id="paneclass">paneClass</h4>
+<p>A classname for scrollbar track element. If you change this setting, you also have to change it in the plugin&#39;s CSS file.</p>
+<p><strong>Default:</strong> &#39;nano-pane&#39;</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ paneClass: &#39;scrollPane&#39; });
+</code></pre>
+<h4 id="sliderclass">sliderClass</h4>
+<p>A classname for scrollbar thumb element. If you change this setting, you also have to change it in the plugin&#39;s CSS file.</p>
+<p><strong>Default:</strong> &#39;nano-slider&#39;</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ sliderClass: &#39;scrollSlider&#39; });
+</code></pre>
+<h4 id="contentclass">contentClass</h4>
+<p>A classname for your content div. If you change this setting, you also have to change it in the plugin&#39;s CSS file.</p>
+<p><strong>Default:</strong> &#39;nano-content&#39;</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ contentClass: &#39;sliderContent&#39; });
+</code></pre>
+<h4 id="tabindex">tabIndex</h4>
+<p>Set the tab order of the scrollable content. Set to -1 to skip over the scrollable content when tabbing.</p>
+<p><strong>Default:</strong> 0</p>
+<pre><code class="lang-js">$(&quot;.nano&quot;).nanoScroller({ tabIndex: 0 });
+</code></pre>
+<h2 id="how-it-works">How it works</h2>
+<p><img src="https://github.com/jamesflorentino/nanoScrollerJS/raw/master/fig1.png" alt="Fig 1."></p>
+<p>The plugin works by creating a scrollbar gadget (with pre-defined css for styling) and then subscribing the <code>.nano-content</code>&#39;s scroll events to it. Mouse press and drag events are also subscribed to the <code>.nano-pane</code> and <code>.nano-pane &gt; .nano-slider</code> to emulate the native scrollbar&#39;s mechanism. The system scrollbars are hidden from the viewport (Fig 1). By doing this, we still retain the natural scrolling experience provided by the OS.</p>
+<p>We are still working on doing a horizontal scrolling feature. If you&#39;re interested in contributing to the project, you are free to fork it and create a pull request.</p>
+<h3 id="development">Development</h3>
+<p>To build nanoScroller from source you need the following libraries installed:</p>
+<ul>
+<li>Node.js and npm: <a href="http://nodejs.org/">homepage / download</a></li>
+<li>Grunt: <a href="http://gruntjs.com/">homepage</a> | <code>npm install -g grunt-cli</code></li>
+</ul>
+<h4 id="how-to-build-contribute">How to build &amp; contribute</h4>
+<ol>
+<li>Make sure that you have <a href="http://gruntjs.com/">Grunt</a> installed.</li>
+<li>In terminal move to nanoscroller folder and run <code>npm install</code> to install all dependencies.</li>
+<li>Make all Javascript changes in Coffeescript file(s), CSS changes in CSS file(s).</li>
+<li>run <code>grunt</code> to build nanoScroller</li>
+<li>Make sure that all changes are valid and open a pull request.</li>
+</ol>
+<h4 id="how-to-run-tests">How to run tests</h4>
+<ol>
+<li>You need to have <a href="http://phantomjs.org/">PhantomJS</a> installed. On Mac OS X the easiest way is to install <a href="http://mxcl.github.com/homebrew/">Homebrew</a> and run <code>brew install phantomjs</code>.</li>
+<li>run <code>grunt test</code> in terminal</li>
+</ol>
+<h3 id="browser-compatibility">Browser compatibility</h3>
+<p><strong>Tested desktop browsers:</strong></p>
+<ul>
+<li>IE7+</li>
+<li>Firefox 3+</li>
+<li>Chrome</li>
+<li>Safari 4+</li>
+<li>Opera 11.60+</li>
+</ul>
+<p><strong>Mobile support:</strong></p>
+<ul>
+<li>iOS 5+ (iPhone, iPad and iPod Touch)</li>
+<li>iOS 4 (<em>with a polyfill</em>)</li>
+<li>Android Firefox</li>
+<li>Android 2.2/2.3 native browser (<em>with a polyfill</em>)</li>
+<li>Android Opera 11.6 (<em>with a polyfill</em>)</li>
+<li>If you see it&#39;s broken on other tablets and mobile devices, please file a ticket in the git repo. Along with model name, and OS of the device.</li>
+</ul>
+<p>If you find a bug, please report here at the <a href="https://github.com/jamesflorentino/nanoScrollerJS/issues">issues section</a>.</p>
+<h3 id="using-a-polyfill-for-better-mobile-browser-support">Using a polyfill for better mobile browser support</h3>
+<p>You can use <a href="https://github.com/filamentgroup/Overthrow/">overthrow.js</a> polyfill (~1.5kb minified and gzipped) to make nanoScroller work on many mobile devices. It emulates CSS overflow (overflow: auto;/overflow: scroll;) in devices that are lacking it.</p>
+<p>To use overthrow, link to the javascript file in your HTML document...</p>
+<pre><code class="lang-html">&lt;script src=&quot;overthrow.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>...and add an <code>overthrow</code> class to your <code>content</code> div.</p>
+<pre><code class="lang-html">&lt;div id=&quot;about&quot; class=&quot;nano&quot;&gt;
+    &lt;div class=&quot;overthrow nano-content&quot;&gt; ... content here ...  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<h3 id="contributors">Contributors</h3>
+<ul>
+<li><a href="https://github.com/jamesflorentino">jamesflorentino</a></li>
+<li><a href="https://github.com/kristerkari">kristerkari</a></li>
+</ul>
+<p>Other people who have contributed code:</p>
+<ul>
+<li><a href="https://github.com/weareoutman">weareoutman</a> #170</li>
+<li><a href="https://github.com/Sailias">Sailias</a> #138</li>
+<li><a href="https://github.com/antonpinchuk">antonpinchuk</a> #123</li>
+<li><a href="https://github.com/miljan-aleksic">miljan-aleksic</a> #144</li>
+<li><a href="https://github.com/callmevlad">callmevlad</a> #122</li>
+<li><a href="https://github.com/bobo76">bobo76</a> #115</li>
+<li><a href="https://github.com/mente">mente</a> #110</li>
+<li><a href="https://github.com/livskiy">livskiy</a> #83</li>
+<li><a href="https://github.com/iStefo">iStefo</a> #65</li>
+<li><a href="https://github.com/tahajahangir">tahajahangir</a> #60</li>
+<li><a href="https://github.com/n0valyfe">n0valyfe</a> #57</li>
+<li><a href="https://github.com/johanbaath">johanbaath</a> #42</li>
+<li><a href="https://github.com/marcelombc">marcelombc</a> #40, #46</li>
+<li><a href="https://github.com/zacstewart">zacstewart</a> #30</li>
+<li><a href="https://github.com/michael-lefebvre">michael-lefebvre</a> #22, #29</li>
+<li><a href="https://github.com/AlicanC">AlicanC</a> #28</li>
+<li><a href="https://github.com/camerond">camerond</a> #26</li>
+<li><a href="https://github.com/jesstelford">jesstelford</a> #23</li>
+<li><a href="https://github.com/lluchs">lluchs</a> #7, #8</li>
+<li><a href="https://github.com/Dlom">Dlom</a></li>
+</ul>
+<h3 id="credits">Credits</h3>
+<ul>
+<li>Initially written by <a href="http://jamesflorentino.com">James Florentino</a> in <a href="http://coffeescript.org">CoffeeScript</a></li>
+<li>Released under <a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a></li>
+</ul>
+

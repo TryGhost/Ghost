@@ -1,0 +1,24 @@
+---
+layout: default
+nav_items:
+    - key: mac
+    - key: windows
+    - key: linux
+    - key: deploy
+    - key: upgrading
+    - key: troubleshooting
+---
+<div class="container">
+    <div class="row">
+
+        {% include subnav.html %}
+
+        <section id="content" class="col-lg-9">
+            {{ content }}
+            
+            {% if page.next_section or page.prev_section %}
+                {% include pagination.html %}
+            {% endif %}
+        </section>
+    </div>
+</div>

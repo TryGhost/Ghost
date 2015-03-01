@@ -1,0 +1,47 @@
+{
+  "name": "mocha",
+  "version": "2.0.1",
+  "homepage": "http://mocha.github.io/mocha",
+  "description": "simple, flexible, fun test framework",
+  "authors": [
+    "TJ Holowaychuk <tj@vision-media.ca>",
+    "Joshua Appelman <joshua@jbna.nl>",
+    "Oleg Gaidarenko <markelog@gmail.com>",
+    "Christoffer Hallas <christoffer.hallas@gmail.com>",
+    "Christopher Hiller <chiller@badwing.com>",
+    "Travis Jeffery <tj@travisjeffery.com>",
+    "Johnathan Ong <me@jongleberry.com>",
+    "Guillermo Rauch <rauchg@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mochajs/mocha.git"
+  },
+  "main": [
+    "mocha.js",
+    "mocha.css"
+  ],
+  "ignore": [
+    "bin",
+    "editors",
+    "images",
+    "lib",
+    "support",
+    "test",
+    ".gitignore",
+    ".npmignore",
+    ".travis.yml",
+    "component.json",
+    "index.js",
+    "Makefile",
+    "package.json"
+  ],
+  "keywords": [
+    "mocha",
+    "test",
+    "bdd",
+    "tdd",
+    "tap"
+  ],
+  "license": "MIT"
+}

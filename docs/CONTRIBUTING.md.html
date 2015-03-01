@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CONTRIBUTING.md</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "", thisFile = "CONTRIBUTING.md", defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+  <script src="fileSearch.js"></script>
+  <link rel="stylesheet" href="fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h1">
+        <a href="#welcome%20to%20the%20contributing%20guide%20for%20ghost!">Welcome to the contributing guide for Ghost!</a>
+      </div>
+      <div class="heading h3">
+        <a href="#tl%3Bdr">TL;DR</a>
+      </div>
+      <div class="heading h3">
+        <a href="#guideline%20contents">Guideline Contents</a>
+      </div>
+      <div class="heading h2">
+        <a href="#reporting%20an%20issue">Reporting An Issue</a>
+      </div>
+      <div class="heading h3">
+        <a href="#bug%20reports">Bug Reports</a>
+      </div>
+      <div class="heading h3">
+        <a href="#feature%20requests">Feature Requests</a>
+      </div>
+      <div class="heading h3">
+        <a href="#change%20requests">Change Requests</a>
+      </div>
+      <div class="heading h3">
+        <a href="#submitting%20pull%20requests">Submitting Pull Requests</a>
+      </div>
+      <div class="heading h5">
+        <a href="#need%20help%3F">Need Help?</a>
+      </div>
+      <div class="heading h3">
+        <a href="#testing%20and%20quality%20assurance">Testing and Quality Assurance</a>
+      </div>
+      <div class="heading h4">
+        <a href="#checking%20out%20a%20pull%20request">Checking out a Pull Request</a>
+      </div>
+      <div class="heading h3">
+        <a href="#documentation">Documentation</a>
+      </div>
+      <div class="heading h3">
+        <a href="#translation">Translation</a>
+      </div>
+      <div class="heading h2">
+        <a href="#working%20on%20ghost%20core">Working on Ghost Core</a>
+      </div>
+      <div class="heading h3">
+        <a href="#installation%20%2F%20setup%20instructions">Installation / Setup Instructions</a>
+      </div>
+      <div class="heading h3">
+        <a href="#looking%20for%20something%20to%20work%20on%3F">Looking for something to work on?</a>
+      </div>
+      <div class="heading h3">
+        <a href="#developer%20tips">Developer Tips</a>
+      </div>
+      <div class="heading h3">
+        <a href="#updating%20with%20the%20latest%20changes">Updating with the latest changes</a>
+      </div>
+      <div class="heading h3">
+        <a href="#key%20branches%20%26amp%3B%20tags">Key Branches &amp; Tags</a>
+      </div>
+      <div class="heading h2">
+        <a href="#grunt%20toolkit">Grunt Toolkit</a>
+      </div>
+      <div class="heading h2">
+        <a href="#troubleshooting%20%2F%20faq">Troubleshooting / FAQ</a>
+      </div>
+      <div class="heading h3">
+        <a href="#i%20get%20%22error%3A%20failed%20to%20lookup%20view%20%22index%22">I get "ERROR: Failed to lookup view "index"</a>
+      </div>
+      <div class="heading h3">
+        <a href="#ghost%20doesn't%20do%20anything%20-%20i%20get%20a%20blank%20screen">Ghost doesn't do anything - I get a blank screen</a>
+      </div>
+      <div class="heading h3">
+        <a href="#i%20get%20node-gyp%20errors%20or%20sqlite3%20doesn't%20install%20properly%20during%20npm%20install">I get node-gyp errors or SQLite3 doesn't install properly during npm install</a>
+      </div>
+      <div class="heading h2">
+        <a href="#contributor%20license%20agreement">Contributor License Agreement</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="docs markdown">
+<div class="pilwrap" id="welcome%20to%20the%20contributing%20guide%20for%20ghost!">
+  <h1>
+    <a href="#welcome%20to%20the%20contributing%20guide%20for%20ghost!" name="welcome%20to%20the%20contributing%20guide%20for%20ghost!" class="pilcrow">&#182;</a>
+    Welcome to the contributing guide for Ghost!
+  </h1>
+</div>
+
+
+<p>So you're interested in giving us a hand? That's awesome! We've put together some guidelines that should help
+you get started quickly and easily. If you need help with contributing, visit the #ghost IRC channel on freenode. Thank you for stopping by!</p>
+
+<p><strong>Quick Links:</strong> <a href="https://github.com/TryGhost/Ghost/wiki/Roadmap">feature roadmap</a> - <a href="https://ghost.org/forum">support forum</a> - <a href="http://support.ghost.org">documentation</a> - <a href="https://github.com/TryGhost/Ghost/wiki">developer wiki</a> - <a href="https://ghost.org/about/guidelines/">community guidelines</a> - <a href="http://dev.ghost.org">dev blog</a></p>
+
+
+<div class="pilwrap" id="tl%3Bdr">
+  <h3>
+    <a href="#tl%3Bdr" name="tl%3Bdr" class="pilcrow">&#182;</a>
+    TL;DR
+  </h3>
+</div>
+
+
+<p>If you need help with Ghost or have questions, please use <a href="https://ghost.org">the forum</a> (documentation is <a href="http://support.ghost.org">here</a>). If you're <a href="#bugs">raising a bug</a> please be sure to <a href="#bug-template">include as much info as possible</a> so that we can fix it! If you've got some code you want to <a href="#pull-requests">pull request</a> please <a href="https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history">squash commits</a>, use this <a href="(https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages">commit message format</a>) and check it passes the tests by running <code>grunt validate</code>. Thanks for helping us make Ghost better.</p>
+
+
+<div class="pilwrap" id="guideline%20contents">
+  <h3>
+    <a href="#guideline%20contents" name="guideline%20contents" class="pilcrow">&#182;</a>
+    Guideline Contents
+  </h3>
+</div>
+
+
+<p>There are lots and lots of ways to get involved, this document covers:</p>
+
+<ul>
+<li><a href="#raising-issues">raising issues</a>
+<ul><li><a href="#bugs">bug reports</a></li>
+<li><a href="#features">feature requests</a></li>
+<li><a href="#changes">change requests</a></li></ul></li>
+<li><a href="#core">working on Ghost core</a>
+<ul><li><a href="#pull-requests">submitting pull requests</a></li></ul></li>
+<li><a href="#testing">testing and quality assurance</a></li>
+<li><a href="#documentation">writing documentation</a></li>
+<li><a href="#translation">translation</a></li>
+</ul>
+
+<p><a name="raising-issues"></a></p>
+
+
+<div class="pilwrap" id="reporting%20an%20issue">
+  <h2>
+    <a href="#reporting%20an%20issue" name="reporting%20an%20issue" class="pilcrow">&#182;</a>
+    Reporting An Issue
+  </h2>
+</div>
+
+
+<p>If you're looking to raise an issue because think you've found a problem with Ghost, or you'd like to make a request
+for a new feature in the codebase, or any other reason… please read this first.</p>
+
+<p>The GitHub issue tracker is the preferred channel for <a href="#bugs">bug reports</a>,
+<a href="#features">feature requests</a>, <a href="#changes">change requests</a> and <a href="#pull-requests">submitting pull
+requests</a>, but please respect the following restrictions:</p>
+
+<ul>
+<li><p>Please <strong>search for existing issues</strong>. Help us keep duplicate issues to a minimum by checking to see if someone
+has already reported your problem or requested your idea.</p></li>
+<li><p>Please <strong>do not</strong> use the issue tracker for personal support requests (use
+<a href="http://ghost.org/forum">the forum</a> or IRC - #ghost on freenode).</p></li>
+<li><p>Please <strong>do not</strong> derail or troll issues. Keep the discussion on topic and respect the opinions of others.</p></li>
+</ul>
+
+<p><a name="bugs"></a></p>
+
+
+<div class="pilwrap" id="bug%20reports">
+  <h3>
+    <a href="#bug%20reports" name="bug%20reports" class="pilcrow">&#182;</a>
+    Bug Reports
+  </h3>
+</div>
+
+
+<p>A bug is a <em>demonstrable problem</em> that is caused by the code in the repository.
+Good bug reports are extremely helpful - thank you!</p>
+
+<p>Guidelines for bug reports:</p>
+
+<ol>
+<li><p><strong>Use the GitHub issue search</strong> &mdash; check if the issue has already been
+reported.</p></li>
+<li><p><strong>Check if the issue has been fixed</strong> &mdash; try to reproduce it using the
+latest <code>master</code> or look for <a href="https://github.com/TryGhost/Ghost/issues?labels=&amp;milestone=3&amp;page=1&amp;state=closed">closed issues in the current milestone</a>.</p></li>
+<li><p><strong>Isolate the problem</strong> &mdash; ideally create a <a href="http://css-tricks.com/6263-reduced-test-cases/">reduced test
+case</a> and a live example.</p></li>
+<li><p><strong>Include a screencast if relevant</strong> - Is your issue about a design or front end feature or bug? The most
+helpful thing in the world is if we can <em>see</em> what you're talking about.
+Use <a href="http://www.cockos.com/licecap/">LICEcap</a> to quickly and easily record a short screencast (24fps) and save it as an animated gif! Embed it directly into your GitHub issue. Kapow.</p></li>
+<li><p><strong>Include as much info as possible!</strong> Use the <strong>Bug Report template</strong> below or <a href="https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&amp;body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A">click this link</a> to start creating a bug report with the template automatically.</p></li>
+</ol>
+
+<p>A good bug report shouldn't leave others needing to chase you up for more information. Be sure to include the
+details of your environment.</p>
+
+<p>Here is a <a href="https://github.com/TryGhost/Ghost/issues/413">real example</a> of a great bug report.</p>
+
+<p><a name="bug-template"></a></p>
+
+<p>Template Example (<a href="https://github.com/TryGhost/Ghost/issues/new?title=Bug%3A&amp;body=%23%23%23%20Issue%20Summary%0A%0A%23%23%23%20Steps%20to%20Reproduce%0A%0A1.%20This%20is%20the%20first%20step%0A%0AThis%20is%20a%20bug%20because...%0A%0A%23%23%23%20Technical%20details%0A%0A*%20Ghost%20Version%3A%20master%20-%20latest%20commit%3A%20%20INSERT%20COMMIT%20REF%0A*%20Client%20OS%3A%20%0A*%20Server%20OS%3A%20%0A*%20Node%20Version%3A%20%0A*%20Browser%3A%20%0A*%20Database%3A">click to use</a>):</p>
+
+<div class='highlight'><pre><code language=''>Short and descriptive example bug report title
+
+### Issue Summary
+
+A summary of the issue and the browser/OS environment in which it occurs. If
+suitable, include the steps required to reproduce the bug.
+
+### Steps to Reproduce
+
+1. This is the first step
+2. This is the second step
+3. Further steps, etc.
+
+Any other information you want to share that is relevant to the issue being
+reported. Especially, why do you consider this to be a bug? What do you expect to happen instead?
+
+### Technical details:
+
+* Ghost Version: master (latest commit: 590ba48988b51b9c5e8d99afbb84c997436d7f21)
+* Client OS: Mac OS X 10.8.4
+* Server OS: CentOS 6.4
+* Node Version: 0.10.16
+* Browser: Chrome 29.0.1547.57
+* Database: SQLite / MySQL / postgres
+</code></pre></div>
+
+<p><a name="features"></a></p>
+
+
+<div class="pilwrap" id="feature%20requests">
+  <h3>
+    <a href="#feature%20requests" name="feature%20requests" class="pilcrow">&#182;</a>
+    Feature Requests
+  </h3>
+</div>
+
+
+<p>Feature requests are very welcome, and you can also suggest roadmap additions via <a href="https://ghost.org/forum/bugs-suggestions/17479-ghost-roadmap-got-a-great-idea/">the forum</a>. Before you make your suggestion, please:</p>
+
+<ol>
+<li><p>Visit the <a href="https://github.com/TryGhost/Ghost/wiki/Roadmap">Roadmap</a> &amp; <strong>use the GitHub search</strong> to
+see if the feature has already been requested</p></li>
+<li><p>Have a quick read through <a href="https://github.com/TryGhost/Ghost/wiki/What-makes-it-into-Ghost-core%3F">What makes it into Ghost core?</a> and decide whether your idea fits with the scope and aims of the project</p></li>
+<li><p>Remember, it's up to <em>you</em> to make a strong case to convince the project's leaders of the merits of this
+feature. Please provide as much detail and context as possible, this means explaining the use case and why it is
+likely to be common.</p></li>
+<li><p>Clearly indicate whether this is a feature request for Ghost admin, or for themes or apps.</p></li>
+</ol>
+
+<p><a name="changes"></a></p>
+
+
+<div class="pilwrap" id="change%20requests">
+  <h3>
+    <a href="#change%20requests" name="change%20requests" class="pilcrow">&#182;</a>
+    Change Requests
+  </h3>
+</div>
+
+
+<p>Change requests cover both architectural and functional changes to how Ghost works. If you have an idea for a
+new or different dependency, a refactor, or an improvement to a feature, etc - please be sure to:</p>
+
+<ol>
+<li><p><strong>Use the GitHub search</strong> and check someone else didn't get there first</p></li>
+<li><p>Take a moment to think about the best way to make a case for, and explain what you're thinking as it's up to you to convince the project's leaders the change is worthwhile. Some questions to consider are:</p>
+
+<ul><li>Is it really one idea or is it many?</li>
+<li>What problem are you solving?</li>
+<li>Why is what you are suggesting better than what's already there?</li></ul></li>
+</ol>
+
+<p><a name="pull-requests"></a></p>
+
+
+<div class="pilwrap" id="submitting%20pull%20requests">
+  <h3>
+    <a href="#submitting%20pull%20requests" name="submitting%20pull%20requests" class="pilcrow">&#182;</a>
+    Submitting Pull Requests
+  </h3>
+</div>
+
+
+<p>Pull requests are <strong>awesome</strong>. If you're looking to raise a PR for something which doesn't have an open issue, please think carefully about <a href="#raising-issues">raising an issue</a> which your PR can close, especially if you're fixing a bug. This makes it more likely that there will be enough information available for your PR to be properly tested and merged. To make sure your PR is accepted as quickly as possible, please take a minute to check the guidelines on:</p>
+
+<ul>
+<li><a href="https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages">commit messages</a></li>
+<li><a href="https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history">cleaning-up history</a></li>
+<li><a href="https://github.com/TryGhost/Ghost/wiki/Git-workflow#check-it-passes-the-tests">not breaking the build</a></li>
+</ul>
+
+
+<div class="pilwrap" id="need%20help%3F">
+  <h5>
+    <a href="#need%20help%3F" name="need%20help%3F" class="pilcrow">&#182;</a>
+    Need Help?
+  </h5>
+</div>
+
+
+<p>If you're not completely clear on how to submit / update / <em>do</em> Pull Requests, please check out our in depth
+<a href="https://github.com/TryGhost/Ghost/wiki/Git-Workflow">Git Workflow guide</a> for Ghost, or visit the #ghost IRC channel on freenode.org and we'll help you out.</p>
+
+<p><a name="testing"></a></p>
+
+
+<div class="pilwrap" id="testing%20and%20quality%20assurance">
+  <h3>
+    <a href="#testing%20and%20quality%20assurance" name="testing%20and%20quality%20assurance" class="pilcrow">&#182;</a>
+    Testing and Quality Assurance
+  </h3>
+</div>
+
+
+<p>Never underestimate just how useful quality assurance is. If you're looking to get involved with the code base and
+don't know where to start, checking out and testing a pull request is one of the most useful things you could do.</p>
+
+<p>If you want to get involved with testing Ghost, there is a set of
+<a href="https://github.com/TryGhost/Ghost/wiki/QA-Documentation">QA Documentation</a> on the wiki.</p>
+
+<p>Essentially though, <a href="#core">check out the latest master</a>, take it for a spin, and if you find anything odd, please
+follow the <a href="#bug-reports">bug report guidelines</a> and let us know!</p>
+
+
+<div class="pilwrap" id="checking%20out%20a%20pull%20request">
+  <h4>
+    <a href="#checking%20out%20a%20pull%20request" name="checking%20out%20a%20pull%20request" class="pilcrow">&#182;</a>
+    Checking out a Pull Request
+  </h4>
+</div>
+
+
+<p>The dev blog has <a href="http://dev.ghost.org/easy-git-pr-test/">detailed instructions</a> on configuring your environment
+ to allow you to checkout pull requests with this simple command: <code>pr #1234</code></p>
+
+<p><a name="documentation"></a></p>
+
+
+<div class="pilwrap" id="documentation">
+  <h3>
+    <a href="#documentation" name="documentation" class="pilcrow">&#182;</a>
+    Documentation
+  </h3>
+</div>
+
+
+<p>Ghost's user documentation can be found at <a href="http://support.ghost.org">support.ghost.org</a>, if you have feedback or would like to write some user documentation, please let us know by <a href="mailto:<a href='mailto:support@ghost.org'>support@ghost.org</a>">emailing support</a>.</p>
+
+<p>Ghost's developer documentation can be found at <a href="http://docs.ghost.org">docs.ghost.org</a>. These docs are written and hosted on <a href="https://readme.io/">readme.io</a> which has a suggested edits feature through which you can submit updates. If you'd like to get more involved than just making amendments, <a href="mailto:<a href='mailto:support@ghost.org'>support@ghost.org</a>">email support</a> and let us know :)</p>
+
+<p><a name="translation"></a></p>
+
+
+<div class="pilwrap" id="translation">
+  <h3>
+    <a href="#translation" name="translation" class="pilcrow">&#182;</a>
+    Translation
+  </h3>
+</div>
+
+
+<p>Full documentation on contributing translations can be found at <a href="http://docs.ghost.org/translations">http://docs.ghost.org/translations</a></p>
+
+<p><a name="core"></a></p>
+
+
+<div class="pilwrap" id="working%20on%20ghost%20core">
+  <h2>
+    <a href="#working%20on%20ghost%20core" name="working%20on%20ghost%20core" class="pilcrow">&#182;</a>
+    Working on Ghost Core
+  </h2>
+</div>
+
+
+<p>Looking to get setup to work on Ghost? AWESOME! The <a href="https://github.com/TryGhost/Ghost-Vagrant">Ghost-Vagrant</a> image is a super-easy way to get a ready-made environment for contributing, but if you'd rather install Ghost natively, here's how...</p>
+
+<p><strong>What you'll need:</strong></p>
+
+<ul>
+<li>Node version 0.10.x &amp; npm</li>
+<li>phantomjs 1.9.x and casperjs 1.1.x
+(<a href="https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS">instructions</a>) for running tests</li>
+</ul>
+
+
+<div class="pilwrap" id="installation%20%2F%20setup%20instructions">
+  <h3>
+    <a href="#installation%20%2F%20setup%20instructions" name="installation%20%2F%20setup%20instructions" class="pilcrow">&#182;</a>
+    Installation / Setup Instructions
+  </h3>
+</div>
+
+
+<ol>
+<li>Check you have the pre-requisites listed above!</li>
+<li><code>git clone https://github.com/TryGhost/Ghost.git</code>- clone the git repo</li>
+<li><code>cd Ghost</code> - change into the project folder</li>
+<li><code>npm install -g grunt-cli</code> - to make it possible to run grunt commands (see <a href="#developer-tips">developer tips</a> for more info on Grunt)</li>
+<li><code>npm install</code> - you need all the dependencies, so do not use the <code>--production</code> flag mentioned in user install guides
+<ul><li>If the install fails with errors to do with "node-gyp rebuild" or "SQLite3", follow the SQLite3 install
+instructions below this list</li>
+<li>Usually if you're within vagrant, and have installed the guest plugins and updated that, this will not happen</li></ul></li>
+<li><code>grunt init</code> - updates bower dependencies, copies assets and compiles Handlebars templates</li>
+<li>If you're going to run in production mode, you also need to run <code>grunt prod</code></li>
+<li><code>npm start</code> - starts Ghost or <code>grunt dev</code> will start it in watch mode</li>
+</ol>
+
+<p>If something goes wrong, please see the
+<a href="https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md#troubleshooting--faq">troubleshooting tips</a> below.</p>
+
+
+<div class="pilwrap" id="looking%20for%20something%20to%20work%20on%3F">
+  <h3>
+    <a href="#looking%20for%20something%20to%20work%20on%3F" name="looking%20for%20something%20to%20work%20on%3F" class="pilcrow">&#182;</a>
+    Looking for something to work on?
+  </h3>
+</div>
+
+
+<p>If you're interested in contributing to Ghost and don't know where to start, here's a few tips:</p>
+
+<ul>
+<li>The <a href="https://github.com/TryGhost/Ghost/labels/beginner">beginner label</a> indicates issues which should be suitable for someone new to the Ghost codebase</li>
+<li>The <a href="https://github.com/TryGhost/Ghost/labels/help%20wanted">help wanted label</a> highlights issues that need a champion</li>
+<li>The <a href="https://github.com/TryGhost/Ghost/wiki/Roadmap#github-backlogs">roadmap wiki page</a> has details of how we use milestones to prioritise issues</li>
+</ul>
+
+<p>If you're still stuck, please come join us in the #ghost channel in IRC and let us know what you're interested in!</p>
+
+
+<div class="pilwrap" id="developer%20tips">
+  <h3>
+    <a href="#developer%20tips" name="developer%20tips" class="pilcrow">&#182;</a>
+    Developer Tips
+  </h3>
+</div>
+
+
+<p>Whilst developing, you can take advantage of the <a href="https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit">Grunt toolkit</a> to automatically compile assets, such as handlebars templates, sass and ember scripts. Some useful commands include:</p>
+
+<ul>
+<li><code>grunt dev</code> => Watch for changes and automatically rebuild assets</li>
+<li><code>grunt prod</code> => Build assets for the production environment</li>
+<li><code>grunt validate</code> => Run the linting and test suite</li>
+</ul>
+
+<p>Addresses for development:</p>
+
+<ul>
+<li>Front-end => <a href="http://localhost:2368">http://localhost:2368</a></li>
+<li>Admin => <a href="http://localhost:2368/ghost/">http://localhost:2368/ghost/</a></li>
+</ul>
+
+
+<div class="pilwrap" id="updating%20with%20the%20latest%20changes">
+  <h3>
+    <a href="#updating%20with%20the%20latest%20changes" name="updating%20with%20the%20latest%20changes" class="pilcrow">&#182;</a>
+    Updating with the latest changes
+  </h3>
+</div>
+
+
+<p>Pulling down the latest changes from master will often require more than just a pull, you may also need to do one
+or more of the following:</p>
+
+<ul>
+<li><code>npm install</code> - fetch any new dependencies</li>
+<li><code>grunt init</code> - will fetch bower dependencies and recompile handlebars templates for the admin</li>
+<li>delete content/data/*.db - delete the database and allow Ghost to recreate the fixtures</li>
+</ul>
+
+
+<div class="pilwrap" id="key%20branches%20%26amp%3B%20tags">
+  <h3>
+    <a href="#key%20branches%20%26amp%3B%20tags" name="key%20branches%20%26amp%3B%20tags" class="pilcrow">&#182;</a>
+    Key Branches &amp; Tags
+  </h3>
+</div>
+
+
+<ul>
+<li><strong><a href="https://github.com/TryGhost/Ghost">master</a></strong> is the bleeding edge development branch. All work on the next
+release is here. Do <strong>NOT</strong> use this branch for a production site.</li>
+<li><strong><a href="https://github.com/TryGhost/Ghost/tree/stable">stable</a></strong> contains the latest release of Ghost. This branch may be used in production.</li>
+<li><strong><a href="http://github.com/TryGhost/Ghost/tree/gh-pages">gh-pages</a></strong> contains <a href="http://docs.ghost.org">The Ghost Guide</a> our developer documentation.</li>
+</ul>
+
+
+<div class="pilwrap" id="grunt%20toolkit">
+  <h2>
+    <a href="#grunt%20toolkit" name="grunt%20toolkit" class="pilcrow">&#182;</a>
+    Grunt Toolkit
+  </h2>
+</div>
+
+
+<p>Ghost uses Grunt heavily to automate useful tasks such as building assets, testing, live reloading/watching etc etc</p>
+
+<p><a href="https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit">Grunt Toolkit docs</a> are a worthwhile read for any would-be
+contributor.</p>
+
+
+<div class="pilwrap" id="troubleshooting%20%2F%20faq">
+  <h2>
+    <a href="#troubleshooting%20%2F%20faq" name="troubleshooting%20%2F%20faq" class="pilcrow">&#182;</a>
+    Troubleshooting / FAQ
+  </h2>
+</div>
+
+
+
+<div class="pilwrap" id="i%20get%20%22error%3A%20failed%20to%20lookup%20view%20%22index%22">
+  <h3>
+    <a href="#i%20get%20%22error%3A%20failed%20to%20lookup%20view%20%22index%22" name="i%20get%20%22error%3A%20failed%20to%20lookup%20view%20%22index%22" class="pilcrow">&#182;</a>
+    I get "ERROR: Failed to lookup view "index"
+  </h3>
+</div>
+
+
+<p>Sounds like you don't have our default theme - Casper, your content/themes/casper folder is probably empty.
+When cloning from GitHub be sure to use SSH and to run <code>git submodule update --init</code>.</p>
+
+
+<div class="pilwrap" id="ghost%20doesn't%20do%20anything%20-%20i%20get%20a%20blank%20screen">
+  <h3>
+    <a href="#ghost%20doesn't%20do%20anything%20-%20i%20get%20a%20blank%20screen" name="ghost%20doesn't%20do%20anything%20-%20i%20get%20a%20blank%20screen" class="pilcrow">&#182;</a>
+    Ghost doesn't do anything - I get a blank screen
+  </h3>
+</div>
+
+
+<p>Sounds like you probably didn't run the right grunt command for building assets. You may need to run <code>grunt init</code> and if using production mode, <code>grunt prod</code> as well.</p>
+
+
+<div class="pilwrap" id="i%20get%20node-gyp%20errors%20or%20sqlite3%20doesn't%20install%20properly%20during%20npm%20install">
+  <h3>
+    <a href="#i%20get%20node-gyp%20errors%20or%20sqlite3%20doesn't%20install%20properly%20during%20npm%20install" name="i%20get%20node-gyp%20errors%20or%20sqlite3%20doesn't%20install%20properly%20during%20npm%20install" class="pilcrow">&#182;</a>
+    I get <code>node-gyp</code> errors or SQLite3 doesn't install properly during npm install
+  </h3>
+</div>
+
+
+<p>Ghost depends upon SQLite3, which requires a native binary. These are provided for most major platforms, but if you
+are using a more obscure *nix flavor you may need to follow
+the <a href="https://github.com/developmentseed/node-sqlite3/wiki/Binaries">node-sqlite3 binary instructions</a>.</p>
+
+
+<div class="pilwrap" id="contributor%20license%20agreement">
+  <h2>
+    <a href="#contributor%20license%20agreement" name="contributor%20license%20agreement" class="pilcrow">&#182;</a>
+    Contributor License Agreement
+  </h2>
+</div>
+
+
+<p>By contributing your code to Ghost you grant the Ghost Foundation a non-exclusive, irrevocable, worldwide,
+royalty-free, sublicenseable, transferable license under all of Your relevant intellectual property rights
+(including copyright, patent, and any other rights), to use, copy, prepare derivative works of, distribute and
+publicly perform and display the Contributions on any licensing terms, including without limitation:
+(a) open source licenses like the MIT license; and (b) binary, proprietary, or commercial licenses. Except for the
+licenses granted herein, You reserve all right, title, and interest in and to the Contribution.</p>
+
+<p>You confirm that you are able to grant us these rights. You represent that You are legally entitled to grant the
+above license. If Your employer has rights to intellectual property that You create, You represent that You have
+received permission to make the Contributions on behalf of that employer, or that Your employer has waived such
+rights for the Contributions.</p>
+
+<p>You represent that the Contributions are Your original works of authorship, and to Your knowledge, no other person
+claims, or has the right to claim, any right in any invention or patent related to the Contributions. You also
+represent that You are not legally obligated, whether by entering into an agreement or otherwise, in any way that
+conflicts with the terms of this license.</p>
+
+<p>The Ghost Foundation acknowledges that, except as explicitly described in this Agreement, any Contribution which
+you provide is on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS
+FOR A PARTICULAR PURPOSE.</p></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+
+<header class="navbar navbar-fixed-top bs-docs-nav">
+    <nav class="container">
+        <a href="{{ site.url }}/{% if page.lang %}{{page.lang}}/{% endif %}" class="navbar-brand">
+            {% if page.lang %}
+            {{site.translations.[page.lang].site_title}}
+            {% else %}
+            Ghost Guide
+            {% endif %}
+        </a>
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="nav-collapse collapse bs-navbar-collapse">
+            <ul class="nav navbar-nav">
+                {% if page.lang %}
+                <li {%if page.chapter == 'installation'%}class="active"{% endif %}>
+                    <a href="{{ site.url }}/{{page.lang}}/installation/">
+                        {{site.translations.[page.lang].installation}}
+                    </a>
+                </li>
+                {% endif %}
+                {% if page.lang %}
+                <li {%if page.chapter == 'usage'%}class="active"{% endif %}>
+                    <a href="{{ site.url }}/{{page.lang}}/usage/">
+                        {{site.translations.[page.lang].usage}}
+                    </a>
+                </li>
+                {% endif %}
+                {% if page.lang  %}
+                <li {%if page.chapter == 'mail'%}class="active"{% endif %}>
+                    <a href="{{ site.url }}/{{page.lang}}/mail/">
+                        {{site.translations.[page.lang].email}}
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if page.lang == nil %}
+                <li><a href="http://api.ghost.org">API</a></li>
+                {% elsif site.translations.[page.lang].api %}
+                <li {%if page.chapter == 'api'%}class="active"{% endif %}>
+                    <a href="{{ site.url }}/{{page.lang}}/api/">
+                        {{site.translations.[page.lang].api}}
+                    </a>
+                </li>
+                {% endif %}
+                {% if page.lang == nil %}
+                <li><a href="http://apps.ghost.org">Apps</a></li>
+                {% elsif site.translations.[page.lang].apps %}
+                <li {%if page.chapter == 'apps'%}class="active"{% endif %}>
+                    <a href="{{ site.url }}/{{page.lang}}/apps/">
+                        {{site.translations.[page.lang].apps}}
+                    </a>
+                </li>
+                {% endif %}
+                {% if page.lang == nil %}
+                <li><a href="http://themes.ghost.org">Themes</a></li>
+                {% else %}
+                <li {%if page.chapter == 'themes'%}class="active"{% endif %}>
+                    <a href="{{ site.url }}/{{page.lang}}/themes/">
+                        {% if site.translations.[page.lang].themes %}
+                        {{site.translations.[page.lang].themes}}
+                        {% else %}
+                        Themes
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
+                <li>
+                    <a href="http://ghost.org/forum/">
+                        {% if page.lang %}
+                        {{site.translations.[page.lang].help}}
+                        {% else %}
+                        Help & Support
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    {% include language_selector.html %}
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>

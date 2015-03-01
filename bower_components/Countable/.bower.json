@@ -1,0 +1,27 @@
+{
+  "name": "Countable",
+  "description": "Countable is a JavaScript function to add live paragraph-, word- and character-counting to an HTML element.",
+  "version": "2.0.2",
+  "main": "Countable.js",
+  "ignore": [
+    "test",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "karma.conf.js",
+    "package.json",
+    ".travis.yml"
+  ],
+  "devDependencies": {
+    "chai": "~1.7.2"
+  },
+  "homepage": "https://github.com/RadLikeWhoa/Countable",
+  "_release": "2.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.2",
+    "commit": "056edffccf09a1e4d070392ef5f59afc97e93518"
+  },
+  "_source": "git://github.com/RadLikeWhoa/Countable.git",
+  "_target": "2.0.2",
+  "_originalSource": "Countable"
+}

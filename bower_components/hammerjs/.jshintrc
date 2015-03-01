@@ -1,0 +1,19 @@
+{
+  "browser" : true,
+  "curly" : true,
+  "eqnull" : true,
+  "expr" : true,
+  "laxcomma" : true,
+  "maxerr" : 100,
+  "newcap" : true,
+  "node" : true,
+  "quotmark" : "single",
+  "strict" : true,
+  "sub" : false,
+  "trailing" : true,
+  "undef" : true,
+  "unused" : true,
+  "globals" : {
+    "define" : false
+  }
+}

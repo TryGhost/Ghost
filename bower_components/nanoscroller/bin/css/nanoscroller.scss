@@ -1,0 +1,74 @@
+//
+// nanoScrollerJS (Sass)
+// --------------------------------------------------
+/** initial setup **/
+$nanoClass: "nano";
+$paneClass: "nano-pane";
+$sliderClass: "nano-slider";
+$contentClass: "nano-content";
+
+.#{$nanoClass} {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+
+    .#{$contentClass} {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        overflow: scroll;
+        overflow-x: hidden;
+
+        &:focus {
+            outline: thin dotted;
+        }
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    > .#{$paneClass} {
+        width: 10px;
+        background: rgba(0,0,0,.25);
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        -webkit-transition: .2s;
+           -moz-transition: .2s;
+             -o-transition: .2s;
+                transition: .2s;
+        -webkit-border-radius: 5px;
+           -moz-border-radius: 5px;
+                border-radius: 5px;
+        visibility: hidden\9; // Target only IE7 and IE8 with this hack
+        opacity: .01;
+
+        > .#{$sliderClass} {
+            background: #444;
+            background: rgba(0,0,0,.5);
+            position: relative;
+            margin: 0 1px;
+            -webkit-border-radius: 3px;
+               -moz-border-radius: 3px;
+                    border-radius: 3px;
+        }
+    }
+}
+
+.has-scrollbar > .#{$contentClass}::-webkit-scrollbar {
+    display: block;
+}
+
+.#{$paneClass} {
+    .#{$nanoClass}:hover > &,
+    &.active,
+    &.flashed {
+        visibility: visible\9; // Target only IE7 and IE8 with this hack
+        opacity: 0.99;
+    }
+}

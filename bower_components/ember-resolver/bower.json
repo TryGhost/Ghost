@@ -1,0 +1,28 @@
+{
+  "name": "ember-jj-abrams-resolver",
+  "version": "0.0.1",
+  "main": ["dist/ember-resolver.js", "dist/ember-resolver.prod.js", "dist/ember-resolver.min.js"],
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt",
+    ".gitignore",
+    ".jshintrc",
+    ".travis.yml",
+    "Assetfile",
+    "Gemfile",
+    "Gemfile.lock",
+    "LICENSE",
+    "README.md",
+    "Rakefile",
+    "VERSION",
+    "bower.json",
+    "config.ru",
+    "ember-dev.yml",
+    "generators",
+    "packages",
+    "tests"
+  ],
+  "dependencies": {
+    "ember": " > 1.5.0-beta.3"
+  }
+}
