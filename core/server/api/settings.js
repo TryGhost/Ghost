@@ -41,7 +41,7 @@ updateConfigTheme = function () {
             description: (settingsCache.description && settingsCache.description.value) || '',
             logo: (settingsCache.logo && settingsCache.logo.value) || '',
             cover: (settingsCache.cover && settingsCache.cover.value) || '',
-            tongji: (settingsCache.tongji && settingsCache.tongji.value) || ''
+            tongji: (settingsCache.tongji && settingsCache.tongji.value) || '',
             navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || []
         }
     });
