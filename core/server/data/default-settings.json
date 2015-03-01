@@ -77,7 +77,7 @@
             "defaultValue": "{}"
         },
         "navigation": {
-            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
+            "defaultValue": "[{\"label\":\"首页\", \"url\":\"/\"}]"
         }
     },
     "theme": {
