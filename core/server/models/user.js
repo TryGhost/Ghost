@@ -615,7 +615,7 @@ User = ghostBookshelf.Model.extend({
             level = 1;
         } else {
             level = parseInt(status.match(regexp)[1], 10) + 1;
-            if (level > 3) {
+            if (level > 4) {
                 user.set('status', 'locked');
             } else {
                 user.set('status', 'warn-' + level);
