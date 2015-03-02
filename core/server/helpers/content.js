@@ -19,7 +19,10 @@ content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
-    if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
+    if (_.contains(this.html, '<!--more-->')) {
+        var split = this.html.split('<!--more-->', 2);
+        return new hbs.handlebars.SafeString(split[0]);
+    } else if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         // Legacy function: {{content words="0"}} should return leading tags.
         if (truncateOptions.hasOwnProperty('words') && truncateOptions.words === 0) {
             return new hbs.handlebars.SafeString(
