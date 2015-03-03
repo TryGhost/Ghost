@@ -1,7 +1,6 @@
 /*globals describe, beforeEach, afterEach, it*/
 /*jshint expr:true*/
-var assert   = require('assert'),
-    moment   = require('moment'),
+var moment   = require('moment'),
     should   = require('should'),
     sinon    = require('sinon'),
     Promise  = require('bluebird'),
@@ -10,8 +9,11 @@ var assert   = require('assert'),
 
 // Stuff we are testing
     api      = require('../../server/api'),
-    config   = rewire('../../server/config'),
-    frontend = rewire('../../server/controllers/frontend');
+
+    frontend = rewire('../../server/controllers/frontend'),
+    config   = require('../../server/config'),
+    origConfig = _.cloneDeep(config),
+    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -19,7 +21,11 @@ should.equal(true, true);
 describe('Frontend Controller', function () {
     var sandbox,
         apiSettingsStub,
-        adminEditPagePath = '/ghost/editor/';
+        adminEditPagePath = '/ghost/editor/',
+
+        resetConfig = function () {
+            config.set(_.merge({}, origConfig, defaultConfig));
+        };
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
@@ -29,6 +35,7 @@ describe('Frontend Controller', function () {
     });
 
     afterEach(function () {
+        resetConfig();
         sandbox.restore();
     });
 
@@ -61,6 +68,12 @@ describe('Frontend Controller', function () {
                     value: 5
                 }]
             }));
+        });
+
+        afterEach(function () {
+            config.set({paths: origConfig.paths});
+            frontend.__set__('config', {paths: origConfig.paths});
+            sandbox.restore();
         });
 
         it('Redirects to home if page number is -1', function () {
@@ -204,7 +217,7 @@ describe('Frontend Controller', function () {
                 res = {
                     locals: {},
                     render: function (view) {
-                        assert.equal(view, 'home');
+                        view.should.equal('home');
                         done();
                     }
                 };
@@ -223,7 +236,7 @@ describe('Frontend Controller', function () {
                 res = {
                     locals: {},
                     render: function (view) {
-                        assert.equal(view, 'index');
+                        view.should.equal('index');
                         done();
                     }
                 };
@@ -255,7 +268,7 @@ describe('Frontend Controller', function () {
                 res = {
                     locals: {},
                     render: function (view) {
-                        assert.equal(view, 'index');
+                        view.should.equal('index');
                         done();
                     }
                 };
@@ -371,9 +384,9 @@ describe('Frontend Controller', function () {
                     res = {
                         locals: {},
                         render: function (view, context) {
-                            assert.equal(view, 'tag');
-                            assert.equal(context.tag, mockTags[0]);
-                            assert.equal(context.posts[0].author.email, undefined);
+                            view.should.equal('tag');
+                            context.tag.should.equal(mockTags[0]);
+                            should.not.exist(context.posts[0].author.email);
                             done();
                         }
                     };
@@ -595,9 +608,9 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'page-' + mockPosts[2].posts[0].slug);
-                                assert.equal(context.post, mockPosts[2].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('page-' + mockPosts[2].posts[0].slug);
+                                context.post.should.equal(mockPosts[2].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -625,9 +638,9 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'page');
-                                assert.equal(context.post, mockPosts[0].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('page');
+                                context.post.should.equal(mockPosts[0].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -737,8 +750,8 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'page');
-                                assert.equal(context.post, mockPosts[0].posts[0]);
+                                view.should.equal('page');
+                                context.post.should.equal(mockPosts[0].posts[0]);
                                 done();
                             }
                         };
@@ -817,10 +830,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                context.post.should.exist;
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -932,10 +945,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                context.post.should.exist;
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1063,10 +1076,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                should.exist(context.post);
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1195,10 +1208,10 @@ describe('Frontend Controller', function () {
                         res = {
                             locals: {},
                             render: function (view, context) {
-                                assert.equal(view, 'post');
-                                assert(context.post, 'Context object has post attribute');
-                                assert.equal(context.post, mockPosts[1].posts[0]);
-                                assert.equal(context.post.author.email, undefined);
+                                view.should.equal('post');
+                                should.exist(context.post);
+                                context.post.should.equal(mockPosts[1].posts[0]);
+                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1223,7 +1236,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will NOT render post via /:year/slug when year does not match post year', function (done) {
-                    var date = moment(mockPosts[1].posts[0].published_at).subtract('years', 1).format('YYYY'),
+                    var date = moment(mockPosts[1].posts[0].published_at).subtract(1, 'years').format('YYYY'),
                         req = {
                             path: '/' + [date, mockPosts[1].posts[0].slug].join('/')
                         },
@@ -1294,11 +1307,7 @@ describe('Frontend Controller', function () {
 
     describe('rss redirects', function () {
         var res,
-            apiUsersStub,
-            overwriteConfig = function (newConfig) {
-                var existingConfig = frontend.__get__('config');
-                config.set(_.extend(existingConfig, newConfig));
-            };
+            apiUsersStub;
 
         beforeEach(function () {
             res = {
@@ -1365,7 +1374,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            overwriteConfig({paths: {subdir: '/blog'}});
+            config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
 
@@ -1377,7 +1386,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            overwriteConfig({paths: {subdir: '/blog'}});
+            config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
 
@@ -1389,7 +1398,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big', function (done) {
-            overwriteConfig({paths: {subdir: ''}});
+            config.set({url: 'http://testurl.com/'});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 
@@ -1402,7 +1411,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            overwriteConfig({paths: {subdir: '/blog'}});
+            config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 

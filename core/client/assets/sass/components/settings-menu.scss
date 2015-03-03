@@ -134,13 +134,30 @@
         padding-bottom: 35px;
         margin: 0 0 1.6rem 0;
 
-        input {
-            width: auto;
+        &.image-uploader-url {
+            padding: 35px 45px;
         }
     }
 
     textarea {
         height: 108px;
+    }
+
+    .tag-delete-button {
+        padding-left: 0;
+        color: $red;
+
+        &:before {
+            margin-right: 4px;
+            top: -1px;
+            position: relative;
+        }
+
+        &:hover {
+            &, &:before {
+                color: darken($red, 10%);
+            }
+        }
     }
 
     .nav-list {

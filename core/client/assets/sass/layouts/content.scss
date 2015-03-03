@@ -112,25 +112,45 @@
 
     .entry-title {
         font-size: 1.6rem;
-        line-height: 1.25em;
+        line-height: 1.4em;
         font-weight: normal;
     }
 
-    .views {
-        @include icon($i-stats, 10px, $brown);
-        float: right;
-        text-align: right;
-        margin-left: 15px;
+    .entry-meta {
+        margin-top: 14px;
+        line-height: 18px;
+    }
 
-        @media (max-width: 900px) {
-            float: none;
+    .avatar {
+        @include circular-image(18px) {
+            float: left; // Used instead of `display: block;` to remove the stupid space under the image.
+            margin-right: 14px;
         }
     }
 
-    .status {
+    .status,
+    .author {
         font-size: 1.3rem;
         font-weight: 300;
+        transition: opacity 0.15s linear;
+    }
 
+    .avatar:hover + .author + .status {
+        opacity: 0;
+    }
+
+    .avatar:hover + .author {
+        opacity: 1;
+    }
+
+    .author {
+        position: absolute;
+        bottom: 22px;
+        left: 56px;
+        opacity: 0;
+    }
+
+    .status {
         .draft {
             color: $red;
         }
@@ -140,10 +160,12 @@
         }
     }
 
-    .featured .status {
+    .featured {
         @include icon($i-featured, 11px) {
-            margin-right: 10px;
             vertical-align: 7%;
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
         };
     }
 
@@ -155,13 +177,14 @@
     }
 
     li {
+        position: relative;
         margin: 0;
         padding: 0;
         border-bottom: $lightbrown 1px solid;
 
         a {
             display: block;
-            padding: 20px 20px;
+            padding: 19px 20px 22px 24px;
             color: rgba(0,0,0,0.5);
 
             @include icon-after($i-chevron) {
@@ -195,18 +218,8 @@
         @media (min-width: 901px) {
             border-bottom: lighten($midgrey, 40%) 1px solid;
             background: lighten($lightbrown, 5%);
-            box-shadow:
-                lighten($midgrey, 40%) 0 -1px 0, // top border
-                rgba(0,0,0,0.06) 7px 0 0 inset, // big left border
-                lighten($midgrey, 40%) 1px 0 0 inset; // small left border
-
-            .views {
-                @include icon($i-stats, 10px, $darkgrey);
-                color: $darkgrey;
-                font-weight: normal;
-            }
         }
-    }//li.active
+    }
 }//.content-list
 
 

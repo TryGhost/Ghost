@@ -1,9 +1,9 @@
 var PostTagsInputController = Ember.Controller.extend({
     tagEnteredOrder: Ember.A(),
 
-    tags: Ember.computed('parentController.tags', function () {
+    tags: Ember.computed('parentController.model.tags', function () {
         var proxyTags = Ember.ArrayProxy.create({
-            content: this.get('parentController.tags')
+            content: this.get('parentController.model.tags')
         }),
         temp = proxyTags.get('arrangedContent').slice();
 
@@ -33,7 +33,7 @@ var PostTagsInputController = Ember.Controller.extend({
         // queries hit a full store cache and we don't see empty or out-of-date
         // suggestion lists
         loadAllTags: function () {
-            this.store.find('tag');
+            this.store.find('tag', {limit: 'all'});
         },
 
         addNewTag: function () {
@@ -52,8 +52,13 @@ var PostTagsInputController = Ember.Controller.extend({
 
             // add existing tag if we have a match
             existingTags = this.store.all('tag').filter(function (tag) {
+                if (tag.get('isNew')) {
+                    return false;
+                }
+
                 return tag.get('name').toLowerCase() === searchTerm;
             });
+
             if (existingTags.get('length')) {
                 this.send('addTag', existingTags.get('firstObject'));
             } else {
@@ -185,7 +190,7 @@ var PostTagsInputController = Ember.Controller.extend({
     findMatchingTags: function (searchTerm) {
         var matchingTags,
             self = this,
-            allTags = this.store.all('tag'),
+            allTags = this.store.all('tag').filterBy('isNew', false),
             deDupe = {};
 
         if (allTags.get('length') === 0) {
@@ -222,16 +227,14 @@ var PostTagsInputController = Ember.Controller.extend({
 
     makeSuggestionObject: function (matchingTag, _searchTerm) {
         var searchTerm = Ember.Handlebars.Utils.escapeExpression(_searchTerm),
-            // jscs:disable
             regexEscapedSearchTerm = searchTerm.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'),
-            // jscs:enable
             tagName = Ember.Handlebars.Utils.escapeExpression(matchingTag.get('name')),
             regex = new RegExp('(' + regexEscapedSearchTerm + ')', 'gi'),
             highlightedName,
             suggestion = Ember.Object.create();
 
         highlightedName = tagName.replace(regex, '<mark>$1</mark>');
-        highlightedName = new Ember.Handlebars.SafeString(highlightedName);
+        highlightedName = Ember.String.htmlSafe(highlightedName);
 
         suggestion.set('tag', matchingTag);
         suggestion.set('highlightedName', highlightedName);

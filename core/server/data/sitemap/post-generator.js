@@ -36,9 +36,9 @@ _.extend(PostMapGenerator.prototype, {
         return config.urlFor('post', {post: post, permalinks: permalinks}, true);
     },
 
-    getPriorityForDatum: function () {
-        // TODO: We could influence this with meta information
-        return 0.8;
+    getPriorityForDatum: function (post) {
+        // give a slightly higher priority to featured posts
+        return post.featured ? 0.9 : 0.8;
     },
 
     createUrlNodeFromDatum: function (datum) {

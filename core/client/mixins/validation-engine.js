@@ -29,12 +29,15 @@ function formatErrors(errors, opts) {
         // get the validator's error messages from the array.
         // normalize array members to map to strings.
         message = errors.map(function (error) {
+            var errorMessage;
             if (typeof error === 'string') {
-                return error;
+                errorMessage = error;
+            } else {
+                errorMessage = error.message;
             }
 
-            return error.message;
-        }).join('<br />');
+            return Ember.Handlebars.Utils.escapeExpression(errorMessage);
+        }).join('<br />').htmlSafe();
     } else if (errors instanceof Error) {
         message += errors.message || '.';
     } else if (typeof errors === 'object') {
@@ -89,11 +92,24 @@ var ValidationEngine = Ember.Mixin.create({
     *                   the class that mixes in this mixin.
     */
     validate: function (opts) {
-        var model = opts.model || this,
-            type = this.get('validationType'),
-            validator = this.get('validators.' + type);
-
+        // jscs:disable safeContextKeyword
         opts = opts || {};
+
+        var model = this,
+            type,
+            validator;
+
+        if (opts.model) {
+            model = opts.model;
+        } else if (this instanceof DS.Model) {
+            model = this;
+        } else if (this.get('model')) {
+            model = this.get('model');
+        }
+
+        type = this.get('validationType') || model.get('validationType');
+        validator = this.get('validators.' + type) || model.get('validators.' + type);
+
         opts.validationType = type;
 
         return new Ember.RSVP.Promise(function (resolve, reject) {

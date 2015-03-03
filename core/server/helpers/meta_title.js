@@ -32,7 +32,7 @@ meta_title = function (options) {
         } else if (this.author) {
             title = this.author.name + pageString + ' - ' + blog.title;
         } else if (this.tag) {
-            title = this.tag.name + pageString + ' - ' + blog.title;
+            title = _.isEmpty(this.tag.meta_title) ? this.tag.name + pageString + ' - ' + blog.title : this.tag.meta_title;
         } else if (this.post) {
             title = _.isEmpty(this.post.meta_title) ? this.post.title : this.post.meta_title;
         } else {

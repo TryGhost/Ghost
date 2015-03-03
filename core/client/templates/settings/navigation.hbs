@@ -1,0 +1,15 @@
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">Navigation</h2>
+    <section class="page-actions">
+        <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
+    </section>
+</header>
+
+<section class="content settings-navigation">
+    <form id="settings-navigation" class="js-settings-navigation" novalidate="novalidate">
+        {{#each navItem in navigationItems}}
+            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addItem" deleteItem="deleteItem" updateUrl="updateUrl"}}
+        {{/each}}
+    </form>
+</section>

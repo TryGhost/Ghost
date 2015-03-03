@@ -1,8 +1,6 @@
 <header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="page-title">About</h2>
-    <div class="js-settings-header-inner settings-header-inner">
-        {{#link-to 'settings' class='btn btn-default btn-back'}}Back{{/link-to}}
-    </div>
 </header>
 
 <section class="content settings-about">
@@ -11,7 +9,7 @@
             <span class="ghost_logo">
                 <span class="hidden">Ghost</span>
             </span>
-            <span class="version blue">v{{version}}</span>
+            <span class="version blue">v{{model.version}}</span>
         </h1>
         <p>A free, open, simple publishing platform</p>
 
@@ -19,13 +17,13 @@
             <div class="about-environment">
                 <dl>
                     <dt>Version:</dt>
-                    <dd class="about-environment-detail">{{version}}</dd>
+                    <dd class="about-environment-detail">{{model.version}}</dd>
                     <dt>Environment:</dt>
-                    <dd class="about-environment-detail">{{environment}}</dd>
+                    <dd class="about-environment-detail">{{model.environment}}</dd>
                     <dt>Database:</dt>
-                    <dd class="about-environment-detail about-environment-database">{{database}}</dd>
+                    <dd class="about-environment-detail about-environment-database">{{model.database}}</dd>
                     <dt>Mail:</dt>
-                    <dd class="about-environment-detail">{{#if mail}}{{mail}}{{else}}Native{{/if}}</dd>
+                    <dd class="about-environment-detail">{{#if model.mail}}{{model.mail}}{{else}}Native{{/if}}</dd>
                 </dl>
             </div>
             <div class="about-help">
@@ -47,7 +45,7 @@
         <a href="https://ghost.org/about/contribute/" class="about-get-involved btn-blue btn-lg btn">Find out how you can get involved</a>
 
         <p class="about-copyright">
-            Copyright 2013 - 2014 Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE">MIT license</a>.
+            Copyright 2013 - 2015 Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE">MIT license</a>.
             <br>
             <a href="https://ghost.org/">Ghost</a> is a trademark of the <a href="https://ghost.org/about/">Ghost Foundation</a>.
         </p>

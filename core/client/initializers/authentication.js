@@ -15,7 +15,7 @@ AuthenticationInitializer = {
 
         window.ENV['simple-auth'] = {
             authenticationRoute: 'signin',
-            routeAfterAuthentication: 'content',
+            routeAfterAuthentication: 'posts',
             authorizer: 'simple-auth-authorizer:oauth2-bearer',
             localStorageKey: 'ghost' + (Ghost.subdir.indexOf('/') === 0 ? '-' + Ghost.subdir.substr(1) : '') + ':session'
         };

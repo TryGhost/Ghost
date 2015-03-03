@@ -1,6 +1,6 @@
 <div class="modal-container js-modal-container" {{action "closeModal"}}>
     <article {{bind-attr class="klass :js-modal"}}>
-        <section class="modal-content" {{action bubbles=false preventDefault=false}}>
+        <section class="modal-content" {{action "noBubble" bubbles=false preventDefault=false}}>
             {{#if title}}<header class="modal-header"><h1>{{title}}</h1></header>{{/if}}
             {{#if showClose}}<a class="close" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>{{/if}}
             <section class="modal-body">
@@ -10,8 +10,9 @@
             <footer class="modal-footer">
                 <button type="button" {{bind-attr class="rejectButtonClass :js-button-reject"}} {{action "confirm" "reject"}}>
                     {{confirm.reject.text}}
-                </button>
-                <button type="button" {{bind-attr class="acceptButtonClass :js-button-accept"}} {{action "confirm" "accept"}}>
+                </button><!--
+                Required to strip the white-space between buttons
+                --><button type="button" {{bind-attr class="acceptButtonClass :js-button-accept"}} {{action "confirm" "accept"}}>
                     {{confirm.accept.text}}
                 </button>
             </footer>
@@ -19,4 +20,4 @@
         </section>
     </article>
 </div>
-<div class="modal-background fade js-modal-background"></div>
+<div class="modal-background js-modal-background"></div>

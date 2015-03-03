@@ -5,15 +5,15 @@
 {{/gh-dropdown-button}}
 {{#gh-dropdown name="post-save-menu" closeOnClick="true" tagName="div" classNames="dropdown editor-options"}}
     <ul class="dropdown-menu dropdown-triangle-bottom-right">
-        <li class="post-save-publish" {{bind-attr class="willPublish:active"}}>
+        <li {{bind-attr class=":post-save-publish willPublish:active"}}>
             <a {{action "setSaveType" "publish"}} href="#">{{view.publishText}}</a>
         </li>
-        <li class="post-save-draft" {{bind-attr class="willPublish::active"}}>
+        <li {{bind-attr class=":post-save-draft willPublish::active"}}>
             <a {{action "setSaveType" "draft"}} href="#">{{view.draftText}}</a>
         </li>
         <li class="divider delete"></li>
         <li class="delete">
-            <a {{action "openModal" "delete-post" this}} href="#">Delete Post</a>
+            <a {{action "openModal" "delete-post" this}} href="#">{{view.deleteText}}</a>
         </li>
     </ul>
 {{/gh-dropdown}}

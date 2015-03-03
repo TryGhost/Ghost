@@ -102,7 +102,8 @@ function urlPathForPost(post, permalinks) {
 function urlFor(context, data, absolute) {
     var urlPath = '/',
         secure, imagePathRe,
-        knownObjects = ['post', 'tag', 'author', 'image'], baseUrl,
+        knownObjects = ['post', 'tag', 'author', 'image', 'nav'], baseUrl,
+        hostname,
 
     // this will become really big
     knownPaths = {
@@ -151,11 +152,26 @@ function urlFor(context, data, absolute) {
         } else if (context === 'sitemap-xsl') {
             absolute = true;
             urlPath = '/sitemap.xsl';
+        } else if (context === 'nav' && data.nav) {
+            urlPath = data.nav.url;
+            baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+            hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
+            if (urlPath.indexOf(hostname) > -1) {
+                // make link relative to account for possible
+                // mismatch in http/https etc, force absolute
+                urlPath = '/' + urlPath.split(hostname)[1];
+                absolute = true;
+            }
         }
         // other objects are recognised but not yet supported
     } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
         // trying to create a url for a named path
         urlPath = knownPaths[context] || '/';
+    }
+
+    // This url already has a protocol so is likely an external url to be returned
+    if (urlPath && urlPath.indexOf('://') !== -1) {
+        return urlPath;
     }
 
     return createUrl(urlPath, absolute, secure);

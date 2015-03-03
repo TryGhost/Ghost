@@ -162,7 +162,7 @@ describe('Post Model', function () {
 
         it('can findOne, returning a dated permalink', function (done) {
             var firstPost = 1,
-                today = new Date(),
+                today = testUtils.DataGenerator.Content.posts[0].published_at,
                 dd = ('0' + today.getDate()).slice(-2),
                 mm = ('0' + (today.getMonth() + 1)).slice(-2),
                 yyyy = today.getFullYear(),

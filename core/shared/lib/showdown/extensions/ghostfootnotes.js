@@ -15,7 +15,7 @@
 
 function replaceInlineFootnotes(text) {
     // Inline footnotes e.g. "foo[^1]"
-    var inlineRegex = /(?!^)\[\^(\d|n)\]/gim,
+    var inlineRegex = /(?!^)\[\^(\d+|n)\]/gim,
         i = 0;
 
     return text.replace(inlineRegex, function (match, n) {
@@ -32,9 +32,9 @@ function replaceInlineFootnotes(text) {
     });
 }
 
-function replaceEndFootnotes(text) {
+function replaceEndFootnotes(text, converter) {
     // Expanded footnotes at the end e.g. "[^1]: cool stuff"
-    var endRegex = /\[\^(\d|n)\]: ([\s\S]*?)$(?!    )/gim,
+    var endRegex = /\[\^(\d+|n)\]: ([\s\S]*?)$(?!    )/gim,
         m = text.match(endRegex),
         total = m ? m.length : 0,
         i = 0;
@@ -45,12 +45,12 @@ function replaceEndFootnotes(text) {
         }
 
         content = content.replace(/\n    /g, '<br>');
-
+        content = converter.makeHtml(content);
+        content = content.replace(/<\/p>$/, '');
         var s = '<li class="footnote" id="fn:' + n + '">' +
-                  '<p>' + content + ' <a href="#fnref:' + n +
+                  content + ' <a href="#fnref:' + n +
                     '" title="return to article">↩</a>' +
-                  '</p>' +
-                '</li>';
+                '</p></li>';
 
         if (i === 0) {
             s = '<div class="footnotes"><ol>' + s;
@@ -66,7 +66,7 @@ function replaceEndFootnotes(text) {
 }
 
 (function () {
-    var footnotes = function () {
+    var footnotes = function (converter) {
         return [
             {
                 type: 'lang',
@@ -79,14 +79,27 @@ function replaceEndFootnotes(text) {
                     }
 
                     // Extract pre blocks
+                    text = text.replace(/<(pre|code)>[\s\S]*?<\/(\1)>/gim, function (x) {
+                        var hash = hashId();
+                        preExtractions[hash] = x;
+                        return '{gfm-js-extract-pre-' + hash + '}';
+                    }, 'm');
+
                     text = text.replace(/```[\s\S]*?\n```/gim, function (x) {
                         var hash = hashId();
                         preExtractions[hash] = x;
                         return '{gfm-js-extract-pre-' + hash + '}';
                     }, 'm');
 
+                    // Extract code blocks
+                    text = text.replace(/`[\s\S]*?`/gim, function (x) {
+                        var hash = hashId();
+                        preExtractions[hash] = x;
+                        return '{gfm-js-extract-pre-' + hash + '}';
+                    }, 'm');
+
                     text = replaceInlineFootnotes(text);
-                    text = replaceEndFootnotes(text);
+                    text = replaceEndFootnotes(text, converter);
 
                     // replace extractions
                     text = text.replace(/\{gfm-js-extract-pre-([0-9]+)\}/gm, function (x, y) {

@@ -96,7 +96,6 @@
             width: 100%;
             border: none;
             z-index: 100;
-            min-height: 380px;
 
             .markdown,
             .entry-preview-content {
@@ -785,16 +784,12 @@ body.zen {
 // Markdown Help Modal
 // --------------------------------------------------
 
-.markdown-help-container{
-    padding-bottom: 20px;
-}
-
 .modal-markdown-help-table {
-    margin: 20px 0;
+    margin: 0 0 20px;
     width: 100%;
 
     td, th {
-        padding: 8px;
+        padding: 8px 0;
     }
 
     th {

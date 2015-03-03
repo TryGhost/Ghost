@@ -8,7 +8,9 @@
 var should      = require('should'),
 
     // Stuff we are testing
-    ghostfootnotes    = require('../../shared/lib/showdown/extensions/ghostfootnotes');
+    ghostfootnotes = require('../../shared/lib/showdown/extensions/ghostfootnotes'),
+    Showdown       = require('showdown-ghost'),
+    converter      = new Showdown.converter({extensions: []});
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -23,7 +25,7 @@ function _ExecuteExtension(ext, text) {
 }
 
 function _ConvertPhrase(testPhrase) {
-    return ghostfootnotes().reduce(function (text, ext) {
+    return ghostfootnotes(converter).reduce(function (text, ext) {
         return _ExecuteExtension(ext, text);
     }, testPhrase);
 }
@@ -51,10 +53,28 @@ describe('Ghost footnotes showdown extension', function () {
         processedMarkup.should.match(testPhrase.output);
     });
 
+    it('should handle n-digit footnotes', function () {
+        var testPhrase = {
+            input: 'foo_bar[^42]',
+            output: /<sup id="fnref:42"><a href="#fn:42" rel="footnote">42<\/a><\/sup>/
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
     it('should replace end footnotes with the right html', function () {
         var testPhrase = {
             input: '[^1]: foo bar',
             output: /<div class="footnotes"><ol><li class="footnote" id="fn:1"><p>foo bar <a href="#fnref:1" title="return to article">↩<\/a><\/p><\/li><\/ol><\/div>/
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should expand Markdown inside footnotes', function () {
+        var testPhrase = {
+            input: '[^1]: *foo*',
+            output: /<em>foo<\/em>/
         }, processedMarkup = _ConvertPhrase(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
@@ -79,6 +99,42 @@ describe('Ghost footnotes showdown extension', function () {
             output: 'foo bar<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> is a very<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup> foo bar<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>\n' +
                     '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p>a metasyntactic variable <a href="#fnref:1" title="return to article">↩</a></p></li>\n' +
                     '<li class="footnote" id="fn:2"><p>this is hard to measure <a href="#fnref:2" title="return to article">↩</a></p></li></ol></div>'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside code block', function () {
+        var testPhrase = {
+            input: '<code>[^n]<\/code>',
+            output: '<code>[^n]<\/code>'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside pre block', function () {
+        var testPhrase = {
+            input: '<pre>[^n]<\/pre>',
+            output: '<pre>[^n]<\/pre>'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside single tick', function () {
+        var testPhrase = {
+            input: '`[^n]`',
+            output: '`[^n]`'
+        }, processedMarkup = _ConvertPhrase(testPhrase.input);
+
+        processedMarkup.should.match(testPhrase.output);
+    });
+
+    it('should show markdown inside triple tick', function () {
+        var testPhrase = {
+            input: '```[^n]```',
+            output: '```[^n]```'
         }, processedMarkup = _ConvertPhrase(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);

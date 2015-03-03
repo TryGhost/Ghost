@@ -15,7 +15,7 @@ utils = {
      * @param {String} docName
      * @returns {Promise(Object)} resolves to the original object if it checks out
      */
-    checkObject: function (object, docName) {
+    checkObject: function (object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
             return errors.logAndRejectError(new errors.BadRequestError('No root key (\'' + docName + '\') provided.'));
         }
@@ -28,9 +28,14 @@ utils = {
                 delete object.posts[0].author;
             }
         }
+
+        if (editId && object[docName][0].id && parseInt(editId, 10) !== parseInt(object[docName][0].id, 10)) {
+            return errors.logAndRejectError(new errors.BadRequestError('Invalid id provided.'));
+        }
+
         return Promise.resolve(object);
     },
-    checkFileExists: function (options, filename)  {
+    checkFileExists: function (options, filename) {
         return options[filename] && options[filename].type && options[filename].path;
     },
     checkFileIsValid: function (file, types, extensions) {
