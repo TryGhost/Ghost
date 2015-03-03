@@ -28,6 +28,7 @@ tags = function (options) {
         if (autolink) {
             return _.map(tags, function (tag) {
                 return utils.linkTemplate({
+					lclass: 'tag-link',
                     url: config.urlFor('tag', {tag: tag}),
                     text: _.escape(tag.name)
                 });

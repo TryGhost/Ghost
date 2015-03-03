@@ -21,7 +21,7 @@ describe('{{author}} helper', function () {
         var data = {author: {name: 'abc 123', slug: 'abc123', bio: '', website: '', status: '', location: ''}},
             result = helpers.author.call(data, {hash: {}});
 
-        String(result).should.equal('<a href="/author/abc123/">abc 123</a>');
+        String(result).should.equal('<a class="author-link" href="/author/abc123/">abc 123</a>');
     });
 
     it('Returns the full name of the author from the context if no autolink', function () {
