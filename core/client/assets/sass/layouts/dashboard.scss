@@ -1,0 +1,160 @@
+// ------------------------------------------------------------
+// Dashboard
+//
+// Layout Styles for the Ghost Dashboard
+//
+// * Wrappers
+// * Widget Item
+// * Widget Sizes
+// ------------------------------------------------------------
+
+
+//
+// Wrappers
+// --------------------------------------------------
+
+.dashboard-widgets {
+    padding: 5px;
+}
+
+.widget-frame {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+
+//
+// Widget Item
+// --------------------------------------------------
+
+.sortable-placeholder,
+.widget-wrapper {
+    padding: 5px;
+}
+
+.widget-item {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid $midgrey;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.widget-header {
+    padding: 0 10px;
+    height: 40px;
+    background: rgba(0,0,0,0.1);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    cursor: move;
+}
+
+// Invisible drag handler header
+.widget-header-phantom {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 40px;
+
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.1) 25%, transparent 100%);
+    background-repeat: no-repeat;
+    background-position: 0 -40px;
+    transition: background-position 0.2s linear;
+
+    cursor: move;
+
+    &:hover {
+        background-position: 0 0;
+    }
+}
+
+.widget-main {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    flex-direction: column;
+    margin: 0 10px;
+
+    &.widget-has-line-graph {
+        margin: 10px 0 0 0;
+    }
+    &.widget-has-pie-chart {
+        margin: 20px;
+    }
+    &.widget-has-bar-graph {
+        margin: 10px 10px 0 10px;
+    }
+
+    h1 {
+        font-weight: 300;
+    }
+}
+
+.widget-toolbar {
+    padding: 0 10px;
+    height: 40px;
+    background: rgba(0,0,0,0.1);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sortable-placeholder {
+    border: 1px dashed blue;
+    background: none;
+}
+
+
+//
+// Widget Sizes
+// --------------------------------------------------
+
+@media (max-width: 400px) {
+    .sortable-placeholder,
+    .widget-wrapper {
+        width: 100%;
+        min-height: 100px;
+    }
+}
+
+@media (min-width: 401px) and (max-width: 700px) {
+    .sortable-placeholder,
+    .widget-wrapper {
+        width: 50%;
+        height: 220px;
+    }
+}
+
+@media (min-width: 701px) and (max-width: 1000px) {
+    .sortable-placeholder,
+    .widget-wrapper {
+        width: 33.33%;
+        height: 250px;
+    }
+}
+
+@media (min-width: 1001px) and (max-width: 1300px) {
+    .sortable-placeholder,
+    .widget-wrapper {
+        width: 25%;
+        height: 270px;
+    }
+}
+
+@media (min-width: 1301px) {
+    .sortable-placeholder,
+    .widget-wrapper {
+        width: 20%;
+        height: 300px;
+    }
+}
