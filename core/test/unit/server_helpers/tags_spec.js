@@ -107,6 +107,6 @@ describe('{{tags}} helper', function () {
             );
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>');
+        String(rendered).should.equal('<a class="tag-link" href="/tag/foo-bar/">foo</a>, <a class="tag-link" href="/tag/bar/">bar</a>');
     });
 });
