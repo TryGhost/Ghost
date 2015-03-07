@@ -105,7 +105,7 @@
         margin: 0;
         border: none;
 
-        @include icon($i-close, 1.4rem, $midgrey) {
+        @include icon('close', 1.4rem, $midgrey) {
             transition: color 0.3s linear;
         };
 
