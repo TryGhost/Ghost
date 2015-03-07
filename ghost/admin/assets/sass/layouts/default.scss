@@ -142,7 +142,7 @@
 
 // The burger to expand .global-nav menu
 .menu-button {
-    @include icon($i-menu, 18px) {
+    @include icon('menu', 18px) {
         position: absolute;
         top: 50%;
         left: 12px;

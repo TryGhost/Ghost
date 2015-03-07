@@ -38,7 +38,7 @@
     }
 
     .media {
-        @include icon($i-image, 60px, darken($lightbrown, 3%)) {
+        @include icon('image', 60px, darken($lightbrown, 3%)) {
             display: inline-block;
             vertical-align: initial;
             transition: transform 1s ease;
@@ -63,15 +63,15 @@
     }
 
     .image-webcam {
-        @include icon($i-camera, 12px);
+        @include icon('camera', 12px);
     }
 
     .image-url {
-        @include icon($i-link, 12px);
+        @include icon('link', 12px);
     }
 
     .image-upload {
-        @include icon($i-image, 12px);
+        @include icon('image', 12px);
     }
 
     .btn-green {
@@ -194,7 +194,7 @@
     }
 
     .image-cancel {
-        @include icon($i-trash, 11px);
+        @include icon('trash', 11px);
         position: absolute;
         top: 10px;
         right: 10px;
