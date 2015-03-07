@@ -28,9 +28,9 @@
         </fieldset>
 
         <div class="form-group">
-            <label for="blog-logo">Blog Logo</label>
+            <label>Blog Logo</label>
             {{#if model.logo}}
-                <button type="button" class="js-modal-logo" {{action "openModal" "upload" this "logo"}}><img id="blog-logo" {{bind-attr src=model.logo}} alt="logo"></button>
+                <img class="blog-logo" {{bind-attr src=model.logo}} alt="logo" role="button" {{action "openModal" "upload" this "logo"}}>
             {{else}}
                 <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
             {{/if}}
@@ -38,9 +38,9 @@
         </div>
 
         <div class="form-group">
-            <label for="blog-cover">Blog Cover</label>
+            <label>Blog Cover</label>
             {{#if model.cover}}
-                <button type="button" class="js-modal-cover" {{action "openModal" "upload" this "cover"}}><img id="blog-cover" {{bind-attr src=model.cover}} alt="cover photo"></button>
+                <img class="blog-cover" {{bind-attr src=model.cover}} alt="cover photo" role="button" {{action "openModal" "upload" this "cover"}}>
             {{else}}
                 <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
             {{/if}}
