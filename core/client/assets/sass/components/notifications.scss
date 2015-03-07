@@ -37,7 +37,7 @@
 // --------------------------------------------------
 
 %notification {
-    @include icon($i-notification) {
+    @include icon('notification') {
         position: absolute;
         top: 0;
         left: 0;
@@ -78,7 +78,7 @@
         bottom: 0;
         width: 34px;
         color: rgba(255,255,255,0.6);
-        @include icon-after($i-close) {
+        @include icon-after('close') {
             padding: 10px;
             position: absolute;
             top: 4px;
@@ -103,7 +103,7 @@
 
 .notification-success {
     @extend %notification;
-    @include icon($i-success);
+    @include icon('success');
     background: $green;
 
     &.notification-passive {
@@ -120,19 +120,19 @@
 
 .notification-error {
     @extend %notification;
-    @include icon($i-error);
+    @include icon('error');
     background: $red;
 }
 
 .notification-warn {
     @extend %notification;
-    @include icon($i-info);
+    @include icon('info');
     background: $orange;
 }
 
 .notification-info {
     @extend %notification;
-    @include icon($i-info);
+    @include icon('info');
     background: $blue;
 }
 

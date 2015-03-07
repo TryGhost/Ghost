@@ -12,6 +12,7 @@
 // * The Icon (before) Mixin
 // * The Icon (after) Mixin
 // * Icon Variables
+// * Icon Getter Function
 // * Icon Class Styles
 // * Icon Classes
 // * Div-based Icon Classes
@@ -57,7 +58,7 @@
     &:before {
         @extend %icon-base;
 
-        content: '#{$char}';
+        content: iconvar($char, 'string');
         @if $size != '' {
             font-size: $size;
         }
@@ -80,7 +81,7 @@
     &:after {
         @extend %icon-base;
 
-        content: '#{$char}';
+        content: iconvar($char, 'string');
         @if $size != '' {
             font-size: $size;
         }
@@ -104,77 +105,93 @@
 // read them out loud.
 //
 
-// Placeholder
-$i:                 \e018;
+$icons: (
+    default:         \e018,
+    add:             \e032,
+    app:             \e00b,
+    appearance:      \e021,
+    archive:         \e01f,
+    atom:            \e601,
+    calendar:        \e01e,
+    camera:          \e036,
+    check:           \e033,
+    chevron-down:    \e001,
+    chevron-left:    \e11d,
+    chevron:         \e01d,
+    clock:           \e028,
+    close:           \e01c,
+    code:            \e03e,
+    comments:        \e01b,
+    compass:         \e602,
+    content:         \e02d,
+    edit:            \e00f,
+    error:           \e01a,
+    external:        \e019,
+    featured:        \e026,
+    fullscreen:      \e017,
+    ghost-logo:      \e600,
+    ghost:           \e000,
+    grid:            \e016,
+    home:            \e015,
+    image:           \e011,
+    info:            \e014,
+    lightning:       \e03d,
+    link:            \e035,
+    list:            \e013,
+    lock:            \e02c,
+    mail:            \e012,
+    menu:            \e005,
+    mobile:          \e010,
+    notification:    \e031,
+    pacman:          \e00e,
+    pc:              \e00d,
+    pin:             \e00c,
+    power:           \e02b,
+    preview:         \e00a,
+    question:        \e018,
+    reply:           \e024,
+    repost:          \e037,
+    rss:             \e009,
+    search-left:     \e008,
+    search:          \e007,
+    services:        \e020,
+    settings:        \e006,
+    settings2:       \e029,
+    stats:           \e025,
+    success:         \e030,
+    support:         \e02f,
+    tablet:          \e004,
+    tag:             \e003,
+    trash:           \e023,
+    unfeatured:      \e027,
+    user:            \e02e,
+    users:           \e002,
+    video:           \e022,
+    weather-cloudy:  \e03c,
+    weather-partial: \e03a,
+    weather-rain:    \e038,
+    weather-snow:    \e03b,
+    weather-sun:     \e039,
+    x:               \e034
+);
 
-// Icons
-$i-ghost:           \e000;
-$i-ghost-logo:      \e600;
-$i-chevron-down:    \e001;
-$i-users:           \e002;
-$i-tag:             \e003;
-$i-tablet:          \e004;
-$i-menu:            \e005;
-$i-settings:        \e006;
-$i-search:          \e007;
-$i-search-left:     \e008;
-$i-rss:             \e009;
-$i-preview:         \e00a;
-$i-app:             \e00b;
-$i-pin:             \e00c;
-$i-pc:              \e00d;
-$i-pacman:          \e00e;
-$i-edit:            \e00f;
-$i-mobile:          \e010;
-$i-image:           \e011;
-$i-mail:            \e012;
-$i-list:            \e013;
-$i-info:            \e014;
-$i-home:            \e015;
-$i-grid:            \e016;
-$i-fullscreen:      \e017;
-$i-question:        \e018;
-$i-external:        \e019;
-$i-error:           \e01a;
-$i-comments:        \e01b;
-$i-close:           \e01c;
-$i-chevron:         \e01d;
-$i-chevron-left:    \e11d;
-$i-calendar:        \e01e;
-$i-archive:         \e01f;
-$i-services:        \e020;
-$i-appearance:      \e021;
-$i-video:           \e022;
-$i-trash:           \e023;
-$i-reply:           \e024;
-$i-stats:           \e025;
-$i-featured:        \e026;
-$i-unfeatured:      \e027;
-$i-clock:           \e028;
-$i-settings2:       \e029;
-$i-camera:          \e02a;
-$i-power:           \e02b;
-$i-lock:            \e02c;
-$i-content:         \e02d;
-$i-user:            \e02e;
-$i-support:         \e02f;
-$i-success:         \e030;
-$i-notification:    \e031;
-$i-add:             \e032;
-$i-check:           \e033;
-$i-x:               \e034;
-$i-link:            \e035;
-$i-camera:          \e036;
-$i-repost:          \e037;
-$i-weather-rain:    \e038;
-$i-weather-sun:     \e039;
-$i-weather-partial: \e03a;
-$i-weather-snow:    \e03b;
-$i-weather-cloudy:  \e03c;
-$i-lightning:       \e03d;
-$i-code:            \e03e;
-$i-atom:            \e601;
-$i-compass:         \e602;
+
+//
+// Icon Getter Function
+// --------------------------------------------------
+// Take the icon name, find it in the $icons map and
+// either return the unicode itself or as a string
+//
+
+@function iconvar($name, $type: 'value'){
+    $unicode: map-get($icons, $name);
+    @if ($type == 'string') {
+        $icon: '#{$unicode}';
+    } @else {
+        $icon: $unicode;
+    }
+    @return $icon;
+}
 
 
 //
@@ -196,206 +213,10 @@ $i-compass:         \e602;
 // Icon Classes
 // --------------------------------------------------
 
-.icon-ghost:before {
-    content: '#{$i-ghost}';
-}
-.icon-ghost-logo:before {
-    content: '#{$i-ghost-logo}';
-}
-.icon-chevron-down:before {
-    content: '#{$i-chevron-down}';
-}
-.icon-users:before {
-    content: '#{$i-users}';
-}
-.icon-tag:before {
-    content: '#{$i-tag}';
-}
-.icon-tablet:before {
-    content: '#{$i-tablet}';
-}
-.icon-menu:before {
-    content: '#{$i-menu}';
-}
-.icon-settings:before {
-    content: '#{$i-settings}';
-}
-.icon-search:before {
-    content: '#{$i-search}';
-}
-.icon-search-left:before {
-    content: '#{$i-search-left}';
-}
-.icon-rss:before {
-    content: '#{$i-rss}';
-}
-.icon-preview:before {
-    content: '#{$i-preview}';
-}
-.icon-app:before {
-    content: '#{$i-app}';
-}
-.icon-pin:before {
-    content: '#{$i-pin}';
-}
-.icon-pc:before {
-    content: '#{$i-pc}';
-}
-.icon-pacman:before {
-    content: '#{$i-pacman}';
-}
-.icon-edit:before {
-    content: '#{$i-edit}';
-}
-.icon-mobile:before {
-    content: '#{$i-mobile}';
-}
-.icon-image:before {
-    content: '#{$i-image}';
-}
-.icon-mail:before {
-    content: '#{$i-mail}';
-}
-.icon-list:before {
-    content: '#{$i-list}';
-}
-.icon-info:before {
-    content: '#{$i-info}';
-}
-.icon-home:before {
-    content: '#{$i-home}';
-}
-.icon-grid:before {
-    content: '#{$i-grid}';
-}
-.icon-fullscreen:before {
-    content: '#{$i-fullscreen}';
-}
-.icon-question:before {
-    content: '#{$i-question}';
-}
-.icon-external:before {
-    content: '#{$i-external}';
-}
-.icon-error:before {
-    content: '#{$i-error}';
-}
-.icon-comments:before {
-    content: '#{$i-comments}';
-}
-.icon-close:before {
-    content: '#{$i-close}';
-}
-.icon-chevron:before {
-    content: '#{$i-chevron}';
-}
-.icon-chevron-left:before {
-    content: '#{$i-chevron-left}';
-}
-.icon-calendar:before {
-    content: '#{$i-calendar}';
-}
-.icon-archive:before {
-    content: '#{$i-archive}';
-}
-.icon-services:before {
-    content: '#{$i-services}';
-}
-.icon-appearance:before {
-    content: '#{$i-appearance}';
-}
-.icon-video:before {
-    content: '#{$i-video}';
-}
-.icon-trash:before {
-    content: '#{$i-trash}';
-}
-.icon-reply:before {
-    content: '#{$i-reply}';
-}
-.icon-stats:before {
-    content: '#{$i-stats}';
-}
-.icon-featured:before {
-    content: '#{$i-featured}';
-}
-.icon-unfeatured:before {
-    content: '#{$i-unfeatured}';
-}
-.icon-clock:before {
-    content: '#{$i-clock}';
-}
-.icon-settings2:before {
-    content: '#{$i-settings2}';
-}
-.icon-camera:before {
-    content: '#{$i-camera}';
-}
-.icon-power:before {
-    content: '#{$i-power}';
-}
-.icon-lock:before {
-    content: '#{$i-lock}';
-}
-.icon-content:before {
-    content: '#{$i-content}';
-}
-.icon-user:before {
-    content: '#{$i-user}';
-}
-.icon-support:before {
-    content: '#{$i-support}';
-}
-.icon-success:before {
-    content: '#{$i-success}';
-}
-.icon-notification:before {
-    content: '#{$i-notification}';
-}
-.icon-add:before {
-    content: '#{$i-add}';
-}
-.icon-check:before {
-    content: '#{$i-check}';
-}
-.icon-x:before {
-    content: '#{$i-x}';
-}
-.icon-link:before {
-    content: '#{$i-link}';
-}
-.icon-camera:before {
-    content: '#{$i-camera}';
-}
-.icon-repost:before {
-    content: '#{$i-repost}';
-}
-.icon-weather-rain:before {
-    content: '#{$i-weather-rain}';
-}
-.icon-weather-sun:before {
-    content: '#{$i-weather-sun}';
-}
-.icon-weather-partial:before {
-    content: '#{$i-weather-partial}';
-}
-.icon-weather-snow:before {
-    content: '#{$i-weather-snow}';
-}
-.icon-weather-cloudy:before {
-    content: '#{$i-weather-cloudy}';
-}
-.icon-lightning:before {
-    content: '#{$i-lightning}';
-}
-.icon-code:before {
-    content: '#{$i-code}';
-}
-.icon-atom:before {
-    content: '#{$i-atom}';
-}
-.icon-compass:before {
-    content: '#{$i-compass}';
+@each $key, $content in $icons {
+    .icon-#{$key}:before {
+        content: '#{$content}';
+    }
 }
 
 
