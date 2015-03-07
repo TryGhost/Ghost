@@ -2,6 +2,8 @@ import DropdownMixin from 'ghost/mixins/dropdown-mixin';
 
 var DropdownButton = Ember.Component.extend(DropdownMixin, {
     tagName: 'button',
+    attributeBindings: 'role',
+    role: 'button',
 
     // matches with the dropdown this button toggles
     dropdownName: null,
