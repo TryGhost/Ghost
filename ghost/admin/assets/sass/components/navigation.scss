@@ -34,6 +34,10 @@
     body.settings-menu-expanded & {
         transform: translate3d(-350px, 0px, 0px);
     }
+
+    ::selection {
+        background: none;
+    }
 }
 
 
@@ -102,6 +106,58 @@
     }
 }
 
+//
+// Help Menu
+// --------------------------------------------------
+
+.help-menu {
+    padding-right: 0;
+    float: right;
+    cursor: pointer;
+
+    .nav-label {
+        margin: 0;
+        padding: 0 6px 0 12px;
+        background: none !important;
+    }
+}
+
+.help-button {
+    height: 30px;
+    width: 30px;
+    border: $midgrey 1px solid;
+    margin-top: 15px;
+    text-align: center;
+    font-size: 1.6rem;
+    line-height: 30px;
+    border-radius: 100%;
+    transition: border 0.5s;
+}
+
+.help-menu:hover {
+    .help-button {
+        border: $lightgrey 1px solid;
+        transition: border 0.3s;
+    }
+}
+
+.help-menu .dropdown {
+    right: 77px;
+    left: auto;
+
+    .dropdown-menu {
+        min-width: 200px;
+    }
+
+    &.fade-in-scale {
+        animation-duration: 0.1s;
+    }
+
+    &.fade-out {
+        animation-duration: 0.01s;
+    }
+}
+
 
 //
 // User Menu
@@ -109,9 +165,7 @@
 
 // Right hand dropdown
 .user-menu {
-    position: absolute;
-    top: 0;
-    right: 0;
+    float: right;
     padding: 0;
     margin: 0;
     cursor: pointer;
@@ -127,7 +181,7 @@
     .image {
         @include circular-image(30px) {
             float: left;
-            margin: 15px 14px 0 0;
+            margin: 15px 10px 0 0;
         }
     }
 
@@ -176,6 +230,7 @@
         }
 
         .dropdown-menu {
+            min-width: 180px;
             position: absolute;
             top: 0;
             right: 0;
@@ -252,6 +307,10 @@
         span {
             display: inline;
         }
+    }
+
+    .help-menu {
+        display: none;
     }
 
     // Drop it to the bottom of the menu
