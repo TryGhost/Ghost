@@ -1,11 +1,33 @@
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
+    isProduction = EmberApp.env() === 'production',
+    disabled = {enabled: false},
+    assetLocation,
+    app;
 
-    app = new EmberApp({
-        hinting: false,
-        sourcemaps: {enabled: false} // see https://github.com/ember-cli/ember-cli/issues/2912
-    });
+assetLocation = function (fileName) {
+    if (isProduction) {
+        fileName = fileName.replace('.', '.min.');
+    }
+    return '/assets/' + fileName;
+};
+
+app = new EmberApp({
+    outputPaths: {
+        app: {
+            js: assetLocation('ghost.js')
+//          css: see config/environment.js (sassOptions)
+        },
+        vendor: {
+            js:  assetLocation('vendor.js'),
+            css: assetLocation('vendor.css')
+        }
+    },
+    hinting: false,
+    fingerprint: disabled,
+    sourcemaps: disabled // see https://github.com/ember-cli/ember-cli/issues/2912
+});
 
 app.import('bower_components/loader.js/loader.js');
 app.import('bower_components/jquery/dist/jquery.js');

@@ -94,7 +94,7 @@ describe('Config', function () {
                 'lang',
                 'availableThemes',
                 'availableApps',
-                'builtScriptPath'
+                'clientAssets'
             );
         });
 
