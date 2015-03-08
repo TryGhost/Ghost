@@ -41,6 +41,9 @@ module.exports = function (environment) {
     }
 
     if (environment === 'production') {
+        ENV.sassOptions = {
+            outputFile: 'ghost.min.css'
+        };
     }
 
     return ENV;
