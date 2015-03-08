@@ -243,7 +243,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use(configHbsForContext);
 
     // Admin only config
-    blogApp.use('/ghost', express['static'](path.join(corePath, '/client/dist/assets'), {maxAge: utils.ONE_YEAR_MS}));
+    blogApp.use('/ghost', express['static'](config.paths.clientAssets, {maxAge: utils.ONE_YEAR_MS}));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,

@@ -88,10 +88,6 @@
         "grunt-express-server": "~0.4.19",
         "grunt-jscs": "~1.2.0",
         "grunt-mocha-cli": "~1.11.0",
-<<<<<<< HEAD
-        "grunt-sass": "~0.18.0",
-=======
->>>>>>> grunt init, dev
         "grunt-shell": "~1.1.1",
         "grunt-update-submodules": "~0.4.1",
         "matchdep": "~0.3.0",

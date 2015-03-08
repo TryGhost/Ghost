@@ -31,6 +31,9 @@ var _              = require('lodash'),
                 return pattern.substr(1);
             }
             return '!' + pattern;
+        }).filter(function (pattern) {
+            // Remove empty patterns
+            return pattern !== '!';
         });
     }()),
 
@@ -855,7 +858,7 @@ var _              = require('lodash'),
         // `bower` does have some quirks, such as not running as root. If you have problems please try running
         // `grunt init --verbose` to see if there are any errors.
         grunt.registerTask('init', 'Prepare the project for development',
-            ['shell:ember:init', 'shell:bower', 'update_submodules', 'default']);
+            ['shell:ember:init', 'shell:bower', 'update_submodules', 'assets', 'default']);
 
         // ### Basic Asset Building
         // Builds and moves necessary client assets. Prod additionally builds the ember app.
@@ -867,14 +870,14 @@ var _              = require('lodash'),
         //
         // Build assets and dev version of the admin app.
         grunt.registerTask('default', 'Build JS & templates for development',
-            ['assets', 'shell:ember:dev']);
+            ['shell:ember:dev']);
 
         // ### Production assets
         // `grunt prod` - will build the minified assets used in production.
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['assets', 'shell:ember:prod', 'uglify:prod', 'master-warn']);
+            ['shell:ember:prod', 'uglify:prod', 'master-warn']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -888,7 +891,7 @@ var _              = require('lodash'),
         //
         // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
-           ['assets', 'bgShell:ember', 'express:dev', 'watch']);
+           ['bgShell:ember', 'express:dev', 'watch']);
 
         // ### Release
         // Run `grunt release` to create a Ghost release zip file.
@@ -901,7 +904,7 @@ var _              = require('lodash'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['init', 'assets', 'shell:ember:prod', 'uglify:release', 'clean:release', 'copy:release', 'shell:shrinkwrap', 'compress:release']);
+            ['init', 'shell:ember:prod', 'uglify:release', 'clean:release', 'copy:release', 'shell:shrinkwrap', 'compress:release']);
     };
 
 // Export the configuration
