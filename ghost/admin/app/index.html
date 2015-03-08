@@ -39,15 +39,15 @@
         <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,700" />
     {{/unless}}
 
-    <link rel="stylesheet" href="{{asset "vendor.css" ghost="true"}}" />
-    <link rel="stylesheet" href="{{asset "ghost.css" ghost="true"}}" />
+    <link rel="stylesheet" href="{{asset "vendor.css" ghost="true" minifyInProduction="true"}}" />
+    <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
     {{content-for 'head-footer'}}
 </head>
 <body>
     {{content-for 'body'}}
 
-    <script src="{{asset "vendor.js" ghost="true"}}"></script>
-    <script src="{{asset "ghost.js" ghost="true"}}"></script>
+    <script src="{{asset "vendor.js" ghost="true" minifyInProduction="true"}}"></script>
+    <script src="{{asset "ghost.js" ghost="true" minifyInProduction="true"}}"></script>
 
     {{content-for 'body-footer'}}
 
