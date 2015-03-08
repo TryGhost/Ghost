@@ -2,7 +2,7 @@
     {{#link-to "posts" tagName="button" class="btn btn-default btn-back"}}Back{{/link-to}}
     <h2 class="page-title">Preview</h2>
     <button type="button" {{bind-attr class="model.featured:featured:unfeatured"}} title="Feature this post" {{action "toggleFeatured"}}>
-        <span class="hidden">Star</span>
+        <span class="sr-only">Star</span>
     </button>
     <small class="post-published-by">
         <span class="status">{{#if isPublished}}Published{{else}}Written{{/if}}</span>
