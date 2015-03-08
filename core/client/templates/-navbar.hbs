@@ -1,19 +1,19 @@
 <nav class="global-nav" role="navigation">
 
-    <a class="nav-item ghost-logo" href="{{gh-path 'blog'}}" title="Visit blog">
+    <a class="nav-item ghost-logo" href="{{gh-path 'blog'}}" title="Visit blog" accesskey="b">
         <div class="nav-label"><i class="icon-ghost"></i> <span>Visit blog</span> </div>
     </a>
 
-    {{#link-to "posts" classNames="nav-item nav-content js-nav-item"}}
+    {{#link-to "posts" classNames="nav-item nav-content js-nav-item" accesskey="c"}}
         <div class="nav-label"><i class="icon-content"></i> Content</div>
     {{/link-to}}
 
-    {{#link-to "editor.new" classNames="nav-item nav-new js-nav-item"}}
+    {{#link-to "editor.new" classNames="nav-item nav-new js-nav-item" accesskey="n"}}
         <div class="nav-label"><i class="icon-add"></i> New Post</div>
     {{/link-to}}
 
     {{#unless session.user.isAuthor}}
-    {{#link-to "settings" classNames="nav-item nav-settings js-nav-item"}}
+    {{#link-to "settings" classNames="nav-item nav-settings js-nav-item" accesskey="s"}}
         <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
     {{/link-to}}
     {{/unless}}
