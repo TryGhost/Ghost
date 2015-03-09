@@ -655,7 +655,7 @@ var _              = require('lodash'),
             uglify: {
                 prod: {
                     options: {
-                        sourceMap: true
+                        sourceMap: false
                     },
                     files: {
                         'core/built/public/jquery.min.js': 'core/built/public/jquery.js',
