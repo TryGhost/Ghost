@@ -132,7 +132,7 @@ NavigationController = Ember.Controller.extend({
                     if (url[url.length - 1] !== '/') {
                         url += '/';
                     }
-                } else if (!validator.isURL(url) && url !== '' && url[0] !== '/') {
+                } else if (!validator.isURL(url) && url !== '' && url[0] !== '/' && url.indexOf('mailto:') !== 0) {
                     url = '/' + url;
                 }
 
