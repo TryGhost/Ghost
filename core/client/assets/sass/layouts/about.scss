@@ -42,11 +42,11 @@
     .ghost_logo {
         position: relative;
         left: 3px;
-        @include icon('ghost', 1.7rem, $midgrey) {
+        @include icon($i-ghost, 1.7rem, $midgrey) {
             position: relative;
             top: -6px;
         };
-        @include icon-after('ghost-logo', 3.2rem, $darkgrey) {
+        @include icon-after($i-ghost-logo, 3.2rem, $darkgrey) {
             position: relative;
             left: -5px;
         };
