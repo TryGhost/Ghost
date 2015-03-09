@@ -105,6 +105,8 @@ Constructed with the following guidelines:
 * A new *patch* release indicates a bugfix or small change which does not affect compatibility.
 * A new *build* release indicates this is a pre-release of the version.
 
+## Changelog
+A list of release highlights is available here: <https://github.com/TryGhost/Ghost/releases>
 
 ## Copyright & License
 
