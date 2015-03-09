@@ -20,7 +20,7 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
     }),
 
     isRelative: Ember.computed('value', function () {
-        return !validator.isURL(this.get('value'));
+        return !validator.isURL(this.get('value')) && this.get('value').indexOf('mailto:') !== 0;
     }),
 
     didInsertElement: function () {
@@ -30,7 +30,7 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
         this.set('value', url);
 
         // if we have a relative url, create the absolute url to be displayed in the input
-        if (this.get('isRelative')) {
+        if (this.get('isRelative') ) {
             url = joinUrlParts(baseUrl, url);
             this.set('value', url);
         }
@@ -80,6 +80,7 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
         var url = this.get('value'),
             baseUrl = this.get('baseUrl');
 
+        // if we have a relative url, create the absolute url to be displayed in the input
         if (this.get('isRelative')) {
             this.set('value', joinUrlParts(baseUrl, url));
         }
