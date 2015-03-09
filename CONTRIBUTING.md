@@ -105,18 +105,22 @@ reported. Especially, why do you consider this to be a bug? What do you expect t
 <a name="features"></a>
 ### Feature Requests
 
-Feature requests are very welcome, and you can also suggest roadmap additions via [the forum](https://ghost.org/forum/bugs-suggestions/17479-ghost-roadmap-got-a-great-idea/). Before you make your suggestion, please:
+If you've got a great idea, we want to hear about it. Our [user wishlist](http://ideas.ghost.org) exists so that we can learn more about what our community wants us to build.
 
-1. Visit the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) & **use the GitHub search** to
+Please use your discretion to decide whether a feature request belongs on the [wishlist](http://ideas.ghost.org) or whether it's better suited to a GitHub issue.
+
+Before making a suggestion, here are a few handy tips on what to consider:
+
+1. Visit the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap), [wishlist](http://ideas.ghost.org) & **use the GitHub search** to
 see if the feature has already been requested
 
-2. Have a quick read through [What makes it into Ghost core?](https://github.com/TryGhost/Ghost/wiki/What-makes-it-into-Ghost-core%3F) and decide whether your idea fits with the scope and aims of the project
+2. Check out [What makes it into Ghost core?](https://github.com/TryGhost/Ghost/wiki/What-makes-it-into-Ghost-core%3F) - this explains the guidelines for what fits into the scope and aims of the project
 
-3. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of this
+3. Have a quick think about whether your feature is for the admin UI, the blog output, themes or apps - or does it affect multiple areas? This can help when describing your idea.
+
+4. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of a new
 feature. Please provide as much detail and context as possible, this means explaining the use case and why it is
-likely to be common.
-
-4. Clearly indicate whether this is a feature request for Ghost admin, or for themes or apps.
+likely to be common. The strongest vote in favour of any feature request is hands-down, un-debatable traction on our user wishlist.
 
 
 <a name="changes"></a>

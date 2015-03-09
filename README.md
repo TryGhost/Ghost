@@ -20,9 +20,12 @@ There are a few different ways to install Ghost, take care to use the method whi
 
 ### Compatibility
 
-Ghost is currently compatible with **Node v0.10.x** only. 
+Ghost is fully compatible with **Node v0.10.x**, 0.10.36 is the recommended version of Node for running Ghost in production.
 
-Support for [v0.12.x](https://github.com/TryGhost/Ghost/issues/4240) and [io.js](https://github.com/TryGhost/Ghost/issues/4811) is a work in progress (click the versions for more info on each). 
+Ghost is also compatible with **Node v0.12** and **io.js-v1.2**. Please note that these versions are more likely to run into installation problems, please use the [support forum](https://ghost.org/forum/installation/) for help with install issues.
+
+Ghost may also be compatible with other io.js versions, providing binaries are available for sqlite3, and for node-sass if you are building Ghost from source rather than using a pre-built zip file.
+
 
 ### Install from zip (fastest & best for bloggers)
 
@@ -30,7 +33,7 @@ If you just want to get a Ghost blog running in the fastest time possible, this 
 
 For detailed instructions on various platforms, visit the [Ghost Installation Guide](http://support.ghost.org/installation/). If you get stuck, help is available on [our support site](http://support.ghost.org/).
 
-1. Install [Node.js](http://nodejs.org) - Ghost requires **Node v0.10.x**
+1. Install [Node.js](http://nodejs.org) - See [compatibility](https://github.com/TryGhost/Ghost#compatibility) section for details of supported versions
 1. Download the latest Ghost package from [Ghost.org](http://ghost.org/download). 
 1. Create a new directory where you would like to run the code, and un-zip the package to that location.
 1. Fire up a Terminal, the Node Command Prompt or shell and change directory to the root of the Ghost application (where config.example.js and index.js are)
@@ -53,6 +56,7 @@ Full instructions & troubleshooting tips can be found in the [Contributing Guide
 
 #### Quickstart:
 
+1. Install node (see [compatibility](https://github.com/TryGhost/Ghost#compatibility) section for details of supported versions)
 1. `npm install -g grunt-cli`
 1. `npm install`
 1. `grunt init` (and `grunt prod` if you want to run Ghost in production mode)
@@ -70,9 +74,11 @@ If you want to build Ghost into a larger node app, or are familiar with using `n
 Further setup instructions can be found in the [using Ghost as an npm module](https://github.com/TryGhost/Ghost/wiki/Using-Ghost-as-an-npm-module) wiki entry.
 
 
-### Upgrading to The Latest Version
+### Keeping up-to-date
 
-Upgrade instructions can be found on the [Ghost Support Site](http://support.ghost.org/how-to-upgrade/)
+Upgrade instructions can be found on the [Ghost Support Site](http://support.ghost.org/how-to-upgrade/).
+
+New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/), which you can subscribe to for notifications of new versions. Each new release is published with highlights and a full changelog, which are also available on the [releases page](https://github.com/TryGhost/Ghost/releases) of GitHub.
 
 
 ### Logging in For The First Time
@@ -88,22 +94,6 @@ Keep track of Ghost development and Ghost community activity.
 * Read and subscribe to the [Official Ghost Blog](http://blog.ghost.org) and the [Ghost Development Blog](http://dev.ghost.org).
 * Join in discussions on the [Ghost Forum](http://ghost.org/forum/)
 * Chat with Ghost developers on IRC. We're on `irc.freenode.net`, in the `#Ghost` channel. We have a public meeting every Tuesday at 5:30pm London time.
-
-
-## Versioning
-
-For transparency and insight into our release cycle, along with striving to maintain backward compatibility, Ghost will be maintained according to the [Semantic Versioning](http://semver.org/) guidelines as much as possible.
-
-Releases will be numbered with the following format:
-
-`<major>.<minor>.<patch>-<build>`
-
-Constructed with the following guidelines:
-
-* A new *major* release indicates a large change where backwards compatibility is broken.
-* A new *minor* release indicates a normal change that maintains backwards compatibility.
-* A new *patch* release indicates a bugfix or small change which does not affect compatibility.
-* A new *build* release indicates this is a pre-release of the version.
 
 
 ## Copyright & License
