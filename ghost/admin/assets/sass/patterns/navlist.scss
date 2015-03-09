@@ -30,7 +30,7 @@
 // --------------------------------------------------
 
 .nav-list-item {
-    @include icon('chevron', 1.4rem, $midbrown) {
+    @include icon($i-chevron, 1.4rem, $midbrown) {
         position: absolute;
         top: 50%;
         right: 10px;

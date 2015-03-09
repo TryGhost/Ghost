@@ -78,7 +78,7 @@
 
             @media (max-width: 900px) {
                 padding-left: 45px;
-                @include icon-after('chevron') {
+                @include icon-after($i-chevron) {
                     float: right;
                     margin-top: 5px;
                 }
