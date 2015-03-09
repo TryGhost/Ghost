@@ -170,7 +170,7 @@ function urlFor(context, data, absolute) {
     }
 
     // This url already has a protocol so is likely an external url to be returned
-    if (urlPath && urlPath.indexOf('://') !== -1) {
+    if (urlPath && (urlPath.indexOf('://') !== -1 || urlPath.indexOf('mailto:') === 0)) {
         return urlPath;
     }
 
