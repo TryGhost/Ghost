@@ -69,7 +69,7 @@
             text-align: center;
             color: #fff;
 
-            @include icon('chevron-down', 9px) {
+            @include icon($i-chevron-down, 9px) {
                 top: 0;
                 display: inline-block;
                 position: relative;
@@ -128,7 +128,7 @@
             rgba(0,0,0,0.02) 0 -1px 0 inset;
         transition: background-color 0.3s linear;
 
-        @include icon('chevron-down', 9px) {
+        @include icon($i-chevron-down, 9px) {
             position: absolute;
             top: 50%;
             right: 50%;
@@ -156,7 +156,7 @@
             will-change: box-shadow, background;
             box-shadow: none;
             background: #f8f8f8;
-            @include icon('chevron-down') {
+            @include icon($i-chevron-down) {
                 will-change: transform;
                 transform: rotate(360deg);
             };
@@ -165,7 +165,7 @@
         // If it has a class of "up" spin it an extra 180degress to point up
         &.up:hover,
         &.up:focus {
-            @include icon('chevron-down') {
+            @include icon($i-chevron-down) {
                 margin-top:-4px;
                 transform: rotate(540deg);
                 transition-property: transform;
