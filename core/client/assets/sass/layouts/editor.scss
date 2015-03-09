@@ -346,12 +346,12 @@
     position: relative;
     top: -3px;
     right: -5px;
-    @include icon('markdown', '16px', lighten($brown, 15%));
+    @include icon($i-markdown, '16px', lighten($brown, 15%));
     float: right;
     padding: 5px;
 
     &:hover {
-        @include icon('markdown', '', $brown);
+        @include icon($i-markdown, '', $brown);
     }
 }
 
@@ -549,7 +549,7 @@ body.zen {
     }
 
     .tag {
-        @include icon-after('x', 10px, #fff) {
+        @include icon-after($i-x, 10px, #fff) {
             margin-left: 1px;
             vertical-align: 10%;
             text-shadow: rgba(255,255,255,0.15) 0 1px 0;
@@ -723,7 +723,7 @@ body.zen {
 }
 
 .post-settings {
-    @include icon('settings', 14px);
+    @include icon($i-settings, 14px);
     display: inline-block;
     padding: 8px 10px;
     color: $midgrey;
