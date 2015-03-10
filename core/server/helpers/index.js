@@ -47,10 +47,15 @@ coreHelpers.helperMissing = function (arg) {
 
 // Register an async handlebars helper for a given handlebars instance
 function registerAsyncHelper(hbs, name, fn) {
-    hbs.registerAsyncHelper(name, function (options, cb) {
-        // Wrap the function passed in with a when.resolve so it can
-        // return either a promise or a value
-        Promise.resolve(fn.call(this, options)).then(function (result) {
+    hbs.registerAsyncHelper(name, function (context, options, cb) {
+        // Handle the case where we only get context and cb
+        if (!cb) {
+            cb = options;
+            options = undefined;
+        }
+
+        // Wrap the function passed in with a when.resolve so it can return either a promise or a value
+        Promise.resolve(fn.call(this, context, options)).then(function (result) {
             cb(result);
         }).catch(function (err) {
             errors.logAndThrowError(err, 'registerAsyncThemeHelper: ' + name);
