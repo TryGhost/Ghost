@@ -52,7 +52,12 @@ function activateTheme(activeTheme) {
     blogApp.cache = {};
 
     // set view engine
-    hbsOptions = {partialsDir: [config.paths.helperTemplates]};
+    hbsOptions = {
+        partialsDir: [config.paths.helperTemplates],
+        onCompile: function (exhbs, source) {
+            return exhbs.handlebars.compile(source, {preventIndent: true});
+        }
+    };
 
     fs.stat(themePartials, function (err, stats) {
         // Check that the theme has a partials directory before trying to use it

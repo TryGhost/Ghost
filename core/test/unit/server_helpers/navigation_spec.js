@@ -18,7 +18,10 @@ describe('{{navigation}} helper', function () {
 
     before(function (done) {
         utils.loadHelpers();
-        hbs.express3({partialsDir: [utils.config.paths.helperTemplates]});
+        hbs.express3({
+            partialsDir: [utils.config.paths.helperTemplates]
+        });
+
         hbs.cachePartials(function () {
             done();
         });
