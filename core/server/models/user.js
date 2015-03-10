@@ -615,7 +615,7 @@ User = ghostBookshelf.Model.extend({
             level = 1;
         } else {
             level = parseInt(status.match(regexp)[1], 10) + 1;
-            if (level > 3) {
+            if (level > 4) {
                 user.set('status', 'locked');
             } else {
                 user.set('status', 'warn-' + level);
@@ -644,7 +644,7 @@ User = ghostBookshelf.Model.extend({
                     if (!matched) {
                         return Promise.resolve(self.setWarning(user, {validate: false})).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
-                            return Promise.reject(new errors.UnauthorizedError('Your password is incorrect.<br>' +
+                            return Promise.reject(new errors.UnauthorizedError('Your password is incorrect. <br />' +
                                 remaining + ' attempt' + s + ' remaining!'));
 
                             // Use comma structure, not .catch, because we don't want to catch incorrect passwords

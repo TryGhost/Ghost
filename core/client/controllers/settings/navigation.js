@@ -100,11 +100,13 @@ NavigationController = Ember.Controller.extend({
                 blogUrl = this.get('config').blogUrl,
                 blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
                 navItems = this.get('navigationItems'),
+                message = 'One of your navigation items has an empty label. ' +
+                    '<br /> Please enter a new label or delete the item before saving.',
                 match;
 
             // Don't save if there's a blank label.
             if (navItems.find(function (item) { return !item.get('isComplete') && !item.get('last');})) {
-                self.notifications.showErrors(['One of your navigation items has an empty label.<br>Please enter a new label or delete the item before saving.']);
+                self.notifications.showErrors([message.htmlSafe()]);
                 return;
             }
 
@@ -126,11 +128,12 @@ NavigationController = Ember.Controller.extend({
                     url = match[1];
 
                     // if the last char is not a slash, then add one,
+                    // as long as there is no # or . in the URL (anchor or file extension)
                     // this also handles the empty case for the homepage
-                    if (url[url.length - 1] !== '/') {
+                    if (url[url.length - 1] !== '/' && url.indexOf('#') === -1 && url.indexOf('.') === -1) {
                         url += '/';
                     }
-                } else if (!validator.isURL(url) && url !== '' && url[0] !== '/') {
+                } else if (!validator.isURL(url) && url !== '' && url[0] !== '/' && url.indexOf('mailto:') !== 0) {
                     url = '/' + url;
                 }
 

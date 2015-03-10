@@ -40,7 +40,7 @@
     font-family: "GhostIcons";
     font-weight: normal;
     font-style: normal;
-    vertical-align: -7%;
+    vertical-align: -3%;
     text-transform:none;
     speak: none;
     line-height: 1;
@@ -104,77 +104,76 @@
 // read them out loud.
 //
 
-// Placeholder
-$i:                 \e018;
 
-// Icons
-$i-ghost:           \e000;
-$i-ghost-logo:      \e600;
-$i-chevron-down:    \e001;
-$i-users:           \e002;
-$i-tag:             \e003;
-$i-tablet:          \e004;
-$i-menu:            \e005;
-$i-settings:        \e006;
-$i-search:          \e007;
-$i-search-left:     \e008;
-$i-rss:             \e009;
-$i-preview:         \e00a;
-$i-app:             \e00b;
-$i-pin:             \e00c;
-$i-pc:              \e00d;
-$i-pacman:          \e00e;
-$i-edit:            \e00f;
-$i-mobile:          \e010;
-$i-image:           \e011;
-$i-mail:            \e012;
-$i-list:            \e013;
-$i-info:            \e014;
-$i-home:            \e015;
-$i-grid:            \e016;
-$i-fullscreen:      \e017;
-$i-question:        \e018;
-$i-external:        \e019;
-$i-error:           \e01a;
-$i-comments:        \e01b;
-$i-close:           \e01c;
-$i-chevron:         \e01d;
-$i-chevron-left:    \e11d;
-$i-calendar:        \e01e;
-$i-archive:         \e01f;
-$i-services:        \e020;
-$i-appearance:      \e021;
-$i-video:           \e022;
-$i-trash:           \e023;
-$i-reply:           \e024;
-$i-stats:           \e025;
-$i-featured:        \e026;
-$i-unfeatured:      \e027;
-$i-clock:           \e028;
-$i-settings2:       \e029;
-$i-camera:          \e02a;
-$i-power:           \e02b;
-$i-lock:            \e02c;
-$i-content:         \e02d;
-$i-user:            \e02e;
-$i-support:         \e02f;
-$i-success:         \e030;
-$i-notification:    \e031;
-$i-add:             \e032;
-$i-check:           \e033;
-$i-x:               \e034;
-$i-link:            \e035;
-$i-camera:          \e036;
-$i-repost:          \e037;
-$i-weather-rain:    \e038;
-$i-weather-sun:     \e039;
-$i-weather-partial: \e03a;
-$i-weather-snow:    \e03b;
-$i-weather-cloudy:  \e03c;
-$i-lightning:       \e03d;
-$i-code:            \e03e;
-$i-atom:            \e601;
-$i-compass:         \e602;
+$i-add:                 \f632;
+$i-app:                 \f60b;
+$i-appearance:          \f621;
+$i-archive:             \f61f;
+$i-atom:                \f63e;
+$i-book:                \f642;
+$i-calendar:            \f61e;
+$i-camera:              \f62a;
+$i-check:               \f633;
+$i-chevron-down:        \f601;
+$i-chevron-left:        \f643;
+$i-chevron:             \f61d;
+$i-clock:               \f628;
+$i-close:               \f61c;
+$i-code:                \f63d;
+$i-comments:            \f61b;
+$i-compass:             \f63f;
+$i-content:             \f62d;
+$i-edit:                \f60f;
+$i-error:               \f61a;
+$i-external:            \f619;
+$i-featured:            \f626;
+$i-fullscreen:          \f617;
+$i-ghost-logo:          \f644;
+$i-ghost:               \f600;
+$i-grid:                \f616;
+$i-home:                \f615;
+$i-image:               \f611;
+$i-info:                \f614;
+$i-lightning:           \f63c;
+$i-link:                \f635;
+$i-list:                \f613;
+$i-lock:                \f62c;
+$i-mail:                \f612;
+$i-markdown:            \f640;
+$i-menu:                \f605;
+$i-mobile:              \f610;
+$i-notification:        \f631;
+$i-pacman:              \f60e;
+$i-pc:                  \f60d;
+$i-pin:                 \f60c;
+$i-power:               \f62b;
+$i-preview:             \f60a;
+$i-question:            \f618;
+$i-reply:               \f624;
+$i-repost:              \f636;
+$i-rss:                 \f609;
+$i-search-left:         \f608;
+$i-search:              \f607;
+$i-services:            \f620;
+$i-settings:            \f606;
+$i-settings2:           \f629;
+$i-stats:               \f625;
+$i-success:             \f630;
+$i-support:             \f62f;
+$i-tablet:              \f604;
+$i-tag:                 \f603;
+$i-trash:               \f623;
+$i-twitter:             \f641;
+$i-unfeatured:          \f627;
+$i-user:                \f62e;
+$i-users:               \f602;
+$i-video:               \f622;
+$i-weather-cloudy:      \f63b;
+$i-weather-partial:     \f639;
+$i-weather-rain:        \f637;
+$i-weather-snow:        \f63a;
+$i-weather-sun:         \f638;
+$i-x:                   \f634;
 
 
 //
@@ -196,206 +195,222 @@ $i-compass:         \e602;
 // Icon Classes
 // --------------------------------------------------
 
-.icon-ghost:before {
-    content: '#{$i-ghost}';
-}
-.icon-ghost-logo:before {
-    content: '#{$i-ghost-logo}';
-}
-.icon-chevron-down:before {
-    content: '#{$i-chevron-down}';
-}
-.icon-users:before {
-    content: '#{$i-users}';
-}
-.icon-tag:before {
-    content: '#{$i-tag}';
-}
-.icon-tablet:before {
-    content: '#{$i-tablet}';
-}
-.icon-menu:before {
-    content: '#{$i-menu}';
-}
-.icon-settings:before {
-    content: '#{$i-settings}';
-}
-.icon-search:before {
-    content: '#{$i-search}';
-}
-.icon-search-left:before {
-    content: '#{$i-search-left}';
-}
-.icon-rss:before {
-    content: '#{$i-rss}';
-}
-.icon-preview:before {
-    content: '#{$i-preview}';
+.icon-add:before {
+    content: '#{$i-add}';
 }
 .icon-app:before {
     content: '#{$i-app}';
 }
-.icon-pin:before {
-    content: '#{$i-pin}';
-}
-.icon-pc:before {
-    content: '#{$i-pc}';
-}
-.icon-pacman:before {
-    content: '#{$i-pacman}';
-}
-.icon-edit:before {
-    content: '#{$i-edit}';
-}
-.icon-mobile:before {
-    content: '#{$i-mobile}';
-}
-.icon-image:before {
-    content: '#{$i-image}';
-}
-.icon-mail:before {
-    content: '#{$i-mail}';
-}
-.icon-list:before {
-    content: '#{$i-list}';
-}
-.icon-info:before {
-    content: '#{$i-info}';
-}
-.icon-home:before {
-    content: '#{$i-home}';
-}
-.icon-grid:before {
-    content: '#{$i-grid}';
-}
-.icon-fullscreen:before {
-    content: '#{$i-fullscreen}';
-}
-.icon-question:before {
-    content: '#{$i-question}';
-}
-.icon-external:before {
-    content: '#{$i-external}';
-}
-.icon-error:before {
-    content: '#{$i-error}';
-}
-.icon-comments:before {
-    content: '#{$i-comments}';
-}
-.icon-close:before {
-    content: '#{$i-close}';
-}
-.icon-chevron:before {
-    content: '#{$i-chevron}';
-}
-.icon-chevron-left:before {
-    content: '#{$i-chevron-left}';
-}
-.icon-calendar:before {
-    content: '#{$i-calendar}';
+.icon-appearance:before {
+    content: '#{$i-appearance}';
 }
 .icon-archive:before {
     content: '#{$i-archive}';
 }
-.icon-services:before {
-    content: '#{$i-services}';
+.icon-atom:before {
+    content: '#{$i-atom}';
 }
-.icon-appearance:before {
-    content: '#{$i-appearance}';
+.icon-book:before {
+    content: '#{$i-book}';
 }
-.icon-video:before {
-    content: '#{$i-video}';
-}
-.icon-trash:before {
-    content: '#{$i-trash}';
-}
-.icon-reply:before {
-    content: '#{$i-reply}';
-}
-.icon-stats:before {
-    content: '#{$i-stats}';
-}
-.icon-featured:before {
-    content: '#{$i-featured}';
-}
-.icon-unfeatured:before {
-    content: '#{$i-unfeatured}';
-}
-.icon-clock:before {
-    content: '#{$i-clock}';
-}
-.icon-settings2:before {
-    content: '#{$i-settings2}';
+.icon-calendar:before {
+    content: '#{$i-calendar}';
 }
 .icon-camera:before {
     content: '#{$i-camera}';
-}
-.icon-power:before {
-    content: '#{$i-power}';
-}
-.icon-lock:before {
-    content: '#{$i-lock}';
-}
-.icon-content:before {
-    content: '#{$i-content}';
-}
-.icon-user:before {
-    content: '#{$i-user}';
-}
-.icon-support:before {
-    content: '#{$i-support}';
-}
-.icon-success:before {
-    content: '#{$i-success}';
-}
-.icon-notification:before {
-    content: '#{$i-notification}';
-}
-.icon-add:before {
-    content: '#{$i-add}';
 }
 .icon-check:before {
     content: '#{$i-check}';
 }
-.icon-x:before {
-    content: '#{$i-x}';
+.icon-chevron-down:before {
+    content: '#{$i-chevron-down}';
 }
-.icon-link:before {
-    content: '#{$i-link}';
+.icon-chevron-left:before {
+    content: '#{$i-chevron-left}';
 }
-.icon-camera:before {
-    content: '#{$i-camera}';
+.icon-chevron:before {
+    content: '#{$i-chevron}';
 }
-.icon-repost:before {
-    content: '#{$i-repost}';
+.icon-clock:before {
+    content: '#{$i-clock}';
 }
-.icon-weather-rain:before {
-    content: '#{$i-weather-rain}';
-}
-.icon-weather-sun:before {
-    content: '#{$i-weather-sun}';
-}
-.icon-weather-partial:before {
-    content: '#{$i-weather-partial}';
-}
-.icon-weather-snow:before {
-    content: '#{$i-weather-snow}';
-}
-.icon-weather-cloudy:before {
-    content: '#{$i-weather-cloudy}';
-}
-.icon-lightning:before {
-    content: '#{$i-lightning}';
+.icon-close:before {
+    content: '#{$i-close}';
 }
 .icon-code:before {
     content: '#{$i-code}';
 }
-.icon-atom:before {
-    content: '#{$i-atom}';
+.icon-comments:before {
+    content: '#{$i-comments}';
 }
 .icon-compass:before {
     content: '#{$i-compass}';
+}
+.icon-content:before {
+    content: '#{$i-content}';
+}
+.icon-edit:before {
+    content: '#{$i-edit}';
+}
+.icon-error:before {
+    content: '#{$i-error}';
+}
+.icon-external:before {
+    content: '#{$i-external}';
+}
+.icon-featured:before {
+    content: '#{$i-featured}';
+}
+.icon-fullscreen:before {
+    content: '#{$i-fullscreen}';
+}
+.icon-ghost-logo:before {
+    content: '#{$i-ghost-logo}';
+}
+.icon-ghost:before {
+    content: '#{$i-ghost}';
+}
+.icon-grid:before {
+    content: '#{$i-grid}';
+}
+.icon-home:before {
+    content: '#{$i-home}';
+}
+.icon-image:before {
+    content: '#{$i-image}';
+}
+.icon-info:before {
+    content: '#{$i-info}';
+}
+.icon-lightning:before {
+    content: '#{$i-lightning}';
+}
+.icon-link:before {
+    content: '#{$i-link}';
+}
+.icon-list:before {
+    content: '#{$i-list}';
+}
+.icon-lock:before {
+    content: '#{$i-lock}';
+}
+.icon-mail:before {
+    content: '#{$i-mail}';
+}
+.icon-markdown:before {
+    content: '#{$i-markdown}';
+}
+.icon-menu:before {
+    content: '#{$i-menu}';
+}
+.icon-mobile:before {
+    content: '#{$i-mobile}';
+}
+.icon-notification:before {
+    content: '#{$i-notification}';
+}
+.icon-pacman:before {
+    content: '#{$i-pacman}';
+}
+.icon-pc:before {
+    content: '#{$i-pc}';
+}
+.icon-pin:before {
+    content: '#{$i-pin}';
+}
+.icon-power:before {
+    content: '#{$i-power}';
+}
+.icon-preview:before {
+    content: '#{$i-preview}';
+}
+.icon-question:before {
+    content: '#{$i-question}';
+}
+.icon-reply:before {
+    content: '#{$i-reply}';
+}
+.icon-repost:before {
+    content: '#{$i-repost}';
+}
+.icon-rss:before {
+    content: '#{$i-rss}';
+}
+.icon-search-left:before {
+    content: '#{$i-search-left}';
+}
+.icon-search:before {
+    content: '#{$i-search}';
+}
+.icon-services:before {
+    content: '#{$i-services}';
+}
+.icon-settings:before {
+    content: '#{$i-settings}';
+}
+.icon-settings2:before {
+    content: '#{$i-settings2}';
+}
+.icon-stats:before {
+    content: '#{$i-stats}';
+}
+.icon-success:before {
+    content: '#{$i-success}';
+}
+.icon-support:before {
+    content: '#{$i-support}';
+}
+.icon-tablet:before {
+    content: '#{$i-tablet}';
+}
+.icon-tag:before {
+    content: '#{$i-tag}';
+}
+.icon-trash:before {
+    content: '#{$i-trash}';
+}
+.icon-twitter:before {
+    content: '#{$i-twitter}';
+}
+.icon-unfeatured:before {
+    content: '#{$i-unfeatured}';
+}
+.icon-user:before {
+    content: '#{$i-user}';
+}
+.icon-users:before {
+    content: '#{$i-users}';
+}
+.icon-video:before {
+    content: '#{$i-video}';
+}
+.icon-weather-cloudy:before {
+    content: '#{$i-weather-cloudy}';
+}
+.icon-weather-partial:before {
+    content: '#{$i-weather-partial}';
+}
+.icon-weather-rain:before {
+    content: '#{$i-weather-rain}';
+}
+.icon-weather-snow:before {
+    content: '#{$i-weather-snow}';
+}
+.icon-weather-sun:before {
+    content: '#{$i-weather-sun}';
+}
+x
+
+// Specific icon size adjustments
+.icon-list:before {
+    font-size: 0.9em;
+}
+.icon-markdown:before {
+    font-size: 1.1em;
+    vertical-align: -7%;
+}
+.icon-twitter:before {
+    font-size: 1.1em;
 }
 
 

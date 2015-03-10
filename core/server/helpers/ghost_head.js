@@ -32,6 +32,7 @@ ghost_head = function (options) {
         majorMinor = /^(\d+\.)?(\d+)/,
         trimmedVersion = this.version,
         trimmedUrlpattern = /.+(?=\/page\/\d*\/)/,
+        tagOrAuthorPattern = /\/(tag)|(author)\//,
         trimmedUrl, next, prev, tags,
         ops = [],
         structuredData,
@@ -76,12 +77,16 @@ ghost_head = function (options) {
             trimmedUrl = self.relativeUrl.match(trimmedUrlpattern);
             if (self.pagination.prev) {
                 prev = (self.pagination.prev > 1 ? prev = '/page/' + self.pagination.prev + '/' : prev = '/');
-                prev = (trimmedUrl) ? '/' + trimmedUrl + prev : prev;
+                prev = (trimmedUrl) ? trimmedUrl + prev : prev;
                 head.push('<link rel="prev" href="' + config.urlFor({relativeUrl: prev, secure: self.secure}, true) + '" />');
             }
             if (self.pagination.next) {
                 next = '/page/' + self.pagination.next + '/';
-                next = (trimmedUrl) ? '/' + trimmedUrl + next : next;
+                if (trimmedUrl) {
+                    next = trimmedUrl + next;
+                } else if (tagOrAuthorPattern.test(self.relativeUrl)) {
+                    next = self.relativeUrl.slice(0, -1) + next;
+                }
                 head.push('<link rel="next" href="' + config.urlFor({relativeUrl: next, secure: self.secure}, true) + '" />');
             }
         }

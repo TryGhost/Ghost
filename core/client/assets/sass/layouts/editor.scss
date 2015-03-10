@@ -344,14 +344,14 @@
 
 .markdown-help {
     position: relative;
-    top: -5px;
+    top: -3px;
     right: -5px;
-    @include icon($i-question, '', lighten($brown, 15%));
+    @include icon($i-markdown, '16px', lighten($brown, 15%));
     float: right;
     padding: 5px;
 
     &:hover {
-        @include icon($i-question, '', $brown);
+        @include icon($i-markdown, '', $brown);
     }
 }
 
