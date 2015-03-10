@@ -106,76 +106,76 @@
  */
 
 // Placeholder 
-$i:                 \e018;
+$i:                 "\e018";
 
-// Icons 
-$i-ghost:           \e000;
-$i-chevron-down:    \e001;
-$i-users:           \e002;
-$i-tag:             \e003;
-$i-tablet:          \e004;
-$i-menu:            \e005;
-$i-settings:        \e006;
-$i-search:          \e007;
-$i-search-left:     \e008;
-$i-rss:             \e009;
-$i-preview:         \e00a;
-$i-plugins:         \e00b;
-$i-pin:             \e00c;
-$i-pc:              \e00d;
-$i-pacman:          \e00e;
-$i-edit:            \e00f;
-$i-mobile:          \e010;
-$i-image:           \e011;
-$i-mail:            \e012;
-$i-list:            \e013;
-$i-info:            \e014;
-$i-home:            \e015;
-$i-grid:            \e016;
-$i-fullscreen:      \e017;
-$i-question:        \e018;
-$i-external:        \e019;
-$i-error:           \e01a;
-$i-comments:        \e01b;
-$i-close:           \e01c;
-$i-chevron:         \e01d;
-$i-calendar:        \e01e;
-$i-archive:         \e01f;
-$i-services:        \e020;
-$i-appearance:      \e021;
-$i-video:           \e022;
-$i-trash:           \e023;
-$i-reply:           \e024;
-$i-stats:           \e025;
-$i-featured:        \e026;
-$i-unfeatured:      \e027;
-$i-clock:           \e028;
-$i-settings2:       \e029;
-$i-camera:          \e02a;
-$i-power:           \e02b;
-$i-lock:            \e02c;
-$i-content:         \e02d;
-$i-user:            \e02e;
-$i-support:         \e02f;
-$i-success:         \e030;
-$i-notification:    \e031;
-$i-add:             \e032;
-$i-check:           \e033;
-$i-x:               \e034;
-$i-link:            \e035;
-$i-camera:          \e036;
-$i-repost:          \e037;
-$i-weather-rain:    \e038;
-$i-weather-sun:     \e039;
-$i-weather-partial: \e03a;
-$i-weather-snow:    \e03b;
-$i-weather-cloudy:  \e03c;
-$i-lightning:       \e03d;
+// Icons
+$i-ghost:           "\e000";
+$i-chevron-down:    "\e001";
+$i-users:           "\e002";
+$i-tag:             "\e003";
+$i-tablet:          "\e004";
+$i-menu:            "\e005";
+$i-settings:        "\e006";
+$i-search:          "\e007";
+$i-search-left:     "\e008";
+$i-rss:             "\e009";
+$i-preview:         "\e00a";
+$i-plugins:         "\e00b";
+$i-pin:             "\e00c";
+$i-pc:              "\e00d";
+$i-pacman:          "\e00e";
+$i-edit:            "\e00f";
+$i-mobile:          "\e010";
+$i-image:           "\e011";
+$i-mail:            "\e012";
+$i-list:            "\e013";
+$i-info:            "\e014";
+$i-home:            "\e015";
+$i-grid:            "\e016";
+$i-fullscreen:      "\e017";
+$i-question:        "\e018";
+$i-external:        "\e019";
+$i-error:           "\e01a";
+$i-comments:        "\e01b";
+$i-close:           "\e01c";
+$i-chevron:         "\e01d";
+$i-calendar:        "\e01e";
+$i-archive:         "\e01f";
+$i-services:        "\e020";
+$i-appearance:      "\e021";
+$i-video:           "\e022";
+$i-trash:           "\e023";
+$i-reply:           "\e024";
+$i-stats:           "\e025";
+$i-featured:        "\e026";
+$i-unfeatured:      "\e027";
+$i-clock:           "\e028";
+$i-settings2:       "\e029";
+$i-camera:          "\e02a";
+$i-power:           "\e02b";
+$i-lock:            "\e02c";
+$i-content:         "\e02d";
+$i-user:            "\e02e";
+$i-support:         "\e02f";
+$i-success:         "\e030";
+$i-notification:    "\e031";
+$i-add:             "\e032";
+$i-check:           "\e033";
+$i-x:               "\e034";
+$i-link:            "\e035";
+$i-camera:          "\e036";
+$i-repost:          "\e037";
+$i-weather-rain:    "\e038";
+$i-weather-sun:     "\e039";
+$i-weather-partial: "\e03a";
+$i-weather-snow:    "\e03b";
+$i-weather-cloudy:  "\e03c";
+$i-lightning:       "\e03d";
 
 
 /* =============================================================================
    Usage
-   ============================================================================= 
+   =============================================================================
 
 To create a button with a label that is prefixed with a camera icon, we might
 write our Sass something like this:
@@ -196,7 +196,7 @@ This would then output full CSS something like this:
 }
 
 #button:before {
-    content: "\e02a";
+    content: ""\e02a"";
     size: 16px;
     color: #fff;
     font-family: "Icons";
