@@ -5,7 +5,6 @@ var should     = require('should'),
     sinon      = require('sinon'),
     express    = require('express'),
     rewire     = require('rewire'),
-    _          = require('lodash'),
 
     // Stuff we are testing
 
@@ -280,28 +279,24 @@ describe('Error handling', function () {
     });
 
     describe('Rendering', function () {
-        var sandbox,
-            originalConfig;
-
+        var sandbox;
         before(function () {
-            originalConfig = _.cloneDeep(config._config);
-            errors.__set__('getConfigModule', sinon.stub().returns(_.merge({}, originalConfig, {
-                paths: {
-                    themePath: '/content/themes',
-                    availableThemes: {
-                        casper: {
-                            assets: null,
-                            'default.hbs': '/content/themes/casper/default.hbs',
-                            'index.hbs': '/content/themes/casper/index.hbs',
-                            'page.hbs': '/content/themes/casper/page.hbs',
-                            'tag.hbs': '/content/themes/casper/tag.hbs'
-                        },
-                        'theme-with-error': {
-                            'error.hbs': ''
-                        }
+            config.set('paths', {
+                themePath: '/content/themes',
+                availableThemes: {
+                    casper: {
+                        assets: null,
+                        'default.hbs': '/content/themes/casper/default.hbs',
+                        'index.hbs': '/content/themes/casper/index.hbs',
+                        'page.hbs': '/content/themes/casper/page.hbs',
+                        'tag.hbs': '/content/themes/casper/tag.hbs'
+                    },
+                    'theme-with-error': {
+                        'error.hbs': ''
                     }
                 }
-            })));
+            });
+            errors.__set__('config', config);
             errors.updateActiveTheme('casper');
         });
 

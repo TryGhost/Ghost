@@ -2,7 +2,7 @@ var _       = require('lodash'),
     xml     = require('xml'),
     moment  = require('moment'),
     api     = require('../../api'),
-    config  = require('../../config'),
+    urls    = require('../../utils/url'),
     utils   = require('./utils'),
     Promise = require('bluebird'),
     CHANGE_FREQ = 'weekly',
@@ -145,11 +145,11 @@ _.extend(BaseSiteMapGenerator.prototype, {
     },
 
     getUrlForDatum: function () {
-        return config.urlFor('home', true);
+        return urls.urlFor('home', true);
     },
 
     getUrlForImage: function (image) {
-        return config.urlFor('image', {image: image}, true);
+        return urls.urlFor('image', {image: image}, true);
     },
 
     getPriorityForDatum: function () {

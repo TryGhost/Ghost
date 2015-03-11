@@ -1,7 +1,7 @@
 var _ = require('lodash'),
     api = require('../../api'),
     BaseMapGenerator = require('./base-generator'),
-    config = require('../../config');
+    urls = require('../../utils/url');
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function TagsMapGenerator(opts) {
@@ -30,7 +30,7 @@ _.extend(TagsMapGenerator.prototype, {
     },
 
     getUrlForDatum: function (tag, permalinks) {
-        return config.urlFor('tag', {tag: tag, permalinks: permalinks}, true);
+        return urls.urlFor('tag', {tag: tag, permalinks: permalinks}, true);
     },
 
     getPriorityForDatum: function () {

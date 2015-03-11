@@ -1,6 +1,6 @@
 var _               = require('lodash'),
     errors          = require('../../errors'),
-    config          = require('../../config'),
+    db              = require('../db'),
 
     defaultSettings = require('../default-settings'),
 
@@ -23,7 +23,7 @@ function getDefaultDatabaseVersion() {
 // The migration version number according to the database
 // This is what the database is currently at and may need to be updated
 function getDatabaseVersion() {
-    var knex = config.database.knex;
+    var knex = db.knex;
 
     return knex.schema.hasTable('settings').then(function (exists) {
         // Check for the current version from the settings table
@@ -54,7 +54,7 @@ function getDatabaseVersion() {
 }
 
 function setDatabaseVersion() {
-    return config.database.knex('settings')
+    return db.knex('settings')
         .where('key', 'databaseVersion')
         .update({value: defaultDatabaseVersion});
 }

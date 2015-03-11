@@ -46,7 +46,7 @@ authentication = {
                 var dbHash = response.settings[0].value;
                 return dataProvider.User.generateResetToken(email, expires, dbHash);
             }).then(function (resetToken) {
-                var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url,
+                var baseUrl = config.get('forceAdminSSL') ? (config.get('urlSSL') || config.get('url')) : config.get('url'),
                     resetUrl = baseUrl.replace(/\/$/, '') + '/ghost/reset/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
 
                 return mail.generateContent({data: {resetUrl: resetUrl}, template: 'reset-password'});

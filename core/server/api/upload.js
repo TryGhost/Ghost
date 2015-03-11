@@ -23,6 +23,7 @@ upload = {
      */
     add: function (options) {
         var store = storage.getStorage(),
+            uploads = config.get('uploads'),
             filepath;
 
         // Check if a file was provided
@@ -31,7 +32,7 @@ upload = {
         }
 
         // Check if the file is valid
-        if (!utils.checkFileIsValid(options.uploadimage, config.uploads.contentTypes, config.uploads.extensions)) {
+        if (!utils.checkFileIsValid(options.uploadimage, uploads.contentTypes, uploads.extensions)) {
             return Promise.reject(new errors.UnsupportedMediaTypeError('Please select a valid image.'));
         }
 

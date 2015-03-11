@@ -34,7 +34,7 @@ var crypto   = require('crypto'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org',
-    currentVersion = config.ghostVersion;
+    currentVersion = config.get('ghostVersion');
 
 function updateCheckError(error) {
     api.settings.edit(
@@ -52,7 +52,7 @@ function updateCheckError(error) {
 function updateCheckData() {
     var data = {},
         ops = [],
-        mailConfig = config.mail;
+        mailConfig = config.get('mail');
 
     ops.push(api.settings.read(_.extend(internal, {key: 'dbHash'})).catch(errors.rejectError));
     ops.push(api.settings.read(_.extend(internal, {key: 'activeTheme'})).catch(errors.rejectError));
@@ -73,8 +73,8 @@ function updateCheckData() {
 
     data.ghost_version   = currentVersion;
     data.node_version    = process.versions.node;
-    data.env             = process.env.NODE_ENV;
-    data.database_type   = config.database.client;
+    data.env             = config.get('NODE_ENV');
+    data.database_type   = config.get('database:client');
     data.email_transport = mailConfig && (mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport);
 
     return Promise.settle(ops).then(function (descriptors) {
@@ -84,7 +84,7 @@ function updateCheckData() {
             posts            = descriptors[3].value(),
             users            = descriptors[4].value(),
             npm              = descriptors[5].value(),
-            blogUrl          = url.parse(config.url),
+            blogUrl          = url.parse(config.get('url')),
             blogId           = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
         data.blog_id         = crypto.createHash('md5').update(blogId).digest('hex');

@@ -35,14 +35,12 @@ var _            = require('lodash'),
 * @private
 */
 updateConfigTheme = function () {
-    config.set({
-        theme: {
-            title: (settingsCache.title && settingsCache.title.value) || '',
-            description: (settingsCache.description && settingsCache.description.value) || '',
-            logo: (settingsCache.logo && settingsCache.logo.value) || '',
-            cover: (settingsCache.cover && settingsCache.cover.value) || '',
-            navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || []
-        }
+    config.set('theme', {
+        title: (settingsCache.title && settingsCache.title.value) || '',
+        description: (settingsCache.description && settingsCache.description.value) || '',
+        logo: (settingsCache.logo && settingsCache.logo.value) || '',
+        cover: (settingsCache.cover && settingsCache.cover.value) || '',
+        navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || []
     });
 };
 
@@ -155,8 +153,8 @@ readSettingsResult = function (settingsModels) {
 
             return memo;
         }, {}),
-        themes = config.paths.availableThemes,
-        apps = config.paths.availableApps,
+        themes = config.get('paths:availableThemes'),
+        apps = config.get('paths:availableApps'),
         res;
 
     if (settings.activeTheme && themes) {

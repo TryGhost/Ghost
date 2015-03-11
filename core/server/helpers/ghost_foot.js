@@ -8,6 +8,7 @@
 
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
+    path            = require('path'),
     config          = require('../config'),
     filters         = require('../filters'),
     api             = require('../api'),
@@ -20,8 +21,8 @@ ghost_foot = function (options) {
         foot = [];
 
     foot.push(utils.scriptTemplate({
-        source: config.paths.subdir + '/public/' + jquery,
-        version: config.assetHash
+        source: path.join('/', config.get('paths:subdir'), 'public', jquery),
+        version: config.get('assetHash')
     }));
 
     return api.settings.read({key: 'ghost_foot'}).then(function (response) {

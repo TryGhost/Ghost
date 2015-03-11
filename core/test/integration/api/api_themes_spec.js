@@ -1,7 +1,6 @@
 /*globals describe, before, beforeEach, afterEach, it */
 /*jshint expr:true*/
-var _             = require('lodash'),
-    testUtils     = require('../../utils'),
+var testUtils     = require('../../utils'),
     rewire        = require('rewire'),
     should        = require('should'),
     sinon         = require('sinon'),
@@ -51,7 +50,7 @@ describe('Themes API', function () {
         };
 
         config = ThemeAPI.__get__('config');
-        _.extend(config, configStub);
+        config.reconfigure(configStub);
     });
 
     should.exist(ThemeAPI);

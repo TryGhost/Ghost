@@ -17,10 +17,10 @@ meta_title = function (options) {
         blog,
         page,
         pageString = '',
-        pagePattern = new RegExp('\\/' + config.routeKeywords.page + '\\/(\\d+)');
+        pagePattern = new RegExp('\\/' + config.get('routeKeywords:page') + '\\/(\\d+)');
 
     if (_.isString(this.relativeUrl)) {
-        blog = config.theme;
+        blog = config.get('theme');
         page = this.relativeUrl.match(pagePattern);
         if (page) {
             pageString = ' - Page ' + page[1];

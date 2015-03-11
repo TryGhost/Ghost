@@ -3,7 +3,7 @@ var _                   = require('lodash'),
     api                 = require('../../api'),
     BaseMapGenerator    = require('./base-generator'),
     validator           = require('validator'),
-    config              = require('../../config');
+    urls                = require('../../utils/url');
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function UserMapGenerator(opts) {
@@ -32,7 +32,7 @@ _.extend(UserMapGenerator.prototype, {
     },
 
     getUrlForDatum: function (user, permalinks) {
-        return config.urlFor('author', {author: user, permalinks: permalinks}, true);
+        return urls.urlFor('author', {author: user, permalinks: permalinks}, true);
     },
 
     getPriorityForDatum: function () {

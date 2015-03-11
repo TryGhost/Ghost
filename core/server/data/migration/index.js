@@ -43,7 +43,7 @@ backupDatabase = function backupDatabase() {
     return dataExport().then(function (exportedData) {
         // Save the exported data to the file system for download
         return dataExport.fileName().then(function (fileName) {
-            fileName = path.resolve(config.paths.contentPath + '/data/' + fileName);
+            fileName = path.resolve(config.get('paths:contentPath') + '/data/' + fileName);
 
             return Promise.promisify(fs.writeFile)(fileName, JSON.stringify(exportedData)).then(function () {
                 logInfo('Database backup written to: ' + fileName);

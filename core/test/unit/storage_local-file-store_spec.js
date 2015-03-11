@@ -5,7 +5,6 @@ var fs              = require('fs-extra'),
     should          = require('should'),
     sinon           = require('sinon'),
     rewire          = require('rewire'),
-    _               = require('lodash'),
     config          = rewire('../../server/config'),
     LocalFileStore  = rewire('../../server/storage/local-file-store'),
     localFileStore;
@@ -14,17 +13,8 @@ var fs              = require('fs-extra'),
 should.equal(true, true);
 
 describe('Local File System Storage', function () {
-    var image,
-        overrideConfig = function (newConfig) {
-            var existingConfig = LocalFileStore.__get__('config'),
-                updatedConfig = _.extend(existingConfig, newConfig);
-            config.set(updatedConfig);
-            LocalFileStore.__set__('config', updatedConfig);
-        };
-
+    var image;
     beforeEach(function () {
-        overrideConfig(config);
-
         sinon.stub(fs, 'mkdirs').yields();
         sinon.stub(fs, 'copy').yields();
         sinon.stub(fs, 'stat').yields(true);
@@ -133,17 +123,18 @@ describe('Local File System Storage', function () {
     });
 
     describe('when a custom content path is used', function () {
-        var origContentPath = config.paths.contentPath,
-            origImagesPath = config.paths.imagesPath;
+        var origContentPath = config.get('paths:contentPath'),
+            origImagesPath = config.get('paths:imagesPath');
 
         beforeEach(function () {
-            config.paths.contentPath = config.paths.appRoot + '/var/ghostcms';
-            config.paths.imagesPath = config.paths.appRoot + '/var/ghostcms/' + config.paths.imagesRelPath;
+            var paths = config.get('paths');
+            config.set('paths:contentPath', path.join(paths.appRoot, '/var/ghostcms'));
+            config.set('paths:imagesPath', path.join(paths.appRoot, '/var/ghostcms/', paths.imagesRelPath));
         });
 
         afterEach(function () {
-            config.paths.contentPath = origContentPath;
-            config.paths.imagesPath = origImagesPath;
+            config.set('paths:contentPath', origContentPath);
+            config.set('paths:imagesPath', origImagesPath);
         });
 
         it('should send the correct path to image', function (done) {

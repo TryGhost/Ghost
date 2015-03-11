@@ -4,9 +4,10 @@ var nock            = require('nock'),
     should          = require('should'),
     sinon           = require('sinon'),
     testUtils       = require('../utils'),
+    config          = require('../../server/config'),
     xmlrpc          = require('../../server/xmlrpc'),
     // storing current environment
-    currentEnv      = process.env.NODE_ENV;
+    currentEnv      = config.get('NODE_ENV');
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -17,13 +18,13 @@ describe('XMLRPC', function () {
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
         // give environment a value that will ping
-        process.env.NODE_ENV = 'production';
+        config.set('NODE_ENV', 'production');
     });
 
     afterEach(function () {
         sandbox.restore();
         // reset the environment
-        process.env.NODE_ENV = currentEnv;
+        config.set('NODE_ENV', currentEnv);
     });
 
     it('should execute two pings', function () {

@@ -17,7 +17,7 @@ meta_description = function () {
         pagePattern = new RegExp('\\/page\\/');
 
     if (_.isString(this.relativeUrl)) {
-        blog = config.theme;
+        blog = config.get('theme');
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
             description = blog.description;
         } else if (this.author) {

@@ -8,18 +8,20 @@ var _                  = require('lodash'),
     configuration;
 
 function getValidKeys() {
-    var validKeys = {
-            fileStorage: config.fileStorage === false ? false : true,
-            apps: config.apps === true ? true : false,
-            codeInjectionUI: config.codeInjectionUI === true ? true : false,
-            version: config.ghostVersion,
-            environment: process.env.NODE_ENV,
-            database: config.database.client,
-            mail: _.isObject(config.mail) ? config.mail.transport : '',
-            blogUrl: config.url.replace(/\/$/, ''),
-            blogTitle: config.theme.title
+    var mail = config.get('mail'),
+        validKeys = {
+            fileStorage: config.get('fileStorage') === false ? false : true,
+            apps: config.get('apps') === true ? true : false,
+            codeInjectionUI: config.get('codeInjectionUI') === true ? true : false,
+            version: config.get('ghostVersion'),
+            environment: config.get('NODE_ENV'),
+            database: config.get('database:client'),
+            mail: _.isObject(mail) ? mail.transport : '',
+            blogUrl: config.get('url').replace(/\/$/, ''),
+            blogTitle: config.get('theme:title')
         };
 
+    mail = null;
     return validKeys;
 }
 

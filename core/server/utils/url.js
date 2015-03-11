@@ -3,7 +3,8 @@
 
 var moment            = require('moment'),
     _                 = require('lodash'),
-    ghostConfig = '';
+    ghostConfig       = require('../config'),
+    urljoin           = require('urljoin');
 
 // ## setConfig
 // Simple utility function to allow
@@ -32,14 +33,20 @@ function setConfig(config) {
 function createUrl(urlPath, absolute, secure) {
     urlPath = urlPath || '/';
     absolute = absolute || false;
-    var output = '', baseUrl;
+    var output = '',
+        baseUrl,
+        url,
+        urlSSL;
+
+    url    = ghostConfig.get('url');
+    urlSSL = ghostConfig.get('urlSSL');
 
     // create base of url, always ends without a slash
     if (absolute) {
-        baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+        baseUrl = (secure && urlSSL) ? urlSSL : url;
         output += baseUrl.replace(/\/$/, '');
     } else {
-        output += ghostConfig.paths.subdir;
+        output += ghostConfig.get('paths:subdir');
     }
 
     // append the path, always starts and ends with a slash
@@ -104,7 +111,9 @@ function urlFor(context, data, absolute) {
         secure, imagePathRe,
         knownObjects = ['post', 'tag', 'author', 'image', 'nav'], baseUrl,
         hostname,
-
+        paths,
+        url,
+        urlSSL,
     // this will become really big
     knownPaths = {
         home: '/',
@@ -112,6 +121,9 @@ function urlFor(context, data, absolute) {
         api: '/ghost/api/v0.1'
     };
 
+    paths = ghostConfig.get('paths');
+    url   = ghostConfig.get('url');
+    urlSSL = ghostConfig.get('urlSSL');
     // Make data properly optional
     if (_.isBoolean(data)) {
         absolute = data;
@@ -129,21 +141,21 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = '/' + ghostConfig.routeKeywords.tag + '/' + data.tag.slug + '/';
+            urlPath = '/' + ghostConfig.get('routeKeywords:tag') + '/' + data.tag.slug + '/';
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = '/' + ghostConfig.routeKeywords.author  + '/' + data.author.slug + '/';
+            urlPath = '/' + ghostConfig.get('routeKeywords:author')  + '/' + data.author.slug + '/';
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
-            imagePathRe = new RegExp('^' + ghostConfig.paths.subdir + '/' + ghostConfig.paths.imagesRelPath);
+            imagePathRe = new RegExp('^' + paths.subdir + '/' + paths.imagesRelPath);
             absolute = imagePathRe.test(data.image) ? absolute : false;
             secure = data.image.secure;
 
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
-                urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
-                baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+                urlPath = urlPath.replace(new RegExp('^' + paths.subdir), '');
+                baseUrl = (secure && urlSSL) ? urlSSL : url;
                 baseUrl = baseUrl.replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
@@ -154,8 +166,8 @@ function urlFor(context, data, absolute) {
             urlPath = '/sitemap.xsl';
         } else if (context === 'nav' && data.nav) {
             urlPath = data.nav.url;
-            baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
-            hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
+            baseUrl = (secure && urlSSL) ? urlSSL : url;
+            hostname = baseUrl.split('//')[1] + paths.subdir;
             if (urlPath.indexOf(hostname) > -1) {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
@@ -180,3 +192,4 @@ function urlFor(context, data, absolute) {
 module.exports.setConfig = setConfig;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
+module.exports.join = urljoin;

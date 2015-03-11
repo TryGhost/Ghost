@@ -12,7 +12,7 @@ var moment   = require('moment'),
 
     frontend = rewire('../../server/controllers/frontend'),
     config   = require('../../server/config'),
-    origConfig = _.cloneDeep(config),
+    origConfig = _.cloneDeep(config.get()),
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
 
 // To stop jshint complaining
@@ -24,7 +24,8 @@ describe('Frontend Controller', function () {
         adminEditPagePath = '/ghost/editor/',
 
         resetConfig = function () {
-            config.set(_.merge({}, origConfig, defaultConfig));
+            config.merge(_.merge({}, origConfig, defaultConfig));
+            config.reconfigure();
         };
 
     beforeEach(function () {
@@ -71,8 +72,9 @@ describe('Frontend Controller', function () {
         });
 
         afterEach(function () {
-            config.set({paths: origConfig.paths});
-            frontend.__set__('config', {paths: origConfig.paths});
+            config.set('paths', origConfig.paths);
+            config.reconfigure();
+            frontend.__set__('config', config);
             sandbox.restore();
         });
 
@@ -107,9 +109,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            frontend.__set__('config', {
-                paths: {subdir: '/blog'}
-            });
+            config.set('paths:subdir', '/blog');
+            frontend.__set__('config', config);
 
             var req = {params: {page: 0}, route: {path: '/page/:page/'}};
 
@@ -121,9 +122,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            frontend.__set__('config', {
-                paths: {subdir: '/blog'}
-            });
+            config.set('paths:subdir', '/blog');
+            frontend.__set__('config', config);
 
             var req = {params: {page: 1}, route: {path: '/page/:page/'}};
 
@@ -146,9 +146,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            frontend.__set__('config', {
-                paths: {subdir: '/blog'}
-            });
+            config.set('paths:subdir', '/blog');
+            frontend.__set__('config', config);
 
             var req = {params: {page: 4}, route: {path: '/page/:page/'}};
 
@@ -191,18 +190,17 @@ describe('Frontend Controller', function () {
                 }]
             }));
 
-            frontend.__set__('config', {
-                paths: {
-                    subdir: '',
-                    availableThemes: {
-                        casper: {
-                            assets: null,
-                            'default.hbs': '/content/themes/casper/default.hbs',
-                            'index.hbs': '/content/themes/casper/index.hbs',
-                            'home.hbs': '/content/themes/casper/home.hbs',
-                            'page.hbs': '/content/themes/casper/page.hbs',
-                            'tag.hbs': '/content/themes/casper/tag.hbs'
-                        }
+            config.set('paths:availableThemes:casper', null);
+            config.set('paths', {
+                subdir: '',
+                availableThemes: {
+                    casper: {
+                        assets: null,
+                        'default.hbs': '/content/themes/casper/default.hbs',
+                        'index.hbs': '/content/themes/casper/index.hbs',
+                        'home.hbs': '/content/themes/casper/home.hbs',
+                        'page.hbs': '/content/themes/casper/page.hbs',
+                        'tag.hbs': '/content/themes/casper/tag.hbs'
                     }
                 },
                 routeKeywords: {
@@ -211,6 +209,8 @@ describe('Frontend Controller', function () {
                     author: 'author'
                 }
             });
+            config.reconfigure();
+            frontend.__set__('config', config);
         });
 
         it('Renders home.hbs template when it exists in the active theme', function (done) {
@@ -250,17 +250,16 @@ describe('Frontend Controller', function () {
         });
 
         it('Renders index.hbs template when home.hbs doesn\'t exist', function (done) {
-            frontend.__set__('config', {
-                paths: {
-                    subdir: '',
-                    availableThemes: {
-                        casper: {
-                            assets: null,
-                            'default.hbs': '/content/themes/casper/default.hbs',
-                            'index.hbs': '/content/themes/casper/index.hbs',
-                            'page.hbs': '/content/themes/casper/page.hbs',
-                            'tag.hbs': '/content/themes/casper/tag.hbs'
-                        }
+            config.set('paths:availableThemes:casper', null);
+            config.set('paths', {
+                subdir: '',
+                availableThemes: {
+                    casper: {
+                        assets: null,
+                        'default.hbs': '/content/themes/casper/default.hbs',
+                        'index.hbs': '/content/themes/casper/index.hbs',
+                        'page.hbs': '/content/themes/casper/page.hbs',
+                        'tag.hbs': '/content/themes/casper/tag.hbs'
                     }
                 },
                 routeKeywords: {
@@ -269,7 +268,8 @@ describe('Frontend Controller', function () {
                     author: 'author'
                 }
             });
-
+            config.reconfigure();
+            frontend.__set__('config', config);
             var req = {
                     path: '/',
                     params: {},
@@ -357,17 +357,16 @@ describe('Frontend Controller', function () {
                 }]
             }));
 
-            frontend.__set__('config', {
-                paths: {
-                    subdir: '',
-                    availableThemes: {
-                        casper: {
-                            assets: null,
-                            'default.hbs': '/content/themes/casper/default.hbs',
-                            'index.hbs': '/content/themes/casper/index.hbs',
-                            'page.hbs': '/content/themes/casper/page.hbs',
-                            'tag.hbs': '/content/themes/casper/tag.hbs'
-                        }
+            config.set('paths:availableThemes:casper', null);
+            config.set('paths', {
+                subdir: '',
+                availableThemes: {
+                    casper: {
+                        assets: null,
+                        'default.hbs': '/content/themes/casper/default.hbs',
+                        'index.hbs': '/content/themes/casper/index.hbs',
+                        'page.hbs': '/content/themes/casper/page.hbs',
+                        'tag.hbs': '/content/themes/casper/tag.hbs'
                     }
                 },
                 routeKeywords: {
@@ -464,10 +463,9 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to base tag page if page number is 0 with subdirectory', function () {
-            frontend.__set__('config', {
-                paths: {subdir: '/blog'},
-                routeKeywords: {tag: 'tag'}
-            });
+            config.set('paths:subdir', '/blog');
+            config.set('routeKeywords:tag', 'tag');
+            frontend.__set__('config', config);
 
             var req = {params: {page: 0, slug: 'pumpkin'}};
 
@@ -479,10 +477,9 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to base tag page if page number is 1 with subdirectory', function () {
-            frontend.__set__('config', {
-                paths: {subdir: '/blog'},
-                routeKeywords: {tag: 'tag'}
-            });
+            config.set('paths:subdir', '/blog');
+            config.set('routeKeywords:tag', 'tag');
+            frontend.__set__('config', config);
 
             var req = {params: {page: 1, slug: 'pumpkin'}};
 
@@ -505,11 +502,9 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            frontend.__set__('config', {
-                paths: {subdir: '/blog'},
-                routeKeywords: {tag: 'tag'}
-            });
-
+            config.set('paths:subdir', '/blog');
+            config.set('routeKeywords:tag', 'tag');
+            frontend.__set__('config', config);
             var req = {params: {page: 4, slug: 'pumpkin'}};
 
             frontend.tag(req, res, done).then(function () {
@@ -588,18 +583,17 @@ describe('Frontend Controller', function () {
                 }]
             }));
 
-            frontend.__set__('config', {
-                paths: {
-                    subdir: '',
-                    availableThemes: {
-                        casper: {
-                            assets: null,
-                            'default.hbs': '/content/themes/casper/default.hbs',
-                            'index.hbs': '/content/themes/casper/index.hbs',
-                            'page.hbs': '/content/themes/casper/page.hbs',
-                            'page-about.hbs': '/content/themes/casper/page-about.hbs',
-                            'post.hbs': '/content/themes/casper/post.hbs'
-                        }
+            config.set('paths:availableThemes:casper', null);
+            config.set('paths', {
+                subdir: '',
+                availableThemes: {
+                    casper: {
+                        assets: null,
+                        'default.hbs': '/content/themes/casper/default.hbs',
+                        'index.hbs': '/content/themes/casper/index.hbs',
+                        'page.hbs': '/content/themes/casper/page.hbs',
+                        'page-about.hbs': '/content/themes/casper/page-about.hbs',
+                        'post.hbs': '/content/themes/casper/post.hbs'
                     }
                 },
                 routeKeywords: {
@@ -608,6 +602,8 @@ describe('Frontend Controller', function () {
                     author: 'author'
                 }
             });
+            config.reconfigure();
+            frontend.__set__('config', config);
         });
 
         describe('static pages', function () {
@@ -1397,7 +1393,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 0 with subdirectory', function () {
-            config.set({url: 'http://testurl.com/blog'});
+            config.set('url', 'http://testurl.com/blog');
+            config.reconfigure();
 
             var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
 
@@ -1409,7 +1406,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to home if page number is 1 with subdirectory', function () {
-            config.set({url: 'http://testurl.com/blog'});
+            config.set('url', 'http://testurl.com/blog');
+            config.reconfigure();
 
             var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
 
@@ -1421,7 +1419,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big', function (done) {
-            config.set({url: 'http://testurl.com/'});
+            config.set('url', 'http://testurl.com/');
+            config.reconfigure();
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 
@@ -1434,7 +1433,8 @@ describe('Frontend Controller', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            config.set({url: 'http://testurl.com/blog'});
+            config.set('url', 'http://testurl.com/blog');
+            config.reconfigure();
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
 

@@ -179,7 +179,8 @@ var _              = require('lodash'),
                 options: {
                     ui: 'bdd',
                     reporter: grunt.option('reporter') || 'spec',
-                    timeout: '15000',
+                    timeout: '20000',
+                    bail:true,
                     save: grunt.option('reporter-output')
                 },
 
@@ -533,7 +534,7 @@ var _              = require('lodash'),
         grunt.registerTask('ensureConfig', function () {
             var config = require('./core/server/config'),
                 done = this.async();
-            config.load().then(function () {
+            config.read().then(function () {
                 done();
             }).catch(function (err) {
                 grunt.fail.fatal(err.stack);

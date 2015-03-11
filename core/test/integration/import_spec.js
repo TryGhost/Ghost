@@ -12,11 +12,11 @@ var testUtils   = require('../utils/index'),
     // Stuff we are testing
     config          = rewire('../../server/config'),
     defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
+    db              = require('../../server/data/db'),
     migration       = rewire('../../server/data/migration'),
     exporter        = require('../../server/data/export'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
-
     knex,
     sandbox = sinon.sandbox.create();
 
@@ -34,11 +34,11 @@ describe('Import', function () {
     describe('Resolves', function () {
         beforeEach(testUtils.setup());
         beforeEach(function () {
-            var newConfig = _.extend(config, defaultConfig);
-
-            migration.__get__('config', newConfig);
-            config.set(newConfig);
-            knex = config.database.knex;
+            var newConfig = _.extend(config.get(), defaultConfig);
+            config.merge(newConfig);
+            config.reconfigure();
+            migration.__get__('config', config);
+            knex = db.knex;
         });
 
         it('resolves DataImporter', function (done) {
@@ -59,7 +59,7 @@ describe('Import', function () {
 
     describe('Sanitizes', function () {
         before(function () {
-            knex = config.database.knex;
+            knex = db.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
@@ -123,7 +123,7 @@ describe('Import', function () {
 
     describe('DataImporter', function () {
         before(function () {
-            knex = config.database.knex;
+            knex = db.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
@@ -338,7 +338,7 @@ describe('Import', function () {
 
     describe('002', function () {
         before(function () {
-            knex = config.database.knex;
+            knex = db.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
@@ -508,7 +508,7 @@ describe('Import', function () {
 
     describe('003', function () {
         before(function () {
-            knex = config.database.knex;
+            knex = db.knex;
         });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
@@ -687,7 +687,7 @@ describe('Import (new test structure)', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
+            knex = db.knex;
 
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
@@ -914,7 +914,7 @@ describe('Import (new test structure)', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
+            knex = db.knex;
 
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner');
@@ -1141,7 +1141,7 @@ describe('Import (new test structure)', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
+            knex = db.knex;
 
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {

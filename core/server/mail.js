@@ -12,9 +12,11 @@ function GhostMailer(opts) {
 // ## E-mail transport setup
 // *This promise should always resolve to avoid halting Ghost::init*.
 GhostMailer.prototype.init = function () {
-    var self = this;
+    var self = this,
+        mail;
     self.state = {};
-    if (config.mail && config.mail.transport) {
+    mail = config.get('mail');
+    if (mail && mail.transport) {
         this.createTransport();
         return Promise.resolve();
     }
@@ -26,11 +28,14 @@ GhostMailer.prototype.init = function () {
 };
 
 GhostMailer.prototype.createTransport = function () {
-    this.transport = nodemailer.createTransport(config.mail.transport, _.clone(config.mail.options) || {});
+    var mail = config.get('mail');
+    this.transport = nodemailer.createTransport(mail.transport, _.clone(mail.options) || {});
 };
 
 GhostMailer.prototype.from = function () {
-    var from = config.mail && (config.mail.from || config.mail.fromaddress);
+    var mail = config.get('mail'),
+        theme = config.get('theme'),
+        from = mail && (mail.from || mail.fromaddress);
 
     // If we don't have a from address at all
     if (!from) {
@@ -40,10 +45,11 @@ GhostMailer.prototype.from = function () {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(from)) {
-        if (!config.theme.title) {
-            config.theme.title = 'Ghost at ' + this.getDomain();
+        if (!theme.title) {
+            theme.title = 'Ghost at ' + this.getDomain();
+            config.set('theme', theme);
         }
-        from = '"' + config.theme.title + '" <' + from + '>';
+        from = '"' + theme.title + '" <' + from + '>';
     }
 
     return from;
@@ -51,7 +57,7 @@ GhostMailer.prototype.from = function () {
 
 // Moved it to its own module
 GhostMailer.prototype.getDomain = function () {
-    var domain = config.url.match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+    var domain = config.get('url').match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
     return domain && domain[1];
 };
 

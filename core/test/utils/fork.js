@@ -42,8 +42,8 @@ function findFreePort(port) {
 // passing to forkGhost() method
 function forkConfig() {
     // require caches values, and we want to read it fresh from the file
-    delete require.cache[config.paths.config];
-    return _.cloneDeep(require(config.paths.config)[process.env.NODE_ENV]);
+    delete require.cache[config.get('paths:config')];
+    return _.cloneDeep(require(config.get('paths:config'))[config.get('NODE_ENV')]);
 }
 
 // Creates a new fork of Ghost process with a given config
@@ -53,14 +53,18 @@ function forkGhost(newConfig, envName) {
 
     return findFreePort(newConfig.server ? newConfig.server.port : undefined)
         .then(function (port) {
+            var newConfigFile, out;
+
             newConfig.server = newConfig.server || {};
             newConfig.server.port = port;
             newConfig.url = url.format(_.extend(url.parse(newConfig.url), {port: port, host: null}));
 
-            var newConfigFile = path.join(config.paths.appRoot, 'config.test' + port + '.js');
+            newConfigFile = path.join(config.get('paths:appRoot'), 'config.test' + port + '.json');
+            out = {};
 
+            out[envName] = newConfig;
             return new Promise(function (resolve, reject) {
-                fs.writeFile(newConfigFile, 'module.exports = {' + envName + ': ' + JSON.stringify(newConfig) + '}', function (err) {
+                fs.writeFile(newConfigFile, JSON.stringify(out, null, 4), function (err) {
                     if (err) {
                         return reject(err);
                     }
@@ -82,7 +86,7 @@ function forkGhost(newConfig, envName) {
 
                     env.GHOST_CONFIG = newConfigFile;
                     env.NODE_ENV = envName;
-                    child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
+                    child = cp.fork(path.join(config.get('paths:appRoot'), 'index.js'), {env: env, silent:true});
                     // return the port to make it easier to do requests
                     child.port = port;
                     // periodic check until forked Ghost is running and is listening on the port
@@ -104,7 +108,6 @@ function forkGhost(newConfig, envName) {
                             }
                         });
                     }, 200);
-
                     child.on('exit', function (code, signal) {
                         /*jshint unused:false*/
                         child.exited = true;
@@ -120,6 +123,7 @@ function forkGhost(newConfig, envName) {
 
                     // override kill() to have an async callback
                     baseKill = child.kill;
+
                     child.kill = function (signal, cb) {
                         if (typeof signal === 'function') {
                             cb = signal;

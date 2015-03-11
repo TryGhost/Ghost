@@ -172,7 +172,7 @@ middleware = {
         api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
             var activeTheme = response.settings[0];
 
-            express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: utils.ONE_YEAR_MS})(req, res, next);
+            express['static'](path.join(config.get('paths:themePath'), activeTheme.value), {maxAge: utils.ONE_YEAR_MS})(req, res, next);
         });
     },
     // ### Spam prevention Middleware
@@ -183,8 +183,8 @@ middleware = {
             deniedRateLimit = '',
             ipCount = '',
             message = 'Too many attempts.',
-            rateSigninPeriod = config.rateSigninPeriod || 3600,
-            rateSigninAttempts = config.rateSigninAttempts || 10;
+            rateSigninPeriod = config.get('rateSigninPeriod'),
+            rateSigninAttempts = config.get('rateSigninAttempts');
 
         if (req.body.username && req.body.grant_type === 'password') {
             loginSecurity.push({ip: remoteAddress, time: currentTime, email: req.body.username});
@@ -220,8 +220,8 @@ middleware = {
     spamForgottenPrevention: function (req, res, next) {
         var currentTime = process.hrtime()[0],
             remoteAddress = req.connection.remoteAddress,
-            rateForgottenPeriod = config.rateForgottenPeriod || 3600,
-            rateForgottenAttempts = config.rateForgottenAttempts || 5,
+            rateForgottenPeriod = config.get('rateForgottenPeriod'),
+            rateForgottenAttempts = config.get('rateForgottenAttempts'),
             email = req.body.passwordreset[0].email,
             ipCount = '',
             deniedRateLimit = '',
@@ -306,12 +306,21 @@ middleware = {
     // Check to see if we should use SSL
     // and redirect if needed
     checkSSL: function (req, res, next) {
-        if (isSSLrequired(res.isAdmin, config.url, config.forceAdminSSL)) {
+        var url,
+            forceAdminSSL,
+            urlSSL,
+            response;
+
+        url           = config.get('url');
+        forceAdminSSL = config.get('forceAdminSSL');
+        urlSSL        = config.get('urlSSL');
+
+        if (isSSLrequired(res.isAdmin, url, forceAdminSSL)) {
             if (!req.secure) {
-                var response = sslForbiddenOrRedirect({
-                    forceAdminSSL: config.forceAdminSSL,
-                    configUrlSSL: config.urlSSL,
-                    configUrl: config.url,
+                response = sslForbiddenOrRedirect({
+                    forceAdminSSL: forceAdminSSL,
+                    configUrlSSL: urlSSL,
+                    configUrl: url,
                     reqUrl: req.url
                 });
 

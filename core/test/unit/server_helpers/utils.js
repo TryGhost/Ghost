@@ -21,11 +21,11 @@ utils.loadHelpers = function () {
 };
 
 utils.overrideConfig = function (newConfig) {
-    config.set(newConfig);
+    config.reconfigure(newConfig);
 };
 
 utils.restoreConfig = function () {
-    config.set(origConfig);
+    config.reconfigure(origConfig);
 };
 
 module.exports = utils;

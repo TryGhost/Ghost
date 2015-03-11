@@ -32,9 +32,9 @@ describe('Configuration API', function () {
     should.exist(ConfigurationAPI);
 
     it('can browse config', function (done) {
-        var updatedConfig = _.extend(config, newConfig);
-        config.set(updatedConfig);
-        ConfigurationAPI.__set__('config', updatedConfig);
+        config.merge(newConfig);
+        config.reconfigure();
+        ConfigurationAPI.__set__('config', config);
 
         ConfigurationAPI.browse(testUtils.context.owner).then(function (response) {
             should.exist(response);
@@ -49,9 +49,9 @@ describe('Configuration API', function () {
     });
 
     it('can read config', function (done) {
-        var updatedConfig = _.extend(config, newConfig);
-        config.set(updatedConfig);
-        ConfigurationAPI.__set__('config', updatedConfig);
+        config.merge(newConfig);
+        config.reconfigure();
+        ConfigurationAPI.__set__('config', config);
 
         ConfigurationAPI.read(_.extend({}, testUtils.context.owner, {key: 'database'})).then(function (response) {
             should.exist(response);

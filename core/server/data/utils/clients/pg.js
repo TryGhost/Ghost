@@ -1,5 +1,5 @@
 var _       = require('lodash'),
-    config  = require('../../../config/index'),
+    db      = require('../../db'),
 
     // private
     doRawFlattenAndPluck,
@@ -10,7 +10,7 @@ var _       = require('lodash'),
     getColumns;
 
 doRawFlattenAndPluck = function doRaw(query, name) {
-    return config.database.knex.raw(query).then(function (response) {
+    return db.knex.raw(query).then(function (response) {
         return _.flatten(_.pluck(response.rows, name));
     });
 };

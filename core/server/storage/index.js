@@ -6,9 +6,9 @@ function getStorage(storageChoice) {
     var storagePath,
         storageConfig;
 
-    storageChoice = config.storage.active;
-    storagePath = config.paths.storage;
-    storageConfig = config.storage[storageChoice];
+    storageChoice = config.get('storage:active');
+    storagePath = config.get('paths:storage');
+    storageConfig = config.get('storage')[storageChoice];
 
     if (storage[storageChoice]) {
         return storage[storageChoice];

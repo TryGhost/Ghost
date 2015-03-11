@@ -8,7 +8,7 @@
 
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
-    config          = require('../config'),
+    urls            = require('../utils/url'),
     utils           = require('./utils'),
     tags;
 
@@ -28,7 +28,7 @@ tags = function (options) {
         if (autolink) {
             return _.map(tags, function (tag) {
                 return utils.linkTemplate({
-                    url: config.urlFor('tag', {tag: tag}),
+                    url: urls.urlFor('tag', {tag: tag}),
                     text: _.escape(tag.name)
                 });
             }).join(separator);
