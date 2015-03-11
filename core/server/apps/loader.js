@@ -1,16 +1,17 @@
 
 var path = require('path'),
     _    = require('lodash'),
-    when = require('when'),
-    appProxy = require('./proxy'),
+    Promise = require('bluebird'),
+    AppProxy = require('./proxy'),
     config = require('../config'),
     AppSandbox = require('./sandbox'),
     AppDependencies = require('./dependencies'),
+    AppPermissions = require('./permissions'),
     loader;
 
 // Get the full path to an app by name
 function getAppAbsolutePath(name) {
-    return path.join(config().paths.appPath, name);
+    return path.join(config.paths.appPath, name);
 }
 
 // Get a relative path to the given apps root, defaults
@@ -28,9 +29,13 @@ function loadApp(appPath) {
     return sandbox.loadApp(appPath);
 }
 
-function getAppByName(name) {
+function getAppByName(name, permissions) {
     // Grab the app class to instantiate
     var AppClass = loadApp(getAppRelativePath(name)),
+        appProxy = new AppProxy({
+            name: name,
+            permissions: permissions
+        }),
         app;
 
     // Check for an actual class, otherwise just use whatever was returned
@@ -40,7 +45,10 @@ function getAppByName(name) {
         app = AppClass;
     }
 
-    return app;
+    return {
+        app: app,
+        proxy: appProxy
+    };
 }
 
 // The loader is responsible for loading apps
@@ -48,37 +56,53 @@ loader = {
     // Load a app and return the instantiated app
     installAppByName: function (name) {
         // Install the apps dependendencies first
-        var deps = new AppDependencies(getAppAbsolutePath(name));
-        return deps.install().then(function () {
-            var app = getAppByName(name);
+        var appPath = getAppAbsolutePath(name),
+            deps = new AppDependencies(appPath);
 
-            // Check for an install() method on the app.
-            if (!_.isFunction(app.install)) {
-                return when.reject(new Error("Error loading app named " + name + "; no install() method defined."));
-            }
+        return deps.install()
+            .then(function () {
+                // Load app permissions
+                var perms = new AppPermissions(appPath);
 
-            // Run the app.install() method
-            // Wrapping the install() with a when because it's possible
-            // to not return a promise from it.
-            return when(app.install(appProxy)).then(function () {
-                return when.resolve(app);
+                return perms.read().catch(function (err) {
+                    // Provide a helpful error about which app
+                    return Promise.reject(new Error('Error loading app named ' + name + '; problem reading permissions: ' + err.message));
+                });
+            })
+            .then(function (appPerms) {
+                var appInfo = getAppByName(name, appPerms),
+                    app = appInfo.app,
+                    appProxy = appInfo.proxy;
+
+                // Check for an install() method on the app.
+                if (!_.isFunction(app.install)) {
+                    return Promise.reject(new Error('Error loading app named ' + name + '; no install() method defined.'));
+                }
+
+                // Run the app.install() method
+                // Wrapping the install() with a when because it's possible
+                // to not return a promise from it.
+                return Promise.resolve(app.install(appProxy)).return(app);
             });
-        });
     },
 
     // Activate a app and return it
     activateAppByName: function (name) {
-        var app = getAppByName(name);
+        var perms = new AppPermissions(getAppAbsolutePath(name));
 
-        // Check for an activate() method on the app.
-        if (!_.isFunction(app.activate)) {
-            return when.reject(new Error("Error loading app named " + name + "; no activate() method defined."));
-        }
+        return perms.read().then(function (appPerms) {
+            var appInfo = getAppByName(name, appPerms),
+                app = appInfo.app,
+                appProxy = appInfo.proxy;
 
-        // Wrapping the activate() with a when because it's possible
-        // to not return a promise from it.
-        return when(app.activate(appProxy)).then(function () {
-            return when.resolve(app);
+            // Check for an activate() method on the app.
+            if (!_.isFunction(app.activate)) {
+                return Promise.reject(new Error('Error loading app named ' + name + '; no activate() method defined.'));
+            }
+
+            // Wrapping the activate() with a when because it's possible
+            // to not return a promise from it.
+            return Promise.resolve(app.activate(appProxy)).return(app);
         });
     }
 };

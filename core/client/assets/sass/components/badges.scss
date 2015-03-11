@@ -1,0 +1,98 @@
+// ------------------------------------------------------------
+// Badges
+//
+// Badges are numbers that sit inside buttons or text, for
+// things like an unread count.
+//
+// * Base Class
+// * Hover state, but only for links
+// * Colours
+// ------------------------------------------------------------
+
+
+//
+// Base Class
+// --------------------------------------------------
+
+.badge {
+    display: inline-block;
+    min-width: 10px;
+    padding: 2px 4px;
+    box-shadow: 0 0 0 1px #777; // Fix due to our smaller than default button sizes
+    font-size: 1rem;
+    font-weight: inherit;
+    color: #FFF;
+    line-height: 1;
+    vertical-align: baseline;
+    white-space: nowrap;
+    text-align: center;
+    background-color: #777;
+    border-radius: 10px;
+
+    // Empty badges collapse automatically (not available in IE8)
+    &:empty {
+        display: none;
+    }
+
+    // Quick fix for badges in buttons
+    .btn & {
+        position: relative;
+        top: -1px;
+    }
+
+    .btn-xs & {
+        top: 0;
+        padding: 1px 5px;
+    }
+
+    // Account for badges in text tags
+    p & {
+        padding: 0px 4px 3px;
+        position: relative;
+        top: -2px;
+        margin-left: -1px;
+    }
+
+    // Account for badges in navs
+    .nav-pills > li > a > & {
+        margin-left: 3px;
+    }
+
+    .nav-item & {
+        margin-top: -5px;
+        margin-left: 3px;
+    }
+}//.badge
+
+
+//
+// Hover state, but only for links
+// --------------------------------------------------
+
+a.badge {
+    &:hover,
+    &:focus {
+        color: #fff;
+        text-decoration: none;
+        cursor: pointer;
+    }
+}
+
+//
+// Colours
+// --------------------------------------------------
+
+.badge.badge-blue {
+    background-color: $blue;
+    box-shadow: 0 0 0 1px $blue;
+}
+
+.badge.badge-green {
+    background-color: $green;
+    box-shadow: 0 0 0 1px $green;
+}
+
+.badge.badge-red {
+    background-color: $red;
+    box-shadow: 0 0 0 1px $red;
+}

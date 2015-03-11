@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Permalinks</title>
+    <link rel="stylesheet" href="../assets/css/ghost.min.css">
+
+    <!-- Styles not needed for this. Just to get around various bits that Ember handles for us. -->
+    <style>
+        @media (max-width: 900px) {
+            .settings-nav {
+                top: 0;
+                left: -100%;
+            }
+            .settings-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="ember-application settings settings-view-general" data-apps="false" data-filestorage="true" data-blogurl="http://127.0.0.1:2368">
+
+    <div id="container"><a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
+
+        <nav class="global-nav" role="navigation">
+
+            <a class="nav-item ghost-logo" href="/" title="/">
+                <div class="nav-label"><i class="icon-ghost"></i>
+                    <span>Visit blog</span>
+                </div>
+            </a>
+
+            <a class="nav-item nav-content js-nav-item" href="/ghost/">
+                <div class="nav-label"><i class="icon-content"></i> Content</div>
+            </a>
+
+            <a class="nav-item nav-new js-nav-item" href="/ghost/editor/">
+                <div class="nav-label"><i class="icon-add"></i> New Post</div>
+            </a>
+
+
+            <a class="nav-item nav-settings js-nav-item active" href="/ghost/settings/">
+                <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
+            </a>
+
+
+
+
+            <div class="nav-item user-menu" data-href="#">
+                <div class=" nav-label">
+                    <div class="image">
+                        <img src="../../../core/shared/img/user-image.png" alt="Paul Davis's profile picture">
+                    </div>
+                    <div class="name">
+                        Paul Davis <i class="icon-chevron-down"></i>
+                        <small>Profile &amp; Settings</small>
+                    </div>
+                </div>
+            </div>
+
+        </nav>
+
+        <div class="nav-cover js-nav-cover"></div>
+
+        <main id="gh-main" class="viewport" role="main" data-notification-count="0" data-bindattr-448="448">
+            <aside class="notifications top">
+            </aside>
+            <aside class="notifications bottom">
+            </aside>
+            <div>
+                <header class="page-header">
+                    <button class="menu-button js-menu-button" data-ember-action="1221">
+                        <span class="sr-only">Menu</span>
+                    </button>
+                    <h2 class="page-title">Settings</h2>
+                </header>
+
+                <div class="page-content">
+                    <nav class="settings-nav js-settings-nav">
+                        <ul>
+                            <li class="settings-nav-general icon-settings active"><a class="active" href="/ghost/settings/general/">General</a>
+                            </li>
+                            <li class="settings-nav-users icon-users"><a href="/ghost/settings/users/">Users</a>
+                            </li>
+                            <li class="settings-nav-about icon-pacman"><a href="/ghost/settings/about/">About</a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <section class="settings-content js-settings-content fade-in">
+
+                        <header class="settings-view-header">
+                            <a class="btn btn-default btn-back active" href="/ghost/settings/">Back</a>
+                            <h2 class="page-title">General</h2>
+                            <section class="page-actions">
+                                <button type="button" class="btn btn-blue" data-ember-action="1271">Save</button>
+                            </section>
+                        </header>
+
+                        <section class="content settings-general">
+                            <form id="settings-general" novalidate="novalidate">
+
+                                    <div class="form-group">
+                                        <label for="blog-title">Blog Title</label>
+                                        <input id="blog-title" class="" type="text" name="general[title]" value="Paul Davis">
+                                        <p>The name of your blog</p>
+                                    </div>
+
+                                <div class="form-group">
+                                    <label for="blog-logo">Blog Logo</label>
+                                    <button type="button" class="btn btn-green js-modal-logo" data-ember-action="1277">Upload Image</button>
+                                    <p>Display a sexy logo for your publication</p>
+                                </div>
+
+                                <fieldset>
+
+                                    <div class="form-group">
+                                        <label for="postsPerPage">Posts per page</label>
+                                        <input id="postsPerPage" class="" type="number" name="general[postsPerPage]" min="1" max="1000" value="5">
+                                        <p>How many posts should be displayed on each page</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="blog-permalinks">Permalinks</label>
+                                        <label class="permalink-input-wrapper input" tabindex="0">
+
+                                            <div class="permalink-fake-input">
+                                                <span class="permalink-domain">http://myblog.ghost.io</span>
+                                                <span class="permalink-parameter label label-default">journal</span>
+                                                <span class="permalink-parameter label label-default">year</span>
+                                                <span class="permalink-parameter label label-default">hello</span>
+                                                <span class="permalink-parameter label label-default">agaian</span>
+                                                <span class="permalink-parameter label label-default">this</span>
+                                                <span class="permalink-parameter label label-default">is</span>
+                                                <span class="permalink-parameter label label-default">nice</span>
+                                                <span class="permalink-parameter label label-default">yo</span>
+                                                <span class="permalink-parameter label label-default">yo</span>
+                                                <span class="permalink-parameter label label-default">yo</span>
+                                                <input id="blog-permalinks" class="permalink-input" type="text" name="general[permalinks]">
+                                            </div>
+
+                                            <div class="popover">
+                                                <button class="permalink-help button icon-question hover-me">
+                                                    <span class="hidden">URL Structure Formatting</span>
+                                                </button>
+                                                <div class="popover-item closed popover-triangle-bottom">
+                                                    <div class="popover-title">URL Structure Formatting</div>
+                                                    <div class="popover-desc">You can use dynamic variables in this field.</div>
+                                                    <div class="popover-body">
+                                                        <p>
+                                                            <b>%t</b> - The title of your post (or page)<br>
+                                                            <b>%c</b> - The tag which your post is categorised in<br>
+                                                            <b>%y</b> - The year your post was published<br>
+                                                            <b>%m</b> - The month your post was published<br>
+                                                            <b>%d</b> - The day your post was published
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </label>
+                                        <p>The default URL structure for your blog</p>
+                                    </div>
+
+                                    <div class="form-group for-select">
+                                        <label for="activeTheme">Theme</label>
+                                        <span class="gh-select" data-bindattr-1286="1286" tabindex="0" data-select-text="Casper - 1.1.0">
+                                            <select id="activeTheme" class="ember-select" name="general[activeTheme]">
+                                                <option value="casper">Casper - 1.1.0</option>
+                                                <option value="hayleybrowne">HJB - 0.5</option>
+                                                <option value="mono">Mono - 0.1.0</option>
+                                                <option value="pad-gs">PAD-GS - 0.8</option>
+                                                <option value="pauladamdavis">PAD - 0.8</option>
+                                            </select>
+                                        </span>
+                                        <p>Select a theme for your blog</p>
+                                    </div>
+                                </fieldset>
+                            </form>
+                        </section>
+                    </section>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+</body>
+</html>
+
+<script src="../../../bower_components/jquery/dist/jquery.js"></script>
+<script>
+    $(function(){
+
+        $('.permalink-input-wrapper').on('click', function(){
+            $(this).addClass('focus');
+            $('#blog-permalinks').focus();
+        });
+
+        $('#blog-permalinks').on('blur', function(){
+            $('.permalink-input-wrapper').removeClass('focus');
+        });
+
+        $('.hover-me').hover(function(){
+            $(this).next('.popover-item').addClass('open fade-in').removeClass('closed fade-out');
+        }, function(){
+            $(this).next('.popover-item').removeClass('fade-in').addClass('fade-out');
+            $(this).next('.popover-item').on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+                if (event.originalEvent.animationName === 'fade-out') {
+                    $(this).removeClass('open fade-out').addClass('closed');
+                }
+            });
+        });
+
+
+        function convertToSlug(Text){
+            return Text.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-').trim();
+        }
+
+        $('#blog-permalinks').on('keyup', function(e){
+            // 188 = comma
+            // Append the new parameter when pressing comma
+            if (e.keyCode === 188) {
+                var input_val = convertToSlug($(this).val());
+
+                var the_param = '<span class="permalink-parameter label label-default">' + input_val + '</span>';
+
+                // If a parameter exists, append after it.
+                // Else append after the domain
+                if ($('.permalink-parameter').length) {
+                    $('.permalink-parameter:last').after(the_param);
+                } else {
+                    $('.permalink-domain').after(the_param);
+                }
+
+
+                $(this).val('');
+            }
+
+            // 8 = backspace
+            // When backspace is pressed AND the input is empty, delete the last parameter
+            if (e.keyCode === 8 && $(this).val() == '') {
+                $('.permalink-parameter:last').remove();
+            }
+        });
+
+    });
+</script>

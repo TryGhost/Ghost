@@ -2,7 +2,7 @@
 var _ = require('lodash'),
     fs = require('fs'),
     path = require('path'),
-    when = require('when'),
+    Promise = require('bluebird'),
     spawn = require('child_process').spawn,
     win32 = process.platform === 'win32';
 
@@ -11,32 +11,32 @@ function AppDependencies(appPath) {
 }
 
 AppDependencies.prototype.install = function installAppDependencies() {
-    var def = when.defer(),
-        spawnOpts;
+    var spawnOpts,
+        self = this;
 
-    fs.exists(path.join(this.appPath, 'package.json'), function (exists) {
-        if (!exists) {
-            // Nothing to do, resolve right away?
-            def.resolve();
-        } else {
-            // Run npm install in the app directory
-            spawnOpts = {
-                cwd: this.appPath
-            };
+    return new Promise(function (resolve, reject) {
+        fs.exists(path.join(self.appPath, 'package.json'), function (exists) {
+            if (!exists) {
+                // Nothing to do, resolve right away?
+                resolve();
+            } else {
+                // Run npm install in the app directory
+                spawnOpts = {
+                    cwd: self.appPath
+                };
 
-            this.spawnCommand('npm', ['install', '--production'], spawnOpts)
-                .on('error', def.reject)
-                .on('exit', function (err) {
-                    if (err) {
-                        def.reject(err);
-                    }
+                self.spawnCommand('npm', ['install', '--production'], spawnOpts)
+                    .on('error', reject)
+                    .on('exit', function (err) {
+                        if (err) {
+                            reject(err);
+                        }
 
-                    def.resolve();
-                });
-        }
-    }.bind(this));
-
-    return def.promise;
+                        resolve();
+                    });
+            }
+        });
+    });
 };
 
 // Normalize a command across OS and spawn it; taken from yeoman/generator
@@ -46,7 +46,7 @@ AppDependencies.prototype.spawnCommand = function (command, args, opt) {
 
     opt = opt || {};
 
-    return spawn(winCommand, winArgs, _.defaults({ stdio: 'inherit' }, opt));
+    return spawn(winCommand, winArgs, _.defaults({stdio: 'inherit'}, opt));
 };
 
 module.exports = AppDependencies;

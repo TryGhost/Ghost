@@ -1,69 +1,55 @@
-/*global window, document, Ghost, $, _, Backbone */
-(function () {
-    'use strict';
+import ValidationEngine from 'ghost/mixins/validation-engine';
+import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-    Ghost.Models.Post = Ghost.ProgressModel.extend({
+var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+    validationType: 'post',
 
-        defaults: {
-            status: 'draft'
-        },
+    uuid: DS.attr('string'),
+    title: DS.attr('string', {defaultValue: ''}),
+    slug: DS.attr('string'),
+    markdown: DS.attr('string', {defaultValue: ''}),
+    html: DS.attr('string'),
+    image: DS.attr('string'),
+    featured: DS.attr('boolean', {defaultValue: false}),
+    page: DS.attr('boolean', {defaultValue: false}),
+    status: DS.attr('string', {defaultValue: 'draft'}),
+    language: DS.attr('string', {defaultValue: 'en_US'}),
+    meta_title: DS.attr('string'),
+    meta_description: DS.attr('string'),
+    author: DS.belongsTo('user',  {async: true}),
+    author_id: DS.attr('number'),
+    updated_at: DS.attr('moment-date'),
+    updated_by: DS.attr(),
+    published_at: DS.attr('moment-date'),
+    published_by: DS.belongsTo('user', {async: true}),
+    created_at: DS.attr('moment-date'),
+    created_by: DS.attr(),
+    tags: DS.hasMany('tag', {embedded: 'always'}),
+    url: DS.attr('string'),
 
-        blacklist: ['published', 'draft'],
+    scratch: null,
+    titleScratch: null,
 
-        parse: function (resp) {
-            if (resp.status) {
-                resp.published = resp.status === 'published';
-                resp.draft = resp.status === 'draft';
-            }
-            if (resp.tags) {
-                return resp;
-            }
-            return resp;
-        },
+    // Computed post properties
 
-        validate: function (attrs) {
-            if (_.isEmpty(attrs.title)) {
-                return 'You must specify a title for the post.';
-            }
-        },
+    isPublished: Ember.computed.equal('status', 'published'),
+    isDraft: Ember.computed.equal('status', 'draft'),
 
-        addTag: function (tagToAdd) {
-            var tags = this.get('tags') || [];
-            tags.push(tagToAdd);
-            this.set('tags', tags);
-        },
+    // remove client-generated tags, which have `id: null`.
+    // Ember Data won't recognize/update them automatically
+    // when returned from the server with ids.
+    updateTags: function () {
+        var tags = this.get('tags'),
+            oldTags = tags.filterBy('id', null);
 
-        removeTag: function (tagToRemove) {
-            var tags = this.get('tags') || [];
-            tags = _.reject(tags, function (tag) {
-                return tag.id === tagToRemove.id || tag.name === tagToRemove.name;
-            });
-            this.set('tags', tags);
-        }
-    });
+        tags.removeObjects(oldTags);
+        oldTags.invoke('deleteRecord');
+    },
 
-    Ghost.Collections.Posts = Backbone.Collection.extend({
-        currentPage: 1,
-        totalPages: 0,
-        totalPosts: 0,
-        nextPage: 0,
-        prevPage: 0,
+    isAuthoredByUser: function (user) {
+        return parseInt(user.get('id'), 10) === parseInt(this.get('author_id'), 10);
+    }
 
-        url: Ghost.paths.apiRoot + '/posts/',
-        model: Ghost.Models.Post,
+});
 
-        parse: function (resp) {
-            if (_.isArray(resp.posts)) {
-                this.limit = resp.limit;
-                this.currentPage = resp.page;
-                this.totalPages = resp.pages;
-                this.totalPosts = resp.total;
-                this.nextPage = resp.next;
-                this.prevPage = resp.prev;
-                return resp.posts;
-            }
-            return resp;
-        }
-    });
-
-}());
+export default Post;

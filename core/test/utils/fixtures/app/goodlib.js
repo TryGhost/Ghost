@@ -1,6 +1,5 @@
-
 module.exports = {
-	util: function () {
-		return 42;
-	}
+    util: function () {
+        return 42;
+    }
 };

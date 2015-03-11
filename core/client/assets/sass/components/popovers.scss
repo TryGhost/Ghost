@@ -1,0 +1,320 @@
+// ------------------------------------------------------------
+// Popovers
+//
+// Styles for the popover component
+//
+// * Popovers
+// * Triangles placeholder styles
+// * Triangles classes
+// * Open/close
+// * Positioning
+// ------------------------------------------------------------
+
+
+//
+// Popovers
+// --------------------------------------------------
+
+.popover-item {
+    position: relative;
+    display: inline-block;
+    padding: 11px 26px 13px 16px;
+    background: $darkgrey;
+    min-width: 300px;
+    max-width: 400px;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    color: $midgrey;
+}
+.popover-title {
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: #fff;
+}
+.popover-desc {
+    margin-top: -4px;
+}
+.popover-body {
+    margin-top: 11px;
+    line-height: 1.7;
+    b {
+        color: #fff;
+    }
+    > *:last-child {
+        margin: 0;
+    }
+}
+
+//
+// Triangles placeholder styles
+// --------------------------------------------------
+
+%popover-triangle {
+    &:before {
+        content: '';
+        position: absolute;
+        display: block;
+    } // :before
+}
+
+%popover-triangle-vertical-top {
+    &:before {
+        @include triangle($popover_triangle, $darkgrey, up, shallow);
+        top: -(floor($popover_triangle * $popover_triangle_shallow_multiplier));
+    }
+}
+
+%popover-triangle-vertical-bottom {
+    &:before {
+        @include triangle($popover_triangle, $darkgrey, down, shallow);
+        bottom: -(floor($popover_triangle * $popover_triangle_shallow_multiplier));
+    }
+}
+
+%popover-triangle-horizontal-left {
+    &:before {
+        @include triangle($popover_triangle, $darkgrey, left, shallow);
+        left: -(floor($popover_triangle * $popover_triangle_shallow_multiplier));
+    }
+}
+
+%popover-triangle-horizontal-right {
+    &:before {
+        @include triangle($popover_triangle, $darkgrey, right, shallow);
+        right: -(floor($popover_triangle * $popover_triangle_shallow_multiplier));
+    }
+}
+
+%popover-triangle-vertical-center {
+    &:before {
+        left: 50%;
+        margin-left: -($popover_triangle / 2);
+    }
+}
+
+%popover-triangle-vertical-left {
+    &:before {
+        left: $popover_triangle;
+    }
+}
+
+%popover-triangle-vertical-right {
+    &:before {
+        left: auto;
+        right: $popover_triangle;
+    }
+}
+
+%popover-triangle-horizontal-center {
+    &:before {
+        top: 50%;
+        margin-top: -$popover_triangle;
+    }
+}
+
+%popover-triangle-horizontal-top {
+    &:before {
+        top: $popover_triangle;
+    }
+}
+
+%popover-triangle-horizontal-bottom {
+    &:before {
+        top: auto;
+        bottom: $popover_triangle;
+    }
+}
+
+
+//
+// Triangles classes
+// --------------------------------------------------
+
+.popover-triangle-top {
+    @extend %popover-triangle;
+    @extend %popover-triangle-vertical-top;
+    @extend %popover-triangle-vertical-center;
+    transform-origin: top center;
+}
+
+.popover-triangle-top-left {
+    @extend %popover-triangle;
+    @extend %popover-triangle-vertical-top;
+    @extend %popover-triangle-vertical-left;
+    transform-origin: top left;
+}
+
+.popover-triangle-top-right {
+    @extend %popover-triangle;
+    @extend %popover-triangle-vertical-top;
+    @extend %popover-triangle-vertical-right;
+    transform-origin: top right;
+}
+
+.popover-triangle-bottom {
+    @extend %popover-triangle;
+    @extend %popover-triangle-vertical-bottom;
+    @extend %popover-triangle-vertical-center;
+    transform-origin: bottom center;
+}
+
+.popover-triangle-bottom-left {
+    @extend %popover-triangle;
+    @extend %popover-triangle-vertical-bottom;
+    @extend %popover-triangle-vertical-left;
+    transform-origin: bottom left;
+}
+
+.popover-triangle-bottom-right {
+    @extend %popover-triangle;
+    @extend %popover-triangle-vertical-bottom;
+    @extend %popover-triangle-vertical-right;
+    transform-origin: bottom right;
+}
+
+.popover-triangle-left {
+    @extend %popover-triangle;
+    @extend %popover-triangle-horizontal-left;
+    @extend %popover-triangle-horizontal-center;
+    transform-origin: left center;
+}
+
+.popover-triangle-left-top {
+    @extend %popover-triangle;
+    @extend %popover-triangle-horizontal-left;
+    @extend %popover-triangle-horizontal-top;
+    transform-origin: left top;
+}
+
+.popover-triangle-left-bottom {
+    @extend %popover-triangle;
+    @extend %popover-triangle-horizontal-left;
+    @extend %popover-triangle-horizontal-bottom;
+    transform-origin: left bottom;
+}
+
+.popover-triangle-right {
+    @extend %popover-triangle;
+    @extend %popover-triangle-horizontal-right;
+    @extend %popover-triangle-horizontal-center;
+    transform-origin: right center;
+}
+
+.popover-triangle-right-top {
+    @extend %popover-triangle;
+    @extend %popover-triangle-horizontal-right;
+    @extend %popover-triangle-horizontal-top;
+    transform-origin: right top;
+}
+
+.popover-triangle-right-bottom {
+    @extend %popover-triangle;
+    @extend %popover-triangle-horizontal-right;
+    @extend %popover-triangle-horizontal-bottom;
+    transform-origin: right bottom;
+}
+
+
+//
+// Open/close
+// --------------------------------------------------
+
+.popover {
+    position: relative;
+    display: inline-block;
+
+    .popover-item {
+        position: absolute;
+        z-index: 20;
+
+        &.open {
+            display: block;
+        }
+
+        &.closed {
+            display: none;
+        }
+    }
+}//.popover
+
+
+//
+// Positioning
+// --------------------------------------------------
+// Position relative to the position of the triangle
+// So... `popover-triangle-left-top` opens on the right
+// of the button because the triangle is on the top left,
+// pointing to the top right of the button
+//
+// |------|  |-----------------|
+// |Button| <  Popover content |
+// |------|  | Lorem ipsum dol |
+//           |-----------------|
+
+.popover-item.popover-triangle-bottom {
+    bottom: calc(100% + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.popover-item.popover-triangle-bottom-left {
+    bottom: calc(100% + 16px);
+    left: 0;
+}
+
+.popover-item.popover-triangle-bottom-right {
+    bottom: calc(100% + 16px);
+    right: 0;
+}
+
+.popover-item.popover-triangle-top {
+    top: calc(100% + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.popover-item.popover-triangle-top-left {
+    top: calc(100% + 16px);
+    left: 0;
+}
+
+.popover-item.popover-triangle-top-right {
+    top: calc(100% + 16px);
+    right: 0;
+}
+
+.popover-item.popover-triangle-left {
+    left: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.popover-item.popover-triangle-left-top {
+    left: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(-($popover_triangle * 2));
+}
+
+.popover-item.popover-triangle-left-bottom {
+    left: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(calc(-100% + #{($popover_triangle * 2)}));
+}
+
+.popover-item.popover-triangle-right {
+    right: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.popover-item.popover-triangle-right-top {
+    right: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(-($popover_triangle * 2));
+}
+
+.popover-item.popover-triangle-right-bottom {
+    right: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(calc(-100% + #{($popover_triangle * 2)}));
+}

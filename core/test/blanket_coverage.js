@@ -1,8 +1,11 @@
-var blanket = require("blanket")({
-    "pattern": ["/core/server/", "/core/client/", "/core/shared/"],
-    "data-cover-only": ["/core/server/", "/core/client/", "/core/shared/"]
-}),
-    requireDir = require("require-dir");
+// Posts
+/*jshint unused:false */
+var blanket = require('blanket')({
+        pattern: ['/core/server/', '/core/client/', '/core/shared/'],
+        'data-cover-only': ['/core/server/', '/core/client/', '/core/shared/']
+    }),
+    requireDir = require('require-dir');
 
-requireDir("./unit");
-requireDir("./integration");
+requireDir('./unit');
+requireDir('./integration');
+requireDir('./functional/routes');

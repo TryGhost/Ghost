@@ -1,0 +1,121 @@
+// ------------------------------------------------------------
+// Error Pages
+// Slug: /ghost/404
+//
+// Covers styles for all error screens, eg. 404, 500
+//
+// * Wrappers
+// * Image & error info
+// * Stack Trace
+// ------------------------------------------------------------
+
+
+//
+// Wrappers
+// --------------------------------------------------
+
+.error-content {
+    max-width: 530px;
+    margin: 0 auto;
+    padding: 0;
+    display: table;
+    height: 100%;
+
+    @media (max-width: 630px) {
+        max-width: 264px;
+        text-align: center;
+    }
+}
+
+.error-details {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+
+//
+// Image & error info
+// --------------------------------------------------
+
+.error-image {
+    display: inline-block;
+    vertical-align: middle;
+    width: 96px;
+    height: 150px;
+
+    @media (max-width: 630px) {
+        width: 72px;
+        height: 112px;
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.error-message {
+    position: relative;
+    top: -5px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+.error-code {
+    margin: 0;
+    font-size: 7.8em;
+    line-height: 0.9em;
+    color: #979797;
+
+    @media (max-width: 630px) {
+        font-size: 5.8em;
+    }
+}
+
+.error-description {
+    margin: 0;
+    padding: 0;
+    font-weight: 300;
+    font-size: 1.9em;
+    color: #979797;
+    border: none;
+
+    @media (max-width: 630px) {
+        font-size: 1.4em;
+    }
+}
+
+
+//
+// Stack Trace
+// --------------------------------------------------
+
+.error-stack {
+    margin: 1em auto;
+    padding: 2em;
+    max-width: 800px;
+    background-color: rgba(255,255,255,0.3);
+}
+
+.error-stack-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.error-stack-list li {
+    display: block;
+
+    &:before {
+        color: #BBB;
+        content: "\21AA";
+        display: inline-block;
+        font-size: 1.2em;
+        margin-right: 0.5em;
+    }
+}
+
+.error-stack-function {
+    font-weight: bold;
+}

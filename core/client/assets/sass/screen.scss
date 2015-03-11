@@ -1,56 +1,65 @@
-/*
- * Welcome to Ghost - all styles for the Ghost platform are located within
- * this set of Sass files. Use this file like a table of contents.
- */
+//
+// Modules: Mixins, variables, and utilities
+// --------------------------------------------------
 
-/* ==========================================================================
-   Modules - These styles are re-used in many areas, and are grouped by type.
-   ========================================================================== */
-
-    @import "modules/mixins";
-    /* Sass variables like colours, font sizes, basic styles. */
-
-    @import "modules/normalize";
-    /* Browser cross compatibility normalisation*/
-
-    @import "modules/icons";
-    /* All the styles controlling icons. */
-
-    @import "modules/animations";
-    /* Keyframe animations. */
-
-    @import "modules/global";
-    /* Global elements for the UI, like the header and footer. */
-
-    @import "modules/forms";
-    /* All the styles controlling forms and form fields. */
+@import "modules/variables";
+@import "modules/mixins";
+@import "modules/icons";
+@import "modules/animations";
 
 
+//
+// Libraries: Code by other Homies
+// --------------------------------------------------
 
-/* ==========================================================================
-   Layouts - Styles for specific admin screen layouts, grouped by screen.
-   ========================================================================== */
+@import "../../../../bower_components/normalize-scss/_normalize"; // via Bower
+@import "vendor/nprogress";
+@import "vendor/codemirror";
+@import "vendor/nanoscroller";
 
-    @import "layouts/manage";
-    /* The manage posts screen. */
 
-    @import "layouts/editor";
-    /* The write/edit post screen. */
+//
+// Patterns: Groups of Styles
+// --------------------------------------------------
 
-    @import "layouts/auth";
-    /* The login screen. */
+@import "patterns/global";
+@import "patterns/_shame"; // TODO: Remove
+@import "patterns/forms";
+@import "patterns/buttons";
+@import "patterns/labels";
+@import "patterns/tables";
+@import "patterns/navlist";
 
-    @import "layouts/errors";
-    /* The error screens. */
 
-  /* ==========================================================================
-   Settings Layouts - Styles for the individual settings panes, grouped by pane.
-   ========================================================================== */
-    @import "layouts/settings";
-    /* The settings screen. */
+//
+// Components: Groups of Patterns
+// --------------------------------------------------
 
-        @import "layouts/users";
-        /* The users pane. */
+@import "components/navigation";
+@import "components/modals";
+@import "components/notifications";
+@import "components/uploader";
+@import "components/splitbuttons";
+@import "components/dropdowns";
+@import "components/pagination";
+@import "components/badges";
+@import "components/popovers";
+@import "components/settings-menu";
+@import "components/url-preview";
 
-        @import "layouts/plugins";
-        /* The plugins pane. */
+
+//
+// Layouts: Groups of Components
+// --------------------------------------------------
+
+@import "layouts/default";
+@import "layouts/setup";
+@import "layouts/auth";
+@import "layouts/content";
+@import "layouts/editor";
+@import "layouts/settings";
+@import "layouts/users";
+@import "layouts/user";
+@import "layouts/about";
+@import "layouts/tags";
+@import "layouts/error";

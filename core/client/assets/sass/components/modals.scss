@@ -1,0 +1,239 @@
+// ------------------------------------------------------------
+// Modals
+//
+// Styles for the modal component
+//
+// * Outer Container
+// * Inner Container
+// * Content
+// * Modifiers
+// * Open States
+// * Animations
+// ------------------------------------------------------------
+
+
+//
+// Outer Container
+// --------------------------------------------------
+
+.modal-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    padding-left: 10px;
+    padding-right: 10px;
+    overflow-x: auto;
+    overflow-y: scroll;
+    transition: all 0.15s linear 0s;
+    transform: translateZ(0);
+}
+
+.modal-background {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    background: rgba(0,0,0,0.6);
+}
+
+
+//
+// Inner Container
+// --------------------------------------------------
+
+.modal {
+    left: 50%;
+    right: auto;
+    z-index: 1050;
+    width: 100%;
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    pointer-events: auto;
+
+    @media (max-width: 900px) {
+        padding: 10px;
+    };
+
+    button {
+        min-width: 100px;
+    }
+
+    .image-uploader,
+    .pre-image-uploader {
+        margin: 0;
+    }
+}//.modal
+
+.modal-action {
+    @extend .modal;
+    padding: 60px 0 30px;
+
+    @media (max-width: 900px) {
+        padding: 30px 0;
+    }
+}
+
+//
+// Content
+// --------------------------------------------------
+
+.modal-content {
+    position: relative;
+    padding: 18px;
+    background-clip: padding-box;
+    background-color: #FFFFFF;
+    border-radius: $border-radius;
+    box-shadow: rgba(0,0,0,0.2) 0 0 0 6px;
+
+    .close {
+        position: absolute;
+        top: 19px;
+        right: 19px;
+        z-index: 9999;
+        width: 16px;
+        padding: 0;
+        margin: 0;
+        border: none;
+
+        @include icon($i-close, 1.4rem, $midgrey) {
+            transition: color 0.3s linear;
+        };
+
+        &:hover:before {
+            color: $grey;
+        }
+    }
+}//.modal-content
+
+.modal-header {
+    position: relative;
+    margin-bottom: 18px;
+
+    h1 {
+        display: inline-block;
+        margin: 0 25px 0 0;
+        font-size: 1.85em;
+        font-weight: 100;
+    }
+}
+
+.modal-body {
+    position: relative;
+    overflow-y: auto;
+
+    .red {
+        color: $red;
+    }
+
+    // Remove bottom margin from whatever the first/last direct descendent is
+    // Normalizes any global styles
+    > *:first-child {
+        margin-top: 0;
+    }
+    > *:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.modal-footer {
+    margin-top: 20px;
+    text-align: right; // Used instead of floats as they invert the order
+
+    .reject-button-class {
+        @extend .btn;
+    }
+
+    button {
+        margin-left: 8px;
+    }
+}
+
+//
+// Modifiers
+// --------------------------------------------------
+
+.modal-style-wide {
+    width: 550px;
+
+    @media (max-width: 900px) {
+        width: 100%;
+    }
+}
+
+.modal-style-centered {
+    text-align: center;
+}
+
+// Modal login styles
+.modal-body .login-form {
+    display: block; // Override inherited `display: table-cell;`
+
+    .password-wrap {
+        input {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 900px) {
+        margin: 0 auto;
+        max-width: 264px;
+
+        .password-wrap {
+            width: 100%;
+            margin: 0 auto 1em;
+        }
+
+        .btn {
+            margin: 0;
+            width: 100%;
+            margin-bottom: 1em;
+        }
+    }
+
+    @media (min-width: 901px) {
+        display: flex;
+
+        .password-wrap {
+            flex: 1;
+        }
+    }
+}
+
+
+//
+// Open States
+// --------------------------------------------------
+
+.modal-container.open,
+.modal-container.open > .modal,
+.modal-container.open > .modal-action {
+    display: block;
+}
+
+.modal-background.open {
+    display: block;
+}
+
+
+//
+// Animations
+// --------------------------------------------------
+
+.modal-container.fade-out {
+    animation-duration: 0.08s;
+}
+
+.modal-background.fade-out {
+    // animation-delay: 0.06s;
+    animation-duration: 0.15s;
+}

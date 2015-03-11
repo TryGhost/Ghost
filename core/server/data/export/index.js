@@ -1,25 +1,42 @@
-var when      = require('when'),
-    _         = require('lodash'),
-    migration = require('../migration'),
-    knex      = require('../../models/base').knex,
-    schema    = require('../schema').tables,
+var _           = require('lodash'),
+    Promise     = require('bluebird'),
+    versioning  = require('../versioning'),
+    config      = require('../../config'),
+    utils       = require('../utils'),
+    serverUtils = require('../../utils'),
+    errors      = require('../../errors'),
+    settings    = require('../../api/settings'),
 
-    excludedTables = ['sessions'],
-    exporter;
+    excludedTables = ['accesstokens', 'refreshtokens', 'clients'],
+    exporter,
+    exportFileName;
+
+exportFileName = function () {
+    var datetime = (new Date()).toJSON().substring(0, 10),
+        title = '';
+
+    return settings.read({key: 'title', context: {internal: true}}).then(function (result) {
+        if (result) {
+            title = serverUtils.safeString(result.settings[0].value) + '.';
+        }
+        return title + 'ghost.' + datetime + '.json';
+    }).catch(function (err) {
+        errors.logError(err);
+        return 'ghost.' + datetime + '.json';
+    });
+};
 
 exporter = function () {
-    var tablesToExport = _.keys(schema);
-
-    return when.join(migration.getDatabaseVersion(), tablesToExport).then(function (results) {
+    return Promise.join(versioning.getDatabaseVersion(), utils.getTables()).then(function (results) {
         var version = results[0],
             tables = results[1],
             selectOps = _.map(tables, function (name) {
                 if (excludedTables.indexOf(name) < 0) {
-                    return knex(name).select();
+                    return config.database.knex(name).select();
                 }
             });
 
-        return when.all(selectOps).then(function (tableData) {
+        return Promise.all(selectOps).then(function (tableData) {
             var exportData = {
                 meta: {
                     exported_on: new Date().getTime(),
@@ -34,11 +51,12 @@ exporter = function () {
                 exportData.data[name] = tableData[i];
             });
 
-            return when.resolve(exportData);
-        }, function (err) {
-            console.log("Error exporting data: " + err);
+            return exportData;
+        }).catch(function (err) {
+            errors.logAndThrowError(err, 'Error exporting data', '');
         });
     });
 };
 
 module.exports = exporter;
+module.exports.fileName = exportFileName;

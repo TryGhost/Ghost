@@ -1,4 +1,3 @@
-
 var path = require('path'),
 	util = require('./goodlib.js'),
 	nested = require('./nested/goodnested');
@@ -18,7 +17,6 @@ GoodApp.prototype.install = function () {
 };
 
 GoodApp.prototype.activate = function () {
-
 };
 
 module.exports = GoodApp;

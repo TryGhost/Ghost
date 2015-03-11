@@ -1,0 +1,238 @@
+// ------------------------------------------------------------
+// User
+//
+// Styles for the Edit User page
+// Slug: /ghost/settings/users/:username/
+//
+// * User Actions
+// * Content Wrapper
+// * Cover Image
+// * Edit User Details
+// * User Image (Avatar)
+// ------------------------------------------------------------
+
+
+//
+// User Actions
+// --------------------------------------------------
+
+.user-actions-cog {
+    padding: 9px 11px;
+}
+
+.user-actions-menu {
+    left: auto;
+    right: 0;
+    top: calc(100% + 17px);
+
+    &.fade-out {
+        animation-duration: 0.01s;
+    }
+}
+
+
+//
+// Content Wrapper
+// --------------------------------------------------
+
+.content.settings-user {
+    padding: 0;
+
+    @media (min-width: 901px) {
+        padding: 0 40px;
+    }
+}
+
+
+//
+// Cover Image
+// --------------------------------------------------
+
+.user-cover {
+    position: relative;
+    width: auto;
+    height: 300px;
+    margin: 0;
+    background: #fafafa no-repeat center center;
+    background-size: cover;
+    overflow: hidden;
+
+    @media (max-width: 900px) {
+        margin: 0;
+    }
+
+    // Gradient overlay
+    &:after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 110px;
+        background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.18));
+    }
+}
+
+.user-cover-edit {
+    position: absolute;
+    right: 35px;
+    bottom: 29px;
+    min-height: 37px;
+    height: 37px;
+    background: rgba(0,0,0,0.3);
+    color: rgba(255,255,255,0.8);
+    z-index: 2;
+    border-width: 0;
+    border-radius: $border-radius;
+    transition: color 0.3s ease, background 0.3s ease;
+
+    @media (max-width: 1000px) {
+        right: 15px;
+    }
+
+    &:hover {
+        color: #fff;
+        background: rgba(0,0,0,0.5);
+    }
+}
+
+
+//
+// Edit User Details
+// --------------------------------------------------
+
+.first-form-group {
+    max-width: 500px;
+
+    @media (min-width: 651px) {
+        min-width: 285px;
+        left: 40px;
+    }
+
+    @media (min-width: 651px) and (max-width: 1000px) {
+        width: calc(100% - 201px);
+    }
+
+    @media (min-width: 1001px) {
+        width: calc(100% - 181px);
+    }
+}
+
+.user-details-top {
+    position: relative;
+
+    @media (max-width: 650px) {
+        margin-top: 40px;
+        margin-bottom: 0;
+    }
+
+    @media (min-width: 651px) {
+        margin-top: -91px;
+        margin-bottom: 0;
+        padding: 0;
+
+        p {
+            color: #fff;
+        }
+
+        label[for="user-name"] {
+            color: transparent;
+        }
+
+        .user-name {
+            border-color: #fff;
+        }
+    }
+
+    @media (min-width: 901px) {
+        .user-name {
+            width: calc(100% - 20px);
+        }
+    }
+}//.user-details-top
+
+.user-profile {
+    position: relative;
+    z-index: 1;
+
+    @media (min-width: 651px) {
+        padding-left: 143px;
+    }
+
+    fieldset {
+        @media (max-width: 650px) {
+            padding: 0 40px;
+        }
+
+        @media (max-width: 550px) {
+            padding: 0 15px;
+        }
+    }
+
+    textarea {
+        min-width: 240px;
+    }
+}
+
+
+//
+// User Image (Avatar)
+// --------------------------------------------------
+
+.user-image {
+    display: block;
+    position: absolute;
+    width: 126px;
+    height: 126px;
+    margin-left: -6px;
+    margin-right: 20px;
+    padding: 3px;
+    float: left;
+    text-align: center;
+    border-radius: 100%;
+    overflow: hidden;
+    background: #fff;
+    z-index: 2;
+
+    @media (min-width: 651px) {
+        top: -19px;
+        left: -98px;
+    }
+
+    @media (max-width: 650px) {
+        top: -159px;
+        left: 21px;
+    }
+
+    .img {
+        display: block;
+        width: 120px;
+        height: 120px;
+        background-size: cover;
+        background-position: center center;
+        border-radius: 100%;
+    }
+
+    &:hover {
+        .edit-user-image {
+            opacity: 1;
+        }
+    }
+}//.user-image
+
+.edit-user-image {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    bottom: 3px;
+    left: 3px;
+    border-radius: 100%;
+    width: calc(100% - 6px);
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    color: #fff;
+    line-height: 120px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}

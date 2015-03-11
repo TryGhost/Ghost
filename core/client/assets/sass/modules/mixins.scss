@@ -1,198 +1,128 @@
-/*
- * These are Sass variables used to make our CSS more dynamic by re-using
- * common property values throughout our styles. Don't overdo it.
- *
- * Table of Contents:
- *
- * Bourbon
- * Breakpoint
- * Typography
- * Colors
- * Gradients
- * Global Styles
- *
- */
+// ------------------------------------------------------------
+// Mixins
+//
+// Mixins defined here are very general and used in mul
+//
+// * baseline()
+// * clearfix()
+// * tab-focus()
+// * triangle()
+// * set-triangle-color()
+// * circular-image()
+// ------------------------------------------------------------
 
 
-/* =============================================================================
-   Bourbon 
-   ============================================================================= */
-
-// Bourbon - http://bourbon.io/
-@import "bourbon/_bourbon";
-$rounded: 2px;
-$shadow: rgba(0,0,0,0.05) 0 1px 5px;
-$default-transition-duration: 0.3s;
-
-
-/* =============================================================================
-   Breakpoint
-   ============================================================================= */
-
-// Breakpoint - http://breakpoint-sass.com/
-@import "breakpoint";
-$breakpoint-default-feature: max-width;
-
-// Max widths
-$netbook: 1000px;
-$tablet: 800px;
-$mobile: 400px;
-
-// Min widths
-$biggerthan-widescreen: min-width 1500px, min-width 1500px;
-$biggerthan-netbook: min-width 1000px, min-width 1000px;
-$biggerthan-tablet: min-width 800px, min-width 800px;
-$biggerthan-mobile: min-width 401px, min-width 401px;
-
-// Heights
-$letterbox: max-height 600px, max-height 600px;
-
-// Pixel Densities
-$retina: 2 device-pixel-ratio;
-
-
-/* =============================================================================
-   Typography
-   ============================================================================= */
-
-$font-family: 'Open Sans', sans-serif;
-$font-family-serif: serif;
-$font-family-mono: Inconsolata, monospace;
+//
+// Baseline margin
+// --------------------------------------------------
 
 @mixin baseline {
     margin: 1.6em 0;
 }
 
-//Does this really need to be a mixin?
-@mixin hidden {
-    text-indent: -9999px;
-    visibility: hidden;
-    display: none;
+
+//
+// Fix for clearing float-based overflows
+// --------------------------------------------------
+
+@mixin clearfix {
+    &:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
 }
 
 
-/* =============================================================================
-   Colors
-   ============================================================================= */
-
-$darkgrey: #242628;
-$grey: #35393b;
-$midgrey: #7d878a;
-$lightgrey: #e2edf2;
-
-$brown: #aaa9a2;
-$midbrown: #c0bfb6;
-$lightbrown: #edece4;
-
-$blue: #5BA4E5;
-$red: #e25440;
-$orange: #F2A925;
-$green: #9FBB58;
+//
+// WebKit-style focus
+// From Bootstrap
+// --------------------------------------------------
+@mixin tab-focus() {
+    // Default
+    outline: thin dotted;
+    // WebKit
+    outline: 0px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
 
 
-/* =============================================================================
-   Gradients
-   ============================================================================= */
+//
+// Simple SCSS mixin to create CSS triangles
+// Example: @include css-triangle (10px, #fff, "up");
+// --------------------------------------------------
 
-/*
- * Auto Gradients
- *
- * If the gradient mixin is called with 1 value: gradient(#444) - then a second
- * color which is 10% lighter than the entered value will be auto-generated. If
- * the gradient mixin is called with 2 values: gradient(#444,#666) - then those
- * two values will be used instead, as normal.
- */
+@mixin triangle($size: 20px, $color: #000, $direction: "down", $type: "normal") {
+    $verticalSize: $size;
+    width: 0;
+    height: 0;
 
-@mixin gradient($color1: #aaa, $color2: none) {
-
-    @if $color2 == 'none' {
-        background-color: lighten($color1, 10%);
-        background-image: -webkit-linear-gradient(bottom, $color1, lighten($color1, 10%));
-        background-image:    -moz-linear-gradient(bottom, $color1, lighten($color1, 10%));
-        background-image:     -ms-linear-gradient(bottom, $color1, lighten($color1, 10%));
-        background-image:         linear-gradient(bottom, $color1, lighten($color1, 10%));
-    } @else {
-        background-color: $color2;
-        background-image: -webkit-linear-gradient(bottom, $color1, $color2);
-        background-image:    -moz-linear-gradient(bottom, $color1, $color2);
-        background-image:     -ms-linear-gradient(bottom, $color1, $color2);
-        background-image:         linear-gradient(to top, $color1, $color2);
+    @if $type == "shallow" {
+      $verticalSize: floor($size * $popover_triangle_shallow_multiplier);
     }
 
-}
-
-// The same as the above, but with the colours reversed.
-
-@mixin inversegradient($color1: #aaa, $color2: none) {
-
-    @if $color2 == 'none' {
-        background-color: $color1;
-        background-image: -webkit-linear-gradient(bottom, lighten($color1, 10%), $color1);
-        background-image:    -moz-linear-gradient(bottom, lighten($color1, 10%), $color1);
-        background-image:     -ms-linear-gradient(bottom, lighten($color1, 10%), $color1);
-        background-image:         linear-gradient(bottom, lighten($color1, 10%), $color1);
-    } @else {
-        background-color: $color1;
-        background-image: -webkit-linear-gradient(bottom, $color2, $color1);
-        background-image:    -moz-linear-gradient(bottom, $color2, $color1);
-        background-image:     -ms-linear-gradient(bottom, $color2, $color1);
-        background-image:         linear-gradient(to top, $color2, $color1);
+    @if $direction == "down" {
+        border-left: $size solid #{set-triangle-color($direction, "left", $color)};
+        border-right: $size solid #{set-triangle-color($direction, "right", $color)};
+        border-top: $verticalSize solid #{set-triangle-color($direction, "top", $color)};
     }
 
+    @if $direction == "up" {
+        border-left: $size solid #{set-triangle-color($direction, "left", $color)};
+        border-right: $size solid #{set-triangle-color($direction, "right", $color)};
+        border-bottom: $verticalSize solid #{set-triangle-color($direction, "bottom", $color)};
+    }
+
+    @if $direction == "left" {
+        border-right: $verticalSize solid #{set-triangle-color($direction, "right", $color)};
+        border-top: $size solid #{set-triangle-color($direction, "top", $color)};
+        border-bottom: $size solid #{set-triangle-color($direction, "bottom", $color)};
+    }
+
+    @if $direction == "right" {
+        border-left: $verticalSize solid #{set-triangle-color($direction, "left", $color)};
+        border-bottom: $size solid #{set-triangle-color($direction, "bottom", $color)};
+        border-top: $size solid #{set-triangle-color($direction, "top", $color)};
+    }
 }
 
 
-/* =============================================================================
-   Global Elements
-   ============================================================================= */
+//
+// Utility function to return the relevant colour depending on what type of arrow it is
+// --------------------------------------------------
 
-%box, .box {
-    padding: 15px;
-    margin-bottom: 15px;
-    background: #fff;
+@function set-triangle-color($direction, $side, $color) {
+    @if $direction == "left" and $side == "right"
+    or  $direction == "right" and $side == "left"
+    or $direction == "down" and $side == "top"
+    or $direction == "up" and $side == "bottom" {
+        @return $color
+    } @else {
+        @return "transparent";
+    }
+}
+
+
+//
+// Reusable styles for creating a circular image which is cropped properly, with the image inside it
+// Example: @circular-image(35px);
+// --------------------------------------------------
+
+@mixin circular-image($widthandheight: 20px) {
+    @content;
+    width: $widthandheight;
+    height: $widthandheight;
+    border-radius: $widthandheight;
+    background-size: cover;
+    background-position: center center;
     position: relative;
-    box-shadow: $shadow;
 
-    header {
-        height:14px;
-        border-bottom: 1px solid $lightbrown;
-        padding-bottom: 15px;
-        margin-bottom: 15px;
-        text-transform: uppercase;
-        font-size:0.85em;
-        color: $brown;
-    }
-
-    footer {
-        height:14px;
-        border-top: 1px solid $lightbrown;
-        padding-top: 10px;
-        margin-top:15px;
-        text-transform: uppercase;
-        font-size:0.85em;
-        color: $brown;
-    }
-
-    header a,
-    footer a {
-        color:$brown;
-
-        &:hover {
-            color:$darkgrey;
-            text-decoration: none;
-        }
-    }
-}
-
-/* =============================================================================
-   Animations
-   ============================================================================= */
-
-@include keyframes(fade-out) {
-    from {
-        opacity: 1;
-    }
-    to {
+    img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         opacity: 0;
     }
 }

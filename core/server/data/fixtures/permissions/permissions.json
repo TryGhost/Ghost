@@ -1,0 +1,174 @@
+{
+    "permissions": {
+        "db": [
+            {
+                "name": "Export database",
+                "action_type": "exportContent"
+            },
+            {
+                "name": "Import database",
+                "action_type": "importContent"
+            },
+            {
+                "name": "Delete all content",
+                "action_type": "deleteAllContent"
+            }
+        ],
+        "mail": [
+            {
+                "name": "Send mail",
+                "action_type": "send"
+            }
+        ],
+        "notification": [
+            {
+                "name": "Browse notifications",
+                "action_type": "browse"
+            },
+            {
+                "name": "Add notifications",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete notifications",
+                "action_type": "destroy"
+            }
+        ],
+        "post": [
+            {
+                "name": "Browse posts",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read posts",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit posts",
+                "action_type": "edit"
+            },
+            {
+                "name": "Add posts",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete posts",
+                "action_type": "destroy"
+            }
+        ],
+        "setting": [
+            {
+                "name": "Browse settings",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read settings",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit settings",
+                "action_type": "edit"
+            }
+        ],
+        "slug": [
+            {
+                "name": "Generate slugs",
+                "action_type": "generate"
+            }
+        ],
+        "tag": [
+            {
+                "name": "Browse tags",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read tags",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit tags",
+                "action_type": "edit"
+            },
+            {
+                "name": "Add tags",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete tags",
+                "action_type": "destroy"
+            }
+        ],
+        "theme": [
+            {
+                "name": "Browse themes",
+                "action_type": "browse"
+            },
+            {
+                "name": "Edit themes",
+                "action_type": "edit"
+            }
+        ],
+        "user": [
+            {
+                "name": "Browse users",
+                "action_type": "browse"
+            },
+            {
+                "name": "Read users",
+                "action_type": "read"
+            },
+            {
+                "name": "Edit users",
+                "action_type": "edit"
+            },
+            {
+                "name": "Add users",
+                "action_type": "add"
+            },
+            {
+                "name": "Delete users",
+                "action_type": "destroy"
+            }
+        ],
+        "role": [
+            {
+                "name": "Assign a role",
+                "action_type": "assign"
+            },
+            {
+                "name": "Browse roles",
+                "action_type": "browse"
+            }
+        ]
+    },
+    "permissions_roles": {
+        "Administrator": {
+            "db": "all",
+            "mail": "all",
+            "notification": "all",
+            "post": "all",
+            "setting": "all",
+            "slug": "all",
+            "tag": "all",
+            "theme": "all",
+            "user": "all",
+            "role": "all"
+        },
+        "Editor": {
+            "post": "all",
+            "setting": ["browse", "read"],
+            "slug": "all",
+            "tag": "all",
+            "user": "all",
+            "role": "all"
+        },
+        "Author": {
+            "post": ["browse", "read", "add"],
+            "setting": ["browse", "read"],
+            "slug": "all",
+            "tag": ["browse", "read", "add"],
+            "user": ["browse", "read"],
+            "role": ["browse"]
+        }
+    }
+}

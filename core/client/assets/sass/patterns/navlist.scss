@@ -1,0 +1,83 @@
+// ------------------------------------------------------------
+// Navigation Lists
+//
+// Navigation component used in places like the settings menu
+//
+// * Wrapper
+// * Nav Item
+// ------------------------------------------------------------
+
+
+//
+// Wrapper
+// --------------------------------------------------
+
+.nav-list {
+    padding: 0;
+    border: 1px solid #E0DFD7;
+    max-width: 500px;
+    border-radius: $border-radius;
+    background: #FFF;
+
+    &.nav-list-block {
+        max-width: none;
+    }
+}
+
+
+//
+// Nav Item
+// --------------------------------------------------
+
+.nav-list-item {
+    @include icon($i-chevron, 1.4rem, $midbrown) {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+    }
+
+    position: relative;
+    display: block;
+    padding: 8px 40px 8px 12px;
+    color: $darkgrey;
+
+    &:hover {
+        background: lighten($lightbrown, 5%);
+    }
+
+    &:first-of-type {
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
+    }
+    &:last-of-type {
+        border-bottom-left-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+    }
+
+    &:not(:last-of-type) {
+        border-bottom: 1px solid #E0DFD7;
+    }
+
+    button {
+        text-align: left;
+    }
+
+    a {
+        color: $darkgrey;
+    }
+
+    b {
+        display: block;
+        font-weight: normal;
+        font-size: 1.6rem;
+        line-height: 1.375;
+    }
+
+    span {
+        display: block;
+        font-size: 1.1rem;
+        color: $midgrey;
+        line-height: 1.375;
+    }
+}//.nav-list-item

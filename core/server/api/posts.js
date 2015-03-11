@@ -1,129 +1,196 @@
-var when                   = require('when'),
-    _                      = require('lodash'),
-    dataProvider           = require('../models'),
-    permissions            = require('../permissions'),
-    canThis                = permissions.canThis,
-    filteredUserAttributes = require('./users').filteredAttributes,
+// # Posts API
+// RESTful API for the Post resource
+var Promise         = require('bluebird'),
+    _               = require('lodash'),
+    dataProvider    = require('../models'),
+    canThis         = require('../permissions').canThis,
+    errors          = require('../errors'),
+    utils           = require('./utils'),
+
+    docName         = 'posts',
+    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'next', 'previous'],
     posts;
 
-// ## Posts
-posts = {
-    // #### Browse
+// ## Helpers
+function prepareInclude(include) {
+    var index;
 
-    // **takes:** filter / pagination parameters
+    include = include || '';
+    include = _.intersection(include.split(','), allowedIncludes);
+    index = include.indexOf('author');
+
+    if (index !== -1) {
+        include[index] = 'author_id';
+    }
+
+    return include;
+}
+
+/**
+ * ## Posts API Methods
+ *
+ * **See:** [API Methods](index.js.html#api%20methods)
+ */
+posts = {
+
+    /**
+     * ### Browse
+     * Find a paginated set of posts
+     *
+     * Will only return published posts unless we have an authenticated user and an alternative status
+     * parameter.
+     *
+     * Will return without static pages unless told otherwise
+     *
+     * Can return posts for a particular tag by passing a tag slug in
+     *
+     * @public
+     * @param {{context, page, limit, status, staticPages, tag}} options (optional)
+     * @returns {Promise(Posts)} Posts Collection with Meta
+     */
     browse: function browse(options) {
         options = options || {};
 
-        // **returns:** a promise for a page of posts in a json object
-        //return dataProvider.Post.findPage(options);
-        return dataProvider.Post.findPage(options).then(function (result) {
-            var i = 0,
-                omitted = result;
-
-            for (i = 0; i < omitted.posts.length; i = i + 1) {
-                omitted.posts[i].author = _.omit(omitted.posts[i].author, filteredUserAttributes);
-                omitted.posts[i].user = _.omit(omitted.posts[i].user, filteredUserAttributes);
-            }
-            return omitted;
-        });
-    },
-
-    // #### Read
-
-    // **takes:** an identifier (id or slug?)
-    read: function read(args) {
-        // **returns:** a promise for a single post in a json object
-
-        return dataProvider.Post.findOne(args).then(function (result) {
-            var omitted;
-
-            if (result) {
-                omitted = result.toJSON();
-                omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                omitted.user = _.omit(omitted.user, filteredUserAttributes);
-                return omitted;
-            }
-            return when.reject({errorCode: 404, message: 'Post not found'});
-
-        });
-    },
-
-    getSlug: function getSlug(args) {
-        return dataProvider.Base.Model.generateSlug(dataProvider.Post, args.title, {status: 'all'}).then(function (slug) {
-            if (slug) {
-                return slug;
-            }
-            return when.reject({errorCode: 500, message: 'Could not generate slug'});
-        });
-    },
-
-    // #### Edit
-
-    // **takes:** a json object with all the properties which should be updated
-    edit: function edit(postData) {
-        // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
+        if (!(options.context && options.context.user)) {
+            options.status = 'published';
         }
-        var self = this;
-        return canThis(self.user).edit.post(postData.id).then(function () {
-            return dataProvider.Post.edit(postData).then(function (result) {
-                if (result) {
-                    var omitted = result.toJSON();
-                    omitted.author = _.omit(omitted.author, filteredUserAttributes);
-                    omitted.user = _.omit(omitted.user, filteredUserAttributes);
-                    return omitted;
+
+        if (options.include) {
+            options.include = prepareInclude(options.include);
+        }
+
+        return dataProvider.Post.findPage(options);
+    },
+
+    /**
+     * ### Read
+     * Find a post, by ID or Slug
+     *
+     * @public
+     * @param {{id_or_slug (required), context, status, include, ...}} options
+     * @return {Promise(Post)} Post
+     */
+    read: function read(options) {
+        var attrs = ['id', 'slug', 'status'],
+            data = _.pick(options, attrs);
+        options = _.omit(options, attrs);
+
+        // only published posts if no user is present
+        if (!(options.context && options.context.user)) {
+            data.status = 'published';
+        }
+
+        if (options.include) {
+            options.include = prepareInclude(options.include);
+        }
+
+        return dataProvider.Post.findOne(data, options).then(function (result) {
+            if (result) {
+                return {posts: [result.toJSON()]};
+            }
+
+            return Promise.reject(new errors.NotFoundError('Post not found.'));
+        });
+    },
+
+    /**
+     * ### Edit
+     * Update properties of a post
+     *
+     * @public
+     * @param {Post} object Post or specific properties to update
+     * @param {{id (required), context, include,...}} options
+     * @return {Promise(Post)} Edited Post
+     */
+    edit: function edit(object, options) {
+        return canThis(options.context).edit.post(options.id).then(function () {
+            return utils.checkObject(object, docName, options.id).then(function (checkedPostData) {
+                if (options.include) {
+                    options.include = prepareInclude(options.include);
                 }
-                return when.reject({errorCode: 404, message: 'Post not found'});
-            }).otherwise(function (error) {
-                return dataProvider.Post.findOne({id: postData.id, status: 'all'}).then(function (result) {
-                    if (!result) {
-                        return when.reject({errorCode: 404, message: 'Post not found'});
+
+                return dataProvider.Post.edit(checkedPostData.posts[0], options);
+            }).then(function (result) {
+                if (result) {
+                    var post = result.toJSON();
+
+                    // If previously was not published and now is (or vice versa), signal the change
+                    post.statusChanged = false;
+                    if (result.updated('status') !== result.get('status')) {
+                        post.statusChanged = true;
                     }
-                    return when.reject({message: error.message});
-                });
+                    return {posts: [post]};
+                }
+
+                return Promise.reject(new errors.NotFoundError('Post not found.'));
             });
         }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to edit this post.'});
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit posts.'));
         });
     },
 
-    // #### Add
+    /**
+     * ### Add
+     * Create a new post along with any tags
+     *
+     * @public
+     * @param {Post} object
+     * @param {{context, include,...}} options
+     * @return {Promise(Post)} Created Post
+     */
+    add: function add(object, options) {
+        options = options || {};
 
-    // **takes:** a json object representing a post,
-    add: function add(postData) {
-        // **returns:** a promise for the resulting post in a json object
-        if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
-        }
+        return canThis(options.context).add.post().then(function () {
+            return utils.checkObject(object, docName).then(function (checkedPostData) {
+                if (options.include) {
+                    options.include = prepareInclude(options.include);
+                }
 
-        return canThis(this.user).create.post().then(function () {
-            return dataProvider.Post.add(postData);
+                return dataProvider.Post.add(checkedPostData.posts[0], options);
+            }).then(function (result) {
+                var post = result.toJSON();
+
+                if (post.status === 'published') {
+                    // When creating a new post that is published right now, signal the change
+                    post.statusChanged = true;
+                }
+                return {posts: [post]};
+            });
         }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to add posts.'});
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to add posts.'));
         });
     },
 
-    // #### Destroy
-
-    // **takes:** an identifier (id or slug?)
-    destroy: function destroy(args) {
-        // **returns:** a promise for a json response with the id of the deleted post
-        if (!this.user) {
-            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
-        }
-
-        return canThis(this.user).remove.post(args.id).then(function () {
-            return when(posts.read({id : args.id, status: 'all'})).then(function (result) {
-                return dataProvider.Post.destroy(args.id).then(function () {
+    /**
+     * ### Destroy
+     * Delete a post, cleans up tag relations, but not unused tags
+     *
+     * @public
+     * @param {{id (required), context,...}} options
+     * @return {Promise(Post)} Deleted Post
+     */
+    destroy: function destroy(options) {
+        return canThis(options.context).destroy.post(options.id).then(function () {
+            var readOptions = _.extend({}, options, {status: 'all'});
+            return posts.read(readOptions).then(function (result) {
+                return dataProvider.Post.destroy(options).then(function () {
                     var deletedObj = result;
+
+                    if (deletedObj.posts) {
+                        _.each(deletedObj.posts, function (post) {
+                            post.statusChanged = true;
+                        });
+                    }
+
                     return deletedObj;
                 });
             });
         }, function () {
-            return when.reject({errorCode: 403, message: 'You do not have permission to remove posts.'});
+            return Promise.reject(new errors.NoPermissionError('You do not have permission to remove posts.'));
         });
     }
+
 };
 
 module.exports = posts;

@@ -1,0 +1,12 @@
+{{#gh-modal-dialog action="closeModal" showClose=true type="action" style="wide"
+    title="Are you sure you want to delete this user?" confirm=confirm}}
+
+    {{#unless userPostCount.isPending}}
+        {{#if userPostCount.count}}
+            <strong>WARNING:</strong> <span class="red">This user is the author of {{userPostCount.count}} {{userPostCount.inflection}}.</span> All posts and user data will be deleted. There is no way to recover this.
+        {{else}}
+            <strong>WARNING:</strong> All user data will be deleted. There is no way to recover this.
+        {{/if}}
+    {{/unless}}
+
+{{/gh-modal-dialog}}

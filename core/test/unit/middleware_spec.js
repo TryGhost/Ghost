@@ -1,183 +1,40 @@
 /*globals describe, beforeEach, afterEach, it*/
+/*jshint expr:true*/
 var assert          = require('assert'),
     should          = require('should'),
     sinon           = require('sinon'),
-    when            = require('when'),
-    _               = require('lodash'),
-    express         = require('express'),
-    api             = require('../../server/api'),
     middleware      = require('../../server/middleware').middleware;
 
 describe('Middleware', function () {
+    // TODO: needs new test for ember admin
+    // describe('redirectToDashboard', function () {
+    //     var req, res;
 
-    describe('auth', function () {
-        var req, res;
+    //     beforeEach(function () {
+    //         req = {
+    //             session: {}
+    //         };
 
-        beforeEach(function (done) {
-            req = {
-                session: {}
-            };
+    //         res = {
+    //             redirect: sinon.spy()
+    //         };
+    //     });
 
-            res = {
-                redirect: sinon.spy()
-            };
+    //     it('should redirect to dashboard', function () {
+    //         req.session.user = {};
 
-            api.notifications.destroyAll().then(function () {
-                return done();
-            });
-        });
+    //         middleware.redirectToDashboard(req, res, null);
+    //         assert(res.redirect.calledWithMatch('/ghost/'));
+    //     });
 
-        it('should redirect to signin path', function (done) {
-
-            req.path = '';
-
-            middleware.auth(req, res, null).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/'));
-                return done();
-            });
-
-        });
-
-        it('should redirect to signin path with redirect paramater stripped of /ghost/', function(done) {
-            var path = 'test/path/party';
-
-            req.path = '/ghost/' + path;
-            middleware.auth(req, res, null).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                return done();
-            });
-        });
-
-        it('should only add one message to the notification array', function (done) {
-            var path = 'test/path/party';
-
-            req.path = '/ghost/' + path;
-            middleware.auth(req, res, null).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                return api.notifications.browse().then(function (notifications) {
-                    assert.equal(notifications.length, 1);
-                    return;
-                });
-            }).then(function () {
-                return middleware.auth(req, res, null);
-            }).then(function () {
-                assert(res.redirect.calledWithMatch('/ghost/signin/?r=' + encodeURIComponent(path)));
-                return api.notifications.browse().then(function (notifications) {
-                    assert.equal(notifications.length, 1);
-                    return done();
-                });
-            });
-        });
-
-        it('should call next if session user exists', function (done) {
-            req.session.user = {};
-
-            middleware.auth(req, res, function (a) {
-                should.not.exist(a);
-                assert(res.redirect.calledOnce.should.be.false);
-                return done();
-            });
-        });
-    });
-
-    describe('authAPI', function () {
-        var req, res;
-
-        beforeEach(function () {
-            req = {
-                session: {}
-            };
-
-            res = {
-                redirect: sinon.spy(),
-                json: sinon.spy()
-            };
-        });
-
-        it('should return a json 401 error response', function (done) {
-            middleware.authAPI(req, res, null);
-            assert(res.json.calledWith(401, { error: 'Please sign in' }));
-            return done();
-        });
-
-        it('should call next if a user exists in session', function (done) {
-            req.session.user = {};
-
-            middleware.authAPI(req, res, function (a) {
-                should.not.exist(a);
-                assert(res.redirect.calledOnce.should.be.false);
-                return done();
-            });
-        });
-    });
-
-    describe('redirectToDashboard', function () {
-        var req, res;
-
-        beforeEach(function () {
-            req = {
-                session: {}
-            };
-
-            res = {
-                redirect: sinon.spy()
-            };
-        });
-
-        it('should redirect to dashboard', function (done) {
-            req.session.user = {};
-
-            middleware.redirectToDashboard(req, res, null);
-            assert(res.redirect.calledWithMatch('/ghost/'));
-            return done();
-        });
-
-        it('should call next if no user in session', function (done) {
-            middleware.redirectToDashboard(req, res, function (a) {
-                should.not.exist(a);
-                assert(res.redirect.calledOnce.should.be.false);
-                return done();
-            });
-        });
-    });
-
-    describe('cleanNotifications', function () {
-
-        beforeEach(function (done) {
-            api.notifications.add({
-                id: 0,
-                status: 'passive',
-                message: 'passive-one'
-            }).then(function () {
-                return api.notifications.add({
-                    id: 1,
-                    status: 'passive',
-                    message: 'passive-two'
-                });
-            }).then(function () {
-                return api.notifications.add({
-                    id: 2,
-                    status: 'aggressive',
-                    message: 'aggressive'
-                });
-            }).then(function () {
-                done();
-            });
-        });
-
-        it('should clean all passive messages', function (done) {
-            middleware.cleanNotifications(null, null, function () {
-                api.notifications.browse().then(function (notifications) {
-                    should(notifications.length).eql(1);
-                    var passiveMsgs = _.filter(notifications, function (notification) {
-                        return notification.status === 'passive';
-                    });
-                    assert.equal(passiveMsgs.length, 0);
-                    return done();
-                });
-            });
-        });
-    });
+    //     it('should call next if no user in session', function (done) {
+    //         middleware.redirectToDashboard(req, res, function (a) {
+    //             should.not.exist(a);
+    //             assert(res.redirect.calledOnce.should.be.false);
+    //             done();
+    //         });
+    //     });
+    // });
 
     describe('cacheControl', function () {
         var res;
@@ -193,7 +50,7 @@ describe('Middleware', function () {
                 should.not.exist(a);
                 res.set.calledOnce.should.be.true;
                 res.set.calledWith({'Cache-Control': 'public, max-age=0'});
-                return done();
+                done();
             });
         });
 
@@ -201,8 +58,11 @@ describe('Middleware', function () {
             middleware.cacheControl('private')(null, res, function (a) {
                 should.not.exist(a);
                 res.set.calledOnce.should.be.true;
-                res.set.calledWith({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
-                return done();
+                res.set.calledWith({
+                    'Cache-Control':
+                        'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+                });
+                done();
             });
         });
 
@@ -210,17 +70,17 @@ describe('Middleware', function () {
             middleware.cacheControl()(null, res, function (a) {
                 should.not.exist(a);
                 res.set.called.should.be.false;
-                return done();
+                done();
             });
         });
     });
 
     describe('whenEnabled', function () {
-        var cbFn, server;
+        var cbFn, blogApp;
 
         beforeEach(function () {
             cbFn = sinon.spy();
-            server = {
+            blogApp = {
                 enabled: function (setting) {
                     if (setting === 'enabled') {
                         return true;
@@ -229,7 +89,7 @@ describe('Middleware', function () {
                     }
                 }
             };
-            middleware.cacheServer(server);
+            middleware.cacheBlogApp(blogApp);
         });
 
         it('should call function if setting is enabled', function (done) {
@@ -239,7 +99,7 @@ describe('Middleware', function () {
                 assert.equal(a, 1);
                 assert.equal(b, 2);
                 assert.equal(c, 3);
-                return done();
+                done();
             })(req, res, next);
         });
 
@@ -247,7 +107,7 @@ describe('Middleware', function () {
             middleware.whenEnabled('rando', cbFn)(null, null, function (a) {
                 should.not.exist(a);
                 cbFn.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
     });
@@ -269,7 +129,7 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (a) {
                 should.not.exist(a);
                 middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
 
@@ -281,7 +141,7 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (a) {
                 should.not.exist(a);
                 middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
 
@@ -293,26 +153,87 @@ describe('Middleware', function () {
             middleware.staticTheme(null)(req, null, function (a) {
                 should.not.exist(a);
                 middleware.forwardToExpressStatic.calledOnce.should.be.false;
-                return done();
+                done();
             });
         });
 
         it('should call express.static if valid file type', function (done) {
-            var ghostStub = {
-                    paths: function () {
-                        return {activeTheme: 'ACTIVETHEME'};
-                    }
-                },
-                req = {
+            var req = {
                     url: 'myvalidfile.css'
                 };
 
             middleware.staticTheme(null)(req, null, function (reqArg, res, next) {
+                /*jshint unused:false */
                 middleware.forwardToExpressStatic.calledOnce.should.be.true;
                 assert.deepEqual(middleware.forwardToExpressStatic.args[0][0], req);
-                return done();
+                done();
             });
         });
     });
-});
 
+    describe('isSSLRequired', function () {
+        var isSSLrequired = middleware.isSSLrequired;
+
+        it('SSL is required if config.url starts with https', function () {
+            isSSLrequired(undefined, 'https://example.com', undefined).should.be.true;
+        });
+
+        it('SSL is required if isAdmin and config.forceAdminSSL is set', function () {
+            isSSLrequired(true, 'http://example.com', true).should.be.true;
+        });
+
+        it('SSL is not required if config.url starts with "http:/" and forceAdminSSL is not set', function () {
+            isSSLrequired(false, 'http://example.com', false).should.be.false;
+        });
+    });
+
+    describe('sslForbiddenOrRedirect', function () {
+        var sslForbiddenOrRedirect = middleware.sslForbiddenOrRedirect;
+        it('Return forbidden if config forces admin SSL for AdminSSL redirect is false.', function () {
+            var response = sslForbiddenOrRedirect({
+                forceAdminSSL: {redirect: false},
+                configUrl: 'http://example.com'
+            });
+            response.isForbidden.should.be.true;
+        });
+
+        it('If not forbidden, should produce SSL to redirect to when config.url ends with no slash', function () {
+            var response = sslForbiddenOrRedirect({
+                forceAdminSSL: {redirect: true},
+                configUrl: 'http://example.com/config/path',
+                reqUrl: '/req/path'
+            });
+            response.isForbidden.should.be.false;
+            response.redirectUrl({}).should.equal('https://example.com/config/path/req/path');
+        });
+
+        it('If config ends is slash, potential double-slash in resulting URL is removed', function () {
+            var response = sslForbiddenOrRedirect({
+                forceAdminSSL: {redirect: true},
+                configUrl: 'http://example.com/config/path/',
+                reqUrl: '/req/path'
+            });
+            response.redirectUrl({}).should.equal('https://example.com/config/path/req/path');
+        });
+
+        it('If config.urlSSL is provided it is preferred over config.url', function () {
+            var response = sslForbiddenOrRedirect({
+                forceAdminSSL: {redirect: true},
+                configUrl: 'http://example.com/config/path/',
+                configUrlSSL: 'https://example.com/ssl/config/path/',
+                reqUrl: '/req/path'
+            });
+            response.redirectUrl({}).should.equal('https://example.com/ssl/config/path/req/path');
+        });
+
+        it('query string in request is preserved in redirect URL', function () {
+            var response = sslForbiddenOrRedirect({
+                forceAdminSSL: {redirect: true},
+                configUrl: 'http://example.com/config/path/',
+                configUrlSSL: 'https://example.com/ssl/config/path/',
+                reqUrl: '/req/path'
+            });
+            response.redirectUrl({a: 'b'}).should.equal('https://example.com/ssl/config/path/req/path?a=b');
+        });
+    });
+});

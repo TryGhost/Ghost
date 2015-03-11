@@ -1,7 +1,7 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "002"
+            "defaultValue": "003"
         },
         "dbHash": {
             "defaultValue": null
@@ -23,7 +23,7 @@
         "email": {
             "defaultValue": "ghost@example.com",
             "validations": {
-                "notNull": true,
+                "isNull": false,
                 "isEmail": true
             }
         },
@@ -36,31 +36,43 @@
         "defaultLang": {
             "defaultValue": "en_US",
             "validations": {
-                "notNull": true
+                "isNull": false
             }
         },
         "postsPerPage": {
-            "defaultValue": "6",
+            "defaultValue": "5",
             "validations": {
-                "notNull": true,
+                "isNull": false,
                 "isInt": true,
-                "max": 1000
+                "isLength": [1, 1000]
             }
         },
         "forceI18n": {
             "defaultValue": "true",
             "validations": {
-                "notNull": true,
-                "isIn": ["true", "false"]
+                "isNull": false,
+                "isIn": [["true", "false"]]
             }
         },
         "permalinks": {
             "defaultValue": "/:slug/",
             "validations": {
-                "is": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "regex": "(:id|:slug|:year|:month|:day)",
+                "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
+                "matches": "(:id|:slug|:year|:month|:day)",
                 "notContains": "/ghost/"
             }
+        },
+        "ghost_head": {
+            "defaultValue" : ""
+        },
+        "ghost_foot": {
+            "defaultValue" : ""
+        },
+        "labs": {
+            "defaultValue": "{}"
+        },
+        "navigation": {
+            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
         }
     },
     "theme": {

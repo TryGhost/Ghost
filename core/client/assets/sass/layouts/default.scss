@@ -1,0 +1,158 @@
+// ------------------------------------------------------------
+// Default Styles
+//
+// Styles for containers and elements used throughout Ghost
+//
+// * Global Container
+// * Main Layout
+// * Content Panel
+// * The header bar
+// ------------------------------------------------------------
+
+
+//
+// Global Container
+// --------------------------------------------------
+// Absolutely everything goes in here. It helps
+// reliably position other elements,
+
+#container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+
+//
+// Main Layout
+// --------------------------------------------------
+// The <main> content wrapper
+
+.viewport {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 500; // Above the .global-nav when collapsed
+    transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
+
+    @media (max-width: 900px) {
+        transition: transform 0.4s cubic-bezier($settings-menu-bezier);
+    }
+
+    // Compiles to `body.settings-menu-expanded .viewport`
+    body.global-nav-expanded & {
+        transform: translate3d(260px, 0px, 0px);
+    }
+
+    // Compiles to `body.settings-menu-expanded .viewport`
+    body.settings-menu-expanded & {
+        @media (max-width: 350px) {
+            transform: translate3d(-100%, 0px, 0px);
+        }
+
+        @media (min-width: 351px) {
+            transform: translate3d(-350px, 0px, 0px);
+
+            &:before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1000;
+                width: 1px;
+                background: #EDECE4;
+            }
+        }
+    }
+}//.viewport
+
+
+//
+// Content Panel
+// --------------------------------------------------
+// We can't use position:fixed on .page-header because it would
+// break the mobile menu. So we create an overflow-auto content
+// area which scrolls just underneath the header, making it look
+// like the header is position:fixed.
+
+.page-content {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #fff;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    @media (max-width: 900px) {
+        top: 44px;
+    }
+}
+
+
+//
+// The header bar
+// --------------------------------------------------
+// Visible below 900px, as the nav isn't covering this.
+
+.page-header {
+    position: relative;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    color: #fff;
+    background: $darkgrey;
+    overflow: hidden;
+
+    @media (min-width: 900px) {
+        height: 60px;
+        line-height: 60px;
+    }
+
+}
+
+// Centered page heading
+.page-title {
+    display: block;
+    height: 44px;
+    line-height: 44px;
+    margin: 0;
+    padding: 0 15%;
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: normal;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    @media (min-width: 900px) {
+        height: 60px;
+        line-height: 60px;
+    }
+}
+
+// The burger to expand .global-nav menu
+.menu-button {
+    @include icon($i-menu, 18px) {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+    }
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    color: #fff;
+}

@@ -1,0 +1,41 @@
+<header class="page-header">
+    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
+    <h2 class="page-title">Settings</h2>
+</header>
+
+<div class="page-content">
+    <nav class="settings-nav js-settings-menu">
+        <ul>
+
+            {{#if showGeneral}}
+                {{gh-activating-list-item route="settings.general" title="General" classNames="settings-nav-general icon-settings"}}
+            {{/if}}
+
+            {{#if showUsers}}
+                {{gh-activating-list-item route="settings.users" title="Users" classNames="settings-nav-users icon-users"}}
+            {{/if}}
+
+            {{#if showTags}}
+                {{gh-activating-list-item route="settings.tags" title="Tags" classNames="settings-nav-tags icon-tag"}}
+            {{/if}}
+
+            {{#if showNavigation}}
+                {{gh-activating-list-item route="settings.navigation" title="Navigation" classNames="settings-nav-navigation icon-compass"}}
+            {{/if}}
+
+            {{#if showCodeInjection}}
+                {{gh-activating-list-item route="settings.code-injection" title="Code Injection" classNames="settings-nav-code icon-code"}}
+            {{/if}}
+
+            {{#if showLabs}}
+                {{gh-activating-list-item route="settings.labs" title="Labs" classNames="settings-nav-labs icon-atom"}}
+            {{/if}}
+
+            {{#if showAbout}}
+                {{gh-activating-list-item route="settings.about" title="About" classNames="settings-nav-about icon-pacman"}}
+            {{/if}}
+        </ul>
+    </nav>
+
+    {{outlet}}
+</div>

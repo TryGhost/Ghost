@@ -1,0 +1,9 @@
+{{#gh-modal-dialog action="closeModal" showClose=true type="action" style="wide"
+    title="Are you sure you want to delete this tag?" confirm=confirm}}
+
+    {{#if model.post_count}}
+        <strong>WARNING:</strong> <span class="red">This tag is attached to {{model.post_count}} {{postInflection}}.</span> You're about to delete "<strong>{{model.name}}</strong>". This is permanent! No backups, no restores, no magic undo button. We warned you, ok?
+    {{else}}
+        <strong>WARNING:</strong> You're about to delete "<strong>{{model.name}}</strong>". This is permanent! No backups, no restores, no magic undo button. We warned you, ok?
+    {{/if}}
+{{/gh-modal-dialog}}

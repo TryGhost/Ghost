@@ -1,68 +1,135 @@
-var when   = require('when'),
-    keys   = require('when/keys'),
-    fs     = require('fs'),
-    path   = require('path'),
-    extend = function (obj, source) {
-        var key;
-        for (key in source) {
-            if (source.hasOwnProperty(key)) {
-                obj[key] = source[key];
-            }
-        }
-        return obj;
-    },
-    readDir = function (dir, options, depth) {
-        depth = depth || 0;
+var _        = require('lodash'),
+    fs       = require('fs'),
+    path     = require('path'),
+    Promise  = require('bluebird'),
+    readdirAsync  = Promise.promisify(fs.readdir),
+    lstatAsync    = Promise.promisify(fs.lstat),
+    readlinkAsync = Promise.promisify(fs.readlink),
 
-        options = extend({
-            index: true
+    parsePackageJson = function (path, messages) {
+        // Default the messages if non were passed
+        messages = messages || {
+            errors: [],
+            warns: []
+        };
+
+        var jsonContainer;
+
+        return new Promise(function (resolve) {
+            fs.readFile(path, function (error, data) {
+                if (error) {
+                    messages.errors.push({
+                        message: 'Could not read package.json file',
+                        context: path
+                    });
+                    resolve(false);
+                    return;
+                }
+                try {
+                    jsonContainer = JSON.parse(data);
+                    if (jsonContainer.hasOwnProperty('name') && jsonContainer.hasOwnProperty('version')) {
+                        resolve(jsonContainer);
+                    } else {
+                        messages.errors.push({
+                            message: '"name" or "version" is missing from theme package.json file.',
+                            context: path,
+                            help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                        });
+                        resolve(false);
+                    }
+                } catch (e) {
+                    messages.errors.push({
+                        message: 'Theme package.json file is malformed',
+                        context: path,
+                        help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                    });
+                    resolve(false);
+                }
+            });
+        });
+    },
+
+    readDir = function (dir, options, depth, messages) {
+        depth = depth || 0;
+        messages = messages || {
+            errors: [],
+            warns: []
+        };
+
+        options = _.extend({
+            index: true,
+            followSymlinks: true
         }, options);
 
         if (depth > 1) {
-            return null;
+            return Promise.resolve(null);
         }
 
-        var subtree = {},
-            treeDeferred = when.defer(),
-            treePromise = treeDeferred.promise;
-
-        fs.readdir(dir, function (error, files) {
-            if (error) {
-                return treeDeferred.reject(error);
-            }
-
+        return readdirAsync(dir).then(function (files) {
             files = files || [];
 
-            files.forEach(function (file) {
-                var fileDeferred = when.defer(),
-                    filePromise = fileDeferred.promise,
-                    ext   = path.extname(file),
-                    name  = path.basename(file, ext),
-                    fpath = path.join(dir, file);
-                subtree[name] = filePromise;
-                fs.lstat(fpath, function (error, result) {
-                    /*jslint unparam:true*/
+            return Promise.reduce(files, function (results, file) {
+                var fpath = path.join(dir, file);
+
+                return lstatAsync(fpath).then(function (result) {
                     if (result.isDirectory()) {
-                        fileDeferred.resolve(readDir(fpath, options, depth + 1));
+                        return readDir(fpath, options, depth + 1, messages);
+                    } else if (options.followSymlinks && result.isSymbolicLink()) {
+                        return readlinkAsync(fpath).then(function (linkPath) {
+                            linkPath = path.resolve(dir, linkPath);
+
+                            return lstatAsync(linkPath).then(function (result) {
+                                if (result.isFile()) {
+                                    return linkPath;
+                                }
+
+                                return readDir(linkPath, options, depth + 1, messages);
+                            });
+                        });
+                    } else if (depth === 1 && file === 'package.json') {
+                        return parsePackageJson(fpath, messages);
                     } else {
-                        fileDeferred.resolve(fpath);
+                        return fpath;
                     }
+                }).then(function (result) {
+                    results[file] = result;
+
+                    return results;
                 });
-            });
-
-            return keys.all(subtree).then(function (theFiles) {
-                return treeDeferred.resolve(theFiles);
-            });
-        });
-
-        return when(treePromise).then(function (prom) {
-            return prom;
+            }, {});
         });
     },
     readAll = function (dir, options, depth) {
-        return when(readDir(dir, options, depth)).then(function (paths) {
+        // Start with clean messages, pass down along traversal
+        var messages = {
+            errors: [],
+            warns: []
+        };
+
+        return readDir(dir, options, depth, messages).then(function (paths) {
+            // for all contents of the dir, I'm interested in the ones that are directories and within /theme/
+            if (typeof paths === 'object' && dir.indexOf('theme') !== -1) {
+                _.each(paths, function (path, index) {
+                    if (typeof path === 'object' && !path.hasOwnProperty('package.json') && index.indexOf('.') !== 0) {
+                        messages.warns.push({
+                            message: 'Found a theme with no package.json file',
+                            context: 'Theme name: ' + index,
+                            help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                        });
+                    }
+                });
+            }
+
+            paths._messages = messages;
+
             return paths;
+        }).catch(function () {
+            return {_messages: messages};
         });
     };
 
-module.exports = readAll;
+module.exports = {
+    readAll: readAll,
+    readDir: readDir,
+    parsePackageJson: parsePackageJson
+};

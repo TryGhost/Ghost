@@ -13,15 +13,26 @@ results
 
 npm-debug.log
 node_modules
-
+bower_components
+.bowerrc
 .idea/*
 *.iml
+*.sublime-*
 projectFilesBackup
 
 .DS_Store
+
+# vim-related
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+.vimrc
 *~
-*.swp
-*.swo
+
+# TernJS
+.tern-project
 
 # Ghost DB file
 *.db
@@ -29,18 +40,10 @@ projectFilesBackup
 
 .build
 .dist
+.tmp
 
-/core/client/tpl/hbs-tpl.js
-/core/client/assets/css
-.sass-cache/
-/core/client/assets/sass/config.rb
-/core/client/assets/sass/layouts/config.rb
-/core/client/assets/sass/modules/config.rb
-/core/client/assets/sass/modules/bourbon
-/core/client/assets/sass/modules/bourbon/*
 /core/server/data/export/exported*
-/docs
-/_site
+/core/client/docs/_site
 /content/tmp/*
 /content/data/*
 /content/apps/**/*
@@ -56,9 +59,14 @@ CHANGELOG.md
 /core/test/functional/*.png
 
 config.js
+/core/client/config.js
 
 # Built asset files
 /core/built
+/core/client/assets/css
+/core/client/assets/img/contributors/
+/core/client/docs/dist/css
+/core/client/templates/-contributors.hbs
 
 # Coverage reports
 coverage.html

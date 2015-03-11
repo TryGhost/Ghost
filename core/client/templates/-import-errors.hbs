@@ -1,0 +1,7 @@
+{{#if importErrors}}
+<table class="table">
+{{#each error in importErrors}}
+    <tr><td>{{error.message}}</td></tr>
+{{/each}}
+</table>
+{{/if}}

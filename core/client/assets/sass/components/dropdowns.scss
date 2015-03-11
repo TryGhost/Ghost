@@ -1,0 +1,272 @@
+// ------------------------------------------------------------
+// Dropdown menus
+//
+// Styles for the dropdown component
+//
+// * Base Styles
+// * States
+// * Open & Close
+// * Dropdown triangles placeholder styles
+// * Dropdown triangles classes
+// ------------------------------------------------------------
+
+
+//
+// Base Styles
+// --------------------------------------------------
+
+// The dropdown wrapper <div>
+.dropdown {
+    position: relative;
+}
+
+// Prevent the focus on the dropdown toggle when closing dropdowns
+.dropdown-toggle:focus {
+    outline: 0;
+}
+
+// The dropdown menu <ul>
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+
+    float: left;
+    min-width: 220px;
+    padding: 5px 0;
+    margin: 2px 0 0; // override default ul
+
+    background-color: #fff;
+    border: darken($lightgrey, 15%) 1px solid;
+    border-radius: 2px;
+    box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
+    background-clip: padding-box;
+
+    list-style: none;
+    font-size: 1.4rem;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    text-align: left;
+
+    // Aligns the dropdown menu to right
+    &.pull-right {
+        right: 0;
+        left: auto;
+    }
+
+    // Dividers (basically an hr) within the dropdown
+    .divider {
+        height: 1px;
+        margin: 4px 0;
+        overflow: hidden;
+        background: darken($lightgrey, 5%);
+    }
+
+    // Links within the dropdown menu
+    > li > a,
+    > li > button {
+        display: block;
+        width: 100%;
+        padding: 3px 20px;
+        clear: both;
+
+        font-weight: normal;
+        line-height: 1.9em;
+        text-align: left;
+        color: #333;
+        white-space: nowrap;
+
+        transition: none;
+    }
+
+    i {
+        font-size: 0.9em;
+        margin-right: 0.5rem;
+    }
+}//.dropdown-menu
+
+
+//
+// States
+// --------------------------------------------------
+
+// Hover/Focus state
+.dropdown-menu > li > a,
+.dropdown-menu > li > button {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+        color: #fff;
+        background: $blue;
+    }
+}
+
+// Active state
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > button {
+    &,
+    &:hover,
+    &:focus {
+        color: #fff;
+        text-decoration: none;
+        outline: 0;
+        background-color: #428bca;
+    }
+}
+
+// Disabled state
+// Gray out text and ensure the hover/focus state remains gray
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > button {
+
+    &,
+    &:hover,
+    &:focus {
+        color: #777;
+    }
+}
+
+// Nuke hover/focus effects
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > button {
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+        background-color: transparent;
+        background-image: none; // Remove CSS gradient
+        cursor: not-allowed;
+    }
+}
+
+
+//
+// Open & Close
+// --------------------------------------------------
+
+// Open state for the dropdown
+.open {
+
+    // Show the menu
+    > .dropdown-menu {
+        display: block;
+    }
+
+    // Remove the outline when :focus is triggered
+    > a {
+        outline: 0;
+    }
+}
+
+// Closed state for the dropdown
+.closed {
+    > .dropdown-menu {
+        display: none;
+    }
+}
+
+
+//
+// Dropdown triangles placeholder styles
+// --------------------------------------------------
+
+%dropdown-triangle {
+    &:before {
+        content: '';
+        position: absolute;
+        display: block;
+    }//&:before
+
+    &:after {
+        content: '';
+        position: absolute;
+        z-index: -1;
+    }//&:after
+}
+
+%dropdown-triangle-top {
+    &:before {
+        @include triangle($dropdown_triangle, #fff, up);
+        top: -$dropdown_triangle;
+    }
+    &:after {
+        @include triangle($dropdown_triangle + 2, darken($lightgrey, 15%), up);
+        top: -($dropdown_triangle + 2);
+    }
+}
+%dropdown-triangle-bottom {
+    &:before {
+        @include triangle($dropdown_triangle, #fff, down);
+        bottom: -$dropdown_triangle;
+    }
+    &:after {
+        @include triangle($dropdown_triangle + 2, darken($lightgrey, 15%), down);
+        bottom: -($dropdown_triangle + 2);
+    }
+}
+%dropdown-triangle-center {
+    &:before {
+        left: 50%;
+        margin-left: -($dropdown_triangle / 2);
+    }
+    &:after {
+        left: 50%;
+        margin-left: -($dropdown_triangle / 2 + 2);
+    }
+}
+
+%dropdown-triangle-left {
+    &:before {
+        left: ($dropdown_triangle / 2 + 2);
+    }
+    &:after {
+        left: ($dropdown_triangle / 2);
+    }
+}
+%dropdown-triangle-right {
+    &:before {
+        left: auto;
+        right: ($dropdown_triangle / 2 + 2);
+    }
+    &:after {
+        left: auto;
+        right: ($dropdown_triangle / 2);
+    }
+}
+
+//
+// Dropdown triangles classes
+// --------------------------------------------------
+
+.dropdown-triangle-top {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-top;
+    @extend %dropdown-triangle-center;
+}
+.dropdown-triangle-top-left {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-top;
+    @extend %dropdown-triangle-left;
+}
+.dropdown-triangle-top-right {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-top;
+    @extend %dropdown-triangle-right;
+}
+.dropdown-triangle-bottom {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-bottom;
+    @extend %dropdown-triangle-center;
+}
+.dropdown-triangle-bottom-left {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-bottom;
+    @extend %dropdown-triangle-left;
+}
+.dropdown-triangle-bottom-right {
+    @extend %dropdown-triangle;
+    @extend %dropdown-triangle-bottom;
+    @extend %dropdown-triangle-right;
+}

@@ -1,105 +1,171 @@
-var sequence   = require('when/sequence'),
-    _          = require('lodash'),
-    Post       = require('../../models/post').Post,
-    Tag        = require('../../models/tag').Tag,
-    Role       = require('../../models/role').Role,
-    Permission = require('../../models/permission').Permission,
-    uuid       = require('node-uuid');
+// # Fixtures
+// This module handles populating or updating fixtures.
+//
+// Currently fixtures only change between data version 002 and 003, therefore the update logic is hard coded
+// rather than abstracted into a migration system. The upgrade function checks that its changes are safe before
+// making them.
 
-var fixtures = {
-    posts: [
-        {
-            "title":            "Welcome to Ghost",
-            "slug":             "welcome-to-ghost",
-            "markdown":         "You're live! Nice. We've put together a little post to introduce you to the Ghost editor and get you started. You can manage your content by signing in to the admin area at `<your blog URL>/ghost/`. When you arrive, you can select this post from a list on the left and see a preview of it on the right. Click the little pencil icon at the top of the preview to edit this post and read the next section!\n\n## Getting Started\n\nGhost uses something called Markdown for writing. Essentially, it's a shorthand way to manage your post formatting as you write!\n\nWriting in Markdown is really easy. In the left hand panel of Ghost, you simply write as you normally would. Where appropriate, you can use *shortcuts* to **style** your content. For example, a list:\n\n* Item number one\n* Item number two\n    * A nested item\n* A final item\n\nor with numbers!\n\n1. Remember to buy some milk\n2. Drink the milk\n3. Tweet that I remembered to buy the milk, and drank it\n\n### Links\n\nWant to link to a source? No problem. If you paste in url, like http://ghost.org - it'll automatically be linked up. But if you want to customise your anchor text, you can do that too! Here's a link to [the Ghost website](http://ghost.org). Neat.\n\n### What about Images?\n\nImages work too! Already know the URL of the image you want to include in your article? Simply paste it in like this to make it show up:\n\n![The Ghost Logo](https://ghost.org/images/ghost.png)\n\nNot sure which image you want to use yet? That's ok too. Leave yourself a descriptive placeholder and keep writing. Come back later and drag and drop the image in to upload:\n\n![A bowl of bananas]\n\n\n### Quoting\n\nSometimes a link isn't enough, you want to quote someone on what they've said. It was probably very wisdomous. Is wisdomous a word? Find out in a future release when we introduce spellcheck! For now - it's definitely a word.\n\n> Wisdomous - it's definitely a word.\n\n### Working with Code\n\nGot a streak of geek? We've got you covered there, too. You can write inline `<code>` blocks really easily with back ticks. Want to show off something more comprehensive? 4 spaces of indentation gets you there.\n\n    .awesome-thing {\n        display: block;\n        width: 100%;\n    }\n\n### Ready for a Break? \n\nThrow 3 or more dashes down on any new line and you've got yourself a fancy new divider. Aw yeah.\n\n---\n\n### Advanced Usage\n\nThere's one fantastic secret about Markdown. If you want, you can  write plain old HTML and it'll still work! Very flexible.\n\n<input type=\"text\" placeholder=\"I'm an input field!\" />\n\nThat should be enough to get you started. Have fun - and let us know what you think :)",
-            "image":            null,
-            "featured":         false,
-            "page":             false,
-            "status":           "published",
-            "language":         "en_US",
-            "meta_title":       null,
-            "meta_description": null
-        }
-    ],
+var Promise     = require('bluebird'),
+    sequence    = require('../../utils/sequence'),
+    _           = require('lodash'),
+    errors      = require('../../errors'),
+    utils       = require('../../utils'),
+    models      = require('../../models'),
+    fixtures    = require('./fixtures'),
+    permissions = require('./permissions'),
 
-    tags: [
-        {
-            "name":             "Getting Started",
-            "slug":             "getting-started",
-            "description":      null,
-            "parent_id":        null,
-            "meta_title":       null,
-            "meta_description": null
-        }
-    ],
+    // Private
+    logInfo,
+    to003,
+    convertAdminToOwner,
+    createOwner,
+    options = {context: {internal: true}},
 
-    roles: [
-        {
-            "name":             "Administrator",
-            "description":      "Administrators"
-        },
-        {
-            "name":             "Editor",
-            "description":      "Editors"
-        },
-        {
-            "name":             "Author",
-            "description":      "Authors"
-        }
-    ],
+    // Public
+    populate,
+    update;
 
-    permissions: [
-        {
-            "name":             "Edit posts",
-            "action_type":      "edit",
-            "object_type":      "post"
-        },
-        {
-            "name":             "Remove posts",
-            "action_type":      "remove",
-            "object_type":      "post"
-        },
-        {
-            "name":             "Create posts",
-            "action_type":      "create",
-            "object_type":      "post"
+logInfo = function logInfo(message) {
+    errors.logInfo('Migrations', message);
+};
+
+/**
+ * Convert admin to Owner
+ * Changes an admin user to have the owner role
+ * @returns {Promise|*}
+ */
+convertAdminToOwner = function () {
+    var adminUser;
+
+    return models.User.findOne({role: 'Administrator'}).then(function (user) {
+        adminUser = user;
+        return models.Role.findOne({name: 'Owner'});
+    }).then(function (ownerRole) {
+        if (adminUser) {
+            logInfo('Converting admin to owner');
+            return adminUser.roles().updatePivot({role_id: ownerRole.id});
         }
-    ]
+    });
+};
+
+/**
+ * Create Owner
+ * Creates the user fixture and gives it the owner role
+ * @returns {Promise|*}
+ */
+createOwner = function () {
+    var user = fixtures.users[0];
+
+    return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+        user.roles = [ownerRole.id];
+        user.password = utils.uid(50);
+
+        logInfo('Creating owner');
+        return models.User.add(user, options);
+    });
+};
+
+populate = function () {
+    var ops = [],
+        relations = [],
+        Post = models.Post,
+        Tag = models.Tag,
+        Role = models.Role,
+        Client = models.Client;
+
+    logInfo('Populating fixtures');
+
+    _.each(fixtures.posts, function (post) {
+        ops.push(Post.add(post, options));
+    });
+
+    _.each(fixtures.tags, function (tag) {
+        ops.push(Tag.add(tag, options));
+    });
+
+    _.each(fixtures.roles, function (role) {
+        ops.push(Role.add(role, options));
+    });
+
+    _.each(fixtures.clients, function (client) {
+        ops.push(Client.add(client, options));
+    });
+
+    // add the tag to the post
+    relations.push(function () {
+        return Post.forge({slug: fixtures.posts[0].slug}).fetch().then(function (post) {
+            return Tag.forge({slug: fixtures.tags[0].slug}).fetch().then(function (tag) {
+                return post.related('tags').attach(tag.id);
+            });
+        });
+    });
+
+    return Promise.all(ops).then(function () {
+        return sequence(relations);
+    }).then(function () {
+        return permissions.populate(options);
+    }).then(function () {
+        return createOwner();
+    }).catch(function (errs) {
+        errors.logError(errs);
+    });
+};
+
+/**
+ * ### Update fixtures to 003
+ * Need to add client & owner role, then update permissions to 003 as well
+ * By doing this in a way that checks before adding, we can ensure that it's possible to force a migration safely.
+ *
+ * Note: At the moment this is pretty adhoc & untestable, in future it would be better to have a config based system.
+ * @returns {Promise|*}
+ */
+to003 = function () {
+    var ops = [],
+        upgradeOp,
+        Role = models.Role,
+        Client = models.Client;
+
+    logInfo('Upgrading fixtures');
+
+    // Add the client fixture if missing
+    upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
+        if (!client) {
+            logInfo('Adding client fixture');
+            _.each(fixtures.clients, function (client) {
+                return Client.add(client, options);
+            });
+        }
+    });
+    ops.push(upgradeOp);
+
+    // Add the owner role if missing
+    upgradeOp = Role.findOne({name: fixtures.roles[3].name}).then(function (owner) {
+        if (!owner) {
+            logInfo('Adding owner role fixture');
+            _.each(fixtures.roles.slice(3), function (role) {
+                return Role.add(role, options);
+            });
+        }
+    });
+    ops.push(upgradeOp);
+
+    return Promise.all(ops).then(function () {
+        return permissions.to003(options);
+    }).then(function () {
+        return convertAdminToOwner();
+    });
+};
+
+update = function (fromVersion, toVersion) {
+    logInfo('Updating fixtures');
+    // Are we migrating to, or past 003?
+    if ((fromVersion < '003' && toVersion >= '003') ||
+        fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
+        return to003();
+    }
 };
 
 module.exports = {
-    populateFixtures: function () {
-        var ops = [];
-
-        _.each(fixtures.posts, function (post) {
-            ops.push(function () {return Post.add(post); });
-        });
-
-        _.each(fixtures.tags, function (tag) {
-            ops.push(function () {return Tag.add(tag); });
-        });
-
-        _.each(fixtures.roles, function (role) {
-            ops.push(function () {return Role.add(role); });
-        });
-        _.each(fixtures.permissions, function (permission) {
-            ops.push(function () {return Permission.add(permission); });
-        });
-
-        // add the tag to the post
-        ops.push(function () {
-            Post.forge({id: 1}).fetch({withRelated: ['tags']}).then(function (post) {
-                post.tags().attach([1]);
-            });
-        });
-
-        // finally, grant admins all permissions
-        ops.push(function () {
-            Role.forge({id: 1}).fetch({withRelated: ['permissions']}).then(function (role) {
-                role.permissions().attach([1, 2, 3]);
-            });
-        });
-
-        return sequence(ops);
-    }
+    populate: populate,
+    update: update
 };

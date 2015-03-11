@@ -1,0 +1,397 @@
+// ------------------------------------------------------------
+// Global Navigation
+//
+// Styles for the main top bar & mobile navigation
+//
+// * Main wrapper
+// * Nav Items
+// * Ghost branding
+// * User Menu
+// * Mobile
+// ------------------------------------------------------------
+
+//
+// Main wrapper
+// --------------------------------------------------
+
+.global-nav {
+    height: 60px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    z-index: 800;
+    background: $darkgrey;
+    transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
+
+    i:before {
+        display: inline-block;
+        width: 16px;
+    }
+
+    // This selector ends up being `body.settings-menu-expanded .global-nav`
+    body.settings-menu-expanded & {
+        transform: translate3d(-350px, 0px, 0px);
+    }
+
+    ::selection {
+        background: none;
+    }
+}
+
+
+//
+// Nav Items
+// --------------------------------------------------
+
+// Wrapper for each item <a>
+.nav-item {
+    position: relative;
+    display: block;
+    float: left;
+    height: 60px;
+    padding-right: 10px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    font-weight: 200;
+    line-height: 1.1em;
+}
+
+// What looks like the actual button <div>
+.nav-label {
+    height: 33px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    border-radius: 4px;
+    white-space: nowrap;
+    transition: color 0.5s, background 0.5s;
+}
+.nav-item.active .nav-label,
+.nav-item:focus .nav-label,
+.nav-item:hover .nav-label,
+.nav-item:active .nav-label {
+    color: #fff;
+    background: darken($darkgrey, 9%);
+    transition: color 0.1s, background 0.1s;
+}
+
+
+//
+// Ghost branding
+// --------------------------------------------------
+
+.ghost-logo {
+    width: 60px;
+    padding-right: 0;
+    text-align: center;
+    color: lighten($grey, 20%);
+    font-size: 1.2rem;
+    line-height: 1em;
+    transition: color 0.5s;
+
+    span {
+        display: none;
+    }
+}
+.ghost-logo:hover,
+.ghost-logo:focus {
+    color: $lightgrey;
+    transition: color 0.1s;
+
+    .nav-label {
+        background: transparent;
+    }
+}
+
+//
+// Help Menu
+// --------------------------------------------------
+
+.help-menu {
+    padding-right: 0;
+    float: right;
+    cursor: pointer;
+
+    .nav-label {
+        margin: 0;
+        padding: 0 6px 0 12px;
+        background: none !important;
+    }
+}
+
+.help-button {
+    height: 30px;
+    width: 30px;
+    border: $midgrey 1px solid;
+    margin-top: 15px;
+    text-align: center;
+    font-size: 1.6rem;
+    line-height: 30px;
+    border-radius: 100%;
+    transition: border 0.5s;
+}
+
+.help-menu:hover {
+    .help-button {
+        border: $lightgrey 1px solid;
+        transition: border 0.3s;
+    }
+}
+
+.help-menu .dropdown {
+    right: 77px;
+    left: auto;
+
+    .dropdown-menu {
+        min-width: 200px;
+    }
+
+    &.fade-in-scale {
+        animation-duration: 0.1s;
+    }
+
+    &.fade-out {
+        animation-duration: 0.01s;
+    }
+}
+
+
+//
+// User Menu
+// --------------------------------------------------
+
+// Right hand dropdown
+.user-menu {
+    float: right;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+
+    .nav-label {
+        margin: 0;
+        padding: 0 12px;
+        background: none !important;
+        height: 60px;
+    }
+
+    // Profile picture
+    .image {
+        @include circular-image(30px) {
+            float: left;
+            margin: 15px 10px 0 0;
+        }
+    }
+
+    // Descriptive label for mobile menu
+    .name {
+        float: right;
+        height: 33px;
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 4px;
+        max-width: 300px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: background 0.5s;
+
+        small {
+            display: none; // hide until mobile
+            font-size: 11px;
+            text-transform: none;
+            letter-spacing: 0;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0;
+            line-height: 11px;
+        }
+    }
+
+    &:hover .name {
+        color: rgba(255,255,255,0.9);
+        background: darken($darkgrey, 7%);
+        transition: background 0.1s;
+    }
+
+    .dropdown {
+        position: fixed;
+        top: 50px;
+        right: 15px;
+        left: auto;
+
+        &.fade-in-scale {
+            animation-duration: 0.1s;
+        }
+
+        &.fade-out {
+            animation-duration: 0.01s;
+        }
+
+        .dropdown-menu {
+            min-width: 180px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: auto;
+        }
+    }
+}//.user-menu
+
+
+//
+// Mobile
+// --------------------------------------------------
+
+@media (max-width: 900px) {
+
+    // Fixed width, position left
+    .global-nav {
+        z-index: 20; // below the .viewport when collapsed
+        width: 260px;
+        height: auto;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        background: darken($darkgrey, 7%);
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+
+        transform: translate3d(-60px, 0px, 0px); // Not off the screen, to give a parallax effect
+        transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
+
+        body.global-nav-expanded & {
+            transform: translate3d(0, 0px, 0px);
+        }
+    }
+
+    .nav-item {
+        position: relative;
+        float: none;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        border-bottom: $darkgrey 1px solid;
+    }
+
+    // Convert to full-width mobile-friendly
+    .nav-label {
+        display: block;
+        height: 44px;
+        line-height: 44px;
+        margin: 0;
+        padding: 0 15px;
+        border-radius: 0;
+    }
+    .nav-item.active .nav-label {
+        color: #fff !important;
+        background: darken($darkgrey, 4%);
+
+        i {
+            color: #fff;
+        }
+    }
+    .nav-item:hover .nav-label {
+        color: rgba(255,255,255,0.9);
+        background: $darkgrey;
+    }
+
+    .ghost-logo {
+        display: block;
+        width: 100%;
+        font-size: 1.1rem;
+        line-height: 44px;
+        text-align: left;
+
+        span {
+            display: inline;
+        }
+    }
+
+    .help-menu {
+        display: none;
+    }
+
+    // Drop it to the bottom of the menu
+    .user-menu {
+        position: absolute;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: auto;
+        padding: 0;
+        border-bottom: none;
+        border-top: $darkgrey 1px solid;
+        transition: color 0.5s, background 0.5s;
+
+        .nav-label {
+            padding: 15px;
+            height: auto;
+        }
+
+        .image {
+            margin: 2px 10px 0 0;
+        }
+
+        .name {
+            float: left;
+            margin: 0;
+            max-width: 300px;
+            padding: 0 0 5px 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 19px;
+            overflow: hidden;
+
+            small {
+                display: block;
+            }
+        }
+
+        // Hide the user-menu icons
+        i {
+            display: none;
+        }
+
+        &:hover {
+            color: rgba(255,255,255,0.9);
+            background: $darkgrey;
+            transition: color 0.1s, background 0.1s;
+
+            .name {
+                background: transparent;
+                transition: none;
+            }
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 100%;
+
+            .dropdown-menu {
+                top: auto;
+                right: auto;
+                bottom: calc(100% + 80px);
+                left: 10px;
+            }
+        }
+    }//.user-menu
+
+    body.global-nav-expanded & {
+
+        .nav-cover {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 600;
+            transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
+            transform: translate3d(260px, 0px, 0px); // Not off the screen, to give a parallax effect
+        }//.nav-cover
+    }//body.global-nav-expanded
+
+}//@media (max-width: 900px)

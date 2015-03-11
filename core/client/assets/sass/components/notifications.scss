@@ -1,0 +1,142 @@
+// ------------------------------------------------------------
+// Notifications
+//
+// Styles for notifications
+//
+// * Wrapper
+// * Base Notification
+// * Individual Notifications
+// ------------------------------------------------------------
+
+//
+// Wrapper
+// --------------------------------------------------
+
+.notifications {
+
+    @media (max-width: 400px) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+    }
+
+    @media (min-width: 401px) {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 800;
+        width: 300px;
+    }
+}//.notifications
+
+
+//
+// Base Notification
+// --------------------------------------------------
+
+%notification {
+    @include icon($i-notification) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 44px;
+        padding: 14px 15px;
+        text-align: center;
+        color: rgba(255,255,255,0.8);
+        background: rgba(0,0,0,0.1);
+    };
+
+    width: 100%;
+    min-height: 40px;
+    max-height: 253px;
+    margin: 0 0 15px 0;
+    color: rgba(255,255,255,0.9);
+    background: $blue;
+    position: relative;
+    box-shadow: $box-shadow;
+    transform: translateZ(0);
+
+    @media (max-width: 400px) {
+        margin-bottom: 1px;
+    }
+
+    .notification-message {
+        display: block;
+        padding: 10px 43px 10px 57px;
+        max-height: 253px;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 34px;
+        color: rgba(255,255,255,0.6);
+        @include icon-after($i-close) {
+            padding: 10px;
+            position: absolute;
+            top: 4px;
+            right: 1px;
+        }
+
+        &:hover {
+            color: #fff;
+        }
+    } // .close
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+    }
+}//%notification
+
+
+//
+// Individual Notifications
+// --------------------------------------------------
+
+.notification-success {
+    @extend %notification;
+    @include icon($i-success);
+    background: $green;
+
+    &.notification-passive {
+        animation: fade-out 1s linear;
+        animation-delay: 3s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+    }
+
+    &.notification-passive:hover {
+        animation: fade-in-snap 0.2s linear;
+    }
+}
+
+.notification-error {
+    @extend %notification;
+    @include icon($i-error);
+    background: $red;
+}
+
+.notification-warn {
+    @extend %notification;
+    @include icon($i-info);
+    background: $orange;
+}
+
+.notification-info {
+    @extend %notification;
+    @include icon($i-info);
+    background: $blue;
+}
+
+// Hide extra space taken up by update notification
+.update-available main {
+    bottom: 56px;
+}

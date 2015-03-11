@@ -1,0 +1,216 @@
+// ------------------------------------------------------------
+// Image Uploader
+//
+// Styles for the image uploader
+//
+// * Image Uploader
+// * Pre Image Uploader
+// ------------------------------------------------------------
+
+
+//
+// Image Uploader
+// --------------------------------------------------
+
+.image-uploader {
+    @include baseline;
+    position: relative;
+    overflow:hidden;
+    padding: 55px 60px;
+    border: $lightbrown 3px dashed;
+    width: 100%;
+    height: auto;
+    text-align: center;
+    color: $brown;
+    background: #F9F8F5;
+
+    a {
+        color: $brown;
+        text-decoration: none;
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+
+    .description {
+        margin-top: 10px;
+    }
+
+    .media {
+        @include icon($i-image, 60px, darken($lightbrown, 3%)) {
+            display: inline-block;
+            vertical-align: initial;
+            transition: transform 1s ease;
+        }
+    }
+
+    .image-url,
+    .image-upload {
+        line-height: 12px;
+        padding: 10px;
+        display: block;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        color: $brown;
+        text-decoration: none;
+        user-select: none;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    .image-webcam {
+        @include icon($i-camera, 12px);
+    }
+
+    .image-url {
+        @include icon($i-link, 12px);
+    }
+
+    .image-upload {
+        @include icon($i-image, 12px);
+    }
+
+    .btn-green {
+        display: inline-block;
+        position:relative;
+        z-index: 700;
+        color: #fff;
+    }
+
+    .btn-blue {
+        margin: 0 0 0 10px;
+    }
+
+    input {
+
+        &.main {
+            position: absolute;
+            right: 0;
+            margin: 0;
+            opacity: 0;
+            transform-origin: right;
+            transform: scale(14);
+            font-size: 23px;
+            direction: ltr;
+            cursor: pointer;
+
+            &.right {
+                right: 9999px;
+                height: 0;
+            }
+        }
+
+        &.url {
+            font: -webkit-small-control;
+            vertical-align: middle;
+            padding: 9px 7px;
+            margin: 10px 0;
+            outline: 0;
+            font-size: 1.1em;
+            background: #fff;
+
+            + .btn.btn-blue {
+                color: #fff;
+            }
+        }
+    }
+
+    .progress {
+        position: relative;
+        margin: -19px 0 44px 0;
+        display: block;
+        overflow: hidden;
+        background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
+        border-radius: 12px;
+        box-shadow: (rgba(0,0,0,0.1) 0 1px 2px inset);
+    }
+
+    .fileupload-loading {
+        display: block;
+        top: 50%;
+        width: 35px;
+        height: 28px;
+        margin: -28px auto 0;
+        background-size: contain;
+    }
+
+    .failed {
+        position: relative;
+        top: -40px;
+        font-size: 16px;
+    }
+
+    .bar {
+        height: 12px;
+        background: $blue;
+
+        &.fail {
+            background: $red;
+        }
+    }
+}//.image-uploader
+
+
+//
+// Pre Image Uploader
+// --------------------------------------------------
+// TODO: Find a better name for this.
+
+.pre-image-uploader {
+    @include baseline;
+    position: relative;
+    overflow: hidden;
+    height: auto;
+    color: $brown;
+    background: rgba(0,0,0,0.1);
+    border-radius: 2px;
+    min-height: 46px;
+
+    input {
+        position: absolute;
+        left: 9999px;
+        opacity: 0;
+    }
+
+    a {
+        z-index: 10000;
+        color: $brown;
+        text-decoration: none;
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+
+    img {
+        display: block;
+        max-width: 100%;
+        margin: 0 auto;
+        line-height: 0;
+    }
+
+    .image-cancel {
+        @include icon($i-trash, 11px);
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 8px;
+        z-index: 300;
+        color: #fff;
+        text-decoration: none;
+        line-height: 0;
+        border-radius: $border-radius;
+        background: rgba(0,0,0,0.6);
+        box-shadow: rgba(255,255,255,0.2) 0 0 0 1px;
+
+        &:hover {
+            color: #fff;
+            cursor: pointer;
+            background: $red;
+        }
+    }
+}//.pre-image-uploader

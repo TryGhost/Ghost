@@ -1,0 +1,6 @@
+{{#if view.canMakeOwner}}
+<li><button {{action "openModal" "transfer-owner" this}}>Make Owner</button></li>
+{{/if}}
+{{#if view.deleteUserActionIsVisible}}
+<li><button {{action "openModal" "delete-user" this}} class="delete">Delete User</button></li>
+{{/if}}
