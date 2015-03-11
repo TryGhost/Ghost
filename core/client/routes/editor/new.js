@@ -16,15 +16,14 @@ var EditorNewRoute = AuthenticatedRoute.extend(base, {
     setupController: function (controller, model) {
         var psm = this.controllerFor('post-settings-menu');
 
+        this._super(controller, model);
+
         // make sure there are no titleObserver functions hanging around
         // from previous posts
         psm.removeObserver('titleScratch', psm, 'titleObserver');
 
-        // Ensure that the PSM Image Uploader and Publish Date selector resets
-        psm.send('resetUploader');
+        // Ensure that the publish date selector resets
         psm.send('resetPubDate');
-
-        this._super(controller, model);
     }
 });
 

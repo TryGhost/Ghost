@@ -129,6 +129,10 @@
         box-shadow: (rgba(0,0,0,0.1) 0 1px 2px inset);
     }
 
+    .fileupload-loading-standalone {
+        top: '56px'
+    }
+
     .fileupload-loading {
         display: block;
         top: 50%;

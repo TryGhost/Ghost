@@ -9,7 +9,6 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
     debounceId: null,
     lastPromise: null,
     selectedAuthor: null,
-    uploaderReference: null,
 
     initializeSelectedAuthor: function () {
         var self = this;
@@ -443,14 +442,6 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
                 self.showErrors(errors);
                 self.get('model').rollback();
             });
-        },
-
-        resetUploader: function () {
-            var uploader = this.get('uploaderReference');
-
-            if (uploader && uploader[0]) {
-                uploader[0].uploaderUi.reset();
-            }
         },
 
         resetPubDate: function () {

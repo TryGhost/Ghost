@@ -91,7 +91,7 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
             this.notifications.showError(error.message);
         },
 
-        openModal: function (modalName, model, type) {
+        openModal: function (modalName, model, type, description) {
             this.get('dropdown').closeDropdowns();
             key.setScope('modal');
             modalName = 'modals/' + modalName;
@@ -105,6 +105,10 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
                 if (type) {
                     this.controllerFor(modalName).set('imageType', type);
                     this.controllerFor(modalName).set('src', model.get(type));
+                }
+
+                if (description) {
+                    this.controller(modalName).set('description', description);
                 }
             }
 
