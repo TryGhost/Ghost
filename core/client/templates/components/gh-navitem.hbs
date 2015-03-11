@@ -1,6 +1,6 @@
 {{#unless navItem.last}}
     <span class="navigation-item-drag-handle icon-grab">
-        <span class="hidden">Reorder</span>
+        <span class="sr-only">Reorder</span>
     </span>
 {{/unless}}
 <div class="navigation-inputs">
@@ -14,11 +14,11 @@
 <span class="navigation-item-action">
     {{#if navItem.last}}
         <button type="button" class="add-navigation-link icon-add" {{action "addItem"}}>
-            <span class="hidden">Add</span>
+            <span class="sr-only">Add</span>
         </button>
     {{else}}
         <button type="button" class="navigation-delete icon-trash" {{action "deleteItem" navItem}}>
-            <span class="hidden">Delete</span>
+            <span class="sr-only">Delete</span>
         </button>
     {{/if}}
 </span>
