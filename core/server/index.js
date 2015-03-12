@@ -66,10 +66,15 @@ function initDbHashAndFirstRun() {
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
-        location = config.paths.builtScriptPath,
+        location = config.paths.clientAssets,
+        fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
 
-        fileNames = process.env.NODE_ENV === 'production' ?
-            helpers.scriptFiles.production : helpers.scriptFiles.development;
+    if (process.env.NODE_ENV === 'production') {
+        // Production uses `.min` files
+        fileNames = fileNames.map(function (file) {
+            return file.replace('.', '.min.');
+        });
+    }
 
     function checkExist(fileName) {
         var errorMessage = 'Javascript files have not been built.',

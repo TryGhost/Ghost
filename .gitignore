@@ -43,7 +43,6 @@ Session.vim
 .tmp
 
 /core/server/data/export/exported*
-/core/client/docs/_site
 /content/tmp/*
 /content/data/*
 /content/apps/**/*
@@ -63,10 +62,7 @@ config.js
 
 # Built asset files
 /core/built
-/core/client/assets/css
-/core/client/assets/img/contributors/
-/core/client/docs/dist/css
-/core/client/templates/-contributors.hbs
+/core/server/views/default.hbs
 
 # Coverage reports
 coverage.html
