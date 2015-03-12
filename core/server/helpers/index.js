@@ -38,8 +38,6 @@ coreHelpers.title = require('./title');
 coreHelpers.url = require('./url');
 coreHelpers.image = require('./image');
 
-coreHelpers.ghost_script_tags = require('./ghost_script_tags');
-
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
         return undefined;
@@ -108,7 +106,6 @@ registerHelpers = function (adminHbs) {
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
 
     // Register admin helpers
-    registerAdminHelper('ghost_script_tags', coreHelpers.ghost_script_tags);
     registerAdminHelper('asset', coreHelpers.asset);
 };
 
@@ -116,4 +113,3 @@ module.exports = coreHelpers;
 module.exports.loadCoreHelpers = registerHelpers;
 module.exports.registerThemeHelper = registerThemeHelper;
 module.exports.registerAsyncThemeHelper = registerAsyncThemeHelper;
-module.exports.scriptFiles = utils.scriptFiles;

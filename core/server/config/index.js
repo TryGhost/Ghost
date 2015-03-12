@@ -176,7 +176,7 @@ ConfigManager.prototype.set = function (config) {
 
             availableThemes:  this._config.paths.availableThemes || {},
             availableApps:    this._config.paths.availableApps || {},
-            builtScriptPath:  path.join(corePath, 'built/scripts/')
+            clientAssets:     path.join(corePath, '/built/assets/')
         },
         theme: {
             // normalise the URL by removing any trailing slash

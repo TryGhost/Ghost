@@ -13,7 +13,6 @@ content/apps/**
 content/data/**
 !content/data/README.md
 node_modules/**
-core/test/**
 **/*.db*
 *.db*
 .sass*
@@ -23,17 +22,9 @@ core/test/**
 .jshintrc
 *.iml
 config.js
-core/built/scripts/templates.js
-core/built/scripts/vendor.js
-core/built/scripts/templates.js
-core/built/scripts/ghost.js
 core/built/**/*.map
 core/client/**
-!core/client/assets/**
-core/client/assets/sass/**
-core/client/assets/css/**
-!core/client/assets/css/ghost.min.css
-core/client/docs/**
+core/test/**
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml
