@@ -9,7 +9,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 - [Ghost.org](https://ghost.org)
 - [Latest Release](https://ghost.org/download/)
-- [Support](https://ghost.org/support/)
+- [Support](http://support.ghost.org/)
 - [Theme Docs](http://themes.ghost.org)
 - [Contributing Guide](https://github.com/TryGhost/Ghost/blob/master/CONTRIBUTING.md)
 - [Feature Requests](http://ideas.ghost.org/)
