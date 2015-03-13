@@ -523,7 +523,7 @@ describe('Showdown client side converter', function () {
 
             {
                 input: '![^1](bar)',
-                output: '<section id="image_upload_undefined" class="js-drop-zone image-uploader"><img class="js-upload-target" src="bar"/><div class="description">Add image of <strong>^1</strong></div><input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage"></section>'
+                output: '<section class="js-drop-zone image-uploader"><img class="js-upload-target" src="bar"/><div class="description">Add image of <strong>^1</strong></div><input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage"></section>'
             }
         ];
 

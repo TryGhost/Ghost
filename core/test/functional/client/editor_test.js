@@ -40,7 +40,7 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
     // Part 2: Test saving with data
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title, {reset: true});
-        casper.writeContentToCodeMirror(testPost.html);
+        casper.writeContentToEditor(testPost.html);
     });
 
     // TODO: Expand markdown tests to cover more markdown, and keyboard shortcuts
@@ -82,33 +82,36 @@ CasperTest.begin('Ghost editor functions correctly', 20, function suite(test) {
         }, trimmedTitle, 'Entry title should match expected value.');
     });
 
-    // Part 4: Word count and plurality
-    casper.then(function checkZeroPlural() {
-        test.assertSelectorHasText('.entry-word-count', '0 words', 'count of 0 produces plural "words".');
-    });
+    // Reset the editor
+    casper.thenOpenAndWaitForPageLoad('editor', function testWordCount() {
+        // Part 4: Word count and plurality
+        casper.then(function checkZeroPlural() {
+            test.assertSelectorHasText('.entry-word-count', '0 words', 'count of 0 produces plural "words".');
+        });
 
-    casper.then(function () {
-        casper.writeContentToCodeMirror('test');
-    });
+        casper.then(function () {
+            casper.writeContentToEditor('test');
+        });
 
-    casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
-        test.assertSelectorHasText('.entry-word-count', '1 word', 'count of 1 produces singular "word".');
-    });
+        casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
+            test.assertSelectorHasText('.entry-word-count', '1 word', 'count of 1 produces singular "word".');
+        });
 
-    casper.then(function () {
-        casper.writeContentToCodeMirror('test'); // append another word, assumes newline
-    });
+        casper.then(function () {
+            casper.writeContentToEditor('test');
+        });
 
-    casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
-        test.assertSelectorHasText('.entry-word-count', '2 words', 'count of 2 produces plural "words".');
-    });
+        casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
+            test.assertSelectorHasText('.entry-word-count', '2 words', 'count of 2 produces plural "words".');
+        });
 
-    casper.then(function () {
-        casper.writeContentToCodeMirror('even **more** words'); // append another word, assumes newline
-    });
+        casper.then(function () {
+            casper.writeContentToEditor('even **more** words'); // append another word, assumes newline
+        });
 
-    casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
-        test.assertSelectorHasText('.entry-word-count', '5 words', 'count of 5 produces plural "words".');
+        casper.waitForSelectorTextChange('.entry-word-count', function onSuccess() {
+            test.assertSelectorHasText('.entry-word-count', '5 words', 'count of 5 produces plural "words".');
+        });
     });
 
     // Part 5: Editor global shortcuts
@@ -154,15 +157,15 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
     // Test standard image upload modal
     casper.then(function testImage() {
-        casper.writeContentToCodeMirror('![some text]()');
+        casper.writeContentToEditor('![some text]()');
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
         test.assertEvalEquals(function () {
-            return document.querySelector('.CodeMirror-wrap textarea').value;
-        }, '![some text]()', 'Editor value is correct');
+            return document.querySelector('.entry-markdown-content textarea').value;
+        }, '![some text]()\n', 'Editor value is correct');
 
-        test.assertHTMLEquals('<section id=\"image_upload_1\" class=\"js-drop-zone image-uploader\">' +
+        test.assertHTMLEquals('<section class=\"js-drop-zone image-uploader\">' +
         '<span class=\"media\"><span class=\"hidden\">Image Upload</span></span>' +
         '<img class=\"js-upload-target\" style=\"display: none; \" src=\"\">' +
         '<div class=\"description\">Add image of <strong>some text</strong></div>' +
@@ -207,7 +210,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
 
     casper.then(function () {
         var markdownImageString = '![](' + testFileLocation + ')';
-        casper.writeContentToCodeMirror(markdownImageString);
+        casper.writeContentToEditor(markdownImageString);
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
@@ -227,7 +230,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     });
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('![]()');
+        casper.writeContentToEditor('![]()');
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.image-uploader', function onSuccess() {
@@ -260,7 +263,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     casper.thenClick('.content-preview a.post-edit');
 
     casper.then(function () {
-        casper.writeContentToCodeMirror('abcdefghijklmnopqrstuvwxyz');
+        casper.writeContentToEditor('abcdefghijklmnopqrstuvwxyz');
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
@@ -323,7 +326,7 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     // Fill headline and content
     casper.then(function fillContent() {
         casper.sendKeys('#entry-title', 'Headline');
-        casper.writeContentToCodeMirror('Just a bit of test text');
+        casper.writeContentToEditor('Just a bit of test text');
     });
 
     casper.then(function switchMenuToPublish() {
@@ -374,7 +377,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
 
     casper.then(function createTestPost() {
         casper.sendKeys('#entry-title', testPost.title);
-        casper.writeContentToCodeMirror(testPost.html);
+        casper.writeContentToEditor(testPost.html);
     });
 
     casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
@@ -579,7 +582,7 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
     // Fill title and content
     casper.then(function writePost() {
         casper.sendKeys('#entry-title', 'a valid title');
-        casper.writeContentToCodeMirror('body content');
+        casper.writeContentToEditor('body content');
     });
 
     // save
@@ -659,7 +662,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
     // add a new post
     casper.then(function fillContent() {
         casper.sendKeys('#entry-title', 'post title', {reset: true});
-        casper.writeContentToCodeMirror('Just a bit of test text');
+        casper.writeContentToEditor('Just a bit of test text');
     });
 
     // save draft
@@ -706,7 +709,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
     // add a new post
     casper.then(function fillContent() {
         casper.sendKeys('#entry-title', 'post title');
-        casper.writeContentToCodeMirror('Just a bit of test text');
+        casper.writeContentToEditor('Just a bit of test text');
     });
 
     // save draft
@@ -716,7 +719,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
 
     // change the content
     casper.then(function updateContent() {
-        casper.writeContentToCodeMirror('updated content');
+        casper.writeContentToEditor('updated content');
         casper.click('#entry-title');
     });
 
