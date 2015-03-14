@@ -79,7 +79,7 @@ var PostsController = Ember.ArrayController.extend(PaginationControllerMixin, {
 
     init: function () {
         // let the PaginationControllerMixin know what type of model we will be paginating
-        // this is necesariy because we do not have access to the model inside the Controller::init method
+        // this is necessary because we do not have access to the model inside the Controller::init method
         this._super({modelType: 'post'});
     }
 });

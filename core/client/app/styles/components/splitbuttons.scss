@@ -162,7 +162,7 @@
             };
         }
 
-        // If it has a class of "up" spin it an extra 180degress to point up
+        // If it has a class of "up" spin it an extra 180degrees to point up
         &.up:hover,
         &.up:focus {
             @include icon($i-chevron-down) {
