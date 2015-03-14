@@ -9,7 +9,7 @@ var moment            = require('moment'),
 // Simple utility function to allow
 // passing of the ghostConfig
 // object here to be used locally
-// to ensure clean depedency graph
+// to ensure clean dependency graph
 // (i.e. no circular dependencies).
 function setConfig(config) {
     ghostConfig = config;
