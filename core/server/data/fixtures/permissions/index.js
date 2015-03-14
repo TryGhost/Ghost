@@ -98,7 +98,7 @@ to003 = function (options) {
         });
     });
 
-    // Now we can perfom the normal populate
+    // Now we can perform the normal populate
     return Promise.all(ops).then(function () {
         return populate(options);
     });

@@ -69,7 +69,7 @@ ghost_head = function (options) {
             metaDescription = excerpt.call(self.post, {hash: {words: '40'}}).string;
         }
         if (tags[0] !== '') {
-            keywords = hbs.handlebars.Utils.escapeExpression(tagsHelper.call(self.post, {hash: {autolink: 'false', seperator: ', '}}).string);
+            keywords = hbs.handlebars.Utils.escapeExpression(tagsHelper.call(self.post, {hash: {autolink: 'false', separator: ', '}}).string);
         }
         head.push('<link rel="canonical" href="' + url + '" />');
 
