@@ -115,7 +115,7 @@ GhostServer.prototype.logUpgradeWarning = function () {
 /**
  * Starts the ghost server listening on the configured port.
  * Alternatively you can pass in your own express instance and let Ghost
- * start lisetning for you.
+ * start listening for you.
  * @param  {Object=} externalApp Optional express app instance.
  * @return {Promise}
  */
