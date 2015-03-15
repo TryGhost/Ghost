@@ -3,4 +3,7 @@
         {{message.message}}
     </span>
     <button class="close" {{action "closeNotification"}}><span class="hidden">Close</span></button>
+    {{#if sound}}
+    <audio {{bind-attr src="sound"}} autoplay />
+    {{/if}}
 </section>
