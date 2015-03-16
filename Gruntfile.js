@@ -284,7 +284,7 @@ var _              = require('lodash'),
                                 return './node_modules/.bin/ember build --silent';
 
                             case 'test':
-                                return './node_modules/.bin/ember test --silent';
+                                return './node_modules/.bin/ember test';
 
                             default:
                                 return './node_modules/.bin/ember build --silent';
