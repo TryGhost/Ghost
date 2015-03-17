@@ -56,8 +56,9 @@ var NotificationComponent = Ember.Component.extend({
         }
 
         switch (type) {
-            case 'success':
             case 'info':
+            case 'success':
+            case 'warn':
             case 'error':
                 return 'shared/sound/' + type + '.mp3';
             default:
