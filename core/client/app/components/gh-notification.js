@@ -42,7 +42,29 @@ var NotificationComponent = Ember.Component.extend({
             var self = this;
             self.notifications.closeNotification(self.get('message'));
         }
-    }
+    },
+
+    sound: Ember.computed(function () {
+        var message = this.get('message'),
+            type;
+
+        // Check to see if we're working with a DS.Model or a plain JS object
+        if (typeof message.toJSON === 'function') {
+            type = message.get('type');
+        } else {
+            type = message.type;
+        }
+
+        switch (type) {
+            case 'info':
+            case 'success':
+            case 'warn':
+            case 'error':
+                return 'shared/sound/' + type + '.mp3';
+            default:
+                return '';
+        }
+    })
 });
 
 export default NotificationComponent;
