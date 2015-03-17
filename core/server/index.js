@@ -183,7 +183,7 @@ function init(options) {
         initNotifications();
         // ##Configuration
 
-        // return the correct mime type for woff filess
+        // return the correct mime type for woff files
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         // enabled gzip compression by default
