@@ -382,7 +382,7 @@ frontendControllers = {
                 return next();
             }
 
-            // If there is any date based paramter in the slug
+            // If there is any date based parameter in the slug
             // we will check it against the post published date
             // to verify it's correct.
             if (params.year || params.month || params.day) {

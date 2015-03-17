@@ -22,7 +22,7 @@ function getAppRelativePath(name, relativeTo) {
     return path.relative(relativeTo, getAppAbsolutePath(name));
 }
 
-// Load apps through a psuedo sandbox
+// Load apps through a pseudo sandbox
 function loadApp(appPath) {
     var sandbox = new AppSandbox();
 
@@ -55,7 +55,7 @@ function getAppByName(name, permissions) {
 loader = {
     // Load a app and return the instantiated app
     installAppByName: function (name) {
-        // Install the apps dependendencies first
+        // Install the apps dependencies first
         var appPath = getAppAbsolutePath(name),
             deps = new AppDependencies(appPath);
 

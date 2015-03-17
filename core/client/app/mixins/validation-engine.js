@@ -82,7 +82,7 @@ var ValidationEngine = Ember.Mixin.create({
     },
 
     /**
-    * Passses the model to the validator specified by validationType.
+    * Passes the model to the validator specified by validationType.
     * Returns a promise that will resolve if validation succeeds, and reject if not.
     * Some options can be specified:
     *
