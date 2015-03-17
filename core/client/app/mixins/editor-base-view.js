@@ -21,7 +21,7 @@ var EditorViewMixin = Ember.Mixin.create({
         this.set('$previewViewPort', $previewViewPort);
         this.set('$previewContent', this.$('.js-rendered-markdown'));
 
-        $previewViewPort.scroll(Ember.run.bind($previewViewPort, setScrollClassName, {
+        $previewViewPort.on('scroll', Ember.run.bind($previewViewPort, setScrollClassName, {
             target: this.$('.js-entry-preview'),
             offset: 10
         }));
@@ -31,26 +31,29 @@ var EditorViewMixin = Ember.Mixin.create({
         this.get('$previewViewPort').off('scroll');
     }.on('willDestroyElement'),
 
-    // updated when gh-codemirror component scrolls
-    markdownScrollInfo: null,
+    // updated when gh-ed-editor component scrolls
+    editorScrollInfo: null,
+    // updated when markdown is rendered
+    height: null,
 
-    // percentage of scroll position to set htmlPreview
-    scrollPosition: Ember.computed('markdownScrollInfo', function () {
-        if (!this.get('markdownScrollInfo')) {
+    // HTML Preview listens to scrollPosition and updates its scrollTop value
+    // This property receives scrollInfo from the textEditor, and height from the preview pane, and will update the
+    // scrollPosition value such that when either scrolling or typing-at-the-end of the text editor the preview pane
+    // stays in sync
+    scrollPosition: Ember.computed('editorScrollInfo', 'height', function () {
+        if (!this.get('editorScrollInfo')) {
             return 0;
         }
 
-        var scrollInfo = this.get('markdownScrollInfo'),
-            markdownHeight,
-            previewHeight,
+        var scrollInfo = this.get('editorScrollInfo'),
+            previewHeight = this.get('$previewContent').height() - this.get('$previewViewPort').height(),
+            previewPosition,
             ratio;
 
-        markdownHeight = scrollInfo.height - scrollInfo.clientHeight;
-        previewHeight = this.get('$previewContent').height() - this.get('$previewViewPort').height();
+        ratio = previewHeight / scrollInfo.diff;
+        previewPosition = scrollInfo.top * ratio;
 
-        ratio = previewHeight / markdownHeight;
-
-        return scrollInfo.top * ratio;
+        return previewPosition;
     })
 });
 
