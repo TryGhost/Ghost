@@ -145,8 +145,8 @@ frontendControllers = {
                 page: pageParam
             };
 
-        // No negative pages, or page 1
-        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
+        // No negative pages
+        if (isNaN(pageParam) || pageParam < 1) {
             return res.redirect(config.paths.subdir + '/');
         }
 
@@ -161,12 +161,12 @@ frontendControllers = {
             // Render the page of posts
             filters.doFilter('prePostsRender', page.posts).then(function (posts) {
                 getActiveThemePaths().then(function (paths) {
-                    var view = paths.hasOwnProperty('home.hbs') ? 'home' : 'index';
+                    var view = 'index';
 
-                    // If we're on a page then we always render the index
-                    // template.
-                    if (pageParam > 1) {
-                        view = 'index';
+                    // Render home template if no page number is defined
+                    // and the home.hbs file is found
+                    if (req.params.page === undefined && paths.hasOwnProperty('home.hbs')) {
+                        view = 'home';
                     }
 
                     setResponseContext(req, res);
