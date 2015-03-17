@@ -70,6 +70,7 @@
 
     <div {{bind-attr class="isViewingSubview:settings-menu-pane-in:settings-menu-pane-out-right :settings-menu :settings-menu-pane"}}>
     {{#gh-tab-pane}}
+        {{#if isViewingSubview}}
         <div class="settings-menu-header subview">
             <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
             <h4>Meta Data</h4>
@@ -99,6 +100,7 @@
             </div>
             </form>
         </div>{{! .settings-menu-content }}
+        {{/if}}
     {{/gh-tab-pane}}
     </div>
 </div>
