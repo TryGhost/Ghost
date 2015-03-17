@@ -18,9 +18,8 @@
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
             {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch
-            scrollInfo=view.editorScrollInfo
-            setEditor="setEditor" openModal="openModal" onChange="autoSave"
-            focus=shouldFocusEditor focusCursorAtEnd=model.isDirty onFocusIn="autoSaveNew"}}
+            scrollInfo=view.editorScrollInfo focus=shouldFocusEditor focusCursorAtEnd=model.isDirty
+            setEditor="setEditor" openModal="openModal" onFocusIn="autoSaveNew"}}
         </section>
     </section>
 
