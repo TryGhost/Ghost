@@ -31,6 +31,36 @@ EditorControllerMixin = Ember.Mixin.create({
             return self.get('isDirty') ? self.unloadDirtyMessage() : null;
         };
     },
+    lastModelId: null,
+    modelChanged: Ember.computed('model.id', function (key, value) {
+        var modelId = this.get('model.id');
+
+        if (arguments.length > 1) {
+            return value;
+        }
+
+        if (this.get('lastModelId') === modelId) {
+            return false;
+        }
+
+        this.set('lastModelId', modelId);
+        return true;
+    }),
+    autoSave: function () {
+        // Don't save just because we swapped out models
+        if (this.get('modelChanged')) {
+            this.set('modelChanged', false);
+        } else if (this.get('model.isDraft') && !this.get('model.isNew')) {
+            var autoSaveId,
+                timedSaveId;
+
+            timedSaveId = Ember.run.throttle(this, 'send', 'save', {silent: true, disableNProgress: true}, 60000, false);
+            this.set('timedSaveId', timedSaveId);
+
+            autoSaveId = Ember.run.debounce(this, 'send', 'save', {silent: true, disableNProgress: true}, 3000);
+            this.set('autoSaveId', autoSaveId);
+        }
+    }.observes('model.scratch'),
 
     /**
      * By default, a post will not change its publish state.
@@ -330,19 +360,6 @@ EditorControllerMixin = Ember.Mixin.create({
 
         togglePreview: function (preview) {
             this.set('isPreview', preview);
-        },
-
-        autoSave: function () {
-            if (this.get('model.isDraft')) {
-                var autoSaveId,
-                    timedSaveId;
-
-                timedSaveId = Ember.run.throttle(this, 'send', 'save', {silent: true, disableNProgress: true}, 60000, false);
-                this.set('timedSaveId', timedSaveId);
-
-                autoSaveId = Ember.run.debounce(this, 'send', 'save', {silent: true, disableNProgress: true}, 3000);
-                this.set('autoSaveId', autoSaveId);
-            }
         },
 
         autoSaveNew: function () {
