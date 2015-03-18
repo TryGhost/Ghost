@@ -2,6 +2,7 @@ var packages = require('../../../package.json'),
     path = require('path'),
     crypto = require('crypto'),
     fs = require('fs'),
+    _  = require('lodash'),
     mode = process.env.NODE_ENV === undefined ? 'development' : process.env.NODE_ENV,
     appRoot = path.resolve(__dirname, '../../../'),
     configFilePath = process.env.GHOST_CONFIG || path.join(appRoot, 'config.js'),
@@ -9,9 +10,48 @@ var packages = require('../../../package.json'),
 
 checks = {
     check: function check() {
+        this.configuration();
         this.packages();
         this.contentPath();
         this.sqlite();
+    },
+
+    // If the config file is present, NODE_ENV must match a key and required keys must be present
+    configuration: function configuration() {
+        var configFile,
+            missingKeys,
+            requiredKeys = ['url', 'database', 'server'],
+            config;
+
+        try {
+            configFile = require(configFilePath);
+        } catch (e) {
+          // Skip-- There are other tests for failure-to-read config file later.
+            return;
+        }
+
+        config = configFile[mode];
+
+        if (!config) {
+            console.error('\x1B[31mERROR: config.js contains no key matching NODE_ENV value:\033[0m ' + mode);
+            process.exit(0);
+        }
+
+        missingKeys = _.remove(requiredKeys, function (key) {
+            if (!config[key]) {
+                return true;
+            }
+        });
+
+        if (missingKeys.length) {
+            console.error('\x1B[31mERROR: config.js is missing required keys:\033[0m ' + missingKeys.join());
+            process.exit(0);
+        }
+
+        if (mode === 'production' && !(config.mail && config.mail.transport)) {
+            console.warn('\x1B[33mWARNING: mail sending has not been configured and will not work. See config.js.\033[0m');
+            process.exit(0);
+        }
     },
 
     // Make sure package.json dependencies have been installed.
