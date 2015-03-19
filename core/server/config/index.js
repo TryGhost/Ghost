@@ -227,8 +227,9 @@ ConfigManager.prototype.load = function (configFilePath) {
     /* Check for config file and copy from config.example.js
         if one doesn't exist. After that, start the server. */
     return new Promise(function (resolve, reject) {
-        fs.exists(self._config.paths.config, function (exists) {
-            var pendingConfig;
+        fs.stat(self._config.paths.config, function (err) {
+            var exists = (err) ? false : true,
+                pendingConfig;
 
             if (!exists) {
                 pendingConfig = self.writeFile();
@@ -250,8 +251,9 @@ ConfigManager.prototype.writeFile = function () {
         configExamplePath = this._config.paths.configExample;
 
     return new Promise(function (resolve, reject) {
-        fs.exists(configExamplePath, function checkTemplate(templateExists) {
-            var read,
+        fs.stat(configExamplePath, function checkTemplate(err) {
+            var templateExists = (err) ? false : true,
+                read,
                 write,
                 error;
 
