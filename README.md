@@ -33,7 +33,7 @@ Ghost is also compatible with **Node v0.12** and **io.js v1.2**, but please note
 
 More [install docs](http://support.ghost.org/installation/) here in case you got stuck.
 
-
+<a name="getting-started"></a>
 # Developer Install (from git)
 
 Install Node.js. 
