@@ -82,11 +82,14 @@ function builtFilesExist() {
                         '\nhttps://github.com/TryGhost/Ghost#getting-started';
 
         return new Promise(function (resolve, reject) {
-            fs.exists(fileName, function (exists) {
+            fs.stat(fileName, function (statErr) {
+                var exists = (statErr) ? false : true,
+                    err;
+
                 if (exists) {
                     resolve(true);
                 } else {
-                    var err = new Error(errorMessage);
+                    err = new Error(errorMessage);
 
                     err.help = errorHelp;
                     reject(err);
