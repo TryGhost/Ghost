@@ -225,6 +225,26 @@ describe('Config', function () {
             config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
             config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
         });
+
+        it('should return a url for a nav item when asked for it', function () {
+            var testContext = 'nav',
+                testData;
+
+            config.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
+
+            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
+            config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
+
+            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
+            config.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
+
+            testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
+            config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
+
+            config.set({url: 'http://my-ghost-blog.com/blog'});
+            testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
+            config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+        });
     });
 
     describe('urlPathForPost', function () {
