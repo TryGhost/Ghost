@@ -82,6 +82,7 @@ describe('Config', function () {
                 'subdir',
                 'config',
                 'configExample',
+                'storage',
                 'contentPath',
                 'corePath',
                 'themePath',
@@ -144,6 +145,34 @@ describe('Config', function () {
             config.paths.should.have.property('themePath', contentPath + 'themes');
             config.paths.should.have.property('appPath', contentPath + 'apps');
             config.paths.should.have.property('imagesPath', contentPath + 'images');
+        });
+    });
+
+    describe('Storage', function () {
+        afterEach(function () {
+            resetConfig();
+        });
+
+        it('should default to local-file-store', function () {
+            var storagePath = path.join(config.paths.corePath, '/server/storage/', 'local-file-store');
+
+            config.paths.should.have.property('storage', storagePath);
+            config.storage.should.have.property('active', 'local-file-store');
+        });
+
+        it('should allow setting a custom active storage', function () {
+            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+
+            config.set({
+                storage: {
+                    active: 's3',
+                    s3: {}
+                }
+            });
+
+            config.paths.should.have.property('storage', storagePath);
+            config.storage.should.have.property('active', 's3');
+            config.storage.should.have.property('s3', {});
         });
     });
 
