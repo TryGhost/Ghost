@@ -52,7 +52,18 @@ function activateTheme(activeTheme) {
     blogApp.cache = {};
 
     // set view engine
-    hbsOptions = {partialsDir: [config.paths.helperTemplates]};
+    hbsOptions = {
+        partialsDir: [config.paths.helperTemplates],
+        // override the default compile
+        onCompile: function(exhbs, source, filename) {
+            var options;
+            if (filename && filename.indexOf('partials') !== -1) {
+                options = {preventIndent: true};
+            }
+
+            return exhbs.handlebars.compile(source, options);
+        }
+    };
 
     fs.stat(themePartials, function (err, stats) {
         // Check that the theme has a partials directory before trying to use it
