@@ -108,7 +108,10 @@ function configureDriver(client) {
  */
 ConfigManager.prototype.set = function (config) {
     var localPath = '',
+        defaultStorage = 'local-file-store',
         contentPath,
+        activeStorage,
+        storagePath,
         subdir,
         assetHash;
 
@@ -151,6 +154,18 @@ ConfigManager.prototype.set = function (config) {
         knexInstance = knex(this._config.database);
     }
 
+    // Protect against accessing a non-existant object.
+    // This ensures there's always at least a storage object
+    // because it's referenced in multiple places.
+    this._config.storage = this._config.storage || {};
+    activeStorage = this._config.storage.active || defaultStorage;
+
+    if (activeStorage === defaultStorage) {
+        storagePath = path.join(corePath, '/server/storage/');
+    } else {
+        storagePath = path.join(contentPath, 'storage');
+    }
+
     _.merge(this._config, {
         database: {
             knex: knexInstance
@@ -162,6 +177,8 @@ ConfigManager.prototype.set = function (config) {
             config:           this._config.paths.config || path.join(appRoot, 'config.js'),
             configExample:    path.join(appRoot, 'config.example.js'),
             corePath:         corePath,
+
+            storage:          path.join(storagePath, activeStorage),
 
             contentPath:      contentPath,
             themePath:        path.resolve(contentPath, 'themes'),
@@ -177,6 +194,9 @@ ConfigManager.prototype.set = function (config) {
             availableThemes:  this._config.paths.availableThemes || {},
             availableApps:    this._config.paths.availableApps || {},
             clientAssets:     path.join(corePath, '/built/assets/')
+        },
+        storage: {
+            active: activeStorage
         },
         theme: {
             // normalise the URL by removing any trailing slash
