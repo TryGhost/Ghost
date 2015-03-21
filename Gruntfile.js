@@ -19,6 +19,7 @@ var _              = require('lodash'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
     mochaPath      = path.resolve(cwd + '/node_modules/grunt-mocha-cli/node_modules/mocha/bin/mocha'),
+    emberPath      = path.resolve(cwd + '/core/client/node_modules/.bin/ember'),
 
     // ## Build File Patterns
     // A list of files and patterns to include when creating a release zip.
@@ -255,7 +256,7 @@ var _              = require('lodash'),
             // Used to run ember-cli watch in the background
             bgShell: {
                 ember: {
-                    cmd: './node_modules/.bin/ember build --watch',
+                    cmd: emberPath + ' build --watch',
                     execOpts: {
                         cwd: path.resolve(cwd + '/core/client/')
                     },
@@ -278,16 +279,13 @@ var _              = require('lodash'),
                                 return 'echo Installing client dependencies... && npm install';
 
                             case 'prod':
-                                return './node_modules/.bin/ember build --environment=production --silent';
+                                return emberPath + ' build --environment=production --silent';
 
                             case 'dev':
-                                return './node_modules/.bin/ember build --silent';
+                                return emberPath + ' build --silent';
 
                             case 'test':
-                                return './node_modules/.bin/ember test --silent';
-
-                            default:
-                                return './node_modules/.bin/ember build --silent';
+                                return emberPath + ' test --silent';
                         }
                     },
                     options: {
