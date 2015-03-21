@@ -15,7 +15,9 @@ meta_description = function () {
     var description,
         blog;
 
-    if (_.isString(this.relativeUrl)) {
+    if (_.isUndefined(this.relativeUrl)) {
+        description = this.meta_description;
+    } else if (_.isString(this.relativeUrl)) {
         blog = config.theme;
         if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
             description = blog.description;
