@@ -16,13 +16,12 @@ meta_title = function (options) {
     var title = '',
         blog,
         page,
-        pageString = '';
+        pageString = '',
+        pagePattern = new RegExp('\\/' + config.routeKeywords.page + '\\/(\\d+)');
 
     if (_.isString(this.relativeUrl)) {
         blog = config.theme;
-
-        page = this.relativeUrl.match(/\/page\/(\d+)/);
-
+        page = this.relativeUrl.match(pagePattern);
         if (page) {
             pageString = ' - Page ' + page[1];
         }
