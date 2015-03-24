@@ -1,8 +1,9 @@
 var _               = require('lodash'),
     http            = require('http'),
     xml             = require('xml'),
-    config          = require('./config'),
-    errors          = require('./errors'),
+    config          = require('../../config'),
+    errors          = require('../../errors'),
+    events          = require('../../events'),
     pingList;
 
 // ToDo: Make this configurable
@@ -75,6 +76,12 @@ function ping(post) {
     });
 }
 
+function init() {
+    events.on('post.published', function (model) {
+        ping(model.toJSON());
+    });
+}
+
 module.exports = {
-    ping: ping
+    init: init
 };
