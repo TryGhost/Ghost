@@ -9,7 +9,7 @@ var _              = require('lodash'),
     request        = require('request'),
     validation     = require('../data/validation'),
     config         = require('../config'),
-    sitemap        = require('../data/sitemap'),
+    events         = require('../events'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -37,17 +37,41 @@ User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
 
+    emitChange: function (event) {
+        events.emit('user' + '.' + event, this);
+    },
+
     initialize: function () {
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
         this.on('created', function (model) {
-            sitemap.userAdded(model);
+            model.emitChange('added');
+
+            // active is the default state, so if status isn't provided, this will be an active user
+            if (!model.get('status') || _.contains(activeStates, model.get('status'))) {
+                model.emitChange('activated');
+            }
         });
         this.on('updated', function (model) {
-            sitemap.userEdited(model);
+            model.statusChanging = model.get('status') !== model.updated('status');
+            model.isActive = _.contains(activeStates, model.get('status'));
+
+            if (model.statusChanging) {
+                model.emitChange(model.isActive ? 'activated' : 'deactivated');
+            } else {
+                if (model.isActive) {
+                    model.emitChange('activated.edited');
+                }
+            }
+
+            model.emitChange('edited');
         });
         this.on('destroyed', function (model) {
-            sitemap.userDeleted(model);
+            if (_.contains(activeStates, model.previous('status'))) {
+                model.emitChange('deactivated');
+            }
+
+            model.emitChange('deleted');
         });
     },
 
