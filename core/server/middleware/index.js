@@ -22,7 +22,7 @@ var api            = require('../api'),
     oauth2orize    = require('oauth2orize'),
     authStrategies = require('./auth-strategies'),
     utils          = require('../utils'),
-    sitemapHandler = require('../data/sitemap/handler'),
+    sitemapHandler = require('../data/xml/sitemap/handler'),
 
     blogApp,
     setupMiddleware;

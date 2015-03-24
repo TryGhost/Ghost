@@ -1,8 +1,9 @@
 var _       = require('lodash'),
     xml     = require('xml'),
     moment  = require('moment'),
-    api     = require('../../api'),
-    config  = require('../../config'),
+    api     = require('../../../api'),
+    config  = require('../../../config'),
+    events  = require('../../../events'),
     utils   = require('./utils'),
     Promise = require('bluebird'),
     CHANGE_FREQ = 'weekly',
@@ -21,12 +22,18 @@ function BaseSiteMapGenerator() {
     this.nodeLookup = {};
     this.nodeTimeLookup = {};
     this.siteMapContent = '';
+    this.dataEvents = events;
 }
 
 _.extend(BaseSiteMapGenerator.prototype, {
     init: function () {
-        return this.refreshAll();
+        var self = this;
+        return this.refreshAll().then(function () {
+            return self.bindEvents();
+        });
     },
+
+    bindEvents: _.noop,
 
     getData: function () {
         return Promise.resolve([]);
@@ -113,27 +120,10 @@ _.extend(BaseSiteMapGenerator.prototype, {
         return content;
     },
 
-    addUrl: function (datum) {
-        var self = this;
-        return this.getPermalinksValue().then(function (permalinks) {
-            var node = self.createUrlNodeFromDatum(datum, permalinks);
-            self.updateLastModified(datum);
-            self.updateLookups(datum, node);
+    addOrUpdateUrl: function (model) {
+        var self = this,
+            datum = model.toJSON();
 
-            return self.updateXmlFromNodes();
-        });
-    },
-
-    removeUrl: function (datum) {
-        this.removeFromLookups(datum);
-
-        this.lastModified = Date.now();
-
-        return this.updateXmlFromNodes();
-    },
-
-    updateUrl: function (datum) {
-        var self = this;
         return this.getPermalinksValue().then(function (permalinks) {
             var node = self.createUrlNodeFromDatum(datum, permalinks);
             self.updateLastModified(datum);
@@ -142,6 +132,15 @@ _.extend(BaseSiteMapGenerator.prototype, {
 
             return self.updateXmlFromNodes();
         });
+    },
+
+    removeUrl: function (model) {
+        var datum = model.toJSON();
+        this.removeFromLookups(datum);
+
+        this.lastModified = Date.now();
+
+        return this.updateXmlFromNodes();
     },
 
     getUrlForDatum: function () {

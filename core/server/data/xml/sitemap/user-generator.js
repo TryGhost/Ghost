@@ -1,9 +1,9 @@
-var _                   = require('lodash'),
-    path                = require('path'),
-    api                 = require('../../api'),
-    BaseMapGenerator    = require('./base-generator'),
-    validator           = require('validator'),
-    config              = require('../../config');
+var _      = require('lodash'),
+    path   = require('path'),
+    api    = require('../../../api'),
+    config = require('../../../config'),
+    validator        = require('validator'),
+    BaseMapGenerator = require('./base-generator');
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function UserMapGenerator(opts) {
@@ -20,6 +20,13 @@ UserMapGenerator.Defaults = {
 _.extend(UserMapGenerator.prototype, BaseMapGenerator.prototype);
 
 _.extend(UserMapGenerator.prototype, {
+    bindEvents: function () {
+        var self = this;
+        this.dataEvents.on('user.activated', self.addOrUpdateUrl.bind(self));
+        this.dataEvents.on('user.activated.edited', self.addOrUpdateUrl.bind(self));
+        this.dataEvents.on('user.deactivated', self.removeUrl.bind(self));
+    },
+
     getData: function () {
         return api.users.browse({
             context: {

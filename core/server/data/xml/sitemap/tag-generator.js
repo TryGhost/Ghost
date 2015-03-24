@@ -1,7 +1,7 @@
-var _ = require('lodash'),
-    api = require('../../api'),
-    BaseMapGenerator = require('./base-generator'),
-    config = require('../../config');
+var _      = require('lodash'),
+    api    = require('../../../api'),
+    config = require('../../../config'),
+    BaseMapGenerator = require('./base-generator');
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function TagsMapGenerator(opts) {
@@ -18,6 +18,13 @@ TagsMapGenerator.Defaults = {
 _.extend(TagsMapGenerator.prototype, BaseMapGenerator.prototype);
 
 _.extend(TagsMapGenerator.prototype, {
+    bindEvents: function () {
+        var self = this;
+        this.dataEvents.on('tag.added', self.addOrUpdateUrl.bind(self));
+        this.dataEvents.on('tag.edited', self.addOrUpdateUrl.bind(self));
+        this.dataEvents.on('tag.deleted', self.removeUrl.bind(self));
+    },
+
     getData: function () {
         return api.tags.browse({
             context: {
