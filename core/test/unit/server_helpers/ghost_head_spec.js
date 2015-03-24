@@ -50,7 +50,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag string', function (done) {
-            helpers.ghost_head.call({version: '0.3.0', post: false}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {version: '0.3.0', post: false},
+                {data: {root: {context: []}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/" />\n' +
                     '    <meta name="generator" content="Ghost 0.3" />\n' +
@@ -61,7 +64,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag string even if version is invalid', function (done) {
-            helpers.ghost_head.call({version: '0.9'}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {version: '0.9'},
+                {data: {root: {context: []}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/" />\n' +
                     '    <meta name="generator" content="Ghost 0.9" />\n' +
@@ -88,7 +94,10 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call({relativeUrl: '/post/', version: '0.3.0', post: post}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', version: '0.3.0', post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/post/" />\n    \n' +
                     '    <meta property="og:site_name" content="Ghost" />\n' +
@@ -141,7 +150,10 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call({relativeUrl: '/post/', version: '0.3.0', post: post}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', version: '0.3.0', post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/post/" />\n    \n' +
                     '    <meta property="og:site_name" content="Ghost" />\n' +
@@ -193,7 +205,10 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call({relativeUrl: '/post/', version: '0.3.0', post: post}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', version: '0.3.0', post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/post/" />\n    \n' +
                     '    <meta property="og:site_name" content="Ghost" />\n' +
@@ -242,7 +257,10 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call({relativeUrl: '/post/', version: '0.3.0', post: post}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', version: '0.3.0', post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/post/" />\n    \n' +
                     '    <meta property="og:site_name" content="Ghost" />\n' +
@@ -296,7 +314,10 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head.call({relativeUrl: '/post/', version: '0.3.0', post: post}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', version: '0.3.0', post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/post/" />\n' +
                     '    <meta name="generator" content="Ghost 0.3" />\n' +
@@ -307,7 +328,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns canonical URL', function (done) {
-            helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/about/'}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {version: '0.3.0', relativeUrl: '/about/'},
+                {data: {root: {context: ['page']}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/about/" />\n' +
                     '    <meta name="generator" content="Ghost 0.3" />\n' +
@@ -318,7 +342,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for middle page', function (done) {
-            helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/page/3/', pagination: {next: '4', prev: '2'}}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {version: '0.3.0', relativeUrl: '/page/3/', pagination: {next: '4', prev: '2'}},
+                {data: {root: {context: ['index', 'paged'], pagination: {total: 4, page: 3, next: 4, prev: 2}}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/page/3/" />\n' +
                     '    <link rel="prev" href="http://testurl.com/page/2/" />\n' +
@@ -330,7 +357,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for second page', function (done) {
-            helpers.ghost_head.call({version: '0.3.0', relativeUrl: '/page/2/', pagination: {next: '3', prev: '1'}}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {version: '0.3.0', relativeUrl: '/page/2/', pagination: {next: '3', prev: '1'}},
+                {data: {root: {context: ['index', 'paged'], pagination: {total: 3, page: 2, next: 3, prev: 1}}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/page/2/" />\n' +
                     '    <link rel="prev" href="http://testurl.com/" />\n' +
@@ -356,7 +386,10 @@ describe('{{ghost_head}} helper', function () {
             });
 
             it('returns correct rss url with subdirectory', function (done) {
-                helpers.ghost_head.call({version: '0.3.0'}).then(function (rendered) {
+                helpers.ghost_head.call(
+                    {version: '0.3.0'},
+                    {data: {root: {context: []}}}
+                ).then(function (rendered) {
                     should.exist(rendered);
                     rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/blog/" />\n' +
                         '    <meta name="generator" content="Ghost 0.3" />\n' +
@@ -391,7 +424,10 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag plus injected code', function (done) {
-            helpers.ghost_head.call({version: '0.3.0', post: false}).then(function (rendered) {
+            helpers.ghost_head.call(
+                {version: '0.3.0', post: false},
+                {data: {root: {context: []}}}
+            ).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.equal('<link rel="canonical" href="http://testurl.com/" />\n' +
                     '    <meta name="generator" content="Ghost 0.3" />\n' +
