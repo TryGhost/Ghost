@@ -14,6 +14,7 @@ var moment      = require('moment'),
     template    = require('../helpers/template'),
     errors      = require('../errors'),
     routeMatch  = require('path-match')(),
+    path        = require('path'),
 
     frontendControllers,
     staticPostPermalink;
@@ -451,7 +452,23 @@ frontendControllers = {
             return handleError(next)(err);
         });
     },
-    rss: rss
+    rss: rss,
+    private: function (req, res) {
+        var defaultPage = path.resolve(config.paths.adminViews, 'password.hbs');
+        return getActiveThemePaths().then(function (paths) {
+            var data = {
+                forward: req.query.r
+            };
+            if (res.error) {
+                data.error = res.error;
+            }
+            if (paths.hasOwnProperty('password.hbs')) {
+                return res.render('password', data);
+            } else {
+                return res.render(defaultPage, data);
+            }
+        });
+    }
 };
 
 module.exports = frontendControllers;

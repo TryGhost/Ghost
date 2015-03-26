@@ -5,7 +5,7 @@ var frontend    = require('../controllers/frontend'),
 
     frontendRoutes;
 
-frontendRoutes = function () {
+frontendRoutes = function (middleware) {
     var router = express.Router(),
         subdir = config.paths.subdir,
         routeKeywords = config.routeKeywords;
@@ -27,6 +27,18 @@ frontendRoutes = function () {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
+
+    // password-protected frontend route
+    router.get('/private/',
+        middleware.isPrivateSessionAuth,
+        frontend.private
+    );
+    router.post('/private/',
+        middleware.isPrivateSessionAuth,
+        middleware.spamProtectedPrevention,
+        middleware.authenticateProtection,
+        frontend.private
+    );
 
     // ### Frontend routes
     router.get('/rss/', frontend.rss);
