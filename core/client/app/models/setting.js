@@ -19,7 +19,9 @@ var Setting = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     ghost_head: DS.attr('string'),
     ghost_foot: DS.attr('string'),
     labs: DS.attr('string'),
-    navigation: DS.attr('string')
+    navigation: DS.attr('string'),
+    isPrivate: DS.attr('boolean'),
+    password: DS.attr('string')
 });
 
 export default Setting;
