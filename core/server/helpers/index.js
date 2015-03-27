@@ -37,6 +37,8 @@ coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.url = require('./url');
 coreHelpers.image = require('./image');
+coreHelpers.prev_post = require('./prev_next');
+coreHelpers.next_post = require('./prev_next');
 
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
@@ -109,6 +111,8 @@ registerHelpers = function (adminHbs) {
     registerAsyncThemeHelper('meta_description', coreHelpers.meta_description);
     registerAsyncThemeHelper('meta_title', coreHelpers.meta_title);
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
+    registerAsyncThemeHelper('next_post', coreHelpers.next_post);
+    registerAsyncThemeHelper('prev_post', coreHelpers.prev_post);
 
     // Register admin helpers
     registerAdminHelper('asset', coreHelpers.asset);
