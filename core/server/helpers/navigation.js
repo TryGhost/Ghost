@@ -54,7 +54,7 @@ navigation = function (options) {
 
     context = _.merge({}, {navigation: output});
 
-    return template.execute('navigation', context);
+    return template.execute('navigation', context, options);
 };
 
 module.exports = navigation;

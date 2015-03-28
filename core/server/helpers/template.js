@@ -6,7 +6,7 @@ var templates     = {},
 
 // Execute a template helper
 // All template helpers are register as partial view.
-templates.execute = function (name, context) {
+templates.execute = function (name, context, options) {
     var partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {
@@ -19,7 +19,7 @@ templates.execute = function (name, context) {
         hbs.registerPartial(partial);
     }
 
-    return new hbs.handlebars.SafeString(partial(context));
+    return new hbs.handlebars.SafeString(partial(context, options));
 };
 
 // Given a theme object and a post object this will return

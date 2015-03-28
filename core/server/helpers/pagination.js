@@ -38,7 +38,7 @@ pagination = function (options) {
         context.authorSlug = this.author.slug;
     }
 
-    return template.execute('pagination', context);
+    return template.execute('pagination', context, options);
 };
 
 module.exports = pagination;
