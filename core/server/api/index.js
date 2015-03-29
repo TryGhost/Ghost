@@ -5,7 +5,7 @@
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
 var _              = require('lodash'),
-    config         = require('../config'),
+    urls           = require('../utils/url'),
     // Include Endpoints
     configuration  = require('./configuration'),
     db             = require('./db'),
@@ -22,7 +22,7 @@ var _              = require('lodash'),
     uploads        = require('./upload'),
     dataExport     = require('../data/export'),
     errors         = require('../errors'),
-
+    config         = require('../config'),
     http,
     formatHttpErrors,
     addHeaders,
@@ -82,11 +82,11 @@ cacheInvalidationHeader = function (req, result) {
             if (hasStatusChanged || wasDeleted || wasPublishedUpdated) {
                 cacheInvalidate = [
                     '/',
-                    '/' + config.routeKeywords.page + '/*',
+                    '/' + config.get('routeKeywords:page') + '/*',
                     '/rss/',
                     '/rss/*',
-                    '/' + config.routeKeywords.tag + '/*',
-                    '/' + config.routeKeywords.author + '/*',
+                    '/' + config.get('routeKeywords:tag') + '/*',
+                    '/' + config.get('routeKeywords:author') + '/*',
                     '/sitemap-*.xml'
                 ].join(', ');
 
@@ -112,7 +112,7 @@ cacheInvalidationHeader = function (req, result) {
  * @return {String} Resolves to header string
  */
 locationHeader = function (req, result) {
-    var apiRoot = config.urlFor('api'),
+    var apiRoot = urls.urlFor('api'),
         location,
         newObject;
 

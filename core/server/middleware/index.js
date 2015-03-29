@@ -35,7 +35,7 @@ var api            = require('../api'),
 function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
-    res.locals.version = config.ghostVersion;
+    res.locals.version = config.get('ghostVersion');
     // relative path from the URL
     res.locals.relativeUrl = req.path;
 
@@ -46,14 +46,14 @@ function ghostLocals(req, res, next) {
 // Helper for manageAdminAndTheme
 function activateTheme(activeTheme) {
     var hbsOptions,
-        themePartials = path.join(config.paths.themePath, activeTheme, 'partials');
+        themePartials = path.join(config.get('paths:themePath'), activeTheme, 'partials');
 
     // clear the view cache
     blogApp.cache = {};
 
     // set view engine
     hbsOptions = {
-        partialsDir: [config.paths.helperTemplates],
+        partialsDir: [config.get('paths:helperTemplates')],
         onCompile: function (exhbs, source) {
             return exhbs.handlebars.compile(source, {preventIndent: true});
         }
@@ -85,15 +85,15 @@ function decideIsAdmin(req, res, next) {
 // ### configHbsForContext Middleware
 // Setup handlebars for the current context (admin or theme)
 function configHbsForContext(req, res, next) {
-    var themeData = config.theme;
-    if (req.secure && config.urlSSL) {
+    var themeData = config.get('theme');
+    if (req.secure && config.get('urlSSL')) {
         // For secure requests override .url property with the SSL version
         themeData = _.clone(themeData);
-        themeData.url = config.urlSSL.replace(/\/$/, '');
+        themeData.url = config.get('urlSSL').replace(/\/$/, '');
     }
 
     hbs.updateTemplateOptions({data: {blog: themeData}});
-    blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
+    blogApp.set('views', path.join(config.get('paths:themePath'), blogApp.get('activeTheme')));
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose 'url' vs 'urlSSL'
@@ -112,7 +112,7 @@ function updateActiveTheme(req, res, next) {
         // Check if the theme changed
         if (activeTheme.value !== blogApp.get('activeTheme')) {
             // Change theme
-            if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
+            if (!config.get('paths:availableThemes').hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
                     return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
@@ -136,7 +136,7 @@ function redirectToSetup(req, res, next) {
 
     api.authentication.isSetup().then(function (exists) {
         if (!exists.setup[0].status && !req.path.match(/\/setup\//)) {
-            return res.redirect(config.paths.subdir + '/ghost/setup/');
+            return res.redirect(config.get('paths:subdir') + '/ghost/setup/');
         }
         next();
     }).catch(function (err) {
@@ -171,7 +171,7 @@ function uncapitalise(req, res, next) {
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function serveSharedFile(file, type, maxAge) {
     var content,
-        filePath = path.join(config.paths.corePath, 'shared', file),
+        filePath = path.join(config.get('paths:corePath'), 'shared', file),
         re = /(\{\{blog-url\}\})/g;
 
     return function serveSharedFile(req, res, next) {
@@ -185,7 +185,7 @@ function serveSharedFile(file, type, maxAge) {
                         return next(err);
                     }
                     if (type === 'text/xsl' || type === 'text/plain') {
-                        buf = buf.toString().replace(re, config.url.replace(/\/$/, ''));
+                        buf = buf.toString().replace(re, config.get('url').replace(/\/$/, ''));
                     }
                     content = {
                         headers: {
@@ -207,8 +207,8 @@ function serveSharedFile(file, type, maxAge) {
 }
 
 setupMiddleware = function (blogAppInstance, adminApp) {
-    var logging = config.logging,
-        corePath = config.paths.corePath,
+    var logging = config.get('logging'),
+        corePath = config.get('paths:corePath'),
         oauthServer = oauth2orize.createServer();
 
     // silence JSHint without disabling unused check for the whole file
@@ -248,14 +248,14 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use(configHbsForContext);
 
     // Admin only config
-    blogApp.use('/ghost', express['static'](config.paths.clientAssets, {maxAge: utils.ONE_YEAR_MS}));
+    blogApp.use('/ghost', express['static'](config.get('paths:clientAssets'), {maxAge: utils.ONE_YEAR_MS}));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
     //       which do not need HTTPS. In fact, if HTTPS is forced on them, then 404 page might
     //       not display properly when HTTPS is not available!
     blogApp.use(middleware.checkSSL);
-    adminApp.set('views', config.paths.adminViews);
+    adminApp.set('views', config.get('paths:adminViews'));
 
     // Theme only config
     blogApp.use(middleware.staticTheme());

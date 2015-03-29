@@ -12,6 +12,7 @@ var hbs             = require('express-hbs'),
     Promise         = require('bluebird'),
 
     config          = require('../config'),
+    urlUtil         = require('../utils/url'),
     filters         = require('../filters'),
 
     api                 = require('../api'),
@@ -26,7 +27,7 @@ var hbs             = require('express-hbs'),
 ghost_head = function (options) {
     /*jshint unused:false*/
     var self = this,
-        blog = config.theme,
+        blog = config.get('theme'),
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         head = [],
         majorMinor = /^(\d+\.)?(\d+)/,
@@ -78,7 +79,7 @@ ghost_head = function (options) {
             if (self.pagination.prev) {
                 prev = (self.pagination.prev > 1 ? prev = '/page/' + self.pagination.prev + '/' : prev = '/');
                 prev = (trimmedUrl) ? trimmedUrl + prev : prev;
-                head.push('<link rel="prev" href="' + config.urlFor({relativeUrl: prev, secure: self.secure}, true) + '" />');
+                head.push('<link rel="prev" href="' + urlUtil.urlFor({relativeUrl: prev, secure: self.secure}, true) + '" />');
             }
             if (self.pagination.next) {
                 next = '/page/' + self.pagination.next + '/';
@@ -87,7 +88,7 @@ ghost_head = function (options) {
                 } else if (tagOrAuthorPattern.test(self.relativeUrl)) {
                     next = self.relativeUrl.slice(0, -1) + next;
                 }
-                head.push('<link rel="next" href="' + config.urlFor({relativeUrl: next, secure: self.secure}, true) + '" />');
+                head.push('<link rel="next" href="' + urlUtil.urlFor({relativeUrl: next, secure: self.secure}, true) + '" />');
             }
         }
 
@@ -162,7 +163,7 @@ ghost_head = function (options) {
 
         head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-            title  + '" href="' + config.urlFor('rss', null, true) + '" />');
+            title  + '" href="' + urlUtil.urlFor('rss', null, true) + '" />');
     }).then(function () {
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {

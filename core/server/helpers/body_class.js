@@ -54,7 +54,7 @@ body_class = function () {
 
     return api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
         var activeTheme = response.settings[0],
-            paths = config.paths.availableThemes[activeTheme.value],
+            paths = config.get('paths:availableThemes')[activeTheme.value],
             view;
 
         if (post && page) {

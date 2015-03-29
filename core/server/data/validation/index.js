@@ -1,5 +1,6 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
+    path      = require('path'),
     validator = require('validator'),
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
@@ -100,15 +101,16 @@ validateSettings = function (defaultSettings, model) {
 validateActiveTheme = function (themeName) {
     // If Ghost is running and its availableThemes collection exists
     // give it priority.
-    if (config.paths.availableThemes && Object.keys(config.paths.availableThemes).length > 0) {
-        availableThemes = Promise.resolve(config.paths.availableThemes);
+    var available = config.get('paths:availableThemes');
+    if (available && Object.keys(available).length > 0) {
+        availableThemes = Promise.resolve(available);
     }
 
     if (!availableThemes) {
         // A Promise that will resolve to an object with a property for each installed theme.
         // This is necessary because certain configuration data is only available while Ghost
         // is running and at times the validations are used when it's not (e.g. tests)
-        availableThemes = requireTree(config.paths.themePath);
+        availableThemes = requireTree(path.resolve(config.get('paths:contentPath'), 'themes'));
     }
 
     return availableThemes.then(function (themes) {

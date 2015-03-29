@@ -1,7 +1,7 @@
 var _           = require('lodash'),
     Promise     = require('bluebird'),
     versioning  = require('../versioning'),
-    config      = require('../../config'),
+    db          = require('../../data/db'),
     utils       = require('../utils'),
     serverUtils = require('../../utils'),
     errors      = require('../../errors'),
@@ -32,7 +32,7 @@ exporter = function () {
             tables = results[1],
             selectOps = _.map(tables, function (name) {
                 if (excludedTables.indexOf(name) < 0) {
-                    return config.database.knex(name).select();
+                    return db.knex(name).select();
                 }
             });
 

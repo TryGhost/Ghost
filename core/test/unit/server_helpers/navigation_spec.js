@@ -20,7 +20,7 @@ describe('{{navigation}} helper', function () {
     before(function (done) {
         utils.loadHelpers();
         hbs.express3({
-            partialsDir: [utils.config.paths.helperTemplates]
+            partialsDir: [utils.config.get('paths:helperTemplates')]
         });
 
         hbs.cachePartials(function () {
@@ -72,7 +72,7 @@ describe('{{navigation}} helper', function () {
 
     it('can render one item', function () {
         var singleItem = {label: 'Foo', url: '/foo'},
-            testUrl = 'href="' + utils.config.url + '/foo"',
+            testUrl = 'href="' + utils.config.get('url') + '/foo"',
             rendered;
 
         optionsData.data.blog.navigation = [singleItem];
@@ -87,8 +87,8 @@ describe('{{navigation}} helper', function () {
     it('can render multiple items', function () {
         var firstItem = {label: 'Foo', url: '/foo'},
             secondItem = {label: 'Bar Baz Qux', url: '/qux'},
-            testUrl = 'href="' + utils.config.url + '/foo"',
-            testUrl2 = 'href="' + utils.config.url + '/qux"',
+            testUrl = 'href="' + utils.config.get('url') + '/foo"',
+            testUrl2 = 'href="' + utils.config.get('url') + '/qux"',
             rendered;
 
         optionsData.data.blog.navigation = [firstItem, secondItem];

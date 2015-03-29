@@ -16,18 +16,18 @@ var config          = require('../config'),
 
 page_url = function (context, block) {
     /*jshint unused:false*/
-    var url = config.paths.subdir;
+    var url = config.get('paths:subdir');
 
     if (this.tagSlug !== undefined) {
-        url += '/' + config.routeKeywords.tag + '/' + this.tagSlug;
+        url += '/' + config.get('routeKeywords:tag') + '/' + this.tagSlug;
     }
 
     if (this.authorSlug !== undefined) {
-        url += '/' + config.routeKeywords.author + '/' + this.authorSlug;
+        url += '/' + config.get('routeKeywords:author') + '/' + this.authorSlug;
     }
 
     if (context > 1) {
-        url += '/' + config.routeKeywords.page + '/' + context;
+        url += '/' + config.get('routeKeywords:page') + '/' + context;
     }
 
     url += '/';

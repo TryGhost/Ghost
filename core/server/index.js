@@ -27,11 +27,11 @@ function doFirstRun() {
     var firstRunMessage = [
         'Welcome to Ghost.',
         'You\'re running under the <strong>',
-        process.env.NODE_ENV,
+        config.get('NODE_ENV'),
         '</strong>environment.',
 
         'Your URL is set to',
-        '<strong>' + config.url + '</strong>.',
+        '<strong>' + config.get('url') + '</strong>.',
         'See <a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a> for instructions.'
     ];
 
@@ -66,10 +66,10 @@ function initDbHashAndFirstRun() {
 // any are missing.
 function builtFilesExist() {
     var deferreds = [],
-        location = config.paths.clientAssets,
+        location = config.get('paths:clientAssets'),
         fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
 
-    if (process.env.NODE_ENV === 'production') {
+    if (config.get('NODE_ENV') === 'production') {
         // Production uses `.min` files
         fileNames = fileNames.map(function (file) {
             return file.replace('.', '.min.');
@@ -147,7 +147,7 @@ function init(options) {
     // has finished starting up.
 
     // Load our config.js file from the local file system.
-    return config.load(options.config).then(function () {
+    return config.read(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function () {
         // Make sure javascript files have been built via grunt concat
@@ -190,7 +190,7 @@ function init(options) {
         express['static'].mime.define({'application/font-woff': ['woff']});
 
         // enabled gzip compression by default
-        if (config.server.compress !== false) {
+        if (config.get('server:compress') !== false) {
             blogApp.use(compress());
         }
 
@@ -209,11 +209,11 @@ function init(options) {
         middleware(blogApp, adminApp);
 
         // Log all theme errors and warnings
-        _.each(config.paths.availableThemes._messages.errors, function (error) {
+        _.each(config.get('paths:availableThemes')._messages.errors, function (error) {
             errors.logError(error.message, error.context, error.help);
         });
 
-        _.each(config.paths.availableThemes._messages.warns, function (warn) {
+        _.each(config.get('paths:availableThemes')._messages.warns, function (warn) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
 

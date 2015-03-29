@@ -17,12 +17,12 @@ var _          = require('lodash'),
     utils      = require('../utils'),
     uuid       = require('node-uuid'),
     validation = require('../data/validation'),
-
+    db         = require('../data/db'),
     ghostBookshelf;
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
-ghostBookshelf = bookshelf(config.database.knex);
+ghostBookshelf = bookshelf(db.knex);
 
 // Load the registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
@@ -361,10 +361,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // Check the filtered slug doesn't match any of the reserved keywords
-        return filters.doFilter('slug.reservedSlugs', config.slugs.reserved).then(function (slugList) {
+        return filters.doFilter('slug.reservedSlugs', config.get('slugs:reserved')).then(function (slugList) {
             // Some keywords cannot be changed
-            slugList = _.union(slugList, config.slugs.protected);
-
+            slugList = _.union(slugList, config.get('slugs:protected'));
             return _.contains(slugList, slug) ? slug + '-' + baseName : slug;
         }).then(function (slug) {
             // if slug is empty after trimming use the model name

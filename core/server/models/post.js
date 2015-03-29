@@ -10,7 +10,7 @@ var _              = require('lodash'),
     xmlrpc         = require('../xmlrpc'),
     sitemap        = require('../data/sitemap'),
 
-    config          = require('../config'),
+    urls            = require('../utils/url'),
     permalinkSetting = '',
     getPermalinkSetting,
     Post,
@@ -253,7 +253,7 @@ Post = ghostBookshelf.Model.extend({
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs.author = attrs.author || attrs.author_id;
-        attrs.url = config.urlPathForPost(attrs, permalinkSetting);
+        attrs.url = urls.urlPathForPost(attrs, permalinkSetting);
         delete attrs.author_id;
 
         return attrs;

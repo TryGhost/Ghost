@@ -1,7 +1,7 @@
 var _       = require('lodash'),
     xml     = require('xml'),
     moment  = require('moment'),
-    config  = require('../../config'),
+    urls    = require('../../utils/url'),
     utils   = require('./utils'),
     RESOURCES,
     XMLNS_DECLS;
@@ -35,7 +35,7 @@ _.extend(SiteMapIndexGenerator.prototype, {
         var self = this;
 
         return _.map(RESOURCES, function (resourceType) {
-            var url = config.urlFor({
+            var url = urls.urlFor({
                     relativeUrl: '/sitemap-' + resourceType + '.xml'
                 }, true),
                 lastModified = self[resourceType].lastModified;

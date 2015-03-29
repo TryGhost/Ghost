@@ -1,5 +1,5 @@
 var _       = require('lodash'),
-    config  = require('../../../config/index'),
+    db      = require('../../db'),
 
     // private
     doRawAndFlatten,
@@ -11,7 +11,7 @@ var _       = require('lodash'),
     checkPostTable;
 
 doRawAndFlatten = function doRaw(query, flattenFn) {
-    return config.database.knex.raw(query).then(function (response) {
+    return db.knex.raw(query).then(function (response) {
         return _.flatten(flattenFn(response));
     });
 };
@@ -39,10 +39,10 @@ getColumns = function getColumns(table) {
 // data type text instead of mediumtext.
 // For details see: https://github.com/TryGhost/Ghost/issues/1947
 checkPostTable = function checkPostTable() {
-    return config.database.knex.raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
+    return db.knex.raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
         return _.flatten(_.map(response[0], function (entry) {
             if (entry.Type.toLowerCase() !== 'mediumtext') {
-                return config.database.knex.raw('ALTER TABLE posts MODIFY ' + entry.Field + ' MEDIUMTEXT');
+                return db.knex.raw('ALTER TABLE posts MODIFY ' + entry.Field + ' MEDIUMTEXT');
             }
         }));
     });

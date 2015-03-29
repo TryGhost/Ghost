@@ -33,10 +33,10 @@ describe('Module', function () {
             ghost().then(function (ghostServer) {
                 should.exist(ghostServer);
                 should.exist(ghostServer.config);
-                should.exist(ghostServer.config.server);
-                should.exist(ghostServer.config.paths);
-                should.exist(ghostServer.config.paths.subdir);
-                should.equal(ghostServer.config.paths.subdir, '');
+                should.exist(ghostServer.config.get('server'));
+                should.exist(ghostServer.config.get('paths'));
+                should.exist(ghostServer.config.get('paths:subdir'));
+                should.equal(ghostServer.config.get('paths:subdir'), '');
 
                 done();
             }).catch(function (e) {

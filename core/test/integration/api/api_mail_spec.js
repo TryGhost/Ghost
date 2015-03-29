@@ -70,7 +70,8 @@ describe('Mail API', function () {
 
     describe('Mail API Direct', function () {
         before(function (done) {
-            config.set({mail: {}});
+            config.set('mail', null);
+            config.set('mail', {});
 
             mailer.init().then(function () {
                 done();
@@ -115,7 +116,7 @@ describe('Mail API', function () {
 
     describe.skip('Stub', function () {
         it('returns a success', function (done) {
-            config.set({mail: {transport: 'stub'}});
+            config.set('mail', {transport: 'stub'});
 
             mailer.init().then(function () {
                 mailer.transport.transportType.should.eql('STUB');
@@ -131,7 +132,7 @@ describe('Mail API', function () {
         });
 
         it('returns a boo boo', function (done) {
-            config.set({mail: {transport: 'stub', error: 'Stub made a boo boo :('}});
+            config.set('mail', {transport: 'stub', error: 'Stub made a boo boo :('});
 
             mailer.init().then(function () {
                 mailer.transport.transportType.should.eql('STUB');

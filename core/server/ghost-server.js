@@ -45,6 +45,14 @@ GhostServer.prototype.closeConnections = function () {
 };
 
 GhostServer.prototype.logStartMessages = function () {
+    var url,
+        NODE_ENV,
+        server;
+
+    url      = config.get('url');
+    NODE_ENV = config.get('NODE_ENV');
+    server   = config.get('server');
+
     // Tell users if their node version is not supported, and exit
     if (!semver.satisfies(process.versions.node, packageInfo.engines.node) &&
         !semver.satisfies(process.versions.node, packageInfo.engines.iojs)) {
@@ -61,20 +69,20 @@ GhostServer.prototype.logStartMessages = function () {
     }
 
     // Startup & Shutdown messages
-    if (process.env.NODE_ENV === 'production') {
+    if (NODE_ENV === 'production') {
         console.log(
             'Ghost is running...'.green,
             '\nYour blog is now available on',
-            config.url,
+            url,
             '\nCtrl+C to shut down'.grey
         );
     } else {
         console.log(
-            ('Ghost is running in ' + process.env.NODE_ENV + '...').green,
+            ('Ghost is running in ' + NODE_ENV + '...').green,
             '\nListening on',
-                config.getSocket() || config.server.host + ':' + config.server.port,
+                config.getSocket() || server.host + ':' + server.port,
             '\nUrl configured as:',
-            config.url,
+            url,
             '\nCtrl+C to shut down'.grey
         );
     }
@@ -121,7 +129,8 @@ GhostServer.prototype.logUpgradeWarning = function () {
  */
 GhostServer.prototype.start = function (externalApp) {
     var self = this,
-        rootApp = externalApp ? externalApp : self.rootApp;
+        rootApp = externalApp ? externalApp : self.rootApp,
+        server = config.get('server');
 
     // ## Start Ghost App
     return new Promise(function (resolve) {
@@ -140,8 +149,8 @@ GhostServer.prototype.start = function (externalApp) {
             fs.chmod(socketConfig.path, socketConfig.permissions);
         } else {
             self.httpServer = rootApp.listen(
-                config.server.port,
-                config.server.host
+                server.port,
+                server.host
             );
         }
 
@@ -149,7 +158,7 @@ GhostServer.prototype.start = function (externalApp) {
             if (error.errno === 'EADDRINUSE') {
                 errors.logError(
                     '(EADDRINUSE) Cannot start Ghost.',
-                    'Port ' + config.server.port + ' is already in use by another program.',
+                    'Port ' + server.port + ' is already in use by another program.',
                     'Is another Ghost instance already running?'
                 );
             } else {

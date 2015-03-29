@@ -85,7 +85,7 @@ mail = {
      */
     generateContent: function (options) {
         var defaultData = {
-                siteUrl: config.forceAdminSSL ? (config.urlSSL || config.url) : config.url
+                siteUrl: config.get('forceAdminSSL') ? (config.get('urlSSL') || config.get('url')) : config.get('url')
             },
             emailData = _.defaults(defaultData, options.data);
 

@@ -1,5 +1,6 @@
 /*jslint regexp: true */
 var _                          = require('lodash'),
+    config                     = require('../../server/config'),
     colors                     = require('colors'),
     path                       = require('path'),
     Promise                    = require('bluebird'),
@@ -14,31 +15,19 @@ var _                          = require('lodash'),
     UnsupportedMediaTypeError  = require('./unsupported-media-type-error'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
-    config,
     errors,
-
     // Paths for views
     userErrorTemplateExists   = false;
 
 // This is not useful but required for jshint
 colors.setTheme({silly: 'rainbow'});
 
-// Shim right now to deal with circular dependencies.
-// @TODO(hswolff): remove circular dependency and lazy require.
-function getConfigModule() {
-    if (!config) {
-        config = require('../config');
-    }
-
-    return config;
-}
-
 /**
  * Basic error handling helpers
  */
 errors = {
-    updateActiveTheme: function (activeTheme) {
-        userErrorTemplateExists = getConfigModule().paths.availableThemes[activeTheme].hasOwnProperty('error.hbs');
+    updateActiveTheme: function (theme) {
+        userErrorTemplateExists = (config.get('paths:availableThemes')[theme]).hasOwnProperty('error.hbs');
     },
 
     throwError: function (err) {
@@ -208,7 +197,7 @@ errors = {
     renderErrorPage: function (code, err, req, res, next) {
         /*jshint unused:false*/
         var self = this,
-            defaultErrorTemplatePath = path.resolve(getConfigModule().paths.adminViews, 'user-error.hbs');
+            defaultErrorTemplatePath = path.resolve(config.get('paths:adminViews'), 'user-error.hbs');
 
         function parseStack(stack) {
             if (!_.isString(stack)) {

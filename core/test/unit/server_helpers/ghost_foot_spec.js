@@ -53,7 +53,6 @@ describe('{{ghost_foot}} helper', function () {
         it('outputs correct jquery for production mode', function (done) {
             utils.overrideConfig({assetHash: 'abc'});
             helpers.__set__('utils.isProduction', true);
-
             helpers.ghost_foot.call().then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.match(/<script src=".*\/public\/jquery.min.js\?v=abc"><\/script>/);

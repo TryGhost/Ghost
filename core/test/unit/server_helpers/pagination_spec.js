@@ -12,8 +12,7 @@ var should         = require('should'),
 describe('{{pagination}} helper', function () {
     before(function (done) {
         utils.loadHelpers();
-        hbs.express3({partialsDir: [utils.config.paths.helperTemplates]});
-
+        hbs.express3({partialsDir: [utils.config.get('paths:helperTemplates')]});
         hbs.cachePartials(function () {
             done();
         });

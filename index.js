@@ -20,7 +20,7 @@ parentApp = express();
 
 ghost().then(function (ghostServer) {
     // Mount our ghost instance on our desired subdirectory path if it exists.
-    parentApp.use(ghostServer.config.paths.subdir, ghostServer.rootApp);
+    parentApp.use(ghostServer.config.get('paths:subdir'), ghostServer.rootApp);
 
     // Let ghost handle starting our server instance.
     ghostServer.start(parentApp);

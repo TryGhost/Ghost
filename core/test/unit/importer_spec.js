@@ -342,11 +342,12 @@ describe('Importer', function () {
     });
 
     describe('ImageHandler', function () {
-        var origConfig = _.cloneDeep(config),
+        var origConfig = _.cloneDeep(config.get()),
             store = storage.getStorage();
 
         afterEach(function () {
-            config.set(_.merge({}, origConfig));
+            config.merge(_.merge({}, origConfig));
+            config.reconfigure();
         });
 
         it('has the correct interface', function () {
@@ -427,7 +428,8 @@ describe('Importer', function () {
         });
 
         it('can load a file (subdirectory)', function (done) {
-            config.set({url: 'http://testurl.com/subdir'});
+            config.set('url', 'http://testurl.com/subdir');
+            config.reconfigure();
 
             var filename = 'test-image.jpeg',
                 file = [{

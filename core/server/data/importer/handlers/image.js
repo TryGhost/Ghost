@@ -3,19 +3,20 @@ var _       = require('lodash'),
     path    = require('path'),
     config  = require('../../../config'),
     storage = require('../../../storage'),
-
+    uploads = config.get('uploads'),
     ImageHandler;
 
 ImageHandler = {
     type: 'images',
-    extensions: config.uploads.extensions,
-    types: config.uploads.contentTypes,
+    extensions: uploads.extensions,
+    types: uploads.contentTypes,
     directories: ['images', 'content'],
 
     loadFile: function (files, baseDir) {
         var store = storage.getStorage(),
+            paths = config.get('paths'),
             baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp(''),
-            imageFolderRegexes = _.map(config.paths.imagesRelPath.split('/'), function (dir) {
+            imageFolderRegexes = _.map(paths.imagesRelPath.split('/'), function (dir) {
                 return new RegExp('^' + dir + '/');
             });
 
@@ -30,14 +31,14 @@ ImageHandler = {
 
             file.originalPath = noBaseDir;
             file.name = noGhostDirs;
-            file.targetDir = path.join(config.paths.imagesPath, path.dirname(noGhostDirs));
+            file.targetDir = path.join(paths.contentPath, 'images', path.dirname(noGhostDirs));
             return file;
         });
 
         return Promise.map(files, function (image) {
             return store.getUniqueFileName(store, image, image.targetDir).then(function (targetFilename) {
-                image.newPath = (config.paths.subdir + '/' +
-                    config.paths.imagesRelPath + '/' + path.relative(config.paths.imagesPath, targetFilename))
+                image.newPath = (paths.subdir + '/' +
+                    paths.imagesRelPath + '/' + path.relative(path.resolve(paths.contentPath, 'images'), targetFilename))
                         .replace(new RegExp('\\' + path.sep, 'g'), '/');
                 return image;
             });

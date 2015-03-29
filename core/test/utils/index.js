@@ -7,11 +7,11 @@ var Promise       = require('bluebird'),
     Models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
+    db            = require('../../server/data/db'),
     permsFixtures = require('../../server/data/fixtures/permissions/permissions.json'),
     DataGenerator = require('./fixtures/data-generator'),
     API           = require('./api'),
     fork          = require('./fork'),
-    config        = require('../../server/config'),
 
     fixtures,
     getFixtureOps,
@@ -31,7 +31,7 @@ var Promise       = require('bluebird'),
 /** TEST FIXTURES **/
 fixtures = {
     insertPosts: function insertPosts() {
-        var knex = config.database.knex;
+        var knex = db.knex;
         return Promise.resolve(knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
             return knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
@@ -41,7 +41,7 @@ fixtures = {
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts(max) {
         /*jshint unused:false*/
-        var knex = config.database.knex,
+        var knex = db.knex,
             author,
             authors,
             i, j, k = postsInserted,
@@ -105,7 +105,7 @@ fixtures = {
             status,
             posts = [],
             i, j, k = postsInserted,
-            knex = config.database.knex;
+            knex = db.knex;
 
         max = max || 50;
 
@@ -123,7 +123,6 @@ fixtures = {
 
         // Keep track so we can run this function again safely
         postsInserted = k;
-
         return sequence(_.times(posts.length, function (index) {
             return function () {
                 return knex('posts').insert(posts[index]);
@@ -134,7 +133,7 @@ fixtures = {
     insertMorePostsTags: function insertMorePostsTags(max) {
         max = max || 50;
 
-        var knex = config.database.knex;
+        var knex = db.knex;
 
         return Promise.all([
             // PostgreSQL can return results in any order
@@ -165,13 +164,13 @@ fixtures = {
         });
     },
     insertRoles: function insertRoles() {
-        var knex = config.database.knex;
+        var knex = db.knex;
         return knex('roles').insert(DataGenerator.forKnex.roles);
     },
 
     initOwnerUser: function initOwnerUser() {
         var user = DataGenerator.Content.users[0],
-            knex = config.database.knex;
+            knex = db.knex;
 
         user = DataGenerator.forKnex.createBasic(user);
         user = _.extend({}, user, {status: 'inactive'});
@@ -185,7 +184,7 @@ fixtures = {
 
     insertOwnerUser: function insertOwnerUser() {
         var user,
-            knex = config.database.knex;
+            knex = db.knex;
 
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
@@ -196,7 +195,7 @@ fixtures = {
 
     overrideOwnerUser: function overrideOwnerUser() {
         var user,
-            knex = config.database.knex;
+            knex = db.knex;
 
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
@@ -206,7 +205,7 @@ fixtures = {
     },
 
     createUsersWithRoles: function createUsersWithRoles() {
-        var knex = config.database.knex;
+        var knex = db.knex;
         return knex('roles').insert(DataGenerator.forKnex.roles).then(function () {
             return knex('users').insert(DataGenerator.forKnex.users);
         }).then(function () {
@@ -215,7 +214,7 @@ fixtures = {
     },
 
     createExtraUsers: function createExtraUsers() {
-        var knex = config.database.knex,
+        var knex = db.knex,
             // grab 3 more users
             extraUsers = DataGenerator.Content.users.slice(2, 5);
 
@@ -237,7 +236,7 @@ fixtures = {
 
     // Creates a client, and access and refresh tokens for user 3 (author)
     createTokensForUser: function createTokensForUser() {
-        var knex = config.database.knex;
+        var knex = db.knex;
         return knex('clients').insert(DataGenerator.forKnex.clients).then(function () {
             return knex('accesstokens').insert(DataGenerator.forKnex.createToken({user_id: 3}));
         }).then(function () {
@@ -246,7 +245,7 @@ fixtures = {
     },
 
     createInvitedUsers: function createInvitedUser() {
-        var knex = config.database.knex,
+        var knex = db.knex,
             // grab 3 more users
             extraUsers = DataGenerator.Content.users.slice(2, 5);
 
@@ -268,13 +267,13 @@ fixtures = {
     },
 
     insertOne: function insertOne(obj, fn) {
-        var knex = config.database.knex;
+        var knex = db.knex;
         return knex(obj)
            .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][0]));
     },
 
     insertApps: function insertApps() {
-        var knex = config.database.knex;
+        var knex = db.knex;
         return knex('apps').insert(DataGenerator.forKnex.apps).then(function () {
             return knex('app_fields').insert(DataGenerator.forKnex.app_fields);
         });
@@ -307,7 +306,7 @@ fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        var knex = config.database.knex,
+        var knex = db.knex,
             permsToInsert = permsFixtures.permissions[obj],
             permsRolesToInsert = permsFixtures.permissions_roles,
             actions = [],
