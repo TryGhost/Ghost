@@ -72,7 +72,8 @@ var _              = require('lodash'),
                         'content/themes/casper/assets/js/*.js',
                         'core/client/dist/*.js',
                         'core/client/dist/*.css',
-                        'core/built/scripts/*.js'
+                        'core/built/scripts/*.js',
+                        'core/client/app/html/*.html'
                     ],
                     options: {
                         livereload: true
