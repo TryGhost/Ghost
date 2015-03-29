@@ -27,7 +27,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for homepage', function (done) {
-        helpers.meta_title.call({relativeUrl: '/'}).then(function (rendered) {
+        helpers.meta_title.call(
+            {},
+            {data: {root: {context: ['home']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Ghost');
 
@@ -36,7 +39,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for paginated page', function (done) {
-        helpers.meta_title.call({relativeUrl: '/page/2/'}).then(function (rendered) {
+        helpers.meta_title.call(
+            {},
+            {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Ghost - Page 2');
 
@@ -45,8 +51,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for a post', function (done) {
-        var post = {relativeUrl: '/nice-post', post: {title: 'Post Title'}};
-        helpers.meta_title.call(post).then(function (rendered) {
+        helpers.meta_title.call(
+            {post: {title: 'Post Title'}},
+            {data: {root: {context: ['post']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Post Title');
 
@@ -55,8 +63,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for a post with meta_title set', function (done) {
-        var post = {relativeUrl: '/nice-post', post: {title: 'Post Title', meta_title: 'Awesome Post'}};
-        helpers.meta_title.call(post).then(function (rendered) {
+        helpers.meta_title.call(
+            {post: {title: 'Post Title', meta_title: 'Awesome Post'}},
+            {data: {root: {context: ['post']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Awesome Post');
 
@@ -66,7 +76,10 @@ describe('{{meta_title}} helper', function () {
 
     it('returns correct title for a tag page', function (done) {
         var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
-        helpers.meta_title.call(tag).then(function (rendered) {
+        helpers.meta_title.call(
+            tag,
+            {data: {root: {context: ['tag']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Rasper Red - Ghost');
 
@@ -75,8 +88,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for a paginated tag page', function (done) {
-        var tag = {relativeUrl: '/tag/rasper-red/page/2/', tag: {name: 'Rasper Red'}};
-        helpers.meta_title.call(tag).then(function (rendered) {
+        helpers.meta_title.call(
+            {tag: {name: 'Rasper Red'}},
+            {data: {root: {context: ['tag', 'paged'], pagination: {total: 2, page: 2}}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Rasper Red - Page 2 - Ghost');
 
@@ -85,8 +100,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('uses tag meta_title to override default response on tag page', function (done) {
-        var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}};
-        helpers.meta_title.call(tag).then(function (rendered) {
+        helpers.meta_title.call(
+            {tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}},
+            {data: {root: {context: ['tag']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Sasper Red');
 
@@ -95,8 +112,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('uses tag meta_title to override default response on paginated tag page', function (done) {
-        var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}};
-        helpers.meta_title.call(tag).then(function (rendered) {
+        helpers.meta_title.call(
+            {tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}},
+            {data: {root: {context: ['tag']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Sasper Red');
 
@@ -105,8 +124,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for an author page', function (done) {
-        var author = {relativeUrl: '/author/donald', author: {name: 'Donald Duck'}};
-        helpers.meta_title.call(author).then(function (rendered) {
+        helpers.meta_title.call(
+            {author: {name: 'Donald Duck'}},
+            {data: {root: {context: ['author']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Donald Duck - Ghost');
 
@@ -115,8 +136,10 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correct title for a paginated author page', function (done) {
-        var author = {relativeUrl: '/author/donald/page/2/', author: {name: 'Donald Duck'}};
-        helpers.meta_title.call(author).then(function (rendered) {
+        helpers.meta_title.call(
+            {author: {name: 'Donald Duck'}},
+            {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Donald Duck - Page 2 - Ghost');
 
@@ -125,10 +148,24 @@ describe('{{meta_title}} helper', function () {
     });
 
     it('returns correctly escaped title of a post', function (done) {
-        var post = {relativeUrl: '/nice-escaped-post', post: {title: 'Post Title "</>'}};
-        helpers.meta_title.call(post).then(function (rendered) {
+        helpers.meta_title.call(
+            {post: {title: 'Post Title "</>'}},
+            {data: {root: {context: ['post']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
             String(rendered).should.equal('Post Title "</>');
+
+            done();
+        }).catch(done);
+    });
+
+    it('returns meta_title on post when used within {{#foreach posts}}', function (done) {
+        helpers.meta_title.call(
+            {meta_title: 'Awesome Post'},
+            {data: {root: {context: ['home']}}}
+        ).then(function (rendered) {
+            should.exist(rendered);
+            String(rendered).should.equal('Awesome Post');
 
             done();
         }).catch(done);
