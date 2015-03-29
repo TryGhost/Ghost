@@ -15,7 +15,12 @@ var Router = Ember.Router.extend({
 documentTitle();
 
 Router.map(function () {
-    this.route('setup');
+    this.resource('setup', function () {
+        this.route('one');
+        this.route('two');
+        this.route('three');
+    });
+
     this.route('signin');
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
