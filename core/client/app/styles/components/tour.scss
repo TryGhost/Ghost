@@ -1,0 +1,97 @@
+// ------------------------------------------------------------
+// Popovers
+//
+// Styles for the popover component
+//
+// * Popovers
+// * Triangles placeholder styles
+// * Triangles classes
+// * Open/close
+// * Positioning
+// ------------------------------------------------------------
+
+
+//
+// Popovers
+// --------------------------------------------------
+
+.tour {
+
+    .popover-item {
+        width: 480px;
+        max-width: none;
+        padding: 25px;
+        border: #bfbfbf 1px solid;
+        color: $midgrey;
+        background: #fff;
+        box-shadow: rgba(0,0,0,0.15) 0 1px 8px;
+    }
+
+    .popover-title {
+        margin-bottom: 0.4em;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: $darkgrey;
+    }
+
+    .popover-desc {
+        margin: 0;
+    }
+
+    .popover-body {
+        margin: 0;
+        font-size: 1.5rem;
+        line-height: 1.55em;
+    }
+
+    %popover-triangle-vertical-top {
+        &:before {
+            @include triangle($popover_triangle, #bfbfbf, up, shallow);
+        }
+        &:after {
+            @include triangle($popover_triangle, #fff, up, shallow);
+            top: -10px;
+        }
+    }
+
+    %popover-triangle-vertical-bottom {
+        &:before {
+            @include triangle($popover_triangle, #bfbfbf, down, shallow);
+        }
+        &:after {
+            @include triangle($popover_triangle, #fff, down, shallow);
+            bottom: -10px;
+        }
+    }
+
+    %popover-triangle-horizontal-left {
+        &:before {
+            @include triangle($popover_triangle, #bfbfbf, left, shallow);
+        }
+        &:after {
+            @include triangle($popover_triangle, #fff, left, shallow);
+            left: -10px;
+        }
+    }
+
+    %popover-triangle-horizontal-right {
+        &:before {
+            @include triangle($popover_triangle, #bfbfbf, right, shallow);
+        }
+        &:after {
+            @include triangle($popover_triangle, #fff, right, shallow);
+            right: -10px;
+        }
+    }
+
+    .popover-foot {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 25px;
+    }
+
+    .tour-optout {
+        align-self: flex-end;
+    }
+
+}
