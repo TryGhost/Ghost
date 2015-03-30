@@ -11,9 +11,12 @@ var ForgottenController = Ember.Controller.extend(ValidationEngine, {
 
     actions: {
         submit: function () {
-            var self = this,
-                data = self.getProperties('email');
-
+            var data = this.getProperties('email');
+            this.send('doForgotten', data, true);
+        },
+        doForgotten: function (data, delay) {
+            var self = this;
+            this.set('email', data.email);
             this.toggleProperty('submitting');
             this.validate({format: false}).then(function () {
                 ajax({
@@ -26,7 +29,7 @@ var ForgottenController = Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function () {
                     self.toggleProperty('submitting');
-                    self.notifications.showSuccess('Please check your email for instructions.', {delayed: true});
+                    self.notifications.showSuccess('Please check your email for instructions.', {delayed: delay});
                     self.set('email', '');
                     self.transitionToRoute('signin');
                 }).catch(function (resp) {
