@@ -87,14 +87,13 @@ describe('{{excerpt}} Helper', function () {
 
     it('can truncate html by character', function () {
         var html = '<p>Hello <strong>World! It\'s me!</strong></p>',
-            expected = 'Hello Wo',
+            expected = 'Hello Wo (contd)',
             rendered = (
                 helpers.excerpt.call(
                     {html: html},
-                    {hash: {characters: '8'}}
+                    {hash: {characters: '8', append: ' (contd)'}}
                 )
                 );
-
         should.exist(rendered);
         rendered.string.should.equal(expected);
     });

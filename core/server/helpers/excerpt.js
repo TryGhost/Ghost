@@ -14,8 +14,7 @@ excerpt = function (options) {
     var truncateOptions = (options || {}).hash || {},
         excerpt;
 
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
-    _.keys(truncateOptions).map(function (key) {
+    _.keys(_.pick(truncateOptions, ['words', 'characters'])).map(function (key) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
