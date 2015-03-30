@@ -3,6 +3,7 @@ import ValidationEngine from 'ghost/mixins/validation-engine';
 
 var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControllerMixin, ValidationEngine, {
     authenticator: 'simple-auth-authenticator:oauth2-password-grant',
+    forgotten: Ember.inject.controller(),
 
     validationType: 'signin',
 
@@ -31,6 +32,14 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
             }).catch(function (errors) {
                 self.notifications.showErrors(errors);
             });
+        },
+
+        forgotten: function () {
+            if (this.get('model.identification')) {
+                return this.get('forgotten').send('doForgotten', {email: this.get('model.identification')}, false);
+            }
+
+            this.transitionToRoute('forgotten');
         }
     }
 });

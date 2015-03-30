@@ -3,19 +3,20 @@
 
 /*globals CasperTest, casper, url, user, falseUser */
 
-CasperTest.begin('Ghost admin will load login page', 3, function suite(test) {
+CasperTest.begin('Ghost admin will load login page', 4, function suite(test) {
     CasperTest.Routines.signout.run(test);
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Sign In - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'We should be presented with the signin page.');
 
         casper.then(function testLink() {
-            var link = this.evaluate(function (selector) {
-                return document.querySelector(selector).getAttribute('href');
-            }, '.forgotten-password');
+            var text = this.evaluate(function (selector) {
+                return document.querySelector(selector).innerHTML;
+            }, '.forgotten-link');
 
-            casper.echoConcise('LINK' + link);
-            test.assert(link === '/ghost/forgotten/', 'Has correct forgotten password link');
+            casper.echoConcise('Text' + text);
+            test.assertExists('.forgotten-link');
+            test.assertEqual(text, 'Forgotten password?');
         });
     });
 }, true);
