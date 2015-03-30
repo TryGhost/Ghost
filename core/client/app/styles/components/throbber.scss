@@ -1,0 +1,102 @@
+// ------------------------------------------------------------
+// Throbber
+//
+// Pulsing little circle which indicates a tour is available
+//
+// ------------------------------------------------------------
+
+.throbber {
+    position: relative;
+    display: block;
+    width: 14px;
+    height: 14px;
+    border: rgba(255,255,255,0.3) 2px solid;
+    background: rgba(255,255,255,0.6);
+    border-radius: 100%;
+    box-shadow: rgba(0,0,0,0.25) 0 0 0 2px;
+    -webkit-animation-name: throbber-fade;
+    animation-name: throbber-fade;
+    -webkit-animation-duration: 1.2s;
+    animation-duration: 1.2s;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-out;
+    animation-timing-function: ease-out;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+
+    &:before {
+        display: block;
+        content: "";
+        width: 26px;
+        height: 26px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -13px 0 0 -13px;
+        border: rgba(255,255,255,0.4) 2px solid;
+        background: rgba(255,255,255,0.2);
+        border-radius: 100%;
+        box-shadow: rgba(0,0,0,0.15) 0 0 0 2px;
+        pointer-events: none;
+        -webkit-animation-name: throbber-pulse, throbber-fade;
+    	animation-name:throbber-pulse, throbber-fade;
+    	-webkit-animation-duration: 1.2s;
+    	animation-duration: 1.2s;
+    	-webkit-animation-iteration-count: infinite;
+    	animation-iteration-count: infinite;
+    	-webkit-animation-timing-function: ease-out;
+    	animation-timing-function: ease-out;
+    	-webkit-animation-fill-mode: forwards;
+    	animation-fill-mode: forwards;
+    }
+
+}
+
+@-webkit-keyframes throbber-fade {
+    0%, 100% {
+        opacity: 1;
+    }
+    40%, 60% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes throbber-fade {
+    0%, 100% {
+        opacity: 0;
+    }
+    40%, 60% {
+        opacity: 0.8;
+    }
+}
+
+@-webkit-keyframes throbber-pulse {
+    0% {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+    50% {
+        -webkit-transform: scale3d(1.4, 1.4, 1);
+        transform: scale3d(1.4, 1.4, 1);
+    }
+    100% {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+@keyframes throbber-pulse {
+    0% {
+        -webkit-transform: scale3d(0.5, 0.5, 1);
+        transform: scale3d(0.5, 0.5, 1);
+    }
+    50% {
+        -webkit-transform: scale3d(1.4, 1.4, 1);
+        transform: scale3d(1.4, 1.4, 1);
+    }
+    100% {
+        -webkit-transform: scale3d(0.5, 0.5, 1);
+        transform: scale3d(0.5, 0.5, 1);
+    }
+}
