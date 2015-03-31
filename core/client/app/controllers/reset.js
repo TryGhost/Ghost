@@ -4,7 +4,7 @@ import ValidationEngine from 'ghost/mixins/validation-engine';
 
 var ResetController = Ember.Controller.extend(ValidationEngine, {
     newPassword: '',
-    ne2Password: '',
+    new2Password: '',
     token: '',
     submitting: false,
 
@@ -20,14 +20,14 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
     clearData: function () {
         this.setProperties({
             newPassword: '',
-            ne2Password: '',
+            new2Password: '',
             token: ''
         });
     },
 
     actions: {
         submit: function () {
-            var credentials = this.getProperties('newPassword', 'ne2Password', 'token'),
+            var credentials = this.getProperties('newPassword', 'new2Password', 'token'),
                 self = this;
 
             this.toggleProperty('submitting');

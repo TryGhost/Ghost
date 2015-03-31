@@ -2,7 +2,7 @@ import Ember from 'ember';
 var ResetValidator = Ember.Object.create({
     check: function (model) {
         var p1 = model.get('newPassword'),
-            p2 = model.get('ne2Password'),
+            p2 = model.get('new2Password'),
             validationErrors = [];
 
         if (!validator.equals(p1, p2)) {
