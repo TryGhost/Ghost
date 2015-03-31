@@ -30,7 +30,7 @@
     "ember-cli-ic-ajax": "0.1.1",
     "ember-cli-inject-live-reload": "^1.3.0",
     "ember-cli-mocha": "^0.4.2",
-    "ember-cli-sass": "^3.0.6",
+    "ember-cli-sass": "3.1.0",
     "ember-cli-uglify": "1.0.1",
     "ember-data": "^1.0.0-beta.14.1",
     "ember-export-application-global": "^1.0.2",
