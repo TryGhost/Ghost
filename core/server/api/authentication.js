@@ -80,7 +80,7 @@ authentication = {
     resetPassword: function resetPassword(object) {
         var resetToken,
             newPassword,
-            ne2Password;
+            new2Password;
 
         return authentication.isSetup().then(function (result) {
             var setup = result.setup[0].status;
@@ -93,11 +93,11 @@ authentication = {
         }).then(function (checkedPasswordReset) {
             resetToken = checkedPasswordReset.passwordreset[0].token;
             newPassword = checkedPasswordReset.passwordreset[0].newPassword;
-            ne2Password = checkedPasswordReset.passwordreset[0].ne2Password;
+            new2Password = checkedPasswordReset.passwordreset[0].new2Password;
 
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
-                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+                return dataProvider.User.resetPassword(resetToken, newPassword, new2Password, dbHash);
             }).then(function () {
                 return Promise.resolve({passwordreset: [{message: 'Password changed successfully.'}]});
             }).catch(function (error) {
@@ -114,7 +114,7 @@ authentication = {
     acceptInvitation: function acceptInvitation(object) {
         var resetToken,
             newPassword,
-            ne2Password,
+            new2Password,
             name,
             email;
 
@@ -129,13 +129,13 @@ authentication = {
         }).then(function (checkedInvitation) {
             resetToken = checkedInvitation.invitation[0].token;
             newPassword = checkedInvitation.invitation[0].password;
-            ne2Password = checkedInvitation.invitation[0].password;
+            new2Password = checkedInvitation.invitation[0].password;
             email = checkedInvitation.invitation[0].email;
             name = checkedInvitation.invitation[0].name;
 
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
-                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+                return dataProvider.User.resetPassword(resetToken, newPassword, new2Password, dbHash);
             }).then(function (user) {
                 // Setting the slug to '' has the model regenerate the slug from the user's name
                 return dataProvider.User.edit({name: name, email: email, slug: ''}, {id: user.id});

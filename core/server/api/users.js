@@ -328,18 +328,18 @@ users = {
     changePassword: function changePassword(object, options) {
         var oldPassword,
             newPassword,
-            ne2Password,
+            new2Password,
             userId;
 
         return utils.checkObject(object, 'password').then(function (checkedPasswordReset) {
             oldPassword = checkedPasswordReset.password[0].oldPassword;
             newPassword = checkedPasswordReset.password[0].newPassword;
-            ne2Password = checkedPasswordReset.password[0].ne2Password;
+            new2Password = checkedPasswordReset.password[0].new2Password;
             userId = parseInt(checkedPasswordReset.password[0].user_id);
         }).then(function () {
             return canThis(options.context).edit.user(userId);
         }).then(function () {
-            return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, userId, options);
+            return dataProvider.User.changePassword(oldPassword, newPassword, new2Password, userId, options);
         }).then(function () {
             return Promise.resolve({password: [{message: 'Password changed successfully.'}]});
         }).catch(function (error) {

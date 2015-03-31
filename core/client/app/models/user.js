@@ -57,7 +57,7 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
                     user_id: this.get('id'),
                     oldPassword: this.get('password'),
                     newPassword: this.get('newPassword'),
-                    ne2Password: this.get('ne2Password')
+                    new2Password: this.get('new2Password')
                 }]
             }
         });
@@ -77,10 +77,10 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
         });
     },
 
-    passwordValidationErrors: Ember.computed('password', 'newPassword', 'ne2Password', function () {
+    passwordValidationErrors: Ember.computed('password', 'newPassword', 'new2Password', function () {
         var validationErrors = [];
 
-        if (!validator.equals(this.get('newPassword'), this.get('ne2Password'))) {
+        if (!validator.equals(this.get('newPassword'), this.get('new2Password'))) {
             validationErrors.push({message: 'Your new passwords do not match'});
         }
 

@@ -1090,7 +1090,7 @@ describe('Users API', function () {
                     user_id: userIdFor.owner,
                     oldPassword: 'Sl1m3rson',
                     newPassword: 'newSl1m3rson',
-                    ne2Password: 'newSl1m3rson'
+                    new2Password: 'newSl1m3rson'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1106,7 +1106,7 @@ describe('Users API', function () {
                     user_id: userIdFor.owner,
                     oldPassword: 'wrong',
                     newPassword: 'Sl1m3rson',
-                    ne2Password: 'Sl1m3rson'
+                    new2Password: 'Sl1m3rson'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1124,7 +1124,7 @@ describe('Users API', function () {
                     user_id: userIdFor.owner,
                     oldPassword: 'Sl1m3rson',
                     newPassword: 'Sl1m3rson1',
-                    ne2Password: 'Sl1m3rson2'
+                    new2Password: 'Sl1m3rson2'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1141,7 +1141,7 @@ describe('Users API', function () {
                 password: [{
                     user_id: userIdFor.editor,
                     newPassword: 'Sl1m3rson1',
-                    ne2Password: 'Sl1m3rson2'
+                    new2Password: 'Sl1m3rson2'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1158,7 +1158,7 @@ describe('Users API', function () {
                 password: [{
                     user_id: userIdFor.editor,
                     newPassword: 'Sl',
-                    ne2Password: 'Sl'
+                    new2Password: 'Sl'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1175,7 +1175,7 @@ describe('Users API', function () {
                 password: [{
                     user_id: userIdFor.editor,
                     newPassword: 'newSl1m3rson',
-                    ne2Password: 'newSl1m3rson'
+                    new2Password: 'newSl1m3rson'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
@@ -1190,7 +1190,7 @@ describe('Users API', function () {
                 password: [{
                     user_id: userIdFor.admin,
                     newPassword: 'newSl1m3rson',
-                    ne2Password: 'newSl1m3rson'
+                    new2Password: 'newSl1m3rson'
                 }]
             };
             UserAPI.changePassword(payload, _.extend({}, context.editor, {id: userIdFor.editor}))

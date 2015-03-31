@@ -159,7 +159,7 @@ var SettingsUserController = Ember.Controller.extend({
                     user.setProperties({
                         password: '',
                         newPassword: '',
-                        ne2Password: ''
+                        new2Password: ''
                     });
 
                     self.notifications.showSuccess('Password updated.');
