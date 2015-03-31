@@ -282,7 +282,7 @@ var _              = require('lodash'),
                                 return emberPath + ' build --environment=production --silent';
 
                             case 'dev':
-                                return emberPath + ' build --silent';
+                                return emberPath + ' build';
 
                             case 'test':
                                 return emberPath + ' test --silent';
