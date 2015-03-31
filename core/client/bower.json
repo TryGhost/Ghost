@@ -11,7 +11,7 @@
     "fastclick": "1.0.0",
     "google-caja": "5669.0.0",
     "ic-ajax": "1.0.1",
-    "jquery": "~1.11.2",
+    "jquery": "1.11.2",
     "jquery-file-upload": "9.5.6",
     "jquery-hammerjs": "1.0.1",
     "jquery-ui": "1.10.4",
@@ -20,7 +20,7 @@
     "loader.js": "ember-cli/loader.js#3.2.0",
     "moment": "2.8.3",
     "nanoscroller": "0.8.4",
-    "normalize-scss": "~3.0.1",
+    "normalize-scss": "3.0.2",
     "nprogress": "0.1.2",
     "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.6",
@@ -29,6 +29,6 @@
   "devDependencies": {
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",
     "ember-cli-test-loader": "ember-cli/ember-cli-test-loader#0.1.1",
-    "ember-mocha": "~0.4.2"
+    "ember-mocha": "0.4.4"
   }
 }
