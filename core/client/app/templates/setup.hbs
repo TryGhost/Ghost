@@ -31,7 +31,7 @@
                 <p>Must be at least 8 characters</p>
             </div>
             <footer>
-                <button type="submit" class="btn btn-green btn-lg" {{action "setup"}} {{bind-attr disabled=submitting}}>Ok, Let's Do This</button>
+                <button type="submit" class="btn btn-green btn-lg" {{action "setup"}} disabled={{submitting}}>Ok, Let's Do This</button>
             </footer>
         </form>
     </div>

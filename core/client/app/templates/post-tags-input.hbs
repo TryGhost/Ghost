@@ -13,7 +13,7 @@
 <div class="publish-bar-tags-input">
     <input type="hidden" class="tags-holder" id="tags-holder">
     {{view view.tagInputView class="tag-input js-tag-input" id="tags" value=newTagText}}
-    <ul class="suggestions dropdown-menu dropdown-triangle-bottom" {{bind-attr style=view.overlayStyles}}>
+    <ul class="suggestions dropdown-menu dropdown-triangle-bottom" style={{view.overlayStyles}}>
         {{#each suggestion in suggestions}}
             {{#view view.suggestionView suggestion=suggestion}}
                 <a href="javascript:void(0);">{{view.suggestion.highlightedName}}</a>
