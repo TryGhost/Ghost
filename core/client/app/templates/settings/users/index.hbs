@@ -48,9 +48,9 @@
         <h4 class="user-list-title">Active users</h4>
 
         {{#each user in activeUsers itemController="settings/users/user"}}
-            {{#link-to 'settings.users.user' user class="user-list-item" }}
-                <span class="user-list-item-figure" {{bind-attr style=user.image}}>
-                    <span class="hidden">Photo of {{unbound user.model.name}}</span>
+            {{#link-to 'settings.users.user' user.model class="user-list-item" }}
+                <span class="user-list-item-figure" style={{user.userImageBackground}}>
+                    <span class="hidden">Photo of {{user.model.name}}</span>
                 </span>
 
                 <div class="user-list-item-body">
@@ -58,12 +58,12 @@
                         {{user.model.name}}
                     </span>
                     <br>
-                    <span class="description">Last seen: {{unbound user.last_login}}</span>
+                    <span class="description">Last seen: {{user.last_login}}</span>
                 </div>
                 <aside class="user-list-item-aside">
                     {{#unless user.model.isAuthor}}
                         {{#each role in user.model.roles}}
-                            <span class="role-label {{unbound role.lowerCaseName}}">{{role.name}}</span>
+                            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
                         {{/each}}
                     {{/unless}}
                 </aside>
