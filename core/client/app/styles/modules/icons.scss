@@ -399,7 +399,9 @@ $i-x:                   \f634;
 .icon-weather-sun:before {
     content: '#{$i-weather-sun}';
 }
-x
+.icon-x:before {
+    content: '#{$i-x}';
+}
 
 // Specific icon size adjustments
 .icon-list:before {
