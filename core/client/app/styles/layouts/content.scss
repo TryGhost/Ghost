@@ -258,6 +258,13 @@
         padding: 3px;
     }
 
+    .post-published-by .status a {
+        color: inherit;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
     .normal {
         text-transform: none;
         margin: 0 3px;
