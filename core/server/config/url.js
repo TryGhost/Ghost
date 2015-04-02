@@ -156,10 +156,14 @@ function urlFor(context, data, absolute) {
             urlPath = data.nav.url;
             baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
-            if (urlPath.indexOf(hostname) > -1) {
+            if (urlPath.indexOf(hostname) > -1 && urlPath.indexOf('.' + hostname) === -1) {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
-                urlPath = '/' + urlPath.split(hostname)[1];
+                // do not do so if link is a subdomain of blog url
+                urlPath = urlPath.split(hostname)[1];
+                if (urlPath.substring(0, 1) !== '/') {
+                    urlPath = '/' + urlPath;
+                }
                 absolute = true;
             }
         }
