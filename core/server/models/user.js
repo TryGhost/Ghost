@@ -110,7 +110,7 @@ User = ghostBookshelf.Model.extend({
             protocols: ['http', 'https']})) {
             options.website = 'http://' + options.website;
         }
-        return options;
+        return ghostBookshelf.Model.prototype.format.call(this, options);
     },
 
     posts: function () {
