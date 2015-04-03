@@ -43,8 +43,8 @@ ghost_head = function (options) {
     trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
     // Push Async calls to an array of promises
     ops.push(urlHelper.call(self, {hash: {absolute: true}}));
-    ops.push(meta_description.call(self));
-    ops.push(meta_title.call(self));
+    ops.push(meta_description.call(self, options));
+    ops.push(meta_title.call(self, options));
     if (self.post) {
         ops.push(imageHelper.call(self.post, {hash: {absolute:true}}));
 

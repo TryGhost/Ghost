@@ -3,6 +3,7 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    path           = require('path'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -18,7 +19,10 @@ describe('{{navigation}} helper', function () {
 
     before(function (done) {
         utils.loadHelpers();
-        hbs.express3({partialsDir: [utils.config.paths.helperTemplates]});
+        hbs.express3({
+            partialsDir: [utils.config.paths.helperTemplates]
+        });
+
         hbs.cachePartials(function () {
             done();
         });
@@ -111,5 +115,48 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.containEql('nav-current');
         rendered.string.should.containEql('nav-foo nav-current');
         rendered.string.should.containEql('nav-bar"');
+    });
+});
+
+describe('{{navigation}} helper with custom template', function () {
+    var optionsData;
+
+    before(function (done) {
+        utils.loadHelpers();
+        hbs.express3({
+            partialsDir: [path.resolve(utils.config.paths.corePath, 'test/unit/server_helpers/test_tpl')]
+        });
+
+        hbs.cachePartials(function () {
+            done();
+        });
+    });
+
+    beforeEach(function () {
+        optionsData = {
+            data: {
+                blog: {
+                    navigation: [],
+                    title: 'Chaos is a ladder.'
+                },
+                root: {
+                    relativeUrl: ''
+                }
+            }
+        };
+    });
+
+    it('can render one item and @blog title', function () {
+        var singleItem = {label: 'Foo', url: '/foo'},
+            testUrl = 'href="' + utils.config.url + '/foo"',
+            rendered;
+
+        optionsData.data.blog.navigation = [singleItem];
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.containEql('Chaos is a ladder');
+        rendered.string.should.containEql(testUrl);
+        rendered.string.should.containEql('Foo');
     });
 });

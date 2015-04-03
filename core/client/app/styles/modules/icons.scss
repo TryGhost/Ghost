@@ -26,7 +26,7 @@
 
 @font-face {
     font-family: 'GhostIcons';
-    src:url('fonts/icons.woff') format('woff');
+    src:url('fonts/icons.woff?v=0.1') format('woff'); // Increment the ?v number every time the font files are regenerated
     font-weight: normal;
     font-style: normal;
 }
@@ -399,7 +399,9 @@ $i-x:                   \f634;
 .icon-weather-sun:before {
     content: '#{$i-weather-sun}';
 }
-x
+.icon-x:before {
+    content: '#{$i-x}';
+}
 
 // Specific icon size adjustments
 .icon-list:before {
