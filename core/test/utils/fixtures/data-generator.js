@@ -23,6 +23,7 @@ DataGenerator.Content = {
             slug: "short-and-sweet",
             markdown: "## testing\n\nmctesters\n\n- test\n- line\n- items",
             html: "<h2 id=\"testing\">testing</h2>\n\n<p>mctesters</p>\n\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>",
+            meta_description: "test stuff",
             published_at: new Date("2015-01-03")
         },
         {
