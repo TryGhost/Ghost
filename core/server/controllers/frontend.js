@@ -15,6 +15,7 @@ var moment      = require('moment'),
     template    = require('../helpers/template'),
     errors      = require('../errors'),
     cheerio     = require('cheerio'),
+    downsize    = require('downsize'),
     routeMatch  = require('path-match')(),
 
     frontendControllers,
@@ -502,7 +503,10 @@ frontendControllers = {
                     generator: 'Ghost ' + trimmedVersion,
                     feed_url: feedUrl,
                     site_url: siteUrl,
-                    ttl: '60'
+                    ttl: '60',
+                    custom_namespaces: {
+                        content: 'http://purl.org/rss/1.0/modules/content/'
+                    }
                 });
 
                 // If page is greater than number of pages we have, redirect to last page
@@ -568,11 +572,18 @@ frontendControllers = {
                             });
                         });
 
-                        item.description = htmlContent.html();
+                        item.custom_elements = [{
+                            'content:encoded': {
+                                _cdata: htmlContent.html()
+                            }
+                        }];
+
+                        item.description = post.meta_description || downsize(htmlContent.html(), {words: 50});
+
                         feed.item(item);
                     });
                 }).then(function () {
-                    res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
+                    res.set('Content-Type', 'text/xml; charset=UTF-8');
                     res.send(feed.xml());
                 });
             });
