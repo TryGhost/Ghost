@@ -5,7 +5,13 @@
         <span class="sr-only">Star</span>
     </button>
     <small class="post-published-by">
-        <span class="status">{{#if isPublished}}Published{{else}}Written{{/if}}</span>
+        <span class="status">
+            {{#if isPublished}}
+                <a {{bind-attr title="model.title" href="model.url"}}>Published</a>
+            {{else}}
+                Written
+            {{/if}}
+        </span>
         <span class="normal">by</span>
         <span class="author">{{#if model.author.name}}{{model.author.name}}{{else}}{{model.author.email}}{{/if}}</span>
     </small>
