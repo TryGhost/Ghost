@@ -40,37 +40,11 @@ Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
     },
 
     /**
-     * Use keypress events to trigger autosave
-     */
-    changeHandler: function () {
-        // onChange is sent to trigger autosave
-        this.sendAction('onChange');
-    },
-
-    /**
-     * Bind to the keypress event once the element is in the DOM
-     * Use keypress because it's the most reliable cross browser
-     */
-    attachChangeHandler: function () {
-        this.$().on('keypress', Ember.run.bind(this, this.changeHandler));
-    }.on('didInsertElement'),
-
-    /**
-     * Unbind from the keypress event when the element is no longer in the DOM
-     */
-    detachChangeHandler: function () {
-        this.$().off('keypress');
-        Ember.run.cancel(this.get('fixHeightThrottle'));
-    }.on('willDestroyElement'),
-
-    /**
      * Disable editing in the textarea (used while an upload is in progress)
      */
     disable: function () {
         var textarea = this.get('element');
         textarea.setAttribute('readonly', 'readonly');
-
-        this.detachChangeHandler();
     },
 
     /**
@@ -79,11 +53,6 @@ Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
     enable: function () {
         var textarea = this.get('element');
         textarea.removeAttribute('readonly');
-
-        // clicking the trash button on an image dropzone causes this function to fire.
-        // this line is a hack to prevent multiple event handlers from being attached.
-        this.detachChangeHandler();
-        this.attachChangeHandler();
     }
 });
 
