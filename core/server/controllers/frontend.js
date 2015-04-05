@@ -505,7 +505,8 @@ frontendControllers = {
                     site_url: siteUrl,
                     ttl: '60',
                     custom_namespaces: {
-                        content: 'http://purl.org/rss/1.0/modules/content/'
+                        content: 'http://purl.org/rss/1.0/modules/content/',
+                        media: 'http://search.yahoo.com/mrss/'
                     }
                 });
 
@@ -525,14 +526,11 @@ frontendControllers = {
                                 url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
                                 date: post.published_at,
                                 categories: _.pluck(post.tags, 'name'),
-                                author: post.author ? post.author.name : null
+                                author: post.author ? post.author.name : null,
+                                custom_elements: []
                             },
-                            htmlContent = cheerio.load(post.html, {decodeEntities: false});
-
-                        if (post.image) {
-                            htmlContent('p').first().before('<img src="' + post.image + '" />');
-                            htmlContent('img').attr('alt', post.title);
-                        }
+                            htmlContent = cheerio.load(post.html, {decodeEntities: false}),
+                            image;
 
                         // convert relative resource urls to absolute
                         ['href', 'src'].forEach(function (attributeName) {
@@ -572,13 +570,31 @@ frontendControllers = {
                             });
                         });
 
-                        item.custom_elements = [{
+                        item.description = post.meta_description || downsize(htmlContent.html(), {words: 50});
+
+                        if (post.image) {
+                            image = config.urlFor('image', {image: post.image}, true);
+
+                            // Add a media content tag
+                            item.custom_elements.push({
+                                'media:content': {
+                                    _attr: {
+                                        url: image,
+                                        medium: 'image'
+                                    }
+                                }
+                            });
+
+                            // Also add the image to the content, because not all readers support media:content
+                            htmlContent('p').first().before('<img src="' + image + '" />');
+                            htmlContent('img').attr('alt', post.title);
+                        }
+
+                        item.custom_elements.push({
                             'content:encoded': {
                                 _cdata: htmlContent.html()
                             }
-                        }];
-
-                        item.description = post.meta_description || downsize(htmlContent.html(), {words: 50});
+                        });
 
                         feed.item(item);
                     });
