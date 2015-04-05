@@ -562,6 +562,11 @@ frontendControllers = {
                                 // as the base URL, otherwise use the post's URL.
                                 baseUrl = attributeValue[0] === '/' ? siteUrl : item.url;
 
+                                // prevent double subdirectoreis
+                                if (attributeValue.indexOf(config.paths.subdir) === 0) {
+                                    attributeValue = attributeValue.replace(config.paths.subdir, '');
+                                }
+
                                 // prevent double slashes
                                 if (baseUrl.slice(-1) === '/' && attributeValue[0] === '/') {
                                     attributeValue = attributeValue.substr(1);
