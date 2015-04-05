@@ -110,12 +110,11 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
     },
 
     setupController: function (controller, model) {
+        model.set('scratch', model.get('markdown'));
+        model.set('titleScratch', model.get('title'));
+
         this._super(controller, model);
         var tags = model.get('tags');
-
-        controller.set('model.scratch', model.get('markdown'));
-
-        controller.set('model.titleScratch', model.get('title'));
 
         if (tags) {
             // used to check if anything has changed in the editor
