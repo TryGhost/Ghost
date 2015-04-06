@@ -15,7 +15,9 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
 
     afterModel: function (model, transition) {
         if (this.get('session').isAuthenticated) {
-            transition.send('loadServerNotifications');
+            this.store.find('user', 'me').then(function (user) {
+                transition.send('userInitialised', transition, user, false);
+            });
         }
     },
 
@@ -50,8 +52,15 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
             this.send('closeModal');
         },
 
-        signedIn: function () {
-            this.send('loadServerNotifications', true);
+        /**
+         * Do things when we know we've got the user object
+         *
+         * @param {User} user - the user object
+         * @param {Boolean} signedIn - whether the user *just* signed in or not
+         */
+        userInitialised: function (transition, user, signedIn) {
+            var self = this;
+            transition.send('loadServerNotifications', signedIn);
         },
 
         sessionAuthenticationFailed: function (error) {
@@ -77,7 +86,7 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
             }
 
             this.store.find('user', 'me').then(function (user) {
-                self.send('signedIn', user);
+                self.send('userInitialised', self, user, true);
                 var attemptedTransition = self.get('session').get('attemptedTransition');
                 if (attemptedTransition) {
                     attemptedTransition.retry();
