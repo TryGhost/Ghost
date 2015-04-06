@@ -1,15 +1,10 @@
 import Ember from 'ember';
 import ModalDialog from 'ghost/components/gh-modal-dialog';
-import upload from 'ghost/assets/lib/uploader';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
 var UploadModal = ModalDialog.extend({
     layoutName: 'components/gh-modal-dialog',
 
-    didInsertElement: function () {
-        this._super();
-        upload.call(this.$('.js-drop-zone'), {fileStorage: this.get('config.fileStorage')});
-    },
     keyDown: function () {
         this.setErrorState(false);
     },
