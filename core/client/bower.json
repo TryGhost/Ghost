@@ -24,7 +24,8 @@
     "nprogress": "0.1.2",
     "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.6",
-    "validator-js": "3.28.0"
+    "validator-js": "3.28.0",
+    "codemirror": "~5.1.0"
   },
   "devDependencies": {
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",
