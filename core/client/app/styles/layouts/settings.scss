@@ -10,6 +10,7 @@
 // * Headers
 // * Custom Permalinks
 // * Navigation
+// * Code Injection
 // ------------------------------------------------------------
 
 
@@ -510,4 +511,27 @@
             background: darken($green, 10%);
         }
     }
+}
+
+//
+// Code Injection
+// --------------------------------------------------
+
+.settings-code-editor {
+    width: 100%;
+    min-width: 250px;
+    max-width: 680px;
+    height: auto;
+    border: 1px solid #E0DFD7;
+    border-radius: $border-radius;
+    -webkit-appearance: none;
+    min-height: 300px;
+    transition: border-color 0.15s linear;
+    line-height: 22px;
+
+    &.focused {
+        border-color: $brown;
+        outline: 0;
+    }
+
 }
