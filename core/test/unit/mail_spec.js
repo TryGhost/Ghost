@@ -11,7 +11,6 @@ var should          = require('should'),
 
 // Mock SMTP config
 SMTP = {
-    transport: 'SMTP',
     options: {
         service: 'Gmail',
         auth: {
@@ -37,7 +36,7 @@ describe('Mail', function () {
         config.set({mail: SMTP});
         mailer.init().then(function () {
             mailer.should.have.property('transport');
-            mailer.transport.transportType.should.eql('SMTP');
+            mailer.transport.transporter.name.should.eql('SMTP');
             mailer.transport.sendMail.should.be.a.function;
             done();
         }).catch(done);
@@ -47,7 +46,7 @@ describe('Mail', function () {
         config.set({mail: {}});
         mailer.init().then(function () {
             mailer.should.have.property('transport');
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
             done();
         }).catch(done);
     });

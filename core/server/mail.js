@@ -1,8 +1,9 @@
-var _          = require('lodash'),
-    Promise    = require('bluebird'),
-    nodemailer = require('nodemailer'),
-    validator  = require('validator'),
-    config     = require('./config');
+var _               = require('lodash'),
+    Promise         = require('bluebird'),
+    nodemailer      = require('nodemailer'),
+    stubTransport   = require('nodemailer-stub-transport'),
+    validator       = require('validator'),
+    config          = require('./config');
 
 function GhostMailer(opts) {
     opts = opts || {};
@@ -14,19 +15,24 @@ function GhostMailer(opts) {
 GhostMailer.prototype.init = function () {
     var self = this;
     self.state = {};
-    if (config.mail && config.mail.transport) {
-        this.createTransport();
+
+    if (config.mail && config.mail.options) {
+        if (config.mail.options.service !== 'stub') {
+            this.createTransport();
+        } else {
+            self.transport = nodemailer.createTransport(stubTransport(config.mail.options));
+        }
         return Promise.resolve();
     }
 
-    self.transport = nodemailer.createTransport('direct');
+    self.transport = nodemailer.createTransport();
     self.state.usingDirect = true;
 
     return Promise.resolve();
 };
 
 GhostMailer.prototype.createTransport = function () {
-    this.transport = nodemailer.createTransport(config.mail.transport, _.clone(config.mail.options) || {});
+    this.transport = nodemailer.createTransport(_.clone(config.mail.options) || {});
 };
 
 GhostMailer.prototype.from = function () {
@@ -86,7 +92,7 @@ GhostMailer.prototype.send = function (message) {
                 return reject(new Error(error));
             }
 
-            if (self.transport.transportType !== 'DIRECT') {
+            if (self.transport.transporter.name !== 'SMTP (direct)') {
                 return resolve(response);
             }
 
