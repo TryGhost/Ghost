@@ -1,7 +1,7 @@
 var _       = require('lodash'),
     xml     = require('xml'),
     moment  = require('moment'),
-    config  = require('../../config'),
+    config  = require('../../../config'),
     utils   = require('./utils'),
     RESOURCES,
     XMLNS_DECLS;

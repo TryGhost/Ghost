@@ -17,7 +17,8 @@ var express     = require('express'),
     models      = require('./models'),
     permissions = require('./permissions'),
     apps        = require('./apps'),
-    sitemap     = require('./data/sitemap'),
+    sitemap     = require('./data/xml/sitemap'),
+    xmlrpc      = require('./data/xml/xmlrpc'),
     GhostServer = require('./ghost-server'),
 
 // Variables
@@ -177,7 +178,9 @@ function init(options) {
             // Initialize apps
             apps.init(),
             // Initialize sitemaps
-            sitemap.init()
+            sitemap.init(),
+            // Initialize xmrpc ping
+            xmlrpc.init()
         );
     }).then(function () {
         var adminHbs = hbs.create();
