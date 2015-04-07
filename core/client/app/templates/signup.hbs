@@ -26,7 +26,7 @@
                 <p>Must be at least 8 characters</p>
             </div>
             <footer>
-                <button type="submit" class="btn btn-green btn-lg" {{action "signup"}} {{bind-attr disabled=submitting}}>Create Account</button>
+                <button type="submit" class="btn btn-green btn-lg" {{action "signup"}} disabled={{submitting}}>Create Account</button>
             </footer>
         </form>
     </div>

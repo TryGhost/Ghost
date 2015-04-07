@@ -38,7 +38,7 @@ var PostTagsInputView = Ember.View.extend({
             styles.push('left', 0);
         }
 
-        return styles.join(';');
+        return styles.join(';').htmlSafe();
     }),
 
     tagInputView: Ember.TextField.extend({

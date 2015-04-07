@@ -16,31 +16,21 @@ var SettingsUserController = Ember.Controller.extend({
     coverDefault: Ember.computed('ghostPaths', function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
     }),
-
-    userDefault: Ember.computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
-    }),
-
-    cover: Ember.computed('user.cover', 'coverDefault', function () {
-        var cover = this.get('user.cover');
-
-        if (Ember.isBlank(cover)) {
-            cover = this.get('coverDefault');
-        }
-
-        return 'background-image: url(' + cover + ')';
+    coverImageBackground: Ember.computed('user.cover', 'coverDefault', function () {
+        var url = this.get('user.cover') || this.get('coverDefault');
+        return `background-image: url(${url})`.htmlSafe();
     }),
 
     coverTitle: Ember.computed('user.name', function () {
         return this.get('user.name') + '\'s Cover Image';
     }),
 
-    image: Ember.computed('imageUrl', function () {
-        return 'background-image: url(' + this.get('imageUrl') + ')';
+    userDefault: Ember.computed('ghostPaths', function () {
+        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
     }),
-
-    imageUrl: Ember.computed('user.image', function () {
-        return this.get('user.image') || this.get('userDefault');
+    userImageBackground: Ember.computed('user.image', 'userDefault', function () {
+        var url = this.get('user.image') || this.get('userDefault');
+        return `background-image: url(${url})`.htmlSafe();
     }),
 
     last_login: Ember.computed('user.last_login', function () {
