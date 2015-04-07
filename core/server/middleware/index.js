@@ -36,6 +36,7 @@ function ghostLocals(req, res, next) {
     // Make sure we have a locals value.
     res.locals = res.locals || {};
     res.locals.version = config.ghostVersion;
+    res.locals.safeVersion = config.ghostVersion.match(/^(\d+\.)?(\d+)/)[0];
     // relative path from the URL
     res.locals.relativeUrl = req.path;
 
