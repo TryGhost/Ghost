@@ -1,8 +1,8 @@
-var _ = require('lodash'),
-    path = require('path'),
-    api = require('../../api'),
-    BaseMapGenerator = require('./base-generator'),
-    config = require('../../config');
+var _      = require('lodash'),
+    path   = require('path'),
+    api    = require('../../../api'),
+    config = require('../../../config'),
+    BaseMapGenerator = require('./base-generator');
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function PageMapGenerator(opts) {
@@ -19,6 +19,13 @@ PageMapGenerator.Defaults = {
 _.extend(PageMapGenerator.prototype, BaseMapGenerator.prototype);
 
 _.extend(PageMapGenerator.prototype, {
+    bindEvents: function () {
+        var self = this;
+        this.dataEvents.on('page.published', self.addOrUpdateUrl.bind(self));
+        this.dataEvents.on('page.published.edited', self.addOrUpdateUrl.bind(self));
+        this.dataEvents.on('page.unpublished', self.removeUrl.bind(self));
+    },
+
     getData: function () {
         return api.posts.browse({
             context: {

@@ -2,7 +2,7 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     errors         = require('../errors'),
     ghostBookshelf = require('./base'),
-    sitemap        = require('../data/sitemap'),
+    events         = require('../events'),
 
     Tag,
     Tags;
@@ -22,17 +22,21 @@ Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
 
+    emitChange: function (event) {
+        events.emit('tag' + '.' + event, this);
+    },
+
     initialize: function () {
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
         this.on('created', function (model) {
-            sitemap.tagAdded(model);
+            model.emitChange('added');
         });
         this.on('updated', function (model) {
-            sitemap.tagEdited(model);
+            model.emitChange('edited');
         });
         this.on('destroyed', function (model) {
-            sitemap.tagDeleted(model);
+            model.emitChange('deleted');
         });
     },
 

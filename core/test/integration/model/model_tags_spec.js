@@ -2,21 +2,33 @@
 /*jshint expr:true*/
 var testUtils   = require('../../utils'),
     should      = require('should'),
+    sinon       = require('sinon'),
     Promise     = require('bluebird'),
     _           = require('lodash'),
 
     // Stuff we are testing
     ModelsTag   = require('../../../server/models/tag'),
     ModelsPost  = require('../../../server/models/post'),
+    events          = require('../../../server/events'),
     context     = testUtils.context.admin,
     TagModel,
-    PostModel;
+    PostModel,
+    sandbox         = sinon.sandbox.create();
 
 describe('Tag Model', function () {
+    var eventSpy;
+
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
     beforeEach(testUtils.setup());
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+    beforeEach(function () {
+        eventSpy = sandbox.spy(events, 'emit');
+    });
 
     before(function () {
         TagModel    = ModelsTag.Tag;
@@ -92,6 +104,10 @@ describe('Tag Model', function () {
                 var createdPost = models[0],
                     createdTag = models[1];
 
+                eventSpy.calledTwice.should.be.true;
+                eventSpy.calledWith('post.added').should.be.true;
+                eventSpy.calledWith('tag.added').should.be.true;
+
                 createdPostID = createdPost.id;
                 return createdPost.tags().attach(createdTag);
             }).then(function () {
@@ -118,6 +134,10 @@ describe('Tag Model', function () {
                 var createdPost = models[0],
                     createdTag = models[1];
 
+                eventSpy.calledTwice.should.be.true;
+                eventSpy.calledWith('post.added').should.be.true;
+                eventSpy.calledWith('tag.added').should.be.true;
+
                 createdPostID = createdPost.id;
                 createdTagID = createdTag.id;
                 return createdPost.tags().attach(createdTag);
@@ -126,6 +146,7 @@ describe('Tag Model', function () {
             }).then(function (postWithTag) {
                 return postWithTag.tags().detach(createdTagID);
             }).then(function () {
+                eventSpy.calledTwice.should.be.true;
                 return PostModel.findOne({id: createdPostID, status: 'all'}, {withRelated: ['tags']});
             }).then(function (postWithoutTag) {
                 postWithoutTag.related('tags').length.should.equal(0);
