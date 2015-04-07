@@ -293,7 +293,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     destroy: function (options) {
         var id = options.id;
         options = this.filterOptions(options, 'destroy');
-        return this.forge({id: id}).destroy(options);
+
+        // Fetch the object before destroying it, so that the changed data is available to events
+        return this.forge({id: id}).fetch(options).then(function (obj) {
+            return obj.destroy(options);
+        });
     },
 
     /**
