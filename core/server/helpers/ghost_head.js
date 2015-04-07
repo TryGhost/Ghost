@@ -261,16 +261,13 @@ ghost_head = function (options) {
     var self = this,
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         head = [],
-        majorMinor = /^(\d+\.)?(\d+)/,
-        trimmedVersion = this.version,
+        safeVersion = this.safeVersion,
         ops = [],
         structuredData,
         schema,
         title = hbs.handlebars.Utils.escapeExpression(blog.title),
         context = self.context[0],
         contextObject = self[context] || blog;
-
-    trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
 
     // Push Async calls to an array of promises
     ops.push(urlHelper.call(self, {hash: {absolute: true}}));
@@ -312,7 +309,7 @@ ghost_head = function (options) {
             finaliseSchema(schema, head);
         }
 
-        head.push('<meta name="generator" content="Ghost ' + trimmedVersion + '" />');
+        head.push('<meta name="generator" content="Ghost ' + safeVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             title  + '" href="' + config.urlFor('rss', null, true) + '" />');
     }).then(function () {
