@@ -13,7 +13,7 @@ var ApplicationController = Ember.Controller.extend({
     }),
 
     userImageBackground: Ember.computed('userImage', function () {
-        return 'background-image: url(' + this.get('userImage') + ')';
+        return `background-image: url(${this.get('userImage')})`.htmlSafe();
     }),
 
     userImageAlt: Ember.computed('session.user.name', function () {

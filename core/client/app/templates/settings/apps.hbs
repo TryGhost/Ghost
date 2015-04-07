@@ -16,7 +16,7 @@
                 {{#if appController.model.package}}{{appController.model.package.name}} - {{appController.model.package.version}}{{else}}{{appController.model.name}} - package.json missing :({{/if}}
             </td>
             <td>
-                <button type="button" {{action toggleApp appController}} {{bind-attr class=":btn :js-button-active activeClass:btn-red inactiveClass:btn-green activeClass:js-button-deactivate"}}>
+                <button type="button" {{action toggleApp appController}} class="btn js-button-active {{if activeClass 'btn-red js-button-deactivate'}} {{if inactiveClass 'btn-green'}}">
                     {{appController.buttonText}}
                 </button>
             </td>

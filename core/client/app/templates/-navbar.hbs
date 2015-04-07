@@ -31,8 +31,8 @@
 
     <div class="nav-item user-menu">
         {{#gh-dropdown-button dropdownName="user-menu" tagName="div" classNames="nav-label clearfix"}}
-            <span class="image" {{bind-attr style=userImageBackground}}>
-                <img {{bind-attr src="userImage" title="userImageAlt"}}>
+            <span class="image" style={{userImageBackground}}>
+                <img src={{userImage}} title={{userImageAlt}}>
             </span>
             <div class="name">
                 {{session.user.name}} <i class="icon-chevron-down"></i>
