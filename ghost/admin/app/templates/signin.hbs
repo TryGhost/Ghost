@@ -10,7 +10,7 @@
                 {{input class="password" type="password" placeholder="Password" name="password" value=model.password}}
             </span>
         </div>
-        <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>Log in</button>
+        <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Log in</button>
         <section class="meta">
             <button {{action 'forgotten'}} class="forgotten-link btn btn-link">Forgotten password?</button>
         </section>
