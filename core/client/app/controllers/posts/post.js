@@ -12,7 +12,7 @@ var PostController = Ember.Controller.extend({
     }),
 
     authorAvatarBackground: Ember.computed('authorAvatar', function () {
-        return 'background-image: url(' + this.get('authorAvatar') + ')';
+        return `background-image: url(${this.get('authorAvatar')})`.htmlSafe();
     }),
 
     actions: {

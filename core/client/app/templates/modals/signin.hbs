@@ -5,7 +5,7 @@
             <div class="password-wrap">
                 {{input class="password" type="password" placeholder="Password" name="password" value=password}}
             </div>
-            <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} {{bind-attr disabled=submitting}}>Log in</button>
+            <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Log in</button>
        </form>
 
 {{/gh-modal-dialog}}
