@@ -24,6 +24,10 @@ var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
         }
 
         return value;
+    }),
+
+    connectionsUI: Ember.computed('config.connectionsUI', 'labs.connectionsUI', function () {
+        return this.get('config.connectionsUI') || this.get('labs.connectionsUI');
     })
 });
 
