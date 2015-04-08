@@ -27,6 +27,8 @@ var SettingSerializer = ApplicationSerializer.extend({
             payload[setting.key] = setting.value;
         });
 
+        payload = this.normalize(type, payload);
+
         return [payload];
     },
 
