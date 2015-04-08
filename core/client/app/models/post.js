@@ -29,6 +29,12 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     tags: DS.hasMany('tag', {embedded: 'always'}),
     url: DS.attr('string'),
 
+    absoluteUrl: Ember.computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
+        var blogUrl = this.get('config.blogUrl'),
+            postUrl = this.get('url');
+        return this.get('ghostPaths.url').join(blogUrl, postUrl);
+    }),
+
     scratch: null,
     titleScratch: null,
 
