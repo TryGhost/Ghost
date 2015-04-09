@@ -3,17 +3,93 @@
 //
 // Styles for notifications
 //
-// * Wrapper
+// * Wrappers
 // * Base Notification
 // * Individual Notifications
 // ------------------------------------------------------------
 
+
 //
-// Wrapper
+// Wrappers
 // --------------------------------------------------
 
-.notifications {
+.notifications.top {
+    // Remove margins from top notifications so there's no space underneath
+    .notification-success,
+    .notification-error,
+    .notification-warn,
+    .notification-info {
+        margin: 0;
+    }
 
+    // Transition position of top notifications when the a settings menu or navigation is open
+    transition: transform $settings-menu-transition cubic-bezier($settings-menu-bezier);
+
+    @media (max-width: 900px) {
+        transition: transform 0.4s cubic-bezier($settings-menu-bezier);
+    }
+
+    body.global-nav-expanded & {
+        transform: translate3d(260px, 0px, 0px);
+    }
+
+    body.settings-menu-expanded & {
+        @media (max-width: 350px) {
+            transform: translate3d(-100%, 0px, 0px);
+        }
+        @media (min-width: 351px) {
+            transform: translate3d(-350px, 0px, 0px);
+
+            &:before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1000;
+                width: 1px;
+                background: #EDECE4;
+            }
+        }
+    }
+}
+
+// Top notifications, usually the update notification
+@media (max-width: 900px) {
+    .notifications.top {
+        position: relative;
+        z-index: 20;
+    }
+
+    .viewport[data-notification-count='1'] {
+        top: 43px;
+
+        .settings-view-header,
+        .settings-subview-header,
+        .post-preview-header {
+            top: 43px;
+        }
+    }
+}
+
+@media (min-width: 901px) {
+    .notifications.top {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        z-index: 20;
+    }
+
+    .viewport[data-notification-count='1'] {
+        .page-content {
+            top: 103px;
+        }
+    }
+}
+
+// Bottom notifications, which is 99% of them
+.notifications.bottom {
     @media (max-width: 400px) {
         position: fixed;
         top: 0;
@@ -29,7 +105,7 @@
         z-index: 800;
         width: 300px;
     }
-}//.notifications
+}
 
 
 //
