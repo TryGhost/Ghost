@@ -11,7 +11,6 @@ function getValidKeys() {
     var validKeys = {
             fileStorage: config.fileStorage === false ? false : true,
             apps: config.apps === true ? true : false,
-            codeInjectionUI: config.codeInjectionUI === true ? true : false,
             version: config.ghostVersion,
             environment: process.env.NODE_ENV,
             database: config.database.client,
