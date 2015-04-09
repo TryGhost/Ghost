@@ -23,16 +23,18 @@
     }
 }
 
+@media (min-width: 901px) {
+    .settings-content .settings-about {
+        padding: 25px 40px 0;
+    }
+}
+
 
 //
 // Logo & Version
 // --------------------------------------------------
 
 .about-ghost-intro {
-    @media (max-width: 550px) {
-        padding-top: 40px;
-    }
-
     h1 {
         margin-top: -6px;
         margin-bottom: -21px;
