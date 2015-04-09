@@ -178,6 +178,16 @@ frontendControllers = {
             });
         }).catch(handleError(next));
     },
+    blog: function (req, res, next) {
+      return getPostPage({ page: 1 }).then(function (page) {
+        setReqCtx(req, page.posts)
+
+        filters.doFilter('prePostsRender', page.posts).then(function (posts) {
+          setResponseContext(req, res);
+          res.render('index', formatPageResponse(posts, page))
+        });
+      }).catch(handleError(next))
+    },
     tag: function (req, res, next) {
         // Parse the page number
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
