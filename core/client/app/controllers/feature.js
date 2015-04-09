@@ -24,10 +24,6 @@ var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
         }
 
         return value;
-    }),
-
-    codeInjectionUI: Ember.computed('config.codeInjectionUI', 'labs.codeInjectionUI', function () {
-        return this.get('config.codeInjectionUI') || this.get('labs.codeInjectionUI');
     })
 });
 
