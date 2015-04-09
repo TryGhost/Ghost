@@ -222,10 +222,11 @@ EditorControllerMixin = Ember.Mixin.create({
 
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status],
-            path = this.get('ghostPaths.url').join(this.get('config.blogUrl'), this.get('model.url'));
+            path = this.get('model.absoluteUrl'),
+            type = this.get('postOrPage');
 
         if (status === 'published') {
-            message += '&nbsp;<a href="' + path + '">View ' + this.get('postOrPage') + '</a>';
+            message += `&nbsp;<a href="${path}">View ${type}</a>`;
         }
         this.notifications.showSuccess(message.htmlSafe(), {delayed: delay});
     },
