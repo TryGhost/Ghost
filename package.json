@@ -60,7 +60,7 @@
         "path-match": "1.2.2",
         "request": "2.51.0",
         "rss": "1.1.1",
-        "semver": "4.1.0",
+        "semver": "4.3.3",
         "showdown-ghost": "0.3.6",
         "sqlite3": "3.0.5",
         "unidecode": "0.1.3",
