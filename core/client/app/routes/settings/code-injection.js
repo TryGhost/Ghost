@@ -7,24 +7,9 @@ var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingInd
     classNames: ['settings-view-code'],
 
     beforeModel: function () {
-        var feature = this.controllerFor('feature'),
-            self = this;
-
-        if (!feature) {
-            this.generateController('feature');
-            feature = this.controllerFor('feature');
-        }
-
         return this.currentUser()
             .then(this.transitionAuthor())
-            .then(this.transitionEditor())
-            .then(function () {
-                return feature.then(function () {
-                    if (!feature.get('codeInjectionUI')) {
-                        return self.transitionTo('settings.general');
-                    }
-                });
-            });
+            .then(this.transitionEditor());
     },
 
     model: function () {
