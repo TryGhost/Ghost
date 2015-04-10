@@ -23,18 +23,6 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
         });
     },
 
-    codeUIFlag: Ember.computed.alias('config.codeInjectionUI'),
-
-    useCodeInjectionUI: Ember.computed('controllers.feature.codeInjectionUI', function (key, value) {
-        // setter
-        if (arguments.length > 1) {
-            this.saveLabs('codeInjectionUI', value);
-        }
-
-        // getter
-        return this.get('controllers.feature.codeInjectionUI') || false;
-    }),
-
     actions: {
         onUpload: function (file) {
             var self = this,
