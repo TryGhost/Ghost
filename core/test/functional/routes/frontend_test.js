@@ -443,7 +443,14 @@ describe('Frontend Routing', function () {
                 }).catch(done);
             });
 
-            it('should use meta_description where available', function (done) {
+            it('should use meta_description and image where available', function (done) {
+                var post1End = 'you think :)</p>]]></content:encoded>',
+                    post3Title = '<title><![CDATA[Short and Sweet]]>',
+                    post3DescStart = '<description><![CDATA[test stuff',
+                    post3ContentStart = '<content:encoded><![CDATA[<h2 id=\"testing\">testing</h2>\n\n' +
+                        '<img src=\"http:\/\/placekitten.com\/500\/200\"',
+                    post3Image = '<media:content url=\"http:\/\/placekitten.com\/500\/200\" medium=\"image\"\/>';
+
                 request.get('/rss/')
                     .expect('Content-Type', 'text/xml; charset=utf-8')
                     .expect('Cache-Control', testUtils.cacheRules['public'])
@@ -454,10 +461,6 @@ describe('Frontend Routing', function () {
                         }
 
                         var content = res.text,
-                            post1End = 'you think :)</p>]]></content:encoded>',
-                            post3Title = '<title><![CDATA[Short and Sweet\]\]>',
-                            post3DescStart = '<description><![CDATA[test stuff',
-                            post3ContentStart = '<content:encoded><![CDATA[<h2 id=\"testing\">testing</h2>',
                             endIndex = content.indexOf(post1End);
 
                         content.indexOf('<rss').should.be.above(0);
@@ -465,6 +468,7 @@ describe('Frontend Routing', function () {
                         content.indexOf(post3Title).should.be.above(endIndex);
                         content.indexOf(post3DescStart).should.be.above(endIndex);
                         content.indexOf(post3ContentStart).should.be.above(endIndex);
+                        content.indexOf(post3Image).should.be.above(endIndex);
                         content.indexOf('</rss>').should.be.above(0);
 
                         done();
