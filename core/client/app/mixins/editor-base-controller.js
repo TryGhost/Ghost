@@ -31,26 +31,9 @@ EditorControllerMixin = Ember.Mixin.create({
             return self.get('isDirty') ? self.unloadDirtyMessage() : null;
         };
     },
-    lastModelId: null,
-    modelChanged: Ember.computed('model.id', function (key, value) {
-        var modelId = this.get('model.id');
-
-        if (arguments.length > 1) {
-            return value;
-        }
-
-        if (this.get('lastModelId') === modelId) {
-            return false;
-        }
-
-        this.set('lastModelId', modelId);
-        return true;
-    }),
     autoSave: function () {
         // Don't save just because we swapped out models
-        if (this.get('modelChanged')) {
-            this.set('modelChanged', false);
-        } else if (this.get('model.isDraft') && !this.get('model.isNew')) {
+        if (this.get('model.isDraft') && !this.get('model.isNew')) {
             var autoSaveId,
                 timedSaveId;
 
