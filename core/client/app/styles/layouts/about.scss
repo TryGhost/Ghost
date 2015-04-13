@@ -1,0 +1,271 @@
+// ------------------------------------------------------------
+// About Ghost
+// Slug: /ghost/settings/about
+//
+// Styles for the About Ghost page, detailing environment & top
+// contributors.
+//
+// * Wrapper
+// * Logo & Version
+// * Environment & Get Involved
+// * Contributors
+// * Credits & Copyright
+// ------------------------------------------------------------
+
+
+//
+// Wrapper
+// --------------------------------------------------
+
+.settings-about {
+    h1 {
+        letter-spacing: 0;
+    }
+}
+
+@media (min-width: 901px) {
+    .settings-content .settings-about {
+        padding: 25px 40px 0;
+    }
+}
+
+
+//
+// Logo & Version
+// --------------------------------------------------
+
+.about-ghost-intro {
+    h1 {
+        margin-top: -6px;
+        margin-bottom: -21px;
+    }
+
+    .ghost_logo {
+        position: relative;
+        left: 3px;
+        @include icon($i-ghost, 1.7rem, $midgrey) {
+            position: relative;
+            top: -6px;
+        };
+        @include icon-after($i-ghost-logo, 3.2rem, $darkgrey) {
+            position: relative;
+            left: -5px;
+        };
+    }
+
+    .version {
+        font-weight: 300;
+        font-size: 1.8rem;
+        position: relative;
+        top: -3px;
+        left: -9px;
+        color: $blue;
+    }
+
+    h1 + p {
+        margin-top: 1px;
+        color: $midgrey;
+    }
+}//.about-ghost-intro
+
+// Special case to hide the desktop page header, because
+// in this instance the Ghost logo replaces it.
+@media (min-width: 901px) {
+    .settings-view-about .settings-view-header {
+        display: none;
+    }
+}
+
+
+//
+// Environment & Get Involved
+// --------------------------------------------------
+
+.about-environment-help {
+    margin-top: 35px;
+}
+
+.about-environment {
+    dl {
+        @include clearfix;
+        color: $midgrey;
+        margin: 2px 0 0 0;
+        line-height: 1.6;
+    }
+
+    dt, dd {
+        width: auto;
+        float: left;
+        display: inline-block;
+        margin: 0;
+    }
+
+    dt {
+        margin-right: 5px;
+    }
+
+    .about-environment-detail {
+        text-transform: capitalize;
+    }
+}
+
+.about-help {
+    padding-top: 8px;
+
+    @media (max-width: 500px) {
+        padding-top: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        display: block;
+        font-size: 1rem;
+        padding-top: 9px;
+        padding-bottom: 9px;
+        min-height: 32px;
+        background: #A1ADB3;
+        color: #fff;
+
+        &:hover {
+            background: darken(#A1ADB3, 10%);
+        }
+
+        &:nth-child(1) {
+            margin-bottom: 11px;
+        }
+    }
+}//.about-help
+
+@media (min-width: 501px) {
+    .about-environment-help {
+        max-width: 430px;
+    }
+
+    .about-environment {
+        float: left;
+        width: calc(100% - 190px);
+    }
+
+    .about-help {
+        float: right;
+        width: 170px;
+    }
+}
+
+
+//
+// Contributors
+// --------------------------------------------------
+
+.top-contributors {
+    padding-left: 0;
+    max-width: 660px;
+
+    li {
+        float: left;
+        list-style: none;
+        width: 10%;
+
+        a {
+            display: block;
+            position: relative;
+
+            @media (min-width: 601px) {
+                margin-right: 9px;
+                margin-bottom: 9px;
+            }
+            @media (max-width: 600px) {
+                margin-right: 6px;
+                margin-bottom: 6px;
+            }
+
+            &:before {
+                opacity: 0;
+                content: attr(title);
+                position: absolute;
+                top: -27px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: $darkgrey;
+                color: #fff;
+                padding: 2px 6px 3px;
+                border-radius: $border-radius;
+                transition: opacity 0.15s ease-in-out;
+                font-size: 1rem;
+                pointer-events: none;
+            }
+
+            &:after {
+                opacity: 0;
+                content: '';
+                position: absolute;
+                top: -6px;
+                left: 50%;
+                transform: translateX(-50%);
+                transition: opacity 0.15s ease-in-out;
+                @include triangle(8px, $darkgrey, "down");
+            }
+
+            &:hover {
+                &:before,
+                &:after {
+                    opacity: 1;
+                }
+            }
+
+            img {
+                width: 100%;
+                display: block;
+                border-radius: 100%;
+            }
+        }//a
+    }//li
+}//.top-contributors
+
+
+//
+// Credits & Copyright
+// --------------------------------------------------
+
+.about-credits {
+    margin-top: 45px;
+
+    h1 {
+        font-size: 2.4rem;
+        margin-bottom: 24px;
+    }
+}
+
+.about-contributors-info {
+    margin-top: -12px;
+    margin-bottom: 22px;
+    font-size: 1.6rem;
+    max-width: 620px;
+}
+
+.about-get-involved {
+    font-size: 1.2rem;
+    width: 100%;
+    display: inline-block;
+    max-width: 290px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.about-copyright {
+    margin-top: 62px;
+
+    a {
+        &:link,
+        &:visited {
+            color: inherit;
+        }
+
+        &:hover,
+        &:focus,
+        &:active {
+            text-decoration: none;
+            color: $blue;
+        }
+    }
+}//.about-copyright

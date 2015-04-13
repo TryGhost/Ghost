@@ -1,0 +1,23 @@
+<div class="publish-bar-tags-icon">
+    <label class="tag-label icon-tag" for="tags" title="Tags">
+        <span class="sr-only">Tags</span>
+    </label>
+</div>
+<div class="publish-bar-tags">
+    <div class="tags-wrapper tags">
+        {{#each tag in controller.tags}}
+           <span class="tag" {{action "deleteTag" tag target=view}}>{{tag.name}}</span>
+        {{/each}}
+    </div>
+</div>
+<div class="publish-bar-tags-input">
+    <input type="hidden" class="tags-holder" id="tags-holder">
+    {{view view.tagInputView class="tag-input js-tag-input" id="tags" value=newTagText}}
+    <ul class="suggestions dropdown-menu dropdown-triangle-bottom" style={{view.overlayStyles}}>
+        {{#each suggestion in suggestions}}
+            {{#view view.suggestionView suggestion=suggestion}}
+                <a href="javascript:void(0);">{{view.suggestion.highlightedName}}</a>
+            {{/view}}
+        {{/each}}
+    </ul>
+</div>

@@ -1,0 +1,46 @@
+<header class="page-header">
+    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
+    <h2 class="page-title">Content</h2>
+</header>
+
+<div class="page-content">
+    <section class="content-list js-content-list {{if postListFocused 'keyboard-focused'}}">
+        <header class="floatingheader">
+            <section class="content-filter">
+                <small>All Posts</small>
+            </section>
+            {{#link-to "editor.new" class="btn btn-green" title="New Post"}}<span class="hidden">New Post</span>{{/link-to}}
+        </header>
+        {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
+        <ol class="posts-list">
+            {{#each post in controller itemController="posts/post" itemView="post-item-view" itemTagName="li"}}
+                {{#link-to "posts.post" post.model class="permalink" alternateActive=view.active title="Edit this post"}}
+                    <h3 class="entry-title">{{post.model.title}}</h3>
+                    <section class="entry-meta">
+                        <span class="avatar" style={{post.authorAvatarBackground}}>
+                            <img src="{{post.authorAvatar}}" title="{{post.authorName}}">
+                        </span>
+                        <span class="author">{{post.authorName}}</span>
+                        <span class="status">
+                            {{#if post.isPublished}}
+                                {{#if post.model.page}}
+                                    <span class="page">Page</span>
+                                {{else}}
+                                    <time datetime="{{post.model.published_at}}" class="date published">
+                                        Published {{gh-format-timeago post.model.published_at}}
+                                    </time>
+                                {{/if}}
+                            {{else}}
+                                <span class="draft">Draft</span>
+                            {{/if}}
+                        </span>
+                    </section>
+                {{/link-to}}
+            {{/each}}
+        </ol>
+        {{/view}}
+    </section>
+    <section class="content-preview js-content-preview {{if postContentFocused 'keyboard-focused'}}">
+        {{outlet}}
+    </section>
+</div>

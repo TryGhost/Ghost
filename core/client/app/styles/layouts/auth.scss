@@ -1,0 +1,268 @@
+// ------------------------------------------------------------
+// Authentication
+// Slug: /ghost/[signin/signup/forgotten/reset]
+//
+// Styles for the authentication pages
+//
+// * Auth colours & wrappers
+// * Sign In
+// * Signup & Reset
+// * Forgot Password
+// ------------------------------------------------------------
+
+
+//
+// Auth colours & wrappers
+// --------------------------------------------------
+
+.ghost-login,
+.ghost-signup,
+.ghost-forgotten,
+.ghost-reset {
+    color: $midgrey;
+    background: $darkgrey;
+
+    main {
+        padding-top: 15px;
+    }
+
+    input {
+        line-height: 1.4em;
+        font-size: 1.1em;
+        font-weight: 200;
+        border: none;
+        color: #fff;
+        background: lighten($darkgrey, 10%);
+        box-shadow: none;
+        margin: 0;
+        position: relative;
+        transition: background ease 0.25s;
+
+        &:focus {
+            border: none;
+            background: lighten($darkgrey, 15%);
+        }
+    }
+
+    // Changes the default Webkit yellow autofill colour to grey
+    input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0px 1000px $lightgrey inset !important;
+    }
+}//.ghost-login, .ghost-signup, .ghost-forgotten, .ghost-reset
+
+.login-box,
+.signup-box,
+.forgotten-box,
+.reset-box {
+    display: table;
+    max-width: 530px;
+    height: 90%;
+    margin: 0 auto;
+    padding: 0;
+
+    @media (max-width: 630px) {
+        max-width: 264px;
+        text-align: center;
+    }
+}
+
+
+//
+// Sign In
+// Slug: /ghost/signin/
+// --------------------------------------------------
+
+.login-form {
+    max-width: 530px;
+    color: lighten($midgrey, 15%);
+    display: table-cell;
+    vertical-align: middle;
+
+    @media (max-width: 630px) {
+        max-width: 264px;
+    }
+
+    .email-wrap,
+    .password-wrap {
+        position: relative;
+        margin: 0 0 5px 0;
+        float: left;
+
+        @media (max-width: 630px) {
+            margin-bottom: 1em;
+        }
+    }
+
+    .email-wrap {
+        margin-right: 3px;
+
+        @media (max-width: 630px) {
+            margin-right: 0;
+        }
+    }
+
+    .email,
+    .password {
+        display: inline-block;
+        clear: both;
+        padding: 8px 0 8px 8px;
+        width: 216px;
+
+        @media (max-width: 630px) {
+            width: 264px;
+            border-radius: 2px;
+        }
+    }
+
+    @media (min-width: 631px) {
+        .email {
+            border-radius: 2px 0 0 2px;
+        }
+        .password {
+            border-radius: 0 2px 2px 0;
+        }
+    }
+
+    button {
+        width: 85px;
+        height: 37px;
+        margin-left: 10px;
+
+        @media (max-width: 630px) {
+            margin: 0;
+            width: 100%;
+            margin-bottom: 1em;
+        }
+    }
+
+    .meta {
+        clear: both;
+        color: $midgrey;
+    }
+
+    .forgotten-link {
+        display: inline-block;
+        height: auto;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        font-size: 1.25rem;
+        color: darken($midgrey, 10%);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    a {
+        color: darken($midgrey, 10%);
+        font-size: 0.9em;
+
+        &:hover {
+            color: lighten($midgrey, 5%);
+            text-decoration: none;
+        }
+    }
+}//.login-form
+
+
+//
+// Signup & Reset
+// Slug: /ghost/signup
+// Slug: /ghost/reset/t0k3n
+// --------------------------------------------------
+
+.signup-form,
+.reset-form {
+    max-width: 280px;
+    color: lighten($midgrey, 15%);
+    display: table-cell;
+    vertical-align: middle;
+
+    @media (max-width: 630px) {
+        width: 264px;
+    }
+
+    .password-wrap {
+        position: relative;
+        margin: 0 0 1em 0;
+        background: lighten($darkgrey, 10%);
+        float: left;
+        display: table;
+    }
+
+    input {
+        width: 280px;
+        padding: 8px 10px;
+
+        @media (max-width: 630px) {
+            width: 264px;
+        }
+    }
+
+    .name-wrap {
+        position: relative;
+        border-radius: 2px;
+    }
+
+    .name {
+        border-radius: 2px;
+    }
+
+    .email-wrap {
+        position: relative;
+        border-radius: 2px;
+    }
+
+    .email {
+        border-radius: 2px;
+    }
+
+    .password-wrap {
+        position: relative;
+        border-radius: 2px;
+    }
+
+    .password {
+        border-radius: 2px;
+    }
+
+    button {
+        width: 100%;
+        height: 36px;
+        margin: 0 0 1em 0;
+        padding: 0.5em 1.37em;
+        min-height: 30px;
+        min-width: 80px;
+        box-shadow: rgba(255,255,255,0.15) 0 1px 0 inset;
+    }
+}//.signup-form, .reset-form
+
+
+//
+// Forgot Password
+// Slug: /ghost/forgotten
+// --------------------------------------------------
+
+.forgotten-form {
+    max-width: 280px;
+    color: lighten($midgrey, 15%);
+    display: table-cell;
+    vertical-align: middle;
+
+    .email-wrap {
+        position: relative;
+        margin: 0 0 1em 0;
+        float: left;
+        border-radius: 2px;
+        width: 100%;
+    }
+
+    .email {
+        padding: 8px 10px;
+        border-radius: 2px;
+    }
+
+    button {
+        width: 100%;
+        height: 37px;
+    }
+}//.forgotten-form

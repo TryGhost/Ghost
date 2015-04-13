@@ -1,0 +1,98 @@
+// ------------------------------------------------------------
+// Shame
+//
+// A home for Styles that need to die in a fire, but are used
+// in lots of places.
+//
+// * Floating Header
+// * Scroll Shadows
+// ------------------------------------------------------------
+
+
+//
+// Floating Header
+// --------------------------------------------------
+
+// Semi-opaque fixed-position headers - used on content/editor
+.floatingheader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 400;
+    height: 40px;
+    padding: 10px 20px;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    color: $brown;
+    background: linear-gradient(to bottom, white 0%, white 25%, rgba(255,255,255,0.9) 100%); //Transparent gradient to make bg fade out as it goes out the top
+
+    .button {
+        display: inline-block;
+        font-size: 10px;
+        min-height: 20px;
+        height: 20px;
+        padding: 3px 4px;
+        vertical-align: top;
+
+        &.button-back {
+            position: relative;
+            top: -2px;
+            left: 3px;
+            display: none;
+            padding: 0 6px 0 3px;
+
+            &:active {
+                box-shadow: none;
+            }
+
+            &:before {
+                left: -8px;
+                border-width: 10px 8px 10px 0;
+            }
+
+            @media (max-width: 900px) {
+                display: inline-block;
+            }
+        }
+    }//.button
+
+    small {
+        font-size: 0.85em;
+    }
+
+    a,
+    button {
+        color: $brown;
+
+        &:hover {
+            color: $darkgrey;
+        }
+    }
+} // .floatingheader
+
+
+//
+// Scroll Shadows
+// --------------------------------------------------
+
+.scrolling {
+
+    .floatingheader {
+        box-shadow: rgba(0, 0, 0, 0.03) 0 1px 3px;
+
+        &:before {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            height: 5px;
+            width: 80%;
+            margin-left: -40%;
+            background-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.05) 0%,rgba(0, 0, 0, 0) 75%,rgba(0, 0, 0, 0) 100%);
+            background-position: 0px -5px;
+            background-size: 100% 200%;
+            z-index: -1;
+        }
+    }
+}

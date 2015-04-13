@@ -1,0 +1,78 @@
+<div class="content-cover" {{action "closeSettingsMenu"}}></div>
+{{#gh-tabs-manager selected="showSubview" class="settings-menu-container"}}
+    <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
+        <div class="settings-menu-header">
+            <h4>Tag Settings</h4>
+            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}>
+                <span class="hidden">Close</span>
+            </button>
+        </div>
+        <div class="settings-menu-content">
+            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=activeTag.image uploaderReference=uploaderReference tagName="section"}}
+            <form>
+                <div class="form-group">
+                    <label>Name</label>
+                    {{gh-input type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
+                </div>
+
+                <div class="form-group">
+                    <label>URL</label>
+                    {{gh-input type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                    {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    {{gh-textarea value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
+                </div>
+
+                <ul class="nav-list nav-list-block">
+                    {{#gh-tab tagName="li" classNames="nav-list-item"}}
+                        <button type="button">
+                            <b>Meta Data</b>
+                            <span>Extra content for SEO and social media.</span>
+                        </button>
+                    {{/gh-tab}}
+                </ul>
+
+                {{#unless activeTag.isNew}}
+                    <button type="button" class="btn btn-link btn-sm tag-delete-button icon-trash" {{action "openModal" "delete-tag" activeTag}}>Delete Tag</button>
+                {{/unless}}
+            </form>
+        </div>
+    </div>{{! .settings-menu-pane }}
+
+    <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane">
+        {{#gh-tab-pane}}
+            <div class="settings-menu-header subview">
+                <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
+                <h4>Meta Data</h4>
+            </div>
+
+            <div class="settings-menu-content">
+                <form>
+                <div class="form-group">
+                    <label for="meta-title">Meta Title</label>
+                    {{gh-input type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
+                    <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters activeTagMetaTitleScratch 70}}</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="meta-description">Meta Description</label>
+                    {{gh-textarea value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
+                    <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters activeTagMetaDescriptionScratch 156}}</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Search Engine Result Preview</label>
+                    <div class="seo-preview">
+                        <div class="seo-preview-title">{{seoTitle}}</div>
+                        <div class="seo-preview-link">{{seoURL}}</div>
+                        <div class="seo-preview-description">{{seoDescription}}</div>
+                    </div>
+                </div>
+                </form>
+            </div>{{! .settings-menu-content }}
+        {{/gh-tab-pane}}
+    </div>{{! .settings-menu-pane }}
+{{/gh-tabs-manager}}

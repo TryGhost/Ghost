@@ -1,0 +1,18 @@
+<section class="login-box js-login-box fade-in">
+    <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
+        <div class="email-wrap">
+            <span class="input-icon icon-mail">
+                {{gh-trim-focus-input class="email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" value=model.identification}}
+            </span>
+        </div>
+        <div class="password-wrap">
+            <span class="input-icon icon-lock">
+                {{input class="password" type="password" placeholder="Password" name="password" value=model.password}}
+            </span>
+        </div>
+        <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Log in</button>
+        <section class="meta">
+            <button {{action 'forgotten'}} class="forgotten-link btn btn-link">Forgotten password?</button>
+        </section>
+    </form>
+</section>

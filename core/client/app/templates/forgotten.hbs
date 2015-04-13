@@ -1,0 +1,9 @@
+<section class="forgotten-box js-forgotten-box fade-in">
+    <form id="forgotten" class="forgotten-form" method="post" novalidate="novalidate">
+        <div class="email-wrap">
+            {{gh-trim-focus-input value=email class="email" type="email" placeholder="Email Address" name="email"
+            autofocus="autofocus" autocapitalize="off" autocorrect="off"}}
+        </div>
+        <button class="btn btn-blue" type="submit" {{action "submit"}} disabled={{submitting}}>Send new password</button>
+    </form>
+</section>

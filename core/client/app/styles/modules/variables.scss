@@ -1,0 +1,46 @@
+// ------------------------------------------------------------
+// Variables
+//
+// * Colours
+// * Default style values
+// * Dropdown & Popover triangles
+// ------------------------------------------------------------
+
+
+//
+// Colours
+// --------------------------------------------------
+
+$darkgrey: #242628;
+$grey: #35393b;
+$midgrey: #7d878a;
+$lightgrey: #e2edf2;
+$lightestgrey: #FCFCFC;
+$brown: #aaa9a2;
+$midbrown: #c0bfb6;
+$lightbrown: #edece4;
+$blue: #5BA4E5;
+$red: #e25440;
+$orange: #F2A925;
+$green: #9FBB58;
+
+
+//
+// Default style values
+// --------------------------------------------------
+
+$border-radius: 3px;
+$box-shadow: rgba(0,0,0,0.05) 0 1px 5px;
+$settings-menu-transition: 0.4s;
+$settings-menu-bezier: 0.1, 0.7, 0.1, 1;
+$font-family: 'Open Sans', sans-serif;
+$font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
+
+//
+// Dropdown & Popover triangles
+// --------------------------------------------------
+
+$dropdown_triangle: 8px;
+$popover_triangle: 14px;
+$popover_triangle_shallow_multiplier: 0.8; // Adjusts the height of the triangle relative to its width, so it's 0.8x the height of the width

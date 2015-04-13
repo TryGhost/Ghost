@@ -1,0 +1,72 @@
+<nav class="global-nav" role="navigation">
+
+    <a class="nav-item ghost-logo" href="{{gh-path 'blog'}}" title="Visit blog">
+        <div class="nav-label"><i class="icon-ghost"></i> <span>Visit blog</span> </div>
+    </a>
+
+    {{#link-to "posts" classNames="nav-item nav-content js-nav-item"}}
+        <div class="nav-label"><i class="icon-content"></i> Content</div>
+    {{/link-to}}
+
+    {{#link-to "editor.new" classNames="nav-item nav-new js-nav-item"}}
+        <div class="nav-label"><i class="icon-add"></i> New Post</div>
+    {{/link-to}}
+
+    {{#unless session.user.isAuthor}}
+    {{#link-to "settings" classNames="nav-item nav-settings js-nav-item"}}
+        <div class="nav-label"><i class="icon-settings2"></i> Settings</div>
+    {{/link-to}}
+    {{/unless}}
+
+    {{! TODO: Mobile-only menu items
+
+    <a class="nav-item thing" href="#">
+        <div class="nav-label">Thing</div>
+    </a>
+    <a class="nav-item thing2" href="#">
+        <div class="nav-label">Thing2</div>
+    </a>
+
+    }}
+
+    <div class="nav-item user-menu">
+        {{#gh-dropdown-button dropdownName="user-menu" tagName="div" classNames="nav-label clearfix"}}
+            <span class="image" style={{userImageBackground}}>
+                <img src={{userImage}} title={{userImageAlt}}>
+            </span>
+            <div class="name">
+                {{session.user.name}} <i class="icon-chevron-down"></i>
+                <small>Profile &amp; Settings</small>
+            </div>
+        {{/gh-dropdown-button}}
+        {{#gh-dropdown tagName="div" classNames="dropdown" name="user-menu" closeOnClick="true"}}
+            <ul class="dropdown-menu dropdown-triangle-top-right js-user-menu-dropdown-menu" role="menu">
+                <li role="presentation">{{#link-to "settings.users.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-user"></i> Your Profile{{/link-to}}</li>
+                <li class="divider"></li>
+                <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}<i class="icon-power"></i> Sign Out{{/link-to}}</li>
+            </ul>
+        {{/gh-dropdown}}
+    </div>{{! .user-menu }}
+
+    <div class="nav-item help-menu">
+        {{#gh-dropdown-button dropdownName="help-menu" tagName="div" classNames="nav-label clearfix"}}
+            <div class="help-button">
+                <i class="icon-question"><span class="hidden">Help</span></i>
+            </div>
+        {{/gh-dropdown-button}}
+        {{#gh-dropdown tagName="div" classNames="dropdown" name="help-menu" closeOnClick="true"}}
+            <ul class="dropdown-menu dropdown-triangle-top" role="menu">
+                <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-support"></i> Support Center</a></li>
+                <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
+                <li class="divider"></li>
+                <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank"><i class="icon-book"></i> How to Use Ghost</a></li>
+                <li role="presentation"><a class="dropdown-item help-menu-markdown" role="menuitem" tabindex="-1" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i> Markdown Help</a></li>
+                <li class="divider"></li>
+                <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank"><i class="icon-list"></i> Wishlist</a></li>
+            </ul>
+        {{/gh-dropdown}}
+    </div>{{! .help-menu }}
+
+</nav>{{! .global-nav }}
+
+<div class="nav-cover js-nav-cover"></div>

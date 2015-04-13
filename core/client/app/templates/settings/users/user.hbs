@@ -1,0 +1,123 @@
+<header class="settings-subview-header clearfix">
+    {{#unless session.user.isAuthor}}
+        {{#link-to "settings.users" class="btn btn-default btn-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
+    {{/unless}}
+    <h2 class="page-title">{{user.name}}</h2>
+    <section class="page-actions">
+        {{#if view.userActionsAreVisible}}
+            <span class="dropdown">
+                {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="btn btn-default only-has-icon user-actions-cog" title="User Actions"}}
+                    <i class="icon-settings"></i>
+                    <span class="hidden">User Settings</span>
+                {{/gh-dropdown-button}}
+                {{#gh-dropdown name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
+                    {{partial "user-actions-menu"}}
+                {{/gh-dropdown}}
+            </span>
+        {{/if}}
+
+        <button class="btn btn-blue" {{action "save"}}>Save</button>
+    </section>
+</header>
+
+<div class="content settings-user">
+
+    <figure class="user-cover" style={{coverImageBackground}}>
+        <button class="btn btn-default user-cover-edit js-modal-cover" {{action "openModal" "upload" user "cover"}}>Change Cover</button>
+    </figure>
+
+    <form class="user-profile" novalidate="novalidate" autocomplete="off">
+
+        {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+        <input style="display:none;" type="text" name="fakeusernameremembered"/>
+        <input style="display:none;" type="password" name="fakepasswordremembered"/>
+
+        <fieldset class="user-details-top">
+
+            <figure class="user-image">
+                <div id="user-image" class="img" style={{userImageBackground}}><span class="hidden">{{user.name}}"s Picture</span></div>
+                <button type="button" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</button>
+            </figure>
+
+            <div class="form-group first-form-group">
+                <label for="user-name">Full Name</label>
+                {{input value=user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off"}}
+                <p>Use your real name so people can recognise you</p>
+            </div>
+
+        </fieldset>
+
+        <fieldset class="user-details-bottom">
+
+            <div class="form-group">
+                <label for="user-slug">Slug</label>
+                {{gh-input class="user-name" id="user-slug" value=slugValue name="user" focus-out="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
+                <p>{{gh-blog-url}}/author/{{slugValue}}</p>
+            </div>
+
+            <div class="form-group">
+                <label for="user-email">Email</label>
+                {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                <p>Used for notifications</p>
+            </div>
+            {{#if view.rolesDropdownIsVisible}}
+            <div class="form-group">
+                <label for="user-role">Role</label>
+                {{gh-role-selector
+                    initialValue=user.role
+                    onChange="changeRole"
+                    selectId="user-role"}}
+                <p>What permissions should this user have?</p>
+            </div>
+            {{/if}}
+            <div class="form-group">
+                <label for="user-location">Location</label>
+                {{input type="text" value=user.location id="user-location"}}
+                <p>Where in the world do you live?</p>
+            </div>
+
+            <div class="form-group">
+                <label for="user-website">Website</label>
+                {{input type="url" value=user.website id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                <p>Have a website or blog other than this one? Link it!</p>
+            </div>
+
+            <div class="form-group bio-container">
+                <label for="user-bio">Bio</label>
+                {{textarea id="user-bio" value=user.bio}}
+                <p>
+                    Write about you, in 200 characters or less.
+                    {{gh-count-characters user.bio}}
+                </p>
+            </div>
+
+            <hr />
+
+        </fieldset>
+
+        <fieldset>
+            {{#unless view.isNotOwnProfile}}
+            <div class="form-group">
+                <label for="user-password-old">Old Password</label>
+                {{input value=user.password type="password" id="user-password-old"}}
+            </div>
+            {{/unless}}
+
+            <div class="form-group">
+                <label for="user-password-new">New Password</label>
+                {{input value=user.newPassword type="password" id="user-password-new"}}
+            </div>
+
+            <div class="form-group">
+                <label for="user-new-password-verification">Verify Password</label>
+                {{input value=user.ne2Password type="password" id="user-new-password-verification"}}
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-red button-change-password" {{action "password"}}>Change Password</button>
+            </div>
+
+        </fieldset>
+
+    </form>
+
+</div>

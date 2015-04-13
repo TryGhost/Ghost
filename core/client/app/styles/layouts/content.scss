@@ -1,0 +1,437 @@
+// ------------------------------------------------------------
+// Content Management
+// Slug: /ghost/
+//
+// Styles for the content management page, which is where
+// the posts are listed.
+//
+// * Container
+// * Show/Hide on mobile
+// * Content List
+// * Preview
+// * No Posts
+// * Keyboard Focus Animations
+// ------------------------------------------------------------
+
+
+//
+// Container
+// --------------------------------------------------
+
+.content-view-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    @media (max-width: 900px) {
+        overflow-x: hidden;
+    }
+}
+
+
+//
+// Show/Hide on mobile
+// --------------------------------------------------
+
+.content-list {
+    &.show-menu {
+        display: block;
+    }
+
+    &.show-content {
+        display: none;
+    }
+}
+
+.content-preview {
+    &.show-menu {
+        display: none;
+    }
+
+    &.show-content {
+        display: block;
+    }
+}
+
+
+//
+// Content List
+// --------------------------------------------------
+
+.content-list {
+    width: 33%;
+    padding: 15px;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    border-right: $lightbrown 1px solid;
+    background: #fff;
+
+    @media (max-width: 900px) {
+        width: auto;
+        right: 0;
+        z-index: 500;
+        border: none;
+    }
+
+    .content-filter {
+        position: relative;
+        z-index: 300;
+
+        > a {
+            padding: 5px;
+            margin-left: -5px;
+        }
+
+        .menu-drop {
+            display: block;
+        }
+    }
+
+    .btn-green {
+        @include icon($i-add);
+        position: absolute;
+        top: 9px;
+        right: 20px;
+        z-index: 700;
+        padding: 2px 4px 3px 5px;
+        color: #fff !important; // getting overridden by floatingheader
+    }
+
+    .content-list-content {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding-top: 40px;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .entry-title {
+        font-size: 1.6rem;
+        line-height: 1.4em;
+        font-weight: normal;
+    }
+
+    .entry-meta {
+        margin-top: 14px;
+        line-height: 18px;
+    }
+
+    .avatar {
+        @include circular-image(18px) {
+            float: left; // Used instead of `display: block;` to remove the stupid space under the image.
+            margin-right: 14px;
+        }
+    }
+
+    .status,
+    .author {
+        font-size: 1.3rem;
+        font-weight: 300;
+        transition: opacity 0.15s linear;
+    }
+
+    .avatar:hover + .author + .status {
+        opacity: 0;
+    }
+
+    .avatar:hover + .author {
+        opacity: 1;
+    }
+
+    .author {
+        position: absolute;
+        bottom: 22px;
+        left: 56px;
+        opacity: 0;
+    }
+
+    .status {
+        .draft {
+            color: $red;
+        }
+
+        .scheduled {
+            color: $orange;
+        }
+    }
+
+    .featured {
+        @include icon($i-featured, 11px) {
+            vertical-align: 7%;
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+        };
+    }
+
+    ol {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-top: $lightbrown 1px solid;
+    }
+
+    li {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        border-bottom: $lightbrown 1px solid;
+
+        a {
+            display: block;
+            padding: 19px 20px 22px 24px;
+            color: rgba(0,0,0,0.5);
+
+            @include icon-after($i-chevron) {
+                position: absolute;
+                top: 50%;
+                margin-top: -6px;
+                right: 15px;
+            }
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            @media (max-width: 400px) {
+                padding: 15px;
+            }
+
+            @media (max-width: 900px) {
+                padding-right: 40px;
+            }
+
+            @media (min-width: 901px) {
+                &:after {
+                    display: none;
+                }
+            }
+        }//a
+    }//li
+
+    li.active {
+        @media (min-width: 901px) {
+            border-bottom: lighten($midgrey, 40%) 1px solid;
+            background: lighten($lightbrown, 5%);
+        }
+    }
+}//.content-list
+
+
+//
+// Preview
+// --------------------------------------------------
+
+.content-preview {
+    width: 67%;
+    padding: 15px;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    right: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+
+    @media (max-width: 900px) {
+        width: 100%;
+        border: none;
+        overflow: visible;
+    }
+
+    .unfeatured {
+        @include icon($i-unfeatured, 14px);
+        vertical-align: -6%;
+        margin: 0 7px 0 -5px;
+        padding: 3px;
+    }
+
+    .featured {
+        @include icon($i-featured, 14px);
+        vertical-align: -6%;
+        margin: 0 7px 0 -5px;
+        padding: 3px;
+    }
+
+    .post-published-by .status a {
+        color: inherit;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .normal {
+        text-transform: none;
+        margin: 0 3px;
+    }
+
+    .content-preview-content {
+        padding: 5%;
+        word-break: break-word;
+        hyphens: auto;
+
+        @media (max-width: 900px) {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .wrapper {
+            max-width: 700px;
+            margin:0 auto;
+        }
+    }
+
+    .post-controls {
+        float:right;
+        position: relative;
+        top: 3px;
+    }
+
+    .post-settings-menu {
+        position: absolute;
+        top: 35px;
+        right: -3px;
+    }
+
+    .post-edit {
+        @include icon($i-edit, 14px);
+    }
+
+    img {
+        width:100%;
+        height:auto;
+    }
+}//.content-preview
+
+.post-preview-header {
+    .page-title,
+    .btn-back {
+        display: none;
+    }
+
+    @media (max-width: 900px) {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        z-index: 3000;
+        height: 44px;
+        text-align: center;
+        color: #fff;
+        background: #242628;
+        overflow: hidden;
+
+        .btn-back {
+            display: block;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            color: #fff;
+            background-color: transparent;
+        }
+
+        .page-title {
+            display: block;
+        }
+
+        .post-controls {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+        }
+
+        .post-edit {
+            color: #fff;
+            background-color: transparent;
+        }
+
+        .featured, .unfeatured, small {
+            display: none;
+        }//@media (max-width: 900px)
+    }//@media (max-width: 900px)
+
+    @media (min-width: 901px) {
+        .unfeatured, .featured {
+            float: left;
+        }
+
+        .post-published-by {
+            float: left;
+            margin-top: 7px;
+            margin-left: 3px;
+        }
+    }
+}//.post-preview-header
+
+
+//
+// No Posts
+// --------------------------------------------------
+
+.no-posts-box {
+    position: relative;
+    height: 90%;
+    margin: 0px auto;
+    padding: 0px;
+    display: table;
+    z-index: 600;
+
+    @media (max-width: 900px) {
+        position: fixed;
+        top: 45%;
+        left: 50%;
+    }
+
+    .no-posts {
+        vertical-align: middle;
+        display: table-cell;
+        text-align: center;
+
+        @media (max-width: 900px) {
+            display: block;
+            position: relative;
+            left: -50%;
+        }
+
+        h3 {
+            color: $brown;
+            font-weight: 200;
+            font-size: 2em;
+        }
+    }//.no-posts
+}//.no-posts-box
+
+
+//
+// Keyboard Focus Animations
+// --------------------------------------------------
+
+// The inset shadow to show which area has keyboard focus
+.content-list.keyboard-focused {
+    // This has to be a pseudo element to sit over the top of everything else in the content list
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 500;
+        pointer-events: none;
+        animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+    }
+}
+
+.content-preview.keyboard-focused {
+    animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+}

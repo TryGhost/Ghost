@@ -1,0 +1,11 @@
+<section class="reset-box js-reset-box fade-in">
+    <form id="reset" class="reset-form" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
+        <div class="password-wrap">
+            {{input value=newPassword class="password" type="password" placeholder="Password" name="newpassword" autofocus="autofocus" }}
+        </div>
+        <div class="password-wrap">
+            {{input value=ne2Password class="password" type="password" placeholder="Confirm Password" name="ne2password" }}
+        </div>
+        <button class="btn btn-blue" type="submit" disabled={{submitting}}>Reset Password</button>
+    </form>
+</section>

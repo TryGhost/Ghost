@@ -1,0 +1,45 @@
+{
+  "name": "ghost",
+  "version": "0.0.0",
+  "description": "Small description for ghost goes here",
+  "private": true,
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "ember server",
+    "build": "ember build",
+    "test": "ember test"
+  },
+  "repository": "",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "broccoli-asset-rev": "^2.0.2",
+    "ember-cli": "0.2.2",
+    "ember-cli-app-version": "0.3.3",
+    "ember-cli-autoprefixer": "0.3.0",
+    "ember-cli-babel": "^4.1.0",
+    "ember-cli-content-security-policy": "0.4.0",
+    "ember-cli-dependency-checker": "0.0.8",
+    "ember-cli-htmlbars": "^0.7.4",
+    "ember-cli-ic-ajax": "0.1.1",
+    "ember-cli-inject-live-reload": "^1.3.0",
+    "ember-cli-mocha": "^0.5.0",
+    "ember-cli-sass": "3.1.0",
+    "ember-cli-uglify": "1.0.1",
+    "ember-data": "1.0.0-beta.16.1",
+    "ember-export-application-global": "^1.0.2",
+    "fs-extra": "0.16.3",
+    "glob": "^4.0.5"
+  },
+  "ember-addon": {
+    "paths": [
+      "lib/asset-delivery"
+    ]
+  }
+}

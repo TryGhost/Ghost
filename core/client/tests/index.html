@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Ghost Tests</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {{content-for 'head'}}
+    {{content-for 'test-head'}}
+
+    <link rel="stylesheet" href="assets/vendor.css">
+    <link rel="stylesheet" href="assets/ghost.css">
+    <link rel="stylesheet" href="assets/test-support.css">
+
+    {{content-for 'head-footer'}}
+    {{content-for 'test-head-footer'}}
+  </head>
+  <body>
+
+    {{content-for 'body'}}
+    {{content-for 'test-body'}}
+    <script src="assets/vendor.js"></script>
+    <script src="assets/test-support.js"></script>
+    <script src="assets/ghost.js"></script>
+    <script src="testem.js"></script>
+    <script src="assets/test-loader.js"></script>
+
+    {{content-for 'body-footer'}}
+    {{content-for 'test-body-footer'}}
+  </body>
+</html>

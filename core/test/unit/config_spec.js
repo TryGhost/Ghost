@@ -82,6 +82,7 @@ describe('Config', function () {
                 'subdir',
                 'config',
                 'configExample',
+                'storage',
                 'contentPath',
                 'corePath',
                 'themePath',
@@ -94,7 +95,7 @@ describe('Config', function () {
                 'lang',
                 'availableThemes',
                 'availableApps',
-                'builtScriptPath'
+                'clientAssets'
             );
         });
 
@@ -144,6 +145,34 @@ describe('Config', function () {
             config.paths.should.have.property('themePath', contentPath + 'themes');
             config.paths.should.have.property('appPath', contentPath + 'apps');
             config.paths.should.have.property('imagesPath', contentPath + 'images');
+        });
+    });
+
+    describe('Storage', function () {
+        afterEach(function () {
+            resetConfig();
+        });
+
+        it('should default to local-file-store', function () {
+            var storagePath = path.join(config.paths.corePath, '/server/storage/', 'local-file-store');
+
+            config.paths.should.have.property('storage', storagePath);
+            config.storage.should.have.property('active', 'local-file-store');
+        });
+
+        it('should allow setting a custom active storage', function () {
+            var storagePath = path.join(config.paths.contentPath, 'storage', 's3');
+
+            config.set({
+                storage: {
+                    active: 's3',
+                    s3: {}
+                }
+            });
+
+            config.paths.should.have.property('storage', storagePath);
+            config.storage.should.have.property('active', 's3');
+            config.storage.should.have.property('s3', {});
         });
     });
 
@@ -224,6 +253,26 @@ describe('Config', function () {
             config.set({url: 'http://my-ghost-blog.com/blog'});
             config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
             config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
+        });
+
+        it('should return a url for a nav item when asked for it', function () {
+            var testContext = 'nav',
+                testData;
+
+            config.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
+
+            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
+            config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
+
+            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
+            config.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
+
+            testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
+            config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
+
+            config.set({url: 'http://my-ghost-blog.com/blog'});
+            testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
+            config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
         });
     });
 
@@ -328,7 +377,7 @@ describe('Config', function () {
 
         it('creates the config file if one does not exist', function (done) {
                 // trick bootstrap into thinking that the config file doesn't exist yet
-            var existsStub = sandbox.stub(fs, 'exists', function (file, cb) { return cb(false); }),
+            var existsStub = sandbox.stub(fs, 'stat', function (file, cb) { return cb(true); }),
                 // ensure that the file creation is a stub, the tests shouldn't really create a file
                 writeFileStub = sandbox.stub(config, 'writeFile').returns(Promise.resolve()),
                 validateStub = sandbox.stub(config, 'validate').returns(Promise.resolve());

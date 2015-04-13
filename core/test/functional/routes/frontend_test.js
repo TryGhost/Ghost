@@ -217,7 +217,7 @@ describe('Frontend Routing', function () {
             });
 
             it('should retrieve built assets', function (done) {
-                request.get('/ghost/scripts/vendor-dev.js')
+                request.get('/ghost/vendor.js')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(200)
                     .end(doEnd(done));
@@ -376,7 +376,7 @@ describe('Frontend Routing', function () {
 
         it('should respond with xml', function (done) {
             request.get('/rss/')
-                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
+                .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(function (err, res) {
@@ -394,8 +394,9 @@ describe('Frontend Routing', function () {
                         siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
                         siteUrl = '<link>http://127.0.0.1:2369/</link>',
                         postTitle = '<![CDATA[Welcome to Ghost]]>',
-                        postStart = '<description><![CDATA[<p>You\'re live!',
-                        postEnd = 'you think :)</p>]]></description>',
+                        descStart = '<description><![CDATA[<p>You\'re live!',
+                        postStart = '<content:encoded><![CDATA[<p>You\'re live!',
+                        postEnd = 'you think :)</p>]]></content:encoded>',
                         postLink = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
                         postCreator = '<dc:creator><![CDATA[Joe Bloggs]]>',
                         author = '<author>';
@@ -405,6 +406,7 @@ describe('Frontend Routing', function () {
                     content.indexOf(siteDescription).should.be.above(0);
                     content.indexOf(siteUrl).should.be.above(0);
                     content.indexOf(postTitle).should.be.above(0);
+                    content.indexOf(descStart).should.be.above(0);
                     content.indexOf(postStart).should.be.above(0);
                     content.indexOf(postEnd).should.be.above(0);
                     content.indexOf(postLink).should.be.above(0);
@@ -434,11 +436,49 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        describe('RSS pages', function () {
+        describe('More RSS', function () {
             before(function (done) {
                 testUtils.fixtures.insertPosts().then(function () {
-                    return testUtils.fixtures.insertMorePosts(11);
-                }).then(function () {
+                    done();
+                }).catch(done);
+            });
+
+            it('should use meta_description and image where available', function (done) {
+                var post1End = 'you think :)</p>]]></content:encoded>',
+                    post3Title = '<title><![CDATA[Short and Sweet]]>',
+                    post3DescStart = '<description><![CDATA[test stuff',
+                    post3ContentStart = '<content:encoded><![CDATA[<h2 id=\"testing\">testing</h2>\n\n' +
+                        '<img src=\"http:\/\/placekitten.com\/500\/200\"',
+                    post3Image = '<media:content url=\"http:\/\/placekitten.com\/500\/200\" medium=\"image\"\/>';
+
+                request.get('/rss/')
+                    .expect('Content-Type', 'text/xml; charset=utf-8')
+                    .expect('Cache-Control', testUtils.cacheRules['public'])
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var content = res.text,
+                            endIndex = content.indexOf(post1End);
+
+                        content.indexOf('<rss').should.be.above(0);
+                        content.indexOf(post1End).should.be.above(0);
+                        content.indexOf(post3Title).should.be.above(endIndex);
+                        content.indexOf(post3DescStart).should.be.above(endIndex);
+                        content.indexOf(post3ContentStart).should.be.above(endIndex);
+                        content.indexOf(post3Image).should.be.above(endIndex);
+                        content.indexOf('</rss>').should.be.above(0);
+
+                        done();
+                    });
+            });
+        });
+
+        describe('RSS pages', function () {
+            before(function (done) {
+                testUtils.fixtures.insertMorePosts(11).then(function () {
                     done();
                 }).catch(done);
             });
@@ -899,7 +939,7 @@ describe('Frontend Routing', function () {
 
         it('should serve RSS with date permalink', function (done) {
             request.get('/rss/')
-                .expect('Content-Type', 'application/rss+xml; charset=utf-8')
+                .expect('Content-Type', 'text/xml; charset=utf-8')
                 .expect('Cache-Control', testUtils.cacheRules['public'])
                 .expect(200)
                 .end(function (err, res) {

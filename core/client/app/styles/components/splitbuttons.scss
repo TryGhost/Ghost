@@ -1,0 +1,257 @@
+// ------------------------------------------------------------
+// Splitbuttons
+//
+// Styles for splitbuttons (button + toggle for a popover)
+//
+// * Default
+// * Base Placeholder Styles
+// * Variation Classes
+// ------------------------------------------------------------
+
+
+//
+// Default
+// --------------------------------------------------
+
+.splitbtn {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+
+    .btn {
+        position: relative;
+        float: left;
+
+        // Prevent double border between buttons
+        + .btn {
+            margin-left: -1px;
+        }
+
+        // Make sure the hovered element is always on
+        // top so overlap from .btn + btn. invisible
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+            z-index: 2;
+        }
+    }
+
+    // Flatten out the right side
+    .btn:first-child {
+        margin-left: 0;
+
+        &:not(:last-child):not(.dropdown-toggle) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    }
+
+    // Flatten out the left side
+    .dropdown-toggle {
+        padding-left: 12px;
+        padding-right: 12px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        &.btn-sm {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        &.btn-lg {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        // This is the additional dropdown arrow, to the right of the button.
+        .options {
+            text-align: center;
+            color: #fff;
+
+            @include icon($i-chevron-down, 9px) {
+                top: 0;
+                display: inline-block;
+                position: relative;
+            }
+        }
+
+        &.up .options:before {
+            transform: rotate(-360deg);
+            transition: transform 0.6s ease, top 0.6s ease;
+        }
+
+        &.up:hover .options:before,
+        &.up.open .options:before {
+            top: -1px;
+            transform: rotate(540deg);
+            transition: transform 0.3s ease, top 0.3s ease;
+        }
+
+    }
+
+}//.splitbtn
+
+
+//
+// Base Placeholder Styles
+// --------------------------------------------------
+
+%splitbtn {
+    display: inline-block;
+    position: relative;
+    font-size: 0; // hack to stop space after button
+    white-space: nowrap;
+
+    button {
+        font-size: 11px; // hack to restore font size
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    // This is the additional dropdown arrow, to the right of the button.
+    .options {
+        display: inline-block;
+        position:relative;
+        width: 35px;
+        height: 35px;
+        margin-left: -1px;
+        vertical-align: top;
+        text-align: center;
+        color: #fff;
+        background: #e5e5e5;
+        border-radius: 0 2px 2px 0;
+        border-left: 0;
+        box-shadow:
+            rgba(0,0,0,0.02) 0 1px 0 inset,
+            rgba(0,0,0,0.02) -1px 0 0 inset,
+            rgba(0,0,0,0.02) 0 -1px 0 inset;
+        transition: background-color 0.3s linear;
+
+        @include icon($i-chevron-down, 9px) {
+            position: absolute;
+            top: 50%;
+            right: 50%;
+            margin-top: -3px;
+            margin-right: -5px;
+            transition: margin-top 0.3s ease;
+            transition-property: transform;
+            transition-duration: 0.3;
+            transition-timing-function: ease;
+        };
+
+        // Keep the arrow spun when the associated menu is open
+        &.active:before {
+            transform: rotate(360deg);
+        }
+
+        &.up.active:before {
+            margin-top:-4px;
+            transform: rotate(540deg);
+        }
+
+        // Spin the arrow on hover and while menu is open
+        &:hover,
+        &:focus {
+            will-change: box-shadow, background;
+            box-shadow: none;
+            background: #f8f8f8;
+            @include icon($i-chevron-down) {
+                will-change: transform;
+                transform: rotate(360deg);
+            };
+        }
+
+        // If it has a class of "up" spin it an extra 180degrees to point up
+        &.up:hover,
+        &.up:focus {
+            @include icon($i-chevron-down) {
+                margin-top:-4px;
+                transform: rotate(540deg);
+                transition-property: transform;
+                transition-duration: 0.6;
+                transition-timing-function: ease;
+            };
+        }
+    }//.options
+}//%splitbtn
+
+
+//
+// Variation Classes
+// --------------------------------------------------
+
+// The default splitbutton
+.splitbutton {
+    @extend %splitbtn;
+
+    .options {
+        color:#777;
+
+        &:hover,
+        &:focus {
+            box-shadow:
+                rgba(0,0,0,0.07) 0 1px 0 inset,
+                rgba(0,0,0,0.07) -1px 0 0 inset,
+                rgba(0,0,0,0.07) 0 -1px 0 inset;
+        }
+    }
+}
+
+// For save/next/continue/confirm actions
+.splitbutton-save {
+    @extend %splitbtn;
+
+    .options {
+        background: darken($blue, 5%);
+
+        &:hover,
+        &.active,
+        &:focus {
+            background: darken($blue, 10%);
+        }
+    }
+}
+
+// For actions which add something
+.splitbutton-add {
+    @extend %splitbtn;
+
+    .options {
+        background: darken($green, 6%);
+
+        &:hover,
+        &:focus {
+            background: darken($green, 8%);
+        }
+    }
+}
+
+// For actions which delete something
+.splitbutton-delete {
+    @extend %splitbtn;
+
+    .options {
+        background: darken($red, 6%);
+
+        &:hover,
+        &:focus {
+            background: darken($red, 10%);
+        }
+    }
+}
+
+// Alternative style with more visual attention,
+// but no extra semantic meaning
+.splitbutton-alt {
+    @extend %splitbtn;
+
+    .options {
+        background: lighten($darkgrey, 4%);
+
+        &:hover,
+        &:focus {
+            background: $darkgrey;
+        }
+    }
+}
