@@ -55,7 +55,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/page/2/', context: ['paged', 'index']},
+                {safeVersion: '0.3', relativeUrl: '/page/2/', context: ['paged', 'index']},
                 {data: {root: {context: ['paged', 'index']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -71,7 +71,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data on first index page', function (done) {
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/', context: ['home', 'index']},
+                {safeVersion: '0.3', relativeUrl: '/', context: ['home', 'index']},
                 {data: {root: {context: ['home', 'index']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -110,7 +110,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
+                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -151,7 +151,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
+                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -191,7 +191,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
+                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/', tag: tag, context: ['tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                     should.exist(rendered);
@@ -212,7 +212,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/tag/tagtitle/page/2/', tag: tag, context: ['paged', 'tag']},
+                {safeVersion: '0.3', relativeUrl: '/tag/tagtitle/page/2/', tag: tag, context: ['paged', 'tag']},
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -237,7 +237,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/author/AuthorName/', author: author, context: ['author']},
+                {safeVersion: '0.3', relativeUrl: '/author/AuthorName/', author: author, context: ['author']},
                 {data: {root: {context: ['author']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -279,7 +279,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/author/AuthorName/page/2/', author: author, context: ['paged', 'author']},
+                {safeVersion: '0.3', relativeUrl: '/author/AuthorName/page/2/', author: author, context: ['paged', 'author']},
                 {data: {root: {context: ['paged', 'author']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -293,9 +293,9 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
-        it('returns meta tag string even if version is invalid', function (done) {
+        it('returns meta tag string even if safeVersion is invalid', function (done) {
             helpers.ghost_head.call(
-                {version: '0.9', context: []},
+                {safeVersion: '0.9', context: []},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -326,7 +326,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {relativeUrl: '/post/', version: '0.3.0', context: ['post'], post: post},
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
                 var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
@@ -398,7 +398,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {relativeUrl: '/post/', version: '0.3.0', context: ['post'], post: post},
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
                 var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
@@ -469,7 +469,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {relativeUrl: '/post/', version: '0.3.0', context: ['post'], post: post},
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}).then(function (rendered) {
                 var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
                     re2 = new RegExp('<meta property="article:modified_time" content="' + post.updated_at),
@@ -537,7 +537,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {relativeUrl: '/post/', version: '0.3.0', context: ['post'], post: post},
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
                 var re1 = new RegExp('<meta property="article:published_time" content="' + post.published_at),
@@ -589,7 +589,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns canonical URL', function (done) {
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/about/', context: ['page']},
+                {safeVersion: '0.3', relativeUrl: '/about/', context: ['page']},
                 {data: {root: {context: ['page']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -605,7 +605,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns next & prev URL correctly for middle page', function (done) {
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/page/3/', context: ['paged', 'index'], pagination: {next: '4', prev: '2'}},
+                {safeVersion: '0.3', relativeUrl: '/page/3/', context: ['paged', 'index'], pagination: {next: '4', prev: '2'}},
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 4, page: 3, next: 4, prev: 2}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -623,7 +623,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns next & prev URL correctly for second page', function (done) {
             helpers.ghost_head.call(
-                {version: '0.3.0', relativeUrl: '/page/2/', context: ['paged', 'index'], pagination: {next: '3', prev: '1'}},
+                {safeVersion: '0.3', relativeUrl: '/page/2/', context: ['paged', 'index'], pagination: {next: '3', prev: '1'}},
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 3, page: 2, next: 3, prev: 1}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -657,7 +657,7 @@ describe('{{ghost_head}} helper', function () {
 
             it('returns correct rss url with subdirectory', function (done) {
                 helpers.ghost_head.call(
-                    {version: '0.3.0', context: ['paged', 'index']},
+                    {safeVersion: '0.3', context: ['paged', 'index']},
                     {data: {root: {context: []}}}
                 ).then(function (rendered) {
                     should.exist(rendered);
@@ -717,7 +717,7 @@ describe('{{ghost_head}} helper', function () {
             };
 
             helpers.ghost_head.call(
-                {relativeUrl: '/post/', version: '0.3.0', context: ['post'], post: post},
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
@@ -758,7 +758,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns meta tag plus injected code', function (done) {
             helpers.ghost_head.call(
-                {version: '0.3.0', context: ['paged', 'index'], post: false},
+                {safeVersion: '0.3', context: ['paged', 'index'], post: false},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
