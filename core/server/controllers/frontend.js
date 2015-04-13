@@ -5,21 +5,18 @@
 /*global require, module */
 
 var moment      = require('moment'),
-    RSS         = require('rss'),
+    rss         = require('../data/xml/rss'),
     _           = require('lodash'),
-    url         = require('url'),
     Promise     = require('bluebird'),
     api         = require('../api'),
     config      = require('../config'),
     filters     = require('../filters'),
     template    = require('../helpers/template'),
     errors      = require('../errors'),
-    cheerio     = require('cheerio'),
-    downsize    = require('downsize'),
     routeMatch  = require('path-match')(),
 
     frontendControllers,
-    staticPostPermalink,
+    staticPostPermalink;
 
 // Cache static post permalink regex
 staticPostPermalink = routeMatch('/:slug/:edit?');
@@ -426,190 +423,7 @@ frontendControllers = {
             return handleError(next)(err);
         });
     },
-    rss: function (req, res, next) {
-        function isPaginated() {
-            return req.route.path.indexOf(':page') !== -1;
-        }
-
-        function isTag() {
-            return req.route.path.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
-        }
-
-        function isAuthor() {
-            return req.route.path.indexOf('/' + config.routeKeywords.author + '/') !== -1;
-        }
-
-        // Initialize RSS
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            slugParam = req.params.slug,
-            baseUrl = config.paths.subdir;
-
-        if (isTag()) {
-            baseUrl += '/' + config.routeKeywords.tag + '/' + slugParam + '/rss/';
-        } else if (isAuthor()) {
-            baseUrl += '/' + config.routeKeywords.author + '/' + slugParam + '/rss/';
-        } else {
-            baseUrl += '/rss/';
-        }
-
-        // No negative pages, or page 1
-        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && isPaginated())) {
-            return res.redirect(baseUrl);
-        }
-
-        return Promise.all([
-            api.settings.read('title'),
-            api.settings.read('description'),
-            api.settings.read('permalinks')
-        ]).then(function (result) {
-            var options = {};
-
-            if (pageParam) { options.page = pageParam; }
-            if (isTag()) { options.tag = slugParam; }
-            if (isAuthor()) { options.author = slugParam; }
-
-            options.include = 'author,tags,fields';
-
-            return api.posts.browse(options).then(function (page) {
-                var title = result[0].settings[0].value,
-                    description = result[1].settings[0].value,
-                    permalinks = result[2].settings[0],
-                    majorMinor = /^(\d+\.)?(\d+)/,
-                    trimmedVersion = res.locals.version,
-                    siteUrl = config.urlFor('home', {secure: req.secure}, true),
-                    feedUrl = config.urlFor('rss', {secure: req.secure}, true),
-                    maxPage = page.meta.pagination.pages,
-                    feed;
-
-                trimmedVersion = trimmedVersion ? trimmedVersion.match(majorMinor)[0] : '?';
-
-                if (isTag()) {
-                    if (page.meta.filters.tags) {
-                        title = page.meta.filters.tags[0].name + ' - ' + title;
-                        feedUrl = siteUrl + config.routeKeywords.tag + '/' + page.meta.filters.tags[0].slug + '/rss/';
-                    }
-                }
-
-                if (isAuthor()) {
-                    if (page.meta.filters.author) {
-                        title = page.meta.filters.author.name + ' - ' + title;
-                        feedUrl = siteUrl + config.routeKeywords.author + '/' + page.meta.filters.author.slug + '/rss/';
-                    }
-                }
-
-                feed = new RSS({
-                    title: title,
-                    description: description,
-                    generator: 'Ghost ' + trimmedVersion,
-                    feed_url: feedUrl,
-                    site_url: siteUrl,
-                    ttl: '60',
-                    custom_namespaces: {
-                        content: 'http://purl.org/rss/1.0/modules/content/',
-                        media: 'http://search.yahoo.com/mrss/'
-                    }
-                });
-
-                // If page is greater than number of pages we have, redirect to last page
-                if (pageParam > maxPage) {
-                    return res.redirect(baseUrl + maxPage + '/');
-                }
-
-                setReqCtx(req, page.posts);
-                setResponseContext(req, res);
-
-                filters.doFilter('prePostsRender', page.posts).then(function (posts) {
-                    posts.forEach(function (post) {
-                        var item = {
-                                title: post.title,
-                                guid: post.uuid,
-                                url: config.urlFor('post', {post: post, permalinks: permalinks}, true),
-                                date: post.published_at,
-                                categories: _.pluck(post.tags, 'name'),
-                                author: post.author ? post.author.name : null,
-                                custom_elements: []
-                            },
-                            htmlContent = cheerio.load(post.html, {decodeEntities: false}),
-                            image;
-
-                        // convert relative resource urls to absolute
-                        ['href', 'src'].forEach(function (attributeName) {
-                            htmlContent('[' + attributeName + ']').each(function (ix, el) {
-                                var baseUrl,
-                                    attributeValue,
-                                    parsed;
-
-                                el = htmlContent(el);
-
-                                attributeValue = el.attr(attributeName);
-
-                                // if URL is absolute move on to the next element
-                                try {
-                                    parsed = url.parse(attributeValue);
-
-                                    if (parsed.protocol) {
-                                        return;
-                                    }
-                                } catch (e) {
-                                    return;
-                                }
-
-                                // compose an absolute URL
-
-                                // if the relative URL begins with a '/' use the blog URL (including sub-directory)
-                                // as the base URL, otherwise use the post's URL.
-                                baseUrl = attributeValue[0] === '/' ? siteUrl : item.url;
-
-                                // prevent double subdirectoreis
-                                if (attributeValue.indexOf(config.paths.subdir) === 0) {
-                                    attributeValue = attributeValue.replace(config.paths.subdir, '');
-                                }
-
-                                // prevent double slashes
-                                if (baseUrl.slice(-1) === '/' && attributeValue[0] === '/') {
-                                    attributeValue = attributeValue.substr(1);
-                                }
-
-                                attributeValue = baseUrl + attributeValue;
-                                el.attr(attributeName, attributeValue);
-                            });
-                        });
-
-                        item.description = post.meta_description || downsize(htmlContent.html(), {words: 50});
-
-                        if (post.image) {
-                            image = config.urlFor('image', {image: post.image}, true);
-
-                            // Add a media content tag
-                            item.custom_elements.push({
-                                'media:content': {
-                                    _attr: {
-                                        url: image,
-                                        medium: 'image'
-                                    }
-                                }
-                            });
-
-                            // Also add the image to the content, because not all readers support media:content
-                            htmlContent('p').first().before('<img src="' + image + '" />');
-                            htmlContent('img').attr('alt', post.title);
-                        }
-
-                        item.custom_elements.push({
-                            'content:encoded': {
-                                _cdata: htmlContent.html()
-                            }
-                        });
-
-                        feed.item(item);
-                    });
-                }).then(function () {
-                    res.set('Content-Type', 'text/xml; charset=UTF-8');
-                    res.send(feed.xml());
-                });
-            });
-        }).catch(handleError(next));
-    }
+    rss: rss
 };
 
 module.exports = frontendControllers;

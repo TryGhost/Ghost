@@ -42,6 +42,11 @@ function createUrl(urlPath, absolute, secure) {
         output += ghostConfig.paths.subdir;
     }
 
+    // Remove double subdirectory
+    if (urlPath.indexOf(ghostConfig.paths.subdir) === 0) {
+        urlPath = urlPath.replace(ghostConfig.paths.subdir, '');
+    }
+
     // append the path, always starts and ends with a slash
     output += urlPath;
 
