@@ -7,7 +7,6 @@ var Setting = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
 
     title: DS.attr('string'),
     description: DS.attr('string'),
-    tongji: DS.attr('string'),
     email: DS.attr('string'),
     logo: DS.attr('string'),
     cover: DS.attr('string'),
