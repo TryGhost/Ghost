@@ -42,7 +42,6 @@
         {{#gh-dropdown tagName="div" classNames="dropdown" name="user-menu" closeOnClick="true"}}
             <ul class="dropdown-menu dropdown-triangle-top-right js-user-menu-dropdown-menu" role="menu">
                  <li role="presentation">{{#link-to "settings.users.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-user"></i> 我的资料{{/link-to}}</li>
-                <li role="presentation"><a class="dropdown-item user-menu-support" role="menuitem" tabindex="-1" href="https://diancloud.com/?c=portal" target="_blank"><i class="icon-support"></i> 技术支持</a></li>
                 <li class="divider"></li>
                 <li role="presentation">{{#link-to "signout" classNames="dropdown-item user-menu-signout" role="menuitem" tabindex="-1"}}<i class="icon-power"></i> 退出登录{{/link-to}}</li>
             </ul>
@@ -57,14 +56,19 @@
         {{/gh-dropdown-button}}
         {{#gh-dropdown tagName="div" classNames="dropdown" name="help-menu" closeOnClick="true"}}
             <ul class="dropdown-menu dropdown-triangle-top" role="menu">
-                <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-support"></i> Support Center</a></li>
-                <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
+                
+                <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="https://diancloud.com" target="_blank"><i class="icon-link"></i> 点云DianCloud </a></li>
+
+                <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://diancloud.com/apps"> <i class="icon-weather-cloudy"></i> 云应用商店 </a></li>
+
                 <li class="divider"></li>
-                <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank"><i class="icon-book"></i> How to Use Ghost</a></li>
-                <li role="presentation"><a class="dropdown-item help-menu-markdown" role="menuitem" tabindex="-1" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i> Markdown Help</a></li>
-                <li class="divider"></li>
-                <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank"><i class="icon-list"></i> Wishlist</a></li>
+                
+                <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://ghost.diancloud.com/doc/zh/usage/" target="_blank"><i class="icon-book"></i> 使用手册 </a></li>
+
+                <li role="presentation"><a href="http://shang.qq.com/wpa/qunwpa?idkey=eb5bc8f9f7444caa1bbdd77c4422b71f6cbda70c21a43f5253653d930c33ea7e" target="_blank" > <i class="icon-users"></i> QQ群 335978388 </a> </li>
+
             </ul>
+
         {{/gh-dropdown}}
     </div>{{! .help-menu }}
 

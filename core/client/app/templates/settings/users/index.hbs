@@ -67,10 +67,11 @@
                 <aside class="user-list-item-aside">
                     {{#unless user.model.isAuthor}}
                         {{#each role in user.model.roles}}
-                            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
+                            <span class="role-label {{role.lowerCaseName}}">{{role.description}}</span>
                         {{/each}}
                     {{/unless}}
                 </aside>
+                
             {{/link-to}}
         {{/each}}
 

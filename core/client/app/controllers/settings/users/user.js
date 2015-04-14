@@ -35,7 +35,6 @@ var SettingsUserController = Ember.Controller.extend({
 
     last_login: Ember.computed('user.last_login', function () {
         var lastLogin = this.get('user.last_login');
-
         return lastLogin ? lastLogin.fromNow() : '(Never)';
     }),
 

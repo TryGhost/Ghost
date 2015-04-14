@@ -21,10 +21,6 @@
             "defaultValue": "又一个使用点云一键安装的Ghost博客。"
         },
 
-        "tongji": {
-            "defaultValue": ""
-        },
-        
         "email": {
             "defaultValue": "ghost@diancloud.com",
             "validations": {
