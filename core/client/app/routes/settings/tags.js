@@ -21,7 +21,7 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
     titleToken: 'Tags',
 
     beforeModel: function () {
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor());
     },
 

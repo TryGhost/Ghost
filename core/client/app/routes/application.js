@@ -76,7 +76,7 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
                 return;
             }
 
-            this.store.find('user', 'me').then(function (user) {
+            this.get('session.user').then(function (user) {
                 self.send('signedIn', user);
                 var attemptedTransition = self.get('session').get('attemptedTransition');
                 if (attemptedTransition) {
@@ -138,10 +138,14 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
             var self = this;
 
             if (this.session.isAuthenticated) {
-                this.store.findAll('notification').then(function (serverNotifications) {
-                    serverNotifications.forEach(function (notification) {
-                        self.notifications.handleNotification(notification, isDelayed);
-                    });
+                this.get('session.user').then(function (user) {
+                    if (!user.get('isAuthor') && !user.get('isEditor')) {
+                        self.store.findAll('notification').then(function (serverNotifications) {
+                            serverNotifications.forEach(function (notification) {
+                                self.notifications.handleNotification(notification, isDelayed);
+                            });
+                        });
+                    }
                 });
             }
         },
