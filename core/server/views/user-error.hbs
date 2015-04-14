@@ -15,7 +15,7 @@
 
     <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
     <meta http-equiv="cleartype" content="on">
-    <link rel="stylesheet" type='text/css' href='//fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
+    <link rel="stylesheet" type='text/css' href='http://fonts.useso.com/css?family=Open+Sans:400,300,700'>
     <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
   </head>
   <body class="{{bodyClass}}">
@@ -32,10 +32,11 @@
             <section class="error-message">
               <h1 class="error-code">{{code}}</h1>
               <h2 class="error-description">{{message}}</h2>
-              <a class="error-link" href="{{@blog.url}}">Go to the front page →</a>
+              <a class="error-link" href="{{@blog.url}}">返回首页 →</a>
             </section>
           </section>
         </section>
+        
         {{#if stack}}
           <section class="error-stack">
             <h3>Stack Trace</h3>

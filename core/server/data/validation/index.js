@@ -107,6 +107,7 @@ validateSettings = function (defaultSettings, model) {
 };
 
 validateActiveTheme = function (themeName) {
+
     // If Ghost is running and its availableThemes collection exists
     // give it priority.
     if (config.paths.availableThemes && Object.keys(config.paths.availableThemes).length > 0) {

@@ -93,13 +93,15 @@ function configHbsForContext(req, res, next) {
         themeData.url = config.urlSSL.replace(/\/$/, '');
     }
 
-    hbs.updateTemplateOptions({data: {blog: themeData}});
-    blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
+    hbs.updateTemplateOptions({data: {blog: themeData}}); 
+
+    // Hacked By Weiping 模板不存在的时候可以进入后台
+    var theActiveTheme = blogApp.get('activeTheme') || '/';
+    blogApp.set('views', path.join(config.paths.themePath, theActiveTheme ));
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose 'url' vs 'urlSSL'
     res.locals.secure = req.secure;
-
     next();
 }
 
@@ -109,26 +111,35 @@ function configHbsForContext(req, res, next) {
 // is not yet activated.
 function updateActiveTheme(req, res, next) {
     api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
+        
         var activeTheme = response.settings[0];
+    
         // Check if the theme changed
         if (activeTheme.value !== blogApp.get('activeTheme')) {
             // Change theme
             if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
-                    return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
+                    return errors.throwError('找不到主题 [' + activeTheme.value + '] 相关文件！请登录后台重新选择主题。');
+
+                } else { // Hacked By Weiping 模板不存在的时候可以进入后台
+                   blogApp.engine('hbs', hbs.express3());
                 }
+                
             } else {
                 activateTheme(activeTheme.value);
             }
         }
+        
         next();
+
     }).catch(function (err) {
         // Trying to start up without the active theme present, setup a simple hbs instance
         // and render an error page straight away.
         blogApp.engine('hbs', hbs.express3());
         next(err);
     });
+
 }
 
 // Redirect to setup if no user exists
