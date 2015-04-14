@@ -65,10 +65,10 @@
         "sqlite3": "3.0.5",
         "unidecode": "0.1.3",
         "validator": "3.28.0",
+        "qiniu":"6.1.6",
         "xml": "1.0.0"
     },
 
-    
     "optionalDependencies": {
         "mysql": "2.1.1",
         "pg": "4.1.1"

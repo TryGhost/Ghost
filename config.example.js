@@ -27,6 +27,29 @@ config = {
             port: '2368'
         },
 
+        // 图片存储引擎配置
+        storage: {
+            
+            active: 'local-file-store', // 选择存储引擎 本地存储 : local-file-store / 七牛云存储: qiniu-store
+
+            // 本地存储 ( 默认选项 )
+            'local-file-store': {},  
+
+            // 七牛云存储
+            // AK, SK 获取地址  https://portal.qiniu.com/setting/key  
+            // domain 获取地址 https://portal.qiniu.com/bucket/setting/domain?bucket=<空间名称>
+            // 启用前请先将 content/images 目录上传至七牛空间
+            // 
+            'qiniu-store': {
+                AK: '填写七牛云存储 AccessKey ',  // AccessKey
+                SK: '填写七牛云存储 SecretKey',   // SecretKey
+                bucket: '填写七牛云存储空间名称',              // 七牛云存储的空间名称
+                prefix: 'ghost',             // 文件前缀 ( 目录 )
+                domain: '填写空间域名',   // 访问域名
+                protocol: 'http'   // 协议 http 或 https
+            },
+        }, 
+
         codeInjectionUI: true,
     },
 
@@ -50,6 +73,31 @@ config = {
         //      }
         //  },
         // ```
+
+
+        // 图片存储引擎配置
+        storage: {
+            
+            active: 'local-file-store', // 选择存储引擎 本地存储 : local-file-store / 七牛云存储: qiniu-store
+
+            // 本地存储 ( 默认选项 )
+            'local-file-store': {},  
+
+            // 七牛云存储
+            // AK, SK 获取地址  https://portal.qiniu.com/setting/key  
+            // domain 获取地址 https://portal.qiniu.com/bucket/setting/domain?bucket=<空间名称>
+            // 启用前请先将 content/images 目录上传至七牛空间
+            // 
+            'qiniu-store': {
+                AK: '填写七牛云存储 AccessKey ',  // AccessKey
+                SK: '填写七牛云存储 SecretKey',   // SecretKey
+                bucket: '填写七牛云存储空间名称',              // 七牛云存储的空间名称
+                prefix: 'ghost',             // 文件前缀 ( 目录 )
+                domain: '填写空间域名',   // 访问域名
+                protocol: 'http'   // 协议 http 或 https
+            },
+        }, 
+
 
         database: {
             client: 'sqlite3',
