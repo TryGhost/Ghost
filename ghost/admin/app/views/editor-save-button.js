@@ -9,7 +9,7 @@ var EditorSaveButtonView = Ember.View.extend({
         return this.get('controller.model.isPublished') !== this.get('controller.willPublish');
     }),
 
-    publishText: Ember.computed('controller.model.isPublished', 'controller.pageOrPost', function () {
+    publishText: Ember.computed('controller.model.isPublished', 'controller.postOrPage', function () {
         return this.get('controller.model.isPublished') ? 'Update ' + this.get('controller.postOrPage') : 'Publish Now';
     }),
 
@@ -21,7 +21,7 @@ var EditorSaveButtonView = Ember.View.extend({
         return 'Delete ' + this.get('controller.postOrPage');
     }),
 
-    saveText: Ember.computed('controller.willPublish', function () {
+    saveText: Ember.computed('controller.willPublish', 'publishText', 'draftText', function () {
         return this.get('controller.willPublish') ? this.get('publishText') : this.get('draftText');
     })
 });
