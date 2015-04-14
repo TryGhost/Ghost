@@ -390,9 +390,7 @@ describe('Post API', function () {
 
                             var publishedPost = res.body;
                             _.has(res.headers, 'x-cache-invalidate').should.equal(true);
-                            res.headers['x-cache-invalidate'].should.eql(
-                                '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /sitemap-*.xml, /' + publishedPost.posts[0].slug + '/'
-                            );
+                            res.headers['x-cache-invalidate'].should.eql('/*');
 
                             publishedPost.should.exist;
                             publishedPost.posts.should.exist;
@@ -419,7 +417,7 @@ describe('Post API', function () {
 
                                     var updatedPost = res.body;
                                     // Require cache invalidation when post was updated and published
-                                    _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                                    res.headers['x-cache-invalidate'].should.eql('/*');
 
                                     updatedPost.should.exist;
                                     updatedPost.posts.should.exist;
@@ -472,7 +470,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                            res.headers['x-cache-invalidate'].should.eql('/*');
                             putBody.should.exist;
                             putBody.posts[0].title.should.eql(changedTitle);
                             putBody.posts[0].author.should.eql(changedAuthor);
@@ -521,7 +519,7 @@ describe('Post API', function () {
                             }
 
                             // Updating a draft should not send x-cache-invalidate headers
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            should.not.exist(res.headers['x-cache-invalidate']);
                             done();
                         });
                 });
@@ -567,7 +565,7 @@ describe('Post API', function () {
                             }
 
                             // Unpublishing a post should send x-cache-invalidate headers
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                            res.headers['x-cache-invalidate'].should.eql('/*');
                             done();
                         });
                 });
@@ -601,7 +599,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                            res.headers['x-cache-invalidate'].should.eql('/*');
                             putBody.should.exist;
                             putBody.posts[0].page.should.be.ok;
 
@@ -640,7 +638,7 @@ describe('Post API', function () {
 
                             var putBody = res.body;
 
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                            res.headers['x-cache-invalidate'].should.eql('/*');
                             putBody.should.exist;
                             putBody.posts[0].page.should.not.be.ok;
                             testUtils.API.checkResponse(putBody.posts[0], 'post');
@@ -676,7 +674,7 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
                             jsonResponse.errors.should.exist;
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
@@ -772,7 +770,7 @@ describe('Post API', function () {
                             }
 
                             var putBody = res.body;
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                            res.headers['x-cache-invalidate'].should.eql('/*');
                             putBody.should.exist;
                             putBody.posts.should.exist;
                             putBody.posts[0].title.should.eql(changedValue);
@@ -812,7 +810,7 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(false);
+                            should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
                             jsonResponse.errors.should.exist;
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
@@ -839,9 +837,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.posts.should.exist;
-                    res.headers['x-cache-invalidate'].should.eql(
-                        '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /sitemap-*.xml, /' + jsonResponse.posts[0].slug + '/'
-                    );
+                    res.headers['x-cache-invalidate'].should.eql('/*');
                     testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                     jsonResponse.posts[0].id.should.eql(deletePostId);
                     done();
@@ -1021,7 +1017,7 @@ describe('Post API', function () {
                             }
                             var putBody = res.body;
 
-                            _.has(res.headers, 'x-cache-invalidate').should.equal(true);
+                            res.headers['x-cache-invalidate'].should.eql('/*');
                             putBody.should.exist;
                             putBody.posts[0].title.should.eql(changedValue);
 
