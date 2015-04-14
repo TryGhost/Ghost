@@ -1,0 +1,112 @@
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}返回{{/link-to}}
+    <h2 class="page-title">博客选项</h2>
+    <section class="page-actions">
+        <button type="button" class="btn btn-blue" {{action "save"}}>保存设置</button>
+    </section>
+</header>
+
+<section class="content settings-general">
+    <form id="settings-general" novalidate="novalidate">
+        <fieldset>
+
+            <div class="form-group">
+
+                <label for="blog-title">博客名称</label>
+                {{input id="blog-title" name="general[title]" type="text" value=model.title}}
+                <p>为你的博客取一个好听的名字</p>
+            </div>
+
+            <div class="form-group description-container">
+                <label for="blog-description">博客简介</label>
+                {{textarea id="blog-description" name="general[description]" value=model.description}}
+                <p>
+                    简单介绍一下你的博客
+                    {{gh-count-characters model.description}}
+                </p>
+
+            </div>
+        </fieldset>
+
+        <div class="form-group">
+            <label>博客 LOGO</label>
+            {{#if model.logo}}
+                <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "openModal" "upload" this "logo"}}>
+            {{else}}
+                <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>上传图片</button>
+            {{/if}}
+            <p>上传一个漂亮的LOGO，秀出你的品牌</p>
+        </div>
+
+        <div class="form-group">
+            <label>博客封面</label>
+            {{#if model.cover}}
+                <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "openModal" "upload" this "cover"}}>
+            {{else}}
+                <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>上传图片</button>
+            {{/if}}
+            <p>有封面的博客最酷，添加一个吧。</p>
+        </div>
+
+        <fieldset>
+            <div class="form-group">
+
+                <label for="email-address">邮箱</label>
+                {{input id="email-address" name="general[email-address]" type="email" value=model.email autocapitalize="off" autocorrect="off"}}
+                <p>用来接收Ghost博客发出的重要通知</p>
+            </div>
+
+            <div class="form-group">
+                <label for="postsPerPage">每页显示博文</label>
+                {{! `pattern` brings up numeric keypad allowing any number of digits}}
+
+                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
+                <p>设置每页显示博文数量。</p>
+            </div>
+
+            <div class="form-group for-checkbox">
+                <label for="permalinks">博文地址</label>
+                <label class="checkbox" for="permalinks">
+                    {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
+                    <span class="input-toggle-component"></span>
+                    <p>在博文地址中显示日期 ( 选中示例: http://yourblog.com/2014/10/11/hello/ )</p>
+                </label>
+            </div>
+
+            <div class="form-group for-select">
+                <label for="activeTheme">博客主题</label>
+                <span class="gh-select" data-select-text="{{selectedTheme.label}}" tabindex="0">
+                   {{view "select"
+                       id="activeTheme"
+                       name="general[activeTheme]"
+                       content=themes
+                       optionValuePath="content.name"
+                       optionLabelPath="content.label"
+                       value=model.activeTheme
+                       selection=selectedTheme}}
+               </span>
+                <p>选择一个你喜欢的博客主题</p>
+            </div>
+
+            <div class="form-group tongji-container">
+                <label for="blog-tongji">第三方统计代码</label>
+                {{textarea id="blog-tongji" name="general[tongji]" value=tongji}}
+                <p>
+                    添加第三方统计系统代码, 获得博客访问数据。 
+                    免费网站统计工具: 
+                    <a href="http://www.cnzz.com/" target="_blank"> CNZZ</a> ,  
+                    <a href="http://tongji.baidu.com/" target="_blank"> 百度统计</a> 
+                </p>
+            </div>
+
+
+            <div class="form-group tongji-container">
+                <label for="blog-tongji">站点地图</label>
+                <p>
+                    <a href="/sitemap.xml" target="_blank">查看站点地图</a> 
+                    将站点地图提交到搜索引擎，可以获得更好的收录效果。
+                </p>
+            </div>
+        </fieldset>
+    </form>
+</section>

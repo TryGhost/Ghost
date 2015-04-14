@@ -3,6 +3,7 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    path           = require('path'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -12,6 +13,7 @@ describe('{{pagination}} helper', function () {
     before(function (done) {
         utils.loadHelpers();
         hbs.express3({partialsDir: [utils.config.paths.helperTemplates]});
+
         hbs.cachePartials(function () {
             done();
         });
@@ -119,5 +121,33 @@ describe('{{pagination}} helper', function () {
             .should.throwError('Invalid value, check page, pages, limit and total are numbers');
         runErrorTest({pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: null}})
             .should.throwError('Invalid value, check page, pages, limit and total are numbers');
+    });
+});
+
+describe('{{pagination}} helper with custom template', function () {
+    before(function (done) {
+        utils.loadHelpers();
+        hbs.express3({partialsDir: [path.resolve(utils.config.paths.corePath, 'test/unit/server_helpers/test_tpl')]});
+
+        hbs.cachePartials(function () {
+            done();
+        });
+    });
+
+    it('can render single page with @blog.title', function () {
+        var rendered = helpers.pagination.call({
+            pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
+            tag: {slug: 'slug'}
+        }, {
+            data: {
+                blog: {
+                    title: 'Chaos is a ladder.'
+                }
+            }
+        });
+        should.exist(rendered);
+        // strip out carriage returns and compare.
+        rendered.string.should.match(/Page 1 of 1/);
+        rendered.string.should.containEql('Chaos is a ladder');
     });
 });

@@ -1,0 +1,81 @@
+{{#view "settings/users/users-list-view" class="users-list-wrapper js-users-list-view"}}
+    <header class="settings-view-header user-list-header">
+
+        {{#if session.user.isEditor}}
+            {{#link-to "content" class="btn btn-default btn-back"}}返回{{/link-to}}
+        {{else}}
+            {{#link-to "settings" class="btn btn-default btn-back"}}返回{{/link-to}}
+        {{/if}}
+
+        <h2 class="page-title">用户列表</h2>
+        <section class="page-actions">
+            <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >邀请用户</button>
+        </section>
+    </header>
+
+    <section class="content settings-users">
+
+    {{#if invitedUsers}}
+
+        <section class="user-list invited-users">
+
+            <h4 class="user-list-title">已邀请用户</h4>
+
+            {{#each user in invitedUsers itemController="settings/users/user"}}
+                <div class="user-list-item">
+                    <span class="user-list-item-icon icon-mail">ic</span>
+
+                    <div class="user-list-item-body">
+
+                        <span class="name">{{user.email}}</span><br>
+
+                            {{#if user.model.pending}}
+                                <span class="red">邀请发送失败 - 请重试</span>
+                            {{else}}
+                                <span class="description">邀请已发送: {{user.model.created_at}}</span>
+                            {{/if}}
+                    </div>
+                    <aside class="user-list-item-aside">
+                        <a class="user-list-action" href="#" {{action "revoke"}}>取消邀请</a>
+                        <a class="user-list-action" href="#" {{action "resend"}}>重发邮件</a>
+                    </aside>
+                </div>
+            {{/each}}
+
+        </section>
+
+    {{/if}}
+
+    <section class="user-list active-users">
+
+        <h4 class="user-list-title">已注册用户</h4>
+
+
+        {{#each user in activeUsers itemController="settings/users/user"}}
+            {{#link-to 'settings.users.user' user.model class="user-list-item" }}
+                <span class="user-list-item-figure" style={{user.userImageBackground}}>
+                    <span class="hidden">{{user.model.name}}的头像</span>
+                </span>
+
+                <div class="user-list-item-body">
+                    <span class="name">
+                        {{user.model.name}}
+                    </span>
+                    <br>
+                    <span class="description">{{user.last_login}}登录</span>
+                </div>
+                <aside class="user-list-item-aside">
+                    {{#unless user.model.isAuthor}}
+                        {{#each role in user.model.roles}}
+                            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
+                        {{/each}}
+                    {{/unless}}
+                </aside>
+            {{/link-to}}
+        {{/each}}
+
+    </section>
+
+    </section>{{! .content settings-users }}
+
+{{/view}}

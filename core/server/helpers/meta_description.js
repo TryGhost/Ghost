@@ -11,25 +11,26 @@ var _           = require('lodash'),
     filters     = require('../filters'),
     meta_description;
 
-meta_description = function () {
-    var description,
-        blog;
+meta_description = function (options) {
+    options = options || {};
 
-    if (_.isString(this.relativeUrl)) {
-        blog = config.theme;
-        if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
-            description = blog.description;
-        } else if (this.author) {
-            description = /\/page\//.test(this.relativeUrl) ? '' : this.author.bio;
-        } else if (this.tag) {
-            if (/\/page\//.test(this.relativeUrl)) {
-                description = '';
-            } else {
-                description = _.isEmpty(this.tag.meta_description) ? '' : this.tag.meta_description;
-            }
-        } else if (this.post) {
-            description = _.isEmpty(this.post.meta_description) ? '' : this.post.meta_description;
-        }
+    var context = options.data.root.context,
+        description;
+
+    if (this.meta_description) {
+        description = this.meta_description;  // E.g. in {{#foreach}}
+    } else if (_.contains(context, 'paged')) {
+        description = '';
+    } else if (_.contains(context, 'home')) {
+        description = config.theme.description;
+    } else if (_.contains(context, 'author') && this.author) {
+        description = this.author.bio;
+    } else if (_.contains(context, 'tag') && this.tag) {
+        description = this.tag.meta_description;
+    } else if (_.contains(context, 'post') && this.post) {
+        description = this.post.meta_description;
+    } else if (_.contains(context, 'page') && this.page) {
+        description = this.page.meta_description;
     }
 
     return filters.doFilter('meta_description', description).then(function (description) {

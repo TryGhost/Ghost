@@ -80,7 +80,16 @@ cacheInvalidationHeader = function (req, result) {
 
             // Don't set x-cache-invalidate header for drafts
             if (hasStatusChanged || wasDeleted || wasPublishedUpdated) {
-                cacheInvalidate = '/, /page/*, /rss/, /rss/*, /tag/*, /author/*, /sitemap-*.xml';
+                cacheInvalidate = [
+                    '/',
+                    '/' + config.routeKeywords.page + '/*',
+                    '/rss/',
+                    '/rss/*',
+                    '/' + config.routeKeywords.tag + '/*',
+                    '/' + config.routeKeywords.author + '/*',
+                    '/sitemap-*.xml'
+                ].join(', ');
+
                 if (id && post.slug && post.url) {
                     cacheInvalidate +=  ', ' + post.url;
                 }

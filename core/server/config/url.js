@@ -9,7 +9,7 @@ var moment            = require('moment'),
 // Simple utility function to allow
 // passing of the ghostConfig
 // object here to be used locally
-// to ensure clean depedency graph
+// to ensure clean dependency graph
 // (i.e. no circular dependencies).
 function setConfig(config) {
     ghostConfig = config;
@@ -40,6 +40,11 @@ function createUrl(urlPath, absolute, secure) {
         output += baseUrl.replace(/\/$/, '');
     } else {
         output += ghostConfig.paths.subdir;
+    }
+
+    // Remove double subdirectory
+    if (urlPath.indexOf(ghostConfig.paths.subdir) === 0) {
+        urlPath = urlPath.replace(ghostConfig.paths.subdir, '');
     }
 
     // append the path, always starts and ends with a slash
@@ -129,10 +134,10 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = '/tag/' + data.tag.slug + '/';
+            urlPath = '/' + ghostConfig.routeKeywords.tag + '/' + data.tag.slug + '/';
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = '/author/' + data.author.slug + '/';
+            urlPath = '/' + ghostConfig.routeKeywords.author  + '/' + data.author.slug + '/';
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
@@ -156,10 +161,14 @@ function urlFor(context, data, absolute) {
             urlPath = data.nav.url;
             baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
-            if (urlPath.indexOf(hostname) > -1) {
+            if (urlPath.indexOf(hostname) > -1 && urlPath.indexOf('.' + hostname) === -1) {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
-                urlPath = '/' + urlPath.split(hostname)[1];
+                // do not do so if link is a subdomain of blog url
+                urlPath = urlPath.split(hostname)[1];
+                if (urlPath.substring(0, 1) !== '/') {
+                    urlPath = '/' + urlPath;
+                }
                 absolute = true;
             }
         }
@@ -170,7 +179,7 @@ function urlFor(context, data, absolute) {
     }
 
     // This url already has a protocol so is likely an external url to be returned
-    if (urlPath && urlPath.indexOf('://') !== -1) {
+    if (urlPath && (urlPath.indexOf('://') !== -1 || urlPath.indexOf('mailto:') === 0)) {
         return urlPath;
     }
 

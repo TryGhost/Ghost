@@ -1,0 +1,35 @@
+{
+  "name": "ghost",
+  "dependencies": {
+    "Countable": "2.0.2",
+    "device": "git://github.com/matthewhudson/device.js#5347a275b66020a0d4dfe9aad81a488f8cce448d",
+    "ember": "1.11.1",
+    "ember-data": "1.0.0-beta.16.1",
+    "ember-load-initializers": "ember-cli/ember-load-initializers#0.0.2",
+    "ember-resolver": "~0.1.15",
+    "ember-simple-auth": "0.7.2",
+    "fastclick": "1.0.0",
+    "google-caja": "5669.0.0",
+    "ic-ajax": "1.0.1",
+    "jquery": "1.11.2",
+    "jquery-file-upload": "9.5.6",
+    "jquery-hammerjs": "1.0.1",
+    "jquery-ui": "1.10.4",
+    "jqueryui-touch-punch": "furf/jquery-ui-touch-punch",
+    "keymaster": "git://github.com/madrobby/keymaster#564ea42e07de40da8113a571f17ceae8802672ff",
+    "loader.js": "ember-cli/loader.js#3.2.0",
+    "moment": "2.8.3",
+    "nanoscroller": "0.8.4",
+    "normalize-scss": "3.0.2",
+    "nprogress": "0.1.2",
+    "rangyinputs": "1.2.0",
+    "showdown-ghost": "0.3.6",
+    "validator-js": "3.28.0",
+    "codemirror": "~5.1.0"
+  },
+  "devDependencies": {
+    "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",
+    "ember-cli-test-loader": "ember-cli/ember-cli-test-loader#0.1.3",
+    "ember-mocha": "0.6.0"
+  }
+}

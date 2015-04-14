@@ -9,7 +9,7 @@ var _              = require('lodash'),
     request        = require('request'),
     validation     = require('../data/validation'),
     config         = require('../config'),
-    sitemap        = require('../data/sitemap'),
+    events         = require('../events'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -38,17 +38,41 @@ User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
 
+    emitChange: function (event) {
+        events.emit('user' + '.' + event, this);
+    },
+
     initialize: function () {
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
         this.on('created', function (model) {
-            sitemap.userAdded(model);
+            model.emitChange('added');
+
+            // active is the default state, so if status isn't provided, this will be an active user
+            if (!model.get('status') || _.contains(activeStates, model.get('status'))) {
+                model.emitChange('activated');
+            }
         });
         this.on('updated', function (model) {
-            sitemap.userEdited(model);
+            model.statusChanging = model.get('status') !== model.updated('status');
+            model.isActive = _.contains(activeStates, model.get('status'));
+
+            if (model.statusChanging) {
+                model.emitChange(model.isActive ? 'activated' : 'deactivated');
+            } else {
+                if (model.isActive) {
+                    model.emitChange('activated.edited');
+                }
+            }
+
+            model.emitChange('edited');
         });
         this.on('destroyed', function (model) {
-            sitemap.userDeleted(model);
+            if (_.contains(activeStates, model.previous('status'))) {
+                model.emitChange('deactivated');
+            }
+
+            model.emitChange('deleted');
         });
     },
 
@@ -111,7 +135,7 @@ User = ghostBookshelf.Model.extend({
             protocols: ['http', 'https']})) {
             options.website = 'http://' + options.website;
         }
-        return options;
+        return ghostBookshelf.Model.prototype.format.call(this, options);
     },
 
     posts: function () {
@@ -616,7 +640,7 @@ User = ghostBookshelf.Model.extend({
             level = 1;
         } else {
             level = parseInt(status.match(regexp)[1], 10) + 1;
-            if (level > 3) {
+            if (level > 4) {
                 user.set('status', 'locked');
             } else {
                 user.set('status', 'warn-' + level);
@@ -645,9 +669,8 @@ User = ghostBookshelf.Model.extend({
                     if (!matched) {
                         return Promise.resolve(self.setWarning(user, {validate: false})).then(function (remaining) {
                             s = (remaining > 1) ? 's' : '';
-                           return Promise.reject(new errors.UnauthorizedError('密码不正确。' +
-                              '还可以尝试' + remaining + '次'));
-
+                            return Promise.reject(new errors.UnauthorizedError('密码不正确。 <br />' +
+                                remaining + ' 还可以尝试' + s + ' 次!'));
                             // Use comma structure, not .catch, because we don't want to catch incorrect passwords
                         }, function (error) {
                             // If we get a validation or other error during this save, catch it and log it, but don't

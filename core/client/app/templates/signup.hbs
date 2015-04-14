@@ -1,0 +1,34 @@
+<section class="setup-box js-signup-box fade-in">
+    <div class="vertical">
+        <form id="signup" class="setup-form" method="post" novalidate="novalidate">
+
+            {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+            <input style="display:none;" type="text" name="fakeusernameremembered"/>
+            <input style="display:none;" type="password" name="fakepasswordremembered"/>
+
+            <header>
+                <h1>欢迎使用Ghost博客</h1>
+                <h2>请填写下面表单，完成注册。</h2>
+            </header>
+            <div class="form-group">
+
+                <label for="email">邮箱</label>
+                {{input type="email" name="email" autocorrect="off" value=model.email }}
+                <p>用来登录博客后台和接收重要通知</p>
+            </div>
+            <div class="form-group">
+                <label for="name">姓名/昵称</label>
+                {{gh-trim-focus-input type="text" name="name" autofocus="autofocus" autocorrect="off" value=model.name }}
+                <p>在你发表文章时，会用这个名字作为签名</p>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=model.password }}
+                <p>设置一个登录密码，至少要8个字符</p>
+            </div>
+            <footer>
+                <button type="submit" class="btn btn-green btn-lg" {{action "signup"}} disabled={{submitting}}>创建账号</button>
+            </footer>
+        </form>
+    </div>
+</section>

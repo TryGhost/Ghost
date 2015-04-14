@@ -1,0 +1,78 @@
+<div class="content-cover" {{action "closeSettingsMenu"}}></div>
+{{#gh-tabs-manager selected="showSubview" class="settings-menu-container"}}
+    <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
+        <div class="settings-menu-header">
+            <h4>标签管理</h4>
+            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}>
+                <span class="hidden">关闭</span>
+            </button>
+        </div>
+        <div class="settings-menu-content">
+            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=activeTag.image uploaderReference=uploaderReference tagName="section"}}
+            <form>
+                <div class="form-group">
+                    <label>名称</label>
+                    {{gh-input type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
+                </div>
+
+                <div class="form-group">
+                    <label>地址</label>
+                    {{gh-input type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                    {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
+                </div>
+
+                <div class="form-group">
+                    <label>简介</label>
+                    {{gh-textarea value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
+                </div>
+
+                <ul class="nav-list nav-list-block">
+                    {{#gh-tab tagName="li" classNames="nav-list-item"}}
+                        <button type="button">
+                            <b>搜索引擎优化</b>
+                            <span>优化在搜索引擎中的呈现效果，提高访问量。</span>
+                        </button>
+                    {{/gh-tab}}
+                </ul>
+
+                {{#unless activeTag.isNew}}
+                    <button type="button" class="btn btn-link btn-sm tag-delete-button icon-trash" {{action "openModal" "delete-tag" activeTag}}>删除标签</button>
+                {{/unless}}
+            </form>
+        </div>
+    </div>{{! .settings-menu-pane }}
+
+    <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane">
+        {{#gh-tab-pane}}
+            <div class="settings-menu-header subview">
+                <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">返回</span></button>
+                <h4>搜索引擎优化</h4>
+            </div>
+
+            <div class="settings-menu-content">
+                <form>
+                <div class="form-group">
+                    <label for="meta-title">呈现标题</label>
+                    {{gh-input type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
+                    <p> <b>15</b> 字以内效果最佳。 已输入 {{gh-count-down-characters activeTagMetaTitleScratch 15}} 个字</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="meta-description">呈现摘要</label>
+                    {{gh-textarea value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
+                    <p><b>80</b> 字以内效果最佳。 已输入 {{gh-count-down-characters activeTagMetaDescriptionScratch 80}} 个字</p>
+                </div>
+
+                <div class="form-group">
+                    <label>搜索引擎呈现效果预览</label>
+                    <div class="seo-preview">
+                        <div class="seo-preview-title">{{seoTitle}}</div>
+                        <div class="seo-preview-description">{{seoDescription}}</div>
+                        <div class="seo-preview-link">{{seoURL}}</div>
+                    </div>
+                </div>
+                </form>
+            </div>{{! .settings-menu-content }}
+        {{/gh-tab-pane}}
+    </div>{{! .settings-menu-pane }}
+{{/gh-tabs-manager}}

@@ -10,12 +10,7 @@ var should      = require('should'),
 
 // Stuff we are testing
     Showdown    = require('showdown-ghost'),
-    ghostgfm            = require('../../shared/lib/showdown/extensions/ghostgfm'),
-    ghostimagepreview   = require('../../shared/lib/showdown/extensions/ghostimagepreview'),
-    footnotes      = require('../../shared/lib/showdown/extensions/ghostfootnotes'),
-    highlight      = require('../../shared/lib/showdown/extensions/ghosthighlight'),
-
-    converter   = new Showdown.converter({extensions: [ghostimagepreview, ghostgfm, footnotes, highlight]});
+    converter   = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -523,7 +518,7 @@ describe('Showdown client side converter', function () {
 
             {
                 input: '![^1](bar)',
-                output: '<section id="image_upload_undefined" class="js-drop-zone image-uploader"><img class="js-upload-target" src="bar"/><div class="description">Add image of <strong>^1</strong></div><input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage"></section>'
+                output: '<section class="js-drop-zone image-uploader"><img class="js-upload-target" src="bar"/><div class="description">Add image of <strong>^1</strong></div><input data-url="upload" class="js-fileupload main fileupload" type="file" name="uploadimage"></section>'
             }
         ];
 

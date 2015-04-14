@@ -1,0 +1,27 @@
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="title">Apps</h2>
+</header>
+
+<section class="content settings-apps">
+    <table class="js-apps">
+        <thead>
+            <th>App name</th>
+            <th>Status</th>
+        </thead>
+        <tbody>
+        {{#each appController in model itemController="settings/app"}}
+        <tr>
+            <td>
+                {{#if appController.model.package}}{{appController.model.package.name}} - {{appController.model.package.version}}{{else}}{{appController.model.name}} - package.json missing :({{/if}}
+            </td>
+            <td>
+                <button type="button" {{action toggleApp appController}} class="btn js-button-active {{if activeClass 'btn-red js-button-deactivate'}} {{if inactiveClass 'btn-green'}}">
+                    {{appController.buttonText}}
+                </button>
+            </td>
+        </tr>
+        {{/each}}
+        </tbody>
+    </table>
+</section>

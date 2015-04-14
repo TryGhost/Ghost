@@ -46,7 +46,8 @@ GhostServer.prototype.closeConnections = function () {
 
 GhostServer.prototype.logStartMessages = function () {
     // Tell users if their node version is not supported, and exit
-    if (!semver.satisfies(process.versions.node, packageInfo.engines.node)) {
+    if (!semver.satisfies(process.versions.node, packageInfo.engines.node) &&
+        !semver.satisfies(process.versions.node, packageInfo.engines.iojs)) {
         console.log(
             '\nERROR: Unsupported version of Node'.red,
             '\nGhost needs Node version'.red,
@@ -114,7 +115,7 @@ GhostServer.prototype.logUpgradeWarning = function () {
 /**
  * Starts the ghost server listening on the configured port.
  * Alternatively you can pass in your own express instance and let Ghost
- * start lisetning for you.
+ * start listening for you.
  * @param  {Object=} externalApp Optional express app instance.
  * @return {Promise}
  */
