@@ -42,7 +42,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
     afterModel: function (post) {
         var self = this;
 
-        return self.store.find('user', 'me').then(function (user) {
+        return self.get('session.user').then(function (user) {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
                 return self.replaceWith('posts.index');
             }

@@ -22,7 +22,7 @@ PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, loadingIndicat
     model: function () {
         var self = this;
 
-        return this.store.find('user', 'me').then(function (user) {
+        return this.get('session.user').then(function (user) {
             if (user.get('isAuthor')) {
                 paginationSettings.author = user.get('slug');
             }

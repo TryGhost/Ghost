@@ -9,7 +9,8 @@ var NavigationRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, 
     classNames: ['settings-view-navigation'],
 
     beforeModel: function () {
-        return this.currentUser().then(this.transitionAuthor());
+        return this.get('session.user')
+            .then(this.transitionAuthor());
     },
 
     model: function () {

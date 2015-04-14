@@ -12,7 +12,7 @@ var AppsRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             return this.transitionTo('settings.general');
         }
 
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },
