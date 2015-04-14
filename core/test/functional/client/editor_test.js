@@ -359,6 +359,62 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     });
 });
 
+CasperTest.begin('Publish menu - new page', 10, function suite(test) {
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    // ... check default option status, label, class
+    casper.then(function () {
+        test.assertExists('.js-publish-splitbutton');
+        test.assertExists('.js-publish-button');
+        test.assertExists('.js-publish-button.btn-blue');
+        test.assertSelectorHasText('.js-publish-button', 'Save Draft');
+    });
+
+    // Fill headline and content
+    casper.then(function fillContent() {
+        casper.sendKeys('#entry-title', 'Page Headline');
+        casper.writeContentToEditor('There once was a page, this was it');
+    });
+
+    // Open post settings menu
+    casper.thenClick('.post-settings');
+
+    // Check the checkbox is checked
+    casper.thenClick('label[for=static-page]');
+
+    casper.then(function switchMenuToPublish() {
+       // Open the publish options menu;
+        casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
+
+        casper.waitForOpaque('.js-publish-splitbutton .open');
+
+        // Select the publish post button
+        casper.thenClick('.js-publish-splitbutton li:first-child a');
+
+        // ... check status, label, class
+        casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
+            test.assertExists('.js-publish-button.btn-red', 'Publish button should have .btn-red');
+            test.assertSelectorHasText('.js-publish-button', 'Publish Now');
+        }, function onTimeout() {
+            test.assert(false, 'Publish split button works');
+        });
+    });
+
+    // Do publish
+    casper.thenClick('.js-publish-button');
+
+    // ... check status, label, class
+    casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
+        test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
+        test.assertSelectorHasText('.js-publish-button', 'Update Page');
+    }, function onTimeout() {
+        test.assert(false, 'Publish split button works');
+    });
+});
+
 CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
     // Create a post, save it and test refreshed editor
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
