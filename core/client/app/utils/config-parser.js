@@ -11,6 +11,8 @@ var isNumeric = function (num) {
             return false;
         } else if (isNumeric(val)) {
             return +val;
+        } else if (val.indexOf('{') === 0) {
+            return JSON.parse(val);
         } else {
             return val;
         }
