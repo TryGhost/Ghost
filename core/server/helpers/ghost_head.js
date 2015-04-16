@@ -266,7 +266,7 @@ ghost_head = function (options) {
         structuredData,
         schema,
         title = hbs.handlebars.Utils.escapeExpression(blog.title),
-        context = self.context[0],
+        context = self.context ? self.context[0] : null,
         contextObject = self[context] || blog;
 
     // Push Async calls to an array of promises
@@ -277,38 +277,39 @@ ghost_head = function (options) {
 
     // Resolves promises then push pushes meta data into ghost_head
     return Promise.settle(ops).then(function (results) {
-        var metaData = initMetaData(context, self, results),
-            tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(',');
+        if (context) {
+            var metaData = initMetaData(context, self, results),
+                tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(',');
 
-        // If there are tags - build the keywords metaData string
-        if (tags[0] !== '') {
-            metaData.keywords = hbs.handlebars.Utils.escapeExpression(tagsHelper.call(self.post,
-                {hash: {autolink: 'false', separator: ', '}}
-            ).string);
+            // If there are tags - build the keywords metaData string
+            if (tags[0] !== '') {
+                metaData.keywords = hbs.handlebars.Utils.escapeExpression(tagsHelper.call(self.post,
+                    {hash: {autolink: 'false', separator: ', '}}
+                ).string);
+            }
+
+            // head is our main array that holds our meta data
+            head.push('<link rel="canonical" href="' + metaData.url + '" />');
+
+            // Generate context driven pagination urls
+            if (self.pagination) {
+                getPaginationUrls(self.pagination, self.relativeUrl, self.secure, head);
+            }
+
+            // Test to see if we are on a post page and that Structured data has not been disabled in config.js
+            if (context !== 'paged' && context !== 'page' && useStructuredData) {
+                // Create context driven OpenGraph and Twitter meta data
+                structuredData = getStructuredData(metaData);
+                // Create context driven JSONLD object
+                schema = chooseSchema(metaData, context, self);
+                head.push('');
+                // Formats structured data and pushes to head array
+                finaliseStructuredData(structuredData, tags, head);
+                head.push('');
+                // Formats schema script/JSONLD data and pushes to head array
+                finaliseSchema(schema, head);
+            }
         }
-
-        // head is our main array that holds our meta data
-        head.push('<link rel="canonical" href="' + metaData.url + '" />');
-
-        // Generate context driven pagination urls
-        if (self.pagination) {
-            getPaginationUrls(self.pagination, self.relativeUrl, self.secure, head);
-        }
-
-        // Test to see if we are on a post page and that Structured data has not been disabled in config.js
-        if (context !== 'paged' && context !== 'page' && useStructuredData) {
-            // Create context driven OpenGraph and Twitter meta data
-            structuredData = getStructuredData(metaData);
-            // Create context driven JSONLD object
-            schema = chooseSchema(metaData, context, self);
-            head.push('');
-            // Formats structured data and pushes to head array
-            finaliseStructuredData(structuredData, tags, head);
-            head.push('');
-            // Formats schema script/JSONLD data and pushes to head array
-            finaliseSchema(schema, head);
-        }
-
         head.push('<meta name="generator" content="Ghost ' + safeVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             title  + '" href="' + config.urlFor('rss', null, true) + '" />');
