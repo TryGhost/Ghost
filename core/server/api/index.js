@@ -57,7 +57,6 @@ cacheInvalidationHeader = function (req, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
-        id = parsedUrl[1],
         cacheInvalidate,
         jsonResult = result.toJSON ? result.toJSON() : result,
         post,
@@ -80,19 +79,7 @@ cacheInvalidationHeader = function (req, result) {
 
             // Don't set x-cache-invalidate header for drafts
             if (hasStatusChanged || wasDeleted || wasPublishedUpdated) {
-                cacheInvalidate = [
-                    '/',
-                    '/' + config.routeKeywords.page + '/*',
-                    '/rss/',
-                    '/rss/*',
-                    '/' + config.routeKeywords.tag + '/*',
-                    '/' + config.routeKeywords.author + '/*',
-                    '/sitemap-*.xml'
-                ].join(', ');
-
-                if (id && post.slug && post.url) {
-                    cacheInvalidate +=  ', ' + post.url;
-                }
+                cacheInvalidate = '/*';
             }
         }
     }
