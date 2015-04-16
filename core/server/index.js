@@ -147,8 +147,17 @@ function init(options) {
     // It returns a promise that is resolved when the application
     // has finished starting up.
 
-    // Load our config.js file from the local file system.
-    return config.load(options.config).then(function () {
+    function configPromise() {
+        if (options.config || process.env.GHOST_CONFIG) {
+            // Load the config file
+            return config.load(options.config);
+        }
+
+        // Assume options is a config object
+        return config.init(options);
+    }
+
+    return configPromise().then(function () {
         return config.checkDeprecated();
     }).then(function () {
         // Make sure javascript files have been built via grunt concat
