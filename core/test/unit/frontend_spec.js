@@ -311,8 +311,7 @@ describe('Frontend Controller', function () {
                 published_at: new Date('2014/1/2').getTime(),
                 author: {
                     id: 1,
-                    name: 'Test User',
-                    email: 'test@ghost.org'
+                    name: 'Test User'
                 }
             }],
             mockTags = [{
@@ -401,7 +400,6 @@ describe('Frontend Controller', function () {
                         render: function (view, context) {
                             view.should.equal('tag');
                             context.tag.should.equal(mockTags[0]);
-                            should.not.exist(context.posts[0].author.email);
                             done();
                         }
                     };
@@ -633,7 +631,6 @@ describe('Frontend Controller', function () {
                             render: function (view, context) {
                                 view.should.equal('page-' + mockPosts[2].posts[0].slug);
                                 context.post.should.equal(mockPosts[2].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -663,7 +660,6 @@ describe('Frontend Controller', function () {
                             render: function (view, context) {
                                 view.should.equal('page');
                                 context.post.should.equal(mockPosts[0].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -856,7 +852,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 context.post.should.exist;
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -971,7 +966,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 context.post.should.exist;
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1102,7 +1096,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 should.exist(context.post);
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1234,7 +1227,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 should.exist(context.post);
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };

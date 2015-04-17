@@ -73,6 +73,7 @@ posts = {
     read: function read(options) {
         var attrs = ['id', 'slug', 'status'],
             data = _.pick(options, attrs);
+
         options = _.omit(options, attrs);
 
         // only published posts if no user is present
@@ -86,7 +87,7 @@ posts = {
 
         return dataProvider.Post.findOne(data, options).then(function (result) {
             if (result) {
-                return {posts: [result.toJSON()]};
+                return {posts: [result.toJSON(options)]};
             }
 
             return Promise.reject(new errors.NotFoundError('Post not found.'));
@@ -112,7 +113,7 @@ posts = {
                 return dataProvider.Post.edit(checkedPostData.posts[0], options);
             }).then(function (result) {
                 if (result) {
-                    var post = result.toJSON();
+                    var post = result.toJSON(options);
 
                     // If previously was not published and now is (or vice versa), signal the change
                     post.statusChanged = false;
@@ -149,7 +150,7 @@ posts = {
 
                 return dataProvider.Post.add(checkedPostData.posts[0], options);
             }).then(function (result) {
-                var post = result.toJSON();
+                var post = result.toJSON(options);
 
                 if (post.status === 'published') {
                     // When creating a new post that is published right now, signal the change

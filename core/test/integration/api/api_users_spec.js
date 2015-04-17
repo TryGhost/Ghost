@@ -139,12 +139,19 @@ describe('Users API', function () {
     });
 
     describe('Read', function () {
-        function checkReadResponse(response) {
+        function checkReadResponse(response, noEmail) {
             should.exist(response);
             should.not.exist(response.meta);
             should.exist(response.users);
             response.users[0].id.should.eql(1);
-            testUtils.API.checkResponse(response.users[0], 'user');
+
+            if (noEmail) {
+                // Email should be missing
+                testUtils.API.checkResponse(response.users[0], 'user', [], ['email']);
+                should.not.exist(response.users[0].email);
+            } else {
+                testUtils.API.checkResponse(response.users[0], 'user');
+            }
             response.users[0].created_at.should.be.a.Date;
         }
 
@@ -180,7 +187,7 @@ describe('Users API', function () {
 
         it('No-auth can read', function (done) {
             UserAPI.read({id: userIdFor.owner}).then(function (response) {
-                checkReadResponse(response);
+                checkReadResponse(response, true);
                 done();
             }).catch(done);
         });

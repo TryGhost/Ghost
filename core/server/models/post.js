@@ -26,7 +26,7 @@ getPermalinkSetting = function (model, attributes, options) {
     }
     return ghostBookshelf.model('Settings').findOne({key: 'permalinks'}).then(function (response) {
         if (response) {
-            response = response.toJSON();
+            response = response.toJSON(options);
             permalinkSetting = response.hasOwnProperty('value') ? response.value : '';
         }
     });
@@ -204,7 +204,7 @@ Post = ghostBookshelf.Model.extend({
                 var doNotExist = [],
                     sequenceTasks = [];
 
-                existingTags = existingTags.toJSON();
+                existingTags = existingTags.toJSON(options);
 
                 doNotExist = _.reject(self.myTags, function (tag) {
                     return _.any(existingTags, function (existingTag) {
@@ -489,14 +489,7 @@ Post = ghostBookshelf.Model.extend({
                 pagination.next = null;
                 pagination.prev = null;
 
-                // Pass include to each model so that toJSON works correctly
-                if (options.include) {
-                    _.each(postCollection.models, function (item) {
-                        item.include = options.include;
-                    });
-                }
-
-                data.posts = postCollection.toJSON();
+                data.posts = postCollection.toJSON(options);
                 data.meta = meta;
                 meta.pagination = pagination;
 
@@ -514,14 +507,14 @@ Post = ghostBookshelf.Model.extend({
                 if (tagInstance) {
                     meta.filters = {};
                     if (!tagInstance.isNew()) {
-                        meta.filters.tags = [tagInstance.toJSON()];
+                        meta.filters.tags = [tagInstance.toJSON(options)];
                     }
                 }
 
                 if (authorInstance) {
                     meta.filters = {};
                     if (!authorInstance.isNew()) {
-                        meta.filters.author = authorInstance.toJSON();
+                        meta.filters.author = authorInstance.toJSON(options);
                     }
                 }
 
@@ -554,7 +547,7 @@ Post = ghostBookshelf.Model.extend({
 
         return ghostBookshelf.Model.findOne.call(this, data, options).then(function (post) {
             if ((withNext || withPrev) && post && !post.page) {
-                var postData = post.toJSON(),
+                var postData = post.toJSON(options),
                     publishedAt = postData.published_at,
                     prev,
                     next;
