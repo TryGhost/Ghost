@@ -152,7 +152,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 // if include is set, expand to full object
                 var fullKey = _.isEmpty(options.name) ? key : options.name + '.' + key;
                 if (_.contains(self.include, fullKey)) {
-                    attrs[key] = relation.toJSON({name: fullKey, include: self.include});
+                    attrs[key] = relation.toJSON(_.extend({}, options, {name: fullKey, include: self.include}));
                 }
             }
         });
