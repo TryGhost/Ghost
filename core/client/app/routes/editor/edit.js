@@ -25,8 +25,7 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
 
         query = {
             id: postId,
-            status: 'all',
-            staticPages: 'all'
+            status: 'all'
         };
 
         return self.store.find('post', query).then(function (records) {

@@ -32,7 +32,7 @@ _.extend(PageMapGenerator.prototype, {
                 internal: true
             },
             status: 'published',
-            staticPages: true,
+            page: true,
             limit: 'all'
         }).then(function (resp) {
             var homePage = {

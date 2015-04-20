@@ -10,7 +10,6 @@ var paginationSettings,
 
 paginationSettings = {
     status: 'all',
-    staticPages: 'all',
     page: 1
 };
 

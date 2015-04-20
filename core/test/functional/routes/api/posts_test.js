@@ -60,7 +60,7 @@ describe('Post API', function () {
         });
 
         it('can retrieve all published posts and pages', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/?staticPages=all'))
+            request.get(testUtils.API.getApiQuery('posts/?page=all'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules['private'])
@@ -84,7 +84,7 @@ describe('Post API', function () {
         // Test bits of the API we don't use in the app yet to ensure the API behaves properly
 
         it('can retrieve all status posts and pages', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/?staticPages=all&status=all'))
+            request.get(testUtils.API.getApiQuery('posts/?page=all&status=all'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules['private'])
@@ -106,7 +106,7 @@ describe('Post API', function () {
         });
 
         it('can retrieve just published pages', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/?staticPages=true'))
+            request.get(testUtils.API.getApiQuery('posts/?page=true'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules['private'])

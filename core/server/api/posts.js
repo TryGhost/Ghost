@@ -8,7 +8,7 @@ var Promise         = require('bluebird'),
     utils           = require('./utils'),
 
     docName         = 'posts',
-    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'next', 'previous'],
+    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'next', 'previous', 'featured', 'page', 'limit', 'offset'],
     posts;
 
 // ## Helpers
@@ -45,7 +45,7 @@ posts = {
      * Can return posts for a particular tag by passing a tag slug in
      *
      * @public
-     * @param {{context, page, limit, status, staticPages, tag}} options (optional)
+     * @param {{context, page[integer for page number, boolean for filtering static pages], limit, status, tag}} options (optional)
      * @returns {Promise(Posts)} Posts Collection with Meta
      */
     browse: function browse(options) {

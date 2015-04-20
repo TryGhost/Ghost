@@ -288,7 +288,7 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'status', 'staticPages'],
+                findPage: ['page', 'limit', 'offset', 'status', 'featured'],
                 add: ['importing']
             };
 
@@ -358,31 +358,42 @@ Post = ghostBookshelf.Model.extend({
         var tagInstance = options.tag !== undefined ? ghostBookshelf.model('Tag').forge({slug: options.tag}) : false,
             authorInstance = options.author !== undefined ? ghostBookshelf.model('User').forge({slug: options.author}) : false;
 
-        if (options.limit && options.limit !== 'all') {
-            options.limit = parseInt(options.limit, 10) || 15;
+        if (options.limit) {
+            if (options.limit !== 'all') {
+                options.limit = parseInt(options.limit, 10) || 15;
+            }
+        } else {
+            options.limit = 15;
         }
 
-        if (options.page) {
-            options.page = parseInt(options.page, 10) || 1;
+        if (options.offset && options.limit !== 'all') {
+            options.offset = parseInt(options.offset, 10) || 0;
+        }
+
+        if (options.page !== undefined && !_.isBoolean(options.page) && options.limit !== 'all') {
+            if (options.page === 'true' || options.page === 'false') {
+                options.page = options.page === 'true' ? true : false;
+            } else if (options.page !== 'all') {
+                options.page = parseInt(options.page, 10) || 1;
+                options.offset = options.limit * (options.page - 1);
+                options.offset = isNaN(options.offset) ? 0 : options.offset;
+                options.page = false;
+            }
         }
 
         options = this.filterOptions(options, 'findPage');
 
         // Set default settings for options
         options = _.extend({
-            page: 1, // pagination page
+            offset: 0, // pagination page
             limit: 15,
-            staticPages: false, // include static pages
+            page: false,
             status: 'published',
             where: {}
         }, options);
 
-        if (options.staticPages !== 'all') {
-            // convert string true/false to boolean
-            if (!_.isBoolean(options.staticPages)) {
-                options.staticPages = options.staticPages === 'true' || options.staticPages === '1' ? true : false;
-            }
-            options.where.page = options.staticPages;
+        if (_.isBoolean(options.page)) {
+            options.where.page = options.page;
         }
 
         // Unless `all` is passed as an option, filter on
@@ -391,6 +402,10 @@ Post = ghostBookshelf.Model.extend({
             // make sure that status is valid
             options.status = _.indexOf(['published', 'draft'], options.status) !== -1 ? options.status : 'published';
             options.where.status = options.status;
+        }
+
+        if (options.featured && _.isBoolean(options.featured)) {
+            options.where.featured = options.featured;
         }
 
         // Add related objects
@@ -415,7 +430,7 @@ Post = ghostBookshelf.Model.extend({
         return Promise.join(fetchTagQuery(), fetchAuthorQuery())
             // Set the limit & offset for the query, fetching
             // with the opts (to specify any eager relations, etc.)
-            // Omitting the `page`, `limit`, `where` just to be sure
+            // Omitting the `offset`, `limit`, `where` just to be sure
             // aren't used for other purposes.
             .then(function () {
                 var postCollection = Posts.forge(),
@@ -445,7 +460,7 @@ Post = ghostBookshelf.Model.extend({
                 if (_.isNumber(options.limit)) {
                     postCollection
                         .query('limit', options.limit)
-                        .query('offset', options.limit * (options.page - 1));
+                        .query('offset', options.offset);
                 }
 
                 collectionPromise = postCollection
@@ -453,7 +468,7 @@ Post = ghostBookshelf.Model.extend({
                     .query('orderBy', 'published_at', 'DESC')
                     .query('orderBy', 'updated_at', 'DESC')
                     .query('orderBy', 'id', 'DESC')
-                    .fetch(_.omit(options, 'page', 'limit'));
+                    .fetch(_.omit(options, 'offset', 'limit'));
 
                 // Find the total number of posts
 
@@ -482,7 +497,7 @@ Post = ghostBookshelf.Model.extend({
                     meta = {},
                     data = {};
 
-                pagination.page = options.page;
+                pagination.page = options.limit === 'all' ? 1 : (options.offset / options.limit) + 1;
                 pagination.limit = options.limit;
                 pagination.pages = calcPages === 0 ? 1 : calcPages;
                 pagination.total = totalPosts;

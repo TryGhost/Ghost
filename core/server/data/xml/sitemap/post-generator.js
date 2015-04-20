@@ -32,7 +32,7 @@ _.extend(PostMapGenerator.prototype, {
                 internal: true
             },
             status: 'published',
-            staticPages: false,
+            page: false,
             limit: 'all'
         }).then(function (resp) {
             return resp.posts;

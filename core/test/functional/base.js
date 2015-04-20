@@ -420,7 +420,7 @@ CasperTest.Routines = (function () {
                 casper.captureScreenshot('signing_in2.png');
             });
 
-            casper.waitForResource(/posts\/\?status=all&staticPages=all/, function then() {
+            casper.waitForResource(/posts\/\?status=all/, function then() {
                 casper.captureScreenshot('signing_in.png');
             }, function timeout() {
                 casper.test.fail('Unable to signin and load admin panel');

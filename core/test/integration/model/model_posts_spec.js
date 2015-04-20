@@ -121,14 +121,14 @@ describe('Post Model', function () {
                 testUtils.fixtures.insertMorePosts().then(function () {
                     return testUtils.fixtures.insertMorePostsTags();
                 }).then(function () {
-                    return PostModel.findPage({page: 2});
+                    return PostModel.findPage({offset: 15});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(2);
                     paginationResult.meta.pagination.limit.should.equal(15);
                     paginationResult.meta.pagination.pages.should.equal(4);
                     paginationResult.posts.length.should.equal(15);
 
-                    return PostModel.findPage({page: 5});
+                    return PostModel.findPage({offset: 60});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(5);
                     paginationResult.meta.pagination.limit.should.equal(15);
@@ -142,16 +142,8 @@ describe('Post Model', function () {
                     paginationResult.meta.pagination.pages.should.equal(2);
                     paginationResult.posts.length.should.equal(30);
 
-                    // Test both boolean formats
-                    return PostModel.findPage({limit: 10, staticPages: true});
-                }).then(function (paginationResult) {
-                    paginationResult.meta.pagination.page.should.equal(1);
-                    paginationResult.meta.pagination.limit.should.equal(10);
-                    paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(1);
-
-                    // Test both boolean formats
-                    return PostModel.findPage({limit: 10, staticPages: '1'});
+                    // Test both old page format
+                    return PostModel.findPage({limit: 10, page: true});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(10);
@@ -168,6 +160,34 @@ describe('Post Model', function () {
                     paginationResult.meta.pagination.limit.should.equal('all');
                     paginationResult.meta.pagination.pages.should.equal(1);
                     paginationResult.posts.length.should.equal(107);
+
+                    return PostModel.findPage({page: 2});
+                }).then(function (paginationResult) {
+                    paginationResult.meta.pagination.page.should.equal(2);
+                    paginationResult.meta.pagination.limit.should.equal(15);
+                    paginationResult.meta.pagination.pages.should.equal(4);
+                    paginationResult.posts.length.should.equal(15);
+
+                    return PostModel.findPage({page: 5});
+                }).then(function (paginationResult) {
+                    paginationResult.meta.pagination.page.should.equal(5);
+                    paginationResult.meta.pagination.limit.should.equal(15);
+                    paginationResult.meta.pagination.pages.should.equal(4);
+                    paginationResult.posts.length.should.equal(0);
+
+                    return PostModel.findPage({featured: true});
+                }).then(function (paginationResult) {
+                    paginationResult.meta.pagination.page.should.equal(1);
+                    paginationResult.meta.pagination.limit.should.equal(15);
+                    paginationResult.meta.pagination.pages.should.equal(4);
+                    paginationResult.meta.pagination.total.should.equal(54);
+
+                    return PostModel.findPage({limit: 30});
+                }).then(function (paginationResult) {
+                    paginationResult.meta.pagination.page.should.equal(1);
+                    paginationResult.meta.pagination.limit.should.equal(30);
+                    paginationResult.meta.pagination.pages.should.equal(2);
+                    paginationResult.posts.length.should.equal(30);
 
                     done();
                 }).catch(done);
