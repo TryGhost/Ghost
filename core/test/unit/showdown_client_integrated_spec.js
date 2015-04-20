@@ -34,6 +34,40 @@ describe('Showdown client side converter', function () {
             // The image is the entire markup, so the image box should be too
             processedMarkup.should.match(testPhrase.output);
         });
+
+        it('should honour `/```/pre/code/script etc', function () {
+            // From Ghost issue #5039
+            var testPhrases = [
+                    {input: '`~~not strike~~`', output: /^<p><code>~~not strike~~<\/code><\/p>$/},
+                    {input: '`\\~\\~not strike\\~\\~`', output: /^<p><code>~~not strike~~<\/code><\/p>$/},
+                    {input: '```\n~~not strike~~\n```', output: /^<pre><code>~~not strike~~\n<\/code><\/pre>$/},
+                    {
+                        input: '```html\n~~not strike~~\n```',
+                        output: /^<pre><code class="language-html">~~not strike~~\n<\/code><\/pre>$/
+                    },
+                    {input: '<pre>~~not strike~~</pre>', output: /^<pre>~~not strike~~<\/pre>$/},
+                    {input: '<code>~~not strike~~</code>', output: /^<p><code>~~not strike~~<\/code><\/p>$/},
+                    {
+                        input: '<pre><code class="language-html">~~not strike~~</code></pre>',
+                        output: /^<pre><code class="language-html">~~not strike~~<\/code><\/pre>$/
+                    },
+                    {
+                        input: '<pre class="lang-html"><code class="language-html">~~not strike~~</code></pre>',
+                        output: /^<pre class="lang-html"><code class="language-html">~~not strike~~<\/code><\/pre>$/
+                    },
+                    {
+                        input: '<script>\nvar strike = "~~not strike~~";\n</script>',
+                        output: /^<script>\nvar strike = "~~not strike~~";\n<\/script>$/
+                    }
+
+                ],
+                processedMarkup;
+
+            testPhrases.forEach(function (testPhrase) {
+                processedMarkup = converter.makeHtml(testPhrase.input);
+                processedMarkup.should.match(testPhrase.output);
+            });
+        });
     });
 
     describe('GFM underscore handling - _and_things_', function () {
@@ -44,13 +78,12 @@ describe('Showdown client side converter', function () {
             processedMarkup.should.match(testPhrase.output);
         });
 
-        // Currently failing - fixing this causes other issues
-        //    it('should not create italic words between lines', function () {
-        //        var testPhrase = {input: 'foo_bar\nbar_foo', output: /^<p>foo_bar <br \/>\nbar_foo<\/p>$/},
-        //            processedMarkup = converter.makeHtml(testPhrase.input);
-        //
-        //        processedMarkup.should.match(testPhrase.output);
-        //    });
+        it('should not create italic words between lines', function () {
+            var testPhrase = {input: 'foo_bar\nbar_foo', output: /^<p>foo_bar <br \/>\nbar_foo<\/p>$/},
+                processedMarkup = converter.makeHtml(testPhrase.input);
+
+            processedMarkup.should.match(testPhrase.output);
+        });
 
         it('should not touch underscores in code blocks', function () {
             var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz\n<\/code><\/pre>$/},
@@ -88,18 +121,24 @@ describe('Showdown client side converter', function () {
             var testPhrases = [
                     {
                         input: '<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
-                        output: /^<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
+                        output: '<pre>\nthis is `a_test` and this_too and finally_this_is\n<\/pre>'
                     },
+                    // Changes to extensions mean this 'fix' no longer present, however the current behaviour as
+                    // shown by the test below is correct compared to most major markdown parsers via babelmark
+                    // {
+                    //    input: 'hmm<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
+                    //    output: '<p>hmm<\/p>\n\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>'
+                    // }
                     {
                         input: 'hmm<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
-                        output: /^<p>hmm<\/p>\n\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
+                        output: '<p>hmm<pre>\nthis is <code>a_test<\/code> and this_too and finally_this_is\n<\/pre><\/p>'
                     }
                 ],
                 processedMarkup;
 
             testPhrases.forEach(function (testPhrase) {
                 processedMarkup = converter.makeHtml(testPhrase.input);
-                processedMarkup.should.match(testPhrase.output);
+                processedMarkup.should.equal(testPhrase.output);
             });
         });
 
@@ -125,7 +164,7 @@ describe('Showdown client side converter', function () {
         it('should NOT escape underscore inside of code/pre blocks', function () {
             var testPhrase = {
                     input: '```\n_____\n```',
-                    output: /^<pre><code>_____  \n<\/code><\/pre>$/
+                    output: /^<pre><code>_____\n<\/code><\/pre>$/
                 },
                 processedMarkup;
 
@@ -139,7 +178,7 @@ describe('Showdown client side converter', function () {
             var testPhrases = [
                     {input: 'fizz\nbuzz', output: /^<p>fizz <br \/>\nbuzz<\/p>$/},
                     {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world <br \/>\nIt is a fine day<\/p>$/},
-                    {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/},
+                    {input: '\"first\nsecond', output: /^<p>\"first <br \/>\nsecond<\/p>$/},
                     {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/}
                 ],
                 processedMarkup;
@@ -339,7 +378,7 @@ describe('Showdown client side converter', function () {
             var testPhrases = [
                     {
                         input: '```\nurl: http://google.co.uk\n```',
-                        output: /^<pre><code>url: http:\/\/google.co.uk  \n<\/code><\/pre>$/
+                        output: /^<pre><code>url: http:\/\/google.co.uk\n<\/code><\/pre>$/
                     },
                     {
                         input: '`url: http://google.co.uk`',
@@ -518,7 +557,7 @@ describe('Showdown client side converter', function () {
         });
     });
 
-    describe('Highlight', function () {
+    describe('Highlight - <mark>', function () {
         it('should replace showdown highlight with html', function () {
             var testPhrases = [
                 {
@@ -607,28 +646,87 @@ describe('Showdown client side converter', function () {
                 processedMarkup.should.match(testPhrase.output);
             });
         });
+
+        it('should honour `/```/pre/code/script etc', function () {
+            // From Ghost issue #5039
+            var testPhrases = [
+                    {input: '`==not highlight==`', output: /^<p><code>==not highlight==<\/code><\/p>$/},
+                    {input: '`\=\=not highlight\=\=`', output: /^<p><code>==not highlight==<\/code><\/p>$/},
+                    {input: '```\n==not highlight==\n```', output: /^<pre><code>==not highlight==\n<\/code><\/pre>$/},
+                    {
+                        input: '```html\n==not highlight==\n```',
+                        output: /^<pre><code class="language-html">==not highlight==\n<\/code><\/pre>$/
+                    },
+                    {input: '<pre>==not highlight==</pre>', output: /^<pre>==not highlight==<\/pre>$/},
+                    {input: '<code>==not highlight==</code>', output: /^<p><code>==not highlight==<\/code><\/p>$/},
+                    {
+                        input: '<pre><code class="language-html">==not highlight==</code></pre>',
+                        output: /^<pre><code class="language-html">==not highlight==<\/code><\/pre>$/
+                    },
+                    {
+                        input: '<pre class="lang-html"><code class="language-html">==not highlight==</code></pre>',
+                        output: /^<pre class="lang-html"><code class="language-html">==not highlight==<\/code><\/pre>$/
+                    },
+                    {
+                        input: '<script>\nvar highlight = "==not highlight==";\n</script>',
+                        output: /^<script>\nvar highlight = "==not highlight==";\n<\/script>$/
+                    },
+                    // From Ghost issue #4627
+                    {
+                        input: '![](http://xxx.com/==20131118/2)\n$$\\x_s$$\nfdsaf\n![](http://xxx.com/==20131119/2)',
+                        output: /(?!<mark>)/
+                    }
+                ],
+                processedMarkup;
+
+            testPhrases.forEach(function (testPhrase) {
+                processedMarkup = converter.makeHtml(testPhrase.input);
+                processedMarkup.should.match(testPhrase.output);
+            });
+        });
     });
 
-    describe('Block HTML', function () {
+    describe('Showdown features', function () {
         it('should output block HTML untouched', function () {
             var testPhrases = [
                 {
                     input: '<table class=\"test\">\n    <tr>\n        <td>Foo</td>\n    </tr>\n    <tr>\n        <td>Bar</td>\n    </tr>\n</table>',
-                    output: /^<table class=\"test\">  \n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>$/
+                    output: '<table class=\"test\">\n    <tr>\n        <td>Foo<\/td>\n    <\/tr>\n    <tr>\n        <td>Bar<\/td>\n    <\/tr>\n<\/table>'
                 },
                 {
                     input: '<hr />',
-                    output: /^<hr \/>$/
+                    output: '<hr \/>'
                 },
                 {   // audio isn't counted as a block tag by showdown so gets wrapped in <p></p>
                     input: '<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n    <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>',
-                    output: /^<audio class=\"podcastplayer\" controls>  \n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>$/
+                    output: '<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio\/mp3\" preload=\"none\"><\/source>\n    <source src=\"foobar.off\" type=\"audio\/ogg\" preload=\"none\"><\/source>\n<\/audio>'
                 }
             ];
 
             testPhrases.forEach(function (testPhrase) {
                 var processedMarkup = converter.makeHtml(testPhrase.input);
-                processedMarkup.should.match(testPhrase.output);
+                processedMarkup.should.equal(testPhrase.output);
+            });
+        });
+
+        it('should handle fenced code blocks', function () {
+            var testPhrases = [
+                {
+                    // From Ghost issue #4659
+                    input: '```\nsudo apt-get install \\\n```',
+                    output: '<pre><code>sudo apt-get install \\\n<\/code><\/pre>'
+                },
+                {
+
+                    // From Ghost issue #5039
+                    input: 'A \`\n\n```\n1\n```\n\n`B`\n\n```\n2\n```',
+                    output: '<p>A `<\/p>\n\n<pre><code>1\n<\/code><\/pre>\n\n<p><code>B<\/code><\/p>\n\n<pre><code>2\n<\/code><\/pre>'
+                }
+            ];
+
+            testPhrases.forEach(function (testPhrase) {
+                var processedMarkup = converter.makeHtml(testPhrase.input);
+                processedMarkup.should.equal(testPhrase.output);
             });
         });
     });
