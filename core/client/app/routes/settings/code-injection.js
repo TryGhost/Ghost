@@ -7,7 +7,7 @@ var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingInd
     classNames: ['settings-view-code'],
 
     beforeModel: function () {
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },

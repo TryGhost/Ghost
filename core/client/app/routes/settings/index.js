@@ -10,7 +10,7 @@ var SettingsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMi
     // is mobile
     beforeModel: function () {
         var self = this;
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor())
             .then(function () {

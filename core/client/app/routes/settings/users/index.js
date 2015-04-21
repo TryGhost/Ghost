@@ -1,4 +1,5 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
+import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 import styleBody from 'ghost/mixins/style-body';
 
@@ -11,7 +12,7 @@ paginationSettings = {
     status: 'active'
 };
 
-UsersIndexRoute = AuthenticatedRoute.extend(styleBody, PaginationRouteMixin, {
+UsersIndexRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, PaginationRouteMixin, {
     titleToken: 'Users',
 
     classNames: ['settings-view-users'],
@@ -21,11 +22,16 @@ UsersIndexRoute = AuthenticatedRoute.extend(styleBody, PaginationRouteMixin, {
         this.setupPagination(paginationSettings);
     },
 
+    beforeModel: function () {
+        return this.get('session.user')
+            .then(this.transitionAuthor());
+    },
+
     model: function () {
         var self = this;
 
         return self.store.find('user', {limit: 'all', status: 'invited'}).then(function () {
-            return self.store.find('user', 'me').then(function (currentUser) {
+            return self.get('session.user').then(function (currentUser) {
                 if (currentUser.get('isEditor')) {
                     // Editors only see authors in the list
                     paginationSettings.role = 'Author';

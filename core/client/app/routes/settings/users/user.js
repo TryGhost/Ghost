@@ -1,7 +1,8 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
+import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, {
+var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'User',
 
     classNames: ['settings-view-user'],
@@ -25,7 +26,7 @@ var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, {
 
     afterModel: function (user) {
         var self = this;
-        this.store.find('user', 'me').then(function (currentUser) {
+        return this.get('session.user').then(function (currentUser) {
             var isOwnProfile = user.get('id') === currentUser.get('id'),
                 isAuthor = currentUser.get('isAuthor'),
                 isEditor = currentUser.get('isEditor');
