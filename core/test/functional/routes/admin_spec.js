@@ -134,7 +134,7 @@ describe('Admin Routing', function () {
         it('should block admin access over non-HTTPS', function (done) {
             request.get('/ghost/')
                 .expect(403)
-                .end(done);
+                .end(doEnd(done));
         });
 
         it('should allow admin access over HTTPS', function (done) {
@@ -173,14 +173,14 @@ describe('Admin Routing', function () {
             request.get('/ghost/')
                 .expect('Location', /^https:\/\/localhost\/ghost\//)
                 .expect(301)
-                .end(done);
+                .end(doEnd(done));
         });
 
         it('should allow admin access over HTTPS', function (done) {
             request.get('/ghost/setup/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
-                .end(done);
+                .end(doEnd(done));
         });
     });
 
