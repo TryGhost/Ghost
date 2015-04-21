@@ -8,7 +8,7 @@ var LabsRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUs
 
     classNames: ['settings'],
     beforeModel: function () {
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },

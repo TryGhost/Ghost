@@ -9,7 +9,7 @@ var SettingsGeneralRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator
     classNames: ['settings-view-general'],
 
     beforeModel: function () {
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },
