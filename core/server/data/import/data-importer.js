@@ -3,6 +3,8 @@ var Promise = require('bluebird'),
     models  = require('../../models'),
     utils   = require('./utils'),
 
+    internal = utils.internal,
+
     DataImporter;
 
 DataImporter = function () {};
@@ -12,13 +14,14 @@ DataImporter.prototype.importData = function (data) {
 };
 
 DataImporter.prototype.loadUsers = function () {
-    var users = {all: {}};
+    var users = {all: {}},
+        options = _.extend({}, {include: ['roles']}, internal);
 
-    return models.User.findAll({include: ['roles']}).then(function (_users) {
+    return models.User.findAll(options).then(function (_users) {
         _users.forEach(function (user) {
             users.all[user.get('email')] = {realId: user.get('id')};
-            if (user.related('roles').toJSON()[0] && user.related('roles').toJSON()[0].name === 'Owner') {
-                users.owner = user.toJSON();
+            if (user.related('roles').toJSON(options)[0] && user.related('roles').toJSON(options)[0].name === 'Owner') {
+                users.owner = user.toJSON(options);
             }
         });
 
@@ -47,7 +50,7 @@ DataImporter.prototype.doUserImport = function (t, tableData, users, errors) {
                 if (d.isRejected()) {
                     errors = errors.concat(d.reason());
                 } else {
-                    imported.push(d.value().toJSON());
+                    imported.push(d.value().toJSON(internal));
                 }
             });
 
