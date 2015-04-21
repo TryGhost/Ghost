@@ -62,7 +62,7 @@ tags = {
 
             return dataProvider.Tag.findOne(data, options).then(function (result) {
                 if (result) {
-                    return {tags: [result.toJSON()]};
+                    return {tags: [result.toJSON(options)]};
                 }
 
                 return Promise.reject(new errors.NotFoundError('Tag not found.'));
@@ -88,7 +88,7 @@ tags = {
             return utils.checkObject(object, docName).then(function (checkedTagData) {
                 return dataProvider.Tag.add(checkedTagData.tags[0], options);
             }).then(function (result) {
-                var tag = result.toJSON();
+                var tag = result.toJSON(options);
 
                 return {tags: [tag]};
             });
@@ -117,7 +117,7 @@ tags = {
                 return dataProvider.Tag.edit(checkedTagData.tags[0], options);
             }).then(function (result) {
                 if (result) {
-                    var tag = result.toJSON();
+                    var tag = result.toJSON(options);
 
                     return {tags: [tag]};
                 }

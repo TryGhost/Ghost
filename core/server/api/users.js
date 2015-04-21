@@ -112,7 +112,7 @@ users = {
 
         return dataProvider.User.findOne(data, options).then(function (result) {
             if (result) {
-                return {users: [result.toJSON()]};
+                return {users: [result.toJSON(options)]};
             }
 
             return Promise.reject(new errors.NotFoundError('User not found.'));
@@ -141,7 +141,7 @@ users = {
                 return dataProvider.User.edit(data.users[0], options)
                     .then(function (result) {
                         if (result) {
-                            return {users: [result.toJSON()]};
+                            return {users: [result.toJSON(options)]};
                         }
 
                         return Promise.reject(new errors.NotFoundError('User not found.'));
@@ -162,7 +162,7 @@ users = {
                 return dataProvider.User.findOne(
                     {id: options.context.user, status: 'all'}, {include: ['roles']}
                 ).then(function (contextUser) {
-                    var contextRoleId = contextUser.related('roles').toJSON()[0].id;
+                    var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
                         return Promise.reject(new errors.NoPermissionError('You cannot change your own role.'));
@@ -231,7 +231,7 @@ users = {
                         }
                     }
                 }).then(function (invitedUser) {
-                    user = invitedUser.toJSON();
+                    user = invitedUser.toJSON(options);
                     return sendInviteEmail(user);
                 }).then(function () {
                     // If status was invited-pending and sending the invitation succeeded, set status to invited.
@@ -239,7 +239,7 @@ users = {
                         return dataProvider.User.edit(
                             {status: 'invited'}, _.extend({}, options, {id: user.id})
                         ).then(function (editedUser) {
-                            user = editedUser.toJSON();
+                            user = editedUser.toJSON(options);
                         });
                     }
                 }).then(function () {

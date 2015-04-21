@@ -1,4 +1,5 @@
-var url             = require('url'),
+var _               = require('lodash'),
+    url             = require('url'),
     moment          = require('moment'),
     config          = require('../../server/config'),
     ApiRouteBase    = '/ghost/api/v0.1/',
@@ -62,9 +63,10 @@ function checkResponseValue(jsonResponse, properties) {
     Object.keys(jsonResponse).length.should.eql(properties.length);
 }
 
-function checkResponse(jsonResponse, objectType, additionalProperties) {
+function checkResponse(jsonResponse, objectType, additionalProperties, missingProperties) {
     var checkProperties = expectedProperties[objectType];
     checkProperties = additionalProperties ? checkProperties.concat(additionalProperties) : checkProperties;
+    checkProperties = missingProperties ? _.xor(checkProperties, missingProperties) : checkProperties;
 
     checkResponseValue(jsonResponse, checkProperties);
 }
