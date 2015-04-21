@@ -236,7 +236,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
-    blogApp.use(serveSharedFile('BingSiteAuth.xml', 'text/xml', utils.ONE_DAY_S));
 
     // Static assets
     blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
@@ -263,7 +262,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
-    blogApp.use(serveSharedFile('bingsiteauth.xml', 'text/xml', utils.ONE_HOUR_S));
 
     // site map
     sitemapHandler(blogApp);
