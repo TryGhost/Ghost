@@ -402,7 +402,7 @@ frontendControllers = {
             // If we've thrown an error message
             // of type: 'NotFound' then we found
             // no path match.
-            if (err.type === 'NotFoundError') {
+            if (err.errorType === 'NotFoundError') {
                 return next();
             }
 

@@ -5,7 +5,7 @@ function UnsupportedMediaTypeError(message) {
     this.message = message;
     this.stack = new Error().stack;
     this.code = 415;
-    this.type = this.name;
+    this.errorType = this.name;
 }
 
 UnsupportedMediaTypeError.prototype = Object.create(Error.prototype);

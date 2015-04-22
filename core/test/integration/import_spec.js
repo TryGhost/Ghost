@@ -257,7 +257,7 @@ describe('Import', function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
                 error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
-                error[0].type.should.eql('ValidationError');
+                error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
                     knex('users').select(),
@@ -302,7 +302,7 @@ describe('Import', function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
                 error[0].message.should.eql('Value in [settings.key] cannot be blank.');
-                error[0].type.should.eql('ValidationError');
+                error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
                     knex('users').select(),
@@ -429,7 +429,7 @@ describe('Import', function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
                 error[0].message.should.eql('Value in [posts.title] exceeds maximum length of 150 characters.');
-                error[0].type.should.eql('ValidationError');
+                error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
                     knex('users').select(),
@@ -473,7 +473,7 @@ describe('Import', function () {
                 (1).should.eql(0, 'Data import should not resolve promise.');
             }, function (error) {
                 error[0].message.should.eql('Value in [settings.key] cannot be blank.');
-                error[0].type.should.eql('ValidationError');
+                error[0].errorType.should.eql('ValidationError');
 
                 Promise.all([
                     knex('users').select(),
@@ -567,15 +567,15 @@ describe('Import', function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
                 response.length.should.equal(5);
-                response[0].type.should.equal('ValidationError');
+                response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [posts.title] cannot be blank.');
-                response[1].type.should.equal('ValidationError');
+                response[1].errorType.should.equal('ValidationError');
                 response[1].message.should.eql('Value in [posts.slug] cannot be blank.');
-                response[2].type.should.equal('ValidationError');
+                response[2].errorType.should.equal('ValidationError');
                 response[2].message.should.eql('Value in [settings.key] cannot be blank.');
-                response[3].type.should.equal('ValidationError');
+                response[3].errorType.should.equal('ValidationError');
                 response[3].message.should.eql('Value in [tags.slug] cannot be blank.');
-                response[4].type.should.equal('ValidationError');
+                response[4].errorType.should.equal('ValidationError');
                 response[4].message.should.eql('Value in [tags.name] cannot be blank.');
                 done();
             }).catch(done);
@@ -590,7 +590,7 @@ describe('Import', function () {
                 done(new Error('Allowed import of duplicate data'));
             }).catch(function (response) {
                 response.length.should.be.above(0);
-                response[0].type.should.equal('DataImportError');
+                response[0].errorType.should.equal('DataImportError');
                 done();
             }).catch(done);
         });
@@ -607,7 +607,7 @@ describe('Import', function () {
             }).catch(function (response) {
                 response.length.should.equal(1);
                 response[0].message.should.eql('Attempting to import data linked to unknown user id 2');
-                response[0].type.should.equal('DataImportError');
+                response[0].errorType.should.equal('DataImportError');
 
                 done();
             }).catch(done);
@@ -627,9 +627,9 @@ describe('Import', function () {
                 done(new Error('Allowed import of invalid tags data'));
             }).catch(function (response) {
                 response.length.should.equal(2);
-                response[0].type.should.equal('ValidationError');
+                response[0].errorType.should.equal('ValidationError');
                 response[0].message.should.eql('Value in [tags.name] cannot be blank.');
-                response[1].type.should.equal('ValidationError');
+                response[1].errorType.should.equal('ValidationError');
                 response[1].message.should.eql('Value in [tags.slug] cannot be blank.');
                 done();
             }).catch(done);
