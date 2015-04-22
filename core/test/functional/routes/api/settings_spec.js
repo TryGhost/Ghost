@@ -93,7 +93,7 @@ describe('Settings API', function () {
                 var jsonResponse = res.body;
                 jsonResponse.should.exist;
                 jsonResponse.errors.should.exist;
-                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                 done();
             });
     });
@@ -200,7 +200,7 @@ describe('Settings API', function () {
                         jsonResponse = res.body;
                         should.not.exist(res.headers['x-cache-invalidate']);
                         jsonResponse.errors.should.exist;
-                        testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                        testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                         done();
                     });
             });
