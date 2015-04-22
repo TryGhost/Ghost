@@ -245,7 +245,7 @@ users = {
                 }).then(function () {
                     return Promise.resolve({users: [user]});
                 }).catch(function (error) {
-                    if (error && error.type === 'EmailError') {
+                    if (error && error.errorType === 'EmailError') {
                         error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
                         errors.logWarn(error.message);
 

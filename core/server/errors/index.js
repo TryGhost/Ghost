@@ -189,14 +189,14 @@ errors = {
             return this.rejectError(new this.NoPermissionError(error));
         }
 
-        if (error.type) {
+        if (error.errorType) {
             return this.rejectError(error);
         }
 
         // handle database errors
         if (error.code && (error.errno || error.detail)) {
             error.db_error_code = error.code;
-            error.type = 'DatabaseError';
+            error.errorType = 'DatabaseError';
             error.code = 500;
 
             return this.rejectError(error);
@@ -323,7 +323,7 @@ errors = {
 
                 errorContent.message = _.isString(errorItem) ? errorItem :
                     (_.isObject(errorItem) ? errorItem.message : 'Unknown Error');
-                errorContent.type = errorItem.type || 'InternalServerError';
+                errorContent.errorType = errorItem.errorType || 'InternalServerError';
                 returnErrors.push(errorContent);
             });
 
