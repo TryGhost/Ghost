@@ -1,6 +1,6 @@
 {
     "name"        : "ghost",
-    "version"     : "0.6.1",
+    "version"     : "0.6.2",
     "description" : "Just a blogging platform.",
     "author"      : "Ghost Foundation",
     "homepage"    : "http://ghost.org",
@@ -24,7 +24,7 @@
     "main": "./core/index",
     "scripts": {
         "start": "node index",
-        "test": "./node_modules/.bin/grunt validate --verbose"
+        "test": "grunt validate --verbose"
     },
     "engines": {
         "node": "~0.10.0 || ~0.12.0",

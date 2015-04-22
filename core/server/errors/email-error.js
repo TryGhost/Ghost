@@ -5,7 +5,7 @@ function EmailError(message) {
     this.message = message;
     this.stack = new Error().stack;
     this.code = 500;
-    this.type = this.name;
+    this.errorType = this.name;
 }
 
 EmailError.prototype = Object.create(Error.prototype);

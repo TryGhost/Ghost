@@ -166,7 +166,7 @@ formatHttpErrors = function (error) {
 
         errorContent.message = _.isString(errorItem) ? errorItem :
             (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
-        errorContent.type = errorItem.type || 'InternalServerError';
+        errorContent.errorType = errorItem.errorType || 'InternalServerError';
         errors.push(errorContent);
     });
 
