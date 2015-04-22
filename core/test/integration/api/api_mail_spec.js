@@ -78,30 +78,30 @@ describe('Mail API', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
             return MailAPI.send(mailDataNoDomain, testUtils.context.internal).then(function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
-                error.message.should.startWith('Email Error: Failed sending email');
+                error.message.should.startWith('Error: Sending failed');
                 error.type.should.eql('EmailError');
                 done();
             }).catch(done);
         });
 
         // This test doesn't work properly - it times out locally
-        it.skip('return correct failure message for no mail server at this address', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+        it('return correct failure message for no mail server at this address', function (done) {
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
             MailAPI.send(mailDataNoServer, testUtils.context.internal).then(function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
-                error.message.should.eql('Email Error: Failed sending email.');
+                error.message.should.eql('Error: Sending failed');
                 error.type.should.eql('EmailError');
                 done();
             }).catch(done);
         });
 
         it('return correct failure message for incomplete data', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
 
             MailAPI.send(mailDataIncomplete, testUtils.context.internal).then(function () {
                 done(new Error('Error message not shown.'));
@@ -113,34 +113,29 @@ describe('Mail API', function () {
         });
     });
 
-    describe.skip('Stub', function () {
+    describe('Stub', function () {
         it('returns a success', function (done) {
-            config.set({mail: {transport: 'stub'}});
-
+            config.set({mail: {options: {service: 'stub'}}});
             mailer.init().then(function () {
-                mailer.transport.transportType.should.eql('STUB');
                 return MailAPI.send(mailDataNoServer, testUtils.context.internal);
             }).then(function (response) {
                 should.exist(response.mail);
                 should.exist(response.mail[0].message);
                 should.exist(response.mail[0].status);
-                response.mail[0].status.should.eql({message: 'Message Queued'});
                 response.mail[0].message.subject.should.eql('testemail');
                 done();
             }).catch(done);
         });
 
         it('returns a boo boo', function (done) {
-            config.set({mail: {transport: 'stub', error: 'Stub made a boo boo :('}});
-
+            config.set({mail: {options: {service: 'stub', error: 'Stub made a boo boo :('}}});
             mailer.init().then(function () {
-                mailer.transport.transportType.should.eql('STUB');
+                mailer.transport.transporter.name.should.eql('Stub');
                 return MailAPI.send(mailDataNoServer, testUtils.context.internal);
-            }).then(function (response) {
-                console.log('res', response.mail[0]);
+            }).then(function () {
                 done(new Error('Stub did not error'));
             }, function (error) {
-                error.message.should.startWith('Email Error: Failed sending email: there is no mail server at this address');
+                error.message.should.startWith('Error: Stub made a boo boo :(');
                 error.type.should.eql('EmailError');
                 done();
             }).catch(done);
