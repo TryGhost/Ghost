@@ -64,8 +64,8 @@ describe('Authentication API', function () {
                     return done(err);
                 }
                 var jsonResponse = res.body;
-                should.exist(jsonResponse.errors[0].type);
-                jsonResponse.errors[0].type.should.eql('NotFoundError');
+                should.exist(jsonResponse.errors[0].errorType);
+                jsonResponse.errors[0].errorType.should.eql('NotFoundError');
                 done();
             });
     });
@@ -81,8 +81,8 @@ describe('Authentication API', function () {
                     return done(err);
                 }
                 var jsonResponse = res.body;
-                should.exist(jsonResponse.errors[0].type);
-                jsonResponse.errors[0].type.should.eql('UnauthorizedError');
+                should.exist(jsonResponse.errors[0].errorType);
+                jsonResponse.errors[0].errorType.should.eql('UnauthorizedError');
                 done();
             });
     });
@@ -128,8 +128,8 @@ describe('Authentication API', function () {
                     return done(err);
                 }
                 var jsonResponse = res.body;
-                should.exist(jsonResponse.errors[0].type);
-                jsonResponse.errors[0].type.should.eql('NoPermissionError');
+                should.exist(jsonResponse.errors[0].errorType);
+                jsonResponse.errors[0].errorType.should.eql('NoPermissionError');
                 done();
             });
     });

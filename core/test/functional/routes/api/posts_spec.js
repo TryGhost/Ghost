@@ -298,7 +298,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.errors.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
         });
@@ -318,7 +318,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.errors.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
         });
@@ -338,7 +338,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.errors.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
         });
@@ -677,7 +677,7 @@ describe('Post API', function () {
                             should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
                             jsonResponse.errors.should.exist;
-                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                             done();
                         });
                 });
@@ -813,7 +813,7 @@ describe('Post API', function () {
                             should.not.exist(res.headers['x-cache-invalidate']);
                             jsonResponse = res.body;
                             jsonResponse.errors.should.exist;
-                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                            testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                             done();
                         });
                 });
@@ -859,7 +859,7 @@ describe('Post API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.errors.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
         });

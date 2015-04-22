@@ -51,7 +51,7 @@ describe('Mail API', function () {
                 done();
             }).catch(function (error) {
                 error.message.should.eql('Email Error: No e-mail transport configured.');
-                error.type.should.eql('EmailError');
+                error.errorType.should.eql('EmailError');
                 done();
             }).catch(done);
         });
@@ -62,7 +62,7 @@ describe('Mail API', function () {
                 done();
             }).catch(function (error) {
                 error.message.should.eql('Email Error: No e-mail transport configured.');
-                error.type.should.eql('EmailError');
+                error.errorType.should.eql('EmailError');
                 done();
             }).catch(done);
         });
@@ -83,7 +83,7 @@ describe('Mail API', function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
                 error.message.should.startWith('Email Error: Failed sending email');
-                error.type.should.eql('EmailError');
+                error.errorType.should.eql('EmailError');
                 done();
             }).catch(done);
         });
@@ -95,7 +95,7 @@ describe('Mail API', function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
                 error.message.should.eql('Email Error: Failed sending email.');
-                error.type.should.eql('EmailError');
+                error.errorType.should.eql('EmailError');
                 done();
             }).catch(done);
         });
@@ -107,7 +107,7 @@ describe('Mail API', function () {
                 done(new Error('Error message not shown.'));
             }, function (error) {
                 error.message.should.eql('Email Error: Incomplete message data.');
-                error.type.should.eql('EmailError');
+                error.errorType.should.eql('EmailError');
                 done();
             }).catch(done);
         });
@@ -141,7 +141,7 @@ describe('Mail API', function () {
                 done(new Error('Stub did not error'));
             }, function (error) {
                 error.message.should.startWith('Email Error: Failed sending email: there is no mail server at this address');
-                error.type.should.eql('EmailError');
+                error.errorType.should.eql('EmailError');
                 done();
             }).catch(done);
         });

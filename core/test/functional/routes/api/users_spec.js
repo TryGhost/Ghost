@@ -282,7 +282,7 @@ describe('User API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.errors.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
         });
@@ -302,7 +302,7 @@ describe('User API', function () {
                     var jsonResponse = res.body;
                     jsonResponse.should.exist;
                     jsonResponse.errors.should.exist;
-                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'type']);
+                    testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                     done();
                 });
         });
