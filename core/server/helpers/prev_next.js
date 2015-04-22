@@ -8,9 +8,10 @@ var api             = require('../api'),
     Promise         = require('bluebird'),
     fetch, prevNext;
 
-fetch = function (options) {
-    return api.posts.read(options).then(function (result) {
+fetch = function (apiOptions, options) {
+    return api.posts.read(apiOptions).then(function (result) {
         var related = result.posts[0];
+
         if (related.previous) {
             return options.fn(related.previous);
         } else if (related.next) {
@@ -26,10 +27,14 @@ fetch = function (options) {
 
 prevNext =  function (options) {
     options = options || {};
-    options.include = options.name === 'prev_post' ? 'previous' : 'next';
+
+    var apiOptions = {
+        include: options.name === 'prev_post' ? 'previous' : 'next'
+    };
+
     if (schema.isPost(this)) {
-        options.slug = this.slug;
-        return fetch(options);
+        apiOptions.slug = this.slug;
+        return fetch(apiOptions, options);
     } else {
         return Promise.resolve(options.inverse(this));
     }
