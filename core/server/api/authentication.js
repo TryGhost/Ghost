@@ -228,7 +228,7 @@ authentication = {
                 userSettings.push({key: 'title', value: setupUser.blogTitle});
                 userSettings.push({key: 'description', value: 'Thoughts, stories and ideas.'});
             }
-            setupUser = user.toJSON();
+            setupUser = user.toJSON(internal);
             return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
         }).then(function () {
             var data = {

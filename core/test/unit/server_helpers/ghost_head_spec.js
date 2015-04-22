@@ -299,7 +299,6 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.9" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
 
