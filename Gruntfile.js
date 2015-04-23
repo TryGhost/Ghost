@@ -589,7 +589,7 @@ var _              = require('lodash'),
         //
         // `grunt validate` is called by `npm test` and is used by Travis.
         grunt.registerTask('validate', 'Run tests and lint code',
-            ['init', 'test-all']);
+            ['init', 'lint', 'test-all']);
 
         // ### Test-All
         // **Main testing task**
@@ -600,7 +600,7 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
-            ['lint', 'test-routes', 'test-module', 'test-unit', 'test-integration', 'shell:ember:test', 'test-functional']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'shell:ember:test', 'test-functional']);
 
         // ### Lint
         //
