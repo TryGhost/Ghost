@@ -22,7 +22,7 @@
 
 .entry-container .entry-title {
     height: 60px;
-    padding: 0 20px;
+    padding: 0;
     position: relative;
 
     input {
@@ -31,9 +31,10 @@
         border: 0;
         margin: 0;
         padding: 0;
-        font-size: 3.6rem;
+        font-size: 3.2rem;
         font-weight: bold;
         letter-spacing: -1px;
+        text-indent: 20px;
         background: transparent;
 
         &:focus {
@@ -53,11 +54,6 @@
         @media (min-width: 401px) {
             bottom: 40px;
         }
-    }
-
-    .entry-container {
-        position: relative;
-        height: 100%;
     }
 
     // The two content panel wrappers, positioned left/right
