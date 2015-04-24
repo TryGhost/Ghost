@@ -41,7 +41,7 @@
 
             <div class="form-group first-form-group">
                 <label for="user-name">Full Name</label>
-                {{input value=user.name id="user-name" class="user-name" placeholder="Full Name" autocorrect="off"}}
+                {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off"}}
                 <p>Use your real name so people can recognise you</p>
             </div>
 
@@ -51,13 +51,13 @@
 
             <div class="form-group">
                 <label for="user-slug">Slug</label>
-                {{gh-input class="user-name" id="user-slug" value=slugValue name="user" focus-out="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
+                {{gh-input class="gh-input user-name" id="user-slug" value=slugValue name="user" focus-out="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
                 <p>{{gh-blog-url}}/author/{{slugValue}}</p>
             </div>
 
             <div class="form-group">
                 <label for="user-email">Email</label>
-                {{input type="email" value=user.email id="user-email" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                {{input type="email" value=user.email id="user-email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
                 <p>Used for notifications</p>
             </div>
             {{#if view.rolesDropdownIsVisible}}
@@ -72,19 +72,19 @@
             {{/if}}
             <div class="form-group">
                 <label for="user-location">Location</label>
-                {{input type="text" value=user.location id="user-location"}}
+                {{input type="text" value=user.location id="user-location" class="gh-input"}}
                 <p>Where in the world do you live?</p>
             </div>
 
             <div class="form-group">
                 <label for="user-website">Website</label>
-                {{input type="url" value=user.website id="user-website" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off"}}
                 <p>Have a website or blog other than this one? Link it!</p>
             </div>
 
             <div class="form-group bio-container">
                 <label for="user-bio">Bio</label>
-                {{textarea id="user-bio" value=user.bio}}
+                {{textarea id="user-bio" class="gh-input" value=user.bio}}
                 <p>
                     Write about you, in 200 characters or less.
                     {{gh-count-characters user.bio}}
@@ -99,18 +99,18 @@
             {{#unless view.isNotOwnProfile}}
             <div class="form-group">
                 <label for="user-password-old">Old Password</label>
-                {{input value=user.password type="password" id="user-password-old"}}
+                {{input value=user.password type="password" id="user-password-old" class="gh-input"}}
             </div>
             {{/unless}}
 
             <div class="form-group">
                 <label for="user-password-new">New Password</label>
-                {{input value=user.newPassword type="password" id="user-password-new"}}
+                {{input value=user.newPassword type="password" id="user-password-new" class="gh-input"}}
             </div>
 
             <div class="form-group">
                 <label for="user-new-password-verification">Verify Password</label>
-                {{input value=user.ne2Password type="password" id="user-new-password-verification"}}
+                {{input value=user.ne2Password type="password" id="user-new-password-verification" class="gh-input"}}
             </div>
             <div class="form-group">
                 <button type="button" class="btn btn-red button-change-password" {{action "password"}}>Change Password</button>

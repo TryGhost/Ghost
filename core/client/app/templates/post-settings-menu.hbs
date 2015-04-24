@@ -22,7 +22,7 @@
                 {{/if}}
 
                 <span class="input-icon icon-link">
-                    {{gh-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" selectOnClick="true" stopEnterKeyDownPropagation="true"}}
+                    {{gh-input class="gh-input post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" selectOnClick="true" stopEnterKeyDownPropagation="true"}}
                 </span>
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
@@ -30,7 +30,7 @@
             <div class="form-group">
                 <label for="post-setting-date">Publish Date</label>
                 <span class="input-icon icon-calendar">
-                    {{gh-input class="post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" stopEnterKeyDownPropagation="true"}}
+                    {{gh-input class="gh-input post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" stopEnterKeyDownPropagation="true"}}
                 </span>
             </div>
 
@@ -62,13 +62,13 @@
 
             <div class="form-group for-checkbox">
                 <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=model.page}}
+                    {{input type="checkbox" name="static-page" id="static-page" class="gh-input post-setting-static-page" checked=model.page}}
                     <span class="input-toggle-component"></span>
                     <p>Turn this post into a static page</p>
                 </label>
 
                 <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                    {{input type="checkbox" name="featured" id="featured" class="post-setting-featured" checked=model.featured}}
+                    {{input type="checkbox" name="featured" id="featured" class="gh-input post-setting-featured" checked=model.featured}}
                     <span class="input-toggle-component"></span>
                     <p>Feature this post</p>
                 </label>
@@ -90,13 +90,13 @@
             <form>
             <div class="form-group">
                 <label for="meta-title">Meta Title</label>
-                {{gh-input class="post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
+                {{gh-input class="gh-input post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
             </div>
 
             <div class="form-group">
                 <label for="meta-description">Meta Description</label>
-                {{gh-textarea class="post-setting-meta-description" id="meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
+                {{gh-textarea class="gh-input post-setting-meta-description" id="meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
             </div>
 

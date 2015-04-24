@@ -18,6 +18,7 @@
 // The dropdown wrapper <div>
 .dropdown {
     position: relative;
+    z-index: 1000;
 }
 
 // Prevent the focus on the dropdown toggle when closing dropdowns
@@ -30,7 +31,6 @@
     position: absolute;
     top: 100%;
     left: 0;
-    z-index: 1000;
 
     float: left;
     min-width: 220px;
@@ -39,7 +39,7 @@
 
     background-color: #fff;
     border: darken($lightgrey, 15%) 1px solid;
-    border-radius: 2px;
+    border-radius: 4px;
     box-shadow: rgba(0,0,0,0.175) 0 2px 6px;
     background-clip: padding-box;
 

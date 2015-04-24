@@ -15,21 +15,6 @@
 
 
 //
-// Container
-// --------------------------------------------------
-
-.content-view-container {
-    position: relative;
-    height: 100%;
-    width: 100%;
-
-    @media (max-width: 900px) {
-        overflow-x: hidden;
-    }
-}
-
-
-//
 // Show/Hide on mobile
 // --------------------------------------------------
 
@@ -105,7 +90,6 @@
         right: 0;
         bottom: 0;
         left: 0;
-        padding-top: 40px;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -214,9 +198,8 @@
         }//a
     }//li
 
-    li.active {
+    .active {
         @media (min-width: 901px) {
-            border-bottom: lighten($midgrey, 40%) 1px solid;
             background: lighten($lightbrown, 5%);
         }
     }
