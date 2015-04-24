@@ -147,21 +147,6 @@
 // The main content panel on the right
 
 .settings-content {
-    @media (max-width: 900px) {
-        &.fade-in {
-            animation: none;
-        }
-    }
-
-    @media (min-width: 901px) {
-        position: absolute;
-        top: 0;
-        right: 0;
-        left: 25%;
-        bottom: 0;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-    }
 
     .settings-general img {
         max-width: 100%;
