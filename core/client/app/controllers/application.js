@@ -1,7 +1,7 @@
 import Ember from 'ember';
 var ApplicationController = Ember.Controller.extend({
     // jscs: disable
-    hideNav: Ember.computed.match('currentPath', /(error|signin|signup|setup|forgotten|reset)/),
+    signedOut: Ember.computed.match('currentPath', /(signin|signup|setup|forgotten|reset)/),
     // jscs: enable
 
     topNotificationCount: 0,

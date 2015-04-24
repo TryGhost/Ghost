@@ -12,13 +12,13 @@
 
             <div class="form-group">
                 <label for="blog-title">Blog Title</label>
-                {{input id="blog-title" name="general[title]" type="text" value=model.title}}
+                {{input id="blog-title" class="gh-input" name="general[title]" type="text" value=model.title}}
                 <p>The name of your blog</p>
             </div>
 
             <div class="form-group description-container">
                 <label for="blog-description">Blog Description</label>
-                {{textarea id="blog-description" name="general[description]" value=model.description}}
+                {{textarea id="blog-description" class="gh-input" name="general[description]" value=model.description}}
                 <p>
                     Describe what your blog is about
                     {{gh-count-characters model.description}}
@@ -50,21 +50,21 @@
         <fieldset>
             <div class="form-group">
                 <label for="email-address">Email Address</label>
-                {{input id="email-address" name="general[email-address]" type="email" value=model.email autocapitalize="off" autocorrect="off"}}
+                {{input id="email-address" class="gh-input" name="general[email-address]" type="email" value=model.email autocapitalize="off" autocorrect="off"}}
                 <p>Address to use for admin notifications</p>
             </div>
 
             <div class="form-group">
                 <label for="postsPerPage">Posts per page</label>
                 {{! `pattern` brings up numeric keypad allowing any number of digits}}
-                {{input id="postsPerPage" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
+                {{input id="postsPerPage" class="gh-input" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
                 <p>How many posts should be displayed on each page</p>
             </div>
 
             <div class="form-group for-checkbox">
                 <label for="permalinks">Dated Permalinks</label>
                 <label class="checkbox" for="permalinks">
-                    {{input id="permalinks" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
+                    {{input id="permalinks" class="gh-input" name="general[permalinks]" type="checkbox" checked=isDatedPermalinks}}
                     <span class="input-toggle-component"></span>
                     <p>Include the date in your post URLs</p>
                 </label>

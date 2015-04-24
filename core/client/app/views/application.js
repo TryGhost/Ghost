@@ -27,14 +27,6 @@ var ApplicationView = Ember.View.extend({
             });
         });
 
-        function swapUserMenuDropdownTriangleClasses(mq) {
-            if (mq.matches) {
-                $('.js-user-menu-dropdown-menu').removeClass('dropdown-triangle-top-right ').addClass('dropdown-triangle-bottom');
-            } else {
-                $('.js-user-menu-dropdown-menu').removeClass('dropdown-triangle-bottom').addClass('dropdown-triangle-top-right');
-            }
-        }
-
         // #### Listen to the viewport and change user-menu dropdown triangle classes accordingly
         this.set('swapUserMenuDropdownTriangleClasses', Ember.run.bind(this, swapUserMenuDropdownTriangleClasses));
 
