@@ -42,7 +42,7 @@ app.import('bower_components/showdown-ghost/src/extensions/footnotes.js');
 app.import('bower_components/showdown-ghost/src/extensions/highlight.js');
 app.import('bower_components/moment/moment.js');
 app.import('bower_components/keymaster/keymaster.js');
-app.import('bower_components/device/lib/device.js');
+app.import('bower_components/devicejs/lib/device.js');
 app.import('bower_components/jquery-ui/ui/jquery-ui.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload.js');
 app.import('bower_components/fastclick/lib/fastclick.js');
