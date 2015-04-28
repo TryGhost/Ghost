@@ -49,8 +49,9 @@ function getData(options) {
     };
 
     return Promise.props(ops).then(function (result) {
-        var titleStart = options.tags ? result.results.meta.filters.tags[0].name + ' - ' :
-                options.author ? result.results.meta.filters.author.name + ' - ' : '';
+        var titleStart = '';
+        if (options.tag) { titleStart = result.results.meta.filters.tags[0].name + ' - ' || ''; }
+        if (options.author) { titleStart = result.results.meta.filters.author.name + ' - ' || ''; }
 
         return {
             title: titleStart + result.title.settings[0].value,
@@ -104,18 +105,7 @@ function processUrls(html, siteUrl, itemUrl) {
             // if the relative URL begins with a '/' use the blog URL (including sub-directory)
             // as the base URL, otherwise use the post's URL.
             baseUrl = attributeValue[0] === '/' ? siteUrl : itemUrl;
-
-            // prevent double subdirectories
-            if (attributeValue.indexOf(config.paths.subdir) === 0) {
-                attributeValue = attributeValue.replace(config.paths.subdir, '');
-            }
-
-            // prevent double slashes
-            if (baseUrl.slice(-1) === '/' && attributeValue[0] === '/') {
-                attributeValue = attributeValue.substr(1);
-            }
-
-            attributeValue = baseUrl + attributeValue;
+            attributeValue = config.urlJoin(baseUrl, attributeValue);
             el.attr(attributeName, attributeValue);
         });
     });
