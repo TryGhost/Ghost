@@ -544,4 +544,12 @@
         outline: 0;
     }
 
+    .CodeMirror {
+        border-radius: inherit; // Inherits from .settings-code-editor
+    }
+
+    // Overwrite bright yellow text
+    .cm-s-xq-light span.cm-meta {
+        color: #000;
+    }
 }
