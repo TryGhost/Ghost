@@ -51,7 +51,7 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
-     // Transition to the editor
+    // Transition to the editor
     casper.thenClick('.post-edit');
     casper.waitForSelector('#entry-title');
 
@@ -89,7 +89,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 
-     // Transition to the editor
+    // Transition to the editor
     casper.thenClick('.post-edit');
     casper.waitForSelector('#entry-title');
 
