@@ -213,7 +213,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return filteredOptions;
     },
 
-     // ## Model Data Functions
+    // ## Model Data Functions
 
     /**
      * ### Find All

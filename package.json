@@ -84,7 +84,7 @@
         "grunt-contrib-watch": "~0.6.1",
         "grunt-docker": "~0.0.8",
         "grunt-express-server": "~0.4.19",
-        "grunt-jscs": "~1.2.0",
+        "grunt-jscs": "~1.8.0",
         "grunt-mocha-cli": "~1.11.0",
         "grunt-mocha-istanbul": "2.4.0",
         "grunt-shell": "~1.1.1",
