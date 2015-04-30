@@ -32,7 +32,7 @@ prevNext =  function (options) {
         include: options.name === 'prev_post' ? 'previous' : 'next'
     };
 
-    if (schema.isPost(this)) {
+    if (schema.isPost(this) && this.status === 'published') {
         apiOptions.slug = this.slug;
         return fetch(apiOptions, options);
     } else {
