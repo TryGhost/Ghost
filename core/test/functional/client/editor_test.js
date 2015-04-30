@@ -330,7 +330,7 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     });
 
     casper.then(function switchMenuToPublish() {
-       // Open the publish options menu;
+        // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
         casper.waitForOpaque('.js-publish-splitbutton .open');
@@ -386,7 +386,7 @@ CasperTest.begin('Publish menu - new page', 10, function suite(test) {
     casper.thenClick('label[for=static-page]');
 
     casper.then(function switchMenuToPublish() {
-       // Open the publish options menu;
+        // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
         casper.waitForOpaque('.js-publish-splitbutton .open');
@@ -596,7 +596,7 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
     });
 
     casper.then(function switchMenuToPublish() {
-       // Open the publish options menu;
+        // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
         casper.waitForOpaque('.js-publish-splitbutton .open');

@@ -376,7 +376,7 @@ describe('Config', function () {
         });
 
         it('creates the config file if one does not exist', function (done) {
-                // trick bootstrap into thinking that the config file doesn't exist yet
+            // trick bootstrap into thinking that the config file doesn't exist yet
             var existsStub = sandbox.stub(fs, 'stat', function (file, cb) { return cb(true); }),
                 // ensure that the file creation is a stub, the tests shouldn't really create a file
                 writeFileStub = sandbox.stub(config, 'writeFile').returns(Promise.resolve()),
@@ -403,13 +403,13 @@ describe('Config', function () {
             }).then(function (localConfig) {
                 localConfig.url.should.equal('https://testurl.com');
 
-                 // Next test
+                // Next test
                 overrideConfig({url: 'http://testurl.com/blog/'});
                 return config.load();
             }).then(function (localConfig) {
                 localConfig.url.should.equal('http://testurl.com/blog/');
 
-                 // Next test
+                // Next test
                 overrideConfig({url: 'http://testurl.com/ghostly/'});
                 return config.load();
             }).then(function (localConfig) {

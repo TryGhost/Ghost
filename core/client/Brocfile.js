@@ -17,7 +17,7 @@ app = new EmberApp({
     outputPaths: {
         app: {
             js: assetLocation('ghost.js')
-//          css: see config/environment.js (sassOptions)
+            // css: see config/environment.js (sassOptions)
         },
         vendor: {
             js:  assetLocation('vendor.js'),
