@@ -83,20 +83,20 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
     casper.thenClick('.post-edit');
     casper.waitForSelector('#entry-title');
 
-    // TODO readd this test when #3811 is fixed
-//    // Change post to static page
-//    casper.thenClick('.post-settings');
-//    casper.waitForOpaque('.post-settings-menu.open');
-//
-//    casper.thenClick('.post-setting-static-page');
-//
-//    casper.thenTransitionAndWaitForScreenLoad('content', function onSuccess() {
-//        casper.waitForSelector('.content-list-content li .entry-meta .status .page', function waitForSuccess() {
-//               test.assertSelectorHasText('.content-list-content li .entry-meta .status .page', 'Page', 'status is Page');
-//           }, function onTimeout() {
-//               test.assert(false, 'status did not change');
-//           });
-//    });
+    // // TODO readd this test when #3811 is fixed
+    // // Change post to static page
+    // casper.thenClick('.post-settings');
+    // casper.waitForOpaque('.post-settings-menu.open');
+
+    // casper.thenClick('.post-setting-static-page');
+
+    // casper.thenTransitionAndWaitForScreenLoad('content', function onSuccess() {
+    //    casper.waitForSelector('.content-list-content li .entry-meta .status .page', function waitForSuccess() {
+    //           test.assertSelectorHasText('.content-list-content li .entry-meta .status .page', 'Page', 'status is Page');
+    //       }, function onTimeout() {
+    //           test.assert(false, 'status did not change');
+    //       });
+    // });
 });
 
 // TODO: Implement this test... much needed!
