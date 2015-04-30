@@ -51,7 +51,7 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
     },
 
     actions: {
-         authorizationFailed: function () {
+        authorizationFailed: function () {
             this.send('openModal', 'signin');
         }
     }

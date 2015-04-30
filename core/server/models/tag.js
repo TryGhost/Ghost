@@ -41,7 +41,7 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     saving: function (newPage, attr, options) {
-         /*jshint unused:false*/
+        /*jshint unused:false*/
 
         var self = this;
 

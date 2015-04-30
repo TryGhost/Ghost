@@ -159,7 +159,7 @@ utils = {
 
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (tag) {
-             // Validate minimum tag fields
+            // Validate minimum tag fields
             if (areEmpty(tag, 'name', 'slug')) {
                 return;
             }
@@ -188,12 +188,12 @@ utils = {
 
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (post) {
-             // Validate minimum post fields
+            // Validate minimum post fields
             if (areEmpty(post, 'title', 'slug', 'markdown')) {
                 return;
             }
 
-             // The post importer has auto-timestamping disabled
+            // The post importer has auto-timestamping disabled
             if (!post.created_at) {
                 post.created_at = Date.now();
             }
@@ -213,7 +213,7 @@ utils = {
 
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (user) {
-             // Validate minimum user fields
+            // Validate minimum user fields
             if (areEmpty(user, 'name', 'slug', 'email')) {
                 return;
             }
