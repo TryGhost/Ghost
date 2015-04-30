@@ -7,7 +7,8 @@ var frontend    = require('../controllers/frontend'),
 
 frontendRoutes = function () {
     var router = express.Router(),
-        subdir = config.paths.subdir;
+        subdir = config.paths.subdir,
+        routeKeywords = config.routeKeywords;
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirect(req, res) {
@@ -37,19 +38,22 @@ frontendRoutes = function () {
     });
 
     // Tags
-    router.get('/' + config.routeKeywords.tag + '/:slug/rss/', frontend.rss);
-    router.get('/' + config.routeKeywords.tag + '/:slug/rss/:page/', frontend.rss);
-    router.get('/' + config.routeKeywords.tag + '/:slug/' + config.routeKeywords.page + '/:page/', frontend.tag);
-    router.get('/' + config.routeKeywords.tag + '/:slug/', frontend.tag);
+    router.get('/' + routeKeywords.tag + '/:slug/rss/', frontend.rss);
+    router.get('/' + routeKeywords.tag + '/:slug/rss/:page/', frontend.rss);
+    router.get('/' + routeKeywords.tag + '/:slug/' + routeKeywords.page + '/:page/', frontend.tag);
+    router.get('/' + routeKeywords.tag + '/:slug/', frontend.tag);
 
     // Authors
-    router.get('/' + config.routeKeywords.author + '/:slug/rss/', frontend.rss);
-    router.get('/' + config.routeKeywords.author + '/:slug/rss/:page/', frontend.rss);
-    router.get('/' + config.routeKeywords.author + '/:slug/' + config.routeKeywords.page + '/:page/', frontend.author);
-    router.get('/' + config.routeKeywords.author + '/:slug/', frontend.author);
+    router.get('/' + routeKeywords.author + '/:slug/rss/', frontend.rss);
+    router.get('/' + routeKeywords.author + '/:slug/rss/:page/', frontend.rss);
+    router.get('/' + routeKeywords.author + '/:slug/' + routeKeywords.page + '/:page/', frontend.author);
+    router.get('/' + routeKeywords.author + '/:slug/', frontend.author);
+
+    // Post Live Preview
+    router.get('/' + routeKeywords.preview + '/:uuid', frontend.preview);
 
     // Default
-    router.get('/' + config.routeKeywords.page + '/:page/', frontend.homepage);
+    router.get('/' + routeKeywords.page + '/:page/', frontend.homepage);
     router.get('/', frontend.homepage);
     router.get('*', frontend.single);
 

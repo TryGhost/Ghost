@@ -118,6 +118,42 @@ describe('Frontend Routing', function () {
             });
         });
 
+        describe('Post preview', function () {
+            it('should display draft posts accessed via uuid', function (done) {
+                request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')
+                    .expect('Content-Type', /html/)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        var $ = cheerio.load(res.text);
+
+                        should.not.exist(res.headers['x-cache-invalidate']);
+                        should.not.exist(res.headers['X-CSRF-Token']);
+                        should.not.exist(res.headers['set-cookie']);
+                        should.exist(res.headers.date);
+
+                        $('title').text().should.equal('Not finished yet');
+                        $('.content .post').length.should.equal(1);
+                        $('.poweredby').text().should.equal('Proudly published with Ghost');
+                        $('body.post-template').length.should.equal(1);
+                        $('body.tag-getting-started').length.should.equal(1);
+                        $('article.post').length.should.equal(1);
+
+                        done();
+                    });
+            });
+
+            it('should redirect published posts to their live url', function (done) {
+                request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
+                    .expect(301)
+                    .expect('Location', '/short-and-sweet/')
+                    .end(doEnd(done));
+            });
+        });
+
         describe('Single post', function () {
             it('should redirect without slash', function (done) {
                 request.get('/welcome-to-ghost')

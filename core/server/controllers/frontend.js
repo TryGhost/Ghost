@@ -123,6 +123,25 @@ function getActiveThemePaths() {
     });
 }
 
+/*
+* Sets the response context around a post and renders it
+* with the current theme's post view. Used by post preview
+* and single post methods.
+* Returns a function that takes the post to be rendered.
+*/
+function renderPost(req, res) {
+    return function (post) {
+        return getActiveThemePaths().then(function (paths) {
+            var view = template.getThemeViewForPost(paths, post),
+                response = formatResponse(post);
+
+            setResponseContext(req, res, response);
+
+            res.render(view, response);
+        });
+    };
+}
+
 frontendControllers = {
     homepage: function (req, res, next) {
         // Parse the page number
@@ -271,6 +290,32 @@ frontendControllers = {
         }).catch(handleError(next));
     },
 
+    preview: function (req, res, next) {
+        var params = {
+                uuid: req.params.uuid,
+                status: 'all',
+                include: 'author,tags,fields'
+            };
+
+        // Query database to find post
+        api.posts.read(params).then(function (result) {
+            var post = result.posts[0];
+
+            if (!post) {
+                return next();
+            }
+
+            if (post.status === 'published') {
+                return res.redirect(301, config.urlFor('post', {post: post}));
+            }
+
+            setReqCtx(req, post);
+
+            filters.doFilter('prePostsRender', post, res.locals)
+                .then(renderPost(req, res, post));
+        });
+    },
+
     single: function (req, res, next) {
         var path = req.path,
             params,
@@ -336,16 +381,8 @@ frontendControllers = {
 
                 setReqCtx(req, post);
 
-                filters.doFilter('prePostsRender', post, res.locals).then(function (post) {
-                    getActiveThemePaths().then(function (paths) {
-                        var view = template.getThemeViewForPost(paths, post),
-                            response = formatResponse(post);
-
-                        setResponseContext(req, res, response);
-
-                        res.render(view, response);
-                    });
-                });
+                filters.doFilter('prePostsRender', post, res.locals)
+                    .then(renderPost(req, res, post));
             }
 
             // If we've checked the path with the static permalink structure
