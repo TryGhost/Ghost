@@ -41,6 +41,7 @@ describe('{{prev_post}} helper', function () {
                 optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
 
             helpers.prev_post.call({html: 'content',
+                status: 'published',
                 markdown: 'ff',
                 title: 'post2',
                 slug: 'current',
@@ -79,6 +80,7 @@ describe('{{prev_post}} helper', function () {
                 optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
 
             helpers.prev_post.call({html: 'content',
+                status: 'published',
                 markdown: 'ff',
                 title: 'post2',
                 slug: 'current',
@@ -116,6 +118,44 @@ describe('{{prev_post}} helper', function () {
                 optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
 
             helpers.prev_post.call({}, optionsData).then(function () {
+                fn.called.should.be.false;
+                inverse.called.should.be.true;
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
+        });
+    });
+
+    describe('for unpublished post', function () {
+        var sandbox;
+
+        beforeEach(function () {
+            sandbox = sinon.sandbox.create();
+            utils.loadHelpers();
+            sandbox.stub(api.posts, 'read', function (options) {
+                if (options.include === 'previous') {
+                    return Promise.resolve({posts: [{slug: '/current/', title: 'post 2',  previous: {slug: '/previous/', title: 'post 1'}}]});
+                }
+            });
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('shows \'else\' template', function (done) {
+            var fn = sinon.spy(),
+                inverse = sinon.spy(),
+                optionsData = {name: 'prev_post', fn: fn, inverse: inverse};
+
+            helpers.prev_post.call({html: 'content',
+                status: 'draft',
+                markdown: 'ff',
+                title: 'post2',
+                slug: 'current',
+                created_at: new Date(0),
+                url: '/current/'}, optionsData).then(function () {
                 fn.called.should.be.false;
                 inverse.called.should.be.true;
                 done();
