@@ -43,6 +43,7 @@ Router.map(function () {
         this.route('labs');
         this.route('code-injection');
         this.route('navigation');
+        this.route('connections');
     });
 
     // Redirect debug to settings labs

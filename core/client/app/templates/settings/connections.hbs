@@ -1,0 +1,56 @@
+<header class="settings-view-header">
+    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
+    <h2 class="page-title">Connections</h2>
+</header>
+
+<section class="content settings-connections">
+
+    <div class="connections-group">
+        <h2 class="connections-group-title">Clients</h2>
+        <p class="connections-group-description">These are services which connect to Ghost - for example a desktop editor which allows you to send content into your Ghost account.</p>
+
+        <div class="connection-item clearfix">
+            <span class="connection-image"><img src="{{connectionImage}}" alt="Blogo icon"></span>
+            <div class="connection-text">
+                <span class="connection-title">Blogo</span>
+                <span class="connection-last-used">Last used on Mar 12, 2015</span>
+                <p class="connection-description">A simple, fast desktop publishing app for OSX</p>
+            </div>
+            <button class="connection-revoke btn btn-red icon-add">Revoke Access</button>
+        </div>
+    </div>
+
+    <div class="connections-group">
+        <h2 class="connections-group-title">Accounts</h2>
+        <p class="connections-group-description">These are services which Ghost connects to - for example sending a post from your Ghost account to one of your social networks for distribution.</p>
+
+        <div class="connection-item clearfix">
+            <span class="connection-image"><img src="{{connectionImage}}" alt="GitHub icon"></span>
+            <div class="connection-text">
+                <span class="connection-title">GitHub</span>
+                <a href="#" class="connection-username">tryghost</a>
+                <p class="connection-description">Source control and code management.</p>
+            </div>
+            <button class="connection-revoke btn btn-red icon-add">Remove</button>
+        </div>
+        <div class="connection-item clearfix">
+            <span class="connection-image"><img src="{{connectionImage}}" alt="Twitter icon"></span>
+            <div class="connection-text">
+                <span class="connection-title">Twitter</span>
+                <a href="#" class="connection-username">tryghost</a>
+                <p class="connection-description">Social networking and microblogging service.</p>
+            </div>
+            <button class="connection-revoke btn btn-red icon-add">Remove</button>
+        </div>
+        <div class="connection-item clearfix">
+            <span class="connection-image"><img src="{{connectionImage}}" alt="Google icon"></span>
+            <div class="connection-text">
+                <span class="connection-title">Google</span>
+                <a href="#" class="connection-username">john@ghost.org</a>
+                <p class="connection-description">Authentication for Google services.</p>
+            </div>
+            <button class="connection-revoke btn btn-red icon-add">Remove</button>
+        </div>
+    </div>
+
+</section>

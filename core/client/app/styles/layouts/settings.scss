@@ -11,6 +11,7 @@
 // * Custom Permalinks
 // * Navigation
 // * Code Injection
+// * Connections
 // ------------------------------------------------------------
 
 
@@ -543,5 +544,137 @@
         border-color: $brown;
         outline: 0;
     }
+}
 
+
+//
+// Connections
+// --------------------------------------------------
+
+@media (min-width: 900px) {
+    .settings-view-connections .settings-view-header {
+        display: none;
+    }
+}
+
+.connections-group + .connections-group {
+    margin-top: 62px;
+}
+
+.connections-group-title {
+    font-size: 2.6rem;
+    line-height: 1.3;
+    font-weight: normal;
+    color: $darkgrey;
+    margin-bottom: 0.5em;
+}
+
+.connections-group-description {
+    font-size: 1.8rem;
+    line-height: 1.5;
+    color: $midgrey;
+    max-width: 695px;
+}
+
+.connection-item {
+    border-top: 1px solid $lightgrey;
+    padding-top: 11px;
+    padding-bottom: 11px;
+    position: relative;
+    padding-left: 62px; // 46px image + 16px right margin
+}
+
+
+.connection-image {
+    width: 46px;
+    height: 46px;
+    border-radius: 3px;
+    overflow: hidden;
+    position: absolute;
+    top: 11px;
+    left: 0;
+
+    img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.connection-text {
+    @media (min-width: 500px) {
+        float: left;
+        width: calc(100% - 160px);
+    }
+}
+
+.connection-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: $grey;
+    display: inline-block;
+    margin-right: 3px;
+}
+
+.connection-last-used {
+    font-size: 1.3rem;
+    color: $brown;
+
+    @media (max-width: 499px) {
+        display: block;
+        margin-top: -5px;
+    }
+}
+
+.connection-username {
+    font-size: 1.4rem;
+    color: $blue;
+
+    @media (max-width: 499px) {
+        display: block;
+        margin-top: -5px;
+    }
+
+    @media (min-width: 500px) {
+        &:before {
+            content: '/';
+            color: $brown;
+            display: inline-block;
+            margin-left: -3px;
+            margin-right: 4px;
+        }
+    }
+}
+
+.connection-description {
+    font-size: 1.6rem;
+    line-height: 1.4;
+    color: $midgrey;
+
+    @media (max-width: 499px) {
+        margin: -2px 0 0 0;
+    }
+
+    @media (min-width: 500px) {
+        margin: -5px 0 0 0;
+    }
+}
+
+.connection-revoke {
+    margin-top: 7px;
+
+    &:before {
+        position: relative;
+        top: 2px;
+        display: inline-block;
+        margin-right: 7px;
+        font-size: 14px;
+        transform: rotate(45deg);
+    }
+
+    @media (min-width: 500px) {
+        float: right;
+    }
 }
