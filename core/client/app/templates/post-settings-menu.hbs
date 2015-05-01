@@ -11,11 +11,16 @@
             <form>
             <div class="form-group">
                 <label for="url">Post URL</label>
-                {{#if model.isDraft}}
-                <a class="post-preview-link" target="_blank" href="{{model.previewUrl}}">
-                    Preview<span class="icon-external"></span>
+                {{#if model.isPublished}}
+                <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
+                    View post <i class="icon-external"></i>
+                </a>
+                {{else}}
+                <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
+                    Preview <i class="icon-external"></i>
                 </a>
                 {{/if}}
+
                 <span class="input-icon icon-link">
                     {{gh-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" selectOnClick="true" stopEnterKeyDownPropagation="true"}}
                 </span>
