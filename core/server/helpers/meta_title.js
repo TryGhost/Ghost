@@ -32,9 +32,21 @@ meta_title = function (options) {
     } else if (_.contains(context, 'tag') && this.tag) {
         title = this.tag.meta_title || this.tag.name + pageString + ' - ' + blog.title;
     } else if (_.contains(context, 'post') && this.post) {
-        title = this.post.meta_title || this.post.title;
+        /*
+         * XXX: Not reached for static pages using (page|post).hbs template(s).
+         *      "_.contains(context, 'post') && " breaks it / them.
+         */
+        title = this.post.meta_title || this.post.title + pageString + ' - ' + blog.title;
     } else {
-        title = blog.title + pageString;
+        /*
+         * XXX: The following workaround satisfies my needs.
+         *      I omit this.post.meta_title here since I never use it.
+         */
+        if (this.post) {
+            title = this.post.title + pageString + ' - ' + blog.title;
+        } else {
+            title = blog.title + pageString;
+        }
     }
 
     return filters.doFilter('meta_title', title).then(function (title) {
