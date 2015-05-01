@@ -692,11 +692,15 @@ body.zen {
     }
 }//.post-settings-menu
 
-.post-preview-link {
+.post-view-link {
     position: absolute;
-    top: 0;
+    top: 1px;
     right: 0;
     font-size: 1.3rem;
+
+    i {
+        font-size: 10px;
+    }
 }
 
 
