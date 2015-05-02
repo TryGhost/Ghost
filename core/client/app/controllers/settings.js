@@ -1,6 +1,8 @@
 import Ember from 'ember';
 var SettingsController = Ember.Controller.extend({
 
+    needs: ['feature'],
+
     showGeneral: Ember.computed('session.user.name', function () {
         return this.get('session.user.isAuthor') || this.get('session.user.isEditor') ? false : true;
     }),
@@ -21,6 +23,9 @@ var SettingsController = Ember.Controller.extend({
     }),
     showAbout: Ember.computed('session.user.name', function () {
         return this.get('session.user.isAuthor') ? false : true;
+    }),
+    showPassProtection: Ember.computed('session.user.name', 'controllers.feature.passProtectUI', function () {
+        return this.get('session.user.isAuthor') || this.get('session.user.isEditor') || !this.get('controllers.feature.passProtectUI') ? false : true;
     })
 });
 
