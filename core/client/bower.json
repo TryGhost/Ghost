@@ -24,7 +24,7 @@
     "normalize-scss": "3.0.2",
     "nprogress": "0.1.6",
     "rangyinputs": "1.2.0",
-    "showdown-ghost": "0.3.6",
+    "showdown-ghost": "0.4.0",
     "validator-js": "3.39.0"
 
   },
