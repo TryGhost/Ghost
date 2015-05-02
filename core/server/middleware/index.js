@@ -249,7 +249,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Static assets
     blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
@@ -273,6 +272,13 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Theme only config
     blogApp.use(middleware.staticTheme());
+
+    // Check if password protected blog
+    blogApp.use(middleware.checkIsPrivate); // check if the blog is protected
+    blogApp.use(middleware.filterPrivateRoutes);
+
+    // Serve sitemap.xsl file
+    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
@@ -315,7 +321,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use('/ghost', adminApp);
 
     // Set up Frontend routes
-    blogApp.use(routes.frontend());
+    blogApp.use(routes.frontend(middleware));
 
     // ### Error handling
     // 404 Handler

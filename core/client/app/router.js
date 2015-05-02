@@ -43,6 +43,7 @@ Router.map(function () {
         this.route('labs');
         this.route('code-injection');
         this.route('navigation');
+        this.route('pass-protect');
     });
 
     // Redirect debug to settings labs
