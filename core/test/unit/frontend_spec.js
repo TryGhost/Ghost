@@ -1438,4 +1438,79 @@ describe('Frontend Controller', function () {
             }).catch(done);
         });
     });
+
+    describe('private', function () {
+        var req, res, config, defaultPath;
+
+        defaultPath = '/core/server/views/password.hbs';
+
+        beforeEach(function () {
+            res = {
+                locals: {verson: ''},
+                render: sandbox.spy()
+            },
+            req = {
+                query: {
+                    r: ''
+                }
+            },
+            config = {
+                paths: {
+                    adminViews: '/core/server/views',
+                    availableThemes: {
+                        casper: {}
+                    }
+                }
+            };
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeTheme',
+                    value: 'casper'
+                }]
+            }));
+        });
+
+        it('Should render default password page when theme has no password template', function (done) {
+            frontend.__set__('config', config);
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath).should.be.true;
+                done();
+            }).catch(done);
+        });
+
+        it('Should render theme password page when it exists', function (done) {
+            config.paths.availableThemes.casper = {
+                'password.hbs': '/content/themes/casper/password.hbs'
+            };
+            frontend.__set__('config', config);
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith('password').should.be.true;
+                done();
+            }).catch(done);
+        });
+
+        it('Should render with forward data when it is passed in', function (done) {
+            frontend.__set__('config', config);
+            req.query.r = '/test-redirect/';
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath, {forward: '/test-redirect/'}).should.be.true;
+                done();
+            }).catch(done);
+        });
+
+        it('Should render with error when error is passed in', function (done) {
+            frontend.__set__('config', config);
+            res.error = 'Test Error';
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath, {forward: '', error: 'Test Error'}).should.be.true;
+                done();
+            }).catch(done);
+        });
+    });
 });

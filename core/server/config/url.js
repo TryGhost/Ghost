@@ -94,7 +94,7 @@ function urlPathForPost(post, permalinks) {
 // Usage:
 // urlFor('home', true) -> http://my-ghost-blog.com/
 // E.g. /blog/ subdir
-// urlFor({relativeUrl: '/my-static-page/') -> /blog/my-static-page/
+// urlFor({relativeUrl: '/my-static-page/'}) -> /blog/my-static-page/
 // E.g. if post object represents welcome post, and slugs are set to standard
 // urlFor('post', {...}) -> /welcome-to-ghost/
 // E.g. if post object represents welcome post, and slugs are set to date
