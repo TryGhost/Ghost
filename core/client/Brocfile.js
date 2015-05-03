@@ -59,5 +59,6 @@ app.import('bower_components/codemirror/mode/htmlmixed/htmlmixed.js');
 app.import('bower_components/codemirror/mode/xml/xml.js');
 app.import('bower_components/codemirror/mode/css/css.js');
 app.import('bower_components/codemirror/mode/javascript/javascript.js');
+app.import('bower_components/xregexp/xregexp-all.js');
 
 module.exports = app.toTree();
