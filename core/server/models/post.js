@@ -159,6 +159,14 @@ Post = ghostBookshelf.Model.extend({
                     self.set({slug: slug});
                 });
         }
+
+        // The post hasn't been published but the title has changed. slug needs to be regenerated:
+        if(this.get('status') == 'draft' && this.get('published_at') == null) {
+            return ghostBookshelf.Model.generateSlug(Post, this.get('title'), {status: 'all', transacting: options.transacting})
+                .then(function (slug) {
+                    self.set({slug: slug});
+                });
+        }
     },
 
     creating: function (model, attr, options) {
