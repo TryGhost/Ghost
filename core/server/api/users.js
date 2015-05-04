@@ -47,7 +47,7 @@ sendInviteEmail = function sendInviteEmail(user) {
     }).then(function (resetToken) {
         var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url;
 
-        emailData.resetLink = baseUrl.replace(/\/$/, '') + '/ghost/signup/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
+        emailData.resetLink = baseUrl.replace(/\/$/, '') + config.paths.subdir + '/ghost/signup/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
 
         return mail.generateContent({data: emailData, template: 'invite-user'});
     }).then(function (emailContent) {
