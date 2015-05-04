@@ -26,6 +26,7 @@ function prepareInclude(include) {
 
 sendInviteEmail = function sendInviteEmail(user) {
     var emailData;
+    
     return Promise.join(
         users.read({id: user.created_by}),
         settings.read({key: 'title'}),
