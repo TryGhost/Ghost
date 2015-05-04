@@ -26,7 +26,7 @@ function prepareInclude(include) {
 
 sendInviteEmail = function sendInviteEmail(user) {
     var emailData;
-    
+
     return Promise.join(
         users.read({id: user.created_by}),
         settings.read({key: 'title'}),
@@ -46,7 +46,6 @@ sendInviteEmail = function sendInviteEmail(user) {
         return dataProvider.User.generateResetToken(user.email, expires, dbHash);
     }).then(function (resetToken) {
         var baseUrl = config.forceAdminSSL ? (config.urlSSL || config.url) : config.url;
-        console.log('¡¡¡' + config.paths.subdir);
         emailData.resetLink = baseUrl.replace(/\/$/, '') + config.paths.subdir + '/ghost/signup/' + globalUtils.encodeBase64URLsafe(resetToken) + '/';
 
         return mail.generateContent({data: emailData, template: 'invite-user'});
