@@ -65,9 +65,7 @@ apiRoutes = function (middleware) {
 
     // ## Mail
     router.post('/mail', api.http(api.mail.send));
-    router.post('/mail/test', function (req, res) {
-        api.http(api.mail.sendTest)(req, res);
-    });
+    router.post('/mail/test', api.http(api.mail.sendTest));
 
     // ## Authentication
     router.post('/authentication/passwordreset',
