@@ -5,9 +5,9 @@
 var _           = require('lodash'),
     fs          = require('fs'),
     express     = require('express'),
-    bcrypt      = require('bcryptjs'),
     busboy      = require('./ghost-busboy'),
     config      = require('../config'),
+    crypto      = require('crypto'),
     path        = require('path'),
     api         = require('../api'),
     passport    = require('passport'),
@@ -81,14 +81,17 @@ function sslForbiddenOrRedirect(opt) {
     return response;
 }
 
-function verifySessionHash(hash) {
-    if (!hash) {
+function verifySessionHash(salt, hash) {
+    if (!salt || !hash) {
         return Promise.resolve(false);
     }
-    var bcryptCompare = Promise.promisify(bcrypt.compare);
+
     return api.settings.read({context: {internal: true}, key: 'password'}).then(function (response) {
-        var pass = response.settings[0].value;
-        return bcryptCompare(pass, hash);
+        var hasher = crypto.createHash('sha256');
+
+        hasher.update(response.settings[0].value + salt, 'utf8');
+
+        return hasher.digest('hex') === hash;
     });
 }
 
@@ -344,14 +347,17 @@ middleware = {
     checkIsPrivate: function (req, res, next) {
         return api.settings.read({context: {internal: true}, key: 'isPrivate'}).then(function (response) {
             var pass = response.settings[0];
+
             if (_.isEmpty(pass.value) || pass.value === 'false') {
                 res.isPrivateBlog = false;
                 return next();
             }
+
             res.isPrivateBlog = true;
+
             return session({
                 maxAge: utils.ONE_MONTH_MS,
-                keys: ['isPrivateBlog']
+                signed: false
             })(req, res, next);
         });
     },
@@ -360,7 +366,9 @@ middleware = {
         if (res.isAdmin || !res.isPrivateBlog || req.url.lastIndexOf('/private/', 0) === 0) {
             return next();
         }
-        if (req.url.lastIndexOf('/rss', 0) === 0 || req.url.lastIndexOf('/sitemap', 0) === 0) { // take care of rss and sitemap 404's
+
+        // take care of rss and sitemap 404s
+        if (req.url.lastIndexOf('/rss', 0) === 0 || req.url.lastIndexOf('/sitemap', 0) === 0) {
             return errors.error404(req, res, next);
         } else if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
             fs.readFile(path.join(config.paths.corePath, 'shared', 'private-robots.txt'), function (err, buf) {
@@ -380,8 +388,10 @@ middleware = {
     },
 
     authenticatePrivateSession: function (req, res, next) {
-        var clientHash = req.session.token || '';
-        return verifySessionHash(clientHash).then(function (isVerified) {
+        var hash = req.session.token || '',
+            salt = req.session.salt || '';
+
+        return verifySessionHash(salt, hash).then(function (isVerified) {
             if (isVerified) {
                 return next();
             } else {
@@ -395,10 +405,14 @@ middleware = {
         if (!res.isPrivateBlog) {
             return res.redirect(config.urlFor('home', true));
         }
-        var hash = req.session.token || '';
-        return verifySessionHash(hash).then(function (isVerified) {
+
+        var hash = req.session.token || '',
+            salt = req.session.salt || '';
+
+        return verifySessionHash(salt, hash).then(function (isVerified) {
             if (isVerified) {
-                return res.redirect(config.urlFor('home', true)); // redirect to home if user is already authenticated
+                // redirect to home if user is already authenticated
+                return res.redirect(config.urlFor('home', true));
             } else {
                 return next();
             }
@@ -446,18 +460,24 @@ middleware = {
     },
 
     authenticateProtection: function (req, res, next) {
-        if (res.error) { // if errors have been generated from the previous call
+        // if errors have been generated from the previous call
+        if (res.error) {
             return next();
         }
-        var bodyPass = req.body.password,
-            bcryptHash = Promise.promisify(bcrypt.hash);
+
+        var bodyPass = req.body.password;
+
         return api.settings.read({context: {internal: true}, key: 'password'}).then(function (response) {
-            var pass = response.settings[0];
+            var pass = response.settings[0],
+                hasher = crypto.createHash('sha256'),
+                salt = Date.now().toString();
+
             if (pass.value === bodyPass) {
-                return bcryptHash(pass.value, 10).then(function (hash) {
-                    req.session.token = hash;
-                    return res.redirect(config.urlFor({relativeUrl: decodeURI(req.body.forward)}));
-                });
+                hasher.update(bodyPass + salt, 'utf8');
+                req.session.token = hasher.digest('hex');
+                req.session.salt = salt;
+
+                return res.redirect(config.urlFor({relativeUrl: decodeURI(req.body.forward)}));
             } else {
                 res.error = {
                     message: 'Wrong password'
