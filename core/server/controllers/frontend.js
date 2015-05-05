@@ -143,55 +143,29 @@ function renderPost(req, res) {
     };
 }
 
-frontendControllers = {
-    homepage: function (req, res, next) {
-        // Parse the page number
+function renderChannel(channelOpts) {
+    channelOpts = channelOpts || {};
+
+    return function renderChannel(req, res, next) {
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             options = {
                 page: pageParam
-            };
+            },
+            hasSlug,
+            filter, filterKey;
 
-        // No negative pages, or page 1
-        if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && req.route.path === '/page/:page/')) {
-            return res.redirect(config.paths.subdir + '/');
+        // Add the slug if it exists in the route
+        if (channelOpts.route.indexOf(':slug') !== -1) {
+            options[channelOpts.name] = req.params.slug;
+            hasSlug = true;
         }
 
-        return getPostPage(options).then(function (page) {
-            // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > page.meta.pagination.pages) {
-                return res.redirect(page.meta.pagination.pages === 1 ? config.paths.subdir + '/' : (config.paths.subdir + '/page/' + page.meta.pagination.pages + '/'));
+        function createUrl(page) {
+            var url = config.paths.subdir + channelOpts.route;
+
+            if (hasSlug) {
+                url = url.replace(':slug', options[channelOpts.name]);
             }
-
-            setReqCtx(req, page.posts);
-
-            // Render the page of posts
-            filters.doFilter('prePostsRender', page.posts, res.locals).then(function (posts) {
-                getActiveThemePaths().then(function (paths) {
-                    var view = paths.hasOwnProperty('home.hbs') ? 'home' : 'index';
-
-                    // If we're on a page then we always render the index
-                    // template.
-                    if (pageParam > 1) {
-                        view = 'index';
-                    }
-
-                    setResponseContext(req, res);
-                    res.render(view, formatPageResponse(posts, page));
-                });
-            });
-        }).catch(handleError(next));
-    },
-    tag: function (req, res, next) {
-        // Parse the page number
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            options = {
-                page: pageParam,
-                tag: req.params.slug
-            };
-
-        // Get url for tag page
-        function tagUrl(tag, page) {
-            var url = config.paths.subdir + '/' + config.routeKeywords.tag  + '/' + tag + '/';
 
             if (page && page > 1) {
                 url += 'page/' + page + '/';
@@ -200,88 +174,47 @@ frontendControllers = {
             return url;
         }
 
-        // No negative pages, or page 1
         if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-            return res.redirect(tagUrl(options.tag));
+            return res.redirect(createUrl());
         }
 
         return getPostPage(options).then(function (page) {
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
-                return res.redirect(tagUrl(options.tag, page.meta.pagination.pages));
+                return res.redirect(createUrl(page.meta.pagination.pages));
             }
 
             setReqCtx(req, page.posts);
-            if (page.meta.filters.tags) {
-                setReqCtx(req, page.meta.filters.tags[0]);
+            if (channelOpts.filter && page.meta.filters[channelOpts.filter]) {
+                filterKey = page.meta.filters[channelOpts.filter];
+                filter = (_.isArray(filterKey)) ? filterKey[0] : filterKey;
+                setReqCtx(req, filter);
             }
 
-            // Render the page of posts
             filters.doFilter('prePostsRender', page.posts, res.locals).then(function (posts) {
                 getActiveThemePaths().then(function (paths) {
-                    var view = template.getThemeViewForTag(paths, options.tag),
-                    // Format data for template
-                        result = formatPageResponse(posts, page, {
-                            tag: page.meta.filters.tags ? page.meta.filters.tags[0] : ''
-                        });
+                    var view = 'index',
+                        result,
+                        extra = {};
 
-                    // If the resulting tag is '' then 404.
-                    if (!result.tag) {
-                        return next();
+                    if (channelOpts.firstPageTemplate && paths.hasOwnProperty(channelOpts.firstPageTemplate + '.hbs')) {
+                        view = (pageParam > 1) ? 'index' : channelOpts.firstPageTemplate;
+                    } else if (channelOpts.slugTemplate) {
+                        view = template.getThemeViewForChannel(paths, channelOpts.name, options[channelOpts.name]);
+                    } else if (paths.hasOwnProperty(channelOpts.name + '.hbs')) {
+                        view = channelOpts.name;
                     }
-                    setResponseContext(req, res);
-                    res.render(view, result);
-                });
-            });
-        }).catch(handleError(next));
-    },
-    author: function (req, res, next) {
-        // Parse the page number
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            options = {
-                page: pageParam,
-                author: req.params.slug
-            };
 
-        // Get url for tag page
-        function authorUrl(author, page) {
-            var url = config.paths.subdir + '/' + config.routeKeywords.author + '/' + author + '/';
+                    if (channelOpts.filter) {
+                        extra[channelOpts.name] = (filterKey) ? filter : '';
 
-            if (page && page > 1) {
-                url += config.routeKeywords.page + '/' + page + '/';
-            }
+                        if (!extra[channelOpts.name]) {
+                            return next();
+                        }
 
-            return url;
-        }
-
-        // No negative pages, or page 1
-        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-            return res.redirect(authorUrl(options.author));
-        }
-
-        return getPostPage(options).then(function (page) {
-            // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > page.meta.pagination.pages) {
-                return res.redirect(authorUrl(options.author, page.meta.pagination.pages));
-            }
-
-            setReqCtx(req, page.posts);
-            if (page.meta.filters.author) {
-                setReqCtx(req, page.meta.filters.author);
-            }
-
-            // Render the page of posts
-            filters.doFilter('prePostsRender', page.posts, res.locals).then(function (posts) {
-                getActiveThemePaths().then(function (paths) {
-                    var view = paths.hasOwnProperty('author.hbs') ? 'author' : 'index',
-                        // Format data for template
-                        result = formatPageResponse(posts, page, {
-                            author: page.meta.filters.author ? page.meta.filters.author : ''
-                        });
-
-                    // If the resulting author is '' then 404.
-                    if (!result.author) {
-                        return next();
+                        result = formatPageResponse(posts, page, extra);
+                    } else {
+                        result = formatPageResponse(posts, page);
                     }
 
                     setResponseContext(req, res);
@@ -289,8 +222,27 @@ frontendControllers = {
                 });
             });
         }).catch(handleError(next));
-    },
+    };
+}
 
+frontendControllers = {
+    homepage: renderChannel({
+        name: 'home',
+        route: '/',
+        firstPageTemplate: 'home'
+    }),
+    tag: renderChannel({
+        name: 'tag',
+        route: '/' + config.routeKeywords.tag + '/:slug/',
+        filter: 'tags',
+        slugTemplate: true
+    }),
+    author: renderChannel({
+        name: 'author',
+        route: '/' + config.routeKeywords.author + '/:slug/',
+        filter: 'author',
+        slugTemplate: true
+    }),
     preview: function (req, res, next) {
         var params = {
                 uuid: req.params.uuid,
