@@ -32,7 +32,7 @@
     },
     "dependencies": {
         "bcryptjs": "2.1.0",
-        "bluebird": "2.4.2",
+        "bluebird": "2.9.25",
         "body-parser": "1.10.0",
         "bookshelf": "0.7.9",
         "busboy": "0.2.9",
