@@ -68,8 +68,8 @@ var _              = require('lodash'),
             watch: {
                 livereload: {
                     files: [
-                        'content/themes/casper/assets/css/*.css',
-                        'content/themes/casper/assets/js/*.js',
+                        'content/themes/**/assets/css/*.css',
+                        'content/themes/**/assets/js/*.js',
                         'core/client/dist/*.js',
                         'core/client/dist/*.css',
                         'core/built/scripts/*.js'
@@ -899,8 +899,6 @@ var _              = require('lodash'),
         // `grunt dev` manages starting an express server and restarting the server whenever core files change (which
         // require a server restart for the changes to take effect) and also manage reloading the browser whenever
         // frontend code changes.
-        //
-        // Note that the current implementation of watch only works with casper, not other themes.
         grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes',
            ['bgShell:ember', 'express:dev', 'watch']);
 
