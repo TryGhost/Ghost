@@ -1,14 +1,22 @@
 /*globals describe, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var assert          = require('assert'),
+    crypto          = require('crypto'),
     should          = require('should'),
     sinon           = require('sinon'),
     Promise         = require('bluebird'),
     middleware      = require('../../server/middleware').middleware,
     api             = require('../../server/api'),
     errors          = require('../../server/errors'),
-    bcrypt          = require('bcryptjs'),
     fs              = require('fs');
+
+function hash(password, salt) {
+    var hasher = crypto.createHash('sha256');
+
+    hasher.update(password + salt, 'utf8');
+
+    return hasher.digest('hex');
+}
 
 describe('Middleware', function () {
     var sandbox,
@@ -272,8 +280,9 @@ describe('Middleware', function () {
             middleware.checkIsPrivate(req, res, next).then(function () {
                 next.called.should.be.true;
                 res.isPrivateBlog.should.be.false;
+
                 done();
-            });
+            }).catch(done);
         });
 
         it('checkIsPrivate should load session if private', function (done) {
@@ -286,8 +295,9 @@ describe('Middleware', function () {
 
             middleware.checkIsPrivate(req, res, next).then(function () {
                 res.isPrivateBlog.should.be.true;
+
                 done();
-            });
+            }).catch(done);
         });
 
         describe('not private', function () {
@@ -376,10 +386,6 @@ describe('Middleware', function () {
 
             describe('with hash verification', function () {
                 beforeEach(function () {
-                    sandbox.stub(bcrypt, 'compare', function (check, hash, cb) {
-                        var isVerified = (check === hash) ? true : false;
-                        cb(null, isVerified);
-                    });
                     apiSettingsStub.withArgs(sinon.match.has('key', 'password')).returns(Promise.resolve({
                         settings: [{
                             key: 'password',
@@ -389,69 +395,85 @@ describe('Middleware', function () {
                 });
 
                 it('authenticatePrivateSession should return next if hash is verified', function (done) {
+                    var salt = Date.now().toString();
+
                     req.session = {
-                        token: 'rightpassword'
+                        token: hash('rightpassword', salt),
+                        salt: salt
                     };
+
                     middleware.authenticatePrivateSession(req, res, next).then(function () {
                         next.called.should.be.true;
+
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('authenticatePrivateSession should redirect if hash is not verified', function (done) {
                     req.url = '/welcome-to-ghost';
                     req.session = {
-                        token: 'wrongpassword'
+                        token: 'wrongpassword',
+                        salt: Date.now().toString()
                     };
                     res.redirect = sinon.spy();
+
                     middleware.authenticatePrivateSession(req, res, next).then(function () {
                         res.redirect.called.should.be.true;
+
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('isPrivateSessionAuth should redirect if hash is verified', function (done) {
+                    var salt = Date.now().toString();
+
                     req.session = {
-                        token: 'rightpassword'
+                        token: hash('rightpassword', salt),
+                        salt: salt
                     };
                     res.redirect = sandbox.spy();
+
                     middleware.isPrivateSessionAuth(req, res, next).then(function () {
                         res.redirect.called.should.be.true;
+
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('isPrivateSessionAuth should return next if hash is not verified', function (done) {
                     req.session = {
-                        token: 'wrongpassword'
+                        token: 'wrongpassword',
+                        salt: Date.now().toString()
                     };
+
                     middleware.isPrivateSessionAuth(req, res, next).then(function () {
                         next.called.should.be.true;
+
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('authenticateProtection should return next if password is incorrect', function (done) {
-                    req.body = {password:'wrongpassword'};
+                    req.body = {password: 'wrongpassword'};
+
                     middleware.authenticateProtection(req, res, next).then(function () {
                         res.error.should.not.be.empty;
                         next.called.should.be.true;
+
                         done();
-                    });
+                    }).catch(done);
                 });
 
                 it('authenticateProtection should redirect if password is correct', function (done) {
-                    req.body = {password:'rightpassword'};
+                    req.body = {password: 'rightpassword'};
                     req.session = {};
                     res.redirect = sandbox.spy();
-                    sandbox.stub(bcrypt, 'hash', function (pass, salt, cb) {
-                        cb(null, pass + 'hash');
-                    });
+
                     middleware.authenticateProtection(req, res, next).then(function () {
-                        req.session.token.should.equal('rightpasswordhash');
                         res.redirect.called.should.be.true;
+
                         done();
-                    });
+                    }).catch(done);
                 });
             });
         });
