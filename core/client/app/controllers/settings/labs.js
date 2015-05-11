@@ -23,16 +23,6 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
         });
     },
 
-    usePassProtectUI: Ember.computed('controllers.feature.passProtectUI', function (key, value) {
-        // setter
-        if (arguments.length > 1) {
-            this.saveLabs('passProtectUI', value);
-        }
-
-        // getter
-        return this.get('controllers.feature.passProtectUI');
-    }),
-
     actions: {
         onUpload: function (file) {
             var self = this,
