@@ -194,7 +194,6 @@
     }
 
     .image-cancel {
-        @include icon($i-trash, 11px);
         position: absolute;
         top: 10px;
         right: 10px;

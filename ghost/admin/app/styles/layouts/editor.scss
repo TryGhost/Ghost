@@ -20,7 +20,7 @@
 // Post Title
 // --------------------------------------------------
 
-.entry-container .entry-title {
+.entry-title {
     height: 60px;
     padding: 0;
     position: relative;
@@ -291,16 +291,8 @@
 // --------------------------------------------------
 
 .markdown-help {
-    position: relative;
-    top: -3px;
-    right: -5px;
-    @include icon($i-markdown, '16px', lighten($brown, 15%));
     float: right;
     padding: 5px;
-
-    &:hover {
-        @include icon($i-markdown, '', $brown);
-    }
 }
 
 
@@ -487,10 +479,6 @@ body.zen {
     }
 
     .tag {
-        @include icon-after($i-x, 8px, #fff) {
-            margin-left: 3px;
-            vetical-align: -10%;
-        }
         display: inline;
         margin-right: 3px;
         padding: 2px 5px;
@@ -504,6 +492,10 @@ body.zen {
 
         &:hover {
             cursor: pointer;
+        }
+
+        i {
+            font-size: 0.7rem;
         }
     }
 }//#entry-tags
@@ -647,7 +639,6 @@ body.zen {
 }
 
 .post-settings {
-    @include icon($i-settings, 14px);
     display: inline-block;
     padding: 8px 10px;
     color: $midgrey;
