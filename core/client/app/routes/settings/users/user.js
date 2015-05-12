@@ -49,6 +49,10 @@ var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings
         this._super();
     },
 
+    renderTemplate: function () {
+        this.render('settings/users/user', {into: 'application'});
+    },
+
     actions: {
         save: function () {
             this.get('controller').send('save');
