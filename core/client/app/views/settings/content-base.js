@@ -7,7 +7,7 @@ import MobileContentView from 'ghost/views/mobile/content-view';
 
 var SettingsContentBaseView = MobileContentView.extend({
     tagName: 'section',
-    classNames: ['settings-content', 'js-settings-content']
+    classNames: ['gh-view', 'js-settings-content']
 });
 
 export default SettingsContentBaseView;

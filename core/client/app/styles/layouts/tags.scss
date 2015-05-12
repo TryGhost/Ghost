@@ -85,11 +85,11 @@
     position: relative;
     padding: 0 45px 0 0;
     display: block;
-    border-top: 1px solid $lightbrown;
+    border-bottom: 1px solid $lightbrown;
 
     .tag-edit-button {
         width: calc(100% + 45px);
-        padding: 20px 15px;
+        padding: 20px;
         text-align: left;
 
         &:hover,
