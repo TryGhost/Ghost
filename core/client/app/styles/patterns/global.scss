@@ -120,7 +120,7 @@ hr {
     display: block;
     height: 1px;
     border: 0;
-    border-top: 1px solid $lightbrown;
+    border-top: 1px solid #e1e1e1;
     margin: 3.2em 0;
     padding: 0;
 }
@@ -149,7 +149,7 @@ dl {
 blockquote {
     @include baseline;
     padding: 0 1.6em 0 1.6em;
-    border-left: $lightbrown 0.6em solid;
+    border-left: #e1e1e1 0.6em solid;
 
     p {
         margin:0.8em 0;
@@ -183,7 +183,7 @@ tt {
 code, tt {
     font-size: 0.85em;
     white-space: pre-wrap;
-    background: lighten($lightbrown, 2%);
+    background: lighten(#e1e1e1, 2%);
     border-radius: 2px;
     padding: 0.2em 0.4em;
     vertical-align: top;
@@ -191,7 +191,7 @@ code, tt {
 
 pre {
     @include baseline;
-    background: lighten($lightbrown, 2%);
+    background: lighten(#e1e1e1, 2%);
     width: 100%;
     padding: 10px;
     font-family: $font-family-mono;

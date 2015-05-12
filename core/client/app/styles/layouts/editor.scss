@@ -62,7 +62,7 @@
     }
     .entry-preview {
         right: 0;
-        border-left: $lightbrown 1px solid;
+        border-left: #e1e1e1 1px solid;
     }
 
     // The visual styles for both panels
@@ -73,7 +73,7 @@
         position: absolute;
         bottom: 40px; // height of the publish bar
         top: 60px; // height of the post title + margin
-        border-top: $lightbrown 1px solid;
+        border-top: #e1e1e1 1px solid;
         background: #fff;
 
         // Hide markdown icon + wordcount when we hit mobile
@@ -151,7 +151,7 @@
         // Restore the white bg of the currently .active tab, remove hand cursor from currently active tab
         &.active header {
             @media (max-width: 1000px) {
-                border-top: $lightbrown 1px solid;
+                border-top: #e1e1e1 1px solid;
                 cursor: auto;
                 color: $brown;
                 background: #fff;
@@ -378,7 +378,7 @@
 // --------------------------------------------------
 
 body.zen {
-    background: lighten($lightbrown, 3%);
+    background: lighten(#e1e1e1, 3%);
 
     .usermenu {
         display: none;
