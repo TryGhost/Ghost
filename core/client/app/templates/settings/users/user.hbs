@@ -1,9 +1,6 @@
-<header class="settings-subview-header clearfix">
-    {{#unless session.user.isAuthor}}
-        {{#link-to "settings.users" class="btn btn-default btn-back" tagName="button"}}<i class="icon-chevron-left"></i>Users{{/link-to}}
-    {{/unless}}
-    <h2 class="page-title">{{user.name}}</h2>
-    <section class="page-actions">
+<header class="view-header">
+    <h2 class="view-title">Team &raquo; {{user.name}}</h2>
+    <section class="view-actions">
         {{#if view.userActionsAreVisible}}
             <span class="dropdown">
                 {{#gh-dropdown-button dropdownName="user-actions-menu" classNames="btn btn-default only-has-icon user-actions-cog" title="User Actions"}}

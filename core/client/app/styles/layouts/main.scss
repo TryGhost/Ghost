@@ -138,7 +138,7 @@
     align-items: center;
     padding: 5px 10px 5px 15px;
     color: $darkgrey;
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 4px 4px 0;
     transition: none;
 }
 
@@ -166,4 +166,31 @@
     height: 40px;
     padding: 0 20px;
     border-top: #E1E1E1 1px solid;
+}
+
+//--------------------------------------------------------------
+
+.view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 65px;
+    padding: 0 20px;
+    margin: 0 0 20px 0;
+    border-bottom: #E1E1E1 1px solid;
+}
+
+.view-title {
+    margin: 0;
+    padding: 0;
+    font-size: 2rem;
+    line-height: 1.2em;
+    font-weight: 400;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.view-actions {
+    display: flex;
 }
