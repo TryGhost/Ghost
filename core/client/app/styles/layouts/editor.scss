@@ -416,14 +416,14 @@ body.zen {
 #publish-bar {
     height: 40px;
     padding: 0;
+    border-top: #e1e1e1 1px solid;
     color: $midgrey;
-    background: darken($darkgrey, 4%);
+    background: #fff;
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 900;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
     transform: translateZ(0);
 
     @media (max-width: 1000px) {
@@ -433,7 +433,7 @@ body.zen {
     .post-settings {
         &:hover,
         &.active {
-            color: $lightgrey;
+            color: $darkgrey;
         }
     }
 
@@ -443,11 +443,6 @@ body.zen {
         right: -3px;
     }
 
-    .splitbtn {
-        .btn {
-            border-top: rgba(255,255,255,0.3) 1px solid;
-        }
-    }
 }//#publish-bar
 
 .extended-tags { // When the tag bar is expanded
@@ -462,11 +457,6 @@ body.zen {
 
     .tags {
         width: 281px;
-    }
-
-    .tag-label,
-    .tag-label.touch {
-        color: #fff;
     }
 
     .tag-input {
@@ -486,13 +476,13 @@ body.zen {
     input[type="text"].tag-input {
         display: inline-block;
         vertical-align: top;
-        color: $lightgrey;
+        color: $midgrey;
         font-weight: 300;
         background: transparent;
         border: none;
         width: 100%;
         line-height: 1;
-        padding: 9px;
+        padding: 9px 9px 9px 0;
 
         &:focus {
             outline: none;
@@ -500,19 +490,19 @@ body.zen {
     }
 
     .tag {
-        @include icon-after($i-x, 10px, #fff) {
-            margin-left: 1px;
-            vertical-align: 10%;
-            text-shadow: rgba(255,255,255,0.15) 0 1px 0;
+        @include icon-after($i-x, 8px, #fff) {
+            margin-left: 3px;
+            vetical-align: -10%;
         }
         display: inline;
         margin-right: 3px;
-        padding: 0 5px;
+        padding: 2px 5px;
         color: $lightgrey;
+        font-size: 1.2rem;
+        line-height: 1.2em;
         white-space: nowrap;
-        background: lighten($grey, 15%);
-        border-radius: $border-radius;
-        box-shadow: rgba(255,255,255,0.2) 0 1px 0 inset, #000 0 1px 3px;
+        background: $darkgrey;
+        border-radius: 3px;
         user-select: none;
 
         &:hover {
@@ -602,19 +592,10 @@ body.zen {
         left: 50%;
         transform: translateX(-50%) translateY(-50%);
         font-size: 1.3rem;
-        color: #7D878A;
+        color: $midgrey;
         transition: color 0.15s linear;
     }
 
-    &:hover:before {
-        color: #fff;
-    }
-}
-
-#entry-tags.focused {
-    .tag-label:before {
-        color: #fff;
-    }
 }
 
 .publish-bar-inner {
