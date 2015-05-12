@@ -39,7 +39,7 @@
 
 .user-list-item {
 
-    border-top: 1px solid $lightbrown;
+    border-top: 1px solid #e1e1e1;
 
     @media (max-width: 550px) {
         display: block;
@@ -64,11 +64,11 @@ a.user-list-item {
     @media (min-width: 601px) {
 
         &:hover {
-            background: lighten($lightbrown, 5%);
+            background: lighten(#e1e1e1, 10%);
         }
 
         &:last-of-type:hover {
-            box-shadow: inset 0px -1px 0px $lightbrown;
+            box-shadow: inset 0px -1px 0px #e1e1e1;
         }
     }
 }
@@ -78,7 +78,7 @@ a.user-list-item {
     height: 35px;
     display: block;
     border-radius: 100%;
-    background: $lightbrown;
+    background: #e1e1e1;
     font-size: 0px;
     color: transparent;
     overflow: hidden;

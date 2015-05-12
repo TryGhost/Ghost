@@ -41,7 +41,7 @@ table,
 
     th,
     td {
-        border-top: 1px solid $lightbrown;
+        border-top: 1px solid #e1e1e1;
     }
 
     th {
@@ -58,7 +58,7 @@ table,
     }
 
     tbody + tbody {
-        border-top: 2px solid $lightbrown;
+        border-top: 2px solid #e1e1e1;
     }
 
     table table {
@@ -67,7 +67,7 @@ table,
 
     tbody > tr:nth-child(odd) > td,
     tbody > tr:nth-child(odd) > th {
-        background-color: lighten($lightbrown, 5%);
+        background-color: lighten(#e1e1e1, 10%);
     }
 
     &.plain {
