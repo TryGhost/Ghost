@@ -27,19 +27,6 @@ var ApplicationView = Ember.View.extend({
             });
         });
 
-        // #### Listen to the viewport and change user-menu dropdown triangle classes accordingly
-        this.set('swapUserMenuDropdownTriangleClasses', Ember.run.bind(this, swapUserMenuDropdownTriangleClasses));
-
-        mobileQuery.addListener(this.get('swapUserMenuDropdownTriangleClasses'));
-        swapUserMenuDropdownTriangleClasses(mobileQuery);
-
-        this.set('closeGlobalMobileNavOnDesktop', Ember.run.bind(this, function closeGlobalMobileNavOnDesktop(mq) {
-            if (!mq.matches) {
-                // Is desktop sized
-                this.set('controller.showGlobalMobileNav', false);
-            }
-        }));
-
         mobileQuery.addListener(this.get('closeGlobalMobileNavOnDesktop'));
     },
 

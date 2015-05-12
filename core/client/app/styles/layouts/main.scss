@@ -16,6 +16,7 @@
 }
 
 .gh-main {
+    position: relative;
     flex-grow: 1;
     display: flex;
 }
@@ -168,7 +169,6 @@
 }
 
 //--------------------------------------------------------------
-#ember720 { flex-grow: 1; display: flex; } // TODO: REMOVE
 
 .gh-view {
     flex-grow: 1;
