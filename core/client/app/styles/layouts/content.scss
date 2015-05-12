@@ -50,7 +50,7 @@
     bottom: 0;
     top: 0;
     left: 0;
-    border-right: $lightbrown 1px solid;
+    border-right: #e1e1e1 1px solid;
     background: #fff;
 
     @media (max-width: 900px) {
@@ -157,14 +157,14 @@
         list-style: none;
         padding: 0;
         margin: 0;
-        border-top: $lightbrown 1px solid;
+        border-top: #e1e1e1 1px solid;
     }
 
     li {
         position: relative;
         margin: 0;
         padding: 0;
-        border-bottom: $lightbrown 1px solid;
+        border-bottom: #e1e1e1 1px solid;
 
         a {
             display: block;
@@ -200,7 +200,7 @@
 
     .active {
         @media (min-width: 901px) {
-            background: lighten($lightbrown, 5%);
+            background: #F6F6F6;
         }
     }
 }//.content-list
