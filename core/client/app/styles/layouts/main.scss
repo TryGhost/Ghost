@@ -162,11 +162,75 @@
 
 .gh-nav-footer {
     flex-shrink: 0;
+    display: flex;
     align-items: center;
     height: 40px;
-    padding: 0 20px;
     border-top: #E1E1E1 1px solid;
 }
+
+.gh-nav-footer-sitelink {
+    flex-grow: 1;
+    display: flex;
+    padding: 12px;
+    font-size: 1.3rem;
+    line-height: 1.2em;
+    color: $midgrey;
+
+    i {
+        margin-left: 5px;
+        font-size: 1rem;
+    }
+
+    &:hover {
+        color: $blue;
+    }
+}
+
+//
+// Help Menu
+// --------------------------------------------------
+
+.gh-help-menu {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-left: #e1e1e1 1px solid;
+}
+
+.gh-help-button {
+    padding: 0 5px;
+    text-align: center;
+    font-size: 1.4rem;
+    line-height: 1.2em;
+    color: $midgrey;
+    transition: all 0.5s;
+}
+
+.gh-help-menu:hover {
+    .gh-help-button {
+        color: $blue;
+        transition: all 0.3s;
+    }
+}
+
+.gh-help-menu .dropdown {
+    right: 112px;
+    bottom: 215px;
+
+    .dropdown-menu {
+        min-width: 200px;
+    }
+
+    &.fade-in-scale {
+        animation-duration: 0.1s;
+    }
+
+    &.fade-out {
+        animation-duration: 0.01s;
+    }
+}
+
 
 //--------------------------------------------------------------
 
@@ -187,6 +251,8 @@
 }
 
 .view-title {
+    display: flex;
+    align-items: baseline;
     margin: 0;
     padding: 0;
     font-size: 2rem;
@@ -195,6 +261,17 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+
+    a {
+        color: inherit;
+        &:hover { color: $blue; }
+    }
+
+    i {
+        margin: 0 10px;
+        color: #818181;
+        font-size: 1.4rem;
+    }
 }
 
 .view-actions {
