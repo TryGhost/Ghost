@@ -11,6 +11,7 @@
 // * Custom Permalinks
 // * Navigation
 // * Code Injection
+// * Labs
 // ------------------------------------------------------------
 
 
@@ -551,5 +552,17 @@
     // Overwrite bright yellow text
     .cm-s-xq-light span.cm-meta {
         color: #000;
+    }
+}
+
+//
+// Labs
+// --------------------------------------------------
+
+#startupload {
+    line-height: inherit;
+    
+    @media (max-width: 400px) {
+        margin-top: 5px;
     }
 }
