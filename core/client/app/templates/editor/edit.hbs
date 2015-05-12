@@ -1,8 +1,3 @@
-<header class="page-header">
-    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
-    <h2 class="page-title">Editor</h2>
-</header>
-
 <div class="page-content">
     <header>
         <section class="box entry-title">
@@ -14,7 +9,7 @@
     <section class="entry-markdown js-entry-markdown {{unless isPreview 'active'}}">
         <header {{action "togglePreview" false}} class="floatingheader">
             <small>Markdown</small>
-            <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
+            <a class="markdown-help" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
         </header>
         <section id="entry-markdown-content" class="entry-markdown-content">
             {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch

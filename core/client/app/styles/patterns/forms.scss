@@ -309,13 +309,23 @@ textarea {
     padding: 0;
     border-width: 0;
 
-    @include icon-after($i-chevron-down, 0.85em, $midbrown) {
+    &:after {
+        font-family: "ghosticons" !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        font-variant: normal !important;
+        text-transform: none !important;
+        speak: none;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
         position: absolute;
         top: 50%;
         right: 0.8em;
         margin-top: -0.5em;
         pointer-events: none;
-    };
+        content: "\e00f";
+    }
 
     select {
         appearance: none;

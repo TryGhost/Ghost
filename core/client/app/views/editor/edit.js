@@ -3,7 +3,7 @@ import EditorViewMixin from 'ghost/mixins/editor-base-view';
 
 var EditorView = Ember.View.extend(EditorViewMixin, {
     tagName: 'section',
-    classNames: ['entry-container']
+    classNames: ['gh-view']
 });
 
 export default EditorView;

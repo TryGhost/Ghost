@@ -30,13 +30,6 @@
 // --------------------------------------------------
 
 .nav-list-item {
-    @include icon($i-chevron, 1.4rem, $midbrown) {
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-    }
-
     position: relative;
     display: block;
     padding: 8px 40px 8px 12px;
@@ -79,5 +72,13 @@
         font-size: 1.1rem;
         color: $midgrey;
         line-height: 1.375;
+    }
+
+    i {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        margin-top: -0.9rem;
+        font-size: 1.4rem;
     }
 }//.nav-list-item

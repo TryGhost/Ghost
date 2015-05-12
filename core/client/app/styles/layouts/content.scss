@@ -60,30 +60,6 @@
         border: none;
     }
 
-    .content-filter {
-        position: relative;
-        z-index: 300;
-
-        > a {
-            padding: 5px;
-            margin-left: -5px;
-        }
-
-        .menu-drop {
-            display: block;
-        }
-    }
-
-    .btn-green {
-        @include icon($i-add);
-        position: absolute;
-        top: 9px;
-        right: 20px;
-        z-index: 700;
-        padding: 2px 4px 3px 5px;
-        color: #fff !important; // getting overridden by floatingheader
-    }
-
     .content-list-content {
         position: absolute;
         top: 0;
@@ -144,15 +120,6 @@
         }
     }
 
-    .featured {
-        @include icon($i-featured, 11px) {
-            vertical-align: 7%;
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
-        };
-    }
-
     ol {
         list-style: none;
         padding: 0;
@@ -170,13 +137,6 @@
             display: block;
             padding: 19px 20px 22px 24px;
             color: rgba(0,0,0,0.5);
-
-            @include icon-after($i-chevron) {
-                position: absolute;
-                top: 50%;
-                margin-top: -6px;
-                right: 15px;
-            }
 
             &:hover {
                 text-decoration: none;
@@ -228,14 +188,12 @@
     }
 
     .unfeatured {
-        @include icon($i-unfeatured, 14px);
         vertical-align: -6%;
         margin: 0 7px 0 -5px;
         padding: 3px;
     }
 
     .featured {
-        @include icon($i-featured, 14px);
         vertical-align: -6%;
         margin: 0 7px 0 -5px;
         padding: 3px;
@@ -284,10 +242,6 @@
         position: absolute;
         top: 35px;
         right: -3px;
-    }
-
-    .post-edit {
-        @include icon($i-edit, 14px);
     }
 
     img {
