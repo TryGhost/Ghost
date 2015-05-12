@@ -41,16 +41,7 @@
     }
 
     .ghost_logo {
-        position: relative;
-        left: 3px;
-        @include icon($i-ghost, 1.7rem, $midgrey) {
-            position: relative;
-            top: -6px;
-        };
-        @include icon-after($i-ghost-logo, 3.2rem, $darkgrey) {
-            position: relative;
-            left: -5px;
-        };
+        content: "Ghost";
     }
 
     .version {
