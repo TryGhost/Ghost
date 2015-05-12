@@ -40,6 +40,24 @@
         </ul>
     </section>
     <footer class="gh-nav-footer">
-        foot
+        <a class="gh-nav-footer-sitelink" href="{{gh-path 'blog'}}" target="_blank">View blog <i class="icon-external"></i></a>
+        <div class="gh-help-menu">
+            {{#gh-dropdown-button dropdownName="help-menu" tagName="div"}}
+                <div class="gh-help-button">
+                    <i class="icon-question"><span class="hidden">Help</span></i>
+                </div>
+            {{/gh-dropdown-button}}
+            {{#gh-dropdown tagName="div" classNames="dropdown" name="help-menu" closeOnClick="true"}}
+                <ul class="dropdown-menu dropdown-triangle-bottom" role="menu">
+                    <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-support"></i> Support Center</a></li>
+                    <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
+                    <li class="divider"></li>
+                    <li role="presentation"><a class="dropdown-item help-menu-how-to" role="menuitem" tabindex="-1" href="http://support.ghost.org/how-to-use-ghost/" target="_blank"><i class="icon-book"></i> How to Use Ghost</a></li>
+                    <li role="presentation"><a class="dropdown-item help-menu-markdown" role="menuitem" tabindex="-1" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i> Markdown Help</a></li>
+                    <li class="divider"></li>
+                    <li role="presentation"><a class="dropdown-item help-menu-wishlist" role="menuitem" tabindex="-1" href="http://ideas.ghost.org/" target="_blank"><i class="icon-list"></i> Wishlist</a></li>
+                </ul>
+            {{/gh-dropdown}}
+        </div>{{! .help-menu }}
     </footer>
 </nav>

@@ -214,7 +214,7 @@
         }
 
         @media (min-width: 1001px) {
-            padding: 62px 20px 36px 20px;
+            padding: 42px 20px 36px 20px;
         }
     }
 
@@ -235,7 +235,7 @@
         right: 0;
         bottom: 0;
         left: 0;
-        padding: 60px 40px 37px 40px;
+        padding: 40px 20px 37px 20px;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
         word-break: break-word;
@@ -247,9 +247,6 @@
             padding: 15px;
         }
 
-        @media (max-width: 1000px) {
-            padding-top: 20px;
-        }
     }
 
     // Special case, when scrolling, add shadows to content headers.
@@ -596,6 +593,9 @@ body.zen {
         transition: color 0.15s linear;
     }
 
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .publish-bar-inner {

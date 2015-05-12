@@ -1,5 +1,5 @@
 <header class="view-header">
-    <h2 class="view-title">Team &raquo; {{user.name}}</h2>
+    <h2 class="view-title">{{#link-to "settings.users"}}Team{{/link-to}} <i class="icon-chevron"></i> {{user.name}}</h2>
     <section class="view-actions">
         {{#if view.userActionsAreVisible}}
             <span class="dropdown">
@@ -17,7 +17,7 @@
     </section>
 </header>
 
-<div class="view-content settings-user">
+<div class="view-container settings-user">
 
     <figure class="user-cover" style={{coverImageBackground}}>
         <button class="btn btn-default user-cover-edit js-modal-cover" {{action "openModal" "upload" user "cover"}}>Change Cover</button>
