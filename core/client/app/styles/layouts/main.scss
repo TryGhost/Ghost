@@ -8,17 +8,16 @@
 }
 
 .gh-nav {
+    flex: 0 0 220px;
     display: flex;
     flex-direction: column;
-    flex: 0 0 220px;
     border-right: #E1E1E1 1px solid;
     background: #F6F6F6;
 }
 
 .gh-main {
-    position: relative;
     flex-grow: 1;
-    overflow-y: auto;
+    display: flex;
 }
 
 //GH-NAV
@@ -169,14 +168,21 @@
 }
 
 //--------------------------------------------------------------
+#ember720 { flex-grow: 1; display: flex; } // TODO: REMOVE
+
+.gh-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
 
 .view-header {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: 65px;
     padding: 0 20px;
-    margin: 0 0 20px 0;
     border-bottom: #E1E1E1 1px solid;
 }
 
@@ -193,4 +199,15 @@
 
 .view-actions {
     display: flex;
+}
+
+.view-container,
+.view-content {
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.view-content {
+    padding: 20px;
 }

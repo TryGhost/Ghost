@@ -14,50 +14,6 @@
 // * Labs
 // ------------------------------------------------------------
 
-
-//
-// Content
-// --------------------------------------------------
-// The main content panel on the right
-
-.settings-content {
-
-    .settings-general img {
-        max-width: 100%;
-        max-height: 400px;
-        display: block;
-    }
-
-    .blog-logo,
-    .blog-cover {
-        cursor: pointer;
-    }
-
-    .content {
-        padding: 0 40px;
-
-        @media (max-width: 900px) {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            padding: 15px;
-            overflow-x: hidden;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-
-    }//.content
-
-    .word-count {
-        float: right;
-        font-weight: bold;
-    }
-}//.settings-content
-
-
 //
 // Navigation
 // --------------------------------------------------
