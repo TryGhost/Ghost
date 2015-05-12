@@ -32,7 +32,7 @@ oauth = {
                     var accessToken = utils.uid(256),
                         refreshToken = utils.uid(256),
                         accessExpires = Date.now() + utils.ONE_HOUR_MS,
-                        refreshExpires = Date.now() + utils.ONE_DAY_MS;
+                        refreshExpires = Date.now() + utils.ONE_WEEK_MS;
 
                     return models.Accesstoken.add({token: accessToken, user_id: user.id, client_id: client.id, expires: accessExpires}).then(function () {
                         return models.Refreshtoken.add({token: refreshToken, user_id: user.id, client_id: client.id, expires: refreshExpires});
@@ -62,7 +62,7 @@ oauth = {
                     var token = model.toJSON(),
                         accessToken = utils.uid(256),
                         accessExpires = Date.now() + utils.ONE_HOUR_MS,
-                        refreshExpires = Date.now() + utils.ONE_DAY_MS;
+                        refreshExpires = Date.now() + utils.ONE_WEEK_MS;
 
                     if (token.expires > Date.now()) {
                         models.Accesstoken.add({
