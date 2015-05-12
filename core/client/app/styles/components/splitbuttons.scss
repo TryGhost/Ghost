@@ -77,7 +77,7 @@
         }
 
         &.up .options:before {
-            transform: rotate(-360deg);
+            transform: rotate(360deg);
             transition: transform 0.6s ease, top 0.6s ease;
         }
 
