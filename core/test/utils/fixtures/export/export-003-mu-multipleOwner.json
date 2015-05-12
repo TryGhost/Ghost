@@ -1,0 +1,125 @@
+{
+    "meta": {
+        "exported_on": 1388318311015,
+        "version": "003"
+    },
+    "data": {
+        "users": [
+            {
+              "id": 1,
+              "name": "Joe Bloggs",
+              "slug": "joe-blogs",
+              "email": "jbloggs@example.com",
+              "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6",
+              "image": null,
+              "cover": null,
+              "bio": "A blogger",
+              "website": null,
+              "location": null,
+              "accessibility": null,
+              "status": "active",
+              "language": "en_US",
+              "meta_title": null,
+              "meta_description": null,
+              "last_login": null,
+              "created_at": 1388319432895,
+              "created_by": 1,
+              "updated_at": null,
+              "updated_by": null
+            },
+            {
+                "id": 2,
+                "name": "Josephine Bloggs",
+                "slug": "josephine-blogs",
+                "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                "email": "josephinebloggs@example.com",
+                "image": null,
+                "cover": null,
+                "bio": "A blogger",
+                "website": null,
+                "location": null,
+                "accessibility": null,
+                "status": "active",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "last_login": null,
+                "created_at": 1388319501897,
+                "created_by": 1,
+                "updated_at": null,
+                "updated_by": null
+            },
+            {
+                "id": 3,
+                "name": "Smith Wellingsworth",
+                "slug": "smith-wellingsworth",
+                "email": "swellingsworth@example.com",
+                "image": null,
+                "cover": null,
+                "bio": null,
+                "website": null,
+                "location": null,
+                "accessibility": null,
+                "status": "invited",
+                "language": "en_US",
+                "meta_title": null,
+                "meta_description": null,
+                "last_login": null,
+                "created_at": 1388319501897,
+                "created_by": 1,
+                "updated_at": null,
+                "updated_by": null
+            }
+        ],
+        "roles": [
+            {
+                "id": 1,
+                "name": "Administrator",
+                "description": "Administrators",
+                "created_at": 1388318310794,
+                "created_by": 1,
+                "updated_at": 1388318310794,
+                "updated_by": 1
+            },
+            {
+                "id": 2,
+                "name": "Editor",
+                "description": "Editors",
+                "created_at": 1388318310796,
+                "created_by": 1,
+                "updated_at": 1388318310796,
+                "updated_by": 1
+            },
+            {
+                "id": 3,
+                "name": "Author",
+                "description": "Authors",
+                "created_at": 1388318310799,
+                "created_by": 1,
+                "updated_at": 1388318310799,
+                "updated_by": 1
+            },
+            {
+                "id": 4,
+                "name": "Owner",
+                "description": "Owner",
+                "created_at": 1388318310799,
+                "created_by": 1,
+                "updated_at": 1388318310799,
+                "updated_by": 1
+            }
+        ],
+        "roles_users": [
+            {
+                "id": 1,
+                "role_id": 3,
+                "user_id": 1
+            },
+            {
+                "id": 2,
+                "role_id": 4,
+                "user_id": 2
+            }
+        ]
+    }
+}
