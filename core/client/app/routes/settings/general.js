@@ -20,6 +20,10 @@ var SettingsGeneralRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator
         });
     },
 
+    renderTemplate: function () {
+        this.render('settings/general', {into: 'application'});
+    },
+
     actions: {
         save: function () {
             this.get('controller').send('save');
