@@ -17,7 +17,7 @@
     position: relative;
     overflow:hidden;
     padding: 55px 60px;
-    border: $lightbrown 3px dashed;
+    border: #e1e1e1 3px dashed;
     width: 100%;
     height: auto;
     text-align: center;
@@ -38,7 +38,7 @@
     }
 
     .media {
-        @include icon($i-image, 60px, darken($lightbrown, 3%)) {
+        @include icon($i-image, 60px, darken(#e1e1e1, 3%)) {
             display: inline-block;
             vertical-align: initial;
             transition: transform 1s ease;

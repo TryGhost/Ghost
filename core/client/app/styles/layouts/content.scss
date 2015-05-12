@@ -200,7 +200,7 @@
 
     .active {
         @media (min-width: 901px) {
-            background: #F6F6F6;
+            background: lighten(#e1e1e1, 9%);
         }
     }
 }//.content-list

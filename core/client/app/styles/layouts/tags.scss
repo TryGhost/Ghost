@@ -85,7 +85,7 @@
     position: relative;
     padding: 0 45px 0 0;
     display: block;
-    border-bottom: 1px solid $lightbrown;
+    border-bottom: 1px solid #e1e1e1;
 
     .tag-edit-button {
         width: calc(100% + 45px);
@@ -95,12 +95,12 @@
         &:hover,
         &:focus,
         &:active {
-            background: lighten($lightbrown, 5%);
+            background: lighten(#e1e1e1, 10%);
         }
     }
 
     &:last-of-type:hover .tag-edit-button {
-        box-shadow: inset 0px -1px 0px $lightbrown;
+        box-shadow: inset 0px -1px 0px #e1e1e1;
     }
 
     // Permalink/labels
