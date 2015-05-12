@@ -1,5 +1,6 @@
-import Ember from 'ember';
-var SettingsUserView = Ember.View.extend({
+import BaseView from 'ghost/views/settings/content-base';
+
+var SettingsUserView = BaseView.extend({
     currentUser: Ember.computed.alias('controller.session.user'),
 
     isNotOwnProfile: Ember.computed('controller.user.id', 'currentUser.id', function () {
