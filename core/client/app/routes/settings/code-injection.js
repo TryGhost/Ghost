@@ -18,6 +18,10 @@ var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingInd
         });
     },
 
+    renderTemplate: function () {
+        this.render('settings/code-injection', {into: 'application'});
+    },
+
     actions: {
         save: function () {
             this.get('controller').send('save');

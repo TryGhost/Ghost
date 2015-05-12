@@ -17,6 +17,10 @@ var LabsRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUs
         return this.store.find('setting', {type: 'blog,theme'}).then(function (records) {
             return records.get('firstObject');
         });
+    },
+
+    renderTemplate: function () {
+        this.render('settings/labs', {into: 'application'});
     }
 });
 
