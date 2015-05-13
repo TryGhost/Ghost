@@ -216,3 +216,12 @@
 .update-available main {
     bottom: 56px;
 }
+
+.notification-upgrade {
+    color: $red;
+
+    a {
+        color: $red;
+        text-decoration: underline;
+    }
+}
