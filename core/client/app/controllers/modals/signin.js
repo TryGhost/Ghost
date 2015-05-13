@@ -1,10 +1,8 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-export default Ember.Controller.extend(SimpleAuth.AuthenticationControllerMixin, ValidationEngine, {
+export default Ember.Controller.extend(ValidationEngine, {
     needs: 'application',
-
-    authenticator: 'simple-auth-authenticator:oauth2-password-grant',
 
     validationType: 'signin',
 
@@ -15,11 +13,13 @@ export default Ember.Controller.extend(SimpleAuth.AuthenticationControllerMixin,
     actions: {
         authenticate: function () {
             var appController = this.get('controllers.application'),
+                authStrategy = 'simple-auth-authenticator:oauth2-password-grant',
+                data = this.getProperties('identification', 'password'),
                 self = this;
 
             appController.set('skipAuthSuccessHandler', true);
 
-            this._super(this.getProperties('identification', 'password')).then(function () {
+            this.get('session').authenticate(authStrategy, data).then(function () {
                 self.send('closeModal');
                 self.notifications.showSuccess('Login successful.');
                 self.set('password', '');
