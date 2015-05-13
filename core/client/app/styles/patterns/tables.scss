@@ -13,7 +13,7 @@
 // Minimal styling
 
 table,
-%table {
+.table {
     margin: 1.6em 0;;
     width: 100%;
     max-width: 100%;
@@ -36,8 +36,6 @@ table,
 // Properly styled with colour, spacing, and borders
 
 .table {
-
-    @extend %table;
 
     th,
     td {
