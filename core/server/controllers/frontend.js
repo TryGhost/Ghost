@@ -71,7 +71,8 @@ function setResponseContext(req, res, data) {
     var contexts = [],
         pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
         tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/'),
-        authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/');
+        authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/'),
+        privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/');
 
     // paged context
     if (!isNaN(pageParam) && pageParam > 1) {
@@ -85,6 +86,8 @@ function setResponseContext(req, res, data) {
         contexts.push('index');
     } else if (/\/rss\/(:page\/)?$/.test(req.route.path)) {
         contexts.push('rss');
+    } else if (privatePattern.test(req.route.path)) {
+        contexts.push('private');
     } else if (tagPattern.test(req.route.path)) {
         contexts.push('tag');
     } else if (authorPattern.test(req.route.path)) {
@@ -137,7 +140,6 @@ function renderPost(req, res) {
                 response = formatResponse(post);
 
             setResponseContext(req, res, response);
-
             res.render(view, response);
         });
     };
@@ -406,16 +408,16 @@ frontendControllers = {
     },
     rss: rss,
     private: function (req, res) {
-        var defaultPage = path.resolve(config.paths.adminViews, 'password.hbs');
+        var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs');
         return getActiveThemePaths().then(function (paths) {
-            var data = {
-                forward: req.query.r
-            };
+            var data = {};
             if (res.error) {
                 data.error = res.error;
             }
-            if (paths.hasOwnProperty('password.hbs')) {
-                return res.render('password', data);
+
+            setResponseContext(req, res);
+            if (paths.hasOwnProperty('private.hbs')) {
+                return res.render('private', data);
             } else {
                 return res.render(defaultPage, data);
             }
