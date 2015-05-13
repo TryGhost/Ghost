@@ -2,9 +2,7 @@ import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 import ajax from 'ghost/utils/ajax';
 
-var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControllerMixin, ValidationEngine, {
-    authenticator: 'simple-auth-authenticator:oauth2-password-grant',
-
+var SigninController = Ember.Controller.extend(ValidationEngine, {
     validationType: 'signin',
 
     submitting: false,
@@ -12,9 +10,10 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
     actions: {
         authenticate: function () {
             var model = this.get('model'),
+                authStrategy = 'simple-auth-authenticator:oauth2-password-grant',
                 data = model.getProperties('identification', 'password');
 
-            this._super(data).catch(function () {
+            this.get('session').authenticate(authStrategy, data).catch(function () {
                 // if authentication fails a rejected promise will be returned.
                 // it needs to be caught so it doesn't generate an exception in the console,
                 // but it's actually "handled" by the sessionAuthenticationFailed action handler.

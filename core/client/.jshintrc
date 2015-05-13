@@ -7,7 +7,6 @@
     "$",
     "validator",
     "ic",
-    "SimpleAuth",
     "NProgress",
     "moment"
   ],
