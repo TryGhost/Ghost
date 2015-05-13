@@ -395,7 +395,7 @@ middleware = {
             if (isVerified) {
                 return next();
             } else {
-                return res.redirect(config.urlFor({relativeUrl: '/private/'}) + '?r=' + encodeURI(req.url));
+                return res.redirect(config.urlFor({relativeUrl: '/private/'}) + '?r=' + encodeURIComponent(req.url));
             }
         });
     },
@@ -470,14 +470,15 @@ middleware = {
         return api.settings.read({context: {internal: true}, key: 'password'}).then(function (response) {
             var pass = response.settings[0],
                 hasher = crypto.createHash('sha256'),
-                salt = Date.now().toString();
+                salt = Date.now().toString(),
+                forward = req.query && req.query.r ? req.query.r : '/';
 
             if (pass.value === bodyPass) {
                 hasher.update(bodyPass + salt, 'utf8');
                 req.session.token = hasher.digest('hex');
                 req.session.salt = salt;
 
-                return res.redirect(config.urlFor({relativeUrl: decodeURI(req.body.forward)}));
+                return res.redirect(config.urlFor({relativeUrl: decodeURIComponent(forward)}));
             } else {
                 res.error = {
                     message: 'Wrong password'

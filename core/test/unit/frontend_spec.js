@@ -1442,17 +1442,17 @@ describe('Frontend Controller', function () {
     describe('private', function () {
         var req, res, config, defaultPath;
 
-        defaultPath = '/core/server/views/password.hbs';
+        defaultPath = '/core/server/views/private.hbs';
 
         beforeEach(function () {
             res = {
-                locals: {verson: ''},
+                locals: {version: ''},
                 render: sandbox.spy()
             },
             req = {
-                query: {
-                    r: ''
-                }
+                route: {path: '/private/?r=/'},
+                query: {r: ''},
+                params: {}
             },
             config = {
                 paths: {
@@ -1460,7 +1460,8 @@ describe('Frontend Controller', function () {
                     availableThemes: {
                         casper: {}
                     }
-                }
+                },
+                routeKeywords: {private: 'private'}
             };
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
@@ -1477,28 +1478,20 @@ describe('Frontend Controller', function () {
 
             frontend.private(req, res, done).then(function () {
                 res.render.calledWith(defaultPath).should.be.true;
+                res.locals.context.should.containEql('private');
                 done();
             }).catch(done);
         });
 
         it('Should render theme password page when it exists', function (done) {
             config.paths.availableThemes.casper = {
-                'password.hbs': '/content/themes/casper/password.hbs'
+                'private.hbs': '/content/themes/casper/private.hbs'
             };
             frontend.__set__('config', config);
 
             frontend.private(req, res, done).then(function () {
-                res.render.calledWith('password').should.be.true;
-                done();
-            }).catch(done);
-        });
-
-        it('Should render with forward data when it is passed in', function (done) {
-            frontend.__set__('config', config);
-            req.query.r = '/test-redirect/';
-
-            frontend.private(req, res, done).then(function () {
-                res.render.calledWith(defaultPath, {forward: '/test-redirect/'}).should.be.true;
+                res.render.calledWith('private').should.be.true;
+                res.locals.context.should.containEql('private');
                 done();
             }).catch(done);
         });
@@ -1508,7 +1501,8 @@ describe('Frontend Controller', function () {
             res.error = 'Test Error';
 
             frontend.private(req, res, done).then(function () {
-                res.render.calledWith(defaultPath, {forward: '', error: 'Test Error'}).should.be.true;
+                res.render.calledWith(defaultPath, {error: 'Test Error'}).should.be.true;
+                res.locals.context.should.containEql('private');
                 done();
             }).catch(done);
         });
