@@ -7,8 +7,6 @@
 
         <title>Ghost - Private Blog Access</title>
 
-        <meta name="description" content="{{siteDescription}}">
-        <meta name="author" content="">
         <meta name="HandheldFriendly" content="True">
         <meta name="MobileOptimized" content="320">
         <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
@@ -26,10 +24,9 @@
                 <div class="vertical">
                     <form id="setup" class="setup-form private-login" method="post" novalidate="novalidate">
                         <h1>This blog is private</h1>
-                        <input type="hidden" name="forward" value="{{forward}}">
                         <div class="form-group">
                             <span class="input-icon icon-lock">
-                                <input class="private-login-password" type="password" name="password" autofocus="autofocus" />
+                                 {{input_password}}
                             </span>
                             <button class="btn btn-green private-login-button" type="submit">
                                 Enter
@@ -49,6 +46,5 @@
             </div>
         </aside>
         {{/if}}
-        <script src="{{asset "ghost.js" ghost="true" minifyInProduction="true"}}"></script>
     </body>
 </html>
