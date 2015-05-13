@@ -2,7 +2,7 @@
     <article class="{{klass}} js-modal">
         <section class="modal-content" {{action "noBubble" bubbles=false preventDefault=false}}>
             {{#if title}}<header class="modal-header"><h1>{{title}}</h1></header>{{/if}}
-            {{#if showClose}}<a class="close" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>{{/if}}
+            {{#if showClose}}<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>{{/if}}
             <section class="modal-body">
                 {{yield}}
             </section>
