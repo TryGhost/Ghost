@@ -1,9 +1,9 @@
 import Ember from 'ember';
 // Handlebars Helper {{gh-path}}
 // Usage: Assume 'http://www.myghostblog.org/myblog/'
-// {{gh-path}} or {{gh-path ‘blog’}} for Ghost’s root (/myblog/)
-// {{gh-path ‘admin’}} for Ghost’s admin root (/myblog/ghost/)
-// {{gh-path ‘api’}} for Ghost’s api root (/myblog/ghost/api/v0.1/)
+// {{gh-path}} or {{gh-path 'blog'}} for Ghost's root (/myblog/)
+// {{gh-path 'admin'}} for Ghost's admin root (/myblog/ghost/)
+// {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
 // {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
 import ghostPaths from 'ghost/utils/ghost-paths';
 
