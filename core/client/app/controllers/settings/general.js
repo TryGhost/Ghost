@@ -1,4 +1,6 @@
 import Ember from 'ember';
+import randomPassword from 'ghost/utils/random-password';
+
 var SettingsGeneralController = Ember.Controller.extend({
     selectedTheme: null,
 
@@ -36,6 +38,12 @@ var SettingsGeneralController = Ember.Controller.extend({
             return themes;
         }, []);
     }).readOnly(),
+
+    generatePassword: Ember.observer('model.isPrivate', function () {
+        if (this.get('model.isPrivate') && this.get('model.isDirty')) {
+            this.get('model').set('password', randomPassword());
+        }
+    }),
 
     actions: {
         save: function () {

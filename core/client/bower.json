@@ -22,6 +22,7 @@
     "nanoscroller": "0.8.4",
     "normalize-scss": "3.0.2",
     "nprogress": "0.1.6",
+    "password-generator": "git://github.com/bermi/password-generator#49accd7",
     "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.6",
     "validator-js": "3.39.0",
