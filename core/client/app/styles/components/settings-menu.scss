@@ -177,6 +177,13 @@
     }
 }//.settings-menu-content
 
+.ghost-url-preview {
+    width: 98%; // Preview never wider than input
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 
 //
 // Content Cover
