@@ -24,10 +24,6 @@ var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
         }
 
         return value;
-    }),
-
-    passProtectUI: Ember.computed('config.passProtectUI', 'labs.passProtectUI', function () {
-        return this.get('config.passProtectUI') || this.get('labs.passProtectUI');
     })
 });
 
