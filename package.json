@@ -47,7 +47,7 @@
     "extract-zip": "1.0.3",
     "fs-extra": "0.13.0",
     "glob": "4.3.2",
-    "html-to-text": "1.2.0",
+    "html-to-text": "1.3.0",
     "knex": "0.7.3",
     "lodash": "2.4.1",
     "moment": "2.10.2",
