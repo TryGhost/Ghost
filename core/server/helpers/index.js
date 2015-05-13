@@ -23,22 +23,25 @@ coreHelpers.excerpt  = require('./excerpt');
 coreHelpers.foreach = require('./foreach');
 coreHelpers.ghost_foot = require('./ghost_foot');
 coreHelpers.ghost_head = require('./ghost_head');
+coreHelpers.image = require('./image');
 coreHelpers.is = require('./is');
 coreHelpers.has = require('./has');
 coreHelpers.meta_description = require('./meta_description');
 coreHelpers.meta_title = require('./meta_title');
 coreHelpers.navigation = require('./navigation');
-coreHelpers.page_url = require('./page_url');
-coreHelpers.pageUrl = require('./page_url').deprecated;
 coreHelpers.pagination = require('./pagination');
 coreHelpers.plural = require('./plural');
 coreHelpers.post_class = require('./post_class');
+coreHelpers.prev_post = require('./prev_next');
+coreHelpers.next_post = require('./prev_next');
 coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
 coreHelpers.url = require('./url');
-coreHelpers.image = require('./image');
-coreHelpers.prev_post = require('./prev_next');
-coreHelpers.next_post = require('./prev_next');
+
+// Specialist helpers for certain templates
+coreHelpers.input_password = require('./input_password');
+coreHelpers.page_url = require('./page_url');
+coreHelpers.pageUrl = require('./page_url').deprecated;
 
 coreHelpers.helperMissing = function (arg) {
     if (arguments.length === 2) {
@@ -94,6 +97,7 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('excerpt', coreHelpers.excerpt);
     registerThemeHelper('foreach', coreHelpers.foreach);
     registerThemeHelper('is', coreHelpers.is);
+    registerThemeHelper('input_password', coreHelpers.input_password);
     registerThemeHelper('has', coreHelpers.has);
     registerThemeHelper('navigation', coreHelpers.navigation);
     registerThemeHelper('page_url', coreHelpers.page_url);
@@ -116,6 +120,7 @@ registerHelpers = function (adminHbs) {
 
     // Register admin helpers
     registerAdminHelper('asset', coreHelpers.asset);
+    registerAdminHelper('input_password', coreHelpers.input_password);
 };
 
 module.exports = coreHelpers;

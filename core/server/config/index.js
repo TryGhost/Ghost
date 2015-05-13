@@ -206,7 +206,8 @@ ConfigManager.prototype.set = function (config) {
             tag: 'tag',
             author: 'author',
             page: 'page',
-            preview: 'p'
+            preview: 'p',
+            private: 'private'
         },
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..

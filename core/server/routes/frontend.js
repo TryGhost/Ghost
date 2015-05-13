@@ -29,11 +29,11 @@ frontendRoutes = function (middleware) {
     });
 
     // password-protected frontend route
-    router.get('/private/',
+    router.get('/' + routeKeywords.private + '/',
         middleware.isPrivateSessionAuth,
         frontend.private
     );
-    router.post('/private/',
+    router.post('/' + routeKeywords.private + '/',
         middleware.isPrivateSessionAuth,
         middleware.spamProtectedPrevention,
         middleware.authenticateProtection,
