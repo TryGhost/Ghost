@@ -48,7 +48,8 @@
 // Inner Container
 // --------------------------------------------------
 
-.modal {
+.modal,
+.modal-action {
     left: 50%;
     right: auto;
     z-index: 1050;
@@ -75,7 +76,6 @@
 }//.modal
 
 .modal-action {
-    @extend .modal;
     padding: 60px 0 30px;
 
     @media (max-width: 900px) {
@@ -140,10 +140,6 @@
 .modal-footer {
     margin-top: 20px;
     text-align: right; // Used instead of floats as they invert the order
-
-    .reject-button-class {
-        @extend .btn;
-    }
 
     button {
         margin-left: 8px;
