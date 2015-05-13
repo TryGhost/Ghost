@@ -13,7 +13,7 @@
 // --------------------------------------------------
 
 .image-uploader {
-    @include baseline;
+    margin: 1.6em 0;;
     position: relative;
     overflow:hidden;
     padding: 55px 60px;
@@ -37,15 +37,6 @@
         margin-top: 10px;
     }
 
-    .media {
-        @include icon($i-image, 60px, darken(#e1e1e1, 3%)) {
-            display: inline-block;
-            vertical-align: initial;
-            transition: transform 1s ease;
-        }
-    }
-
-    .image-url,
     .image-upload {
         line-height: 12px;
         padding: 10px;
@@ -60,18 +51,6 @@
         &:hover {
             cursor: pointer;
         }
-    }
-
-    .image-webcam {
-        @include icon($i-camera, 12px);
-    }
-
-    .image-url {
-        @include icon($i-link, 12px);
-    }
-
-    .image-upload {
-        @include icon($i-image, 12px);
     }
 
     .btn-green {
@@ -161,7 +140,7 @@
 // TODO: Find a better name for this.
 
 .pre-image-uploader {
-    @include baseline;
+    margin: 1.6em 0;;
     position: relative;
     overflow: hidden;
     height: auto;

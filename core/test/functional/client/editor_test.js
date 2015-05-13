@@ -172,7 +172,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
         '<input class=\"js-fileupload main fileupload\" type=\"file\" name=\"uploadimage\">' +
         '<div class=\"js-fail failed\" style=\"display: none\">Something went wrong :(</div>' +
         '<button class=\"js-fail btn btn-green\" style=\"display: none\">Try Again</button>' +
-        '<a class=\"image-url\" title=\"Add image from URL\"><span class=\"hidden\">URL</span></a>' +
+        '<a class=\"icon-link\" title=\"Add image from URL\"><span class=\"hidden\">URL</span></a>' +
         '</section>\n', 'HTML is correct');
 
         test.assertSelectorHasText(
@@ -185,13 +185,13 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     function assertEmptyImageUploaderDisplaysCorrectly() {
         test.assertExists('.entry-preview .js-upload-target', 'Upload target exists');
         test.assertExists('.entry-preview .js-fileupload', 'File upload target exists');
-        test.assertExists('.entry-preview .image-url', 'Image URL button exists');
+        test.assertExists('.entry-preview .icon-link', 'Image URL button exists');
     }
 
     casper.waitForSelector('.entry-preview .js-drop-zone.image-uploader', assertEmptyImageUploaderDisplaysCorrectly);
 
     // Test image URL upload modal
-    casper.thenClick('.entry-preview .image-uploader a.image-url');
+    casper.thenClick('.entry-preview .image-uploader a.icon-link');
 
     casper.waitForSelector('.image-uploader-url', function onSuccess() {
         test.assertExists('.image-uploader-url .url.js-upload-url', 'Image URL uploader exists');
@@ -234,7 +234,7 @@ CasperTest.begin('Image Uploads', 24, function suite(test) {
     });
 
     casper.waitForSelector('.entry-preview .js-drop-zone.image-uploader', function onSuccess() {
-        casper.thenClick('.entry-preview .image-uploader a.image-url');
+        casper.thenClick('.entry-preview .image-uploader a.icon-link');
     });
 
     casper.waitForSelector('.image-uploader-url', function onSuccess() {

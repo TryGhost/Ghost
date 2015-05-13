@@ -63,35 +63,67 @@ a.label {
 // Colours
 // --------------------------------------------------
 
-@mixin label-variant($text-color, $bg-color) {
-    background-color: $bg-color;
-    color: $text-color;
+.label-default {
+    background-color: #A1ADB3;
+    color: #fff;
 
     &[href] {
-        color: $text-color;
+        color: #fff;
         &:hover,
         &:focus {
-            background-color: darken($bg-color, 10%);
+            background-color: darken(#A1ADB3, 10%);
         }
     }
 }
 
-.label-default {
-    @include label-variant(#fff, #A1ADB3);
-}
-
 .label-alt {
-    @include label-variant(#fff, #666);
+    background-color: #666;
+    color: #fff;
+
+    &[href] {
+        color: #fff;
+        &:hover,
+        &:focus {
+            background-color: darken(#666, 10%);
+        }
+    }
 }
 
 .label-blue {
-    @include label-variant(#fff, $blue);
+    background-color: $blue;
+    color: #fff;
+
+    &[href] {
+        color: #fff;
+        &:hover,
+        &:focus {
+            background-color: darken($blue, 10%);
+        }
+    }
 }
 
 .label-green {
-    @include label-variant(#fff, $green);
+    background-color: $green;
+    color: #fff;
+
+    &[href] {
+        color: #fff;
+        &:hover,
+        &:focus {
+            background-color: darken($green, 10%);
+        }
+    }
 }
 
 .label-red {
-    @include label-variant(#fff, $red);
+    background-color: $red;
+    color: #fff;
+
+    &[href] {
+        color: #fff;
+        &:hover,
+        &:focus {
+            background-color: darken($red, 10%);
+        }
+    }
 }

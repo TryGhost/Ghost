@@ -104,14 +104,6 @@
         padding: 0;
         margin: 0;
         border: none;
-
-        @include icon($i-close, 1.4rem, $midgrey) {
-            transition: color 0.3s linear;
-        };
-
-        &:hover:before {
-            color: $grey;
-        }
     }
 }//.modal-content
 
