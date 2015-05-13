@@ -78,7 +78,6 @@
 
 .about-environment {
     dl {
-        @include clearfix;
         color: $midgrey;
         margin: 2px 0 0 0;
         line-height: 1.6;
@@ -194,7 +193,6 @@
                 left: 50%;
                 transform: translateX(-50%);
                 transition: opacity 0.15s ease-in-out;
-                @include triangle(8px, $darkgrey, "down");
             }
 
             &:hover {

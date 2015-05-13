@@ -91,38 +91,56 @@
 // Sizing
 // --------------------------------------------------
 
-@mixin pagination-size($padding-vertical, $padding-horizontal, $font-size, $border-radius) {
+// Large
+.pagination-lg {
     > li {
         > a,
         > span {
-            padding: $padding-vertical $padding-horizontal;
-            font-size: $font-size;
+            padding: 10px 16px;
+            font-size: 18px;
         }
 
         &:first-child {
             > a,
             > span {
-                border-top-left-radius: $border-radius;
-                border-bottom-left-radius: $border-radius;
+                border-top-left-radius: 6px;
+                border-bottom-left-radius: 6px;
             }
         }
 
         &:last-child {
             > a,
             > span {
-                border-top-right-radius: $border-radius;
-                border-bottom-right-radius: $border-radius;
+                border-top-right-radius: 6px;
+                border-bottom-right-radius: 6px;
             }
         }
     }
 }
 
-// Large
-.pagination-lg {
-    @include pagination-size(10px, 16px, 18px, 6px);
-}
-
 // Small
 .pagination-sm {
-    @include pagination-size(5px, 10px, 12px, 3px);
+    > li {
+        > a,
+        > span {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        &:first-child {
+            > a,
+            > span {
+                border-top-left-radius: 3px;
+                border-bottom-left-radius: 3px;
+            }
+        }
+
+        &:last-child {
+            > a,
+            > span {
+                border-top-right-radius: 3px;
+                border-bottom-right-radius: 3px;
+            }
+        }
+    }
 }

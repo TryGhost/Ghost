@@ -186,87 +186,32 @@
     }//&:after
 }
 
-%dropdown-triangle-top {
-    &:before {
-        @include triangle($dropdown_triangle, #fff, up);
-        top: -$dropdown_triangle;
-    }
-    &:after {
-        @include triangle($dropdown_triangle + 2, darken($lightgrey, 15%), up);
-        top: -($dropdown_triangle + 2);
-    }
-}
-%dropdown-triangle-bottom {
-    &:before {
-        @include triangle($dropdown_triangle, #fff, down);
-        bottom: -$dropdown_triangle;
-    }
-    &:after {
-        @include triangle($dropdown_triangle + 2, darken($lightgrey, 15%), down);
-        bottom: -($dropdown_triangle + 2);
-    }
-}
 %dropdown-triangle-center {
     &:before {
         left: 50%;
-        margin-left: -($dropdown_triangle / 2);
+        margin-left: -(8px / 2);
     }
     &:after {
         left: 50%;
-        margin-left: -($dropdown_triangle / 2 + 2);
+        margin-left: -(8px / 2 + 2);
     }
 }
 
 %dropdown-triangle-left {
     &:before {
-        left: ($dropdown_triangle / 2 + 2);
+        left: (8px / 2 + 2);
     }
     &:after {
-        left: ($dropdown_triangle / 2);
+        left: (8px / 2);
     }
 }
 %dropdown-triangle-right {
     &:before {
         left: auto;
-        right: ($dropdown_triangle / 2 + 2);
+        right: (8px / 2 + 2);
     }
     &:after {
         left: auto;
-        right: ($dropdown_triangle / 2);
+        right: (8px / 2);
     }
-}
-
-//
-// Dropdown triangles classes
-// --------------------------------------------------
-
-.dropdown-triangle-top {
-    @extend %dropdown-triangle;
-    @extend %dropdown-triangle-top;
-    @extend %dropdown-triangle-center;
-}
-.dropdown-triangle-top-left {
-    @extend %dropdown-triangle;
-    @extend %dropdown-triangle-top;
-    @extend %dropdown-triangle-left;
-}
-.dropdown-triangle-top-right {
-    @extend %dropdown-triangle;
-    @extend %dropdown-triangle-top;
-    @extend %dropdown-triangle-right;
-}
-.dropdown-triangle-bottom {
-    @extend %dropdown-triangle;
-    @extend %dropdown-triangle-bottom;
-    @extend %dropdown-triangle-center;
-}
-.dropdown-triangle-bottom-left {
-    @extend %dropdown-triangle;
-    @extend %dropdown-triangle-bottom;
-    @extend %dropdown-triangle-left;
-}
-.dropdown-triangle-bottom-right {
-    @extend %dropdown-triangle;
-    @extend %dropdown-triangle-bottom;
-    @extend %dropdown-triangle-right;
 }
