@@ -82,9 +82,22 @@
     }
 
     .avatar {
-        @include circular-image(18px) {
-            float: left; // Used instead of `display: block;` to remove the stupid space under the image.
-            margin-right: 14px;
+        float: left; // Used instead of `display: block;` to remove the stupid space under the image.
+        margin-right: 14px;
+        width: 18px;
+        height: 18px;
+        border-radius: 18px;
+        background-size: cover;
+        background-position: center center;
+        position: relative;
+
+        img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
         }
     }
 

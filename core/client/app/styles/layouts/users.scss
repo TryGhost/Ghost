@@ -44,7 +44,6 @@
     @media (max-width: 550px) {
         display: block;
         padding: 15px 0;
-        @include clearfix;
     }
 
     @media (min-width: 551px) {
@@ -97,9 +96,23 @@ a.user-list-item {
 }
 
 .user-list-item-figure {
-    @include circular-image(35px) {
-        display: block;
+    display: block;
+    width: 35px;
+    height: 35px;
+    border-radius: 35px;
+    background-size: cover;
+    background-position: center center;
+    position: relative;
+
+    img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
     }
+
 }
 
 .user-list-item-icon,
@@ -208,10 +221,6 @@ a.user-list-item {
 // --------------------------------------------------
 
 .invite-new-user {
-
-    .modal-body {
-        @include clearfix;
-    }
 
     .form-group {
 
