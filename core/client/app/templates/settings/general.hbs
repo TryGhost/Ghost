@@ -84,6 +84,23 @@
                </span>
                 <p>Select a theme for your blog</p>
             </div>
+
+            <div class="form-group for-checkbox">
+                <label for="isPrivate">Make this blog private</label>
+                <label class="checkbox" for="isPrivate">
+                    {{input id="isPrivate" name="general[isPrivate]" type="checkbox"
+                    checked=model.isPrivate}}
+                    <span class="input-toggle-component"></span>
+                    <p>Enable password protection</p>
+                </label>
+            </div>
+
+            {{#if model.isPrivate}}
+            <div class="form-group">
+                {{input name="general[password]" type="text" value=model.password}}
+                <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
+            </div>
+            {{/if}}
         </fieldset>
     </form>
 </section>

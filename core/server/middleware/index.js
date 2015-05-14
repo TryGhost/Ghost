@@ -94,7 +94,10 @@ function configHbsForContext(req, res, next) {
     }
 
     hbs.updateTemplateOptions({data: {blog: themeData}});
-    blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
+
+    if (config.paths.themePath && blogApp.get('activeTheme')) {
+        blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
+    }
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose 'url' vs 'urlSSL'
@@ -110,6 +113,7 @@ function configHbsForContext(req, res, next) {
 function updateActiveTheme(req, res, next) {
     api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
         var activeTheme = response.settings[0];
+
         // Check if the theme changed
         if (activeTheme.value !== blogApp.get('activeTheme')) {
             // Change theme
@@ -117,6 +121,15 @@ function updateActiveTheme(req, res, next) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
                     return errors.throwError('The currently active theme ' + activeTheme.value + ' is missing.');
+                } else {
+                    // At this point the activated theme is not present and the current
+                    // request is for the admin client.  In order to allow the user access
+                    // to the admin client we set an hbs instance on the app so that middleware
+                    // processing can continue.
+                    blogApp.engine('hbs', hbs.express3());
+                    errors.logWarn('The currently active theme "' + activeTheme.value + '" is missing.');
+
+                    return next();
                 }
             } else {
                 activateTheme(activeTheme.value);
@@ -236,7 +249,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Static assets
     blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
@@ -260,6 +272,13 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Theme only config
     blogApp.use(middleware.staticTheme());
+
+    // Check if password protected blog
+    blogApp.use(middleware.checkIsPrivate); // check if the blog is protected
+    blogApp.use(middleware.filterPrivateRoutes);
+
+    // Serve sitemap.xsl file
+    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
@@ -302,7 +321,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use('/ghost', adminApp);
 
     // Set up Frontend routes
-    blogApp.use(routes.frontend());
+    blogApp.use(routes.frontend(middleware));
 
     // ### Error handling
     // 404 Handler

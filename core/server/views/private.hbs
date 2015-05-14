@@ -1,0 +1,50 @@
+<!doctype html>
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+    <head>
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+        <title>Ghost - Private Blog Access</title>
+
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+
+        <link rel="shortcut icon" href="{{asset "favicon.ico"}}">
+        <meta http-equiv="cleartype" content="on">
+
+        <link rel="stylesheet" type='text/css' href='//fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
+        <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
+    </head>
+    <body class="ghost-setup">
+        <main role="main" id="main" class="viewport">
+            <section class="setup-box js-setup-box fade-in">
+                <div class="vertical">
+                    <form id="setup" class="setup-form private-login" method="post" novalidate="novalidate">
+                        <h1>This blog is private</h1>
+                        <div class="form-group">
+                            <span class="input-icon icon-lock">
+                                 {{input_password}}
+                            </span>
+                            <button class="btn btn-green private-login-button" type="submit">
+                                Enter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        {{#if error}}
+        <aside class="notification bottom">
+            <div class="js-bb-notification">
+                <section class="js-notification notification-error">
+                    <span class="notification-message">{{error.message}}</span>
+                </section>
+            </div>
+        </aside>
+        {{/if}}
+    </body>
+</html>

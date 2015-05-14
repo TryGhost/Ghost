@@ -45,7 +45,7 @@ posts = {
      * Can return posts for a particular tag by passing a tag slug in
      *
      * @public
-     * @param {{context, page, limit, status, staticPages, tag}} options (optional)
+     * @param {{context, page, limit, status, staticPages, tag, featured}} options (optional)
      * @returns {Promise(Posts)} Posts Collection with Meta
      */
     browse: function browse(options) {
@@ -64,20 +64,20 @@ posts = {
 
     /**
      * ### Read
-     * Find a post, by ID or Slug
+     * Find a post, by ID, UUID, or Slug
      *
      * @public
      * @param {{id_or_slug (required), context, status, include, ...}} options
      * @return {Promise(Post)} Post
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'status'],
+        var attrs = ['id', 'slug', 'status', 'uuid'],
             data = _.pick(options, attrs);
 
         options = _.omit(options, attrs);
 
         // only published posts if no user is present
-        if (!(options.context && options.context.user)) {
+        if (!data.uuid && !(options.context && options.context.user)) {
             data.status = 'published';
         }
 

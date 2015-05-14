@@ -288,7 +288,7 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'status', 'staticPages'],
+                findPage: ['page', 'limit', 'status', 'staticPages', 'featured'],
                 add: ['importing']
             };
 
@@ -383,6 +383,14 @@ Post = ghostBookshelf.Model.extend({
                 options.staticPages = options.staticPages === 'true' || options.staticPages === '1' ? true : false;
             }
             options.where.page = options.staticPages;
+        }
+
+        if (options.featured) {
+            // convert string true/false to boolean
+            if (!_.isBoolean(options.featured)) {
+                options.featured = options.featured === 'true' || options.featured === '1' ? true : false;
+            }
+            options.where.featured = options.featured;
         }
 
         // Unless `all` is passed as an option, filter on

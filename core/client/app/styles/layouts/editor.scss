@@ -692,6 +692,17 @@ body.zen {
     }
 }//.post-settings-menu
 
+.post-view-link {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    font-size: 1.3rem;
+
+    i {
+        font-size: 10px;
+    }
+}
+
 
 //
 // Post Settings Menu meta Data

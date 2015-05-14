@@ -155,7 +155,7 @@ generateFeed = function (data) {
     });
 
     data.results.posts.forEach(function (post) {
-        var itemUrl = config.urlFor('post', {post: post, permalinks: data.permalinks}, true),
+        var itemUrl = config.urlFor('post', {post: post, permalinks: data.permalinks, secure: data.secure}, true),
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
                 title: post.title,
@@ -170,7 +170,7 @@ generateFeed = function (data) {
             imageUrl;
 
         if (post.image) {
-            imageUrl = config.urlFor('image', {image: post.image}, true);
+            imageUrl = config.urlFor('image', {image: post.image, secure: data.secure}, true);
 
             // Add a media content tag
             item.custom_elements.push({
@@ -224,6 +224,7 @@ generate = function (req, res, next) {
         data.version = res.locals.safeVersion;
         data.siteUrl = config.urlFor('home', {secure: req.secure}, true);
         data.feedUrl = config.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
+        data.secure = req.secure;
 
         return getFeedXml(req.route.path, data).then(function (feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');

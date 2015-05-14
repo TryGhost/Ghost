@@ -1438,4 +1438,73 @@ describe('Frontend Controller', function () {
             }).catch(done);
         });
     });
+
+    describe('private', function () {
+        var req, res, config, defaultPath;
+
+        defaultPath = '/core/server/views/private.hbs';
+
+        beforeEach(function () {
+            res = {
+                locals: {version: ''},
+                render: sandbox.spy()
+            },
+            req = {
+                route: {path: '/private/?r=/'},
+                query: {r: ''},
+                params: {}
+            },
+            config = {
+                paths: {
+                    adminViews: '/core/server/views',
+                    availableThemes: {
+                        casper: {}
+                    }
+                },
+                routeKeywords: {private: 'private'}
+            };
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeTheme',
+                    value: 'casper'
+                }]
+            }));
+        });
+
+        it('Should render default password page when theme has no password template', function (done) {
+            frontend.__set__('config', config);
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath).should.be.true;
+                res.locals.context.should.containEql('private');
+                done();
+            }).catch(done);
+        });
+
+        it('Should render theme password page when it exists', function (done) {
+            config.paths.availableThemes.casper = {
+                'private.hbs': '/content/themes/casper/private.hbs'
+            };
+            frontend.__set__('config', config);
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith('private').should.be.true;
+                res.locals.context.should.containEql('private');
+                done();
+            }).catch(done);
+        });
+
+        it('Should render with error when error is passed in', function (done) {
+            frontend.__set__('config', config);
+            res.error = 'Test Error';
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath, {error: 'Test Error'}).should.be.true;
+                res.locals.context.should.containEql('private');
+                done();
+            }).catch(done);
+        });
+    });
 });
