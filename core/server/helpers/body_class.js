@@ -14,42 +14,43 @@ var hbs             = require('express-hbs'),
     template        = require('./template'),
     body_class;
 
-body_class = function () {
+body_class = function (options) {
     var classes = [],
+        context = options.data.root.context,
         post = this.post,
         tags = this.post && this.post.tags ? this.post.tags : this.tags || [],
         page = this.post && this.post.page ? this.post.page : this.page || false;
 
-    if (this.tag !== undefined) {
-        classes.push('tag-template');
-        classes.push('tag-' + this.tag.slug);
-    }
-
-    if (this.author !== undefined) {
-        classes.push('author-template');
-        classes.push('author-' + this.author.slug);
-    }
-
-    if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
-        classes.push('paged');
+    if (post) {
         // To be removed from pages by #2597 when we're ready to deprecate this
-        classes.push('archive-template');
-    } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
-        classes.push('home-template');
-    } else if (post) {
-        // To be removed from pages by #2597 when we're ready to deprecate this
-        // i.e. this should be if (post && !page) { ... }
+        // i.e. this should be if (_.contains(context, 'post') && post) { ... }
         classes.push('post-template');
     }
 
-    if (page) {
+    if (_.contains(context, 'home')) {
+        classes.push('home-template');
+    } else if (_.contains(context, 'page') && page) {
         classes.push('page-template');
         // To be removed by #2597 when we're ready to deprecate this
         classes.push('page');
+    } else if (_.contains(context, 'tag') && this.tag) {
+        classes.push('tag-template');
+        classes.push('tag-' + this.tag.slug);
+    } else if (_.contains(context, 'author') && this.author) {
+        classes.push('author-template');
+        classes.push('author-' + this.author.slug);
+    } else if (_.contains(context, 'private')) {
+        classes.push('private-template');
     }
 
     if (tags) {
         classes = classes.concat(tags.map(function (tag) { return 'tag-' + tag.slug; }));
+    }
+
+    if (_.contains(context, 'paged')) {
+        classes.push('paged');
+        // To be removed from pages by #2597 when we're ready to deprecate this
+        classes.push('archive-template');
     }
 
     return api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
