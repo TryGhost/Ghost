@@ -32,20 +32,14 @@ body_class = function () {
 
     if (_.isString(this.relativeUrl) && this.relativeUrl.match(/\/(page\/\d)/)) {
         classes.push('paged');
-        // To be removed from pages by #2597 when we're ready to deprecate this
-        classes.push('archive-template');
     } else if (!this.relativeUrl || this.relativeUrl === '/' || this.relativeUrl === '') {
         classes.push('home-template');
-    } else if (post) {
-        // To be removed from pages by #2597 when we're ready to deprecate this
-        // i.e. this should be if (post && !page) { ... }
+    } else if (post && !page) {
         classes.push('post-template');
     }
 
     if (page) {
         classes.push('page-template');
-        // To be removed by #2597 when we're ready to deprecate this
-        classes.push('page');
     }
 
     if (tags) {
@@ -61,9 +55,6 @@ body_class = function () {
             view = template.getThemeViewForPost(paths, post).split('-');
 
             if (view[0] === 'page' && view.length > 1) {
-                classes.push(view.join('-'));
-                // To be removed by #2597 when we're ready to deprecate this
-                view.splice(1, 0, 'template');
                 classes.push(view.join('-'));
             }
         }
