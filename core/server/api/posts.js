@@ -45,7 +45,7 @@ posts = {
      * Can return posts for a particular tag by passing a tag slug in
      *
      * @public
-     * @param {{context, page, limit, status, staticPages, tag}} options (optional)
+     * @param {{context, page, limit, status, staticPages, tag, featured}} options (optional)
      * @returns {Promise(Posts)} Posts Collection with Meta
      */
     browse: function browse(options) {
