@@ -3,7 +3,13 @@
 So you're interested in giving us a hand? That's awesome! We've put together some guidelines that should help
 you get started quickly and easily. If you need help with contributing, visit the #ghost IRC channel on freenode. Thank you for stopping by!
 
-**Quick Links:** [feature roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) - [support forum](https://ghost.org/forum) - [documentation](http://support.ghost.org) - [developer wiki](https://github.com/TryGhost/Ghost/wiki) - [community guidelines](https://ghost.org/about/guidelines/) - [dev blog](http://dev.ghost.org)
+**Quick Links:**
+- [feature roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap)
+- [support forum](https://ghost.org/forum)
+- [documentation](http://support.ghost.org)
+- [developer wiki](https://github.com/TryGhost/Ghost/wiki)
+- [community guidelines](https://ghost.org/about/guidelines/)
+- [dev blog](http://dev.ghost.org)
 
 
 ### TL;DR
