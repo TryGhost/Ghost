@@ -296,3 +296,8 @@
 .view-content {
     padding: 20px;
 }
+
+.view-content p,
+.view-content p * {
+    user-select: text;
+}

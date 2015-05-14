@@ -9,6 +9,10 @@
     height: 100%;
 }
 
+.error-content {
+    user-select: text;
+}
+
 @media (max-width: 630px) {
     .error-content {
       max-width: 264px;

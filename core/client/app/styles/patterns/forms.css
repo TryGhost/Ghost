@@ -1,6 +1,10 @@
 /* Forms
 /* ---------------------------------------------------------- */
 
+form * {
+    user-select: text;
+}
+
 form label {
     display: block;
     color: var(--darkgrey);
@@ -27,6 +31,10 @@ legend {
     font-size: 1.2em;
     line-height: 2.0em;
     color: var(--brown);
+}
+
+input {
+    user-select: text;
 }
 
 
@@ -106,6 +114,7 @@ select {
     font-weight: normal;
     color: var(--darkgrey);
     transition: border-color 0.15s linear;
+    user-select: text;
 }
 
 .gh-input.error,
@@ -129,6 +138,7 @@ textarea {
     min-height: 10rem;
     line-height: 1.5;
     resize: vertical;
+    user-select: text;
 }
 
 

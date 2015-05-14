@@ -92,6 +92,10 @@
     box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 6px;
 }
 
+.modal-content * {
+    user-select: text;
+}
+
 .modal-content .close {
     position: absolute;
     top: 19px;

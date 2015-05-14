@@ -36,7 +36,6 @@
     left: 0;
     color: var(--brown);
     text-decoration: none;
-    user-select: none;
 }
 
 .image-uploader .image-upload:hover {

@@ -15,7 +15,6 @@
     letter-spacing: 1px;
     white-space: nowrap;
     border-radius: var(--border-radius);
-    user-select: none;
     cursor: pointer;
 
     background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
