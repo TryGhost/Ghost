@@ -1,0 +1,143 @@
+/* Setup New Blog /ghost/setup/
+/* ---------------------------------------------------------- */
+
+.ghost-setup {
+    color: var(--midgrey);
+    background: var(--darkgrey);
+}
+
+@media (max-width: 550px) {
+    .ghost-setup {
+        background: color(var(--darkgrey) lightness(-5%));
+    }
+}
+
+.ghost-setup main {
+    padding-top: 15px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 550px) {
+    .ghost-setup main {
+        top: 0;
+    }
+}
+
+.setup-box {
+    display: table;
+    max-width: 500px;
+    height: 90%;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.setup-form {
+    max-width: 530px;
+    padding: 40px;
+    color: color(var(--midgrey) lightness(+15%));
+    border-radius: 2px;
+}
+
+@media (max-width: 400px) {
+    .setup-form {
+        padding: 15px;
+    }
+}
+
+@media (min-width: 551px) {
+    .setup-form {
+        background: color(var(--darkgrey) lightness(-5%));
+    }
+}
+
+.setup-form header {
+    margin-bottom: 30px;
+}
+
+.setup-form label {
+    color: var(--lightgrey);
+    font-weight: 300;
+}
+
+@media (max-width: 550px) {
+    .setup-form label {
+        width: 100%;
+    }
+}
+
+.setup-form .form-group input {
+    padding: 7px;
+    border: none;
+    color: #fff;
+    background: color(var(--darkgrey) lightness(+10%));
+    transition: background 0.25s ease;
+}
+
+.setup-form .form-group input:focus {
+    border: none;
+    background: color(var(--darkgrey) lightness(+15%));
+}
+
+.setup-form input:-webkit-autofill {
+    /* Chrome auto-fill style */
+    -webkit-box-shadow: 0 0 0px 1000px var(--lightgrey) inset !important;
+}
+
+.setup-form h1 {
+    margin: 0;
+    font-weight: 200;
+    font-size: 26px;
+    letter-spacing: 0;
+    color: var(--lightgrey);
+}
+
+@media (max-width: 400px) {
+    .setup-form h1 {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 550px) {
+    .setup-form h1 {
+        font-size: 20px;
+    }
+}
+
+.setup-form h2 {
+    margin: 6px 0 0 0;
+    padding: 0;
+    border: none;
+    font-weight: 200;
+    font-size: 16px;
+    letter-spacing: 0;
+    color: var(--midgrey);
+}
+
+@media (max-width: 400px) {
+    .setup-form h2 {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 550px) {
+    .setup-form h2 {
+        font-size: 14px;
+    }
+}
+
+.setup-form p {
+    font-size: 12px;
+    line-height: 1.4em;
+    color: var(--midgrey);
+}
+
+.setup-form footer {
+    margin: 30px 0 5px 0;
+}
+
+.setup-form .btn-green {
+    width: 100%;
+    padding: 0.9em 1.8em;
+    font-size: 13px;
+}
