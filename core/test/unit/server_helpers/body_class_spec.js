@@ -46,7 +46,7 @@ describe('{{body_class}} helper', function () {
     });
 
     it('can render class string', function (done) {
-        helpers.body_class.call({}).then(function (rendered) {
+        helpers.body_class.call({}, {data: {root: {context: ['home']}}}).then(function (rendered) {
             should.exist(rendered);
 
             rendered.string.should.equal('home-template');
@@ -57,15 +57,53 @@ describe('{{body_class}} helper', function () {
 
     it('can render class string for context', function (done) {
         Promise.all([
-            helpers.body_class.call({relativeUrl: '/'}),
-            helpers.body_class.call({relativeUrl: '/a-post-title', post: {}}),
-            helpers.body_class.call({relativeUrl: '/page/4'}),
-            helpers.body_class.call({relativeUrl: '/tag/foo', tag: {slug: 'foo'}}),
-            helpers.body_class.call({relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}}),
-            helpers.body_class.call({relativeUrl: '/author/bar', author: {slug: 'bar'}}),
-            helpers.body_class.call({relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}})
+            // Standard home page
+            helpers.body_class.call(
+                {relativeUrl: '/'},
+                {data: {root: {context: ['home', 'index']}}}
+            ),
+            // A post
+            helpers.body_class.call(
+                {relativeUrl: '/a-post-title', post: {}},
+                {data: {root: {context: ['post']}}}
+            ),
+            // Paginated index
+            helpers.body_class.call(
+                {relativeUrl: '/page/4'},
+                {data: {root: {context: ['index', 'paged']}}}
+            ),
+            // Tag page
+            helpers.body_class.call(
+                {relativeUrl: '/tag/foo', tag: {slug: 'foo'}},
+                {data: {root: {context: ['tag']}}}
+            ),
+            // Paginated tag page
+            helpers.body_class.call(
+                {relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}},
+                {data: {root: {context: ['tag', 'paged']}}}
+            ),
+            // Author page
+            helpers.body_class.call(
+                {relativeUrl: '/author/bar', author: {slug: 'bar'}},
+                {data: {root: {context: ['author']}}}
+            ),
+            // Paginated author page
+            helpers.body_class.call(
+                {relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}},
+                {data: {root: {context: ['author', 'paged']}}}
+            ),
+            // Private route for password protection
+            helpers.body_class.call(
+                {relativeUrl: '/private/'},
+                {data: {root: {context: ['private']}}}
+            ),
+            // Post with tags
+            helpers.body_class.call(
+                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}},
+                {data: {root: {context: ['post']}}}
+            )
         ]).then(function (rendered) {
-            rendered.length.should.equal(7);
+            rendered.length.should.equal(9);
 
             should.exist(rendered[0]);
             should.exist(rendered[1]);
@@ -74,6 +112,8 @@ describe('{{body_class}} helper', function () {
             should.exist(rendered[4]);
             should.exist(rendered[5]);
             should.exist(rendered[6]);
+            should.exist(rendered[7]);
+            should.exist(rendered[8]);
 
             rendered[0].string.should.equal('home-template');
             rendered[1].string.should.equal('post-template');
@@ -82,34 +122,40 @@ describe('{{body_class}} helper', function () {
             rendered[4].string.should.equal('tag-template tag-foo paged archive-template');
             rendered[5].string.should.equal('author-template author-bar');
             rendered[6].string.should.equal('author-template author-bar paged archive-template');
+            rendered[7].string.should.equal('private-template');
+            rendered[8].string.should.equal('post-template tag-foo tag-bar');
 
             done();
         }).catch(done);
     });
 
     it('can render class for static page', function (done) {
-        helpers.body_class.call({
-            relativeUrl: '/',
-            post: {
-                page: true
-            }
-        }).then(function (rendered) {
+        helpers.body_class.call(
+            {
+                relativeUrl: '/about',
+                post: {
+                    page: true
+                }
+            },
+            {data: {root: {context: ['page']}}}
+        ).then(function (rendered) {
             should.exist(rendered);
-            rendered.string.should.equal('home-template page-template page');
+            rendered.string.should.equal('post-template page-template page');
 
             done();
         }).catch(done);
     });
 
     it('can render class for static page with custom template', function (done) {
-        helpers.body_class.call({
-            relativeUrl: '/about',
-            post: {
-                page: true,
-                slug: 'about'
-
-            }
-        }).then(function (rendered) {
+        helpers.body_class.call(
+            {
+                relativeUrl: '/about',
+                post: {
+                    page: true,
+                    slug: 'about'
+                }
+            },
+            {data: {root: {context: ['page']}}}).then(function (rendered) {
             should.exist(rendered);
             rendered.string.should.equal('post-template page-template page page-about page-template-about');
 

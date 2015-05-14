@@ -74,6 +74,18 @@ describe('{{meta_title}} helper', function () {
         }).catch(done);
     });
 
+    it('returns correct title for a page with meta_title set', function (done) {
+        helpers.meta_title.call(
+            {post: {title: 'About Page', meta_title: 'All about my awesomeness', page: true}},
+            {data: {root: {context: ['page']}}}
+        ).then(function (rendered) {
+                should.exist(rendered);
+                String(rendered).should.equal('All about my awesomeness');
+
+                done();
+            }).catch(done);
+    });
+
     it('returns correct title for a tag page', function (done) {
         var tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
         helpers.meta_title.call(
