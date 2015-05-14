@@ -233,7 +233,6 @@
     -webkit-overflow-scrolling: touch;
     word-break: break-word;
     hyphens: auto;
-    user-select: none;
     cursor: default;
 }
 
@@ -287,6 +286,11 @@
     font-size: 1.8rem;
     line-height: 1.5em;
     font-weight: 200;
+}
+
+.entry-preview-content *,
+.content-preview-content * {
+    user-select: all;
 }
 
 .entry-preview-content a,
@@ -468,7 +472,6 @@ body.zen .entry-preview {
     white-space: nowrap;
     background: var(--darkgrey);
     border-radius: 3px;
-    user-select: none;
 }
 
 #entry-tags .tag:hover {
