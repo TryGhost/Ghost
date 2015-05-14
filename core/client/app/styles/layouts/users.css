@@ -1,0 +1,233 @@
+/* Users /ghost/settings/users/
+/* ---------------------------------------------------------- */
+
+.users-list-wrapper {
+    overflow: auto;
+    height: 100%;
+}
+
+
+/* User list
+/* ---------------------------------------------------------- */
+
+.invited-users {
+    margin-bottom: 34px;
+}
+
+.user-list-title {
+    font-size: 13px;
+    font-weight: normal;
+    color: var(--midbrown);
+    margin-bottom: 14px;
+}
+
+.user-list-item {
+    border-top: 1px solid #e1e1e1;
+}
+
+@media (max-width: 550px) {
+    .user-list-item {
+        display: block;
+        padding: 15px 0;
+    }
+}
+
+@media (min-width: 551px) {
+    .user-list-item {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        padding: 0 15px;
+        height: 68px;
+    }
+}
+
+/* Only apply these styles to anchor tags (pending invited are divs) */
+a.user-list-item {
+    text-decoration: none;
+}
+
+@media (min-width: 601px) {
+    a.user-list-item:hover {
+        background: color(#e1e1e1 lightness(+10%));
+    }
+    a.user-list-item:last-of-type:hover {
+        box-shadow: inset 0px -1px 0px #e1e1e1;
+    }
+}
+
+.user-list-item-icon {
+    width: 35px;
+    height: 35px;
+    display: block;
+    border-radius: 100%;
+    background: #e1e1e1;
+    font-size: 0px;
+    color: transparent;
+    overflow: hidden;
+    position: relative;
+}
+
+.user-list-item-icon:before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    margin-top: -7px;
+    text-align: center;
+    color: var(--brown);
+    font-size: 14px;
+}
+
+.user-list-item-figure {
+    display: block;
+    width: 35px;
+    height: 35px;
+    border-radius: 35px;
+    background-size: cover;
+    background-position: center center;
+    position: relative;
+}
+
+.user-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+@media (max-width: 550px) {
+    .user-list-item-icon,
+    .user-list-item-figure {
+        float: left;
+        margin-right: 15px;
+    }
+}
+
+.user-list-item-body {
+    flex: 1 1 auto;
+    align-items: stretch;
+    padding-left: 15px;
+    line-height: 1;
+}
+
+@media (max-width: 550px) {
+    .user-list-item-body {
+        margin-top: 3px;
+    }
+}
+
+.user-list-item-body .name {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--darkgrey);
+}
+
+.user-list-item-body .description {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--midbrown);
+    white-space: nowrap;
+    margin-top: 3px;
+}
+
+@media (max-width: 550px) {
+    .user-list-item-aside {
+        float: left;
+        width: 100%;
+        margin: 12px 0 0 50px;
+    }
+}
+
+.user-list-item-aside .user-list-action:not(:first-of-type) {
+    margin-left: 20px;
+}
+
+@media (min-width: 551px) {
+    .user-list-item-aside .user-list-action:not(:first-of-type) {
+        margin-left: 50px;
+    }
+}
+
+.user-list-item-aside .role-label {
+    float: left;
+    margin-top: -1px;
+}
+
+.user-list-item-aside .role-label + .role-label {
+    margin-left: 5px;
+}
+
+.user-list-action {
+    font-size: 11px;
+    text-transform: uppercase;
+    text-decoration: underline;
+}
+
+
+/* Role Labels
+/* ---------------------------------------------------------- */
+
+.role-label {
+    display: inline-block;
+    padding: 6px 8px;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 9px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+    background: #eee;
+}
+
+.role-label.owner {
+    color: rgba(255, 255, 255, 0.8);
+    background: var(--darkgrey);
+}
+
+.role-label.administrator {
+    color: rgba(255, 255, 255, 0.8);
+    background: var(--red);
+}
+
+.role-label.editor {
+    color: rgba(255, 255, 255, 0.8);
+    background: var(--blue);
+}
+
+
+/* User invitation modal
+/* ---------------------------------------------------------- */
+
+.invite-new-user .form-group {
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.invite-new-user .form-group label {
+    position: static;
+    display: block;
+    text-align: left;
+}
+
+.invite-new-user .form-group:nth-of-type(1) {
+    float: left;
+    width: 60%;
+}
+
+.invite-new-user .form-group:nth-of-type(2) {
+    float: left;
+    width: 35%;
+    margin-left: 5%;
+}
+
+.invite-new-user .form-group input {
+    width: 100%;
+}
+
+.invite-new-user .btn-green {
+    width: 100%;
+}
