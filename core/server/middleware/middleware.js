@@ -433,10 +433,11 @@ middleware = {
             protectedSecurity.push({ip: remoteAddress, time: currentTime});
         } else {
             res.error = {
-                message: 'No password entered'
+                message: '请输入暗号'
             };
             return next();
         }
+
 
         // filter entries that are older than rateProtectedPeriod
         protectedSecurity = _.filter(protectedSecurity, function (logTime) {
@@ -481,13 +482,13 @@ middleware = {
                 return res.redirect(config.urlFor({relativeUrl: decodeURIComponent(forward)}));
             } else {
                 res.error = {
-                    message: 'Wrong password'
+                    message: '暗号不正确'
                 };
                 return next();
             }
         });
     },
-
+    
     busboy: busboy
 };
 

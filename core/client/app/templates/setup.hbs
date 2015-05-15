@@ -30,9 +30,14 @@
                 {{input type="password" name="password" autofocus="autofocus" autocorrect="off" value=password }}
                 <p>设置一个密码，至少要8个字符</p>
             </div>
+            
             <footer>
-                <button type="submit" class="btn btn-green btn-lg" {{action "setup"}} disabled={{submitting}}>填好了, 开启Ghost博客</button>
+                <button type="submit" class="btn btn-green btn-lg" {{action "setup"}} disabled={{submitting}}>
+                   填好了, 开启Ghost博客
+                </button>
+                <p style="margin-top:10px;text-align:center">( 首次开启可能需要近1分钟的时间, 请不要关闭或刷新页面 ) </p>
             </footer>
+
         </form>
     </div>
 </section>

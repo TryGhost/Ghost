@@ -96,21 +96,22 @@
             </div>
 
             <div class="form-group for-checkbox">
-                <label for="isPrivate">Make this blog private</label>
+                <label for="isPrivate">隐私设置</label>
                 <label class="checkbox" for="isPrivate">
                     {{input id="isPrivate" name="general[isPrivate]" type="checkbox"
                     checked=model.isPrivate}}
                     <span class="input-toggle-component"></span>
-                    <p>Enable password protection</p>
+                    <p>设置访问暗号</p>
                 </label>
             </div>
 
             {{#if model.isPrivate}}
             <div class="form-group">
                 {{input name="general[password]" type="text" value=model.password}}
-                <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
+                <p>访问者需要输入上面的暗号才能访问您的博客(暗号支持中文)。开启后您的博客将无法被搜索引擎收录。</p>
             </div>
             {{/if}}
+
         </fieldset>
     </form>
 </section>

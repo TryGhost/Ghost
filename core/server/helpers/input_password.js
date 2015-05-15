@@ -12,12 +12,11 @@ var hbs             = require('express-hbs'),
 
 input_password = function () {
     var output = utils.inputTemplate({
-        type: 'password',
+        type: 'text',
         name: 'password',
         className: 'private-login-password',
-        extras: 'autofocus="autofocus"'
+        extras: 'autofocus="autofocus" placeholder="请输入暗号"'
     });
-
     return new hbs.handlebars.SafeString(output);
 };
 

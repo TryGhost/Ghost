@@ -278,13 +278,22 @@
         margin-bottom: 2rem;
         text-indent: 0;
     }
+    
     .form-group {
         margin: 0;
     }
+
     input[type="password"] {
         padding: 9px 7px;
         border-radius: 3px 3px 0 0;
     }
+
+    input[type="text"] {
+        padding: 9px 7px;
+        border-radius: 3px 3px 0 0;
+        height:42px;
+    }
+
     .private-login-button {
         padding: 9px 1.8em;
         border-radius: 0 0 3px 3px;
