@@ -291,13 +291,16 @@
         color: #fff;
         background-color: transparent;
     }
-    .post-preview-header .featured, .post-preview-header .unfeatured, .post-preview-header small {
+    .post-preview-header .featured,
+    .post-preview-header .unfeatured,
+    .post-preview-header small {
         display: none;
     }
 }
 
 @media (min-width: 901px) {
-    .post-preview-header .unfeatured, .post-preview-header .featured {
+    .post-preview-header .unfeatured,
+    .post-preview-header .featured {
         float: left;
     }
     .post-preview-header .post-published-by {
@@ -314,8 +317,8 @@
 .no-posts-box {
     position: relative;
     height: 90%;
-    margin: 0px auto;
-    padding: 0px;
+    margin: 0 auto;
+    padding: 0;
     display: table;
     z-index: 600;
 }
@@ -355,7 +358,7 @@
 
 /* This has to be a pseudo element to sit over the top of everything else in the content list */
 .content-list.keyboard-focused:before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;

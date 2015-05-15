@@ -84,7 +84,7 @@
     width: 80%;
     margin-left: -40%;
     background-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.05) 0%, transparent 75%, transparent 100%);
-    background-position: 0px -5px;
+    background-position: 0 -5px;
     background-size: 100% 200%;
     z-index: -1;
 }
