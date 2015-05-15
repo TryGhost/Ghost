@@ -21,7 +21,7 @@
     --green: #9FBB58;
 
     /* Style values */
-    --border-radius: 3px;
+    --border-radius: 4px;
     --box-shadow: rgba(0,0,0,0.05) 0 1px 5px; /* TODO: not used? */
     --font-family: 'Open Sans', sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
