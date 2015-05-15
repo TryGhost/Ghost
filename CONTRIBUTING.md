@@ -1,11 +1,12 @@
 # Welcome to the contributing guide for Ghost!
 
 So you're interested in giving us a hand? That's awesome! We've put together some guidelines that should help
-you get started quickly and easily. If you need help with contributing, visit the #ghost IRC channel on freenode. Thank you for stopping by!
+you get started quickly and easily. If you need help with anything, please come visit our [slack community](https://ghost.org/slack). Thank you for stopping by!
 
 **Quick Links:**
-- [feature roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap)
-- [support forum](https://ghost.org/forum)
+- [feature roadmap](https://trello.com/b/EceUgtCL/ghost-roadmap)
+- [feature wishlist](http://ideas.ghost.org)
+- [slack community](https://ghost.org/slack)
 - [documentation](http://support.ghost.org)
 - [developer wiki](https://github.com/TryGhost/Ghost/wiki)
 - [community guidelines](https://ghost.org/about/guidelines/)
@@ -14,7 +15,7 @@ you get started quickly and easily. If you need help with contributing, visit th
 
 ### TL;DR
 
-If you need help with Ghost or have questions, please use [the forum](https://ghost.org) (documentation is [here](http://support.ghost.org)). If you're [raising a bug](#bugs) please be sure to [include as much info as possible](#bug-template) so that we can fix it! If you've got some code you want to [pull request](#pull-requests) please [squash commits](https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history), use this [commit message format](https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
+If you need help with Ghost or have questions, please use [slack](https://ghost.org/slack) (documentation is [here](http://support.ghost.org)). If you're [raising a bug](#bugs) please be sure to [include as much info as possible](#bug-template) so that we can fix it! If you've got some code you want to [pull request](#pull-requests) please [squash commits](https://github.com/TryGhost/Ghost/wiki/Git-workflow#wiki-clean-up-history), use this [commit message format](https://github.com/TryGhost/Ghost/wiki/Git-workflow#commit-messages) and check it passes the tests by running `grunt validate`. Thanks for helping us make Ghost better.
 
 
 ### Guideline Contents
@@ -38,15 +39,14 @@ There are lots and lots of ways to get involved, this document covers:
 If you're looking to raise an issue because think you've found a problem with Ghost, or you'd like to make a request
 for a new feature in the codebase, or any other reason… please read this first.
 
-The GitHub issue tracker is the preferred channel for [bug reports](#bugs),
-[feature requests](#features), [change requests](#changes) and [submitting pull
+The GitHub issue tracker is the preferred channel for [bug reports](#bugs), [change requests](#changes) and [submitting pull
 requests](#pull-requests), but please respect the following restrictions:
 
 * Please **search for existing issues**. Help us keep duplicate issues to a minimum by checking to see if someone
 has already reported your problem or requested your idea.
 
-* Please **do not** use the issue tracker for personal support requests (use
-  [the forum](http://ghost.org/forum) or IRC - #ghost on freenode).
+* Please **do not** use the issue tracker for personal support requests (use [slack](http://ghost.org/slack) or 
+[stackoverflow](http://stackoverflow.com/questions/tagged/ghost-blog) if you prefer).
 
 * Please **do not** derail or troll issues. Keep the discussion on topic and respect the opinions of others.
 
@@ -117,8 +117,7 @@ Please use your discretion to decide whether a feature request belongs on the [w
 
 Before making a suggestion, here are a few handy tips on what to consider:
 
-1. Visit the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap), [wishlist](http://ideas.ghost.org) & **use the GitHub search** to
-see if the feature has already been requested
+1. Visit the [Roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap), [wishlist](http://ideas.ghost.org) & search to see if the feature has already been requested
 
 2. Check out [What makes it into Ghost core?](https://github.com/TryGhost/Ghost/wiki/What-makes-it-into-Ghost-core%3F) - this explains the guidelines for what fits into the scope and aims of the project
 
@@ -126,7 +125,7 @@ see if the feature has already been requested
 
 4. Remember, it's up to *you* to make a strong case to convince the project's leaders of the merits of a new
 feature. Please provide as much detail and context as possible, this means explaining the use case and why it is
-likely to be common. The strongest vote in favour of any feature request is hands-down, un-debatable traction on our user wishlist.
+likely to be common. The strongest vote in favour of any feature request is hands-down, un-debatable traction on our user [wishlist](http://ideas.ghost.org).
 
 
 <a name="changes"></a>
@@ -155,7 +154,7 @@ Pull requests are **awesome**. If you're looking to raise a PR for something whi
 ##### Need Help?
 
 If you're not completely clear on how to submit / update / *do* Pull Requests, please check out our in depth
-[Git Workflow guide](https://github.com/TryGhost/Ghost/wiki/Git-Workflow) for Ghost, or visit the #ghost IRC channel on freenode.org and we'll help you out.
+[Git Workflow guide](https://github.com/TryGhost/Ghost/wiki/Git-Workflow) for Ghost, or visit [slack](http://ghost.org/slack) and we'll help you out.
 
 
 <a name="testing"></a>
@@ -224,7 +223,7 @@ If you're interested in contributing to Ghost and don't know where to start, her
 - The [help wanted label](https://github.com/TryGhost/Ghost/labels/help%20wanted) highlights issues that need a champion
 - The [roadmap wiki page](https://github.com/TryGhost/Ghost/wiki/Roadmap#github-backlogs) has details of how we use milestones to prioritise issues
 
-If you're still stuck, please come join us in the #ghost channel in IRC and let us know what you're interested in!
+If you're still stuck, please come join us in [slack](https://ghost.org/slack) and let us know what you're interested in!
 
 
 ### Developer Tips
