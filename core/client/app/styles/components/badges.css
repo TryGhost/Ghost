@@ -8,7 +8,7 @@
     box-shadow: 0 0 0 1px #777;
     font-size: 1rem;
     font-weight: inherit;
-    color: #FFF;
+    color: #fff;
     line-height: 1;
     vertical-align: baseline;
     white-space: nowrap;
@@ -32,7 +32,7 @@
 }
 
 p .badge {
-    padding: 0px 4px 3px;
+    padding: 0 4px 3px;
     position: relative;
     top: -2px;
     margin-left: -1px;
