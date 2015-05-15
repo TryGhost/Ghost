@@ -10,7 +10,18 @@
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add post image" image=model.image uploaderReference=uploaderReference tagName="section"}}
             <form>
             <div class="form-group">
+
                 <label for="url">博文地址</label>
+                {{#if model.isPublished}}
+                <a class="post-view-link" target="_blank" href="{{model.absoluteUrl}}">
+                    查看博文 <i class="icon-external"></i>
+                </a>
+                {{else}}
+                <a class="post-view-link" target="_blank" href="{{model.previewUrl}}">
+                    预览 <i class="icon-external"></i>
+                </a>
+                {{/if}}
+
                 <span class="input-icon icon-link">
                     {{gh-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" selectOnClick="true" stopEnterKeyDownPropagation="true"}}
                 </span>

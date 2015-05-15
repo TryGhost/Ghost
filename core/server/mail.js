@@ -91,8 +91,9 @@ GhostMailer.prototype.send = function (message) {
             }
 
             response.statusHandler.once('failed', function (data) {
+
                 var reason = '邮件发送错误: 邮件发送失败';
-                if (data.error.errno === 'ENOTFOUND') {
+                if (data.error && data.error.errno === 'ENOTFOUND') {
                     reason += ': there is no mail server at this address: ' + data.domain;
                 }
                 reason += '.';
@@ -100,7 +101,14 @@ GhostMailer.prototype.send = function (message) {
             });
 
             response.statusHandler.once('requeue', function (data) {
-                return reject(new Error('邮件发送错误: 邮件发送失败 :( \n更多信息: ' + data.error.message));
+
+                var errorMessage = '邮件发送错误: 邮件可能发送失败 :( ';
+
+                if (data.error && data.error.message) {
+                    errorMessage += '\n详情: ' + data.error.message;
+                }
+
+                return reject(new Error(errorMessage));
             });
 
             response.statusHandler.once('sent', function () {

@@ -73,7 +73,14 @@
             "defaultValue": "{}"
         },
         "navigation": {
+
             "defaultValue": "[{\"label\":\"首页\", \"url\":\"/\"}]"
+        },
+        "isPrivate": {
+            "defaultValue": "false"
+        },
+        "password": {
+            "defaultValue": ""
         }
     },
     "theme": {

@@ -311,8 +311,7 @@ describe('Frontend Controller', function () {
                 published_at: new Date('2014/1/2').getTime(),
                 author: {
                     id: 1,
-                    name: 'Test User',
-                    email: 'test@ghost.org'
+                    name: 'Test User'
                 }
             }],
             mockTags = [{
@@ -401,7 +400,6 @@ describe('Frontend Controller', function () {
                         render: function (view, context) {
                             view.should.equal('tag');
                             context.tag.should.equal(mockTags[0]);
-                            should.not.exist(context.posts[0].author.email);
                             done();
                         }
                     };
@@ -633,7 +631,6 @@ describe('Frontend Controller', function () {
                             render: function (view, context) {
                                 view.should.equal('page-' + mockPosts[2].posts[0].slug);
                                 context.post.should.equal(mockPosts[2].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -663,7 +660,6 @@ describe('Frontend Controller', function () {
                             render: function (view, context) {
                                 view.should.equal('page');
                                 context.post.should.equal(mockPosts[0].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -856,7 +852,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 context.post.should.exist;
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -971,7 +966,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 context.post.should.exist;
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1102,7 +1096,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 should.exist(context.post);
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1234,7 +1227,6 @@ describe('Frontend Controller', function () {
                                 view.should.equal('post');
                                 should.exist(context.post);
                                 context.post.should.equal(mockPosts[1].posts[0]);
-                                should.not.exist(context.post.author.email);
                                 done();
                             }
                         };
@@ -1442,6 +1434,75 @@ describe('Frontend Controller', function () {
                 res.redirect.calledOnce.should.be.true;
                 res.redirect.calledWith('/blog/rss/3/').should.be.true;
                 res.render.called.should.be.false;
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('private', function () {
+        var req, res, config, defaultPath;
+
+        defaultPath = '/core/server/views/private.hbs';
+
+        beforeEach(function () {
+            res = {
+                locals: {version: ''},
+                render: sandbox.spy()
+            },
+            req = {
+                route: {path: '/private/?r=/'},
+                query: {r: ''},
+                params: {}
+            },
+            config = {
+                paths: {
+                    adminViews: '/core/server/views',
+                    availableThemes: {
+                        casper: {}
+                    }
+                },
+                routeKeywords: {private: 'private'}
+            };
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeTheme',
+                    value: 'casper'
+                }]
+            }));
+        });
+
+        it('Should render default password page when theme has no password template', function (done) {
+            frontend.__set__('config', config);
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath).should.be.true;
+                res.locals.context.should.containEql('private');
+                done();
+            }).catch(done);
+        });
+
+        it('Should render theme password page when it exists', function (done) {
+            config.paths.availableThemes.casper = {
+                'private.hbs': '/content/themes/casper/private.hbs'
+            };
+            frontend.__set__('config', config);
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith('private').should.be.true;
+                res.locals.context.should.containEql('private');
+                done();
+            }).catch(done);
+        });
+
+        it('Should render with error when error is passed in', function (done) {
+            frontend.__set__('config', config);
+            res.error = 'Test Error';
+
+            frontend.private(req, res, done).then(function () {
+                res.render.calledWith(defaultPath, {error: 'Test Error'}).should.be.true;
+                res.locals.context.should.containEql('private');
                 done();
             }).catch(done);
         });

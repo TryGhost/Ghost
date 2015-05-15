@@ -35,12 +35,19 @@ EditorControllerMixin = Ember.Mixin.create({
         // Don't save just because we swapped out models
         if (this.get('model.isDraft') && !this.get('model.isNew')) {
             var autoSaveId,
-                timedSaveId;
+                timedSaveId,
+                saveOptions;
 
-            timedSaveId = Ember.run.throttle(this, 'send', 'save', {silent: true, disableNProgress: true}, 60000, false);
+            saveOptions = {
+                silent: true,
+                disableNProgress: true,
+                backgroundSave: true
+            };
+
+            timedSaveId = Ember.run.throttle(this, 'send', 'save', saveOptions, 60000, false);
             this.set('timedSaveId', timedSaveId);
 
-            autoSaveId = Ember.run.debounce(this, 'send', 'save', {silent: true, disableNProgress: true}, 3000);
+            autoSaveId = Ember.run.debounce(this, 'send', 'save', saveOptions, 3000);
             this.set('autoSaveId', autoSaveId);
         }
     }.observes('model.scratch'),
@@ -229,7 +236,7 @@ EditorControllerMixin = Ember.Mixin.create({
 
     actions: {
         save: function (options) {
-            var status = this.get('willPublish') ? 'published' : 'draft',
+            var status,
                 prevStatus = this.get('model.status'),
                 isNew = this.get('model.isNew'),
                 autoSaveId = this.get('autoSaveId'),
@@ -239,6 +246,13 @@ EditorControllerMixin = Ember.Mixin.create({
                 promise;
 
             options = options || {};
+
+            if (options.backgroundSave) {
+                // do not allow a post's status to be set to published by a background save
+                status = 'draft';
+            } else {
+                status = this.get('willPublish') ? 'published' : 'draft';
+            }
 
             if (autoSaveId) {
                 Ember.run.cancel(autoSaveId);
@@ -349,7 +363,7 @@ EditorControllerMixin = Ember.Mixin.create({
 
         autoSaveNew: function () {
             if (this.get('model.isNew')) {
-                this.send('save', {silent: true, disableNProgress: true});
+                this.send('save', {silent: true, disableNProgress: true, backgroundSave: true});
             }
         }
     }

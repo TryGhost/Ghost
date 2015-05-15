@@ -9,8 +9,8 @@ var EditorSaveButtonView = Ember.View.extend({
         return this.get('controller.model.isPublished') !== this.get('controller.willPublish');
     }),
 
-    publishText: Ember.computed('controller.model.isPublished', 'controller.pageOrPost', function () {
-        return this.get('controller.model.isPublished') ? '更新' + this.get('controller.postOrPage') : '立即发布';
+    publishText: Ember.computed('controller.model.isPublished', 'controller.postOrPage', function () {
+        return this.get('controller.model.isPublished') ? '更新 ' + this.get('controller.postOrPage') : '立即发布';
     }),
 
     draftText: Ember.computed('controller.model.isPublished', function () {
@@ -21,7 +21,7 @@ var EditorSaveButtonView = Ember.View.extend({
         return '删除 ' + this.get('controller.postOrPage');
     }),
 
-    saveText: Ember.computed('controller.willPublish', function () {
+    saveText: Ember.computed('controller.willPublish', 'publishText', 'draftText', function () {
         return this.get('controller.willPublish') ? this.get('publishText') : this.get('draftText');
     })
 });

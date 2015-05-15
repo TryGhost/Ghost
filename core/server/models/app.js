@@ -6,7 +6,7 @@ App = ghostBookshelf.Model.extend({
     tableName: 'apps',
 
     saving: function (newPage, attr, options) {
-         /*jshint unused:false*/
+        /*jshint unused:false*/
         var self = this;
 
         ghostBookshelf.Model.prototype.saving.apply(this, arguments);

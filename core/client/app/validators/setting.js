@@ -5,7 +5,9 @@ var SettingValidator = Ember.Object.create({
             title = model.get('title'),
             description = model.get('description'),
             email = model.get('email'),
-            postsPerPage = model.get('postsPerPage');
+            postsPerPage = model.get('postsPerPage'),
+            isPrivate    = model.get('isPrivate'),
+            password     = model.get('password');
 
         if (!validator.isLength(title, 0, 150)) {
 
@@ -18,6 +20,10 @@ var SettingValidator = Ember.Object.create({
 
         if (!validator.isEmail(email) || !validator.isLength(email, 0, 254)) {
             validationErrors.push({message: '邮箱格式不正确'});
+        }
+
+        if (isPrivate && password === '') {
+            validationErrors.push({message: 'Password must be supplied'});
         }
 
         if (postsPerPage > 1000) {

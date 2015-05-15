@@ -205,7 +205,9 @@ ConfigManager.prototype.set = function (config) {
         routeKeywords: {
             tag: 'tag',
             author: 'author',
-            page: 'page'
+            page: 'page',
+            preview: 'p',
+            private: 'private'
         },
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..

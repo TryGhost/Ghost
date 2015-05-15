@@ -112,7 +112,7 @@ users = {
 
         return dataProvider.User.findOne(data, options).then(function (result) {
             if (result) {
-                return {users: [result.toJSON()]};
+                return {users: [result.toJSON(options)]};
             }
 
             return Promise.reject(new errors.NotFoundError('用户不存在。'));
@@ -141,7 +141,7 @@ users = {
                 return dataProvider.User.edit(data.users[0], options)
                     .then(function (result) {
                         if (result) {
-                            return {users: [result.toJSON()]};
+                            return {users: [result.toJSON(options)]};
                         }
 
                         return Promise.reject(new errors.NotFoundError('用户不存在。'));
@@ -163,7 +163,7 @@ users = {
                 return dataProvider.User.findOne(
                     {id: options.context.user, status: 'all'}, {include: ['roles']}
                 ).then(function (contextUser) {
-                    var contextRoleId = contextUser.related('roles').toJSON()[0].id;
+                    var contextRoleId = contextUser.related('roles').toJSON(options)[0].id;
 
                     if (roleId !== contextRoleId && editedUserId === contextUser.id) {
                         return Promise.reject(new errors.NoPermissionError('你不能修改你自己的角色。'));
@@ -232,7 +232,7 @@ users = {
                         }
                     }
                 }).then(function (invitedUser) {
-                    user = invitedUser.toJSON();
+                    user = invitedUser.toJSON(options);
                     return sendInviteEmail(user);
                 }).then(function () {
                     // If status was invited-pending and sending the invitation succeeded, set status to invited.
@@ -240,14 +240,15 @@ users = {
                         return dataProvider.User.edit(
                             {status: 'invited'}, _.extend({}, options, {id: user.id})
                         ).then(function (editedUser) {
-                            user = editedUser.toJSON();
+                            user = editedUser.toJSON(options);
                         });
                     }
                 }).then(function () {
                     return Promise.resolve({users: [user]});
                 }).catch(function (error) {
-                    if (error && error.type === 'EmailError') {
-                        error.message = '邮件发送失败: ' + error.message + '请检查邮箱配置后重新发送邀请函。';
+
+                    if (error && error.errorType === 'EmailError') {
+                        error.message = '邮件发送失败: ' + error.message + ' 请检查邮箱配置后重新发送邀请函。';
                         errors.logWarn(error.message);
 
                         // If sending the invitation failed, set status to invited-pending

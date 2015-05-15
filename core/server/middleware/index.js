@@ -93,11 +93,12 @@ function configHbsForContext(req, res, next) {
         themeData.url = config.urlSSL.replace(/\/$/, '');
     }
 
-    hbs.updateTemplateOptions({data: {blog: themeData}}); 
 
-    // Hacked By Weiping 模板不存在的时候可以进入后台
-    var theActiveTheme = blogApp.get('activeTheme') || '/';
-    blogApp.set('views', path.join(config.paths.themePath, theActiveTheme ));
+    hbs.updateTemplateOptions({data: {blog: themeData}});
+
+    if (config.paths.themePath && blogApp.get('activeTheme')) {
+        blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
+    }
 
     // Pass 'secure' flag to the view engine
     // so that templates can choose 'url' vs 'urlSSL'
@@ -113,17 +114,22 @@ function updateActiveTheme(req, res, next) {
     api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
         
         var activeTheme = response.settings[0];
-    
         // Check if the theme changed
         if (activeTheme.value !== blogApp.get('activeTheme')) {
             // Change theme
             if (!config.paths.availableThemes.hasOwnProperty(activeTheme.value)) {
                 if (!res.isAdmin) {
                     // Throw an error if the theme is not available, but not on the admin UI
-                    return errors.throwError('找不到主题 [' + activeTheme.value + '] 相关文件！请登录后台重新选择主题。');
 
-                } else { // Hacked By Weiping 模板不存在的时候可以进入后台
-                   blogApp.engine('hbs', hbs.express3());
+                    return errors.throwError('找不到主题 [' + activeTheme.value + ' ] 相关文件！请登录后台重新选择主题。');
+                } else {
+                    // At this point the activated theme is not present and the current
+                    // request is for the admin client.  In order to allow the user access
+                    // to the admin client we set an hbs instance on the app so that middleware
+                    // processing can continue.
+                    blogApp.engine('hbs', hbs.express3());
+                    errors.logWarn('找不到主题 [' + activeTheme.value + ']');
+                    return next();
                 }
                 
             } else {
@@ -247,7 +253,6 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
-    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Static assets
     blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
@@ -271,6 +276,13 @@ setupMiddleware = function (blogAppInstance, adminApp) {
 
     // Theme only config
     blogApp.use(middleware.staticTheme());
+
+    // Check if password protected blog
+    blogApp.use(middleware.checkIsPrivate); // check if the blog is protected
+    blogApp.use(middleware.filterPrivateRoutes);
+
+    // Serve sitemap.xsl file
+    blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
 
     // Serve robots.txt if not found in theme
     blogApp.use(serveSharedFile('robots.txt', 'text/plain', utils.ONE_HOUR_S));
@@ -313,7 +325,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use('/ghost', adminApp);
 
     // Set up Frontend routes
-    blogApp.use(routes.frontend());
+    blogApp.use(routes.frontend(middleware));
 
     // ### Error handling
     // 404 Handler

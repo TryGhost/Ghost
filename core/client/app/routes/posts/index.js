@@ -23,7 +23,7 @@ var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin
             posts = this.store.all('post'),
             post;
 
-        return this.store.find('user', 'me').then(function (user) {
+        return this.get('session.user').then(function (user) {
             post = posts.find(function (post) {
                 // Authors can only see posts they've written
                 if (user.get('isAuthor')) {

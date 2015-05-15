@@ -28,6 +28,10 @@
                 {{gh-activating-list-item route="settings.code-injection" title="自定义代码" classNames="settings-nav-code icon-code"}}
             {{/if}}
 
+            {{#if showPassProtection}}
+                {{gh-activating-list-item route="settings.pass-protect" title="Password Protection" classNames="settings-nav-pass icon-lock"}}
+            {{/if}}
+
             {{#if showLabs}}
                 {{gh-activating-list-item route="settings.labs" title="实验室" classNames="settings-nav-labs icon-atom"}}
             {{/if}}

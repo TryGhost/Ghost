@@ -33,8 +33,8 @@ adminControllers = {
             }
 
             var notification = {
-                type: 'success',
-                location: 'top',
+                type: 'upgrade',
+                location: 'settings-about-upgrade',
                 dismissible: false,
                 status: 'persistent',
                 message: '<a href="http://ghost.diancloud.com"> Ghost ' + updateVersion +

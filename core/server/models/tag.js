@@ -41,7 +41,7 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     saving: function (newPage, attr, options) {
-         /*jshint unused:false*/
+        /*jshint unused:false*/
 
         var self = this;
 
@@ -163,7 +163,7 @@ Tag = ghostBookshelf.Model.extend({
             pagination.next = null;
             pagination.prev = null;
 
-            data.tags = tagCollection.toJSON();
+            data.tags = tagCollection.toJSON(options);
             data.meta = meta;
             meta.pagination = pagination;
 

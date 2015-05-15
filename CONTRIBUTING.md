@@ -3,7 +3,13 @@
 So you're interested in giving us a hand? That's awesome! We've put together some guidelines that should help
 you get started quickly and easily. If you need help with contributing, visit the #ghost IRC channel on freenode. Thank you for stopping by!
 
-**Quick Links:** [feature roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap) - [support forum](https://ghost.org/forum) - [documentation](http://support.ghost.org) - [developer wiki](https://github.com/TryGhost/Ghost/wiki) - [community guidelines](https://ghost.org/about/guidelines/) - [dev blog](http://dev.ghost.org)
+**Quick Links:**
+- [feature roadmap](https://github.com/TryGhost/Ghost/wiki/Roadmap)
+- [support forum](https://ghost.org/forum)
+- [documentation](http://support.ghost.org)
+- [developer wiki](https://github.com/TryGhost/Ghost/wiki)
+- [community guidelines](https://ghost.org/about/guidelines/)
+- [dev blog](http://dev.ghost.org)
 
 
 ### TL;DR
@@ -59,7 +65,7 @@ Guidelines for bug reports:
    latest `master` or look for [closed issues in the current milestone](https://github.com/TryGhost/Ghost/issues?labels=&milestone=3&page=1&state=closed).
 
 3. **Isolate the problem** &mdash; ideally create a [reduced test
-   case](http://css-tricks.com/6263-reduced-test-cases/) and a live example.
+   case](https://css-tricks.com/reduced-test-cases/) and a live example.
 
 4. **Include a screencast if relevant** - Is your issue about a design or front end feature or bug? The most
 helpful thing in the world is if we can *see* what you're talking about.
