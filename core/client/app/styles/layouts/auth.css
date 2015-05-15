@@ -44,7 +44,7 @@
 .ghost-signup input:-webkit-autofill,
 .ghost-forgotten input:-webkit-autofill,
 .ghost-reset input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0px 1000px var(--lightgrey) inset !important;
+    -webkit-box-shadow: 0 0 0 1000px var(--lightgrey) inset !important;
 }
 
 .login-box,

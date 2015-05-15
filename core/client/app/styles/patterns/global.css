@@ -6,24 +6,23 @@
 /* ---------------------------------------------------------- */
 
 :root {
-
     /* Colours */
     --darkgrey: #242628;
     --grey: #242628;
     --midgrey: #7d878a;
     --lightgrey: #e2edf2;
-    --lightestgrey: #FCFCFC;
+    --lightestgrey: #fcfcfc;
     --brown: #aaa9a2;
     --midbrown: #c0bfb6;
-    --blue: #5BA4E5;
+    --blue: #5ba4e5;
     --red: #e25440;
-    --orange: #F2A925;
-    --green: #9FBB58;
+    --orange: #f2a925;
+    --green: #9fbb58;
 
     /* Style values */
     --border-radius: 4px;
     --box-shadow: rgba(0,0,0,0.05) 0 1px 5px; /* TODO: not used? */
-    --font-family: 'Open Sans', sans-serif;
+    --font-family: "Open Sans", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
@@ -31,7 +30,9 @@
 /* Layout
 /* ---------------------------------------------------------- */
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
     box-sizing: border-box;
     user-select: none;
 }
@@ -66,8 +67,12 @@ body {
 /* Text
 /* ---------------------------------------------------------- */
 
-h1, h2, h3,
-h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     margin: 0 0 0.3em 0;
     line-height: 1.15em;
     color: var(--darkgrey);
@@ -101,16 +106,22 @@ h6 {
     font-size: 2.2rem;
 }
 
-p, ul, ol, dl {
+p,
+ul,
+ol,
+dl {
     margin: 0 0 1.7em 0;
 }
 
-ol, ul {
+ol,
+ul {
     padding-left: 2.5em;
 }
 
-ol ol, ul ul,
-ul ol, ol ul {
+ol ol,
+ul ul,
+ul ol,
+ol ul {
     margin: 0 0 0.4em 0;
     padding-left: 2em;
     font-size: 0.9em;
@@ -158,7 +169,7 @@ dl dt {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: bold;
-    margin-bottom: 1em
+    margin-bottom: 1em;
 }
 
 dl dd {
@@ -173,22 +184,28 @@ blockquote {
 }
 
 blockquote p {
-    margin:0.8em 0;
-    font-size:1.2em;
+    margin: 0.8em 0;
+    font-size: 1.2em;
     font-weight: 300;
 }
 
 blockquote small {
     display: inline-block;
     margin: 0.8em 0 0.8em 1.5em;
-    font-size:0.9em;
+    font-size: 0.9em;
     color: var(--brown);
 }
 /* Quotation marks */
-blockquote small:before { content: '\2014 \00A0'; }
+blockquote small:before {
+    content: "\2014 \00A0";
+}
 
-blockquote cite { font-weight:bold; }
-blockquote cite a { font-weight: normal; }
+blockquote cite {
+    font-weight: bold;
+}
+blockquote cite a {
+    font-weight: normal;
+}
 
 .markdown,
 pre,
@@ -197,7 +214,8 @@ tt {
     font-family: var(--font-family-mono);
 }
 
-code, tt {
+code,
+tt {
     font-size: 0.85em;
     white-space: pre-wrap;
     background: lighten(#e1e1e1, 2%);
@@ -238,9 +256,8 @@ kbd {
     font-weight: bold;
     background: #f4f4f4;
     border-radius: 4px;
-    box-shadow:
-        0 1px 0 rgba(0, 0, 0, 0.2),
-        0 1px 0 0 #fff inset;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2),
+    0 1px 0 0 #fff inset;
 }
 
 button {
@@ -313,8 +330,8 @@ img {
 }
 
 .vertical {
-  display: table-cell;
-  vertical-align: middle;
+    display: table-cell;
+    vertical-align: middle;
 }
 
 

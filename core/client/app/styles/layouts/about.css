@@ -44,7 +44,8 @@
     line-height: 1.6;
 }
 
-.about-environment dt, .about-environment dd {
+.about-environment dt,
+.about-environment dd {
     width: auto;
     float: left;
     display: inline-block;
@@ -76,12 +77,12 @@
     padding-top: 9px;
     padding-bottom: 9px;
     min-height: 32px;
-    background: #A1ADB3;
+    background: #a1adb3;
     color: #fff;
 }
 
 .about-help .btn:hover {
-    background: color(#A1ADB3 lightness(-10%));
+    background: color(#a1adb3 lightness(-10%));
 }
 
 .about-help .btn:nth-child(1) {
@@ -154,7 +155,7 @@
 
 .top-contributors li a:after {
     opacity: 0;
-    content: '';
+    content: "";
     position: absolute;
     top: -6px;
     left: 50%;

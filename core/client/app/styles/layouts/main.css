@@ -11,8 +11,8 @@
     flex: 0 0 220px;
     display: flex;
     flex-direction: column;
-    border-right: #E1E1E1 1px solid;
-    background: #F6F6F6;
+    border-right: #e1e1e1 1px solid;
+    background: #f6f6f6;
 }
 
 .gh-main {
@@ -170,7 +170,7 @@
     display: flex;
     align-items: center;
     height: 40px;
-    border-top: #E1E1E1 1px solid;
+    border-top: #e1e1e1 1px solid;
 }
 
 .gh-nav-footer-sitelink {
@@ -251,7 +251,7 @@
     justify-content: space-between;
     height: 65px;
     padding: 0 20px;
-    border-bottom: #E1E1E1 1px solid;
+    border-bottom: #e1e1e1 1px solid;
 }
 
 .view-title {
