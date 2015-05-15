@@ -81,7 +81,7 @@
 
 .setup-form input:-webkit-autofill {
     /* Chrome auto-fill style */
-    -webkit-box-shadow: 0 0 0px 1000px var(--lightgrey) inset !important;
+    -webkit-box-shadow: 0 0 0 1000px var(--lightgrey) inset !important;
 }
 
 .setup-form h1 {

@@ -50,7 +50,7 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: #B3B2A8;
+    color: #b3b2a8;
     font-size: 1.3rem;
 }
 
@@ -68,27 +68,27 @@ input {
 /* Input Icons
 /* ---------------------------------------------------------- */
 
-.input-icon[class*='icon-'] {
+.input-icon[class*="icon-"] {
     position: relative;
     display: block;
 }
 
-.input-icon[class*='icon-'] input[type="email"],
-.input-icon[class*='icon-'] input[type="number"],
-.input-icon[class*='icon-'] input[type="password"],
-.input-icon[class*='icon-'] input[type="search"],
-.input-icon[class*='icon-'] input[type="tel"],
-.input-icon[class*='icon-'] input[type="text"],
-.input-icon[class*='icon-'] input[type="url"],
-.input-icon[class*='icon-'] input[type="date"] {
+.input-icon[class*="icon-"] input[type="email"],
+.input-icon[class*="icon-"] input[type="number"],
+.input-icon[class*="icon-"] input[type="password"],
+.input-icon[class*="icon-"] input[type="search"],
+.input-icon[class*="icon-"] input[type="tel"],
+.input-icon[class*="icon-"] input[type="text"],
+.input-icon[class*="icon-"] input[type="url"],
+.input-icon[class*="icon-"] input[type="date"] {
     padding-left: 3.2rem;
 }
 
-.input-icon[class*='icon-'] .gh-select select {
+.input-icon[class*="icon-"] .gh-select select {
     padding-left: 3.2rem;
 }
 
-.input-icon[class*='icon-']:before {
+.input-icon[class*="icon-"]:before {
     position: absolute;
     top: 50%;
     left: 1.1rem;
@@ -107,7 +107,7 @@ select {
     display: block;
     padding: 8px 10px;
     width: 100%;
-    border: 1px solid #E0DFD7;
+    border: 1px solid #e0dfd7;
     border-radius: var(--border-radius);
     -webkit-appearance: none;
     font-size: 1.4rem;
@@ -180,14 +180,14 @@ textarea {
     width: 18px;
     height: 18px;
     margin-right: 7px;
-    background: #F7F7F3;
+    background: #f7f7f3;
     border: 1px solid #e1e1e1;
 }
 
 .for-radio p,
 .for-checkbox p {
     font-weight: normal;
-    color: #B3B2A8;
+    color: #b3b2a8;
     white-space: nowrap;
 }
 
@@ -201,7 +201,7 @@ textarea {
 
 .for-checkbox label .input-toggle-component:before {
     transition: opacity 0.15s ease-in-out;
-    content: '';
+    content: "";
     position: absolute;
     width: 10px;
     height: 6px;
@@ -233,13 +233,13 @@ textarea {
 
 .for-radio label .input-toggle-component:before {
     transition: opacity 0.15s ease-in-out;
-    content: '';
+    content: "";
     position: absolute;
     width: 8px;
     height: 8px;
     top: 4px;
     left: 4px;
-    background: #FFF;
+    background: #fff;
     border-radius: 100%;
     opacity: 0;
 }

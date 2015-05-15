@@ -7,11 +7,11 @@
     font-size: 75%;
     font-weight: 300;
     line-height: 1;
-    color: #FFF;
+    color: #fff;
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
-    border-radius: .25em;
+    border-radius: 0.25em;
 }
 
 .label:empty {
@@ -39,7 +39,7 @@ h6 .label {
 
 a.label:hover,
 a.label:focus {
-    color: #FFF;
+    color: #fff;
     text-decoration: none;
     cursor: pointer;
 }
@@ -49,7 +49,7 @@ a.label:focus {
 /* ---------------------------------------------------------- */
 
 .label-default {
-    background-color: #A1ADB3;
+    background-color: #a1adb3;
     color: #fff;
 }
 
@@ -59,7 +59,7 @@ a.label:focus {
 
 .label-default[href]:hover,
 .label-default[href]:focus {
-    background-color: color(#A1ADB3 lightness(-10%));
+    background-color: color(#a1adb3 lightness(-10%));
 }
 
 .label-alt {

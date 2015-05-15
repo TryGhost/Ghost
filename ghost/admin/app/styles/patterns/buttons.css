@@ -20,10 +20,9 @@
     cursor: pointer;
     background: #fff;
     background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
-    transition:
-        color 0.2s ease,
-        background 0.2s ease,
-        border-color 0.2s ease;
+    transition: color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 /* When hovered or clicked */
@@ -39,7 +38,7 @@
 .btn:active:focus,
 .btn.active:focus {
     outline: thin dotted;
-    outline: 0px auto -webkit-focus-ring-color;
+    outline: 0 auto -webkit-focus-ring-color;
     outline-offset: -2px;
 }
 
