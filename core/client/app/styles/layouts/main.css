@@ -281,10 +281,6 @@
     font-size: 1.4rem;
 }
 
-.view-actions {
-    display: flex;
-}
-
 .view-container,
 .view-content {
     flex-grow: 1;

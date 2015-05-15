@@ -1,14 +1,16 @@
 /* Buttons
 /* ---------------------------------------------------------- */
 
+/* Base button style */
 .btn {
     display: inline-block;
     margin-bottom: 0;
-    padding: 9px 14px;
-    border: 1px solid transparent;
+    padding: 9px 15px;
+    border: #e1e1e1 1px solid;
     font-size: 1.1rem;
     line-height: 1.428571429;
     font-weight: 300;
+    color: #828282;
     text-align: center;
     text-transform: uppercase;
     text-shadow: none;
@@ -16,10 +18,23 @@
     white-space: nowrap;
     border-radius: var(--border-radius);
     cursor: pointer;
-
+    background: #fff;
     background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
+/* When hovered or clicked */
+.btn:hover,
+.btn:focus {
+    color: color(var(--blue) lightness(-10%));
+    border-color: var(--blue);
+    text-decoration: none;
+}
+
+/* When focused with keyboard */
 .btn:focus,
 .btn:active:focus,
 .btn.active:focus {
@@ -28,19 +43,15 @@
     outline-offset: -2px;
 }
 
-.btn:hover,
-.btn:focus {
-    color: var(--blue);
-    text-decoration: none;
-}
-
+/* When clicked */
 .btn:active,
 .btn.active {
     outline: 0;
     background-image: none;
-    box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.125);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+/* When disabled */
 .btn.disabled,
 .btn[disabled],
 fieldset[disabled] .btn {
@@ -51,62 +62,111 @@ fieldset[disabled] .btn {
 }
 
 
-/* Link Buttons
+/* Blue button
 /* ---------------------------------------------------------- */
 
-/* Make a button look and behave like a link */
-.btn-link {
-    color: var(--blue);
-    font-weight: normal;
-    cursor: pointer;
-    border-radius: 0;
+.btn-blue {
+    color: #fff;
+    border-color: color(var(--blue) lightness(-10%));
+    background: var(--blue);
 }
 
-.btn-link,
+.btn-blue:hover,
+.btn-blue:active,
+.btn-blue:focus {
+    color: #fff;
+    border-color: color(var(--blue) lightness(-20%));
+    background: color(var(--blue) lightness(-10%));
+}
+
+
+/* Green button
+/* ---------------------------------------------------------- */
+
+.btn-green {
+    color: #fff;
+    border-color: color(var(--green) lightness(-10%));
+    background: var(--green);
+}
+
+.btn-green:hover,
+.btn-green:active,
+.btn-green:focus {
+    color: #fff;
+    border-color: color(var(--green) lightness(-20%));
+    background: color(var(--green) lightness(-10%));
+}
+
+
+/* Red button
+/* ---------------------------------------------------------- */
+
+.btn-red {
+    color: #fff;
+    border-color: color(var(--red) lightness(-10%));
+    background: var(--red);
+}
+
+.btn-red:hover,
+.btn-red:active,
+.btn-red:focus {
+    color: #fff;
+    border-color: color(var(--red) lightness(-20%));
+    background: color(var(--red) lightness(-10%));
+}
+
+
+/* Link button
+/* ---------------------------------------------------------- */
+
+/* For styling a button like a link */
+.btn-link {
+    color: var(--blue);
+    border-color: transparent;
+    background: transparent;
+}
+
+.btn-link:hover,
 .btn-link:active,
-.btn-link[disabled],
-fieldset[disabled] .btn-link {
-    background-color: transparent;
+.btn-link:focus {
+    color: var(--blue);
+    text-decoration: underline;
+    border-color: transparent;
+    background: transparent;
+}
+
+.btn-link.disabled,
+.btn-link[disabled] {
+    cursor: not-allowed;
+    pointer-events: none;
+    color: #b2b2b2;
+    opacity: 0.65;
     box-shadow: none;
 }
 
-.btn-link,
-.btn-link:hover,
-.btn-link:focus,
-.btn-link:active {
-    color: var(--blue);
-    border-color: transparent;
-}
 
-.btn-link:hover,
-.btn-link:focus {
-    text-decoration: underline;
-    background-color: transparent;
-}
-
-.btn-link[disabled]:hover,
-.btn-link[disabled]:focus,
-fieldset[disabled] .btn-link:hover,
-fieldset[disabled] .btn-link:focus {
-    color: var(--midgrey);
-    text-decoration: none;
-}
-
-
-/* Minor Buttons
+/* Minor button
 /* ---------------------------------------------------------- */
 
-/* Add this class to buttons with a small/insignificant action
-for example a "cancel" button. Style is de-emphasised. */
+/* For buttons with a small/insignificant action for
+// example a "cancel" button. Style is de-emphasised. */
 .btn-minor {
     text-transform: none;
     letter-spacing: 0;
     font-size: 1.2rem;
-    padding: 8px 14px;
+    padding: 8px 15px;
+}
+
+.btn-minor:hover,
+.btn-minor:active,
+.btn-minor:focus {
+    color: #828282;
+    border-color: #c1c1c1;
+    background: #fff;
 }
 
 
-/* Button Sizes
+/* Button size variations
 /* ---------------------------------------------------------- */
 
 .btn-lg {
@@ -123,19 +183,17 @@ for example a "cancel" button. Style is de-emphasised. */
     border-radius: 2px;
 }
 
-
-/* Block Button (Fluid width)
-/* ---------------------------------------------------------- */
-
 .btn-block {
     display: block;
     width: 100%;
 }
 
+/* Vertically space out multiple block buttons */
 .btn-block + .btn-block {
     margin-top: 5px;
 }
 
+/* Specificity overrides */
 input[type="submit"].btn-block,
 input[type="reset"].btn-block,
 input[type="button"].btn-block {
