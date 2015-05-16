@@ -15,10 +15,10 @@
 }
 
 .user-list-title {
+    margin-bottom: 14px;
+    color: var(--midbrown);
     font-size: 13px;
     font-weight: normal;
-    color: var(--midbrown);
-    margin-bottom: 14px;
 }
 
 .user-list-item {
@@ -57,36 +57,36 @@ a.user-list-item {
 }
 
 .user-list-item-icon {
+    position: relative;
+    display: block;
+    overflow: hidden;
     width: 35px;
     height: 35px;
-    display: block;
-    border-radius: 100%;
     background: #e1e1e1;
-    font-size: 0;
+    border-radius: 100%;
     color: transparent;
-    overflow: hidden;
-    position: relative;
+    font-size: 0;
 }
 
 .user-list-item-icon:before {
     position: absolute;
     top: 50%;
-    left: 0;
     right: 0;
+    left: 0;
     margin-top: -7px;
-    text-align: center;
     color: var(--brown);
+    text-align: center;
     font-size: 14px;
 }
 
 .user-list-item-figure {
+    position: relative;
     display: block;
     width: 35px;
     height: 35px;
-    border-radius: 35px;
-    background-size: cover;
     background-position: center center;
-    position: relative;
+    background-size: cover;
+    border-radius: 35px;
 }
 
 .user-list-item-figure img {
@@ -121,24 +121,24 @@ a.user-list-item {
 
 .user-list-item-body .name {
     display: inline-block;
+    color: var(--darkgrey);
     font-size: 15px;
     font-weight: 400;
-    color: var(--darkgrey);
 }
 
 .user-list-item-body .description {
     display: inline-block;
-    font-size: 12px;
+    margin-top: 3px;
     color: var(--midbrown);
     white-space: nowrap;
-    margin-top: 3px;
+    font-size: 12px;
 }
 
 @media (max-width: 550px) {
     .user-list-item-aside {
         float: left;
-        width: 100%;
         margin: 12px 0 0 50px;
+        width: 100%;
     }
 }
 
@@ -162,9 +162,9 @@ a.user-list-item {
 }
 
 .user-list-action {
-    font-size: 11px;
-    text-transform: uppercase;
     text-decoration: underline;
+    text-transform: uppercase;
+    font-size: 11px;
 }
 
 
@@ -174,28 +174,28 @@ a.user-list-item {
 .role-label {
     display: inline-block;
     padding: 6px 8px;
+    background: #eee;
     color: rgba(0, 0, 0, 0.5);
-    font-size: 9px;
-    line-height: 1;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    font-size: 9px;
+    line-height: 1;
     font-weight: 400;
-    background: #eee;
 }
 
 .role-label.owner {
-    color: rgba(255, 255, 255, 0.8);
     background: var(--darkgrey);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .role-label.administrator {
-    color: rgba(255, 255, 255, 0.8);
     background: var(--red);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .role-label.editor {
-    color: rgba(255, 255, 255, 0.8);
     background: var(--blue);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 
@@ -220,8 +220,8 @@ a.user-list-item {
 
 .invite-new-user .form-group:nth-of-type(2) {
     float: left;
-    width: 35%;
     margin-left: 5%;
+    width: 35%;
 }
 
 .invite-new-user .form-group input {

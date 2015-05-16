@@ -6,22 +6,22 @@
 /* ---------------------------------------------------------- */
 
 .entry-title {
-    height: 60px;
-    padding: 0;
     position: relative;
+    padding: 0;
+    height: 60px;
 }
 
 .entry-title input {
+    margin: 0;
+    padding: 0;
     width: 100%;
     height: 60px;
     border: 0;
-    margin: 0;
-    padding: 0;
+    background: transparent;
+    text-indent: 20px;
+    letter-spacing: -1px;
     font-size: 3.2rem;
     font-weight: bold;
-    letter-spacing: -1px;
-    text-indent: 20px;
-    background: transparent;
 }
 
 .entry-title input:focus {
@@ -54,11 +54,11 @@
 
 .editor .entry-markdown,
 .editor .entry-preview {
-    width: 50%;
-    padding: 15px;
     position: absolute;
-    bottom: 40px;
     top: 60px;
+    bottom: 40px;
+    padding: 15px;
+    width: 50%;
     border-top: #e1e1e1 1px solid;
     background: #fff;
     /* Hide markdown icon + wordcount when we hit mobile */
@@ -81,19 +81,19 @@
     .editor .entry-preview {
         /* Convert all content areas to small boxes */
         top: 100px;
-        left: 0;
         right: 0;
+        left: 0;
+        z-index: 100;
         width: 100%;
         border: none;
-        z-index: 100;
         /* Correctly colour the markdown icon when inactive and hovered */
     }
     .editor .entry-markdown .markdown,
     .editor .entry-markdown .entry-preview-content,
     .editor .entry-preview .markdown,
     .editor .entry-preview .entry-preview-content {
-        height: 50px;
         overflow: hidden;
+        height: 50px;
     }
     .editor .entry-markdown:not(.active) .markdown-help:hover:before,
     .editor .entry-preview:not(.active) .markdown-help:hover:before {
@@ -109,15 +109,15 @@
 @media (max-width: 1000px) {
     .editor .entry-markdown .floatingheader,
     .editor .entry-preview .floatingheader {
-        cursor: pointer;
-        width: 50%;
-        color: #fff;
-        font-weight: normal;
-        background: var(--brown);
         position: absolute;
         top: -40px;
         left: 0;
+        width: 50%;
+        background: var(--brown);
         box-shadow: rgba(0, 0, 0, 0.1) 0 -2px 3px inset;
+        color: #fff;
+        font-weight: normal;
+        cursor: pointer;
     }
     .editor .entry-markdown .floatingheader a,
     .editor .entry-preview .floatingheader a {
@@ -127,9 +127,9 @@
 
 .editor .entry-markdown .floatingheader .entry-word-count,
 .editor .entry-preview .floatingheader .entry-word-count {
-    float: right;
     position: relative;
     top: 2px;
+    float: right;
 }
 
 .editor .entry-markdown.active,
@@ -141,19 +141,19 @@
 .editor .entry-markdown.active .entry-preview-content,
 .editor .entry-preview.active .markdown,
 .editor .entry-preview.active .entry-preview-content {
-    height: auto;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    height: auto;
 }
 
 @media (max-width: 1000px) {
     .editor .entry-markdown.active header,
     .editor .entry-preview.active header {
         border-top: #e1e1e1 1px solid;
-        cursor: auto;
-        color: var(--brown);
         background: #fff;
         box-shadow: none;
+        color: var(--brown);
+        cursor: auto;
     }
     .editor .entry-markdown.active header a,
     .editor .entry-preview.active header a {
@@ -179,16 +179,16 @@
     right: 0;
     bottom: 0;
     left: 0;
-    height: 100%;
-    max-width: 100%;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    resize: none;
+    max-width: 100%;
+    height: 100%;
     border: 0;
+    color: color(var(--darkgrey) lightness(+10%));
+    font-family: var(--font-family-mono);
     font-size: 1.6rem;
     line-height: 2.5rem;
-    font-family: var(--font-family-mono);
-    color: color(var(--darkgrey) lightness(+10%));
+    resize: none;
 }
 
 .editor .markdown-editor:focus {
@@ -228,9 +228,9 @@
     right: 0;
     bottom: 0;
     left: 0;
-    padding: 40px 20px 37px 20px;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 40px 20px 37px 20px;
     word-break: break-word;
     hyphens: auto;
     cursor: default;
@@ -269,9 +269,9 @@
 
 @-moz-document url-prefix() {
     .editor .markdown-editor {
+        top: 40px;
         padding-top: 0;
         padding-bottom: 0;
-        top: 40px;
         height: calc(100% - 40px);
     }
 }
@@ -306,25 +306,25 @@
 
 .entry-preview-content .btn,
 .content-preview-content .btn {
-    text-decoration: none;
     color: var(--grey);
+    text-decoration: none;
 }
 
 .entry-preview-content .img-placeholder,
 .content-preview-content .img-placeholder {
-    border: 5px dashed var(--grey);
-    height: 100px;
     position: relative;
+    height: 100px;
+    border: 5px dashed var(--grey);
 }
 
 .entry-preview-content .img-placeholder span,
 .content-preview-content .img-placeholder span {
-    display: block;
-    height: 30px;
     position: absolute;
-    margin-top: -15px;
     top: 50%;
+    display: block;
+    margin-top: -15px;
     width: 100%;
+    height: 30px;
     text-align: center;
 }
 
@@ -336,21 +336,21 @@
 
 .entry-preview-content img,
 .content-preview-content img {
+    margin: 0 auto;
     max-width: 100%;
     height: auto;
-    margin: 0 auto;
 }
 
 /* Placeholder objects for <script> & <iframe> */
 .js-embed-placeholder,
 .iframe-embed-placeholder {
-    background: #f9f9f9;
-    border: none;
     padding: 100px 20px;
-    font-family: var(--font-family);
-    font-weight: bold;
-    font-size: 1.6rem;
+    border: none;
+    background: #f9f9f9;
     text-align: center;
+    font-family: var(--font-family);
+    font-size: 1.6rem;
+    font-weight: bold;
 }
 
 
@@ -368,9 +368,9 @@ body.zen .usermenu {
 body.zen .global-nav,
 body.zen .page-header,
 body.zen #publish-bar {
-    opacity: 0;
-    height: 0;
     overflow: hidden;
+    height: 0;
+    opacity: 0;
     transition: all 0.5s ease-out;
 }
 
@@ -390,16 +390,16 @@ body.zen .entry-preview {
 /* ---------------------------------------------------------- */
 
 #publish-bar {
-    height: 40px;
-    padding: 0;
-    border-top: #e1e1e1 1px solid;
-    color: var(--midgrey);
-    background: #fff;
     position: absolute;
+    right: 0;
     bottom: 0;
     left: 0;
-    right: 0;
     z-index: 900;
+    padding: 0;
+    height: 40px;
+    border-top: #e1e1e1 1px solid;
+    background: #fff;
+    color: var(--midgrey);
     transform: translateZ(0);
 }
 
@@ -416,8 +416,8 @@ body.zen .entry-preview {
 
 #publish-bar .post-settings-menu {
     position: absolute;
-    bottom: 41px;
     right: -3px;
+    bottom: 41px;
 }
 
 .extended-tags {
@@ -435,10 +435,10 @@ body.zen .entry-preview {
 }
 
 .extended-tags .tag-input {
-    width: 100%;
     margin-top: 5px;
     padding-top: 5px;
     padding-left: 10px;
+    width: 100%;
     border-top: 1px solid var(--darkgrey);
 }
 
@@ -448,14 +448,14 @@ body.zen .entry-preview {
 
 #entry-tags input[type="text"].tag-input {
     display: inline-block;
-    vertical-align: top;
-    color: var(--midgrey);
-    font-weight: 300;
-    background: transparent;
-    border: none;
-    width: 100%;
-    line-height: 1;
     padding: 9px 9px 9px 0;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--midgrey);
+    vertical-align: top;
+    line-height: 1;
+    font-weight: 300;
 }
 
 #entry-tags input[type="text"].tag-input:focus {
@@ -466,12 +466,12 @@ body.zen .entry-preview {
     display: inline;
     margin-right: 3px;
     padding: 2px 5px;
-    color: var(--lightgrey);
-    font-size: 1.2rem;
-    line-height: 1.2em;
-    white-space: nowrap;
     background: var(--darkgrey);
     border-radius: 3px;
+    color: var(--lightgrey);
+    white-space: nowrap;
+    font-size: 1.2rem;
+    line-height: 1.2em;
 }
 
 #entry-tags .tag:hover {
@@ -489,9 +489,9 @@ body.zen .entry-preview {
 
 .suggestions li.selected,
 .suggestions li.selected a {
-    text-decoration: none;
-    color: #fff;
     background: var(--blue);
+    color: #fff;
+    text-decoration: none;
 }
 
 .suggestions li.selected mark {
@@ -505,25 +505,25 @@ body.zen .entry-preview {
 }
 
 #entry-actions {
+    position: relative;
     display: flex;
     justify-content: flex-end;
-    align-content: center;
     align-items: center;
+    align-content: center;
     margin-right: 6px;
-    position: relative;
 }
 
 #entry-actions .dropdown {
     position: absolute;
-    bottom: 49px;
     right: 0;
+    bottom: 49px;
 }
 
 #entry-actions .dropdown .dropdown-menu {
     top: auto;
-    left: auto;
     right: 100%;
     bottom: 100%;
+    left: auto;
 }
 
 #entry-actions.unsaved {
@@ -536,8 +536,8 @@ body.zen .entry-preview {
 
 #entry-actions-menu {
     position: absolute;
-    bottom: 50px;
     right: -5px;
+    bottom: 50px;
 }
 
 .tags-wrapper {
@@ -550,20 +550,20 @@ body.zen .entry-preview {
 }
 
 .tag-label {
+    position: relative;
     display: block;
     width: 40px;
     height: 40px;
-    position: relative;
 }
 
 .tag-label:before {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    font-size: 1.3rem;
     color: var(--midgrey);
+    font-size: 1.3rem;
     transition: color 0.15s linear;
+    transform: translateX(-50%) translateY(-50%);
 }
 
 .tag-label:hover {
@@ -574,11 +574,11 @@ body.zen .entry-preview {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-content: space-between;
-    align-items: center;
     justify-content: center;
-    height: 100%;
+    align-items: center;
+    align-content: space-between;
     width: 100%;
+    height: 100%;
 }
 
 .publish-bar-tags-icon {
@@ -591,39 +591,39 @@ body.zen .entry-preview {
 .publish-bar-tags {
     flex: 0 1 auto;
     align-self: auto;
+    overflow-y: hidden;
     margin-right: 10px;
     height: 40px;
-    overflow-y: hidden;
 }
 
 .publish-bar-tags .tags-wrapper {
-    white-space: nowrap;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     padding-top: 8px;
     padding-bottom: 9px;
     height: 70px;
+    white-space: nowrap;
 }
 
 .publish-bar-tags-input {
+    position: relative;
     flex: 1 1 auto;
     align-self: auto;
-    position: relative;
 }
 
 .publish-bar-actions {
-    display: flex;
     flex: 1 0 auto;
     align-self: auto;
+    display: flex;
     text-align: right;
 }
 
 .post-settings {
+    position: relative;
     display: inline-block;
     padding: 8px 10px;
     color: var(--midgrey);
     transition: all 0.15s ease-out 0s;
-    position: relative;
 }
 
 .post-settings:hover,
@@ -633,9 +633,9 @@ body.zen .entry-preview {
 
 .post-settings-menu .dropdown-menu {
     top: auto;
+    right: 100%;
     bottom: 100%;
     left: auto;
-    right: 100%;
 }
 
 .post-view-link {
@@ -659,27 +659,28 @@ body.zen .entry-preview {
 }
 
 .seo-preview-title {
-    font-size: 1.8rem;
-    line-height: 2.16rem;
     color: #1e0fbe;
     text-overflow: ellipses;
-    -webkit-text-overflow: ellipsis;
     word-wrap: break-word;
+    font-size: 1.8rem;
+    line-height: 2.16rem;
+
+    -webkit-text-overflow: ellipsis;
 }
 
 .seo-preview-link {
     margin: 1px 0 2px 0;
-    font-size: 1.3rem;
-    line-height: 1.6rem;
     color: #006621;
     word-wrap: break-word;
+    font-size: 1.3rem;
+    line-height: 1.6rem;
 }
 
 .seo-preview-description {
-    font-size: 1.3rem;
-    line-height: 1.4;
     color: #545454;
     word-wrap: break-word;
+    font-size: 1.3rem;
+    line-height: 1.4;
 }
 
 
