@@ -6,14 +6,14 @@
 /* ---------------------------------------------------------- */
 
 .user-actions-cog {
-    padding: 9px 11px;
     margin-right: 10px;
+    padding: 9px 11px;
 }
 
 .user-actions-menu {
-    left: auto;
-    right: 0;
     top: calc(100% + 17px);
+    right: 0;
+    left: auto;
 }
 
 .user-actions-menu.fade-out {
@@ -36,12 +36,12 @@
 
 .user-cover {
     position: relative;
+    overflow: hidden;
+    margin: 0;
     width: auto;
     height: 300px;
-    margin: 0;
     background: #fafafa no-repeat center center;
     background-size: cover;
-    overflow: hidden;
 }
 
 @media (max-width: 900px) {
@@ -54,9 +54,9 @@
     /* Gradient overlay */
     content: "";
     position: absolute;
-    left: 0;
     right: 0;
     bottom: 0;
+    left: 0;
     height: 110px;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.18));
 }
@@ -65,13 +65,13 @@
     position: absolute;
     right: 35px;
     bottom: 29px;
+    z-index: 2;
     min-height: 37px;
     height: 37px;
-    background: rgba(0, 0, 0, 0.3);
-    color: rgba(255, 255, 255, 0.8);
-    z-index: 2;
     border-width: 0;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: var(--border-radius);
+    color: rgba(255, 255, 255, 0.8);
     transition: color 0.3s ease, background 0.3s ease;
 }
 
@@ -82,8 +82,8 @@
 }
 
 .user-cover-edit:hover {
-    color: #fff;
     background: rgba(0, 0, 0, 0.5);
+    color: #fff;
 }
 
 
@@ -96,8 +96,8 @@
 
 @media (min-width: 651px) {
     .first-form-group {
-        min-width: 285px;
         left: 40px;
+        min-width: 285px;
     }
 }
 
@@ -179,19 +179,19 @@
 /* ---------------------------------------------------------- */
 
 .user-image {
-    display: block;
     position: absolute;
+    z-index: 2;
+    display: block;
+    float: left;
+    overflow: hidden;
+    margin-right: 20px;
+    margin-left: -6px;
+    padding: 3px;
     width: 126px;
     height: 126px;
-    margin-left: -6px;
-    margin-right: 20px;
-    padding: 3px;
-    float: left;
-    text-align: center;
-    border-radius: 100%;
-    overflow: hidden;
     background: #fff;
-    z-index: 2;
+    border-radius: 100%;
+    text-align: center;
 }
 
 @media (min-width: 651px) {
@@ -212,8 +212,8 @@
     display: block;
     width: 120px;
     height: 120px;
-    background-size: cover;
     background-position: center center;
+    background-size: cover;
     border-radius: 100%;
 }
 
@@ -227,13 +227,13 @@
     right: 3px;
     bottom: 3px;
     left: 3px;
-    border-radius: 100%;
     width: calc(100% - 6px);
     background: rgba(0, 0, 0, 0.5);
-    opacity: 0;
+    border-radius: 100%;
     color: #fff;
-    line-height: 120px;
-    text-transform: uppercase;
     text-decoration: none;
+    text-transform: uppercase;
+    line-height: 120px;
+    opacity: 0;
     transition: opacity 0.3s ease;
 }

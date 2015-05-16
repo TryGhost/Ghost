@@ -42,8 +42,8 @@
         position: absolute;
         top: 50%;
         left: 0;
-        margin-top: -9px;
         z-index: 20;
+        margin-top: -9px;
     }
 }
 
@@ -80,19 +80,19 @@
 }
 
 .navigation-item-action {
-    padding-left: 10px;
-    width: 40px;
     position: relative;
     z-index: 10;
+    padding-left: 10px;
+    width: 40px;
 }
 
 .navigation-item-action button {
-    width: 30px;
-    height: 30px;
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     margin-top: -2px;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
 }
 
 .navigation-item-action .icon-trash:before {
@@ -106,11 +106,11 @@
 }
 
 .navigation-item-action .icon-add:before {
+    padding: 3px;
     background: var(--green);
+    border-radius: 2px;
     color: #fff;
     font-size: 12px;
-    padding: 3px;
-    border-radius: 2px;
     transition: background 0.1s linear;
 }
 
@@ -135,21 +135,22 @@
 }
 
 .settings-code-editor {
-    width: 100%;
     min-width: 250px;
+    min-height: 300px;
     max-width: 680px;
+    width: 100%;
     height: auto;
     border: 1px solid #e0dfd7;
     border-radius: var(--border-radius);
-    -webkit-appearance: none;
-    min-height: 300px;
-    transition: border-color 0.15s linear;
     line-height: 22px;
+    transition: border-color 0.15s linear;
+
+    -webkit-appearance: none;
 }
 
 .settings-code-editor.focused {
-    border-color: var(--brown);
     outline: 0;
+    border-color: var(--brown);
 }
 
 .settings-code-editor .CodeMirror {

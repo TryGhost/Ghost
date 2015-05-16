@@ -21,12 +21,12 @@
 }
 
 .about-ghost-intro .version {
-    font-weight: 300;
-    font-size: 1.8rem;
     position: relative;
     top: -3px;
     left: -9px;
     color: var(--blue);
+    font-size: 1.8rem;
+    font-weight: 300;
 }
 
 .about-ghost-intro h1 + p {
@@ -39,17 +39,17 @@
 }
 
 .about-environment dl {
-    color: var(--midgrey);
     margin: 2px 0 0 0;
+    color: var(--midgrey);
     line-height: 1.6;
 }
 
 .about-environment dt,
 .about-environment dd {
-    width: auto;
-    float: left;
     display: inline-block;
+    float: left;
     margin: 0;
+    width: auto;
 }
 
 .about-environment dt {
@@ -71,14 +71,14 @@
 }
 
 .about-help .btn {
-    width: 100%;
     display: block;
-    font-size: 1rem;
     padding-top: 9px;
     padding-bottom: 9px;
     min-height: 32px;
+    width: 100%;
     background: #a1adb3;
     color: #fff;
+    font-size: 1rem;
 }
 
 .about-help .btn:hover {
@@ -114,13 +114,13 @@
 
 .top-contributors li {
     float: left;
-    list-style: none;
     width: 10%;
+    list-style: none;
 }
 
 .top-contributors li a {
-    display: block;
     position: relative;
+    display: block;
 }
 
 @media (min-width: 601px) {
@@ -138,29 +138,29 @@
 }
 
 .top-contributors li a:before {
-    opacity: 0;
     content: attr(title);
     position: absolute;
     top: -27px;
     left: 50%;
-    transform: translateX(-50%);
-    background: var(--darkgrey);
-    color: #fff;
     padding: 2px 6px 3px;
+    background: var(--darkgrey);
     border-radius: var(--border-radius);
-    transition: opacity 0.15s ease-in-out;
+    color: #fff;
     font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    transform: translateX(-50%);
     pointer-events: none;
 }
 
 .top-contributors li a:after {
-    opacity: 0;
     content: "";
     position: absolute;
     top: -6px;
     left: 50%;
-    transform: translateX(-50%);
+    opacity: 0;
     transition: opacity 0.15s ease-in-out;
+    transform: translateX(-50%);
 }
 
 .top-contributors li a:hover:before,
@@ -169,8 +169,8 @@
 }
 
 .top-contributors li a img {
-    width: 100%;
     display: block;
+    width: 100%;
     border-radius: 100%;
 }
 
@@ -183,24 +183,24 @@
 }
 
 .about-credits h1 {
-    font-size: 2.4rem;
     margin-bottom: 24px;
+    font-size: 2.4rem;
 }
 
 .about-contributors-info {
     margin-top: -12px;
     margin-bottom: 22px;
-    font-size: 1.6rem;
     max-width: 620px;
+    font-size: 1.6rem;
 }
 
 .about-get-involved {
-    font-size: 1.2rem;
-    width: 100%;
     display: inline-block;
     max-width: 290px;
-    text-transform: uppercase;
+    width: 100%;
     text-align: center;
+    text-transform: uppercase;
+    font-size: 1.2rem;
 }
 
 .about-copyright {
@@ -215,6 +215,6 @@
 .about-copyright a:hover,
 .about-copyright a:focus,
 .about-copyright a:active {
-    text-decoration: none;
     color: var(--blue);
+    text-decoration: none;
 }

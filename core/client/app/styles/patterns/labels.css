@@ -4,14 +4,14 @@
 .label {
     display: inline;
     padding: 0.2em 0.6em 0.3em;
-    font-size: 75%;
-    font-weight: 300;
-    line-height: 1;
+    border-radius: 0.25em;
     color: #fff;
+    vertical-align: baseline;
     text-align: center;
     white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25em;
+    font-size: 75%;
+    line-height: 1;
+    font-weight: 300;
 }
 
 .label:empty {
@@ -29,12 +29,12 @@ h3 .label,
 h4 .label,
 h5 .label,
 h6 .label {
+    position: relative;
+    top: -0.18em;
     display: inline-block;
     padding: 0.2em 0.5em 0.25em;
-    top: -0.18em;
-    position: relative;
-    line-height: 70%;
     font-size: 70%;
+    line-height: 70%;
 }
 
 a.label:hover,

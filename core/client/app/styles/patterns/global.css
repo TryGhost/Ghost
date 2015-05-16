@@ -18,7 +18,6 @@
     --red: #e25440;
     --orange: #f2a925;
     --green: #9fbb58;
-
     /* Style values */
     --border-radius: 4px;
     --box-shadow: rgba(0,0,0,0.05) 0 1px 5px; /* TODO: not used? */
@@ -34,29 +33,29 @@
 *:before,
 *:after {
     box-sizing: border-box;
+
     user-select: none;
 }
 
 html {
-    font: 62.5%/1.65 "Open Sans", sans-serif;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-
+    overflow: hidden;
+    width: 100%;
     /* Prevent elastic scrolling on the whole page */
     height: 100%;
-    width: 100%;
-    overflow: hidden;
+    font: 62.5%/1.65 "Open Sans", sans-serif;
+
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 body {
+    overflow: auto;
+    overflow-x: hidden;
+    width: 100%;
+    /* Prevent elastic scrolling on the whole page */
+    height: 100%;
     color: lighten(var(--darkgrey), 10%);
     font-size: 1.4rem;
     font-feature-settings: "kern" 1;
-
-    /* Prevent elastic scrolling on the whole page */
-    height: 100%;
-    width: 100%;
-    overflow: auto;
-    overflow-x: hidden;
 }
 
 ::selection {
@@ -74,20 +73,20 @@ h4,
 h5,
 h6 {
     margin: 0 0 0.3em 0;
-    line-height: 1.15em;
     color: var(--darkgrey);
+    line-height: 1.15em;
     text-rendering: optimizeLegibility;
     font-feature-settings: "dlig" 1, "liga" 1, "lnum" 1, "kern" 1;
 }
 
 h1 {
-    font-size: 5rem;
     text-indent: -1px;
+    font-size: 5rem;
 }
 
 h2 {
-    font-size: 4.2rem;
     text-indent: -1px;
+    font-size: 4.2rem;
 }
 
 h3 {
@@ -149,11 +148,11 @@ a.highlight {
 
 hr {
     display: block;
+    margin: 3.2em 0;
+    padding: 0;
     height: 1px;
     border: 0;
     border-top: 1px solid #e1e1e1;
-    margin: 3.2em 0;
-    padding: 0;
 }
 
 dl {
@@ -162,25 +161,25 @@ dl {
 
 dl dt {
     float: left;
-    width: 180px;
-    overflow: hidden;
     clear: left;
+    overflow: hidden;
+    margin-bottom: 1em;
+    width: 180px;
     text-align: right;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: bold;
-    margin-bottom: 1em;
 }
 
 dl dd {
-    margin-left: 200px;
     margin-bottom: 1em;
+    margin-left: 200px;
 }
 
 blockquote {
-    margin: 1.6em 0;;
+    margin: 1.6em 0;
     padding: 0 1.6em 0 1.6em;
-    border-left: #e1e1e1 0.6em solid;
+    border-left: #e1e1e1 0.6em solid;;
 }
 
 blockquote p {
@@ -192,8 +191,8 @@ blockquote p {
 blockquote small {
     display: inline-block;
     margin: 0.8em 0 0.8em 1.5em;
-    font-size: 0.9em;
     color: var(--brown);
+    font-size: 0.9em;
 }
 /* Quotation marks */
 blockquote small:before {
@@ -216,33 +215,33 @@ tt {
 
 code,
 tt {
-    font-size: 0.85em;
-    white-space: pre-wrap;
+    padding: 0.2em 0.4em;
     background: lighten(#e1e1e1, 2%);
     border-radius: 2px;
-    padding: 0.2em 0.4em;
     vertical-align: top;
+    white-space: pre-wrap;
+    font-size: 0.85em;
 }
 
 pre {
-    margin: 1.6em 0;;
-    background: lighten(#e1e1e1, 2%);
-    width: 100%;
-    padding: 10px;
-    font-family: var(--font-family-mono);
-    font-size: 0.9em;
-    white-space: pre;
     overflow: auto;
+    margin: 1.6em 0;
+    padding: 10px;
+    width: 100%;
+    background: lighten(#e1e1e1, 2%);
     border-radius: 3px;
+    white-space: pre;
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;;
 }
 
 pre code,
 pre tt {
-    font-size: inherit;
-    white-space: pre-wrap;
-    background: transparent;
-    border: none;
     padding: 0;
+    border: none;
+    background: transparent;
+    white-space: pre-wrap;
+    font-size: inherit;
 }
 
 kbd {
@@ -250,22 +249,22 @@ kbd {
     margin-bottom: 0.4em;
     padding: 1px 8px;
     border: #ccc 1px solid;
-    color: var(--darkgrey);
-    text-shadow: #fff 0 1px 0;
-    font-size: 0.9em;
-    font-weight: bold;
     background: #f4f4f4;
     border-radius: 4px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2),
     0 1px 0 0 #fff inset;
+    color: var(--darkgrey);
+    text-shadow: #fff 0 1px 0;
+    font-size: 0.9em;
+    font-weight: bold;
 }
 
 button {
-    background: transparent;
-    border: none;
-    outline: none;
-    box-shadow: none;
     padding: 0;
+    outline: none;
+    border: none;
+    background: transparent;
+    box-shadow: none;
 }
 
 img {
@@ -292,8 +291,8 @@ img {
 }
 
 .hidden {
-    display: none !important;
     visibility: hidden !important;
+    display: none !important;
 }
 
 .invisible {
@@ -302,23 +301,23 @@ img {
 
 .sr-only {
     position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
+    margin: -1px;
+    padding: 0;
+    width: 1px;
+    height: 1px;
     border: 0;
 }
 
 .sr-only:active,
 .sr-only:focus {
     position: static;
-    width: auto;
-    height: auto;
-    margin: 0;
     overflow: visible;
     clip: auto;
+    margin: 0;
+    width: auto;
+    height: auto;
 }
 
 .right {
@@ -355,12 +354,12 @@ img {
 
 @keyframes fade-in-scale {
     from {
-        transform: scale(0.95);
         opacity: 0;
+        transform: scale(0.95);
     }
     to {
-        transform: scale(1);
         opacity: 1;
+        transform: scale(1);
     }
 }
 

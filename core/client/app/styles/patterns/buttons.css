@@ -7,19 +7,19 @@
     margin-bottom: 0;
     padding: 9px 15px;
     border: #e1e1e1 1px solid;
-    font-size: 1.1rem;
-    line-height: 1.428571429;
-    font-weight: 300;
+    background: #fff;
+    background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
+    border-radius: var(--border-radius);
     color: #828282;
     text-align: center;
     text-transform: uppercase;
     text-shadow: none;
-    letter-spacing: 1px;
     white-space: nowrap;
-    border-radius: var(--border-radius);
+    letter-spacing: 1px;
+    font-size: 1.1rem;
+    line-height: 1.428571429;
+    font-weight: 300;
     cursor: pointer;
-    background: #fff;
-    background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
     transition: color 0.2s ease,
     background 0.2s ease,
     border-color 0.2s ease;
@@ -28,8 +28,8 @@
 /* When hovered or clicked */
 .btn:hover,
 .btn:focus {
-    color: color(var(--blue) lightness(-10%));
     border-color: var(--blue);
+    color: color(var(--blue) lightness(-10%));
     text-decoration: none;
 }
 
@@ -54,10 +54,10 @@
 .btn.disabled,
 .btn[disabled],
 fieldset[disabled] .btn {
+    box-shadow: none;
+    opacity: 0.65;
     cursor: not-allowed;
     pointer-events: none;
-    opacity: 0.65;
-    box-shadow: none;
 }
 
 
@@ -65,17 +65,17 @@ fieldset[disabled] .btn {
 /* ---------------------------------------------------------- */
 
 .btn-blue {
-    color: #fff;
     border-color: color(var(--blue) lightness(-10%));
     background: var(--blue);
+    color: #fff;
 }
 
 .btn-blue:hover,
 .btn-blue:active,
 .btn-blue:focus {
-    color: #fff;
     border-color: color(var(--blue) lightness(-20%));
     background: color(var(--blue) lightness(-10%));
+    color: #fff;
 }
 
 
@@ -83,17 +83,17 @@ fieldset[disabled] .btn {
 /* ---------------------------------------------------------- */
 
 .btn-green {
-    color: #fff;
     border-color: color(var(--green) lightness(-10%));
     background: var(--green);
+    color: #fff;
 }
 
 .btn-green:hover,
 .btn-green:active,
 .btn-green:focus {
-    color: #fff;
     border-color: color(var(--green) lightness(-20%));
     background: color(var(--green) lightness(-10%));
+    color: #fff;
 }
 
 
@@ -101,17 +101,17 @@ fieldset[disabled] .btn {
 /* ---------------------------------------------------------- */
 
 .btn-red {
-    color: #fff;
     border-color: color(var(--red) lightness(-10%));
     background: var(--red);
+    color: #fff;
 }
 
 .btn-red:hover,
 .btn-red:active,
 .btn-red:focus {
-    color: #fff;
     border-color: color(var(--red) lightness(-20%));
     background: color(var(--red) lightness(-10%));
+    color: #fff;
 }
 
 
@@ -120,27 +120,27 @@ fieldset[disabled] .btn {
 
 /* For styling a button like a link */
 .btn-link {
-    color: var(--blue);
     border-color: transparent;
     background: transparent;
+    color: var(--blue);
 }
 
 .btn-link:hover,
 .btn-link:active,
 .btn-link:focus {
-    color: var(--blue);
-    text-decoration: underline;
     border-color: transparent;
     background: transparent;
+    color: var(--blue);
+    text-decoration: underline;
 }
 
 .btn-link.disabled,
 .btn-link[disabled] {
-    cursor: not-allowed;
-    pointer-events: none;
+    box-shadow: none;
     color: #b2b2b2;
     opacity: 0.65;
-    box-shadow: none;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 
@@ -150,18 +150,18 @@ fieldset[disabled] .btn {
 /* For buttons with a small/insignificant action for
 // example a "cancel" button. Style is de-emphasised. */
 .btn-minor {
+    padding: 8px 15px;
     text-transform: none;
     letter-spacing: 0;
     font-size: 1.2rem;
-    padding: 8px 15px;
 }
 
 .btn-minor:hover,
 .btn-minor:active,
 .btn-minor:focus {
-    color: #828282;
     border-color: #c1c1c1;
     background: #fff;
+    color: #828282;
 }
 
 
@@ -170,16 +170,16 @@ fieldset[disabled] .btn {
 
 .btn-lg {
     padding: 12px 18px;
+    border-radius: 4px;
     font-size: 1.4rem;
     line-height: 1.33;
-    border-radius: 4px;
 }
 
 .btn-sm {
     padding: 7px 10px;
+    border-radius: 2px;
     font-size: 1rem;
     line-height: 1.5;
-    border-radius: 2px;
 }
 
 .btn-block {

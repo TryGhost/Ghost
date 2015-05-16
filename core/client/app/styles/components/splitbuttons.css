@@ -38,24 +38,24 @@
 }
 
 .splitbtn .dropdown-toggle {
-    padding-left: 12px;
     padding-right: 12px;
+    padding-left: 12px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     /* This is the additional dropdown arrow, to the right of the button. */
 }
 
 .splitbtn .dropdown-toggle.btn-sm {
-    padding-left: 10px;
     padding-right: 10px;
+    padding-left: 10px;
 }
 
 .splitbtn .dropdown-toggle.btn-lg {
-    padding-left: 16px;
     padding-right: 16px;
+    padding-left: 16px;
 }
 
 .splitbtn .dropdown-toggle .options {
-    text-align: center;
     color: #fff;
+    text-align: center;
 }

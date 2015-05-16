@@ -3,18 +3,18 @@
 
 .badge {
     display: inline-block;
-    min-width: 10px;
     padding: 2px 4px;
-    box-shadow: 0 0 0 1px #777;
-    font-size: 1rem;
-    font-weight: inherit;
-    color: #fff;
-    line-height: 1;
-    vertical-align: baseline;
-    white-space: nowrap;
-    text-align: center;
+    min-width: 10px;
     background-color: #777;
     border-radius: 10px;
+    box-shadow: 0 0 0 1px #777;
+    color: #fff;
+    vertical-align: baseline;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: inherit;
 }
 
 .badge:empty {
@@ -32,10 +32,10 @@
 }
 
 p .badge {
-    padding: 0 4px 3px;
     position: relative;
     top: -2px;
     margin-left: -1px;
+    padding: 0 4px 3px;
 }
 
 .nav-pills > li > a > .badge {

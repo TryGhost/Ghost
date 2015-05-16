@@ -3,10 +3,10 @@
 
 .nav-list {
     padding: 0;
-    border: 1px solid #e0dfd7;
     max-width: 500px;
-    border-radius: var(--border-radius);
+    border: 1px solid #e0dfd7;
     background: #fff;
+    border-radius: var(--border-radius);
 }
 
 .nav-list.nav-list-block {
@@ -30,8 +30,8 @@
 }
 
 .nav-list-item:last-of-type {
-    border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
 }
 
 .nav-list-item:not(:last-of-type) {
@@ -48,15 +48,15 @@
 
 .nav-list-item b {
     display: block;
-    font-weight: normal;
     font-size: 1.6rem;
     line-height: 1.375;
+    font-weight: normal;
 }
 
 .nav-list-item span {
     display: block;
-    font-size: 1.1rem;
     color: var(--midgrey);
+    font-size: 1.1rem;
     line-height: 1.375;
 }
 

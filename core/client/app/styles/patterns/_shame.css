@@ -10,25 +10,25 @@
 .floatingheader {
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     z-index: 400;
-    height: 40px;
     padding: 10px 20px;
-    font-size: 1.3rem;
-    text-transform: uppercase;
-    color: var(--brown);
+    height: 40px;
     background: linear-gradient(to bottom, white 0%, white 25%, rgba(255, 255, 255, 0.9) 100%);
+    color: var(--brown);
+    text-transform: uppercase;
+    font-size: 1.3rem;
     /*Transparent gradient to make bg fade out as it goes out the top */
 }
 
 .floatingheader .button {
     display: inline-block;
-    font-size: 10px;
+    padding: 3px 4px;
     min-height: 20px;
     height: 20px;
-    padding: 3px 4px;
     vertical-align: top;
+    font-size: 10px;
 }
 
 .floatingheader .button.button-back {
@@ -80,11 +80,11 @@
     position: absolute;
     bottom: -5px;
     left: 50%;
-    height: 5px;
-    width: 80%;
+    z-index: -1;
     margin-left: -40%;
+    width: 80%;
+    height: 5px;
     background-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.05) 0%, transparent 75%, transparent 100%);
     background-position: 0 -5px;
     background-size: 100% 200%;
-    z-index: -1;
 }

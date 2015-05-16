@@ -5,18 +5,18 @@
     position: relative;
     display: inline-block;
     padding: 11px 26px 13px 16px;
-    background: var(--darkgrey);
     min-width: 300px;
     max-width: 400px;
+    background: var(--darkgrey);
     border-radius: 6px;
-    font-size: 1.2rem;
     color: var(--midgrey);
+    font-size: 1.2rem;
 }
 
 .popover-title {
+    color: #fff;
     font-size: 1.4rem;
     font-weight: 300;
-    color: #fff;
 }
 
 .popover-desc {

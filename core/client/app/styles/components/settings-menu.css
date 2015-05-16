@@ -11,10 +11,10 @@
     right: 0;
     bottom: 0;
     z-index: 500;
+    overflow: hidden;
     width: 350px;
     border-left: #e1e1e1 1px solid;
     background: #fff;
-    overflow: hidden;
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(350px, 0px, 0px);
 }
@@ -29,10 +29,10 @@ body.settings-menu-expanded .settings-menu-container {
     right: 0;
     bottom: 0;
     left: 0;
-    transform: translate3d(0, 0px, 0px);
-    opacity: 1;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    opacity: 1;
+    transform: translate3d(0, 0px, 0px);
 }
 
 @media (min-width: 901px) {
@@ -63,10 +63,10 @@ body.settings-menu-expanded .settings-menu-container {
 }
 
 .settings-menu-header h4 {
-    font-weight: normal;
+    margin: 0;
     font-size: 1.6rem;
     line-height: 1.375;
-    margin: 0;
+    font-weight: normal;
 }
 
 .settings-menu-header .close {
@@ -93,16 +93,16 @@ body.settings-menu-expanded .settings-menu-container {
     position: absolute;
     top: 0;
     bottom: 7px;
-    width: 45px;
     padding: 0;
+    width: 45px;
 }
 
 .settings-menu-header-action:before {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     color: var(--midbrown);
     font-size: 2rem;
+    transform: translateY(-50%);
 }
 
 .settings-menu-header-action:hover:before {
@@ -118,9 +118,9 @@ body.settings-menu-expanded .settings-menu-container {
 }
 
 .settings-menu-content .image-uploader {
+    margin: 0 0 1.6rem 0;
     padding-top: 35px;
     padding-bottom: 35px;
-    margin: 0 0 1.6rem 0;
 }
 
 .settings-menu-content .image-uploader.image-uploader-url {
@@ -137,9 +137,9 @@ body.settings-menu-expanded .settings-menu-container {
 }
 
 .settings-menu-content .tag-delete-button:before {
-    margin-right: 4px;
-    top: -1px;
     position: relative;
+    top: -1px;
+    margin-right: 4px;
 }
 
 .settings-menu-content .tag-delete-button:hover,
@@ -152,10 +152,10 @@ body.settings-menu-expanded .settings-menu-container {
 }
 
 .settings-menu-content .pre-image-uploader {
-    width: auto;
+    margin-top: 0;
     min-height: 50px;
     max-height: 250px;
-    margin-top: 0;
+    width: auto;
 }
 
 .settings-menu-content .word-count {
@@ -163,11 +163,11 @@ body.settings-menu-expanded .settings-menu-container {
 }
 
 .ghost-url-preview {
-    width: 98%;
     /* Preview never wider than input */
     overflow: hidden;
-    white-space: nowrap;
+    width: 98%;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
