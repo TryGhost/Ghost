@@ -2,16 +2,16 @@
 /* ---------------------------------------------------------- */
 
 .image-uploader {
-    margin: 1.6em 0;
     position: relative;
     overflow: hidden;
+    margin: 1.6em 0;
     padding: 55px 60px;
-    border: #e1e1e1 3px dashed;
     width: 100%;
     height: auto;
-    text-align: center;
-    color: var(--brown);
+    border: #e1e1e1 3px dashed;
     background: #f9f8f5;
+    color: var(--brown);
+    text-align: center;
 }
 
 .image-uploader a {
@@ -28,14 +28,14 @@
 }
 
 .image-uploader .image-upload {
-    line-height: 12px;
-    padding: 10px;
-    display: block;
     position: absolute;
     bottom: 0;
     left: 0;
+    display: block;
+    padding: 10px;
     color: var(--brown);
     text-decoration: none;
+    line-height: 12px;
 }
 
 .image-uploader .image-upload:hover {
@@ -43,9 +43,9 @@
 }
 
 .image-uploader .btn-green {
-    display: inline-block;
     position: relative;
     z-index: 700;
+    display: inline-block;
     color: #fff;
 }
 
@@ -57,12 +57,12 @@
     position: absolute;
     right: 0;
     margin: 0;
-    opacity: 0;
-    transform-origin: right;
-    transform: scale(14);
     font-size: 23px;
-    direction: ltr;
+    opacity: 0;
     cursor: pointer;
+    transform: scale(14);
+    transform-origin: right;
+    direction: ltr;
 }
 
 .image-uploader input.main.right {
@@ -71,13 +71,13 @@
 }
 
 .image-uploader input.url {
-    font: -webkit-small-control;
-    vertical-align: middle;
-    padding: 9px 7px;
     margin: 10px 0;
+    padding: 9px 7px;
     outline: 0;
-    font-size: 1.1em;
     background: #fff;
+    vertical-align: middle;
+    font: -webkit-small-control;
+    font-size: 1.1em;
 }
 
 .image-uploader input.url + .btn.btn-blue {
@@ -86,20 +86,20 @@
 
 .image-uploader .progress {
     position: relative;
-    margin: -19px 0 44px 0;
     display: block;
     overflow: hidden;
+    margin: -19px 0 44px 0;
     background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
     border-radius: 12px;
     box-shadow: rgba(0, 0, 0, 0.1) 0 1px 2px inset;
 }
 
 .image-uploader .fileupload-loading {
-    display: block;
     top: 50%;
+    display: block;
+    margin: -28px auto 0;
     width: 35px;
     height: 28px;
-    margin: -28px auto 0;
     background-size: contain;
 }
 
@@ -123,14 +123,14 @@
 /* ---------------------------------------------------------- */
 
 .pre-image-uploader {
-    margin: 1.6em 0;
     position: relative;
     overflow: hidden;
+    margin: 1.6em 0;
+    min-height: 46px;
     height: auto;
-    color: var(--brown);
     background: rgba(0, 0, 0, 0.1);
     border-radius: 2px;
-    min-height: 46px;
+    color: var(--brown);
 }
 
 .pre-image-uploader input {
@@ -151,8 +151,8 @@
 
 .pre-image-uploader img {
     display: block;
-    max-width: 100%;
     margin: 0 auto;
+    max-width: 100%;
     line-height: 0;
 }
 
@@ -160,18 +160,18 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    padding: 8px;
     z-index: 300;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: var(--border-radius);
+    box-shadow: rgba(255, 255, 255, 0.2) 0 0 0 1px;
     color: #fff;
     text-decoration: none;
     line-height: 0;
-    border-radius: var(--border-radius);
-    background: rgba(0, 0, 0, 0.6);
-    box-shadow: rgba(255, 255, 255, 0.2) 0 0 0 1px;
 }
 
 .pre-image-uploader .image-cancel:hover {
+    background: var(--red);
     color: #fff;
     cursor: pointer;
-    background: var(--red);
 }

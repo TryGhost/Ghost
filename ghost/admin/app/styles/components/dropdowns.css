@@ -15,20 +15,20 @@
     top: 100%;
     left: 0;
     float: left;
-    min-width: 220px;
-    padding: 5px 0;
     margin: 2px 0 0;
-    background-color: #fff;
+    padding: 5px 0;
+    min-width: 220px;
     border: color(var(--lightgrey) lightness(-15%)) 1px solid;
+    background-color: #fff;
+    background-clip: padding-box;
     border-radius: 4px;
     box-shadow: rgba(0, 0, 0, 0.175) 0 2px 6px;
-    background-clip: padding-box;
     list-style: none;
-    font-size: 1.4rem;
-    font-weight: normal;
+    text-align: left;
     text-transform: none;
     letter-spacing: 0;
-    text-align: left;
+    font-size: 1.4rem;
+    font-weight: normal;
 }
 
 .dropdown-menu.pull-right {
@@ -37,29 +37,29 @@
 }
 
 .dropdown-menu .divider {
-    height: 1px;
-    margin: 4px 0;
     overflow: hidden;
+    margin: 4px 0;
+    height: 1px;
     background: color(var(--lightgrey) lightness(-5%));
 }
 
 .dropdown-menu > li > a,
 .dropdown-menu > li > button {
     display: block;
-    width: 100%;
-    padding: 3px 20px;
     clear: both;
-    font-weight: normal;
-    line-height: 1.9em;
-    text-align: left;
+    padding: 3px 20px;
+    width: 100%;
     color: #333;
+    text-align: left;
     white-space: nowrap;
+    line-height: 1.9em;
+    font-weight: normal;
     transition: none;
 }
 
 .dropdown-menu i {
-    font-size: 0.9em;
     margin-right: 0.5rem;
+    font-size: 0.9em;
 }
 
 
@@ -71,9 +71,9 @@
 .dropdown-menu > li > a:focus,
 .dropdown-menu > li > button:hover,
 .dropdown-menu > li > button:focus {
-    text-decoration: none;
-    color: #fff;
     background: var(--blue);
+    color: #fff;
+    text-decoration: none;
 }
 
 /* Active */
@@ -83,10 +83,10 @@
 .dropdown-menu > .active > button,
 .dropdown-menu > .active > button:hover,
 .dropdown-menu > .active > button:focus {
-    color: #fff;
-    text-decoration: none;
     outline: 0;
     background-color: #428bca;
+    color: #fff;
+    text-decoration: none;
 }
 
 /* Disabled */
@@ -103,9 +103,9 @@
 .dropdown-menu > .disabled > a:focus,
 .dropdown-menu > .disabled > button:hover,
 .dropdown-menu > .disabled > button:focus {
-    text-decoration: none;
     background-color: transparent;
     background-image: none;
+    text-decoration: none;
     cursor: not-allowed;
 }
 

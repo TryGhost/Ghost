@@ -5,8 +5,8 @@
 .ghost-signup,
 .ghost-forgotten,
 .ghost-reset {
-    color: var(--midgrey);
     background: var(--darkgrey);
+    color: var(--midgrey);
 }
 
 .ghost-login main,
@@ -20,15 +20,15 @@
 .ghost-signup input,
 .ghost-forgotten input,
 .ghost-reset input {
-    line-height: 1.4em;
-    font-size: 1.1em;
-    font-weight: 200;
+    position: relative;
+    margin: 0;
     border: none;
-    color: #fff;
     background: color(var(--darkgrey) lightness(+10%));
     box-shadow: none;
-    margin: 0;
-    position: relative;
+    color: #fff;
+    font-size: 1.1em;
+    line-height: 1.4em;
+    font-weight: 200;
     transition: background ease 0.25s;
 }
 
@@ -52,10 +52,10 @@
 .forgotten-box,
 .reset-box {
     display: table;
-    max-width: 530px;
-    height: 90%;
     margin: 0 auto;
     padding: 0;
+    max-width: 530px;
+    height: 90%;
 }
 
 @media (max-width: 630px) {
@@ -73,9 +73,9 @@
 /* ---------------------------------------------------------- */
 
 .login-form {
+    display: table-cell;
     max-width: 530px;
     color: color(var(--midgrey) lightness(+15%));
-    display: table-cell;
     vertical-align: middle;
 }
 
@@ -88,8 +88,8 @@
 .login-form .email-wrap,
 .login-form .password-wrap {
     position: relative;
-    margin: 0 0 5px 0;
     float: left;
+    margin: 0 0 5px 0;
 }
 
 @media (max-width: 630px) {
@@ -135,16 +135,16 @@
 }
 
 .login-form button {
+    margin-left: 10px;
     width: 85px;
     height: 37px;
-    margin-left: 10px;
 }
 
 @media (max-width: 630px) {
     .login-form button {
         margin: 0;
-        width: 100%;
         margin-bottom: 1em;
+        width: 100%;
     }
 }
 
@@ -155,14 +155,14 @@
 
 .login-form .forgotten-link {
     display: inline-block;
-    height: auto;
-    width: auto;
     margin: 0;
     padding: 0;
-    font-size: 1.25rem;
+    width: auto;
+    height: auto;
     color: color(var(--midgrey) lightness(-10%));
     text-transform: none;
     letter-spacing: 0;
+    font-size: 1.25rem;
 }
 
 .login-form a {
@@ -181,9 +181,9 @@
 
 .signup-form,
 .reset-form {
+    display: table-cell;
     max-width: 280px;
     color: color(var(--midgrey) lightness(+15%));
-    display: table-cell;
     vertical-align: middle;
 }
 
@@ -197,16 +197,16 @@
 .signup-form .password-wrap,
 .reset-form .password-wrap {
     position: relative;
+    display: table;
+    float: left;
     margin: 0 0 1em 0;
     background: color(var(--darkgrey) lightness(+10%));
-    float: left;
-    display: table;
 }
 
 .signup-form input,
 .reset-form input {
-    width: 280px;
     padding: 8px 10px;
+    width: 280px;
 }
 
 @media (max-width: 630px) {
@@ -251,12 +251,12 @@
 
 .signup-form button,
 .reset-form button {
-    width: 100%;
-    height: 36px;
     margin: 0 0 1em 0;
     padding: 0.5em 1.37em;
-    min-height: 30px;
     min-width: 80px;
+    min-height: 30px;
+    width: 100%;
+    height: 36px;
     box-shadow: rgba(255, 255, 255, 0.15) 0 1px 0 inset;
 }
 
@@ -265,18 +265,18 @@
 /* ---------------------------------------------------------- */
 
 .forgotten-form {
+    display: table-cell;
     max-width: 280px;
     color: color(var(--midgrey) lightness(+15%));
-    display: table-cell;
     vertical-align: middle;
 }
 
 .forgotten-form .email-wrap {
     position: relative;
-    margin: 0 0 1em 0;
     float: left;
-    border-radius: 2px;
+    margin: 0 0 1em 0;
     width: 100%;
+    border-radius: 2px;
 }
 
 .forgotten-form .email {
