@@ -3,37 +3,39 @@
 
 @font-face {
     font-family: "ghosticons";
+    font-weight: normal;
+    font-style: normal;
     src: url("fonts/ghosticons.eot");
     src: url("fonts/ghosticons.eot?#iefix") format("embedded-opentype"),
     url("fonts/ghosticons.woff") format("woff"),
     url("fonts/ghosticons.ttf") format("truetype"),
     url("fonts/ghosticons.svg#ghosticons") format("svg");
-    font-weight: normal;
-    font-style: normal;
 }
 
 [data-icon]:before {
-    font-family: "ghosticons" !important;
     content: attr(data-icon);
-    font-style: normal !important;
-    font-weight: normal !important;
-    font-variant: normal !important;
     text-transform: none !important;
-    speak: none;
+    font-family: "ghosticons" !important;
     line-height: 1;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+
+    speak: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 [class^="icon-"]:before,
 [class*=" icon-"]:before {
-    font-family: "ghosticons" !important;
-    font-style: normal !important;
-    font-weight: normal !important;
-    font-variant: normal !important;
     text-transform: none !important;
-    speak: none;
+    font-family: "ghosticons" !important;
     line-height: 1;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+
+    speak: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

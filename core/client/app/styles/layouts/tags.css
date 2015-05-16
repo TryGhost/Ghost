@@ -13,8 +13,8 @@
 
 .tags-search .btn {
     position: relative;
-    padding-left: 10px;
     padding-right: 10px;
+    padding-left: 10px;
     transition: padding 0.3s ease-in-out;
 }
 
@@ -30,14 +30,14 @@
     position: absolute;
     top: 1px;
     left: 1px;
-    width: 0;
     margin: 0;
     padding: 7px 10px;
+    width: 0;
     border: 0;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
-    transition: all 0.3s ease-in-out;
     opacity: 0;
+    transition: all 0.3s ease-in-out;
     pointer-events: none;
 }
 
@@ -70,14 +70,14 @@
 
 .settings-tag {
     position: relative;
-    padding: 0 45px 0 0;
     display: block;
+    padding: 0 45px 0 0;
     border-bottom: 1px solid #e1e1e1;
 }
 
 .settings-tag .tag-edit-button {
-    width: calc(100% + 45px);
     padding: 20px;
+    width: calc(100% + 45px);
     text-align: left;
 }
 
@@ -92,9 +92,9 @@
 }
 
 .settings-tag .label {
-    margin-left: 2px;
     position: relative;
     top: -2px;
+    margin-left: 2px;
 }
 
 .settings-tag .label-alt {
@@ -102,21 +102,21 @@
 }
 
 .settings-tag .tag-title {
-    font-size: 16px;
     color: var(--darkgrey);
+    font-size: 16px;
     font-weight: normal;
 }
 
 .settings-tag .tag-description {
     margin: 0;
-    font-size: 13px;
     color: var(--midbrown);
+    font-size: 13px;
 }
 
 .settings-tag .tags-count {
     position: absolute;
     top: 20px;
     right: 12px;
-    font-size: 16px;
     color: var(--midbrown);
+    font-size: 16px;
 }

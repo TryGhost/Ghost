@@ -3,8 +3,8 @@
 
 .gh-viewport {
     display: flex;
-    height: 100vh;
     overflow: hidden;
+    height: 100vh;
 }
 
 .gh-nav {
@@ -33,9 +33,9 @@
 }
 
 .gh-nav-menu i {
-    height: 11px;
-    width: 11px;
     margin-right: 8px;
+    width: 11px;
+    height: 11px;
     font-size: 11px;
     line-height: 11px;
 }
@@ -49,8 +49,8 @@
     margin-right: 10px;
     width: 34px;
     height: 34px;
-    background-size: 34px;
     background-color: #222;
+    background-size: 34px;
     border-radius: 4px;
 }
 
@@ -60,22 +60,22 @@
 }
 
 .gh-nav-menu-details-blog {
+    overflow: hidden;
     margin-bottom: 1px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 1.5rem;
     line-height: 1.3em;
     font-weight: 600;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
 }
 
 .gh-nav-menu-details-user {
-    font-size: 1.2rem;
-    line-height: 1.2em;
+    overflow: hidden;
     color: var(--midgrey);
     text-overflow: ellipsis;
-    overflow: hidden;
     white-space: nowrap;
+    font-size: 1.2rem;
+    line-height: 1.2em;
 }
 
 .gh-nav-body {
@@ -95,22 +95,22 @@
 }
 
 .gh-nav-search-button {
-    display: flex;
-    align-items: center;
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
+    display: flex;
+    align-items: center;
     padding: 0 6px 0 5px;
 }
 
 .gh-nav-search-button i {
     width: 16px;
     height: 16px;
-    font-size: 13px;
     color: var(--midgrey);
-    transform: rotate(90deg);
+    font-size: 13px;
     transition: color 0.2s ease;
+    transform: rotate(90deg);
 }
 
 .gh-nav-search-button:hover i {
@@ -118,51 +118,51 @@
 }
 
 .gh-nav-list {
-    list-style: none;
     margin: 0;
     padding: 0 15px 0 0;
+    list-style: none;
     font-size: 1.3rem;
     line-height: 1.5em;
 }
 
 .gh-nav-list-h {
+    overflow: hidden;
     margin-top: 15px;
     padding: 5px 10px 5px 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     color: #828282;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 1px;
     font-size: 1.2rem;
     line-height: 1.1em;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
 }
 
 .gh-nav-list a {
     display: flex;
     align-items: center;
     padding: 5px 10px 5px 15px;
-    color: var(--darkgrey);
     border-radius: 0 4px 4px 0;
+    color: var(--darkgrey);
     transition: none;
 }
 
 .gh-nav-list .active {
-    color: #fff;
     background: color(var(--blue) lightness(+10%));
+    color: #fff;
 }
 
 .gh-nav-list a:not(.active):hover {
-    color: var(--darkgrey);
     background: color(var(--blue) lightness(+30%));
+    color: var(--darkgrey);
 }
 
 .gh-nav-list i {
+    margin-right: 8px;
     width: 15px;
     height: 15px;
-    margin-right: 8px;
-    font-size: 15px;
     text-align: center;
+    font-size: 15px;
 }
 
 .gh-nav-footer {
@@ -177,9 +177,9 @@
     flex-grow: 1;
     display: flex;
     padding: 12px;
+    color: var(--midgrey);
     font-size: 1.3rem;
     line-height: 1.2em;
-    color: var(--midgrey);
 }
 
 .gh-nav-footer-sitelink i {
@@ -199,16 +199,16 @@
     display: flex;
     align-items: center;
     padding: 5px 10px;
-    cursor: pointer;
     border-left: #e1e1e1 1px solid;
+    cursor: pointer;
 }
 
 .gh-help-button {
     padding: 0 5px;
+    color: var(--midgrey);
     text-align: center;
     font-size: 1.4rem;
     line-height: 1.2em;
-    color: var(--midgrey);
     transition: all 0.5s;
 }
 
@@ -247,24 +247,24 @@
 .view-header {
     flex-shrink: 0;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    height: 65px;
+    align-items: center;
     padding: 0 20px;
+    height: 65px;
     border-bottom: #e1e1e1 1px solid;
 }
 
 .view-title {
     display: flex;
     align-items: baseline;
+    overflow: hidden;
     margin: 0;
     padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 2rem;
     line-height: 1.2em;
     font-weight: 400;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
 }
 
 .view-title a {

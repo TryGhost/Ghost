@@ -2,8 +2,8 @@
 /* ---------------------------------------------------------- */
 
 .ghost-setup {
-    color: var(--midgrey);
     background: var(--darkgrey);
+    color: var(--midgrey);
 }
 
 @media (max-width: 550px) {
@@ -13,9 +13,9 @@
 }
 
 .ghost-setup main {
-    padding-top: 15px;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    padding-top: 15px;
 }
 
 @media (max-width: 550px) {
@@ -26,17 +26,17 @@
 
 .setup-box {
     display: table;
-    max-width: 500px;
-    height: 90%;
     margin: 0 auto;
     padding: 0;
+    max-width: 500px;
+    height: 90%;
 }
 
 .setup-form {
-    max-width: 530px;
     padding: 40px;
-    color: color(var(--midgrey) lightness(+15%));
+    max-width: 530px;
     border-radius: 2px;
+    color: color(var(--midgrey) lightness(+15%));
 }
 
 @media (max-width: 400px) {
@@ -69,8 +69,8 @@
 .setup-form .form-group input {
     padding: 7px;
     border: none;
-    color: #fff;
     background: color(var(--darkgrey) lightness(+10%));
+    color: #fff;
     transition: background 0.25s ease;
 }
 
@@ -86,10 +86,10 @@
 
 .setup-form h1 {
     margin: 0;
-    font-weight: 200;
-    font-size: 26px;
-    letter-spacing: 0;
     color: var(--lightgrey);
+    letter-spacing: 0;
+    font-size: 26px;
+    font-weight: 200;
 }
 
 @media (max-width: 400px) {
@@ -108,10 +108,10 @@
     margin: 6px 0 0 0;
     padding: 0;
     border: none;
-    font-weight: 200;
-    font-size: 16px;
-    letter-spacing: 0;
     color: var(--midgrey);
+    letter-spacing: 0;
+    font-size: 16px;
+    font-weight: 200;
 }
 
 @media (max-width: 400px) {
@@ -127,9 +127,9 @@
 }
 
 .setup-form p {
+    color: var(--midgrey);
     font-size: 12px;
     line-height: 1.4em;
-    color: var(--midgrey);
 }
 
 .setup-form footer {
@@ -137,7 +137,7 @@
 }
 
 .setup-form .btn-green {
-    width: 100%;
     padding: 0.9em 1.8em;
+    width: 100%;
     font-size: 13px;
 }

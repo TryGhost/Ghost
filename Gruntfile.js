@@ -335,6 +335,10 @@ var _              = require('lodash'),
 
                 shrinkwrap: {
                     command: 'npm shrinkwrap'
+                },
+
+                csscomb: {
+                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -v core/client/app/styles')
                 }
             },
 

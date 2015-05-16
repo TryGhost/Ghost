@@ -6,29 +6,29 @@
 /* ---------------------------------------------------------- */
 
 .modal-container {
-    display: none;
     position: fixed;
     top: 0;
+    right: 0;
     bottom: 0;
     left: 0;
-    right: 0;
     z-index: 1040;
-    padding-left: 10px;
-    padding-right: 10px;
+    display: none;
     overflow-x: auto;
     overflow-y: scroll;
+    padding-right: 10px;
+    padding-left: 10px;
     transition: all 0.15s linear 0s;
     transform: translateZ(0);
 }
 
 .modal-background {
-    display: none;
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     z-index: 1030;
+    display: none;
     background: rgba(0, 0, 0, 0.6);
 }
 
@@ -38,15 +38,15 @@
 
 .modal,
 .modal-action {
-    left: 50%;
     right: auto;
+    left: 50%;
     z-index: 1050;
-    width: 100%;
-    max-width: 550px;
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
     padding-top: 30px;
     padding-bottom: 30px;
+    max-width: 550px;
+    width: 100%;
     pointer-events: auto;
 }
 
@@ -86,8 +86,8 @@
 .modal-content {
     position: relative;
     padding: 18px;
-    background-clip: padding-box;
     background-color: #fff;
+    background-clip: padding-box;
     border-radius: var(--border-radius);
     box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 6px;
 }
@@ -101,9 +101,9 @@
     top: 19px;
     right: 19px;
     z-index: 9999;
-    width: 16px;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    width: 16px;
     border: none;
 }
 
@@ -178,13 +178,13 @@
         max-width: 264px;
     }
     .modal-body .login-form .password-wrap {
-        width: 100%;
         margin: 0 auto 1em;
+        width: 100%;
     }
     .modal-body .login-form .btn {
         margin: 0;
-        width: 100%;
         margin-bottom: 1em;
+        width: 100%;
     }
 }
 

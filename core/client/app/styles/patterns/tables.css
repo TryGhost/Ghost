@@ -5,8 +5,8 @@
 table,
 .table {
     margin: 1.6em 0;
-    width: 100%;
     max-width: 100%;
+    width: 100%;
     background-color: transparent;
 }
 
@@ -15,9 +15,9 @@ table td,
 .table th,
 .table td {
     padding: 8px;
-    line-height: 20px;
-    text-align: left;
     vertical-align: middle;
+    text-align: left;
+    line-height: 20px;
 }
 
 
