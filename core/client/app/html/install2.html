@@ -15,10 +15,10 @@
 <body>
 
 
-<div class="gh-setup">
-    <header class="gh-setup-head">
-        <nav class="gh-setup-nav">
-            <a class="gh-setup-back" href="#"><i class="icon-chevron-left"></i> Back</a>
+<div class="gh-flow">
+    <header class="gh-flow-head">
+        <nav class="gh-flow-nav">
+            <a class="gh-flow-back" href="#"><i class="icon-chevron-left"></i> Back</a>
             <ol>
                 <li><a class="step" href="#"><i class="icon-check"></i><span class="num">1</span></a></li>
                 <li class="divider"></li>
@@ -29,13 +29,13 @@
         </nav>
     </header>
 
-    <div class="gh-setup-content-wrap">
-        <section class="gh-setup-content">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
             <header>
                 <h1>Create your account</h1>
             </header>
 
-            <form class="gh-setup-create">
+            <form class="gh-flow-create">
                 <figure class="account-image">
                     <div  id="account-image" class="img"  style="background-image: url(http://www.gravatar.com/avatar/75e958a6674a7d68fe0d575fb235116c?d=404&s=250)">
                         <!-- fallback to: Ghost/core/shared/img/ghosticon.jpg -->
@@ -46,19 +46,19 @@
                 <div class="form-group">
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        <input id="email-address" class="ember-view ember-text-field" type="email" placeholder="Eg. john@example.com">
+                        <input id="email-address" class="ember-view ember-text-field gh-input" type="email" placeholder="Eg. john@example.com">
                     </span>
                 </div>
                 <div class="form-group">
                     <label for="full-name">Full name</label>
                     <span class="input-icon icon-user">
-                        <input id="full-name" class="ember-view ember-text-field" type="text" placeholder="Eg. John Smith">
+                        <input id="full-name" class="ember-view ember-text-field gh-input" type="text" placeholder="Eg. John Smith">
                     </span>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <span class="input-icon icon-lock">
-                        <input id="password" class="ember-view ember-text-field" type="password" placeholder="At least 7 characters">
+                        <input id="password" class="ember-view ember-text-field gh-input" type="password" placeholder="At least 7 characters">
                         <div class="pw-strength">
                             <div class="pw-strength-dot"></div>
                             <div class="pw-strength-dot"></div>
@@ -71,7 +71,7 @@
                 <div class="form-group">
                     <label for="blog-title">Blog title</label>
                     <span class="input-icon icon-content">
-                        <input id="blog-title" class="ember-view ember-text-field" type="text" placeholder="Eg. The Daily Awesome">
+                        <input id="blog-title" class="ember-view ember-text-field gh-input" type="text" placeholder="Eg. The Daily Awesome">
                     </span>
                 </div>
             </form>

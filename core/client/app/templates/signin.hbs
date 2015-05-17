@@ -1,18 +1,22 @@
-<section class="login-box js-login-box fade-in">
-    <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
-        <div class="email-wrap">
-            <span class="input-icon icon-mail">
-                {{gh-trim-focus-input class="gh-input email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" value=model.identification}}
-            </span>
-        </div>
-        <div class="password-wrap">
-            <span class="input-icon icon-lock">
-                {{input class="gh-input password" type="password" placeholder="Password" name="password" value=model.password}}
-            </span>
-        </div>
-        <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Log in</button>
-        <section class="meta">
-            <button {{action 'forgotten'}} class="forgotten-link btn btn-link">Forgotten password?</button>
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            <form id="login" class="gh-signin" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
+                <div class="form-group">
+                    <span class="input-icon icon-mail">
+                        {{gh-trim-focus-input class="gh-input email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" tabindex="1" value=model.identification}}
+                    </span>
+                </div>
+                <div class="form-group">
+                    <span class="input-icon icon-lock forgotten-wrap">
+                        {{input class="gh-input password" type="password" placeholder="Password" name="password" tabindex="2" value=model.password}}
+                        <button {{action 'forgotten'}} class="forgotten-link btn btn-link"  tabindex="4">Forgot?</button>
+                    </span>
+                </div>
+                <button id="login-button" class="login btn btn-blue btn-block" type="submit" tabindex="3" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Sign in</button>
+            </form>
+
+            <p class="main-error">The password fairy does not approve</p>
         </section>
-    </form>
-</section>
+    </div>
+</div>

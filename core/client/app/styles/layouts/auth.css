@@ -1,292 +1,46 @@
-/* Authentication /ghost/[signin/signup/forgotten/reset]
-/* ---------------------------------------------------------- */
-
-.ghost-login,
-.ghost-signup,
-.ghost-forgotten,
-.ghost-reset {
-    background: var(--darkgrey);
-    color: var(--midgrey);
-}
-
-.ghost-login main,
-.ghost-signup main,
-.ghost-forgotten main,
-.ghost-reset main {
-    padding-top: 15px;
-}
-
-.ghost-login input,
-.ghost-signup input,
-.ghost-forgotten input,
-.ghost-reset input {
-    position: relative;
-    margin: 0;
-    border: none;
-    background: color(var(--darkgrey) lightness(+10%));
-    box-shadow: none;
-    color: #fff;
-    font-size: 1.1em;
-    line-height: 1.4em;
-    font-weight: 200;
-    transition: background ease 0.25s;
-}
-
-.ghost-login input:focus,
-.ghost-signup input:focus,
-.ghost-forgotten input:focus,
-.ghost-reset input:focus {
-    border: none;
-    background: color(var(--darkgrey) lightness(+15%));
-}
-
-.ghost-login input:-webkit-autofill,
-.ghost-signup input:-webkit-autofill,
-.ghost-forgotten input:-webkit-autofill,
-.ghost-reset input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 1000px var(--lightgrey) inset !important;
-}
-
-.login-box,
-.signup-box,
-.forgotten-box,
-.reset-box {
-    display: table;
-    margin: 0 auto;
-    padding: 0;
-    max-width: 530px;
-    height: 90%;
-}
-
-@media (max-width: 630px) {
-    .login-box,
-    .signup-box,
-    .forgotten-box,
-    .reset-box {
-        max-width: 264px;
-        text-align: center;
-    }
-}
-
-
 /* Sign in
 /* ---------------------------------------------------------- */
 
-.login-form {
-    display: table-cell;
-    max-width: 530px;
-    color: color(var(--midgrey) lightness(+15%));
-    vertical-align: middle;
-}
-
-@media (max-width: 630px) {
-    .login-form {
-        max-width: 264px;
-    }
-}
-
-.login-form .email-wrap,
-.login-form .password-wrap {
+.gh-signin {
     position: relative;
-    float: left;
-    margin: 0 0 5px 0;
+    margin: 30px auto;
+    padding: 40px;
+    max-width: 400px;
+    border: #dae1e3 1px solid;
+    background: #f8fbfd;
+    border-radius: 5px;
+    text-align: left;
 }
 
-@media (max-width: 630px) {
-    .login-form .email-wrap,
-    .login-form .password-wrap {
-        margin-bottom: 1em;
-    }
+.gh-signin .form-group {
+    margin-bottom: 1.5rem;
 }
 
-.login-form .email-wrap {
-    margin-right: 3px;
-}
-
-@media (max-width: 630px) {
-    .login-form .email-wrap {
-        margin-right: 0;
-    }
-}
-
-.login-form .email,
-.login-form .password {
-    display: inline-block;
-    clear: both;
-    padding: 8px 0 8px 8px;
-    width: 216px;
-}
-
-@media (max-width: 630px) {
-    .login-form .email,
-    .login-form .password {
-        width: 264px;
-        border-radius: 2px;
-    }
-}
-
-@media (min-width: 631px) {
-    .login-form .email {
-        border-radius: 2px 0 0 2px;
-    }
-    .login-form .password {
-        border-radius: 0 2px 2px 0;
-    }
-}
-
-.login-form button {
-    margin-left: 10px;
-    width: 85px;
-    height: 37px;
-}
-
-@media (max-width: 630px) {
-    .login-form button {
-        margin: 0;
-        margin-bottom: 1em;
-        width: 100%;
-    }
-}
-
-.login-form .meta {
-    clear: both;
-    color: var(--midgrey);
-}
-
-.login-form .forgotten-link {
-    display: inline-block;
+.gh-signin .btn {
     margin: 0;
-    padding: 0;
-    width: auto;
-    height: auto;
-    color: color(var(--midgrey) lightness(-10%));
+    padding: 12px;
+}
+
+.forgotten-wrap {
+    position: relative;
+}
+
+.forgotten-wrap .forgotten-link {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    bottom: 10px;
+    padding: 0 12px;
+    border-left: #dae1e3 1px solid;
+    border-radius: 0;
     text-transform: none;
     letter-spacing: 0;
-    font-size: 1.25rem;
 }
 
-.login-form a {
-    color: color(var(--midgrey) lightness(-10%));
-    font-size: 0.9em;
-}
-
-.login-form a:hover {
-    color: color(var(--midgrey) lightness(+5%));
+.forgotten-link:hover {
+    border-left: #dae1e3 1px solid;
+    color: color(var(--blue) lightness(-20%));
     text-decoration: none;
-}
-
-
-/* Signup / Reset Password
-/* ---------------------------------------------------------- */
-
-.signup-form,
-.reset-form {
-    display: table-cell;
-    max-width: 280px;
-    color: color(var(--midgrey) lightness(+15%));
-    vertical-align: middle;
-}
-
-@media (max-width: 630px) {
-    .signup-form,
-    .reset-form {
-        width: 264px;
-    }
-}
-
-.signup-form .password-wrap,
-.reset-form .password-wrap {
-    position: relative;
-    display: table;
-    float: left;
-    margin: 0 0 1em 0;
-    background: color(var(--darkgrey) lightness(+10%));
-}
-
-.signup-form input,
-.reset-form input {
-    padding: 8px 10px;
-    width: 280px;
-}
-
-@media (max-width: 630px) {
-    .signup-form input,
-    .reset-form input {
-        width: 264px;
-    }
-}
-
-.signup-form .name-wrap,
-.reset-form .name-wrap {
-    position: relative;
-    border-radius: 2px;
-}
-
-.signup-form .name,
-.reset-form .name {
-    border-radius: 2px;
-}
-
-.signup-form .email-wrap,
-.reset-form .email-wrap {
-    position: relative;
-    border-radius: 2px;
-}
-
-.signup-form .email,
-.reset-form .email {
-    border-radius: 2px;
-}
-
-.signup-form .password-wrap,
-.reset-form .password-wrap {
-    position: relative;
-    border-radius: 2px;
-}
-
-.signup-form .password,
-.reset-form .password {
-    border-radius: 2px;
-}
-
-.signup-form button,
-.reset-form button {
-    margin: 0 0 1em 0;
-    padding: 0.5em 1.37em;
-    min-width: 80px;
-    min-height: 30px;
-    width: 100%;
-    height: 36px;
-    box-shadow: rgba(255, 255, 255, 0.15) 0 1px 0 inset;
-}
-
-
-/* Forgotten password
-/* ---------------------------------------------------------- */
-
-.forgotten-form {
-    display: table-cell;
-    max-width: 280px;
-    color: color(var(--midgrey) lightness(+15%));
-    vertical-align: middle;
-}
-
-.forgotten-form .email-wrap {
-    position: relative;
-    float: left;
-    margin: 0 0 1em 0;
-    width: 100%;
-    border-radius: 2px;
-}
-
-.forgotten-form .email {
-    padding: 8px 10px;
-    border-radius: 2px;
-}
-
-.forgotten-form button {
-    width: 100%;
-    height: 37px;
 }
 
 .private-login h1 {

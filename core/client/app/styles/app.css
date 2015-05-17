@@ -31,7 +31,7 @@
 /* Layouts: Groups of Components
 /* ---------------------------------------------------------- */
 @import "layouts/main.css";
-@import "layouts/setup.css";
+@import "layouts/flow.css";
 @import "layouts/auth.css";
 @import "layouts/content.css";
 @import "layouts/editor.css";
