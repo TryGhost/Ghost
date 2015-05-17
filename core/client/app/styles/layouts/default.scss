@@ -89,10 +89,10 @@
     bottom: 0;
     left: 0;
     background: #fff;
-    overflow-y: auto;
-    overflow-x: hidden;
 
     @media (max-width: 900px) {
+        overflow-y: auto;
+        overflow-x: hidden;
         top: 44px;
     }
 }
