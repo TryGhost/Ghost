@@ -103,7 +103,7 @@
 .icon-new:before {
     content: "\e014";
 }
-.icon-lock-2:before {
+.icon-lock:before {
     content: "\e015";
 }
 .icon-link:before {
