@@ -389,13 +389,16 @@ middleware = {
 
     authenticatePrivateSession: function (req, res, next) {
         var hash = req.session.token || '',
-            salt = req.session.salt || '';
+            salt = req.session.salt || '',
+            url;
 
         return verifySessionHash(salt, hash).then(function (isVerified) {
             if (isVerified) {
                 return next();
             } else {
-                return res.redirect(config.urlFor({relativeUrl: '/private/'}) + '?r=' + encodeURIComponent(req.url));
+                url = config.urlFor({relativeUrl: '/private/'});
+                url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
+                return res.redirect(url);
             }
         });
     },
