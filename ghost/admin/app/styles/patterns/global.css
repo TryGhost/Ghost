@@ -55,7 +55,6 @@ body {
     height: 100%;
     color: lighten(var(--darkgrey), 10%);
     font-size: 1.4rem;
-    font-feature-settings: "kern" 1;
 }
 
 ::selection {
@@ -76,7 +75,6 @@ h6 {
     color: var(--darkgrey);
     line-height: 1.15em;
     text-rendering: optimizeLegibility;
-    font-feature-settings: "dlig" 1, "liga" 1, "lnum" 1, "kern" 1;
 }
 
 h1 {
