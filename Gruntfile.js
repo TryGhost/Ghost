@@ -370,6 +370,9 @@ var _              = require('lodash'),
                 },
                 tmp: {
                     src: ['.tmp/**']
+                },
+                dependencies: {
+                    src: ['node_modules/**', 'core/client/bower_components/**', 'core/client/node_modules/**']
                 }
             },
 
@@ -699,8 +702,8 @@ var _              = require('lodash'),
 
         // ### Ember unit tests *(sub task)*
         // `grunt testem` will run just the ember unit tests
-        grunt.registerTask('testem', 'Run the ember unit tests',
-            ['test-setup', 'shell:testem']
+        grunt.registerTask('test-ember', 'Run the ember unit tests',
+            ['test-setup', 'shell:ember:test']
         );
 
         // ### Functional tests *(sub task)*
