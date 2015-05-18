@@ -301,8 +301,11 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp.use(passport.initialize());
 
     // ### Caching
+    // Blog frontend is cacheable
     blogApp.use(middleware.cacheControl('public'));
+    // Admin shouldn't be cached
     adminApp.use(middleware.cacheControl('private'));
+    // API shouldn't be cached
     blogApp.use(routes.apiBaseUri, middleware.cacheControl('private'));
 
     // enable authentication
