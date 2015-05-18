@@ -59,6 +59,8 @@ body.settings-menu-expanded .settings-menu-container {
 
 .settings-menu-header {
     position: relative;
+    display: flex;
+    justify-content: space-between;
     padding: 19px 24px;
 }
 
@@ -70,11 +72,8 @@ body.settings-menu-expanded .settings-menu-container {
 }
 
 .settings-menu-header .close {
-    right: 0;
-}
-
-.settings-menu-header .close:before {
     right: 22px;
+    font-size: 12px;
 }
 
 .settings-menu-header.subview h4 {
@@ -89,25 +88,7 @@ body.settings-menu-expanded .settings-menu-container {
     left: 19px;
 }
 
-.settings-menu-header-action {
-    position: absolute;
-    top: 0;
-    bottom: 7px;
-    padding: 0;
-    width: 45px;
-}
 
-.settings-menu-header-action:before {
-    position: absolute;
-    top: 50%;
-    color: var(--midbrown);
-    font-size: 2rem;
-    transform: translateY(-50%);
-}
-
-.settings-menu-header-action:hover:before {
-    color: var(--midgrey);
-}
 
 
 /* Content
@@ -119,8 +100,6 @@ body.settings-menu-expanded .settings-menu-container {
 
 .settings-menu-content .image-uploader {
     margin: 0 0 1.6rem 0;
-    padding-top: 35px;
-    padding-bottom: 35px;
 }
 
 .settings-menu-content .image-uploader.image-uploader-url {

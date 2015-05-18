@@ -14,7 +14,7 @@
     float: left;
     /* Prevent double border between buttons */
     /* Make sure the hovered element is always on
-                // top so overlap from .btn + btn. invisible */
+    // top so overlap from .btn + btn. invisible */
 }
 
 .splitbtn .btn + .btn {
