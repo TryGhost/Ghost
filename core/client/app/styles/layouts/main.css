@@ -1,6 +1,7 @@
 /* Global Layout
 /* ---------------------------------------------------------- */
 
+/* Main viewport, contains main content, and alerts */
 .gh-viewport {
     display: flex;
     flex-direction: column;
@@ -8,6 +9,7 @@
     height: 100vh;
 }
 
+/* Content viewport, contains everything else */
 .gh-viewport-container {
     flex-grow: 1;
     display: flex;
