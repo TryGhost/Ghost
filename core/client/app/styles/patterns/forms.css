@@ -112,10 +112,10 @@ select {
     color: var(--darkgrey);
     font-size: 1.4rem;
     font-weight: normal;
+    user-select: text;
     transition: border-color 0.15s linear;
 
     -webkit-appearance: none;
-    user-select: text;
 }
 
 .gh-input.error,
@@ -138,9 +138,8 @@ textarea {
     width: 100%;
     height: auto;
     line-height: 1.5;
-    resize: vertical;
-
     user-select: text;
+    resize: vertical;
 }
 
 
