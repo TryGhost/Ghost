@@ -5,13 +5,13 @@
 /* Title
 /* ---------------------------------------------------------- */
 
-.entry-title {
+.editor .entry-title {
     position: relative;
     padding: 0;
     height: 60px;
 }
 
-.entry-title input {
+.editor .entry-title input {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -24,18 +24,13 @@
     font-weight: bold;
 }
 
-.entry-title input:focus {
+.editor .entry-title input:focus {
     outline: 0;
 }
 
 
 /* Container & Headers
 /* ---------------------------------------------------------- */
-
-.editor {
-    /* The two content panel wrappers, positioned left/right */
-    /* The visual styles for both panels */
-}
 
 @media (min-width: 401px) {
     .editor .notifications.bottom {
