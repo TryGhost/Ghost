@@ -3,8 +3,14 @@
 
 .gh-viewport {
     display: flex;
+    flex-direction: column;
     overflow: hidden;
     height: 100vh;
+}
+
+.gh-viewport-container {
+    flex-grow: 1;
+    display: flex;
 }
 
 .gh-nav {
