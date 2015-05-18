@@ -83,8 +83,9 @@
     {{#gh-tab-pane}}
         {{#if isViewingSubview}}
         <div class="settings-menu-header subview">
-            <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
+            <button {{action "closeSubview"}} class="back icon-arrow-left settings-menu-header-action"><span class="hidden">Back</span></button>
             <h4>Meta Data</h4>
+            <div style="width:23px;">{{!flexbox space-between}}</div>
         </div>
 
         <div class="settings-menu-content">
