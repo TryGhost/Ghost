@@ -177,6 +177,7 @@
         "font-stretch",
         "text-rendering",
         "font-feature-settings",
+        "user-select",
         "src",
         "opacity",
         "filter:progid:DXImageTransform.Microsoft.Alpha(Opacity",
