@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import BaseView from 'ghost/views/settings/content-base';
 
 var SettingsUserView = BaseView.extend({
