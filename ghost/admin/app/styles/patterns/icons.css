@@ -208,3 +208,21 @@
 .icon-markdown:before {
     content: "\e037";
 }
+.icon-external:before {
+    content: "\e038";
+}
+.icon-arrow2:before {
+    content: "\e039";
+}
+.icon-arrow2-up:before {
+    content: "\e03a";
+}
+.icon-arrow2-left:before {
+    content: "\e03b";
+}
+.icon-arrow2-right:before {
+    content: "\e03c";
+}
+.icon-x2:before {
+    content: "\e03d";
+}
