@@ -5,7 +5,6 @@
 var _           = require('lodash'),
     fs          = require('fs'),
     express     = require('express'),
-    busboy      = require('./ghost-busboy'),
     config      = require('../config'),
     crypto      = require('crypto'),
     path        = require('path'),
@@ -16,6 +15,9 @@ var _           = require('lodash'),
     session     = require('cookie-session'),
     url         = require('url'),
     utils       = require('../utils'),
+
+    busboy       = require('./ghost-busboy'),
+    cacheControl = require('./cache-control'),
 
     middleware,
     blogApp,
@@ -138,28 +140,6 @@ middleware = {
             )(req, res, next);
         }
         next();
-    },
-
-    // ### CacheControl Middleware
-    // provide sensible cache control headers
-    cacheControl: function (options) {
-        /*jslint unparam:true*/
-        var profiles = {
-                public: 'public, max-age=0',
-                private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-            },
-            output;
-
-        if (_.isString(options) && profiles.hasOwnProperty(options)) {
-            output = profiles[options];
-        }
-
-        return function cacheControlHeaders(req, res, next) {
-            if (output) {
-                res.set({'Cache-Control': output});
-            }
-            next();
-        };
     },
 
     // ### whenEnabled Middleware
@@ -491,7 +471,8 @@ middleware = {
         });
     },
 
-    busboy: busboy
+    busboy: busboy,
+    cacheControl: cacheControl
 };
 
 module.exports = middleware;
