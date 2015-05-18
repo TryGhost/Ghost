@@ -257,58 +257,6 @@
     display: none;
 }
 
-@media (max-width: 900px) {
-    .post-preview-header {
-        position: fixed;
-        top: 0;
-        right: 0;
-        left: 0;
-        z-index: 3000;
-        overflow: hidden;
-        height: 44px;
-        background: #242628;
-        color: #fff;
-        text-align: center;
-    }
-    .post-preview-header .btn-back {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        display: block;
-        background-color: transparent;
-        color: #fff;
-    }
-    .post-preview-header .page-title {
-        display: block;
-    }
-    .post-preview-header .post-controls {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-    }
-    .post-preview-header .post-edit {
-        background-color: transparent;
-        color: #fff;
-    }
-    .post-preview-header .featured,
-    .post-preview-header .unfeatured,
-    .post-preview-header small {
-        display: none;
-    }
-}
-
-@media (min-width: 901px) {
-    .post-preview-header .unfeatured,
-    .post-preview-header .featured {
-        float: left;
-    }
-    .post-preview-header .post-published-by {
-        float: left;
-        margin-top: 7px;
-        margin-left: 3px;
-    }
-}
-
 
 /* Empty State
 /* ---------------------------------------------------------- */
