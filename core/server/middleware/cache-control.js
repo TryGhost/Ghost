@@ -23,7 +23,11 @@ cacheControl = function (options) {
 
     return function cacheControlHeaders(req, res, next) {
         if (output) {
-            res.set({'Cache-Control': output});
+            if (res.isPrivateBlog) {
+                res.set({'Cache-Control': profiles['private']});
+            } else {
+                res.set({'Cache-Control': output});
+            }
         }
         next();
     };
