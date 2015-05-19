@@ -794,7 +794,7 @@ var _              = require('lodash'),
             var done = this.async(),
                 templatePath = 'core/client/app/templates/-contributors.hbs',
                 imagePath = 'core/client/public/assets/img/contributors/',
-                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90),
+                timeSpan = Date.now() - (1000 * 60 * 60 * 24 * 180),
                 oauthKey = process.env.GITHUB_OAUTH_KEY;
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
@@ -811,15 +811,15 @@ var _              = require('lodash'),
                     user: 'tryghost',
                     repo: 'ghost',
                     oauthKey: oauthKey,
-                    releaseDate: ninetyDaysAgo,
-                    count: 20,
+                    releaseDate: timeSpan,
+                    count: 18,
                     retry: true
                 })
             ).then(function (results) {
                 var contributors = results[1],
-                    contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
-                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>">\n' +
-                    '    </a>\n</li>',
+                    contributorTemplate = '<article>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
+                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>" />\n' +
+                    '    </a>\n</article>',
 
                     downloadImagePromise = function (url, name) {
                         return new Promise(function (resolve, reject) {
