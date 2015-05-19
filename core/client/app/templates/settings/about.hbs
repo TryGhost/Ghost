@@ -1,51 +1,41 @@
-<section class="view-content settings-about">
-    <section class="about-ghost-intro">
-        <h1>
-            <span class="ghost_logo">
-                <span class="hidden">Ghost</span>
-            </span>
-            <span class="version blue">v{{model.version}}</span>
-        </h1>
-        {{gh-notifications location="settings-about-upgrade" notify="updateNotificationChange"}}
-        {{#unless updateNotificationCount}}
-            <p>A free, open, simple publishing platform</p>
-        {{/unless}}
+<section class="view-content">
 
-        <div class="about-environment-help clearfix">
-            <div class="about-environment">
-                <dl>
-                    <dt>Version:</dt>
-                    <dd class="about-environment-detail">{{model.version}}</dd>
-                    <dt>Environment:</dt>
-                    <dd class="about-environment-detail">{{model.environment}}</dd>
-                    <dt>Database:</dt>
-                    <dd class="about-environment-detail about-environment-database">{{model.database}}</dd>
-                    <dt>Mail:</dt>
-                    <dd class="about-environment-detail">{{#if model.mail}}{{model.mail}}{{else}}Native{{/if}}</dd>
-                </dl>
-            </div>
-            <div class="about-help">
-                <a href="http://support.ghost.org" class="btn">User Documentation</a>
-                <a href="https://ghost.org/slack/" class="btn">Get Help With Ghost</a>
-            </div>
+    <header class="gh-about-header">
+        <img class="gh-logo" src="{{gh-path 'admin' '/img/ghost-logo.png'}}" alt="Ghost" />
+        <!-- TODO: fix about notifications -->
+        {{gh-notifications location="settings-about-upgrade" notify="updateNotificationChange"}}
+    </header>
+
+    <section class="gh-env-details">
+        <ul class="gh-env-list">
+            <li><strong>Version</strong> {{model.version}}</li>
+            <li><strong>Environment</strong> {{model.environment}}</li>
+            <li><strong>Database</strong> {{model.database}}</li>
+            <li><strong>Mail</strong> {{#if model.mail}}{{model.mail}}{{else}}Native{{/if}}</li>
+        </ul>
+        <div class="gh-env-help">
+            <a href="http://support.ghost.org" class="btn btn-minor" target="_blank">User Documentation</a>
+            <a href="https://ghost.org/slack/" class="btn btn-minor" target="_blank">Get Help With Ghost</a>
         </div>
     </section>
 
-    <section class="about-credits">
-        <h1>The People Who Made it Possible</h1>
+    <section class="gh-credits">
+        <h2>The People Who Made it Possible</h2>
 
-        <ul class="top-contributors clearfix">
+        <section class="gh-contributors">
             {{partial "contributors"}}
-        </ul>
+        </section>
 
-        <p class="about-contributors-info">Ghost is built by an incredible group of contributors from all over the world. Here are just a few of the people who helped create the version you’re using right now.</p>
+        <p>Ghost is built by an incredible group of contributors from all over the world. Here are just a few of the people who helped create the version you’re using right now.</p>
 
-        <a href="https://ghost.org/about/contribute/" class="about-get-involved btn-blue btn-lg btn">Find out how you can get involved</a>
+        <a href="https://ghost.org/about/contribute/" class="btn btn-blue btn-lg">Find out how you can get involved</a>
 
-        <p class="about-copyright">
-            Copyright 2013 - 2015 Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE">MIT license</a>.
-            <br>
-            <a href="https://ghost.org/">Ghost</a> is a trademark of the <a href="https://ghost.org/about/">Ghost Foundation</a>.
-        </p>
     </section>
+
+    <footer class="gh-copyright-info">
+        Copyright 2013 - 2015 Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE">MIT license</a>.
+        <br>
+        <a href="https://ghost.org/">Ghost</a> is a trademark of the <a href="https://ghost.org/about/">Ghost Foundation</a>.
+    </footer>
+
 </section>
