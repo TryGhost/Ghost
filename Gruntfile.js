@@ -6,7 +6,7 @@
 //
 // **Debug tip:** If you have any problems with any Grunt tasks, try running them with the `--verbose` command
 var _              = require('lodash'),
-    colors         = require('colors'),
+    chalk          = require('chalk'),
     fs             = require('fs-extra'),
     moment         = require('moment'),
     getTopContribs = require('top-gh-contribs'),
@@ -41,9 +41,6 @@ var _              = require('lodash'),
     // ## Grunt configuration
 
     configureGrunt = function (grunt) {
-        // *This is not useful but required for jshint*
-        colors.setTheme({silly: 'rainbow'});
-
         // #### Load all grunt tasks
         //
         // Find all of the task which start with `grunt-` and load them, rather than explicitly declaring them all
@@ -281,10 +278,10 @@ var _              = require('lodash'),
                     },
                     bg: true,
                     stdout: function (out) {
-                        grunt.log.writeln('Ember-cli::'.cyan + out);
+                        grunt.log.writeln(chalk.cyan('Ember-cli::') + out);
                     },
                     stderror: function (error) {
-                        grunt.log.error('Ember-cli::'.red + error.red);
+                        grunt.log.error(chalk.red('Ember-cli::' + error));
                     }
                 }
             },
@@ -756,9 +753,9 @@ var _              = require('lodash'),
         grunt.registerTask('master-warn',
             'Outputs a warning to runners of grunt prod, that master shouldn\'t be used for live blogs',
             function () {
-                console.log('>', 'Always two there are, no more, no less. A master and a'.red,
-                        'stable'.red.bold + '.'.red);
-                console.log('Use the', 'stable'.bold, 'branch for live blogs.', 'Never'.bold, 'master!');
+                console.log('>', chalk.red('Always two there are, no more, no less. A master and a'),
+                        chalk.bold.red('stable') + chalk.red('.'));
+                console.log('Use the', chalk.bold('stable'), 'branch for live blogs.', chalk.bold('Never'), 'master!');
             });
 
         // ### Build About Page *(Utility Task)*
@@ -779,7 +776,7 @@ var _              = require('lodash'),
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
                 grunt.log.writeln('Contributors template already exists.');
-                grunt.log.writeln('Skipped'.bold);
+                grunt.log.writeln(chalk.bold('Skipped'));
                 return done();
             }
 

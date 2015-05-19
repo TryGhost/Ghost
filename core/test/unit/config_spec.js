@@ -688,10 +688,7 @@ describe('Config', function () {
 
             logStub.calledOnce.should.be.true;
 
-            logStub.calledWithMatch(null, 'updateCheck').should.be.false;
-            logStub.calledWithMatch('', 'updateCheck').should.be.true;
-            logStub.calledWithMatch(sinon.match.string, 'updateCheck').should.be.true;
-            logStub.calledWithMatch(sinon.match.number, 'updateCheck').should.be.false;
+            logStub.calledWithMatch('updateCheck').should.be.true;
 
             // Future tests: This is important here!
             resetEnvironment();
@@ -706,10 +703,7 @@ describe('Config', function () {
 
             logStub.calledOnce.should.be.true;
 
-            logStub.calledWithMatch(null, 'updateCheck').should.be.false;
-            logStub.calledWithMatch('', 'updateCheck').should.be.true;
-            logStub.calledWithMatch(sinon.match.string, 'updateCheck').should.be.true;
-            logStub.calledWithMatch(sinon.match.number, 'updateCheck').should.be.false;
+            logStub.calledWithMatch('updateCheck').should.be.true;
 
             // Future tests: This is important here!
             resetEnvironment();
@@ -726,10 +720,7 @@ describe('Config', function () {
 
             logStub.calledOnce.should.be.true;
 
-            logStub.calledWithMatch(null, 'mail.fromaddress').should.be.false;
-            logStub.calledWithMatch('', 'mail.fromaddress').should.be.true;
-            logStub.calledWithMatch(sinon.match.string, 'mail.fromaddress').should.be.true;
-            logStub.calledWithMatch(sinon.match.number, 'mail.fromaddress').should.be.false;
+            logStub.calledWithMatch('mail.fromaddress').should.be.true;
 
             // Future tests: This is important here!
             resetEnvironment();
@@ -745,10 +736,7 @@ describe('Config', function () {
             config.checkDeprecated();
 
             logStub.calledOnce.should.be.true;
-            logStub.calledWithMatch(null, 'mail.fromaddress').should.be.false;
-            logStub.calledWithMatch('', 'mail.fromaddress').should.be.true;
-            logStub.calledWithMatch(sinon.match.string, 'mail.fromaddress').should.be.true;
-            logStub.calledWithMatch(sinon.match.number, 'mail.fromaddress').should.be.false;
+            logStub.calledWithMatch('mail.fromaddress').should.be.true;
 
             // Future tests: This is important here!
             resetEnvironment();

@@ -5,6 +5,7 @@
 
 var path          = require('path'),
     Promise       = require('bluebird'),
+    chalk         = require('chalk'),
     crypto        = require('crypto'),
     fs            = require('fs'),
     url           = require('url'),
@@ -423,7 +424,7 @@ ConfigManager.prototype.displayDeprecated = function (item, properties, address)
         if (properties.length) {
             return self.displayDeprecated(item[property], properties, address);
         }
-        errorText = 'The configuration property [' + address.join('.').bold + '] has been deprecated.';
+        errorText = 'The configuration property [' + chalk.bold(address.join('.')) + '] has been deprecated.';
         explanationText =  'This will be removed in a future version, please update your config.js file.';
         helpText = 'Please check http://support.ghost.org/config for the most up-to-date example.';
         errors.logWarn(errorText, explanationText, helpText);
