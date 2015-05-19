@@ -39,7 +39,7 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque('.login-box',
+    casper.waitForOpaque('.gh-signin',
         function then() {
             this.fillAndSave('#login', falseUser);
         },
@@ -67,7 +67,7 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque('.login-box', function then() {
+    casper.waitForOpaque('.gh-signin', function then() {
         this.fillAndSave('#login', user);
     });
 
@@ -90,7 +90,7 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque('.login-box', function then() {
+    casper.waitForOpaque('.gh-signin', function then() {
         this.fillAndSave('#login', user);
     });
 
