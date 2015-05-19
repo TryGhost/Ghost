@@ -201,6 +201,10 @@ var _              = require('lodash'),
                     src: ['core/test/unit/server_helpers/*_spec.js']
                 },
 
+                middleware: {
+                    src: ['core/test/unit/middleware/*_spec.js']
+                },
+
                 showdown: {
                     src: ['core/test/unit/**/showdown*_spec.js']
                 },
