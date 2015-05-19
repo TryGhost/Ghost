@@ -62,27 +62,27 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
 screens = {
     root: {
         url: 'ghost/',
-        linkSelector: '.nav-content',
-        selector: '.nav-content.active'
+        linkSelector: '.gh-nav-main-content',
+        selector: '.gh-nav-main-content.active'
     },
     content: {
         url: 'ghost/content/',
-        linkSelector: '.nav-content',
-        selector: '.nav-content.active'
+        linkSelector: '.gh-nav-main-content',
+        selector: '.gh-nav-main-content.active'
     },
     editor: {
         url: 'ghost/editor/',
-        linkSelector: '.nav-new',
-        selector: '#entry-title'
+        linkSelector: '.gh-nav-main-editor',
+        selector: '.gh-nav-main-editor.active'
     },
     settings: {
         url: 'ghost/settings/',
-        linkSelector: '.nav-settings',
-        selector: '.nav-settings.active'
+        linkSelector: '.gh-nav-settings-general',
+        selector: '.gh-nav-settings-general.active'
     },
     'settings.general': {
         url: 'ghost/settings/general',
-        selector: '.settings-nav-general.active'
+        selector: '.gh-nav-settings-general.active'
     },
     'settings.about': {
         url: 'ghost/settings/about',
@@ -90,7 +90,7 @@ screens = {
     },
     'settings.users': {
         url: 'ghost/settings/users',
-        linkSelector: '.settings-nav-users a',
+        linkSelector: '.gh-nav-main-settings-users',
         selector: '.settings-nav-users.active'
     },
     'settings.users.user': {
@@ -105,7 +105,7 @@ screens = {
     'signin-authenticated': {
         url: 'ghost/signin/',
         // signin with authenticated user redirects to posts
-        selector: '.nav-content.active'
+        selector: '.gh-nav-main-content.active'
     },
     signout: {
         url: 'ghost/signout/',
@@ -123,7 +123,7 @@ screens = {
     },
     'setup-authenticated': {
         url: 'ghost/setup/',
-        selector: '.nav-content.active'
+        selector: '.gh-nav-main-content.active'
     }
 };
 
@@ -414,7 +414,7 @@ CasperTest.Routines = (function () {
 
     function signin() {
         casper.thenOpenAndWaitForPageLoad('signin', function then() {
-            casper.waitForOpaque('.login-box', function then() {
+            casper.waitForOpaque('.gh-signin', function then() {
                 casper.captureScreenshot('signing_in.png');
                 this.fillAndSave('#login', user);
                 casper.captureScreenshot('signing_in2.png');
