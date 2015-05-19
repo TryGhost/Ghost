@@ -226,3 +226,9 @@
 .icon-x2:before {
     content: "\e03d";
 }
+.icon-gh:before {
+    content: "\e03e";
+}
+.icon-signout:before {
+    content: "\e036";
+}
