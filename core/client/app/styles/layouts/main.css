@@ -2,7 +2,7 @@
 /* ---------------------------------------------------------- */
 
 /* Main viewport, contains main content, and alerts */
-.gh-viewport {
+.gh-app {
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -10,7 +10,7 @@
 }
 
 /* Content viewport, contains everything else */
-.gh-viewport-container {
+.gh-viewport {
     flex-grow: 1;
     display: flex;
 }
