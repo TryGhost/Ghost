@@ -4,7 +4,6 @@ var SettingValidator = Ember.Object.create({
         var validationErrors = [],
             title = model.get('title'),
             description = model.get('description'),
-            email = model.get('email'),
             postsPerPage = model.get('postsPerPage'),
             isPrivate    = model.get('isPrivate'),
             password     = model.get('password');
@@ -15,10 +14,6 @@ var SettingValidator = Ember.Object.create({
 
         if (!validator.isLength(description, 0, 200)) {
             validationErrors.push({message: 'Description is too long'});
-        }
-
-        if (!validator.isEmail(email) || !validator.isLength(email, 0, 254)) {
-            validationErrors.push({message: 'Supply a valid email address'});
         }
 
         if (isPrivate && password === '') {
