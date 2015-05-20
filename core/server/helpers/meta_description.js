@@ -27,10 +27,8 @@ meta_description = function (options) {
         description = this.author.bio;
     } else if (_.contains(context, 'tag') && this.tag) {
         description = this.tag.meta_description;
-    } else if (_.contains(context, 'post') && this.post) {
+    } else if ((_.contains(context, 'post') || _.contains(context, 'page')) && this.post) {
         description = this.post.meta_description;
-    } else if (_.contains(context, 'page') && this.page) {
-        description = this.page.meta_description;
     }
 
     return filters.doFilter('meta_description', description).then(function (description) {
