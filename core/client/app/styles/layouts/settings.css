@@ -122,11 +122,11 @@
 /* Code Injection
 /* ---------------------------------------------------------- */
 
-.settings-code .form-group {
+.settings-code {
     max-width: 700px;
 }
 
-.settings-code .form-group p {
+.settings-code p {
     margin: 0 0 4px 0;
 }
 
@@ -135,6 +135,7 @@
 }
 
 .settings-code-editor {
+    padding: 0;
     min-width: 250px;
     min-height: 300px;
     max-width: 680px;
