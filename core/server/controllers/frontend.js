@@ -4,23 +4,19 @@
 
 /*global require, module */
 
-var moment      = require('moment'),
-    rss         = require('../data/xml/rss'),
-    _           = require('lodash'),
-    Promise     = require('bluebird'),
+var _           = require('lodash'),
     api         = require('../api'),
-    config      = require('../config'),
-    filters     = require('../filters'),
-    template    = require('../helpers/template'),
-    errors      = require('../errors'),
-    routeMatch  = require('path-match')(),
+    rss         = require('../data/xml/rss'),
     path        = require('path'),
+    config      = require('../config'),
+    errors      = require('../errors'),
+    filters     = require('../filters'),
+    Promise     = require('bluebird'),
+    template    = require('../helpers/template'),
+    routeMatch  = require('path-match')(),
 
     frontendControllers,
-    staticPostPermalink;
-
-// Cache static post permalink regex
-staticPostPermalink = routeMatch('/:slug/:edit?');
+    staticPostPermalink = routeMatch('/:slug/:edit?');
 
 function getPostPage(options) {
     return api.settings.read('postsPerPage').then(function (response) {
@@ -277,21 +273,21 @@ frontendControllers = {
     },
 
     single: function (req, res, next) {
-        var path = req.path,
+        var postPath = req.path,
             params,
             usingStaticPermalink = false;
 
         api.settings.read('permalinks').then(function (response) {
-            var permalink = response.settings[0],
+            var permalink = response.settings[0].value,
                 editFormat,
                 postLookup,
                 match;
 
-            editFormat = permalink.value[permalink.value.length - 1] === '/' ? ':edit?' : '/:edit?';
+            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?';
 
             // Convert saved permalink into a path-match function
-            permalink = routeMatch(permalink.value + editFormat);
-            match = permalink(path);
+            permalink = routeMatch(permalink + editFormat);
+            match = permalink(postPath);
 
             // Check if the path matches the permalink structure.
             //
@@ -299,7 +295,7 @@ frontendControllers = {
             // need to verify it's not a static post,
             // and test against that permalink structure.
             if (match === false) {
-                match = staticPostPermalink(path);
+                match = staticPostPermalink(postPath);
                 // If there are still no matches then return.
                 if (match === false) {
                     // Reject promise chain with type 'NotFound'
@@ -320,8 +316,7 @@ frontendControllers = {
             return api.posts.read(postLookup);
         }).then(function (result) {
             var post = result.posts[0],
-                slugDate = [],
-                slugFormat = [];
+                postUrl = (params.edit) ? postPath.replace(params.edit + '/', '') : postPath;
 
             if (!post) {
                 return next();
@@ -352,49 +347,17 @@ frontendControllers = {
                 if (post.page) {
                     return render();
                 }
-
                 return next();
             }
 
-            // If there is an author parameter in the slug, check that the
-            // post is actually written by the given author\
-            if (params.author) {
-                if (post.author.slug === params.author) {
-                    return render();
-                }
+            // Check if the url provided with the post object matches req.path
+            // If it does, render the post
+            // If not, return 404
+            if (post.url && post.url === postUrl) {
+                return render();
+            } else {
                 return next();
             }
-
-            // If there is any date based parameter in the slug
-            // we will check it against the post published date
-            // to verify it's correct.
-            if (params.year || params.month || params.day) {
-                if (params.year) {
-                    slugDate.push(params.year);
-                    slugFormat.push('YYYY');
-                }
-
-                if (params.month) {
-                    slugDate.push(params.month);
-                    slugFormat.push('MM');
-                }
-
-                if (params.day) {
-                    slugDate.push(params.day);
-                    slugFormat.push('DD');
-                }
-
-                slugDate = slugDate.join('/');
-                slugFormat = slugFormat.join('/');
-
-                if (slugDate === moment(post.published_at).format(slugFormat)) {
-                    return render();
-                }
-
-                return next();
-            }
-
-            return render();
         }).catch(function (err) {
             // If we've thrown an error message
             // of type: 'NotFound' then we found
