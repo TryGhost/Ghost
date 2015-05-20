@@ -232,3 +232,9 @@
 .icon-signout:before {
     content: "\e036";
 }
+.icon-minimise:before {
+    content: "\e03f";
+}
+.icon-maximise:before {
+    content: "\e040";
+}

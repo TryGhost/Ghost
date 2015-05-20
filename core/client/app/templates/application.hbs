@@ -1,50 +1,47 @@
 <a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
+
+<!-- TODO: Rename gh-alerts, remove location attr -->
+{{gh-notifications location="top" notify="topNotificationChange"}}
+<!-- TODO: SHOULD RENDER LIKE
+<aside id="ember754" class="gh-alerts">
+    <article class="gh-alert gh-alert-blue">
+        <div class="gh-alert-content">
+            <a href="https://ghost.org/download">Ghost 0.6.4</a> is available! Hot Damn. Please <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">upgrade</a> now.
+        </div>
+        <button class="gh-alert-close icon-x" data-ember-action="779"><span class="hidden">Close</span></button>
+    </article>
+</aside>
+-->
+
 <div class="gh-viewport">
 
-    <!-- TODO: Rename gh-alerts, remove location attr -->
-    {{gh-notifications location="top" notify="topNotificationChange"}}
+    {{#unless signedOut}}
+        {{partial "nav-menu"}}
+    {{/unless}}
+
+    <main id="gh-main" class="gh-main" role="main" data-notification-count={{topNotificationCount}}>
+        {{outlet}}
+    </main>
+
+    <!-- TODO: Remove location attr -->
+    {{gh-notifications location="bottom"}}
     <!-- TODO: SHOULD RENDER LIKE
-    <aside id="ember754" class="gh-alerts">
-        <article class="gh-alert gh-alert-blue">
-            <div class="gh-alert-content">
-                <a href="https://ghost.org/download">Ghost 0.6.4</a> is available! Hot Damn. Please <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">upgrade</a> now.
+    <aside id="ember721" class="ember-view gh-notifications">
+        <article class="gh-notification gh-notification-green">
+            <div class="gh-notification-content">
+                <strong>Hannah Wolfe</strong> just updated the post <em>12 Reasons Why You're Not Selling Anything</em>.
             </div>
-            <button class="gh-alert-close icon-x" data-ember-action="779"><span class="hidden">Close</span></button>
+            <button class="gh-notification-close icon-x" data-ember-action="1077"><span class="hidden">Close</span></button>
+        </article>
+        <article class="gh-notification">
+            <div class="gh-notification-content">
+                <strong>Hannah Wolfe</strong> just updated the post <em>20 Reasons Why You're Not Selling Anything</em>.
+            </div>
+            <button class="gh-notification-close icon-x" data-ember-action="1077"><span class="hidden">Close</span></button>
         </article>
     </aside>
     -->
+    {{outlet "modal"}}
+    {{outlet "settings-menu"}}
 
-    <div class="gh-viewport-container open-nav">
-
-        {{#unless signedOut}}
-            {{partial "nav-menu"}}
-        {{/unless}}
-
-        <main id="gh-main" class="gh-main" role="main" data-notification-count={{topNotificationCount}}>
-            {{outlet}}
-
-            <!-- TODO: Remove location attr -->
-            {{gh-notifications location="bottom"}}
-            <!-- TODO: SHOULD RENDER LIKE
-            <aside id="ember721" class="ember-view gh-notifications">
-                <article class="gh-notification gh-notification-green">
-                    <div class="gh-notification-content">
-                        <strong>Hannah Wolfe</strong> just updated the post <em>12 Reasons Why You're Not Selling Anything</em>.
-                    </div>
-                    <button class="gh-notification-close icon-x" data-ember-action="1077"><span class="hidden">Close</span></button>
-                </article>
-                <article class="gh-notification">
-                    <div class="gh-notification-content">
-                        <strong>Hannah Wolfe</strong> just updated the post <em>20 Reasons Why You're Not Selling Anything</em>.
-                    </div>
-                    <button class="gh-notification-close icon-x" data-ember-action="1077"><span class="hidden">Close</span></button>
-                </article>
-            </aside>
-            -->
-        </main>
-
-        {{outlet "modal"}}
-        {{outlet "settings-menu"}}
-
-    </div>{{!gh-viewport-container}}
 </div>{{!gh-viewport}}

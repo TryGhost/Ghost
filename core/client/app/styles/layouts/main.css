@@ -19,11 +19,6 @@
     position: relative;
     flex-grow: 1;
     display: flex;
-    margin-left: 15px;
-}
-
-.open-nav .gh-main {
-    margin-left: 0;
 }
 
 
@@ -31,67 +26,20 @@
 /* ---------------------------------------------------------- */
 
 .gh-nav {
-    position: absolute;
-    top: 0;
-    left: -220px;
-    z-index: 10;
-    display: block;
-    width: 235px;
-    height: 100%;
-    border-right: #e1e1e1 1px solid;
-    background: #f6f6f6;
-    transition: transform 0.2s;
-    transform: translateX(0);
-}
-
-.gh-nav:hover {
-    transform: translateX(220px);
-}
-
-.open-nav .gh-nav {
     position: static;
     flex: 0 0 235px;
     display: flex;
     flex-direction: column;
-    width: auto;
-    height: auto;
+    border-right: #e1e1e1 1px solid;
+    background: #f6f6f6;
     transform: translateX(0);
-}
-
-.gh-nav-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 5;
-    width: 15px;
-    height: 100%;
-    text-align: center;
-    cursor: pointer;
-}
-
-.gh-nav-toggle:hover {
-    background-color: rgb(224, 238, 250);
-}
-
-.gh-nav-toggle:after {
-    content: ">";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-size: 14px;
-    opacity: 0.25;
-    transform: translateX(-50%) translateY(-50%);
-}
-
-.open-nav .gh-nav-toggle:after {
-    content: "<";
 }
 
 .gh-nav-menu {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 15px 30px 15px 15px;
+    padding: 15px;
 }
 
 .gh-nav-menu i {
@@ -147,7 +95,7 @@
 
 .gh-nav-search {
     position: relative;
-    margin: 0 30px 10px;
+    margin: 0 15px 10px;
 }
 
 .gh-nav-search-input {
@@ -181,7 +129,7 @@
 
 .gh-nav-list {
     margin: 0;
-    padding: 0 30px 0 0;
+    padding: 0 15px 0 0;
     list-style: none;
     font-size: 1.3rem;
     line-height: 1.5em;
@@ -215,7 +163,7 @@
 }
 
 .gh-nav-list a:not(.active):hover {
-    background: color(var(--blue) lightness(+30%));
+    background: color(var(--blue) alpha(-80%));
     color: var(--darkgrey);
 }
 
@@ -228,24 +176,20 @@
 }
 
 .gh-nav-footer {
-    position: absolute;
-    bottom: 0;
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding-right: 15px;
-    width: 100%;
     height: 40px;
     border-top: #e1e1e1 1px solid;
 }
 
 .gh-nav-footer-sitelink {
     flex-grow: 1;
-    display: flex;
     padding: 12px;
     color: var(--midgrey);
+    text-align: center;
     font-size: 1.3rem;
-    line-height: 1.2em;
+    line-height: 1;
 }
 
 .gh-nav-footer-sitelink i {
@@ -255,6 +199,66 @@
 
 .gh-nav-footer-sitelink:hover {
     color: var(--blue);
+}
+
+
+/* Auto Nav - Opens and closes like OSX dock
+/* ---------------------------------------------------------- */
+
+.gh-autonav-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    width: 45px;
+    height: 27px;
+    border-right: #e1e1e1 1px solid;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gh-autonav-toggle:hover {
+    cursor: pointer;
+}
+
+.gh-autonav-toggle i {
+    transition: all 0.2s ease;
+}
+
+.gh-autonav-toggle:hover i {
+    color: var(--blue);
+}
+
+/* Hide the nav */
+.gh-autonav .gh-nav {
+    position: absolute;
+    top: 0;
+    left: -220px;
+    z-index: 1000;
+    width: 235px;
+    height: 100%;
+    transition: transform 0.15s;
+    transform: translateX(0);
+}
+
+/* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
+@supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+    .gh-autonav .gh-nav {
+        background: rgba(246,246,246, 0.7);
+
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* Bring it back on hover */
+.gh-autonav .gh-nav.open {
+    transform: translateX(220px);
+}
+
+/* Move main content over for the closed-nav trigger bar */
+.gh-autonav .gh-main {
+    margin-left: 15px;
 }
 
 
