@@ -238,3 +238,9 @@
 .icon-maximise:before {
     content: "\e040";
 }
+.icon-book:before {
+    content: "\e041";
+}
+.icon-twitter:before {
+    content: "\e042";
+}

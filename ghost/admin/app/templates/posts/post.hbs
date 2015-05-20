@@ -1,6 +1,4 @@
 <header class="post-preview-header clearfix">
-    {{#link-to "posts" tagName="button" class="btn btn-default btn-back"}}Back{{/link-to}}
-    <h2 class="page-title">Preview</h2>
     <button type="button" class="{{if model.featured 'featured icon-star' 'unfeatured icon-star'}}" title="Feature this post" {{action "toggleFeatured"}}>
         <span class="sr-only">Star</span>
     </button>

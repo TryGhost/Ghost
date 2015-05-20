@@ -252,11 +252,10 @@
     height: auto;
 }
 
-.post-preview-header .page-title,
-.post-preview-header .btn-back {
-    display: none;
+.post-preview-header {
+    display: block;
+    justify-content: space-between;
 }
-
 
 /* Empty State
 /* ---------------------------------------------------------- */
