@@ -75,6 +75,11 @@ screens = {
         linkSelector: '.gh-nav-main-editor',
         selector: '.gh-nav-main-editor.active'
     },
+    'editor.editing': {
+        url: 'ghost/editor/',
+        linkSelector: 'a.post-edit',
+        selector: '.entry-markdown-content .markdown-editor'
+    },
     settings: {
         url: 'ghost/settings/',
         linkSelector: '.gh-nav-settings-general',
@@ -190,9 +195,13 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
 
     return casper.thenOpen(url + screens[screen].url).then(function () {
-        // Some screens fade in
-        return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
+        return casper.waitForScreenLoad(screen, then, timeout);
     });
+};
+
+casper.waitForScreenLoad = function (screen, then, timeout) {
+    // Some screens fade in
+    return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
 };
 
 casper.thenTransitionAndWaitForScreenLoad = function (screen, then, timeout) {
@@ -200,8 +209,7 @@ casper.thenTransitionAndWaitForScreenLoad = function (screen, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
 
     return casper.thenClick(screens[screen].linkSelector).then(function () {
-        // Some screens fade in
-        return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
+        return casper.waitForScreenLoad(screen, then, timeout);
     });
 };
 

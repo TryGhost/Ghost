@@ -70,7 +70,7 @@ UploadUi = function ($dropzone, settings) {
                     $dropzone.find('.js-url').remove();
                     $progress.find('.js-upload-progress-bar').removeClass('fail');
                     $dropzone.trigger('uploadstart', [$dropzone.attr('id')]);
-                    $dropzone.find('span.media, div.description, a.icon-link, a.image-webcam')
+                    $dropzone.find('span.media, div.description, a.image-url, a.image-webcam')
                         .animate({opacity: 0}, 250, function () {
                             $dropzone.find('div.description').hide().css({opacity: 100});
                             if (settings.progressbar) {
@@ -139,7 +139,7 @@ UploadUi = function ($dropzone, settings) {
         },
 
         removeExtras: function () {
-            $dropzone.find('span.media, div.js-upload-progress, a.icon-link, a.image-upload, a.image-webcam, div.js-fail, button.js-fail, a.js-cancel').remove();
+            $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-upload, a.image-webcam, div.js-fail, button.js-fail, a.js-cancel').remove();
         },
 
         initWithDropzone: function () {
@@ -156,7 +156,7 @@ UploadUi = function ($dropzone, settings) {
                 self.initUrl();
                 return;
             }
-            $dropzone.find('a.icon-link').on('click', function () {
+            $dropzone.find('a.image-url').on('click', function () {
                 self.initUrl();
             });
         },

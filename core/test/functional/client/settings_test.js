@@ -123,7 +123,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
         test.assertSelectorHasText('.notification-error', 'too long');
     }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
 
-    casper.thenClick('.js-bb-notification .close');
+    casper.thenClick('.gh-notification-close');
 
     // Ensure general blog description field length validation
     casper.fillAndSave('form#settings-general', {
@@ -134,7 +134,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
         test.assertSelectorHasText('.notification-error', 'too long');
     }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
 
-    casper.thenClick('.js-bb-notification .close');
+    casper.thenClick('.gh-notification-close');
 
     // Check postsPerPage autocorrect
     casper.fillAndSave('form#settings-general', {
