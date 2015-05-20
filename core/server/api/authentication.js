@@ -221,8 +221,6 @@ authentication = {
         }).then(function (user) {
             var userSettings = [];
 
-            userSettings.push({key: 'email', value: setupUser.email});
-
             // Handles the additional values set by the setup screen.
             if (!_.isEmpty(setupUser.blogTitle)) {
                 userSettings.push({key: 'title', value: setupUser.blogTitle});
