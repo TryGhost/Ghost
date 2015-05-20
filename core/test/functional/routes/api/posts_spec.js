@@ -540,8 +540,8 @@ describe('Post API', function () {
                                 return done(err);
                             }
 
-                            // Updating a draft should not send x-cache-invalidate headers
-                            should.not.exist(res.headers['x-cache-invalidate']);
+                            // Updating a draft should send x-cache-invalidate headers for the preview only
+                            res.headers['x-cache-invalidate'].should.eql('/p/' + draftPost.posts[0].uuid + '/');
                             done();
                         });
                 });
