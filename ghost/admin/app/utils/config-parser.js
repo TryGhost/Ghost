@@ -12,7 +12,12 @@ var isNumeric = function (num) {
         } else if (isNumeric(val)) {
             return +val;
         } else if (val.indexOf('{') === 0) {
-            return JSON.parse(val);
+            try {
+                return JSON.parse(val);
+            } catch (e) {
+                /*jshint unused:false */
+                return val;
+            }
         } else {
             return val;
         }
