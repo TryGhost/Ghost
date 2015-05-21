@@ -6,7 +6,7 @@
     position: fixed;
     bottom: 20px;
     left: 20px;
-    z-index: 999;
+    z-index: 7000;
     display: flex;
     flex-direction: column;
 }
