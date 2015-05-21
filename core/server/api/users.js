@@ -28,7 +28,7 @@ sendInviteEmail = function sendInviteEmail(user) {
     var emailData;
 
     return Promise.join(
-        users.read({id: user.created_by}),
+        users.read({id: user.created_by, context: {internal: true}}),
         settings.read({key: 'title'}),
         settings.read({context: {internal: true}, key: 'dbHash'})
     ).then(function (values) {
