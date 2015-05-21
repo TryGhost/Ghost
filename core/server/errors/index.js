@@ -1,6 +1,6 @@
 /*jslint regexp: true */
 var _                          = require('lodash'),
-    colors                     = require('colors'),
+    chalk                      = require('chalk'),
     path                       = require('path'),
     Promise                    = require('bluebird'),
     hbs                        = require('express-hbs'),
@@ -19,9 +19,6 @@ var _                          = require('lodash'),
 
     // Paths for views
     userErrorTemplateExists   = false;
-
-// This is not useful but required for jshint
-colors.setTheme({silly: 'rainbow'});
 
 // Shim right now to deal with circular dependencies.
 // @TODO(hswolff): remove circular dependency and lazy require.
@@ -63,9 +60,7 @@ errors = {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
-            var msg = [component.cyan + ':'.cyan, info.cyan];
-
-            console.info.apply(console, msg);
+            console.info(chalk.cyan(component + ':', info));
         }
     },
 
@@ -74,14 +69,14 @@ errors = {
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
             warn = warn || 'no message supplied';
-            var msgs = ['\nWarning:'.yellow, warn.yellow, '\n'];
+            var msgs = [chalk.yellow('\nWarning:', warn), '\n'];
 
             if (context) {
-                msgs.push(context.white, '\n');
+                msgs.push(chalk.white(context), '\n');
             }
 
             if (help) {
-                msgs.push(help.green);
+                msgs.push(chalk.green(help));
             }
 
             // add a new line
@@ -126,14 +121,14 @@ errors = {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
-            msgs = ['\nERROR:'.red, err.red, '\n'];
+            msgs = [chalk.red('\nERROR:', err), '\n'];
 
             if (context) {
-                msgs.push(context.white, '\n');
+                msgs.push(chalk.white(context), '\n');
             }
 
             if (help) {
-                msgs.push(help.green);
+                msgs.push(chalk.green(help));
             }
 
             // add a new line
