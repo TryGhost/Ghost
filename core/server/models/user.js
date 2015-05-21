@@ -694,9 +694,8 @@ User = ghostBookshelf.Model.extend({
                         });
                 }, errors.logAndThrowError);
             }
-            return Promise.reject(new errors.NoPermissionError('Your account is locked due to too many ' +
-                'login attempts. Please reset your password to log in again by clicking ' +
-                'the "Forgotten password?" link!'));
+            return Promise.reject(new errors.NoPermissionError('Your account is locked. Please reset your password ' +
+                'to log in again by clicking the "Forgotten password?" link!'));
         }, function (error) {
             if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
                 return Promise.reject(new errors.NotFoundError('There is no user with that email address.'));

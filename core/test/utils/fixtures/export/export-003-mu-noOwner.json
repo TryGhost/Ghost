@@ -156,62 +156,6 @@
                 "user_id": 2
             }
         ],
-        "permissions": [
-            {
-                "id": 1,
-                "uuid": "bdfbd261-e0fb-4c8e-abab-aece7a9e8e34",
-                "name": "Edit posts",
-                "object_type": "post",
-                "action_type": "edit",
-                "object_id": null,
-                "created_at": 1388318310803,
-                "created_by": 1,
-                "updated_at": 1388318310803,
-                "updated_by": 1
-            },
-            {
-                "id": 2,
-                "uuid": "580d31c4-e3db-40f3-969d-9a1caea9d1bb",
-                "name": "Remove posts",
-                "object_type": "post",
-                "action_type": "remove",
-                "object_id": null,
-                "created_at": 1388318310814,
-                "created_by": 1,
-                "updated_at": 1388318310814,
-                "updated_by": 1
-            },
-            {
-                "id": 3,
-                "uuid": "c1f8b024-e383-494a-835d-6fb673f143db",
-                "name": "Create posts",
-                "object_type": "post",
-                "action_type": "create",
-                "object_id": null,
-                "created_at": 1388318310818,
-                "created_by": 1,
-                "updated_at": 1388318310818,
-                "updated_by": 1
-            }
-        ],
-        "permissions_users": [],
-        "permissions_roles": [
-            {
-                "id": 1,
-                "role_id": 1,
-                "permission_id": 1
-            },
-            {
-                "id": 2,
-                "role_id": 1,
-                "permission_id": 2
-            },
-            {
-                "id": 3,
-                "role_id": 1,
-                "permission_id": 3
-            }
-        ],
         "settings": [
             {
                 "id": 1,
@@ -414,44 +358,6 @@
                 "id": 1,
                 "post_id": 1,
                 "tag_id": 1
-            }
-        ],
-        "apps": [
-            {
-                "id": 1,
-                "uuid": "4d7557f0-0949-4946-9fe8-ec030e0727f0",
-                "name": "Kudos",
-                "slug": "kudos",
-                "version": "0.0.1",
-                "status": "installed",
-                "created_at": 1388318312790,
-                "created_by": 1,
-                "updated_at": 1388318312790,
-                "updated_by": 1
-            }
-        ],
-        "app_settings": [
-            {
-                "id": 1,
-                "uuid": "790e4551-b9cc-4954-8f5d-b6e651bc7342",
-                "key": "position",
-                "value": "bottom",
-                "app_id": 1,
-                "created_at": 1388318312790,
-                "created_by": 1,
-                "updated_at": 1388318312790,
-                "updated_by": 1
-            },
-            {
-                "id": 2,
-                "uuid": "29682b66-cdeb-4773-9821-bcf40ea93b58",
-                "key": "size",
-                "value": "60",
-                "app_id": 1,
-                "created_at": 1388318312790,
-                "created_by": 1,
-                "updated_at": 1388318312790,
-                "updated_by": 1
             }
         ]
     }
