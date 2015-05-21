@@ -50,7 +50,8 @@
 // --------------------------------------------------
 
 %popover-triangle {
-    &:before {
+    &:before,
+    &:after {
         content: '';
         position: absolute;
         display: block;
@@ -86,40 +87,46 @@
 }
 
 %popover-triangle-vertical-center {
-    &:before {
+    &:before,
+    &:after {
         left: 50%;
         margin-left: -($popover_triangle / 2);
     }
 }
 
 %popover-triangle-vertical-left {
-    &:before {
+    &:before,
+    &:after {
         left: $popover_triangle;
     }
 }
 
 %popover-triangle-vertical-right {
-    &:before {
+    &:before,
+    &:after {
         left: auto;
         right: $popover_triangle;
     }
 }
 
 %popover-triangle-horizontal-center {
-    &:before {
+    &:before,
+    &:after {
         top: 50%;
         margin-top: -$popover_triangle;
     }
 }
 
 %popover-triangle-horizontal-top {
-    &:before {
+    &:before,
+    &:after {
         top: $popover_triangle;
     }
 }
 
 %popover-triangle-horizontal-bottom {
-    &:before {
+    &:before,
+    &:after {
         top: auto;
         bottom: $popover_triangle;
     }
