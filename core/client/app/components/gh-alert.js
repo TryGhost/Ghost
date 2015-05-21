@@ -1,8 +1,8 @@
 import Ember from 'ember';
 
-var NotificationComponent = Ember.Component.extend({
+var AlertComponent = Ember.Component.extend({
     tagName: 'article',
-    classNames: ['gh-notification', 'gh-notification-green'],
+    classNames: ['gh-alert', 'gh-alert-blue'],
     classNameBindings: ['typeClass'],
 
     typeClass: Ember.computed(function () {
@@ -29,16 +29,6 @@ var NotificationComponent = Ember.Component.extend({
         return classes;
     }),
 
-    didInsertElement: function () {
-        var self = this;
-
-        self.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
-            if (event.originalEvent.animationName === 'fade-out') {
-                self.notifications.removeObject(self.get('message'));
-            }
-        });
-    },
-
     actions: {
         closeNotification: function () {
             var self = this;
@@ -47,4 +37,4 @@ var NotificationComponent = Ember.Component.extend({
     }
 });
 
-export default NotificationComponent;
+export default AlertComponent;
