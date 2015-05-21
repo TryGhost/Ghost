@@ -1,4 +1,5 @@
 var Promise = require('bluebird'),
+    chalk = require('chalk'),
     fs = require('fs'),
     semver = require('semver'),
     packageInfo = require('../../package.json'),
@@ -49,12 +50,12 @@ GhostServer.prototype.logStartMessages = function () {
     if (!semver.satisfies(process.versions.node, packageInfo.engines.node) &&
         !semver.satisfies(process.versions.node, packageInfo.engines.iojs)) {
         console.log(
-            '\nERROR: Unsupported version of Node'.red,
-            '\nGhost needs Node version'.red,
-            packageInfo.engines.node.yellow,
-            'you are using version'.red,
-            process.versions.node.yellow,
-            '\nPlease go to http://nodejs.org to get a supported version'.green
+            chalk.red('\nERROR: Unsupported version of Node'),
+            chalk.red('\nGhost needs Node version'),
+            chalk.yellow(packageInfo.engines.node),
+            chalk.red('you are using version'),
+            chalk.yellow(process.versions.node),
+            chalk.green('\nPlease go to http://nodejs.org to get a supported version')
         );
 
         process.exit(0);
@@ -63,24 +64,24 @@ GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(
-            'Ghost is running...'.green,
+            chalk.green('Ghost is running...'),
             '\nYour blog is now available on',
             config.url,
-            '\nCtrl+C to shut down'.grey
+            chalk.gray('\nCtrl+C to shut down')
         );
     } else {
         console.log(
-            ('Ghost is running in ' + process.env.NODE_ENV + '...').green,
+            chalk.green('Ghost is running in ' + process.env.NODE_ENV + '...'),
             '\nListening on',
                 config.getSocket() || config.server.host + ':' + config.server.port,
             '\nUrl configured as:',
             config.url,
-            '\nCtrl+C to shut down'.grey
+            chalk.gray('\nCtrl+C to shut down')
         );
     }
 
     function shutdown() {
-        console.log('\nGhost has shut down'.red);
+        console.log(chalk.red('\nGhost has shut down'));
         if (process.env.NODE_ENV === 'production') {
             console.log(
                 '\nYour blog is now offline'
@@ -101,7 +102,7 @@ GhostServer.prototype.logStartMessages = function () {
 };
 
 GhostServer.prototype.logShutdownMessages = function () {
-    console.log('Ghost is closing connections'.red);
+    console.log(chalk.red('Ghost is closing connections'));
 };
 
 GhostServer.prototype.logUpgradeWarning = function () {
@@ -198,7 +199,7 @@ GhostServer.prototype.restart = function () {
 
 // To be called after `stop`
 GhostServer.prototype.hammertime = function () {
-    console.log('Can\'t touch this'.green);
+    console.log(chalk.green('Can\'t touch this'));
 
     return Promise.resolve(this);
 };
