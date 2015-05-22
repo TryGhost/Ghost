@@ -1,11 +1,13 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
+import ajax from 'ghost/utils/ajax';
 
 var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControllerMixin, ValidationEngine, {
     authenticator: 'simple-auth-authenticator:oauth2-password-grant',
-    forgotten: Ember.inject.controller(),
 
     validationType: 'signin',
+
+    submitting: false,
 
     actions: {
         authenticate: function () {
@@ -35,11 +37,30 @@ var SigninController = Ember.Controller.extend(SimpleAuth.AuthenticationControll
         },
 
         forgotten: function () {
-            if (this.get('model.identification')) {
-                return this.get('forgotten').send('doForgotten', {email: this.get('model.identification')}, false);
+            var email = this.get('model.identification'),
+                self = this;
+
+            if (!email) {
+                return this.notifications.showError('Enter email address to reset password.');
             }
 
-            this.transitionToRoute('forgotten');
+            self.set('submitting', true);
+
+            ajax({
+                url: self.get('ghostPaths.url').api('authentication', 'passwordreset'),
+                type: 'POST',
+                data: {
+                    passwordreset: [{
+                        email: email
+                    }]
+                }
+            }).then(function () {
+                self.set('submitting', false);
+                self.notifications.showSuccess('Please check your email for instructions.');
+            }).catch(function (resp) {
+                self.set('submitting', false);
+                self.notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
+            });
         }
     }
 });
