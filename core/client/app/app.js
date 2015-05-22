@@ -7,6 +7,9 @@ import config from './config/environment';
 
 Ember.MODEL_FACTORY_INJECTIONS = true;
 
+// TODO : See location below and call the default language
+Languages.init("en_EN", "/ghost/languages/");
+
 var App = Ember.Application.extend({
     modulePrefix: config.modulePrefix,
     podModulePrefix: config.podModulePrefix,
