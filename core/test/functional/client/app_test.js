@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, newUser */
 
-CasperTest.begin('Admin navigation bar is correct', 45, function suite(test) {
+CasperTest.begin('Admin navigation bar is correct', 65, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
         test.assertTitle('Content - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
@@ -13,10 +13,15 @@ CasperTest.begin('Admin navigation bar is correct', 45, function suite(test) {
         var logoHref = this.getElementAttribute('.gh-nav-footer-sitelink', 'href'),
             contentHref = this.getElementAttribute('.gh-nav-main-content', 'href'),
             editorHref = this.getElementAttribute('.gh-nav-main-editor', 'href'),
-            settingsGeneralHref = this.getElementAttribute('.gh-nav-settings-general', 'href');
+            usersHref = this.getElementAttribute('.gh-nav-main-users', 'href'),
+            settingsGeneralHref = this.getElementAttribute('.gh-nav-settings-general', 'href'),
+            settingsNavigationHref = this.getElementAttribute('.gh-nav-settings-navigation', 'href'),
+            settingsTagsHref = this.getElementAttribute('.gh-nav-settings-tags', 'href'),
+            settingsCodeInjectionHref = this.getElementAttribute('.gh-nav-settings-code-injection', 'href'),
+            settingsLabsHref = this.getElementAttribute('.gh-nav-settings-labs', 'href');
 
         // Logo
-        test.assertExists('.gh-nav-footer-sitelink', 'Ghost logo home page link exists');
+        test.assertExists('.gh-nav-footer-sitelink', 'Ghost home page link exists in nav footer');
         test.assertEquals(logoHref, 'http://127.0.0.1:2369/', 'Ghost logo link href is correct');
 
         // Content
@@ -31,11 +36,41 @@ CasperTest.begin('Admin navigation bar is correct', 45, function suite(test) {
         test.assertEquals(editorHref, '/ghost/editor/', 'Editor href is correct');
         test.assertDoesntExist('.gh-nav-main-editor.active', 'Editor nav item is not marked active');
 
-        // Settings
-        test.assertExists('.gh-nav-settings-general', 'Settings nav item exists');
+        // Users
+        test.assertExists('.gh-nav-main-users', 'Users nav item exists');
+        test.assertSelectorHasText('.gh-nav-main-users', 'Team', 'Users nav item has correct text');
+        test.assertEquals(usersHref, '/ghost/settings/users/', 'Users href is correct');
+        test.assertDoesntExist('.gh-nav-main-users.active', 'Users nav item is not marked active');
+
+        // Settings - General
+        test.assertExists('.gh-nav-settings-general', 'Settings - General nav exists');
         test.assertSelectorHasText('.gh-nav-settings-general', 'General', 'Settings nav item has correct text');
         test.assertEquals(settingsGeneralHref, '/ghost/settings/general/', 'Settings href is correct');
         test.assertDoesntExist('.gh-nav-settings-general.active', 'Settings nav item is marked active');
+
+        // Settings - Navigation
+        test.assertExists('.gh-nav-settings-navigation', 'Settings - Navigation nav item exists');
+        test.assertSelectorHasText('.gh-nav-settings-navigation', 'Navigation', 'Settings nav item has correct text');
+        test.assertEquals(settingsNavigationHref, '/ghost/settings/navigation/', 'Settings Navigation href is correct');
+        test.assertDoesntExist('.gh-nav-settings-navigation.active', 'Settings - Navigation nav item is marked active');
+
+        // Settings - Tags
+        test.assertExists('.gh-nav-settings-tags', 'Settings - Tags nav item exists');
+        test.assertSelectorHasText('.gh-nav-settings-tags', 'Tags', 'Settings nav item has correct text');
+        test.assertEquals(settingsTagsHref, '/ghost/settings/tags/', 'Settings Navigation href is correct');
+        test.assertDoesntExist('.gh-nav-settings-tags.active', 'Settings - Navigation nav item is marked active');
+
+        // Settings - Code Injection
+        test.assertExists('.gh-nav-settings-code-injection', 'Settings - Code Injection nav item exists');
+        test.assertSelectorHasText('.gh-nav-settings-code-injection', 'Code Injection', 'Settings nav item has correct text');
+        test.assertEquals(settingsCodeInjectionHref, '/ghost/settings/code-injection/', 'Settings Navigation href is correct');
+        test.assertDoesntExist('.gh-nav-settings-code-injection.active', 'Settings - Code Injection nav item is marked active');
+
+        // Settings - Labs
+        test.assertExists('.gh-nav-settings-labs', 'Settings - Labs nav item exists');
+        test.assertSelectorHasText('.gh-nav-settings-labs', 'Labs', 'Settings nav item has correct text');
+        test.assertEquals(settingsLabsHref, '/ghost/settings/labs/', 'Settings Labs href is correct');
+        test.assertDoesntExist('.gh-nav-settings-labs.active', 'Settings - Labs nav item is marked active');
     });
 
     casper.then(function testHelpMenuNotVisible() {
@@ -110,6 +145,8 @@ CasperTest.begin('Admin navigation bar is correct', 45, function suite(test) {
         test.assertSelectorHasText('.user-menu-signout', 'Sign Out', 'Signout menu item has correct text');
         test.assertEquals(signoutHref, '/ghost/signout/', 'Sign Out href is correct');
     }, casper.failOnTimeout(test, 'WaitForSelector .user-menu .dropdown failed'));
+
+    // TODO Add tests to check each pane gets active class appropriately
 });
 
 CasperTest.begin('Can transition to the editor and back', 6, function suite(test) {

@@ -27,7 +27,7 @@ CasperTest.begin('Post settings menu', 10, function suite(test) {
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
         test.assertSelectorHasText('.notification-success', 'Saved.');
-        casper.click('.notification-success .close');
+        casper.click('.gh-notification-close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
     });

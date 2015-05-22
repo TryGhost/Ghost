@@ -9,7 +9,7 @@
     {{/gh-dropdown-button}}
     {{#gh-dropdown tagName="div" classNames="dropdown" name="user-menu" closeOnClick="true"}}
         <ul class="dropdown-menu dropdown-triangle-top js-user-menu-dropdown-menu" role="menu" style="right:-50%;left:auto;margin-right:40px">
-            <li role="presentation">{{#link-to "settings.about" classNames="dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-gh"></i> About Ghost{{/link-to}}</li>
+            <li role="presentation">{{#link-to "settings.about" classNames="gh-nav-menu-about dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-gh"></i> About Ghost{{/link-to}}</li>
             <li class="divider"></li>
             <li role="presentation">{{#link-to "settings.users.user" session.user.slug classNames="dropdown-item user-menu-profile js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-user"></i> Your Profile{{/link-to}}</li>
             <li class="divider"></li>
@@ -26,7 +26,7 @@
             <li>{{#link-to "editor.new" classNames="gh-nav-main-editor"}}<i class="icon-pen"></i>New Post{{/link-to}}</li>
             <li>{{#link-to "posts" classNames="gh-nav-main-content"}}<i class="icon-content"></i>Content{{/link-to}}</li>
             {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
-            <li>{{#link-to "settings.users" classnames="gh-nav-main-settings-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
+            <li>{{#link-to "settings.users" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
             {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
         </ul>
         <ul class="gh-nav-list gh-nav-settings">

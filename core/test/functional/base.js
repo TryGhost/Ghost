@@ -80,23 +80,19 @@ screens = {
         linkSelector: 'a.post-edit',
         selector: '.entry-markdown-content .markdown-editor'
     },
-    settings: {
-        url: 'ghost/settings/',
-        linkSelector: '.gh-nav-settings-general',
-        selector: '.gh-nav-settings-general.active'
-    },
     'settings.general': {
         url: 'ghost/settings/general',
         selector: '.gh-nav-settings-general.active'
     },
     'settings.about': {
         url: 'ghost/settings/about',
-        selector: '.settings-nav-about.active'
+        linkSelector: '.gh-nav-menu-about',
+        selector: '.gh-about-header'
     },
     'settings.users': {
         url: 'ghost/settings/users',
-        linkSelector: '.gh-nav-main-settings-users',
-        selector: '.settings-nav-users.active'
+        linkSelector: '.gh-nav-main-users',
+        selector: '.gh-nav-main-users.active'
     },
     'settings.users.user': {
         url: 'ghost/settings/users/test',
@@ -112,6 +108,7 @@ screens = {
         // signin with authenticated user redirects to posts
         selector: '.gh-nav-main-content.active'
     },
+
     signout: {
         url: 'ghost/signout/',
         linkSelector: '.user-menu-signout',
