@@ -8,6 +8,8 @@ var ApplicationController = Ember.Controller.extend({
     showGlobalMobileNav: false,
     showSettingsMenu: false,
 
+    autoNavClass: '',
+
     userImage: Ember.computed('session.user.image', function () {
         return this.get('session.user.image') || this.get('ghostPaths.url').asset('/shared/img/user-image.png');
     }),
@@ -25,6 +27,10 @@ var ApplicationController = Ember.Controller.extend({
     actions: {
         topNotificationChange: function (count) {
             this.set('topNotificationCount', count);
+        },
+        toggleAutoNav: function () {
+            var navClass = (this.get('autoNavClass')) ? '' : 'gh-autonav';
+            this.set('autoNavClass', navClass);
         }
     }
 });
