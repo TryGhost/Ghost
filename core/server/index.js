@@ -20,6 +20,7 @@ var express     = require('express'),
     sitemap     = require('./data/xml/sitemap'),
     xmlrpc      = require('./data/xml/xmlrpc'),
     GhostServer = require('./ghost-server'),
+	Languages   = require('languages-js').Languages,
 
 // Variables
     dbHash;
@@ -133,6 +134,23 @@ function initNotifications() {
     }
 }
 
+function loadLanguages() {
+     
+     var lang = config.language || "en_EN";
+
+     Languages.add(lang, "core/built/assets/languages/", "ghost");
+    
+     api.settings.read({
+            key: 'activeTheme',
+            context: {
+                internal: true
+            }
+        }).then(function (response) {
+            var activeTheme = response.settings[0];
+            Languages.add(lang, config.paths.themePath + "/" + activeTheme.value + "/assets/languages/");
+      });
+}
+
 // ## Initializes the ghost application.
 // Sets up the express server instance.
 // Instantiates the ghost singleton, helpers, routes, middleware, and apps.
@@ -210,6 +228,8 @@ function init(options) {
 
         // ## Middleware and Routing
         middleware(blogApp, adminApp);
+		
+		loadLanguages();
 
         // Log all theme errors and warnings
         _.each(config.paths.availableThemes._messages.errors, function (error) {

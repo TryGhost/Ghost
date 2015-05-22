@@ -27,6 +27,13 @@ frontendRoutes = function (middleware) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });
+	
+    // Alternative to call same translation script (in node_modules)
+	 router.get('/languages.min.js', function(req, res) {
+        fs.readFile("node_modules/languages-js/languages.min.js", function(err, js) {
+             res.end(js);
+        });
+    });
 
     // password-protected frontend route
     router.get('/' + routeKeywords.private + '/',
