@@ -47,6 +47,10 @@ UsersIndexRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Pagi
         });
     },
 
+    renderTemplate: function () {
+        this.render('settings/users/index', {into: 'application'});
+    },
+
     actions: {
         reload: function () {
             this.refresh();

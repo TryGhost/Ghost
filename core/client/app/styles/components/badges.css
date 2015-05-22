@@ -1,0 +1,74 @@
+/* Badges
+/* ---------------------------------------------------------- */
+
+.badge {
+    display: inline-block;
+    padding: 2px 4px;
+    min-width: 10px;
+    background-color: #777;
+    border-radius: 10px;
+    box-shadow: 0 0 0 1px #777;
+    color: #fff;
+    vertical-align: baseline;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: inherit;
+}
+
+.badge:empty {
+    display: none;
+}
+
+.btn .badge {
+    position: relative;
+    top: -1px;
+}
+
+.btn-xs .badge {
+    top: 0;
+    padding: 1px 5px;
+}
+
+p .badge {
+    position: relative;
+    top: -2px;
+    margin-left: -1px;
+    padding: 0 4px 3px;
+}
+
+.nav-pills > li > a > .badge {
+    margin-left: 3px;
+}
+
+.nav-item .badge {
+    margin-top: -5px;
+    margin-left: 3px;
+}
+
+a.badge:hover,
+a.badge:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+/* Colour variations
+/* ---------------------------------------------------------- */
+
+.badge.badge-blue {
+    background-color: var(--blue);
+    box-shadow: 0 0 0 1px var(--blue);
+}
+
+.badge.badge-green {
+    background-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green);
+}
+
+.badge.badge-red {
+    background-color: var(--red);
+    box-shadow: 0 0 0 1px var(--red);
+}

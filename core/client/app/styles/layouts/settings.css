@@ -1,0 +1,178 @@
+/* Settings
+/* ---------------------------------------------------------- */
+
+
+/* Navigation
+/* ---------------------------------------------------------- */
+
+.navigation-item {
+    display: flex;
+}
+
+@media (max-width: 600px) {
+    .navigation-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+}
+
+@media (min-width: 601px) {
+    .navigation-item {
+        margin-bottom: 10px;
+    }
+}
+
+.navigation-item:last-child {
+    padding-left: 17px;
+    /* simulate .navigation-item-drag-handle width + horizontal padding */
+}
+
+.navigation-item:last-child .navigation-item-drag-handle {
+    display: none;
+}
+
+.navigation-item-drag-handle {
+    padding: 6px 17px 0 0;
+    width: 17px;
+    cursor: move;
+}
+
+@media (max-width: 600px) {
+    .navigation-item-drag-handle:before {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        z-index: 20;
+        margin-top: -9px;
+    }
+}
+
+.navigation-inputs {
+    width: 100%;
+}
+
+.navigation-item-url .fake-placeholder {
+    color: lightgrey;
+}
+
+@media (max-width: 600px) {
+    .navigation-item-label {
+        margin-bottom: 5px;
+    }
+    .navigation-item-label,
+    .navigation-item-url {
+        display: block;
+        width: 100%;
+    }
+}
+
+@media (min-width: 601px) {
+    .navigation-inputs {
+        display: flex;
+    }
+    .navigation-item-label {
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+    .navigation-item-url {
+        flex-grow: 3;
+    }
+}
+
+.navigation-item-action {
+    position: relative;
+    z-index: 10;
+    padding-left: 10px;
+    width: 40px;
+}
+
+.navigation-item-action button {
+    position: absolute;
+    top: 50%;
+    margin-top: -2px;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
+}
+
+.navigation-item-action .icon-trash:before {
+    color: var(--midbrown);
+    font-size: 16px;
+    transition: color 0.1s linear;
+}
+
+.navigation-item-action .icon-trash:hover:before {
+    color: var(--red);
+}
+
+.navigation-item-action .icon-add:before {
+    padding: 3px;
+    background: var(--green);
+    border-radius: 2px;
+    color: #fff;
+    font-size: 12px;
+    transition: background 0.1s linear;
+}
+
+.navigation-item-action .icon-add:hover:before {
+    background: color(var(--green) lightness(-10%));
+}
+
+
+/* Code Injection
+/* ---------------------------------------------------------- */
+
+.settings-code {
+    max-width: 700px;
+}
+
+.settings-code p {
+    margin: 0 0 4px 0;
+}
+
+.settings-code code {
+    vertical-align: middle;
+}
+
+.settings-code-editor {
+    padding: 0;
+    min-width: 250px;
+    min-height: 300px;
+    max-width: 680px;
+    width: 100%;
+    height: auto;
+    border: 1px solid #e0dfd7;
+    border-radius: var(--border-radius);
+    line-height: 22px;
+    transition: border-color 0.15s linear;
+
+    -webkit-appearance: none;
+}
+
+.settings-code-editor.focused {
+    outline: 0;
+    border-color: var(--brown);
+}
+
+.settings-code-editor .CodeMirror {
+    border-radius: inherit;
+}
+
+.settings-code-editor .cm-s-xq-light span.cm-meta {
+    color: #000;
+}
+
+
+
+/* Labs
+/* ---------------------------------------------------------- */
+
+#startupload {
+    line-height: inherit;
+}
+
+@media (max-width: 400px) {
+    #startupload {
+        margin-top: 5px;
+    }
+}

@@ -19,6 +19,10 @@ var NavigationRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, 
         });
     },
 
+    renderTemplate: function () {
+        this.render('settings/navigation', {into: 'application'});
+    },
+
     actions: {
         save: function () {
             // since shortcuts are run on the route, we have to signal to the components

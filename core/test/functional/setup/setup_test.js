@@ -3,7 +3,7 @@
 
 /*global CasperTest, casper, email, user, password */
 
-CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
+CasperTest.begin('Ghost setup fails properly', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('setup', function then() {
         test.assertUrlMatch(/ghost\/setup\/$/, 'Landed on the correct URL');
     });
@@ -29,20 +29,19 @@ CasperTest.begin('Ghost setup fails properly', 6, function suite(test) {
 
     casper.waitForResource(/\d+/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('.global-nav', 'Global admin header is present');
-        test.assertExists('.manage', 'We\'re now on content');
+        test.assertExists('.gh-nav-main-content.active', 'Now we are on Content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
     }, 20000);
 }, true);
 
-CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
+CasperTest.begin('Authenticated user is redirected', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
         test.assertTitle('Sign In - ghost', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque('.login-box', function then() {
+    casper.waitForOpaque('.gh-signin', function then() {
         this.fillAndSave('#login', user);
     });
 
@@ -50,16 +49,14 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
 
     casper.waitForResource(/\d+/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('.global-nav', 'Global admin header is present');
-        test.assertExists('.manage', 'We\'re now on content');
+        test.assertExists('.gh-nav-main-content.active', 'Now we are on Content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
 
     casper.thenOpenAndWaitForPageLoad('setup-authenticated', function testTitleAndUrl() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('.global-nav', 'Global admin header is present');
-        test.assertExists('.manage', 'We\'re now on content');
+        test.assertExists('.gh-nav-main-content.active', 'Now we are on Content');
     }, function onTimeOut() {
         test.fail('Failed to redirect');
     });

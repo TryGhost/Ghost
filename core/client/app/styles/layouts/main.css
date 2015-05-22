@@ -1,0 +1,374 @@
+/* Global Layout
+/* ---------------------------------------------------------- */
+
+/* Main viewport, contains main content, and alerts */
+.gh-app {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Content viewport, contains everything else */
+.gh-viewport {
+    flex-grow: 1;
+    display: flex;
+}
+
+.gh-main {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+}
+
+
+/* Global Nav
+/* ---------------------------------------------------------- */
+
+.gh-nav {
+    position: relative;
+    z-index: 1000;
+    flex: 0 0 235px;
+    display: flex;
+    flex-direction: column;
+    border-right: #e1e1e1 1px solid;
+    background: #f6f6f6;
+    transform: translateX(0);
+}
+
+.gh-nav-menu {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+}
+
+.gh-nav-menu i {
+    margin-right: 8px;
+    width: 11px;
+    height: 11px;
+    font-size: 11px;
+    line-height: 11px;
+}
+
+.gh-nav-menu:hover {
+    cursor: pointer;
+}
+
+.gh-nav-menu-icon {
+    flex-shrink: 0;
+    margin-right: 10px;
+    width: 34px;
+    height: 34px;
+    background-color: #222;
+    background-size: 34px;
+    border-radius: 4px;
+}
+
+.gh-nav-menu-details {
+    flex-grow: 1;
+    padding-right: 10px;
+}
+
+.gh-nav-menu-details-blog {
+    overflow: hidden;
+    margin-bottom: 1px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.5rem;
+    line-height: 1.3em;
+    font-weight: 600;
+}
+
+.gh-nav-menu-details-user {
+    overflow: hidden;
+    color: var(--midgrey);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    line-height: 1.2em;
+}
+
+.gh-nav-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.gh-nav-search {
+    position: relative;
+    margin: 0 15px 10px;
+}
+
+.gh-nav-search-input {
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 1.3rem;
+}
+
+.gh-nav-search-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 6px 0 5px;
+}
+
+.gh-nav-search-button i {
+    width: 16px;
+    height: 16px;
+    color: var(--midgrey);
+    font-size: 13px;
+    transition: color 0.2s ease;
+    transform: rotate(90deg);
+}
+
+.gh-nav-search-button:hover i {
+    color: var(--darkgrey);
+}
+
+.gh-nav-list {
+    margin: 0;
+    padding: 0 15px 0 0;
+    list-style: none;
+    font-size: 1.3rem;
+    line-height: 1.5em;
+}
+
+.gh-nav-list-h {
+    overflow: hidden;
+    margin-top: 15px;
+    padding: 5px 10px 5px 15px;
+    color: #828282;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 1px;
+    font-size: 1.2rem;
+    line-height: 1.1em;
+}
+
+.gh-nav-list a {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px 5px 15px;
+    border-radius: 0 4px 4px 0;
+    color: var(--darkgrey);
+    transition: none;
+}
+
+.gh-nav-list .active {
+    background: color(var(--blue) lightness(+10%));
+    color: #fff;
+}
+
+.gh-nav-list a:not(.active):hover {
+    background: color(var(--blue) alpha(-85%));
+    color: var(--darkgrey);
+}
+
+.gh-nav-list i {
+    margin-right: 8px;
+    width: 15px;
+    height: 15px;
+    text-align: center;
+    font-size: 15px;
+}
+
+.gh-nav-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    border-top: #e1e1e1 1px solid;
+    color: var(--midgrey);
+}
+
+.gh-nav-footer-sitelink {
+    flex-grow: 1;
+    padding: 12px;
+    color: var(--midgrey);
+    text-align: center;
+    font-size: 1.3rem;
+    line-height: 1;
+    font-weight: 200;
+}
+
+.gh-nav-footer-sitelink i {
+    margin-left: 5px;
+    font-size: 1rem;
+}
+
+.gh-nav-footer-sitelink:hover {
+    color: var(--blue);
+}
+
+
+/* Auto Nav - Opens and closes like OSX dock
+/* ---------------------------------------------------------- */
+
+.gh-autonav-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    width: 45px;
+    height: 27px;
+    border-right: #e1e1e1 1px solid;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gh-autonav-toggle:hover {
+    cursor: pointer;
+}
+
+.gh-autonav-toggle i {
+    transition: all 0.2s ease;
+}
+
+.gh-autonav-toggle:hover i {
+    color: var(--blue);
+}
+
+/* Hide the nav */
+.gh-autonav .gh-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 235px;
+    height: 100%;
+    transition: transform 0.20s;
+    /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
+    transform: translate3d(-220px,0,0);
+}
+
+/* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
+@supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+    .gh-autonav .gh-nav {
+        background: rgba(246,246,246, 0.7);
+
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* Bring it back on hover */
+.gh-autonav .gh-nav.open {
+    transition: transform 0.15s;
+    transform: translate3d(0,0,0);
+}
+
+/* Move main content over for the closed-nav trigger bar */
+.gh-autonav .gh-main {
+    margin-left: 15px;
+}
+
+
+/* Help (?) Menu
+/* ---------------------------------------------------------- */
+
+.gh-help-menu {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-left: #e1e1e1 1px solid;
+    cursor: pointer;
+}
+
+.gh-help-button {
+    padding: 0 5px;
+    color: var(--midgrey);
+    text-align: center;
+    font-size: 1.4rem;
+    line-height: 1.2em;
+    transition: all 0.5s;
+}
+
+.gh-help-menu:hover .gh-help-button {
+    color: var(--blue);
+    transition: all 0.3s;
+}
+
+.gh-help-menu .dropdown {
+    right: 112px;
+    bottom: 215px;
+}
+
+.gh-help-menu .dropdown .dropdown-menu {
+    min-width: 200px;
+}
+
+.gh-help-menu .dropdown.fade-in-scale {
+    animation-duration: 0.1s;
+}
+
+.gh-help-menu .dropdown.fade-out {
+    animation-duration: 0.01s;
+}
+
+
+/* Container for App View
+/* ---------------------------------------------------------- */
+
+.gh-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.view-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 65px;
+    border-bottom: #e1e1e1 1px solid;
+}
+
+.view-title {
+    display: flex;
+    align-items: baseline;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 2rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.view-title a {
+    color: inherit;
+}
+
+.view-title a:hover {
+    color: var(--blue);
+}
+
+.view-title i {
+    margin: 0 10px;
+    color: #818181;
+    font-size: 1.4rem;
+}
+
+.view-container,
+.view-content {
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.view-content {
+    padding: 20px;
+}
+
+.view-content p,
+.view-content p * {
+    user-select: text;
+}

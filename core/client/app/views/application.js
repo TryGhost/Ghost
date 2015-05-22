@@ -2,7 +2,7 @@ import Ember from 'ember';
 import mobileQuery from 'ghost/utils/mobile';
 
 var ApplicationView = Ember.View.extend({
-    elementId: 'container',
+    classNames: 'gh-app',
 
     didInsertElement: function () {
         // #### Navigating within the sidebar closes it.
@@ -27,26 +27,23 @@ var ApplicationView = Ember.View.extend({
             });
         });
 
-        function swapUserMenuDropdownTriangleClasses(mq) {
-            if (mq.matches) {
-                $('.js-user-menu-dropdown-menu').removeClass('dropdown-triangle-top-right ').addClass('dropdown-triangle-bottom');
-            } else {
-                $('.js-user-menu-dropdown-menu').removeClass('dropdown-triangle-bottom').addClass('dropdown-triangle-top-right');
-            }
-        }
+        // TODO: ABOVE - All of this can be removed
+        // TODO: BELOW - John wrote this, reimplement in a not-shit way
 
-        // #### Listen to the viewport and change user-menu dropdown triangle classes accordingly
-        this.set('swapUserMenuDropdownTriangleClasses', Ember.run.bind(this, swapUserMenuDropdownTriangleClasses));
+        // #### Toggle nav between fixed and auto
+        $('.gh-autonav-toggle').on('click tap', function () {
+            $('.gh-viewport').toggleClass('gh-autonav');
+            $('.gh-autonav-toggle i').toggleClass('icon-minimise').toggleClass('icon-maximise');
+            $('.gh-nav').removeClass('open');
+        });
 
-        mobileQuery.addListener(this.get('swapUserMenuDropdownTriangleClasses'));
-        swapUserMenuDropdownTriangleClasses(mobileQuery);
-
-        this.set('closeGlobalMobileNavOnDesktop', Ember.run.bind(this, function closeGlobalMobileNavOnDesktop(mq) {
-            if (!mq.matches) {
-                // Is desktop sized
-                this.set('controller.showGlobalMobileNav', false);
-            }
-        }));
+        // #### Open and close the nav on hover
+        $('.gh-nav').mouseenter(function () {
+            $('.gh-nav').addClass('open');
+        });
+        $('.gh-main').mouseenter(function () {
+            $('.gh-nav').removeClass('open');
+        });
 
         mobileQuery.addListener(this.get('closeGlobalMobileNavOnDesktop'));
     },

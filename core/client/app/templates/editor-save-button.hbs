@@ -1,6 +1,6 @@
 <button type="button" {{action "save"}} class="btn btn-sm js-publish-button {{if view.isDangerous 'btn-red' 'btn-blue'}}">{{view.saveText}}</button>
 {{#gh-dropdown-button dropdownName="post-save-menu" classNameBindings=":btn :btn-sm view.isDangerous:btn-red:btn-blue btnopen:active :dropdown-toggle :up"}}
-    <i class="options"></i>
+    <i class="options icon-arrow2"></i>
     <span class="sr-only">Toggle Settings Menu</span>
 {{/gh-dropdown-button}}
 {{#gh-dropdown name="post-save-menu" closeOnClick="true" tagName="div" classNames="dropdown editor-options"}}

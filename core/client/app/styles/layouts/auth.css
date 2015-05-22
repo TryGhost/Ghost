@@ -1,0 +1,60 @@
+/* Sign in
+/* ---------------------------------------------------------- */
+
+.gh-signin {
+    position: relative;
+    margin: 30px auto;
+    padding: 40px;
+    max-width: 400px;
+    border: #dae1e3 1px solid;
+    background: #f8fbfd;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.gh-signin .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.gh-signin .btn {
+    margin: 0;
+    padding: 12px;
+}
+
+.forgotten-wrap {
+    position: relative;
+}
+
+.forgotten-wrap .forgotten-link {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    bottom: 10px;
+    padding: 0 12px;
+    border-left: #dae1e3 1px solid;
+    border-radius: 0;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.forgotten-link:hover {
+    border-left: #dae1e3 1px solid;
+    color: color(var(--blue) lightness(-20%));
+    text-decoration: none;
+}
+
+.private-login h1 {
+    margin-bottom: 2rem;
+    text-indent: 0;
+}
+.private-login .form-group {
+    margin: 0;
+}
+.private-login input[type="password"] {
+    padding: 9px 7px;
+    border-radius: 3px 3px 0 0;
+}
+.private-login-button {
+    padding: 9px 1.8em;
+    border-radius: 0 0 3px 3px;
+}

@@ -1,0 +1,90 @@
+/* Shame
+/* ---------------------------------------------------------- */
+/* TODO: Kill with fire */
+
+
+/* Animations
+/* ---------------------------------------------------------- */
+
+/* Semi-opaque fixed-position headers - used on content/editor */
+.floatingheader {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 400;
+    padding: 10px 20px;
+    height: 40px;
+    background: linear-gradient(to bottom, white 0%, white 25%, rgba(255, 255, 255, 0.9) 100%);
+    color: var(--brown);
+    text-transform: uppercase;
+    font-size: 1.3rem;
+    /*Transparent gradient to make bg fade out as it goes out the top */
+}
+
+.floatingheader .button {
+    display: inline-block;
+    padding: 3px 4px;
+    min-height: 20px;
+    height: 20px;
+    vertical-align: top;
+    font-size: 10px;
+}
+
+.floatingheader .button.button-back {
+    position: relative;
+    top: -2px;
+    left: 3px;
+    display: none;
+    padding: 0 6px 0 3px;
+}
+
+.floatingheader .button.button-back:active {
+    box-shadow: none;
+}
+
+.floatingheader .button.button-back:before {
+    left: -8px;
+    border-width: 10px 8px 10px 0;
+}
+
+@media (max-width: 900px) {
+    .floatingheader .button.button-back {
+        display: inline-block;
+    }
+}
+
+.floatingheader small {
+    font-size: 0.85em;
+}
+
+.floatingheader a,
+.floatingheader button {
+    color: var(--brown);
+}
+
+.floatingheader a:hover,
+.floatingheader button:hover {
+    color: var(--darkgrey);
+}
+
+
+/* Scroll shadows
+/* ---------------------------------------------------------- */
+.scrolling .floatingheader {
+    box-shadow: rgba(0, 0, 0, 0.03) 0 1px 3px;
+}
+
+.scrolling .floatingheader:before {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    z-index: -1;
+    margin-left: -40%;
+    width: 80%;
+    height: 5px;
+    background-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.05) 0%, transparent 75%, transparent 100%);
+    background-position: 0 -5px;
+    background-size: 100% 200%;
+}

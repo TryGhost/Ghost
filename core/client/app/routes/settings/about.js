@@ -25,6 +25,10 @@ var SettingsAboutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, 
                 self.set('cachedConfig', cachedConfig);
                 return cachedConfig;
             });
+    },
+
+    renderTemplate: function () {
+        this.render('settings/about', {into: 'application'});
     }
 });
 

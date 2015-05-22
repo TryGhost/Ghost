@@ -5,10 +5,10 @@
 {{/unless}}
 <div class="navigation-inputs">
     <span class="navigation-item-label">
-        {{gh-trim-focus-input focus=navItem.last placeholder="Label" value=navItem.label}}
+        {{gh-trim-focus-input class="gh-input" focus=navItem.last placeholder="Label" value=navItem.label}}
     </span>
     <span class="navigation-item-url">
-        {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url last=navItem.last change="updateUrl"}}
+        {{gh-navitem-url-input class="gh-input" baseUrl=baseUrl url=navItem.url last=navItem.last change="updateUrl"}}
     </span>
 </div>
 <span class="navigation-item-action">

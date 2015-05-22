@@ -1,6 +1,4 @@
-<section class="js-notification {{typeClass}}">
-    <span class="notification-message">
-        {{message.message}}
-    </span>
-    <button class="close" {{action "closeNotification"}}><span class="hidden">Close</span></button>
-</section>
+<div class="gh-notification-content">
+    {{message.message}}
+</div>
+<button class="gh-notification-close icon-x" {{action "closeNotification"}}><span class="hidden">Close</span></button>

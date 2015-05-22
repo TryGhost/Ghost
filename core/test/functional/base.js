@@ -62,36 +62,37 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
 screens = {
     root: {
         url: 'ghost/',
-        linkSelector: '.nav-content',
-        selector: '.nav-content.active'
+        linkSelector: '.gh-nav-main-content',
+        selector: '.gh-nav-main-content.active'
     },
     content: {
         url: 'ghost/content/',
-        linkSelector: '.nav-content',
-        selector: '.nav-content.active'
+        linkSelector: '.gh-nav-main-content',
+        selector: '.gh-nav-main-content.active'
     },
     editor: {
         url: 'ghost/editor/',
-        linkSelector: '.nav-new',
-        selector: '#entry-title'
+        linkSelector: '.gh-nav-main-editor',
+        selector: '.gh-nav-main-editor.active'
     },
-    settings: {
-        url: 'ghost/settings/',
-        linkSelector: '.nav-settings',
-        selector: '.nav-settings.active'
+    'editor.editing': {
+        url: 'ghost/editor/',
+        linkSelector: 'a.post-edit',
+        selector: '.entry-markdown-content .markdown-editor'
     },
     'settings.general': {
         url: 'ghost/settings/general',
-        selector: '.settings-nav-general.active'
+        selector: '.gh-nav-settings-general.active'
     },
     'settings.about': {
         url: 'ghost/settings/about',
-        selector: '.settings-nav-about.active'
+        linkSelector: '.gh-nav-menu-about',
+        selector: '.gh-about-header'
     },
     'settings.users': {
         url: 'ghost/settings/users',
-        linkSelector: '.settings-nav-users a',
-        selector: '.settings-nav-users.active'
+        linkSelector: '.gh-nav-main-users',
+        selector: '.gh-nav-main-users.active'
     },
     'settings.users.user': {
         url: 'ghost/settings/users/test',
@@ -105,8 +106,9 @@ screens = {
     'signin-authenticated': {
         url: 'ghost/signin/',
         // signin with authenticated user redirects to posts
-        selector: '.nav-content.active'
+        selector: '.gh-nav-main-content.active'
     },
+
     signout: {
         url: 'ghost/signout/',
         linkSelector: '.user-menu-signout',
@@ -123,7 +125,7 @@ screens = {
     },
     'setup-authenticated': {
         url: 'ghost/setup/',
-        selector: '.nav-content.active'
+        selector: '.gh-nav-main-content.active'
     }
 };
 
@@ -190,9 +192,13 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
 
     return casper.thenOpen(url + screens[screen].url).then(function () {
-        // Some screens fade in
-        return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
+        return casper.waitForScreenLoad(screen, then, timeout);
     });
+};
+
+casper.waitForScreenLoad = function (screen, then, timeout) {
+    // Some screens fade in
+    return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
 };
 
 casper.thenTransitionAndWaitForScreenLoad = function (screen, then, timeout) {
@@ -200,8 +206,7 @@ casper.thenTransitionAndWaitForScreenLoad = function (screen, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
 
     return casper.thenClick(screens[screen].linkSelector).then(function () {
-        // Some screens fade in
-        return casper.waitForOpaque(screens[screen].selector, then, timeout, 10000);
+        return casper.waitForScreenLoad(screen, then, timeout);
     });
 };
 
@@ -414,7 +419,7 @@ CasperTest.Routines = (function () {
 
     function signin() {
         casper.thenOpenAndWaitForPageLoad('signin', function then() {
-            casper.waitForOpaque('.login-box', function then() {
+            casper.waitForOpaque('.gh-signin', function then() {
                 casper.captureScreenshot('signing_in.png');
                 this.fillAndSave('#login', user);
                 casper.captureScreenshot('signing_in2.png');

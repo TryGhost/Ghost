@@ -1,0 +1,59 @@
+/* Popovers
+/* ---------------------------------------------------------- */
+
+.popover-item {
+    position: relative;
+    display: inline-block;
+    padding: 11px 26px 13px 16px;
+    min-width: 300px;
+    max-width: 400px;
+    background: var(--darkgrey);
+    border-radius: 6px;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+}
+
+.popover-title {
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 300;
+}
+
+.popover-desc {
+    margin-top: -4px;
+}
+
+.popover-body {
+    margin-top: 11px;
+    line-height: 1.7;
+}
+
+.popover-body b {
+    color: #fff;
+}
+
+.popover-body > *:last-child {
+    margin: 0;
+}
+
+
+/* Open / Close
+/* ---------------------------------------------------------- */
+
+.popover {
+    position: relative;
+    display: inline-block;
+}
+
+.popover .popover-item {
+    position: absolute;
+    z-index: 20;
+}
+
+.popover .popover-item.open {
+    display: block;
+}
+
+.popover .popover-item.closed {
+    display: none;
+}

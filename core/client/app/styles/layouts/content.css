@@ -1,0 +1,320 @@
+/* Content /ghost/
+/* ---------------------------------------------------------- */
+
+
+/* Show/Hide on Mobile // TODO: What the fuck does that mean?
+/* ---------------------------------------------------------- */
+
+.content-list.show-menu {
+    display: block;
+}
+
+.content-list.show-content {
+    display: none;
+}
+
+.content-preview.show-menu {
+    display: none;
+}
+
+.content-preview.show-content {
+    display: block;
+}
+
+
+/* Content List (Left pane)
+/* ---------------------------------------------------------- */
+
+.content-list {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding: 15px;
+    width: 33%;
+    border-right: #e1e1e1 1px solid;
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .content-list {
+        right: 0;
+        z-index: 500;
+        width: auto;
+        border: none;
+    }
+}
+
+.content-list .content-list-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.content-list .entry-title {
+    font-size: 1.6rem;
+    line-height: 1.4em;
+    font-weight: normal;
+}
+
+.content-list .entry-meta {
+    margin-top: 14px;
+    line-height: 18px;
+}
+
+.content-list .avatar {
+    position: relative;
+    float: left;
+    margin-right: 14px;
+    width: 18px;
+    height: 18px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 18px;
+}
+
+.content-list .avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.content-list .status,
+.content-list .author {
+    font-size: 1.3rem;
+    font-weight: 300;
+    transition: opacity 0.15s linear;
+}
+
+.content-list .avatar:hover + .author + .status {
+    opacity: 0;
+}
+
+.content-list .avatar:hover + .author {
+    opacity: 1;
+}
+
+.content-list .author {
+    position: absolute;
+    bottom: 22px;
+    left: 56px;
+    opacity: 0;
+}
+
+.content-list .status .draft {
+    color: var(--red);
+}
+
+.content-list .status .scheduled {
+    color: var(--orange);
+}
+
+.content-list ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.content-list li {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border-bottom: #e1e1e1 1px solid;
+}
+
+.content-list li a {
+    display: block;
+    padding: 19px 20px 22px 24px;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.content-list li a:hover {
+    text-decoration: none;
+}
+
+@media (max-width: 400px) {
+    .content-list li a {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 900px) {
+    .content-list li a {
+        padding-right: 40px;
+    }
+}
+
+@media (min-width: 901px) {
+    .content-list li a:after {
+        display: none;
+    }
+}
+
+@media (min-width: 901px) {
+    .content-list .active {
+        background: color(#e1e1e1 lightness(+9%));
+    }
+}
+
+
+/* Preview (Right pane)
+/* ---------------------------------------------------------- */
+
+.content-preview {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px;
+    width: 67%;
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .content-preview {
+        overflow: visible;
+        width: 100%;
+        border: none;
+    }
+}
+
+.content-preview .unfeatured {
+    margin: 0 7px 0 -5px;
+    padding: 3px;
+    vertical-align: -6%;
+}
+
+.content-preview .featured {
+    margin: 0 7px 0 -5px;
+    padding: 3px;
+    vertical-align: -6%;
+}
+
+.content-preview .post-published-by .status a {
+    color: inherit;
+}
+
+.content-preview .post-published-by .status a:hover {
+    text-decoration: underline;
+}
+
+.content-preview .normal {
+    margin: 0 3px;
+    text-transform: none;
+}
+
+.content-preview .content-preview-content {
+    padding: 5%;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+@media (max-width: 900px) {
+    .content-preview .content-preview-content {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.content-preview .content-preview-content .wrapper {
+    margin: 0 auto;
+    max-width: 700px;
+}
+
+.content-preview .post-controls {
+    position: relative;
+    top: 3px;
+    float: right;
+}
+
+.content-preview .post-settings-menu {
+    position: absolute;
+    top: 35px;
+    right: -3px;
+}
+
+.content-preview img {
+    width: 100%;
+    height: auto;
+}
+
+.post-preview-header {
+    display: block;
+    justify-content: space-between;
+}
+
+/* Empty State
+/* ---------------------------------------------------------- */
+
+.no-posts-box {
+    position: relative;
+    z-index: 600;
+    display: table;
+    margin: 0 auto;
+    padding: 0;
+    height: 90%;
+}
+
+@media (max-width: 900px) {
+    .no-posts-box {
+        position: fixed;
+        top: 45%;
+        left: 50%;
+    }
+}
+
+.no-posts-box .no-posts {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .no-posts-box .no-posts {
+        position: relative;
+        left: -50%;
+        display: block;
+    }
+}
+
+.no-posts-box .no-posts h3 {
+    color: var(--brown);
+    font-size: 2em;
+    font-weight: 200;
+}
+
+
+/* Keyboard Focus Effects
+/* ---------------------------------------------------------- */
+
+
+/* This has to be a pseudo element to sit over the top of everything else in the content list */
+.content-list.keyboard-focused:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 500;
+    animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+    pointer-events: none;
+}
+
+.content-preview.keyboard-focused {
+    animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+}

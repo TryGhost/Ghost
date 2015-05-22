@@ -227,7 +227,7 @@ If you're still stuck, please come join us in [slack](https://ghost.org/slack) a
 
 
 ### Developer Tips
-Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebars templates, sass and ember scripts. Some useful commands include:
+Whilst developing, you can take advantage of the [Grunt toolkit](https://github.com/TryGhost/Ghost/wiki/Grunt-Toolkit) to automatically compile assets, such as handlebars templates, styles and ember scripts. Some useful commands include:
 
 - `grunt dev` => Watch for changes and automatically rebuild assets
 - `grunt prod` => Build assets for the production environment

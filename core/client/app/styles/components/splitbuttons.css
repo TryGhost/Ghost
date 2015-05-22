@@ -1,0 +1,61 @@
+/* Splitbuttons
+/* ---------------------------------------------------------- */
+
+.splitbtn {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    /* Flatten out the right side */
+    /* Flatten out the left side */
+}
+
+.splitbtn .btn {
+    position: relative;
+    float: left;
+    /* Prevent double border between buttons */
+    /* Make sure the hovered element is always on
+    // top so overlap from .btn + btn. invisible */
+}
+
+.splitbtn .btn + .btn {
+    margin-left: -1px;
+}
+
+.splitbtn .btn:hover,
+.splitbtn .btn:focus,
+.splitbtn .btn:active,
+.splitbtn .btn.active {
+    z-index: 2;
+}
+
+.splitbtn .btn:first-child {
+    margin-left: 0;
+}
+
+.splitbtn .btn:first-child:not(:last-child):not(.dropdown-toggle) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.splitbtn .dropdown-toggle {
+    padding-right: 12px;
+    padding-left: 12px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    /* This is the additional dropdown arrow, to the right of the button. */
+}
+
+.splitbtn .dropdown-toggle.btn-sm {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.splitbtn .dropdown-toggle.btn-lg {
+    padding-right: 16px;
+    padding-left: 16px;
+}
+
+.splitbtn .dropdown-toggle .options {
+    color: #fff;
+    text-align: center;
+}

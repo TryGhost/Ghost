@@ -40,6 +40,7 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
 
     renderTemplate: function (controller, model) {
         this._super(controller, model);
+        this.render('settings/tags', {into: 'application'});
         this.render('settings/tags/settings-menu', {
             into: 'application',
             outlet: 'settings-menu',
