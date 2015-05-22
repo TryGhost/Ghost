@@ -16,7 +16,7 @@ CasperTest.begin('Ghost admin will load login page', 4, function suite(test) {
 
             casper.echoConcise('Text' + text);
             test.assertExists('.forgotten-link');
-            test.assertEqual(text, 'Forgotten password?');
+            test.assertEqual(text, 'Forgot?');
         });
     });
 }, true);
@@ -59,7 +59,7 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
     });
 }, true);
 
-CasperTest.begin('Can login to Ghost', 5, function suite(test) {
+CasperTest.begin('Can login to Ghost', 4, function suite(test) {
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -75,14 +75,13 @@ CasperTest.begin('Can login to Ghost', 5, function suite(test) {
 
     casper.waitForResource(/posts/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('.global-nav', 'Global admin header is present');
-        test.assertExists('.manage', 'We\'re now on content');
+        test.assertExists('.gh-nav-main-content.active', 'Now we are on Content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
 }, true);
 
-CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
+CasperTest.begin('Authenticated user is redirected', 6, function suite(test) {
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -90,7 +89,8 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque('.gh-signin', function then() {
+    casper.waitForOpaque('' +
+        '.gh-signin', function then() {
         this.fillAndSave('#login', user);
     });
 
@@ -98,16 +98,14 @@ CasperTest.begin('Authenticated user is redirected', 8, function suite(test) {
 
     casper.waitForResource(/posts/, function testForDashboard() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('.global-nav', 'Global admin header is present');
-        test.assertExists('.manage', 'We\'re now on content');
+        test.assertExists('.gh-nav-main-content.active', 'Now we are on Content');
     }, function onTimeOut() {
         test.fail('Failed to signin');
     });
 
     casper.thenOpenAndWaitForPageLoad('signin-authenticated', function testTitleAndUrl() {
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-        test.assertExists('.global-nav', 'Global admin header is present');
-        test.assertExists('.manage', 'We\'re now on content');
+        test.assertExists('.gh-nav-main-content.active', 'Now we are on Content');
     }, function onTimeOut() {
         test.fail('Failed to redirect');
     });
@@ -121,9 +119,9 @@ CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
         test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
     });
 
-    casper.waitForOpaque('.js-login-box',
+    casper.waitForOpaque('.gh-signin',
         function then() {
-            this.fillAndSave('form.login-form', {
+            this.fillAndSave('form.gh-signin', {
                 identification: 'notanemail'
             });
         },

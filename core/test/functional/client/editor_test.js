@@ -42,7 +42,7 @@ CasperTest.begin('Ghost editor functions correctly', 16, function suite(test) {
         casper.sendKeys('#entry-title', testPost.title, {reset: true});
         casper.writeContentToEditor(testPost.html);
 
-    // TODO: Expand markdown tests to cover more markdown, and keyboard shortcuts
+        // TODO: Expand markdown tests to cover more markdown, and keyboard shortcuts
         casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
             test.assertSelectorHasText(
                 '.entry-preview .rendered-markdown',
@@ -55,7 +55,6 @@ CasperTest.begin('Ghost editor functions correctly', 16, function suite(test) {
             );
         }, casper.failOnTimeout(test, 'markdown did not re-render'));
     });
-
 
     casper.thenClick('.js-publish-button');
 
@@ -228,16 +227,16 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
         test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
     }, casper.failOnTimeout(test, 'Post was not successfully created'));
 
-
     casper.thenTransitionAndWaitForScreenLoad('content', function canTransition() {
         test.assert(true, 'Can transition to content screen');
         test.assertUrlMatch(/ghost\/\d+\/$/, 'content transitions to correct url');
     });
 
-    ////// Edit the draft post we just created
-    //casper.thenClick('a.post-edit');
+    // TODO fix this test
+    // Edit the draft post we just created
+    // casper.thenClick('a.post-edit');
     //
-    //casper.waitForScreenLoad('editor.editing', function () {
+    // casper.waitForScreenLoad('editor.editing', function () {
     //    casper.writeContentToEditor('abcdefghijklmnopqrstuvwxyz');
     //    casper.waitForSelectorTextChange('.entry-preview .rendered-markdown', function onSuccess() {
     //        test.assertSelectorHasText(
@@ -247,10 +246,7 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
     //        );
     //    }, casper.failOnTimeout(test, 'markdown did not re-render'));
     //
-    //}, casper.failOnTimeout(test, 'Editor did not load'));
-
-
-
+    // }, casper.failOnTimeout(test, 'Editor did not load'));
 });
 
 CasperTest.begin('Tag editor', 7, function suite(test) {
