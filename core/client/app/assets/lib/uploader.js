@@ -6,7 +6,7 @@ var UploadUi,
 
 UploadUi = function ($dropzone, settings) {
     var $url = '<div class="js-url"><input class="url js-upload-url" type="url" placeholder="http://"/></div>',
-        $cancel = '<a class="image-cancel js-cancel" title="Delete"><span class="hidden">Delete</span></a>',
+        $cancel = '<a class="image-cancel icon-trash js-cancel" title="Delete"><span class="hidden">Delete</span></a>',
         $progress =  $('<div />', {
             class: 'js-upload-progress progress progress-success active',
             role: 'progressbar',
@@ -131,7 +131,7 @@ UploadUi = function ($dropzone, settings) {
                 $dropzone.append('<button class="js-fail btn btn-green" style="display: none">Try Again</button>');
             }
             if (!$dropzone.find('a.image-url')[0]) {
-                $dropzone.append('<a class="image-url" title="Add image from URL"><span class="hidden">URL</span></a>');
+                $dropzone.append('<a class="image-url" title="Add image from URL"><i class="icon-link"><span class="hidden">URL</span></i></a>');
             }
             // if (!$dropzone.find('a.image-webcam')[0]) {
             //     $dropzone.append('<a class="image-webcam" title="Add image from webcam"><span class="hidden">Webcam</span></a>');

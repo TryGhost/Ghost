@@ -12,18 +12,18 @@
             <form>
                 <div class="form-group">
                     <label>Name</label>
-                    {{gh-input type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
+                    {{gh-input class="gh-input" type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
                 </div>
 
                 <div class="form-group">
                     <label>URL</label>
-                    {{gh-input type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                    {{gh-input class="gh-input" type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
                     {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
                 </div>
 
                 <div class="form-group">
                     <label>Description</label>
-                    {{gh-textarea value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
+                    {{gh-textarea class="gh-input" value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
                 </div>
 
                 <ul class="nav-list nav-list-block">
@@ -47,19 +47,20 @@
             <div class="settings-menu-header subview">
                 <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
                 <h4>Meta Data</h4>
+                <div style="width:23px;">{{!flexbox space-between}}</div>
             </div>
 
             <div class="settings-menu-content">
                 <form>
                 <div class="form-group">
                     <label for="meta-title">Meta Title</label>
-                    {{gh-input type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
+                    {{gh-input class="gh-input" type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
                     <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters activeTagMetaTitleScratch 70}}</p>
                 </div>
 
                 <div class="form-group">
                     <label for="meta-description">Meta Description</label>
-                    {{gh-textarea value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
+                    {{gh-textarea class="gh-input" value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
                     <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters activeTagMetaDescriptionScratch 156}}</p>
                 </div>
 

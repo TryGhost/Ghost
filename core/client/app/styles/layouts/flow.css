@@ -1,0 +1,374 @@
+/* Full screen workflow
+/* ---------------------------------------------------------- */
+
+.gh-flow {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.gh-flow-head {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 4vh;
+    padding-bottom: 20px;
+}
+
+.gh-flow-content-wrap {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5%;
+    padding-bottom: 8vh;
+}
+
+.gh-flow-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0 0 0 3%;
+    padding: 2px 9px 2px 5px;
+    border: transparent 1px solid;
+    border-radius: 4px;
+    color: #7d878a;
+    font-weight: 100;
+    transition: all 0.3s ease;
+}
+
+.gh-flow-back:hover {
+    border: #dae1e3 1px solid;
+}
+
+.gh-flow-nav {
+    position: relative;
+    flex: 1;
+}
+
+.gh-flow-nav ol {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto;
+    padding: 0;
+    width: 160px;
+    list-style: none;
+}
+
+.gh-flow-nav li {
+    margin: 0;
+}
+
+.gh-flow-nav .divider {
+    align-self: center;
+    width: 22px;
+    height: 2px;
+    background-image: linear-gradient(to right, var(--green) 33%, rgba(255, 255, 255, 0) 0%);
+    background-position: bottom;
+    background-size: 6px 2px;
+    background-repeat: repeat-x;
+}
+
+.gh-flow-nav .current ~ .divider {
+    background-image: linear-gradient(to right, #e3e3e3 33%, rgba(255, 255, 255, 0) 0%);
+}
+
+.gh-flow-nav .step {
+    display: table-cell;
+    width: 30px;
+    height: 30px;
+    border: transparent 2px solid;
+    background: var(--green);
+    border-radius: 100%;
+    color: #fff;
+    vertical-align: middle;
+    text-align: center;
+    text-align: center;
+    font-size: 1.3rem;
+}
+
+.gh-flow-nav .step .num {
+    display: none;
+}
+
+.gh-flow-nav .current ~ li:not(divider) .step {
+    border: #e3e3e3 2px solid;
+    background: transparent;
+    color: #cdcdcd;
+}
+
+.gh-flow-nav .current ~ li:not(divider) .step .num {
+    display: block;
+}
+
+.gh-flow-nav .current ~ li:not(divider) .step i {
+    display: none;
+}
+
+.gh-flow-nav .current .step {
+    border: var(--green) 2px solid;
+    background: transparent;
+    color: var(--green);
+    font-weight: bold;
+    cursor: default;
+}
+
+.gh-flow-nav .current .step .num {
+    display: block;
+}
+
+.gh-flow-nav .current .step i {
+    display: none;
+}
+
+.gh-flow-nav .done {
+    border: none;
+    background: var(--green);
+    color: #fff;
+}
+
+.gh-flow-content {
+    max-width: 700px;
+    width: 100%;
+    color: var(--midgrey);
+    text-align: center;
+    font-size: 1.9rem;
+    line-height: 1.5em;
+    font-weight: 100;
+}
+
+@media (max-width: 500px) {
+    .gh-flow-content {
+        font-size: 4vw;
+    }
+}
+
+.gh-flow-content header {
+    margin: 0 auto;
+    max-width: 520px;
+}
+
+.gh-flow-content h1 {
+    letter-spacing: -1px;
+    font-size: 4.2rem;
+    font-weight: 100;
+}
+
+@media (max-width: 600px) {
+    .gh-flow-content h1 {
+        font-size: 7vw;
+    }
+}
+
+.gh-flow-content strong {
+    font-weight: 400;
+}
+
+.gh-flow-content em {
+    color: var(--blue);
+    font-weight: 400;
+    font-style: normal;
+}
+
+.gh-flow-content img {
+    max-width: 100%;
+}
+
+.gh-flow-content .gh-flow-screenshot {
+    position: relative;
+    left: -38px;
+}
+
+@media (max-width: 860px) {
+    .gh-flow-content .gh-flow-screenshot {
+        left: 0;
+    }
+}
+
+.gh-flow-content .btn {
+    display: block;
+    margin: 20px auto 0;
+    max-width: 400px;
+}
+
+.gh-flow-content .gh-flow-create {
+    position: relative;
+    margin: 70px auto 30px;
+    padding: 50px 40px 25px;
+    max-width: 400px;
+    border: #dae1e3 1px solid;
+    background: #f8fbfd;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.gh-flow-content .account-image {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    overflow: hidden;
+    margin: 0;
+    margin-left: -50px;
+    padding: 4px;
+    width: 100px;
+    height: 100px;
+    border: #d1d9db 1px solid;
+    background: #fff;
+    border-radius: 100%;
+    text-align: center;
+}
+
+.gh-flow-content .account-image:hover .edit-account-image {
+    opacity: 1;
+}
+
+.gh-flow-content .edit-account-image {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(100% - 8px);
+    background: rgba(87, 163, 232, 0.7);
+    border-radius: 100%;
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 3rem;
+    line-height: 90px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gh-flow-content .img {
+    display: block;
+    width: 90px;
+    height: 90px;
+    background-color: #f8fbfd;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+    animation: fade-in 1s;
+}
+
+.gh-flow-content .form-group {
+    margin-bottom: 2.5rem;
+}
+
+.gh-flow-content .form-group label {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.gh-flow-content .form-group a {
+    text-decoration: underline;
+}
+
+.gh-flow-content input {
+    padding: 10px;
+    border: #dae1e3 1px solid;
+    font-size: 1.6rem;
+    line-height: 1.4em;
+    font-weight: 100;
+}
+
+.gh-flow-content .pw-strength {
+    position: absolute;
+    top: 50%;
+    right: 1px;
+    margin-top: -11px;
+    padding: 0 10px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.gh-flow-content .pw-strength-dot {
+    display: block;
+    margin-top: 2px;
+    width: 3px;
+    height: 3px;
+    background-color: #d9e0e3;
+    border-radius: 100%;
+}
+
+.gh-flow-content .pw-strength-dot:first-child {
+    margin-top: 0;
+}
+
+.gh-flow-content .pw-strength-activedot {
+    background-color: var(--red);
+}
+
+.gh-flow-content .input-icon[class*="icon-"]:before {
+    transform: translateY(-49%);
+}
+
+.gh-flow-content .gh-flow-invite {
+    margin: 0 auto;
+    max-width: 400px;
+    width: 100%;
+    text-align: left;
+}
+
+@media (max-width: 460px) {
+    .gh-flow-content .gh-flow-invite label i {
+        display: none;
+    }
+}
+
+.gh-flow-content .gh-flow-faces {
+    margin-bottom: 3vw;
+}
+
+.gh-flow-content textarea {
+    margin-bottom: 40px;
+    width: 100%;
+    height: 160px;
+    font-size: 1.6rem;
+    font-weight: 100;
+}
+
+@media (max-width: 1200px) {
+    .gh-flow-content textarea {
+        margin-bottom: 3vw;
+    }
+}
+
+.gh-flow-content .response {
+    position: absolute;
+    right: 0;
+    bottom: -25px;
+    margin: 0;
+    color: #a6b0b3;
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+.gh-flow-content .success .input-icon:before {
+    color: var(--green);
+}
+
+.error,
+.error-content,
+.main-error {
+    user-select: text;
+}
+
+.gh-flow-content .error input {
+    border-color: var(--red);
+}
+
+.gh-flow-content .error .input-icon:before {
+    color: var(--red);
+}
+
+.gh-flow-content .error .response {
+    color: var(--red);
+}
+
+.gh-flow-content .main-error {
+    margin-top: 5px;
+    color: var(--red);
+    font-size: 1.3rem;
+}

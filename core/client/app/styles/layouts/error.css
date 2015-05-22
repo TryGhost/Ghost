@@ -1,0 +1,114 @@
+/* Error /ghost/404/
+/* ---------------------------------------------------------- */
+
+.error-content {
+    display: table;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 530px;
+    height: 100%;
+}
+
+.error-content {
+    user-select: text;
+}
+
+@media (max-width: 630px) {
+    .error-content {
+        max-width: 264px;
+        text-align: center;
+    }
+}
+
+.error-details {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.error-image {
+    display: inline-block;
+    width: 96px;
+    height: 150px;
+    vertical-align: middle;
+}
+
+@media (max-width: 630px) {
+    .error-image {
+        width: 72px;
+        height: 112px;
+    }
+}
+
+.error-image img {
+    width: 100%;
+    height: 100%;
+}
+
+.error-message {
+    position: relative;
+    top: -5px;
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.error-code {
+    margin: 0;
+    color: #979797;
+    font-size: 7.8em;
+    line-height: 0.9em;
+}
+
+@media (max-width: 630px) {
+    .error-code {
+        font-size: 5.8em;
+    }
+}
+
+.error-description {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #979797;
+    font-size: 1.9em;
+    font-weight: 300;
+}
+
+@media (max-width: 630px) {
+    .error-description {
+        font-size: 1.4em;
+    }
+}
+
+
+/* Stack trace
+/* ---------------------------------------------------------- */
+
+.error-stack {
+    margin: 1em auto;
+    padding: 2em;
+    max-width: 800px;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.error-stack-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.error-stack-list li {
+    display: block;
+}
+
+.error-stack-list li:before {
+    content: "\21AA";
+    display: inline-block;
+    margin-right: 0.5em;
+    color: #bbb;
+    font-size: 1.2em;
+}
+
+.error-stack-function {
+    font-weight: bold;
+}
