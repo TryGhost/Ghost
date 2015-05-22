@@ -7,7 +7,7 @@
     "ember-data": "1.0.0-beta.16.1",
     "ember-load-initializers": "ember-cli/ember-load-initializers#0.0.2",
     "ember-resolver": "0.1.15",
-    "ember-simple-auth": "0.7.2",
+    "ember-simple-auth": "0.8.0-beta.2",
     "fastclick": "1.0.6",
     "google-caja": "5669.0.0",
     "ic-ajax": "2.0.2",

@@ -1,5 +1,8 @@
-import Ember from 'ember';
 /* global key */
+
+import Ember from 'ember';
+import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
+import Configuration from 'simple-auth/configuration';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
@@ -10,7 +13,7 @@ shortcuts.esc = {action: 'closePopups', scope: 'all'};
 shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
 shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
 
-ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     shortcuts: shortcuts,
 
     afterModel: function (model, transition) {
@@ -54,6 +57,10 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
             this.send('loadServerNotifications', true);
         },
 
+        invalidateSession: function () {
+            this.get('session').invalidate();
+        },
+
         sessionAuthenticationFailed: function (error) {
             if (error.errors) {
                 // These are server side errors, which can be marked as htmlSafe
@@ -83,7 +90,7 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
                     attemptedTransition.retry();
                     self.get('session').set('attemptedTransition', null);
                 } else {
-                    self.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+                    self.transitionTo(Configuration.routeAfterAuthentication);
                 }
             });
         },

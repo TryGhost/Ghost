@@ -17,6 +17,21 @@ module.exports = function (environment) {
         APP: {
               // Here you can pass flags/options to your application instance
               // when it is created
+        },
+
+        'simple-auth': {
+            authenticationRoute: 'signin',
+            routeAfterAuthentication: 'posts',
+            authorizer: 'simple-auth-authorizer:oauth2-bearer',
+
+            localStorageKey: '<overriden by initializers/simple-auth-env>'
+        },
+
+        'simple-auth-oauth2': {
+            refreshAccessTokens: true,
+
+            serverTokenEndpoint: '<overriden by initializers/simple-auth-env>',
+            serverTokenRevocationEndpoint: '<overriden by initializers/simple-auth-env>'
         }
     };
 
