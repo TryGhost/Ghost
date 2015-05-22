@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 import loadingIndicator from 'ghost/mixins/loading-indicator';
 
@@ -9,7 +10,7 @@ var SigninRoute = Ember.Route.extend(styleBody, loadingIndicator, {
 
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+            this.transitionTo(Configuration.routeAfterAuthentication);
         }
     },
 
