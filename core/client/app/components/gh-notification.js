@@ -1,7 +1,9 @@
 import Ember from 'ember';
 
 var NotificationComponent = Ember.Component.extend({
-    classNames: ['js-bb-notification'],
+    tagName: 'article',
+    classNames: ['gh-notification', 'gh-notification-green'],
+    classNameBindings: ['typeClass'],
 
     typeClass: Ember.computed(function () {
         var classes = '',

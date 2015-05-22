@@ -69,7 +69,8 @@ var _              = require('lodash'),
                         'content/themes/casper/assets/js/*.js',
                         'core/client/dist/*.js',
                         'core/client/dist/*.css',
-                        'core/built/scripts/*.js'
+                        'core/built/scripts/*.js',
+                        'core/client/app/html/*.html'
                     ],
                     options: {
                         livereload: true
@@ -81,6 +82,13 @@ var _              = require('lodash'),
                     options: {
                         // **Note:** Without this option specified express won't be reloaded
                         nospawn: true
+                    }
+                },
+                csscomb: {
+                    files: ['core/client/app/styles/**/*.css'],
+                    tasks: ['shell:csscombfix'],
+                    options: {
+                        livereload: true
                     }
                 }
             },
@@ -334,6 +342,14 @@ var _              = require('lodash'),
 
                 shrinkwrap: {
                     command: 'npm shrinkwrap'
+                },
+
+                csscombfix: {
+                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -v core/client/app/styles')
+                },
+
+                csscomblint: {
+                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -lv core/client/app/styles')
                 }
             },
 
@@ -610,7 +626,7 @@ var _              = require('lodash'),
         //
         // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
         grunt.registerTask('lint', 'Run the code style checks and linter',
-            ['jshint', 'jscs']
+            ['jshint', 'jscs', 'shell:csscomblint']
         );
 
         // ### test-setup *(utility)(
@@ -778,7 +794,7 @@ var _              = require('lodash'),
             var done = this.async(),
                 templatePath = 'core/client/app/templates/-contributors.hbs',
                 imagePath = 'core/client/public/assets/img/contributors/',
-                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90),
+                timeSpan = Date.now() - (1000 * 60 * 60 * 24 * 180),
                 oauthKey = process.env.GITHUB_OAUTH_KEY;
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
@@ -795,15 +811,15 @@ var _              = require('lodash'),
                     user: 'tryghost',
                     repo: 'ghost',
                     oauthKey: oauthKey,
-                    releaseDate: ninetyDaysAgo,
-                    count: 20,
+                    releaseDate: timeSpan,
+                    count: 18,
                     retry: true
                 })
             ).then(function (results) {
                 var contributors = results[1],
-                    contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
-                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>">\n' +
-                    '    </a>\n</li>',
+                    contributorTemplate = '<article>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
+                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>" />\n' +
+                    '    </a>\n</article>',
 
                     downloadImagePromise = function (url, name) {
                         return new Promise(function (resolve, reject) {
