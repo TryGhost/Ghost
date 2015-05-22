@@ -8,7 +8,7 @@ var NotificationsComponent = Ember.Component.extend({
             notification.get('status') : notification.status;
 
         return displayStatus === 'passive';
-    }),
+    })
 });
 
 export default NotificationsComponent;

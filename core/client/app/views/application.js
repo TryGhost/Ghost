@@ -38,13 +38,12 @@ var ApplicationView = Ember.View.extend({
         });
 
         // #### Open and close the nav on hover
-        $('.gh-nav').mouseenter(function() {
+        $('.gh-nav').mouseenter(function () {
             $('.gh-nav').addClass('open');
         });
-        $('.gh-main').mouseenter(function() {
+        $('.gh-main').mouseenter(function () {
             $('.gh-nav').removeClass('open');
         });
-
 
         mobileQuery.addListener(this.get('closeGlobalMobileNavOnDesktop'));
     },

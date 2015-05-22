@@ -8,9 +8,9 @@
 
     <section class="gh-env-details">
         <ul class="gh-env-list">
-            <li><strong>Version</strong> {{model.version}}</li>
+            <li class="gh-env-list-version"><strong>Version</strong> {{model.version}}</li>
             <li><strong>Environment</strong> {{model.environment}}</li>
-            <li><strong>Database</strong> {{model.database}}</li>
+            <li class="gh-env-list-database-type"><strong>Database</strong> {{model.database}}</li>
             <li><strong>Mail</strong> {{#if model.mail}}{{model.mail}}{{else}}Native{{/if}}</li>
         </ul>
         <div class="gh-env-help">
