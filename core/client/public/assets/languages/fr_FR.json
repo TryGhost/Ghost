@@ -1,0 +1,14 @@
+[{
+     "NOT_FOUND": "Pas trouvé",
+     "GOTO_FRONT": "Revenir sur la page d'accueil",
+     "NEW_POST": "Nouvel Article",
+     
+     "HAVE_FUN": "Have fun, and good luck!!!",
+     "EMAIL_TXT_ASSISTANCE": "If you have trouble activating your %s account, you can reach out to %s on %s for assistance."
+},
+{
+    "plurial": {
+		"p": ["s"]
+	 },
+	 "name": "fr"
+}]

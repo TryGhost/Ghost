@@ -171,6 +171,7 @@ ConfigManager.prototype.set = function (config) {
         database: {
             knex: knexInstance
         },
+		language: "en_EN",
         ghostVersion: packageInfo.version,
         paths: {
             appRoot:          appRoot,

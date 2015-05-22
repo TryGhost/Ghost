@@ -2,6 +2,7 @@ var hbs             = require('express-hbs'),
     Promise         = require('bluebird'),
     errors          = require('../errors'),
     utils           = require('./utils'),
+	Languages       = require('languages-js').Languages,
     coreHelpers     = {},
     registerHelpers;
 
@@ -49,6 +50,8 @@ coreHelpers.helperMissing = function (arg) {
     }
     errors.logError('Missing helper: "' + arg + '"');
 };
+
+Languages.require("express-hbs");
 
 // Register an async handlebars helper for a given handlebars instance
 function registerAsyncHelper(hbs, name, fn) {

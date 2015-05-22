@@ -1,0 +1,16 @@
+[{
+     "NOT_FOUND": "Not Found",
+     "GOTO_FRONT": "Go to front Page",
+     "NEW_POST": "Posts",
+     "INVITE_NEW_USER": "Invite a New User",
+    
+     "HAVE_FUN": "Have fun, and good luck !",
+     "EMAIL_TXT_ASSISTANCE": "If you have trouble activating your %s account, you can reach out to %s on %s for assistance."
+},
+{
+    "plurial": {
+		"p": ["s"]
+	 },
+    
+	 "name": "en"
+}]
