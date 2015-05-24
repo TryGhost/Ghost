@@ -2,10 +2,10 @@
 
 {{gh-alerts notify="topNotificationChange"}}
 
-<div class="gh-viewport">
+<div class="gh-viewport {{autoNavClass}}">
 
     {{#unless signedOut}}
-        {{partial "nav-menu"}}
+        {{view "nav-menu"}}
     {{/unless}}
 
     <main id="gh-main" class="gh-main" role="main" data-notification-count={{topNotificationCount}}>
