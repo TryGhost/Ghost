@@ -28,6 +28,8 @@
     position: absolute;
     top: 0;
     left: 0;
+    display: flex;
+    align-items: center;
     margin: 0 0 0 3%;
     padding: 2px 9px 2px 5px;
     border: transparent 1px solid;
@@ -35,6 +37,12 @@
     color: #7d878a;
     font-weight: 100;
     transition: all 0.3s ease;
+}
+
+.gh-flow-back i {
+    margin-right: 4px;
+    font-size: 12px;
+    line-height: 8px;
 }
 
 .gh-flow-back:hover {
@@ -74,7 +82,9 @@
 }
 
 .gh-flow-nav .step {
-    display: table-cell;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 30px;
     height: 30px;
     border: transparent 2px solid;
@@ -85,10 +95,16 @@
     text-align: center;
     text-align: center;
     font-size: 1.3rem;
+    line-height: 1;
 }
 
 .gh-flow-nav .step .num {
     display: none;
+}
+
+.gh-flow-nav .step i {
+    font-size: 26px;
+    line-height: 22px;
 }
 
 .gh-flow-nav .current ~ li:not(divider) .step {
@@ -108,8 +124,7 @@
 .gh-flow-nav .current .step {
     border: var(--green) 2px solid;
     background: transparent;
-    color: var(--green);
-    font-weight: bold;
+    color: color(var(--green) lightness(-10%));
     cursor: default;
 }
 
@@ -126,6 +141,8 @@
     background: var(--green);
     color: #fff;
 }
+
+
 
 .gh-flow-content {
     max-width: 700px;
