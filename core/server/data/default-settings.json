@@ -58,7 +58,7 @@
             "defaultValue": "/:slug/",
             "validations": {
                 "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "matches": "(:id|:slug|:year|:month|:day)",
+                "matches": "(:id|:slug|:year|:month|:day|:author)",
                 "notContains": "/ghost/"
             }
         },
