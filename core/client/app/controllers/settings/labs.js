@@ -65,7 +65,7 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
         exportData: function () {
             var iframe = $('#iframeDownload'),
                 downloadURL = this.get('ghostPaths.url').api('db') +
-                    '?access_token=' + this.get('session.access_token');
+                    '?access_token=' + this.get('session.secure.access_token');
 
             if (iframe.length === 0) {
                 iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
