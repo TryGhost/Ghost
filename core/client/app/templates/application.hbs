@@ -2,15 +2,15 @@
 
 {{gh-alerts notify="topNotificationChange"}}
 
-<div class="gh-viewport">
+<div class="gh-viewport {{if autoNav 'gh-autonav'}}">
 
     {{#unless signedOut}}
-        {{partial "nav-menu"}}
+        {{gh-nav-menu open=showNavMenu autoNav=autoNav toggleMaximise="navMenuToggleMaximise" openModal="openModal"}}
     {{/unless}}
 
-    <main id="gh-main" class="gh-main" role="main" data-notification-count={{topNotificationCount}}>
+    {{#gh-main onMouseEnter="closeNavMenu" data-notification-count=topNotificationCount}}
         {{outlet}}
-    </main>
+    {{/gh-main}}
 
     {{gh-notifications}}
 
