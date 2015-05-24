@@ -18,33 +18,36 @@
         <link rel="stylesheet" type='text/css' href='//fonts.googleapis.com/css?family=Open+Sans:400,300,700'>
         <link rel="stylesheet" href="{{asset "ghost.css" ghost="true" minifyInProduction="true"}}" />
     </head>
-    <body class="ghost-setup">
-        <main role="main" id="main" class="viewport">
-            <section class="setup-box js-setup-box fade-in">
-                <div class="vertical">
-                    <form id="setup" class="setup-form private-login" method="post" novalidate="novalidate">
-                        <h1>This blog is private</h1>
-                        <div class="form-group">
-                            <span class="input-icon icon-lock">
-                                 {{input_password}}
-                            </span>
-                            <button class="btn btn-green private-login-button" type="submit">
-                                Enter
-                            </button>
+    <body>
+        <div class="gh-app">
+            <div class="gh-viewport">
+                <main class="gh-main" role="main">
+                    <div class="gh-flow">
+                        <div class="gh-flow-content-wrap">
+                            <section class="gh-flow-content">
+                                <header>
+                                    <h1>This blog is private</h1>
+                                </header>
+                                <form class="gh-signin" method="post" novalidate="novalidate">
+                                    <div class="form-group">
+                                        <span class="input-icon icon-lock">
+                                            {{input_password class="gh-input" placeholder="Password"}}
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-blue btn-block" type="submit">Enter Now</button>
+                                </form>
+                            </section>
                         </div>
-                    </form>
-                </div>
-            </section>
-        </main>
-
-        {{#if error}}
-        <aside class="notification bottom">
-            <div class="js-bb-notification">
-                <section class="js-notification notification-error">
-                    <span class="notification-message">{{error.message}}</span>
-                </section>
+                    </div>
+                </main>
+                {{#if error}}
+                <aside class="gh-notifications">
+                    <article class="gh-notification gh-notification-red">
+                        <div id="gh-notification-content">{{error.message}}</div>
+                    </article>
+                </aside>
+                {{/if}}
             </div>
-        </aside>
-        {{/if}}
+        </div>
     </body>
 </html>

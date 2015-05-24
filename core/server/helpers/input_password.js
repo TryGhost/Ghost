@@ -10,12 +10,23 @@ var hbs             = require('express-hbs'),
     utils           = require('./utils'),
     input_password;
 
-input_password = function () {
-    var output = utils.inputTemplate({
+input_password = function (options) {
+    options = options || {};
+    options.hash = options.hash || {};
+
+    var className = (options.hash.class) ? options.hash.class : 'private-login-password',
+        extras = 'autofocus="autofocus"',
+        output;
+
+    if (options.hash.placeholder) {
+        extras += ' placeholder="' + options.hash.placeholder + '"';
+    }
+
+    output = utils.inputTemplate({
         type: 'password',
         name: 'password',
-        className: 'private-login-password',
-        extras: 'autofocus="autofocus"'
+        className: className,
+        extras: extras
     });
 
     return new hbs.handlebars.SafeString(output);
