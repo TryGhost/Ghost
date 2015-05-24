@@ -105,6 +105,11 @@
     padding: 0;
     width: 16px;
     border: none;
+    color: #828282;
+}
+
+.modal-content .close:hover {
+    color: var(--darkgrey);
 }
 
 .modal-header {
