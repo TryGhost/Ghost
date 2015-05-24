@@ -196,11 +196,11 @@ textarea {
     border-radius: var(--border-radius);
 }
 
-.for-checkbox label .input-toggle-component {
+.for-checkbox .input-toggle-component {
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-.for-checkbox label .input-toggle-component:before {
+.for-checkbox .input-toggle-component:before {
     content: "";
     position: absolute;
     top: 4px;
@@ -215,12 +215,12 @@ textarea {
     transform: rotate(-45deg);
 }
 
-.for-checkbox label input:checked + .input-toggle-component {
+.for-checkbox input:checked + .input-toggle-component {
     border-color: color(var(--green) lightness(-10%));
     background: var(--green);
 }
 
-.for-checkbox label input:checked + .input-toggle-component:before {
+.for-checkbox input:checked + .input-toggle-component:before {
     opacity: 1;
 }
 
@@ -228,11 +228,11 @@ textarea {
     border-radius: 100px;
 }
 
-.for-radio label .input-toggle-component {
+.for-radio .input-toggle-component {
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-.for-radio label .input-toggle-component:before {
+.for-radio .input-toggle-component:before {
     content: "";
     position: absolute;
     top: 4px;
@@ -245,12 +245,12 @@ textarea {
     transition: opacity 0.15s ease-in-out;
 }
 
-.for-radio label input:checked + .input-toggle-component {
+.for-radio input:checked + .input-toggle-component {
     border-color: color(var(--green) lightness(-10%));
     background: var(--green);
 }
 
-.for-radio label input:checked + .input-toggle-component:before {
+.for-radio input:checked + .input-toggle-component:before {
     opacity: 1;
 }
 
