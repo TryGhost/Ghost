@@ -19,6 +19,8 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
         this._super(options);
     },
 
+    application: Ember.inject.controller(),
+
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
         this.notifications.showErrors(errors);
@@ -128,6 +130,10 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
 
         clearCoverImage: function () {
             this.saveActiveTagProperty('image', '');
+        },
+
+        closeNavMenu: function () {
+            this.get('application').send('closeNavMenu');
         }
     }
 });

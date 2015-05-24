@@ -9,6 +9,7 @@ var dropdownInitializer = {
         // Inject dropdowns
         application.inject('component:gh-dropdown', 'dropdown', 'dropdown:service');
         application.inject('component:gh-dropdown-button', 'dropdown', 'dropdown:service');
+        application.inject('controller:application', 'dropdown', 'dropdown:service');
         application.inject('controller:modals.delete-post', 'dropdown', 'dropdown:service');
         application.inject('controller:modals.transfer-owner', 'dropdown', 'dropdown:service');
         application.inject('route:application', 'dropdown', 'dropdown:service');
