@@ -19,10 +19,6 @@ var AppsRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     model: function () {
         return this.store.find('app');
-    },
-
-    renderTemplate: function () {
-        this.render('settings/apps', {into: 'application'});
     }
 });
 

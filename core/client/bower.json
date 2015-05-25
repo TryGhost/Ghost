@@ -20,7 +20,6 @@
     "loader.js": "3.2.1",
     "moment": "2.10.2",
     "normalize.css": "3.0.3",
-    "nprogress": "0.1.6",
     "password-generator": "git://github.com/bermi/password-generator#49accd7",
     "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.6",
