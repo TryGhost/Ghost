@@ -247,3 +247,9 @@
 .icon-check:before {
     content: "\e043";
 }
+.icon-grab:before {
+    content: "\e044";
+}
+.icon-add2:before {
+    content: "\e045";
+}

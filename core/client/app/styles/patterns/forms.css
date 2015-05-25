@@ -28,7 +28,7 @@ legend {
     margin: 2em 0;
     width: 100%;
     border-bottom: #e1e1e1 1px solid;
-    color: var(--brown);
+    color: #b1b1b1;
     font-size: 1.2em;
     line-height: 2.0em;
 }
@@ -50,7 +50,7 @@ input {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: #b3b2a8;
+    color: #b1b1b1;
     font-size: 1.3rem;
 }
 
@@ -107,9 +107,9 @@ select {
     display: block;
     padding: 8px 10px;
     width: 100%;
-    border: 1px solid #e0dfd7;
+    border: 1px solid #e1e1e1;
     border-radius: var(--border-radius);
-    color: var(--darkgrey);
+    color: #666;
     font-size: 1.4rem;
     font-weight: normal;
     user-select: text;
@@ -128,7 +128,7 @@ select.error {
 .gh-select:focus,
 select:focus {
     outline: 0;
-    border-color: var(--brown);
+    border-color: #b1b1b1;
 }
 
 textarea {
@@ -160,7 +160,7 @@ textarea {
 
 .for-radio label:hover input:not(:checked) + .input-toggle-component,
 .for-checkbox label:hover input:not(:checked) + .input-toggle-component {
-    border-color: var(--midbrown);
+    border-color: #e1e1e1;
 }
 
 .for-radio input,
@@ -321,6 +321,6 @@ textarea {
         padding: 7px 10px 7px 8px;
     }
     .gh-select:focus {
-        border-color: var(--brown);
+        border-color: #b1b1b1;
     }
 }
