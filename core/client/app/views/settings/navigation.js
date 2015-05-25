@@ -4,12 +4,12 @@ import BaseView from 'ghost/views/settings/content-base';
 var SettingsNavigationView = BaseView.extend({
 
     didInsertElement: function () {
-        var navContainer = Ember.$('.js-settings-navigation'),
-            navElements = '.navigation-item:not(.navigation-item:last-child)',
+        var navContainer = Ember.$('.js-gh-blognav'),
+            navElements = '.gh-blognav-item:not(.gh-blognav-item:last-child)',
             self = this;
 
         navContainer.sortable({
-            handle: '.navigation-item-drag-handle',
+            handle: '.gh-blognav-grab',
             items: navElements,
 
             start: function (event, ui) {
@@ -28,7 +28,7 @@ var SettingsNavigationView = BaseView.extend({
     },
 
     willDestroyElement: function () {
-        Ember.$('.js-settings-navigation').sortable('destroy');
+        Ember.$('.js-gh-blognav').sortable('destroy');
     }
 
 });
