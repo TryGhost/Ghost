@@ -22,32 +22,23 @@ Router.map(function () {
     this.route('reset', {path: '/reset/:token'});
     this.route('about', {path: '/about'});
 
-    this.resource('posts', {path: '/'}, function () {
+    this.route('posts', {path: '/'}, function () {
         this.route('post', {path: ':post_id'});
     });
 
-    this.resource('editor', function () {
+    this.route('editor', function () {
         this.route('new', {path: ''});
         this.route('edit', {path: ':post_id'});
     });
 
-    this.resource('settings', function () {
-        this.route('general');
-
-        this.resource('settings.users', {path: '/users'}, function () {
-            this.route('user', {path: '/:slug'});
-        });
-
-        // Redirect about page
-        this.route('about');
-        this.route('tags');
-        this.route('labs');
-        this.route('code-injection');
-        this.route('navigation');
+    this.route('settings.general', {path: '/settings/general'});
+    this.route('settings.users', {path: '/settings/users'}, function () {
+        this.route('user', {path: ':slug'});
     });
-
-    // Redirect debug to settings labs
-    this.route('debug');
+    this.route('settings.tags', {path: '/settings/tags'});
+    this.route('settings.labs', {path: '/settings/labs'});
+    this.route('settings.code-injection', {path: '/settings/code-injection'});
+    this.route('settings.navigation', {path: '/settings/navigation'});
 
     // Redirect legacy content to posts
     this.route('content');
