@@ -18,6 +18,7 @@
     height: 60px;
     border: 0;
     background: transparent;
+    color: var(--darkgrey);
     text-indent: 20px;
     letter-spacing: -1px;
     font-size: 3.2rem;
