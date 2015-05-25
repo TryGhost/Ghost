@@ -247,3 +247,15 @@
 .icon-check:before {
     content: "\e043";
 }
+.icon-grab:before {
+    content: "\e044";
+}
+.icon-add2:before {
+    content: "\e045";
+}
+.icon-pause:before {
+    content: "\e046";
+}
+.icon-play:before {
+    content: "\e047";
+}
