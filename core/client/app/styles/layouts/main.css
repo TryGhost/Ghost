@@ -19,6 +19,7 @@
     position: relative;
     flex-grow: 1;
     display: flex;
+    background: #fff;
 }
 
 
@@ -206,65 +207,122 @@
 }
 
 
-/* Auto Nav - Opens and closes like OSX dock
+/* Mobile Nav
 /* ---------------------------------------------------------- */
 
-.gh-autonav-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 5px 10px;
-    width: 45px;
-    height: 27px;
-    border-right: #e1e1e1 1px solid;
-    line-height: 1;
-    cursor: pointer;
+.gh-mobilemenu-button {
+    display: none;
 }
 
-.gh-autonav-toggle:hover {
-    cursor: pointer;
-}
+@media (max-width: 800px) {
+    .gh-mobilemenu-button {
+        flex-shrink: 0;
+        display: block;
+        margin: 0 5px 0 -10px;
+        padding: 10px;
+        font-size: 18px;
+        line-height: 18px;
+    }
 
-.gh-autonav-toggle i {
-    transition: all 0.2s ease;
-}
+    .gh-mobilemenu-button .icon-gh {
+        margin: 0;
+    }
 
-.gh-autonav-toggle:hover i {
-    color: var(--blue);
-}
+    /* Hide the nav */
+    .gh-nav {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 500;
+        width: 235px;
+        height: 100%;
+    }
 
-/* Hide the nav */
-.gh-autonav .gh-nav {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    width: 235px;
-    height: 100%;
-    transition: transform 0.20s;
-    /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
-    transform: translate3d(-220px,0,0);
-}
+    .gh-main {
+        z-index: 1000;
+        transition: transform 0.15s;
+        /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
+        transform: translate3d(0,0,0);
+    }
 
-/* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
-@supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
-    .gh-autonav .gh-nav {
-        background: rgba(246,246,246, 0.7);
-
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
+    /* Bring it back on toggle */
+    .gh-main.open {
+        transition: transform 0.10s;
+        transform: translate3d(235px,0,0);
     }
 }
 
-/* Bring it back on hover */
-.gh-autonav .gh-nav.open {
-    transition: transform 0.15s;
-    transform: translate3d(0,0,0);
+@media (max-width: 500px) {
+    .gh-nav {
+        width: 75vw;
+    }
+    .gh-main.open {
+        transform: translate3d(75vw,0,0);
+    }
 }
 
-/* Move main content over for the closed-nav trigger bar */
-.gh-autonav .gh-main {
-    margin-left: 15px;
+
+/* Auto Nav - Opens and closes like OSX dock
+/* ---------------------------------------------------------- */
+
+@media (min-width: 801px) {
+    .gh-autonav-toggle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 5px 10px;
+        width: 45px;
+        height: 27px;
+        border-right: #e1e1e1 1px solid;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .gh-autonav-toggle:hover {
+        cursor: pointer;
+    }
+
+    .gh-autonav-toggle i {
+        transition: all 0.2s ease;
+    }
+
+    .gh-autonav-toggle:hover i {
+        color: var(--blue);
+    }
+
+    /* Hide the nav */
+    .gh-autonav .gh-nav {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        width: 235px;
+        height: 100%;
+        transition: transform 0.20s;
+        /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
+        transform: translate3d(-220px,0,0);
+    }
+
+    /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
+    @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+        .gh-autonav .gh-nav {
+            background: rgba(246,246,246, 0.7);
+
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+    }
+
+    /* Bring it back on hover */
+    .gh-autonav .gh-nav.open {
+        transition: transform 0.15s;
+        transform: translate3d(0,0,0);
+    }
+
+    /* Move main content over for the closed-nav trigger bar */
+    .gh-autonav .gh-main {
+        margin-left: 15px;
+    }
 }
 
 
