@@ -1,6 +1,6 @@
 import Ember from 'ember';
 var NavItemComponent = Ember.Component.extend({
-    classNames: 'navigation-item',
+    classNames: 'gh-blognav-item',
 
     attributeBindings: ['order:data-order'],
     order: Ember.computed.readOnly('navItem.order'),
