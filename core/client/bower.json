@@ -25,8 +25,8 @@
     "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.6",
     "validator-js": "3.39.0",
-    "xregexp": "2.0.0"
-
+    "xregexp": "2.0.0",
+    "cdnjs-zxcvbn-async": "0.1.0"
   },
   "devDependencies": {
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",
