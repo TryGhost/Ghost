@@ -5,8 +5,8 @@
     </section>
 </header>
 
-<section class="view-content settings-navigation">
-    <form id="settings-navigation" class="js-settings-navigation" novalidate="novalidate">
+<section class="view-container">
+    <form id="settings-navigation" class="gh-blognav js-gh-blognav" novalidate="novalidate">
         {{#each navItem in navigationItems}}
             {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addItem" deleteItem="deleteItem" updateUrl="updateUrl"}}
         {{/each}}
