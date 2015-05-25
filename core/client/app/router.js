@@ -20,6 +20,7 @@ Router.map(function () {
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
+    this.route('about', {path: '/about'});
 
     this.resource('posts', {path: '/'}, function () {
         this.route('post', {path: ':post_id'});
@@ -37,6 +38,7 @@ Router.map(function () {
             this.route('user', {path: '/:slug'});
         });
 
+        // Redirect about page
         this.route('about');
         this.route('tags');
         this.route('labs');
