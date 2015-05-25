@@ -75,6 +75,11 @@ screens = {
         linkSelector: '.gh-nav-main-editor',
         selector: '.gh-nav-main-editor.active'
     },
+    about: {
+        url: 'ghost/settings/about',
+        linkSelector: '.gh-nav-menu-about',
+        selector: '.gh-about-header'
+    },
     'editor.editing': {
         url: 'ghost/editor/',
         linkSelector: 'a.post-edit',
