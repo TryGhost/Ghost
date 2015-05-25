@@ -1,5 +1,6 @@
-import Ember from 'ember';
 /* global console */
+
+import Ember from 'ember';
 import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import imageManager from 'ghost/utils/ed-image-manager';

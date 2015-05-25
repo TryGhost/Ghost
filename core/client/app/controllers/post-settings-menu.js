@@ -12,6 +12,8 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
     selectedAuthor: null,
     uploaderReference: null,
 
+    application: Ember.inject.controller(),
+
     initializeSelectedAuthor: function () {
         var self = this;
 
@@ -456,6 +458,10 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
 
         resetPubDate: function () {
             this.set('publishedAtValue', '');
+        },
+
+        closeNavMenu: function () {
+            this.get('application').send('closeNavMenu');
         }
     }
 });

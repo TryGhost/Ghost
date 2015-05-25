@@ -1,32 +1,28 @@
 import Ember from 'ember';
-var ApplicationController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
     // jscs: disable
     signedOut: Ember.computed.match('currentPath', /(signin|signup|setup|reset)/),
     // jscs: enable
 
     topNotificationCount: 0,
-    showGlobalMobileNav: false,
+    showNavMenu: false,
     showSettingsMenu: false,
 
-    userImage: Ember.computed('session.user.image', function () {
-        return this.get('session.user.image') || this.get('ghostPaths.url').asset('/shared/img/user-image.png');
-    }),
-
-    userImageBackground: Ember.computed('userImage', function () {
-        return `background-image: url(${this.get('userImage')})`.htmlSafe();
-    }),
-
-    userImageAlt: Ember.computed('session.user.name', function () {
-        var name = this.get('session.user.name');
-
-        return (name) ? name + '\'s profile picture' : 'Profile picture';
-    }),
+    autoNav: false,
 
     actions: {
         topNotificationChange: function (count) {
             this.set('topNotificationCount', count);
+        },
+
+        closeNavMenu: function () {
+            this.get('dropdown').closeDropdowns();
+            this.set('showNavMenu', false);
+        },
+
+        navMenuToggleMaximise: function () {
+            this.toggleProperty('autoNav');
         }
     }
 });
-
-export default ApplicationController;
