@@ -76,7 +76,7 @@ screens = {
         selector: '.gh-nav-main-editor.active'
     },
     about: {
-        url: 'ghost/settings/about',
+        url: 'ghost/about',
         linkSelector: '.gh-nav-menu-about',
         selector: '.gh-about-header'
     },
@@ -88,11 +88,6 @@ screens = {
     'settings.general': {
         url: 'ghost/settings/general',
         selector: '.gh-nav-settings-general.active'
-    },
-    'settings.about': {
-        url: 'ghost/settings/about',
-        linkSelector: '.gh-nav-menu-about',
-        selector: '.gh-about-header'
     },
     'settings.users': {
         url: 'ghost/settings/users',
