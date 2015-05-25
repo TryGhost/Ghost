@@ -5,117 +5,101 @@
 /* Navigation
 /* ---------------------------------------------------------- */
 
-.navigation-item {
+.gh-blognav {
+    margin: 20px 0;
+}
+
+.gh-blognav-item {
     display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 20px;
 }
 
-@media (max-width: 600px) {
-    .navigation-item {
-        position: relative;
-        margin-bottom: 20px;
-    }
-}
-
-@media (min-width: 601px) {
-    .navigation-item {
-        margin-bottom: 10px;
-    }
-}
-
-.navigation-item:last-child {
-    padding-left: 17px;
-    /* simulate .navigation-item-drag-handle width + horizontal padding */
-}
-
-.navigation-item:last-child .navigation-item-drag-handle {
-    display: none;
-}
-
-.navigation-item-drag-handle {
-    padding: 6px 17px 0 0;
-    width: 17px;
+.gh-blognav-grab {
+    padding: 0 16px 0 0;
+    width: 16px;
+    color: #d1d1d1;
+    text-indent: -4px;
+    font-size: 16px;
     cursor: move;
 }
 
-@media (max-width: 600px) {
-    .navigation-item-drag-handle:before {
-        position: absolute;
-        top: 50%;
-        left: 0;
-        z-index: 20;
-        margin-top: -9px;
-    }
+.gh-blognav-url .fake-placeholder {
+    color: #c1c1c1;
 }
 
-.navigation-inputs {
+.gh-blognav-line {
+    display: flex;
     width: 100%;
 }
 
-.navigation-item-url .fake-placeholder {
-    color: lightgrey;
+.gh-blognav-label {
+    flex-grow: 1;
+    margin-right: 10px;
 }
 
-@media (max-width: 600px) {
-    .navigation-item-label {
-        margin-bottom: 5px;
-    }
-    .navigation-item-label,
-    .navigation-item-url {
-        display: block;
-        width: 100%;
-    }
+.gh-blognav-url {
+    flex-grow: 3;
 }
 
-@media (min-width: 601px) {
-    .navigation-inputs {
-        display: flex;
-    }
-    .navigation-item-label {
-        flex-grow: 1;
-        margin-right: 10px;
-    }
-    .navigation-item-url {
-        flex-grow: 3;
-    }
-}
-
-.navigation-item-action {
-    position: relative;
-    z-index: 10;
-    padding-left: 10px;
-    width: 40px;
-}
-
-.navigation-item-action button {
-    position: absolute;
-    top: 50%;
-    margin-top: -2px;
-    width: 30px;
-    height: 30px;
-    transform: translateY(-50%);
-}
-
-.navigation-item-action .icon-trash:before {
-    color: var(--midbrown);
-    font-size: 16px;
+.gh-blognav-delete {
+    padding: 8px 0 8px 10px;
+    color: #c1c1c1;
+    font-size: 14px;
     transition: color 0.1s linear;
 }
 
-.navigation-item-action .icon-trash:hover:before {
+.gh-blognav-delete:hover,
+.gh-blognav-delete:focus {
     color: var(--red);
 }
 
-.navigation-item-action .icon-add:before {
-    padding: 3px;
+.gh-blognav-add {
+    margin-right: -2px;
+    margin-left: 10px;
+    width: 16px;
+    height: 16px;
     background: var(--green);
     border-radius: 2px;
     color: #fff;
-    font-size: 12px;
+    text-align: center;
+    font-size: 10px;
+    line-height: 8px;
     transition: background 0.1s linear;
 }
 
-.navigation-item-action .icon-add:hover:before {
+.gh-blognav-add:hover,
+.gh-blognav-add:focus {
     background: color(var(--green) lightness(-10%));
+}
+
+.gh-blognav-item:last-child {
+    padding-left: calc(16px + 20px);
+    /* icon-grab + nav-item padding) */
+}
+
+.gh-blognav-item:last-child .gh-blognav-grab {
+    display: none;
+}
+
+/* Remove space between inputs on smaller screens */
+@media (max-width: 800px) {
+    .gh-blognav-label {
+        margin-right: -1px;
+    }
+    .gh-blognav-label input {
+        border-right-color: #eaeaea;
+        border-radius: 4px 0 0 4px;
+    }
+    .gh-blognav-url input {
+        border-left-color: #eaeaea;
+        border-radius: 0 4px 4px 0;
+    }
+    .gh-blognav-item input:focus {
+        position: relative;
+        z-index: 100;
+    }
 }
 
 
