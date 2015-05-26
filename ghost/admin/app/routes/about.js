@@ -1,8 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import styleBody from 'ghost/mixins/style-body';
 
-var AboutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
+var AboutRoute = AuthenticatedRoute.extend(styleBody, {
     titleToken: 'About',
 
     classNames: ['view-about'],
