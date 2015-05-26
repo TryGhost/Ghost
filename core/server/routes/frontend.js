@@ -41,7 +41,7 @@ frontendRoutes = function (middleware) {
         )
         .post(
             middleware.isPrivateSessionAuth,
-            middleware.spamProtectedPrevention,
+            middleware.spamPrevention.protected,
             middleware.authenticateProtection,
             frontend.private
         );
