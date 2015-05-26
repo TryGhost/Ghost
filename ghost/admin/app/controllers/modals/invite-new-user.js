@@ -1,5 +1,8 @@
 import Ember from 'ember';
-var InviteNewUserController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
+    notifications: Ember.inject.service(),
+
     // Used to set the initial value for the dropdown
     authorRole: Ember.computed(function () {
         var self = this;
@@ -45,9 +48,9 @@ var InviteNewUserController = Ember.Controller.extend({
 
                 if (invitedUser) {
                     if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
-                        self.notifications.showWarn('A user with that email address was already invited.');
+                        self.get('notifications').showWarn('A user with that email address was already invited.');
                     } else {
-                        self.notifications.showWarn('A user with that email address already exists.');
+                        self.get('notifications').showWarn('A user with that email address already exists.');
                     }
                 } else {
                     newUser = self.store.createRecord('user', {
@@ -62,13 +65,13 @@ var InviteNewUserController = Ember.Controller.extend({
                         // If sending the invitation email fails, the API will still return a status of 201
                         // but the user's status in the response object will be 'invited-pending'.
                         if (newUser.get('status') === 'invited-pending') {
-                            self.notifications.showWarn('Invitation email was not sent.  Please try resending.');
+                            self.get('notifications').showWarn('Invitation email was not sent.  Please try resending.');
                         } else {
-                            self.notifications.showSuccess(notificationText);
+                            self.get('notifications').showSuccess(notificationText);
                         }
                     }).catch(function (errors) {
                         newUser.deleteRecord();
-                        self.notifications.showErrors(errors);
+                        self.get('notifications').showErrors(errors);
                     });
                 }
             });
@@ -79,5 +82,3 @@ var InviteNewUserController = Ember.Controller.extend({
         }
     }
 });
-
-export default InviteNewUserController;

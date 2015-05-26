@@ -2,6 +2,8 @@ import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
 var Preview = Ember.Component.extend({
+    config: Ember.inject.service(),
+
     didInsertElement: function () {
         this.set('scrollWrapper', this.$().closest('.entry-preview-content'));
         Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);

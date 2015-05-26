@@ -2,9 +2,8 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import SelectiveSaveMixin from 'ghost/mixins/selective-save';
 
-export default DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
+export default DS.Model.extend(ValidationEngine, {
     validationType: 'user',
 
     uuid: DS.attr('string'),
@@ -27,6 +26,8 @@ export default DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
     roles: DS.hasMany('role', {embedded: 'always'}),
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
 
     role: Ember.computed('roles', function (name, value) {
         if (arguments.length > 1) {
@@ -93,13 +94,13 @@ export default DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
 
     isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]'),
 
-    active: function () {
+    active: Ember.computed('status', function () {
         return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
-    }.property('status'),
+    }),
 
-    invited: function () {
+    invited: Ember.computed('status', function () {
         return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
-    }.property('status'),
+    }),
 
     pending: Ember.computed.equal('status', 'invited-pending').property('status')
 });
