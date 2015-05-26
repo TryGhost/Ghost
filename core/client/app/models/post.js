@@ -1,9 +1,8 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+var Post = DS.Model.extend(ValidationEngine, {
     validationType: 'post',
 
     uuid: DS.attr('string'),

@@ -1,10 +1,9 @@
 import Ember from 'ember';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
-var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndicator, {
+var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
 
     actions: {
