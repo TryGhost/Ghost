@@ -6,6 +6,8 @@ import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 var UploadModal = ModalDialog.extend({
     layoutName: 'components/gh-modal-dialog',
 
+    config: Ember.inject.service(),
+
     didInsertElement: function () {
         this._super();
         upload.call(this.$('.js-drop-zone'), {fileStorage: this.get('config.fileStorage')});

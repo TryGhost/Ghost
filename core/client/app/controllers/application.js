@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
+    dropdown: Ember.inject.service(),
+
     // jscs: disable
     signedOut: Ember.computed.match('currentPath', /(signin|signup|setup|reset)/),
     // jscs: enable

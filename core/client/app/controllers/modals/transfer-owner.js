@@ -2,6 +2,10 @@ import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
 export default Ember.Controller.extend({
+    dropdown: Ember.inject.service(),
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
+
     actions: {
         confirmAccept: function () {
             var user = this.get('model'),
@@ -29,9 +33,9 @@ export default Ember.Controller.extend({
                     });
                 }
 
-                self.notifications.showSuccess('Ownership successfully transferred to ' + user.get('name'));
+                self.get('notifications').showSuccess('Ownership successfully transferred to ' + user.get('name'));
             }).catch(function (error) {
-                self.notifications.showAPIError(error);
+                self.get('notifications').showAPIError(error);
             });
         },
 

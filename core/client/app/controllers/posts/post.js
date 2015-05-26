@@ -1,7 +1,12 @@
 import Ember from 'ember';
-var PostController = Ember.Controller.extend({
-    isPublished: Ember.computed.equal('model.status', 'published'),
+
+export default Ember.Controller.extend({
     classNameBindings: ['model.featured'],
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
+
+    isPublished: Ember.computed.equal('model.status', 'published'),
 
     authorName: Ember.computed('model.author.name', 'model.author.email', function () {
         return this.get('model.author.name') || this.get('model.author.email');
@@ -17,17 +22,16 @@ var PostController = Ember.Controller.extend({
 
     actions: {
         toggleFeatured: function () {
-            var self = this;
+            var notifications = this.get('notifications');
 
             this.toggleProperty('model.featured');
             this.get('model').save().catch(function (errors) {
-                self.notifications.showErrors(errors);
+                notifications.showErrors(errors);
             });
         },
+
         showPostContent: function () {
             this.transitionToRoute('posts.post', this.get('model'));
         }
     }
 });
-
-export default PostController;

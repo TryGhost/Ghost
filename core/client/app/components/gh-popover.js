@@ -1,7 +1,7 @@
+import Ember from 'ember';
 import GhostDropdown from 'ghost/components/gh-dropdown';
 
-var GhostPopover = GhostDropdown.extend({
-    classNames: 'ghost-popover'
+export default GhostDropdown.extend({
+    classNames: 'ghost-popover',
+    dropdown: Ember.inject.service()
 });
-
-export default GhostPopover;

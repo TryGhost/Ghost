@@ -1,11 +1,14 @@
+import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var AppsRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Apps',
 
     classNames: ['settings-view-apps'],
+
+    config: Ember.inject.service(),
 
     beforeModel: function () {
         if (!this.get('config.apps')) {
@@ -21,5 +24,3 @@ var AppsRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         return this.store.find('app');
     }
 });
-
-export default AppsRoute;

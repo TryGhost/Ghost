@@ -1,8 +1,6 @@
 import Ember from 'ember';
-var NavigationController,
-    NavItem;
 
-NavItem = Ember.Object.extend({
+var NavItem = Ember.Object.extend({
     label: '',
     url: '',
     last: false,
@@ -12,7 +10,10 @@ NavItem = Ember.Object.extend({
     })
 });
 
-NavigationController = Ember.Controller.extend({
+export default Ember.Controller.extend({
+    config: Ember.inject.service(),
+    notifications: Ember.inject.service(),
+
     blogUrl: Ember.computed('config.blogUrl', function () {
         var url = this.get('config.blogUrl');
 
@@ -96,18 +97,18 @@ NavigationController = Ember.Controller.extend({
         },
 
         save: function () {
-            var self = this,
-                navSetting,
+            var navSetting,
                 blogUrl = this.get('config').blogUrl,
                 blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
                 navItems = this.get('navigationItems'),
                 message = 'One of your navigation items has an empty label. ' +
                     '<br /> Please enter a new label or delete the item before saving.',
-                match;
+                match,
+                notifications = this.get('notifications');
 
             // Don't save if there's a blank label.
-            if (navItems.find(function (item) { return !item.get('isComplete') && !item.get('last');})) {
-                self.notifications.showErrors([message.htmlSafe()]);
+            if (navItems.find(function (item) {return !item.get('isComplete') && !item.get('last');})) {
+                notifications.showErrors([message.htmlSafe()]);
                 return;
             }
 
@@ -147,15 +148,13 @@ NavigationController = Ember.Controller.extend({
             // we need to have navigationItems recomputed.
             this.get('model').notifyPropertyChange('navigation');
 
-            this.notifications.closePassive();
+            notifications.closePassive();
 
             this.get('model').save().then(function () {
-                self.notifications.showSuccess('Navigation items saved.');
+                notifications.showSuccess('Navigation items saved.');
             }).catch(function (err) {
-                self.notifications.showErrors(err);
+                notifications.showErrors(err);
             });
         }
     }
 });
-
-export default NavigationController;
