@@ -5,6 +5,8 @@ export default Ember.Component.extend({
     classNames: ['gh-nav'],
     classNameBindings: ['open'],
 
+    config: Ember.inject.service(),
+
     open: false,
 
     autoNav: null,

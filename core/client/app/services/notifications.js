@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import Notification from 'ghost/models/notification';
 
-var Notifications = Ember.ArrayProxy.extend({
-    delayedNotifications: [],
+export default Ember.Service.extend({
+    delayedNotifications: Ember.A(),
     content: Ember.A(),
     timeout: 3000,
 
@@ -25,6 +25,7 @@ var Notifications = Ember.ArrayProxy.extend({
 
         this._super(object);
     },
+
     handleNotification: function (message, delayed) {
         if (typeof message.toJSON === 'function') {
             // If this is a persistent message from the server, treat it as html safe
@@ -42,11 +43,12 @@ var Notifications = Ember.ArrayProxy.extend({
         }
 
         if (!delayed) {
-            this.pushObject(message);
+            this.get('content').pushObject(message);
         } else {
-            this.delayedNotifications.push(message);
+            this.delayedNotifications.pushObject(message);
         }
     },
+
     showError: function (message, options) {
         options = options || {};
 
@@ -59,6 +61,7 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         }, options.delayed);
     },
+
     showErrors: function (errors, options) {
         options = options || {};
 
@@ -70,6 +73,7 @@ var Notifications = Ember.ArrayProxy.extend({
             this.showError(errors[i].message || errors[i], {doNotClosePassive: true});
         }
     },
+
     showAPIError: function (resp, options) {
         options = options || {};
 
@@ -89,6 +93,7 @@ var Notifications = Ember.ArrayProxy.extend({
             this.showError(options.defaultErrorText, {doNotClosePassive: true});
         }
     },
+
     showInfo: function (message, options) {
         options = options || {};
 
@@ -101,6 +106,7 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         }, options.delayed);
     },
+
     showSuccess: function (message, options) {
         options = options || {};
 
@@ -113,6 +119,7 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         }, options.delayed);
     },
+
     showWarn: function (message, options) {
         options = options || {};
 
@@ -125,35 +132,38 @@ var Notifications = Ember.ArrayProxy.extend({
             message: message
         }, options.delayed);
     },
+
     displayDelayed: function () {
         var self = this;
 
         self.delayedNotifications.forEach(function (message) {
-            self.pushObject(message);
+            self.get('content').pushObject(message);
         });
         self.delayedNotifications = [];
     },
+
     closeNotification: function (notification) {
-        var self = this;
+        var content = this.get('content');
 
         if (notification instanceof Notification) {
             notification.deleteRecord();
             notification.save().finally(function () {
-                self.removeObject(notification);
+                content.removeObject(notification);
             });
         } else {
-            this.removeObject(notification);
+            content.removeObject(notification);
         }
     },
+
     closePassive: function () {
-        this.set('content', this.rejectBy('status', 'passive'));
+        this.set('content', this.get('content').rejectBy('status', 'passive'));
     },
+
     closePersistent: function () {
-        this.set('content', this.rejectBy('status', 'persistent'));
+        this.set('content', this.get('content').rejectBy('status', 'persistent'));
     },
+
     closeAll: function () {
-        this.clear();
+        this.get('content').clear();
     }
 });
-
-export default Notifications;

@@ -2,6 +2,8 @@ import Ember from 'ember';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
 export default Ember.Mixin.create({
+    notifications: Ember.inject.service(),
+
     // set from PaginationRouteMixin
     paginationSettings: null,
 
@@ -23,7 +25,7 @@ export default Ember.Mixin.create({
             message += '.';
         }
 
-        this.notifications.showError(message);
+        this.get('notifications').showError(message);
     },
 
     actions: {
