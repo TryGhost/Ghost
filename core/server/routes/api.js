@@ -69,7 +69,7 @@ apiRoutes = function (middleware) {
 
     // ## Authentication
     router.post('/authentication/passwordreset',
-        middleware.spamForgottenPrevention,
+        middleware.spamPrevention.forgotten,
         api.http(api.authentication.generateResetToken)
     );
     router.put('/authentication/passwordreset', api.http(api.authentication.resetPassword));
@@ -78,7 +78,7 @@ apiRoutes = function (middleware) {
     router.post('/authentication/setup', api.http(api.authentication.setup));
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',
-        middleware.spamSigninPrevention,
+        middleware.spamPrevention.signin,
         middleware.addClientSecret,
         middleware.authenticateClient,
         middleware.generateAccessToken

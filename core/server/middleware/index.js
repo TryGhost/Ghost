@@ -232,7 +232,7 @@ setupMiddleware = function (blogAppInstance, adminApp) {
     blogApp = blogAppInstance;
     middleware.cacheBlogApp(blogApp);
     middleware.cacheOauthServer(oauthServer);
-    oauth.init(oauthServer, middleware.resetSpamCounter);
+    oauth.init(oauthServer, middleware.spamPrevention.resetCounter);
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
