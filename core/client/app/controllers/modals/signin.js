@@ -2,9 +2,10 @@ import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 export default Ember.Controller.extend(ValidationEngine, {
-    needs: 'application',
-
     validationType: 'signin',
+
+    application: Ember.inject.controller(),
+    notifications: Ember.inject.service(),
 
     identification: Ember.computed('session.user.email', function () {
         return this.get('session.user.email');
@@ -12,7 +13,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     actions: {
         authenticate: function () {
-            var appController = this.get('controllers.application'),
+            var appController = this.get('application'),
                 authStrategy = 'simple-auth-authenticator:oauth2-password-grant',
                 data = this.getProperties('identification', 'password'),
                 self = this;
@@ -21,7 +22,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
             this.get('session').authenticate(authStrategy, data).then(function () {
                 self.send('closeModal');
-                self.notifications.showSuccess('Login successful.');
+                self.get('notifications').showSuccess('Login successful.');
                 self.set('password', '');
             }).catch(function () {
                 // if authentication fails a rejected promise will be returned.
@@ -40,10 +41,10 @@ export default Ember.Controller.extend(ValidationEngine, {
             $('#login').find('input').trigger('change');
 
             this.validate({format: false}).then(function () {
-                self.notifications.closePassive();
+                self.get('notifications').closePassive();
                 self.send('authenticate');
             }).catch(function (errors) {
-                self.notifications.showErrors(errors);
+                self.get('notifications').showErrors(errors);
             });
         },
 

@@ -2,9 +2,10 @@ import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
 export default Ember.Object.extend({
-    ghostPaths: null,
     slugType: null,
     value: null,
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
 
     toString: function () {
         return this.get('value');

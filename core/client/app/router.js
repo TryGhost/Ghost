@@ -6,9 +6,13 @@ var Router = Ember.Router.extend({
     location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
     rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 
+    notifications: Ember.inject.service(),
+
     clearNotifications: Ember.on('didTransition', function () {
-        this.notifications.closePassive();
-        this.notifications.displayDelayed();
+        var notifications = this.get('notifications');
+
+        notifications.closePassive();
+        notifications.displayDelayed();
     })
 });
 
