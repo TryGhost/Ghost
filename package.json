@@ -15,12 +15,7 @@
   },
   "bugs": "https://github.com/TryGhost/Ghost/issues",
   "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://raw.github.com/TryGhost/Ghost/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "main": "./core/index",
   "scripts": {
     "start": "node index",
