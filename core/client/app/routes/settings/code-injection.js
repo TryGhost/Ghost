@@ -1,9 +1,8 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUserSettings, {
+var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     classNames: ['settings-view-code'],
 
     beforeModel: function () {

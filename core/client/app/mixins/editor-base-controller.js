@@ -41,7 +41,6 @@ EditorControllerMixin = Ember.Mixin.create({
 
             saveOptions = {
                 silent: true,
-                disableNProgress: true,
                 backgroundSave: true
             };
 
@@ -363,7 +362,7 @@ EditorControllerMixin = Ember.Mixin.create({
 
         autoSaveNew: function () {
             if (this.get('model.isNew')) {
-                this.send('save', {silent: true, disableNProgress: true, backgroundSave: true});
+                this.send('save', {silent: true, backgroundSave: true});
             }
         }
     }

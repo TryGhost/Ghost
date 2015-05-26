@@ -1,9 +1,8 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var LabsRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUserSettings, {
+var LabsRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Labs',
 
     classNames: ['settings'],

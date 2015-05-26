@@ -17,11 +17,10 @@ var PostController = Ember.Controller.extend({
 
     actions: {
         toggleFeatured: function () {
-            var options = {disableNProgress: true},
-                self = this;
+            var self = this;
 
             this.toggleProperty('model.featured');
-            this.get('model').save(options).catch(function (errors) {
+            this.get('model').save().catch(function (errors) {
                 self.notifications.showErrors(errors);
             });
         },

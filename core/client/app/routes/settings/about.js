@@ -1,8 +1,7 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsAboutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
+var SettingsAboutRoute = AuthenticatedRoute.extend(styleBody, {
     beforeModel: function () {
         this.transitionTo('about');
     }
