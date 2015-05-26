@@ -7,7 +7,6 @@
     "$",
     "validator",
     "ic",
-    "NProgress",
     "moment"
   ],
   "browser": true,

@@ -1,9 +1,8 @@
 import Ember from 'ember';
 import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
+var SignupRoute = Ember.Route.extend(styleBody, {
     classNames: ['ghost-signup'],
 
     beforeModel: function () {

@@ -1,8 +1,7 @@
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Setting = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+var Setting = DS.Model.extend(ValidationEngine, {
     validationType: 'setting',
 
     title: DS.attr('string'),

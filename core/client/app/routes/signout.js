@@ -1,9 +1,8 @@
 import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var SignoutRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, {
+var SignoutRoute = AuthenticatedRoute.extend(styleBody,  {
     titleToken: 'Sign Out',
 
     classNames: ['ghost-signout'],

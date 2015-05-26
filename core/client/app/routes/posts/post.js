@@ -1,10 +1,9 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute, {
+var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
     model: function (params) {
         var self = this,
             post,
