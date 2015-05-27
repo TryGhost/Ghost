@@ -198,7 +198,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 // ### User settings tests
 CasperTest.begin('Can save settings', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost Admin title is correct');
+        test.assertTitle('Team - User - Test Blog', 'Ghost Admin title is correct');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'settings.users.user has correct URL');
     });
 
@@ -273,7 +273,7 @@ CasperTest.begin('User settings screen resets all whitespace slug to original va
     var slug;
 
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
@@ -301,7 +301,7 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
     var slug;
 
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
@@ -332,7 +332,7 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
     var email;
 
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
@@ -378,7 +378,7 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
 // TODO: user needs to be loaded whenever it is edited (multi user)
 CasperTest.begin('User settings screen shows remaining characters for Bio properly', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
@@ -403,7 +403,7 @@ CasperTest.begin('User settings screen shows remaining characters for Bio proper
 
 CasperTest.begin('Ensure user bio field length validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
@@ -422,7 +422,7 @@ CasperTest.begin('Ensure user bio field length validation', 3, function suite(te
 
 CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 
@@ -441,7 +441,7 @@ CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
 
 CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.users.user', function testTitleAndUrl() {
-        test.assertTitle('Settings - User - Test Blog', 'Ghost admin has incorrect title');
+        test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/users\/test\/$/, 'Ghost doesn\'t require login this time');
     });
 

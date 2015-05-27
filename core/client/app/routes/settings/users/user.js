@@ -3,7 +3,7 @@ import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
 var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
-    titleToken: 'User',
+    titleToken: 'Team - User',
 
     classNames: ['settings-view-user'],
 
@@ -47,10 +47,6 @@ var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings
         }
 
         this._super();
-    },
-
-    renderTemplate: function () {
-        this.render('settings/users/user', {into: 'application'});
     },
 
     actions: {
