@@ -39,11 +39,11 @@ export default Ember.Controller.extend(ValidationEngine, {
                         identification: self.get('model.email'),
                         password: self.get('model.password')
                     });
-                }, function (resp) {
+                }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     notifications.showAPIError(resp);
                 });
-            }, function (errors) {
+            }).catch(function (errors) {
                 self.toggleProperty('submitting');
                 notifications.showErrors(errors);
             });

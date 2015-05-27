@@ -1,9 +1,9 @@
 /* global md5 */
 import Ember from 'ember';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var SetupTwoController = Ember.Controller.extend(ValidationEngine, {
+export default Ember.Controller.extend(ValidationEngine, {
     size: 90,
     blogTitle: null,
     name: null,
@@ -11,6 +11,9 @@ var SetupTwoController = Ember.Controller.extend(ValidationEngine, {
     password: null,
     image: null,
     submitting: false,
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
 
     gravatarUrl: Ember.computed('email', function () {
         var email = this.get('email'),
@@ -33,9 +36,10 @@ var SetupTwoController = Ember.Controller.extend(ValidationEngine, {
     actions: {
         setup: function () {
             var self = this,
+                notifications = this.get('notifications'),
                 data = self.getProperties('blogTitle', 'name', 'email', 'password');
 
-            self.notifications.closePassive();
+            notifications.closePassive();
 
             this.toggleProperty('submitting');
             this.validate({format: false}).then(function () {
@@ -57,14 +61,12 @@ var SetupTwoController = Ember.Controller.extend(ValidationEngine, {
                     });
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
-                    self.notifications.showAPIError(resp);
+                    notifications.showAPIError(resp);
                 });
             }).catch(function (errors) {
                 self.toggleProperty('submitting');
-                self.notifications.showErrors(errors);
+                notifications.showErrors(errors);
             });
         }
     }
 });
-
-export default SetupTwoController;

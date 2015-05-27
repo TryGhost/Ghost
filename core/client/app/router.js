@@ -19,7 +19,7 @@ var Router = Ember.Router.extend({
 documentTitle();
 
 Router.map(function () {
-    this.resource('setup', function () {
+    this.route('setup', function () {
         this.route('one');
         this.route('two');
         this.route('three');
