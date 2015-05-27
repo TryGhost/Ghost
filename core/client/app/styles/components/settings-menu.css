@@ -19,7 +19,7 @@
     transform: translate3d(350px, 0px, 0px);
 }
 
-body.settings-menu-expanded .settings-menu-container {
+.settings-menu-expanded .settings-menu-container {
     transform: translate3d(0, 0px, 0px);
 }
 
@@ -153,14 +153,20 @@ body.settings-menu-expanded .settings-menu-container {
 /* Background
 /* ---------------------------------------------------------- */
 
-body.settings-menu-expanded .content-cover {
+.settings-menu-expanded .content-cover,
+.mobile-menu-expanded .content-cover {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 600;
+    z-index: 900;
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    transform: translate3d(-350px, 0px, 0px);
     /* Not off the screen, to give a parallax effect */
+}
+.settings-menu-expanded .content-cover {
+    transform: translate3d(-350px, 0px, 0px);
+}
+.mobile-menu-expanded .content-cover {
+    transform: translate3d(235px, 0px, 0px);
 }
