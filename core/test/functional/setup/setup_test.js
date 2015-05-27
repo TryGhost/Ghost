@@ -5,10 +5,10 @@
 
 CasperTest.begin('Ghost setup fails properly', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('setup', function then() {
-        test.assertUrlMatch(/ghost\/setup\/$/, 'Landed on the correct URL');
+        test.assertUrlMatch(/ghost\/setup\/one\/$/, 'Landed on the correct URL');
     });
 
-    casper.then(function setupWithShortPassword() {
+    casper.thenTransitionAndWaitForScreenLoad('setup.two', function setupWithShortPassword() {
         casper.fillAndAdd('#setup', {'blog-title': 'ghost', name: 'slimer', email: email, password: 'short'});
     });
 

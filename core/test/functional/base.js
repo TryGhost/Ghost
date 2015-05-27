@@ -120,8 +120,17 @@ screens = {
         selector: '.btn-blue'
     },
     setup: {
-        url: 'ghost/setup/',
+        url: 'ghost/setup/one/',
         selector: '.btn-green'
+    },
+    'setup.two': {
+        url: 'ghost/setup/two/',
+        linkSelector: '.btn-green',
+        selector: '.gh-flow-create'
+    },
+    'setup.three': {
+        url: 'ghost/setup/three/',
+        selector: '.gh-flow-invite'
     },
     'setup-authenticated': {
         url: 'ghost/setup/',
@@ -395,12 +404,10 @@ CasperTest = (function () {
 
 CasperTest.Routines = (function () {
     function setup() {
-        casper.thenOpenAndWaitForPageLoad('setup', function then() {
+        casper.thenOpenAndWaitForPageLoad('setup.two', function then() {
             casper.captureScreenshot('setting_up1.png');
 
-            casper.waitForOpaque('.setup-box', function then() {
-                this.fillAndAdd('#setup', newSetup);
-            });
+            casper.fillAndAdd('#setup', newSetup);
 
             casper.captureScreenshot('setting_up2.png');
 

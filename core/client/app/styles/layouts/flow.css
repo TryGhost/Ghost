@@ -77,7 +77,7 @@
     background-repeat: repeat-x;
 }
 
-.gh-flow-nav .current ~ .divider {
+.gh-flow-nav .active ~ .divider {
     background-image: linear-gradient(to right, #e3e3e3 33%, rgba(255, 255, 255, 0) 0%);
 }
 
@@ -107,32 +107,32 @@
     line-height: 22px;
 }
 
-.gh-flow-nav .current ~ li:not(divider) .step {
+.gh-flow-nav .active ~ li:not(divider) .step {
     border: #e3e3e3 2px solid;
     background: transparent;
     color: #cdcdcd;
 }
 
-.gh-flow-nav .current ~ li:not(divider) .step .num {
+.gh-flow-nav .active ~ li:not(divider) .step .num {
     display: block;
 }
 
-.gh-flow-nav .current ~ li:not(divider) .step i {
+.gh-flow-nav .active ~ li:not(divider) .step i {
     display: none;
 }
 
-.gh-flow-nav .current .step {
+.gh-flow-nav .active .step {
     border: var(--green) 2px solid;
     background: transparent;
     color: color(var(--green) lightness(-10%));
     cursor: default;
 }
 
-.gh-flow-nav .current .step .num {
+.gh-flow-nav .active .step .num {
     display: block;
 }
 
-.gh-flow-nav .current .step i {
+.gh-flow-nav .active .step i {
     display: none;
 }
 
@@ -257,11 +257,29 @@
     transition: opacity 0.3s ease;
 }
 
-.gh-flow-content .img {
+.gh-flow-content .placeholder-img {
     display: block;
     width: 90px;
     height: 90px;
     background-color: #f8fbfd;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+    animation: fade-in 1s;
+}
+
+.gh-flow-content .gravatar-img {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    box-sizing: content-box;
+    width: calc(100% - 8px);
+    width: 90px;
+    height: 90px;
+    border: #fff 4px solid;
     background-position: center center;
     background-size: cover;
     border-radius: 100%;

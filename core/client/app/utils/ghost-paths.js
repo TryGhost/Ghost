@@ -53,7 +53,8 @@ function ghostPaths() {
             },
 
             asset: assetUrl
-        }
+        },
+        count: 'https://ghost.org/count/'
     };
 }
 
