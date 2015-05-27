@@ -1,24 +1,50 @@
 import Ember from 'ember';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 
-var SetupOneRoute = Ember.Route.extend({
-    titleToken: 'Setup',
-    beforeModel: function () {
-        var self = this,
-            ctrl = this.controllerFor('setup.one');
+var DownloadCountPoller = Ember.Object.extend({
+    url: null,
+    count: 'many, many',
+    runId: null,
 
-        if (!ctrl) {
-            this.generateController('setup.one');
-            ctrl = this.controllerFor('setup.one');
-        }
+    init: function () {
+        this.downloadCounter();
+        this.poll();
+    },
 
-        return ajax({
-            url: self.get('ghostPaths.count'),
-            type: 'GET'
-        }).then(function (data) {
-            ctrl.set('count', data.count.toLocaleString());
-        }).catch(function () { /* Do nothing */ });
+    poll: function () {
+        var interval = 3000,
+            runId;
+
+        runId = Ember.run.later(this, function () {
+            this.downloadCounter();
+            this.poll();
+        }, interval);
+
+        this.set('runId', runId);
+    },
+
+    downloadCounter: function () {
+        var self = this;
+
+        ajax(this.get('url')).then(function (data) {
+            self.set('count', data.count.toLocaleString());
+        }).catch(function () {
+            self.set('count', 'many, many');
+        });
     }
 });
 
-export default SetupOneRoute;
+export default Ember.Route.extend({
+    ghostPaths: Ember.inject.service('ghost-paths'),
+
+    model: function () {
+        return DownloadCountPoller.create({url: this.get('ghostPaths.count')});
+    },
+
+    resetController: function (controller, isExiting) {
+        if (isExiting) {
+            Ember.run.cancel(controller.get('model.runId'));
+            controller.set('model', null);
+        }
+    }
+});
