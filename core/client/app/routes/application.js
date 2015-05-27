@@ -27,8 +27,8 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     actions: {
-        toggleGlobalMobileNav: function () {
-            this.toggleProperty('controller.showGlobalMobileNav');
+        toggleMobileMenu () {
+            this.controller.toggleProperty('showMobileMenu');
         },
 
         openSettingsMenu: function () {

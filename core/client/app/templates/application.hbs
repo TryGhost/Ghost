@@ -8,7 +8,7 @@
         {{partial "nav-menu"}}
     {{/unless}}
 
-    <main id="gh-main" class="gh-main" role="main" data-notification-count={{topNotificationCount}}>
+    <main id="gh-main" class="gh-main {{if showMobileMenu 'open'}}" role="main" data-notification-count={{topNotificationCount}}>
         {{outlet}}
     </main>
 

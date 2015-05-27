@@ -5,7 +5,7 @@ var ApplicationController = Ember.Controller.extend({
     // jscs: enable
 
     topNotificationCount: 0,
-    showGlobalMobileNav: false,
+    showMobileMenu: false,
     showSettingsMenu: false,
 
     userImage: Ember.computed('session.user.image', function () {

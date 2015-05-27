@@ -16,10 +16,6 @@ var ApplicationView = Ember.View.extend({
             });
         });
 
-        $('.gh-mobilemenu-button').on('click tap', function () {
-            $('.gh-main').toggleClass('open');
-        });
-
         // #### Close the nav if mobile and clicking outside of the nav or not the burger toggle
         $('.js-nav-cover').on('click tap', function () {
             Ember.run(function () {
