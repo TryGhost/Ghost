@@ -1,13 +1,8 @@
 import Ember from 'ember';
-/* global ic */
-
-var ajax = function () {
-    return ic.ajax.request.apply(null, arguments);
-};
 
 // Used in API request fail handlers to parse a standard api error
 // response json for the message to display
-function getRequestErrorMessage(request, performConcat) {
+export default function getRequestErrorMessage(request, performConcat) {
     var message,
         msgDetail;
 
@@ -47,6 +42,3 @@ function getRequestErrorMessage(request, performConcat) {
 
     return message;
 }
-
-export {getRequestErrorMessage, ajax};
-export default ajax;

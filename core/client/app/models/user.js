@@ -1,9 +1,10 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 import SelectiveSaveMixin from 'ghost/mixins/selective-save';
 
-var User = DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
+export default DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
     validationType: 'user',
 
     uuid: DS.attr('string'),
@@ -49,7 +50,7 @@ var User = DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
 
-        return ic.ajax.request(url, {
+        return ajax(url, {
             type: 'PUT',
             data: {
                 password: [{
@@ -69,7 +70,7 @@ var User = DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
                 roles: fullUserData.roles
             };
 
-        return ic.ajax.request(this.get('ghostPaths.url').api('users'), {
+        return ajax(this.get('ghostPaths.url').api('users'), {
             type: 'POST',
             data: JSON.stringify({users: [userData]}),
             contentType: 'application/json'
@@ -102,5 +103,3 @@ var User = DS.Model.extend(SelectiveSaveMixin, ValidationEngine, {
 
     pending: Ember.computed.equal('status', 'invited-pending').property('status')
 });
-
-export default User;
