@@ -5,7 +5,10 @@ var MobileContentView = Ember.View.extend({
     // Ensure that loading this view brings it into view on mobile
     showContent: function () {
         if (mobileQuery.matches) {
-            this.get('parentView').showContent();
+            var parent = this.get('parentView');
+            if (parent.showContent) {
+                parent.showContent();
+            }
         }
     }.on('didInsertElement')
 });

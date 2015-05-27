@@ -13,7 +13,7 @@ export default Ember.Controller.extend({
                 name = tag.get('name'),
                 self = this;
 
-            this.send('closeSettingsMenu');
+            this.send('closeMenus');
 
             tag.destroyRecord().then(function () {
                 self.get('notifications').showSuccess('Deleted ' + name);
