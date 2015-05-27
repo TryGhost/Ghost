@@ -1,3 +1,4 @@
+import {request as ajax} from 'ic-ajax';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 
@@ -16,7 +17,7 @@ export default AuthenticatedRoute.extend(styleBody, {
             return cachedConfig;
         }
 
-        return ic.ajax.request(this.get('ghostPaths.url').api('configuration'))
+        return ajax(this.get('ghostPaths.url').api('configuration'))
             .then(function (configurationResponse) {
                 var configKeyValues = configurationResponse.configuration;
 

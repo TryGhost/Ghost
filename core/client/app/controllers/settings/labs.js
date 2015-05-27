@@ -1,5 +1,7 @@
 import Ember from 'ember';
-var LabsController = Ember.Controller.extend(Ember.Evented, {
+import {request as ajax} from 'ic-ajax';
+
+export default Ember.Controller.extend(Ember.Evented, {
     needs: ['feature'],
 
     uploadButtonText: 'Import',
@@ -34,7 +36,7 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
 
             formData.append('importfile', file);
 
-            ic.ajax.request(this.get('ghostPaths.url').api('db'), {
+            ajax(this.get('ghostPaths.url').api('db'), {
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
@@ -77,7 +79,7 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
         sendTestEmail: function () {
             var self = this;
 
-            ic.ajax.request(this.get('ghostPaths.url').api('mail', 'test'), {
+            ajax(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
             }).then(function () {
                 self.notifications.showSuccess('Check your email for the test message.');
@@ -91,5 +93,3 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
         }
     }
 });
-
-export default LabsController;
