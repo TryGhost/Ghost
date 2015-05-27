@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-import {getRequestErrorMessage} from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
 import PostValidator from 'ghost/validators/post';
@@ -61,7 +61,7 @@ function formatErrors(errors, opts) {
 * It will be able to validate any properties on itself (or the model it passes to validate())
 * with the use of a declared validator.
 */
-var ValidationEngine = Ember.Mixin.create({
+export default Ember.Mixin.create({
     // these validators can be passed a model to validate when the class that
     // mixes in the ValidationEngine declares a validationType equal to a key on this object.
     // the model is either passed in via `this.validate({ model: object })`
@@ -174,5 +174,3 @@ var ValidationEngine = Ember.Mixin.create({
         });
     }
 });
-
-export default ValidationEngine;
