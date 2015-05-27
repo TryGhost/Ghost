@@ -1,5 +1,7 @@
 import Ember from 'ember';
-var TransferOwnerController = Ember.Controller.extend({
+import {request as ajax} from 'ic-ajax';
+
+export default Ember.Controller.extend({
     actions: {
         confirmAccept: function () {
             var user = this.get('model'),
@@ -8,7 +10,7 @@ var TransferOwnerController = Ember.Controller.extend({
 
             self.get('dropdown').closeDropdowns();
 
-            ic.ajax.request(url, {
+            ajax(url, {
                 type: 'PUT',
                 data: {
                     owner: [{
@@ -49,5 +51,3 @@ var TransferOwnerController = Ember.Controller.extend({
         }
     }
 });
-
-export default TransferOwnerController;
