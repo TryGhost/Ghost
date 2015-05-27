@@ -8,9 +8,10 @@ export default Ember.Route.extend(styleBody, {
 
     classNames: ['ghost-setup'],
 
+    ghostPaths: Ember.inject.service('ghost-paths'),
+
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
-
     beforeModel: function () {
         var self = this;
 

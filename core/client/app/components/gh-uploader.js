@@ -4,6 +4,8 @@ import uploader from 'ghost/assets/lib/uploader';
 var PostImageUploader = Ember.Component.extend({
     classNames: ['image-uploader', 'js-post-image-upload'],
 
+    config: Ember.inject.service(),
+
     imageSource: Ember.computed('image', function () {
         return this.get('image') || '';
     }),

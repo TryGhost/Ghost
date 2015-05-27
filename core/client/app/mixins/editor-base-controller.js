@@ -5,23 +5,23 @@ import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import imageManager from 'ghost/utils/ed-image-manager';
 
-var watchedProps,
-    EditorControllerMixin;
-
 // this array will hold properties we need to watch
 // to know if the model has been changed (`controller.isDirty`)
-watchedProps = ['model.scratch', 'model.titleScratch', 'model.isDirty', 'model.tags.[]'];
+var watchedProps = ['model.scratch', 'model.titleScratch', 'model.isDirty', 'model.tags.[]'];
 
 PostModel.eachAttribute(function (name) {
     watchedProps.push('model.' + name);
 });
 
-EditorControllerMixin = Ember.Mixin.create({
-    needs: ['post-tags-input', 'post-settings-menu'],
+export default Ember.Mixin.create({
+    postTagsInputController: Ember.inject.controller('post-tags-input'),
+    postSettingsMenuController: Ember.inject.controller('post-settings-menu'),
 
     autoSaveId: null,
     timedSaveId: null,
     editor: null,
+
+    notifications: Ember.inject.service(),
 
     init: function () {
         var self = this;
@@ -32,6 +32,7 @@ EditorControllerMixin = Ember.Mixin.create({
             return self.get('isDirty') ? self.unloadDirtyMessage() : null;
         };
     },
+
     autoSave: function () {
         // Don't save just because we swapped out models
         if (this.get('model.isDraft') && !this.get('model.isNew')) {
@@ -213,21 +214,24 @@ EditorControllerMixin = Ember.Mixin.create({
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status],
             path = this.get('model.absoluteUrl'),
-            type = this.get('postOrPage');
+            type = this.get('postOrPage'),
+            notifications = this.get('notifications');
 
         if (status === 'published') {
             message += `&nbsp;<a href="${path}">View ${type}</a>`;
         }
-        this.notifications.showSuccess(message.htmlSafe(), {delayed: delay});
+
+        notifications.showSuccess(message.htmlSafe(), {delayed: delay});
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
         var message = this.messageMap.errors.post[prevStatus][status],
-            error = (errors && errors[0] && errors[0].message) || 'Unknown Error';
+            error = (errors && errors[0] && errors[0].message) || 'Unknown Error',
+            notifications = this.get('notifications');
 
         message += '<br />' + error;
 
-        this.notifications.showError(message.htmlSafe(), {delayed: delay});
+        notifications.showError(message.htmlSafe(), {delayed: delay});
     },
 
     shouldFocusTitle: Ember.computed.alias('model.isNew'),
@@ -241,8 +245,9 @@ EditorControllerMixin = Ember.Mixin.create({
                 autoSaveId = this.get('autoSaveId'),
                 timedSaveId = this.get('timedSaveId'),
                 self = this,
-                psmController = this.get('controllers.post-settings-menu'),
-                promise;
+                psmController = this.get('postSettingsMenuController'),
+                promise,
+                notifications = this.get('notifications');
 
             options = options || {};
 
@@ -263,10 +268,10 @@ EditorControllerMixin = Ember.Mixin.create({
                 this.set('timedSaveId', null);
             }
 
-            self.notifications.closePassive();
+            notifications.closePassive();
 
             // ensure an incomplete tag is finalised before save
-            this.get('controllers.post-tags-input').send('addNewTag');
+            this.get('postTagsInputController').send('addNewTag');
 
             // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.
@@ -367,5 +372,3 @@ EditorControllerMixin = Ember.Mixin.create({
         }
     }
 });
-
-export default EditorControllerMixin;

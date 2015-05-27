@@ -1,7 +1,9 @@
 import Ember from 'ember';
 import randomPassword from 'ghost/utils/random-password';
 
-var SettingsGeneralController = Ember.Controller.extend({
+export default Ember.Controller.extend({
+    notifications: Ember.inject.service(),
+
     selectedTheme: null,
 
     logoImageSource: Ember.computed('model.logo', function () {
@@ -47,14 +49,14 @@ var SettingsGeneralController = Ember.Controller.extend({
 
     actions: {
         save: function () {
-            var self = this;
+            var notifications = this.get('notifications');
 
             return this.get('model').save().then(function (model) {
-                self.notifications.showSuccess('Settings successfully saved.');
+                notifications.showSuccess('Settings successfully saved.');
 
                 return model;
             }).catch(function (errors) {
-                self.notifications.showErrors(errors);
+                notifications.showErrors(errors);
             });
         },
 
@@ -67,5 +69,3 @@ var SettingsGeneralController = Ember.Controller.extend({
         }
     }
 });
-
-export default SettingsGeneralController;

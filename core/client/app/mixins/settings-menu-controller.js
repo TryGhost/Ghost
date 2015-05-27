@@ -1,10 +1,11 @@
 import Ember from 'ember';
-var SettingsMenuControllerMixin = Ember.Mixin.create({
-    needs: 'application',
 
-    isViewingSubview: Ember.computed('controllers.application.showSettingsMenu', function (key, value) {
+export default Ember.Mixin.create({
+    application: Ember.inject.controller(),
+
+    isViewingSubview: Ember.computed('application.showSettingsMenu', function (key, value) {
         // Not viewing a subview if we can't even see the PSM
-        if (!this.get('controllers.application.showSettingsMenu')) {
+        if (!this.get('application.showSettingsMenu')) {
             return false;
         }
         if (arguments.length > 1) {
@@ -24,5 +25,3 @@ var SettingsMenuControllerMixin = Ember.Mixin.create({
         }
     }
 });
-
-export default SettingsMenuControllerMixin;

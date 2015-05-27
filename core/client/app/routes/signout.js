@@ -2,13 +2,15 @@ import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 
-var SignoutRoute = AuthenticatedRoute.extend(styleBody,  {
+export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'Sign Out',
 
     classNames: ['ghost-signout'],
 
+    notifications: Ember.inject.service(),
+
     afterModel: function (model, transition) {
-        this.notifications.clear();
+        this.get('notifications').closeAll();
         if (Ember.canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
             transition.abort();
@@ -17,5 +19,3 @@ var SignoutRoute = AuthenticatedRoute.extend(styleBody,  {
         }
     }
 });
-
-export default SignoutRoute;

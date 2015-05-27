@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
@@ -6,6 +7,8 @@ export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'About',
 
     classNames: ['view-about'],
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
 
     cachedConfig: false,
 

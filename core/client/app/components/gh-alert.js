@@ -1,9 +1,11 @@
 import Ember from 'ember';
 
-var AlertComponent = Ember.Component.extend({
+export default Ember.Component.extend({
     tagName: 'article',
     classNames: ['gh-alert', 'gh-alert-blue'],
     classNameBindings: ['typeClass'],
+
+    notifications: Ember.inject.service(),
 
     typeClass: Ember.computed(function () {
         var classes = '',
@@ -31,10 +33,7 @@ var AlertComponent = Ember.Component.extend({
 
     actions: {
         closeNotification: function () {
-            var self = this;
-            self.notifications.closeNotification(self.get('message'));
+            this.get('notifications').closeNotification(this.get('message'));
         }
     }
 });
-
-export default AlertComponent;
