@@ -7,7 +7,8 @@ var testUtils   = require('../../utils'),
 
     // Stuff we are testing
     mail        = rewire('../../../server/api/mail'),
-    AuthAPI     = require('../../../server/api/authentication');
+    AuthAPI     = require('../../../server/api/authentication'),
+    context     = testUtils.context;
 
 describe('Authentication API', function () {
     // Keep the DB clean
@@ -81,7 +82,7 @@ describe('Authentication API', function () {
                     name: 'test user',
                     email: 'test@example.com',
                     password: 'areallygoodpassword',
-                    title: 'a test blog'
+                    blogTitle: 'a test blog'
                 };
 
                 AuthAPI.setup({setup: [setupData]}).then(function () {
@@ -94,6 +95,112 @@ describe('Authentication API', function () {
 
                     done();
                 });
+            });
+        });
+    });
+
+    describe('Setup Update', function () {
+        describe('Setup not complete', function () {
+            beforeEach(testUtils.setup('roles', 'owner:pre', 'settings', 'perms:setting', 'perms:init'));
+
+            it('should report that setup has not been completed', function (done) {
+                AuthAPI.isSetup().then(function (result) {
+                    should.exist(result);
+                    result.setup[0].status.should.be.false;
+
+                    done();
+                }).catch(done);
+            });
+
+            it('should not allow setup to be updated', function (done) {
+                var setupData = {
+                        name: 'test user',
+                        email: 'test@example.com',
+                        password: 'areallygoodpassword',
+                        blogTitle: 'a test blog'
+                    };
+
+                AuthAPI.updateSetup({setup: [setupData]}, {}).then(function () {
+                    done(new Error('Update was able to be run'));
+                }).catch(function (err) {
+                    should.exist(err);
+
+                    err.name.should.equal('NoPermissionError');
+                    err.code.should.equal(403);
+
+                    done();
+                });
+            });
+        });
+
+        describe('Not Owner', function () {
+            beforeEach(testUtils.setup('roles', 'users:roles', 'settings', 'perms:setting', 'perms:init', 'perms:user'));
+
+            it('should report that setup has been completed', function (done) {
+                AuthAPI.isSetup().then(function (result) {
+                    should.exist(result);
+                    result.setup[0].status.should.be.true;
+
+                    done();
+                }).catch(done);
+            });
+
+            it('should not allow setup to be updated', function (done) {
+                var setupData = {
+                        name: 'test user',
+                        email: 'test@example.com',
+                        password: 'areallygoodpassword',
+                        blogTitle: 'a test blog'
+                    };
+
+                AuthAPI.updateSetup({setup: [setupData]}, context.author).then(function () {
+                    done(new Error('Update was able to be run'));
+                }).catch(function (err) {
+                    should.exist(err);
+
+                    err.name.should.equal('NoPermissionError');
+                    err.code.should.equal(403);
+
+                    done();
+                });
+            });
+        });
+
+        describe('Owner', function () {
+            beforeEach(testUtils.setup('roles', 'users:roles', 'settings', 'perms:setting', 'perms:init'));
+
+            it('should report that setup has been completed', function (done) {
+                AuthAPI.isSetup().then(function (result) {
+                    should.exist(result);
+                    result.setup[0].status.should.be.true;
+
+                    done();
+                }).catch(done);
+            });
+
+            it('should allow setup to be updated', function (done) {
+                var setupData = {
+                        name: 'test user',
+                        email: 'test@example.com',
+                        password: 'areallygoodpassword',
+                        blogTitle: 'a test blog'
+                    };
+
+                AuthAPI.updateSetup({setup: [setupData]}, context.owner).then(function (result) {
+                    should.exist(result);
+                    should.exist(result.users);
+                    should.not.exist(result.meta);
+                    result.users.should.have.length(1);
+                    testUtils.API.checkResponse(result.users[0], 'user');
+
+                    var newUser = result.users[0];
+
+                    newUser.id.should.equal(1);
+                    newUser.name.should.equal(setupData.name);
+                    newUser.email.should.equal(setupData.email);
+
+                    done();
+                }).catch(done);
             });
         });
     });

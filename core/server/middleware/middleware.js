@@ -111,7 +111,8 @@ middleware = {
         });
 
         if (subPath.indexOf('/ghost/api/') === 0
-            && path.indexOf('/ghost/api/v0.1/authentication/') !== 0) {
+            && (path.indexOf('/ghost/api/v0.1/authentication/') !== 0
+            || (path.indexOf('/ghost/api/v0.1/authentication/') === 0 && req.method === 'PUT'))) {
             return passport.authenticate('bearer', {session: false, failWithError: true},
                 function authenticate(err, user, info) {
                     if (err) {
