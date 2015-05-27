@@ -1,5 +1,8 @@
 import Ember from 'ember';
-var LeaveEditorController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
+    notifications: Ember.inject.service(),
+
     args: Ember.computed.alias('model'),
 
     actions: {
@@ -16,7 +19,7 @@ var LeaveEditorController = Ember.Controller.extend({
             }
 
             if (!transition || !editorController) {
-                this.notifications.showError('Sorry, there was an error in the application. Please let the Ghost team know what happened.');
+                this.get('notifications').showError('Sorry, there was an error in the application. Please let the Ghost team know what happened.');
 
                 return true;
             }
@@ -56,5 +59,3 @@ var LeaveEditorController = Ember.Controller.extend({
         }
     }
 });
-
-export default LeaveEditorController;
