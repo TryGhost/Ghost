@@ -1,8 +1,9 @@
 import Ember from 'ember';
+import {request as ajax} from 'ic-ajax';
 import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
-var SignupRoute = Ember.Route.extend(styleBody, {
+export default Ember.Route.extend(styleBody, {
     classNames: ['ghost-signup'],
 
     beforeModel: function () {
@@ -32,7 +33,7 @@ var SignupRoute = Ember.Route.extend(styleBody, {
             model.set('email', email);
             model.set('token', params.token);
 
-            return ic.ajax.request({
+            return ajax({
                 url: self.get('ghostPaths.url').api('authentication', 'invitation'),
                 type: 'GET',
                 dataType: 'json',
@@ -60,5 +61,3 @@ var SignupRoute = Ember.Route.extend(styleBody, {
         this.controllerFor('signup').setProperties({email: '', password: '', token: ''});
     }
 });
-
-export default SignupRoute;

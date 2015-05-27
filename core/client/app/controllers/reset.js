@@ -1,8 +1,8 @@
 import Ember from 'ember';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var ResetController = Ember.Controller.extend(ValidationEngine, {
+export default Ember.Controller.extend(ValidationEngine, {
     newPassword: '',
     ne2Password: '',
     token: '',
@@ -56,5 +56,3 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
         }
     }
 });
-
-export default ResetController;

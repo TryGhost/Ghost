@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 
-var SigninController = Ember.Controller.extend(ValidationEngine, {
+export default Ember.Controller.extend(ValidationEngine, {
     validationType: 'signin',
 
     submitting: false,
@@ -63,5 +63,3 @@ var SigninController = Ember.Controller.extend(ValidationEngine, {
         }
     }
 });
-
-export default SigninController;

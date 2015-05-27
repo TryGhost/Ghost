@@ -1,7 +1,7 @@
 import Ember from 'ember';
-import { getRequestErrorMessage } from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost/utils/ajax';
 
-var PaginationControllerMixin = Ember.Mixin.create({
+export default Ember.Mixin.create({
     // set from PaginationRouteMixin
     paginationSettings: null,
 
@@ -57,5 +57,3 @@ var PaginationControllerMixin = Ember.Mixin.create({
         }
     }
 });
-
-export default PaginationControllerMixin;
