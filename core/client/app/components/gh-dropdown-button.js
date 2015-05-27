@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import DropdownMixin from 'ghost/mixins/dropdown-mixin';
 
-var DropdownButton = Ember.Component.extend(DropdownMixin, {
+export default Ember.Component.extend(DropdownMixin, {
     tagName: 'button',
     attributeBindings: 'role',
     role: 'button',
@@ -9,11 +9,11 @@ var DropdownButton = Ember.Component.extend(DropdownMixin, {
     // matches with the dropdown this button toggles
     dropdownName: null,
 
+    dropdown: Ember.inject.service(),
+
     // Notify dropdown service this dropdown should be toggled
     click: function (event) {
         this._super(event);
         this.get('dropdown').toggleDropdown(this.get('dropdownName'), this);
     }
 });
-
-export default DropdownButton;
