@@ -6,7 +6,6 @@
     "-Notification",
     "$",
     "validator",
-    "ic",
     "moment"
   ],
   "browser": true,
