@@ -2,8 +2,8 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsGeneralRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
-    titleToken: 'General',
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+    titleToken: 'Settings - General',
 
     classNames: ['settings-view-general'],
 
@@ -19,15 +19,9 @@ var SettingsGeneralRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSetti
         });
     },
 
-    renderTemplate: function () {
-        this.render('settings/general', {into: 'application'});
-    },
-
     actions: {
         save: function () {
             this.get('controller').send('save');
         }
     }
 });
-
-export default SettingsGeneralRoute;
