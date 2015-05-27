@@ -12,13 +12,7 @@ paginationSettings = {
 };
 
 TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
-    actions: {
-        willTransition: function () {
-            this.send('closeSettingsMenu');
-        }
-    },
-
-    titleToken: 'Tags',
+    titleToken: 'Settings - Tags',
 
     beforeModel: function () {
         return this.get('session.user')
@@ -40,7 +34,6 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
 
     renderTemplate: function (controller, model) {
         this._super(controller, model);
-        this.render('settings/tags', {into: 'application'});
         this.render('settings/tags/settings-menu', {
             into: 'application',
             outlet: 'settings-menu',
@@ -50,6 +43,12 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
 
     deactivate: function () {
         this.controller.send('resetPagination');
+    },
+
+    actions: {
+        willTransition: function () {
+            this.send('closeSettingsMenu');
+        }
     }
 });
 

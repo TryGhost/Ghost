@@ -5,64 +5,60 @@
         </section>
     </header>
 
-    <section class="view-content settings-users">
+    {{#view "users-list"}}
+        {{#if invitedUsers}}
+            <section class="user-list invited-users">
 
-    {{#if invitedUsers}}
+                <h4 class="user-list-title">Invited users</h4>
 
-        <section class="user-list invited-users">
+                {{#each user in invitedUsers itemController="settings/users/user"}}
+                    <div class="user-list-item">
+                        <span class="user-list-item-icon icon-mail">ic</span>
 
-            <h4 class="user-list-title">Invited users</h4>
+                        <div class="user-list-item-body">
+                            <span class="name">{{user.email}}</span><br>
+                                {{#if user.model.pending}}
+                                    <span class="red">Invitation not sent - please try again</span>
+                                {{else}}
+                                    <span class="description">Invitation sent: {{user.model.created_at}}</span>
+                                {{/if}}
+                        </div>
+                        <aside class="user-list-item-aside">
+                            <a class="user-list-action" href="#" {{action "revoke"}}>Revoke</a>
+                            <a class="user-list-action" href="#" {{action "resend"}}>Resend</a>
+                        </aside>
+                    </div>
+                {{/each}}
 
-            {{#each user in invitedUsers itemController="settings/users/user"}}
-                <div class="user-list-item">
-                    <span class="user-list-item-icon icon-mail">ic</span>
+            </section>
+        {{/if}}
+
+        <section class="user-list active-users">
+
+            <h4 class="user-list-title">Active users</h4>
+
+            {{#each user in activeUsers itemController="settings/users/user"}}
+                {{#link-to 'settings.users.user' user.model class="user-list-item" }}
+                    <span class="user-list-item-figure" style={{user.userImageBackground}}>
+                        <span class="hidden">Photo of {{user.model.name}}</span>
+                    </span>
 
                     <div class="user-list-item-body">
-                        <span class="name">{{user.email}}</span><br>
-                            {{#if user.model.pending}}
-                                <span class="red">Invitation not sent - please try again</span>
-                            {{else}}
-                                <span class="description">Invitation sent: {{user.model.created_at}}</span>
-                            {{/if}}
+                        <span class="name">
+                            {{user.model.name}}
+                        </span>
+                        <br>
+                        <span class="description">Last seen: {{user.last_login}}</span>
                     </div>
                     <aside class="user-list-item-aside">
-                        <a class="user-list-action" href="#" {{action "revoke"}}>Revoke</a>
-                        <a class="user-list-action" href="#" {{action "resend"}}>Resend</a>
+                        {{#unless user.model.isAuthor}}
+                            {{#each role in user.model.roles}}
+                                <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
+                            {{/each}}
+                        {{/unless}}
                     </aside>
-                </div>
+                {{/link-to}}
             {{/each}}
 
         </section>
-
-    {{/if}}
-
-    <section class="user-list active-users">
-
-        <h4 class="user-list-title">Active users</h4>
-
-        {{#each user in activeUsers itemController="settings/users/user"}}
-            {{#link-to 'settings.users.user' user.model class="user-list-item" }}
-                <span class="user-list-item-figure" style={{user.userImageBackground}}>
-                    <span class="hidden">Photo of {{user.model.name}}</span>
-                </span>
-
-                <div class="user-list-item-body">
-                    <span class="name">
-                        {{user.model.name}}
-                    </span>
-                    <br>
-                    <span class="description">Last seen: {{user.last_login}}</span>
-                </div>
-                <aside class="user-list-item-aside">
-                    {{#unless user.model.isAuthor}}
-                        {{#each role in user.model.roles}}
-                            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
-                        {{/each}}
-                    {{/unless}}
-                </aside>
-            {{/link-to}}
-        {{/each}}
-
-    </section>
-
-    </section>{{! .content settings-users }}
+    {{/view}}
