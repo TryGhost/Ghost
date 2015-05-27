@@ -8,7 +8,7 @@ import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
 var shortcuts = {};
 
-shortcuts.esc = {action: 'closePopups', scope: 'all'};
+shortcuts.esc = {action: 'closeMenus', scope: 'all'};
 shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
 shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
 
@@ -30,30 +30,22 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     actions: {
-        toggleGlobalMobileNav: function () {
-            this.toggleProperty('controller.showGlobalMobileNav');
+        openMobileMenu () {
+            this.controller.set('showMobileMenu', true);
         },
 
         openSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', true);
+            this.controller.set('showSettingsMenu', true);
         },
 
-        closeSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', false);
-        },
-
-        toggleSettingsMenu: function () {
-            this.toggleProperty('controller.showSettingsMenu');
-        },
-
-        closePopups: function () {
+        closeMenus () {
             this.get('dropdown').closeDropdowns();
             this.get('notifications').closeAll();
-
-            // Close right outlet if open
-            this.send('closeSettingsMenu');
-
             this.send('closeModal');
+            this.controller.setProperties({
+                showSettingsMenu: false,
+                showMobileMenu: false
+            });
         },
 
         signedIn: function () {

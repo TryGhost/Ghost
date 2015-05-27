@@ -47,7 +47,7 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
 
     actions: {
         willTransition: function () {
-            this.send('closeSettingsMenu');
+            this.send('closeMenus');
         }
     }
 });

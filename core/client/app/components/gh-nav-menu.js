@@ -9,14 +9,8 @@ export default Ember.Component.extend({
 
     open: false,
 
-    autoNav: null,
-
     mouseEnter: function () {
-        if (!this.get('autoNav')) {
-            return;
-        }
-
-        this.set('open', true);
+        this.sendAction('onMouseEnter');
     },
 
     actions: {

@@ -1,10 +1,8 @@
-{{gh-content-cover onClick="closeSettingsMenu" onMouseEnter="closeNavMenu"}}
-
 {{#gh-tabs-manager selected="showSubview" class="settings-menu-container"}}
     <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
         <div class="settings-menu-header">
             <h4>Tag Settings</h4>
-            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}>
+            <button class="close icon-x settings-menu-header-action" {{action "closeMenus"}}>
                 <span class="hidden">Close</span>
             </button>
         </div>

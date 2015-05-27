@@ -105,6 +105,7 @@
 
 /* Base alert style */
 .gh-alert {
+    z-index: 1000;
     flex-grow: 1;
     display: flex;
     justify-content: space-between;

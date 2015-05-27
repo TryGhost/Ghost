@@ -246,7 +246,7 @@
     }
 
     /* Bring it back on toggle */
-    .gh-main.open {
+    .mobile-menu-expanded .gh-main {
         transition: transform 0.10s;
         transform: translate3d(235px,0,0);
     }
@@ -256,7 +256,7 @@
     .gh-nav {
         width: 75vw;
     }
-    .gh-main.open {
+    .mobile-menu-expanded .gh-main {
         transform: translate3d(75vw,0,0);
     }
 }
@@ -264,6 +264,10 @@
 
 /* Auto Nav - Opens and closes like OSX dock
 /* ---------------------------------------------------------- */
+/* Autonav is hidden on mobile */
+.gh-autonav-toggle {
+    display: none;
+}
 
 @media (min-width: 801px) {
     .gh-autonav-toggle {
