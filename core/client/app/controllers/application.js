@@ -5,7 +5,7 @@ var ApplicationController = Ember.Controller.extend({
     // jscs: enable
 
     topNotificationCount: 0,
-    showGlobalMobileNav: false,
+    showMobileMenu: false,
     showSettingsMenu: false,
 
     userImage: Ember.computed('session.user.image', function () {
@@ -25,7 +25,13 @@ var ApplicationController = Ember.Controller.extend({
     actions: {
         topNotificationChange: function (count) {
             this.set('topNotificationCount', count);
-        }
+        },
+        resetView: function () {
+            this.setProperties({
+                showSettingsMenu: false,
+                showMobileMenu: false
+            });
+        },
     }
 });
 
