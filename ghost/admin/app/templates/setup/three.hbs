@@ -12,7 +12,10 @@
 sally.sanders@example.com" value=users}}
     </form>
 
-    <button {{action "signin"}} class="btn btn-default btn-lg btn-block {{buttonClass}}">
+    <button {{action 'invite'}} class="btn btn-default btn-lg btn-block {{buttonClass}}">
         {{buttonText}}
     </button>
+    {{#link-to "posts" class="gh-flow-skip"}}
+      I'll do this later, take me to my blog!
+    {{/link-to}}
 </section>
