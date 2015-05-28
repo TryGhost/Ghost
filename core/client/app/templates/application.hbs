@@ -2,19 +2,20 @@
 
 {{gh-alerts notify="topNotificationChange"}}
 
-<div class="gh-viewport">
+<div class="gh-viewport {{if showSettingsMenu 'settings-menu-expanded'}} {{if showMobileMenu 'mobile-menu-expanded'}}">
 
     {{#unless signedOut}}
         {{partial "nav-menu"}}
     {{/unless}}
 
-    <main id="gh-main" class="gh-main {{if showMobileMenu 'open'}}" role="main" data-notification-count={{topNotificationCount}}>
+    <main id="gh-main" class="gh-main" role="main" data-notification-count={{topNotificationCount}}>
         {{outlet}}
     </main>
 
     {{gh-notifications}}
 
     {{outlet "modal"}}
+    <div class="eater-of-clicks-devourer-of-worlds-mother-of-dragons" {{action "resetView"}}></div>
     {{outlet "settings-menu"}}
 
 </div>{{!gh-viewport}}

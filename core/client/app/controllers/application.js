@@ -25,7 +25,13 @@ var ApplicationController = Ember.Controller.extend({
     actions: {
         topNotificationChange: function (count) {
             this.set('topNotificationCount', count);
-        }
+        },
+        resetView: function () {
+            this.setProperties({
+                showSettingsMenu: false,
+                showMobileMenu: false
+            });
+        },
     }
 });
 

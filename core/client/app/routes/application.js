@@ -35,14 +35,6 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.set('controller.showSettingsMenu', true);
         },
 
-        closeSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', false);
-        },
-
-        toggleSettingsMenu: function () {
-            this.toggleProperty('controller.showSettingsMenu');
-        },
-
         closePopups: function () {
             this.get('dropdown').closeDropdowns();
             this.get('notifications').closeAll();
