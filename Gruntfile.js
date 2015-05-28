@@ -270,7 +270,7 @@ var _              = require('lodash'),
                 coverage: {
                     // TODO fix the timing/async & cleanup issues with the route and integration tests so that
                     // they can also have coverage generated for them & the order doesn't matter
-                    src: ['core/test/integration', 'core/test/unit'],
+                    src: ['core/test/unit'],
                     options: {
                         mask: '**/*_spec.js',
                         coverageFolder: 'core/test/coverage',
@@ -336,7 +336,7 @@ var _              = require('lodash'),
 
                 test: {
                     command: function (test) {
-                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec core/test/' + test;
+                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec --colors core/test/' + test;
                     }
                 },
 
@@ -361,8 +361,8 @@ var _              = require('lodash'),
                     src: ['.'],
                     options: {
                         onlyUpdated: true,
-                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,' +
-                            'config.js,.travis.yml,*.min.css,screen.css',
+                        exclude: 'node_modules,bower_components,content,core/client,*test,*doc*,' +
+                        '*vendor,config.js,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md',
                         extras: ['fileSearch']
                     }
                 }
@@ -539,6 +539,23 @@ var _              = require('lodash'),
         // ### Documentation
         // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
         grunt.registerTask('docs', 'Generate Docs', ['docker']);
+
+        // Runun `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
+        grunt.registerTask('watch-docs', function () {
+            grunt.config.merge({
+                watch: {
+                    docs: {
+                        files: ['core/server/**/*', 'index.js', 'Gruntfile.js', 'config.example.js'],
+                        tasks: ['docker'],
+                        options: {
+                            livereload: true
+                        }
+                    }
+                }
+            });
+
+            grunt.task.run('watch:docs');
+        });
 
         // ## Testing
 
@@ -938,5 +955,4 @@ var _              = require('lodash'),
             ['init', 'shell:ember:prod', 'uglify:release', 'clean:release',  'shell:shrinkwrap', 'copy:release', 'compress:release']);
     };
 
-// Export the configuration
 module.exports = configureGrunt;
