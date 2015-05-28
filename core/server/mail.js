@@ -1,3 +1,5 @@
+// # Mail
+// Handles sending email for Ghost
 var _          = require('lodash'),
     Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
