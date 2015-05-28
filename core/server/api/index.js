@@ -239,7 +239,7 @@ http = function http(apiMethod) {
 
         return apiMethod(object, options).tap(function onSuccess(response) {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
-            return addHeaders(apiMethod, req, res, response);
+            return addHeaders(apiMethod, req, res, (response || {}));
         }).then(function then(response) {
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
