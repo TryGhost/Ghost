@@ -208,6 +208,13 @@
     max-width: 400px;
 }
 
+.gh-flow-content .gh-flow-skip {
+    display: inline-block;
+    margin-top: 5px;
+    color: #7d878a;
+    font-size: 1.2rem;
+}
+
 .gh-flow-content .gh-flow-create {
     position: relative;
     margin: 70px auto 30px;

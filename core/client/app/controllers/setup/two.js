@@ -14,6 +14,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    application: Ember.inject.controller(),
 
     gravatarUrl: Ember.computed('email', function () {
         var email = this.get('email'),
@@ -55,9 +56,15 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
+                    // Don't call the success handler, otherwise we will be redirected to admin
+                    self.get('application').set('skipAuthSuccessHandler', true);
+
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: self.get('password')
+                    }).then(function () {
+                        self.set('password', '');
+                        self.transitionToRoute('setup.three');
                     });
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
