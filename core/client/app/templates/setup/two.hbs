@@ -8,16 +8,7 @@
         <input style="display:none;" type="text" name="fakeusernameremembered"/>
         <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-
-        <figure class="account-image">
-            <div class="placeholder-img" style="background-image: url({{gh-path 'admin' 'img/ghosticon.jpg'}})"></div>
-
-            <!-- TODO: fix/change this to prevent XSS -->
-            <div id="account-image" class="gravatar-img" style="{{userImageBackground}}">
-                <span class="sr-only">User image</span>
-            </div>
-            <a class="edit-account-image" href="#"><i class="icon-photos"><span class="sr-only">Upload an image</span></i></a>
-        </figure>
+        {{gh-profile-image email=email setImage="setImage"}}
         {{#gh-form-group errors=errors property="email"}}
             <label for="email-address">Email address</label>
             <span class="input-icon icon-mail">
