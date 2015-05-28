@@ -19,11 +19,11 @@ function isPaginated(req) {
 }
 
 function isTag(req) {
-    return req.route.path.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
+    return req.originalUrl.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
 }
 
 function isAuthor(req) {
-    return req.route.path.indexOf('/' + config.routeKeywords.author + '/') !== -1;
+    return req.originalUrl.indexOf('/' + config.routeKeywords.author + '/') !== -1;
 }
 
 function handleError(next) {
@@ -226,7 +226,7 @@ generate = function (req, res, next) {
         data.feedUrl = config.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
-        return getFeedXml(req.route.path, data).then(function (feedXml) {
+        return getFeedXml(req.originalUrl, data).then(function (feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');
             res.send(feedXml);
         });

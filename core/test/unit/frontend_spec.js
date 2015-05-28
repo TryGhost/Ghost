@@ -1374,6 +1374,7 @@ describe('Frontend Controller', function () {
 
         it('Redirects to rss if page number is 0', function () {
             var req = {params: {page: -1}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, null);
 
@@ -1384,6 +1385,7 @@ describe('Frontend Controller', function () {
 
         it('Redirects to rss if page number is 0', function () {
             var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, null);
 
@@ -1394,6 +1396,7 @@ describe('Frontend Controller', function () {
 
         it('Redirects to home if page number is 1', function () {
             var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, null);
 
@@ -1406,6 +1409,7 @@ describe('Frontend Controller', function () {
             config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 0}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, null);
 
@@ -1418,6 +1422,7 @@ describe('Frontend Controller', function () {
             config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 1}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, null);
 
@@ -1430,6 +1435,7 @@ describe('Frontend Controller', function () {
             config.set({url: 'http://testurl.com/'});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, done).then(function () {
                 res.redirect.called.should.be.true;
@@ -1443,6 +1449,7 @@ describe('Frontend Controller', function () {
             config.set({url: 'http://testurl.com/blog'});
 
             var req = {params: {page: 4}, route: {path: '/rss/:page/'}};
+            req.originalUrl = req.route.path.replace(':page', req.params.page);
 
             frontend.rss(req, res, done).then(function () {
                 res.redirect.calledOnce.should.be.true;
