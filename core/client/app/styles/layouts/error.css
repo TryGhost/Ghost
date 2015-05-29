@@ -2,15 +2,21 @@
 /* ---------------------------------------------------------- */
 
 .error-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: table;
     margin: 0 auto;
     padding: 0;
     max-width: 530px;
     height: 100%;
+    user-select: text;
 }
 
-.error-content {
-    user-select: text;
+.gh-main .error-content {
+    margin: auto;
 }
 
 @media (max-width: 630px) {
