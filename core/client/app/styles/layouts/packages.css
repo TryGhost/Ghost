@@ -23,7 +23,75 @@
 }
 
 
-/* Package Card
+/* Package Card Theme
+/* ---------------------------------------------------------- */
+
+.package-card-theme {
+    flex: 1 1 290px;
+    overflow: hidden;
+    margin: 10px;
+    max-width: 440px;
+    border: rgba(0,0,0,0.1) 1px solid;
+    border-radius: 5px;
+}
+
+.package-index .package-card-theme,
+.package-featured .package-card-theme {
+    flex: 1 1 240px;
+}
+
+.package-card-theme-image {
+    position: relative;
+    display: block;
+}
+
+.package-card-theme-image:hover img {
+    filter: grayscale(0.5) blur(1px);
+
+    -webkit-filter: grayscale(0.5) blur(1px);
+}
+
+.package-card-theme-image:hover .package-card-theme-overlay {
+    opacity: 1;
+    transition: all 0.2s ease;
+}
+
+.package-card-theme-image img {
+    display: block;
+    max-width: 100%;
+    line-height: 0;
+}
+
+.package-card-theme-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10%;
+    background: rgba(0,20,40,0.2);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.package-card-theme-title {
+    color: #fff;
+    font-size: 2rem;
+    line-height: 1.15em;
+    font-weight: 100;
+}
+
+.package-card-theme .package-card-footer {
+    margin: 0;
+    padding: 16px 20px;
+    border-top: rgba(0,0,0,0.1) 1px solid;
+}
+
+/* Package Card App
 /* ---------------------------------------------------------- */
 
 .package-card-app {
@@ -72,6 +140,10 @@
     font-size: 1.9rem;
     font-weight: normal;
 }
+
+
+/* Package Card Meta
+/* ---------------------------------------------------------- */
 
 .package-card-stats {
     position: absolute;
@@ -137,15 +209,6 @@
     align-items: center;
     margin-top: 15px;
     width: 100%;
-}
-@media (max-width: 540px) {
-    .package-card-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .package-card-footer .package-developer {
-        display: none;
-    }
 }
 
 .package-developer {
@@ -221,7 +284,7 @@
 /* ---------------------------------------------------------- */
 
 @media (max-width: 800px) {
-    .package-grid {
+    .package-grid-apps {
         overflow: hidden;
         margin: 0 0 4vw 0;
         border: #e1e1e1 1px solid;
@@ -240,11 +303,18 @@
 }
 
 @media (max-width: 760px) {
-    .package-developer {
+    .package-card-app {
+        padding: 15px;
+    }
+    .package-card-app .package-developer {
         display: none;
     }
-    .package-card-footer {
+    .package-card-app .package-card-footer {
         justify-content: flex-end;
+    }
+    .package-card-theme .package-card-footer {
+        margin: 0;
+        padding: 15px;
     }
 }
 
@@ -252,5 +322,18 @@
     .package-grid {
         margin: -5px -20px 4vw -20px;
         border: none;
+    }
+}
+
+@media (max-width: 540px) {
+    .package-card-footer {
+        justify-content: flex-end;
+    }
+    .package-card-app .package-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .package-card-footer .package-developer {
+        display: none;
     }
 }
