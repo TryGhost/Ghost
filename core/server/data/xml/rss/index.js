@@ -14,10 +14,6 @@ var _        = require('lodash'),
     getFeedXml,
     feedCache = {};
 
-function isPaginated(req) {
-    return req.route.path.indexOf(':page') !== -1;
-}
-
 function isTag(req) {
     return req.originalUrl.indexOf('/' + config.routeKeywords.tag + '/') !== -1;
 }
@@ -209,7 +205,7 @@ generate = function (req, res, next) {
         options   = getOptions(req, pageParam, slugParam);
 
     // No negative pages, or page 1
-    if (isNaN(pageParam) || pageParam < 1 || (pageParam === 1 && isPaginated(req))) {
+    if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
         return res.redirect(baseUrl);
     }
 
