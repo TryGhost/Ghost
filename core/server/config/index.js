@@ -1,8 +1,5 @@
+// # Config
 // General entry point for all configuration data
-//
-// This file itself is a wrapper for the root level config.js file.
-// All other files that need to reference config.js should use this file.
-
 var path          = require('path'),
     Promise       = require('bluebird'),
     chalk         = require('chalk'),

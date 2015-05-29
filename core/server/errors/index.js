@@ -1,3 +1,4 @@
+// # Errors
 /*jslint regexp: true */
 var _                          = require('lodash'),
     chalk                      = require('chalk'),
