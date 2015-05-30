@@ -36,7 +36,7 @@ var _              = require('lodash'),
  * Initialise the API - populate the settings cache
  * @return {Promise(Settings)} Resolves to Settings Collection
  */
-init = function () {
+init = function init() {
     return settings.updateSettingsCache();
 };
 
@@ -53,7 +53,7 @@ init = function () {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-cacheInvalidationHeader = function (req, result) {
+cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
@@ -100,7 +100,7 @@ cacheInvalidationHeader = function (req, result) {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-locationHeader = function (req, result) {
+locationHeader = function locationHeader(req, result) {
     var apiRoot = config.urlFor('api'),
         location,
         newObject;
@@ -138,8 +138,8 @@ locationHeader = function (req, result) {
  * @see http://tools.ietf.org/html/rfc598
  * @return {string}
  */
-contentDispositionHeader = function () {
-    return dataExport.fileName().then(function (filename) {
+contentDispositionHeader = function contentDispositionHeader() {
+    return dataExport.fileName().then(function then(filename) {
         return 'Attachment; filename="' + filename + '"';
     });
 };
@@ -152,7 +152,7 @@ contentDispositionHeader = function () {
  * @param {Array} error
  * @return {{errors: Array, statusCode: number}}
  */
-formatHttpErrors = function (error) {
+formatHttpErrors = function formatHttpErrors(error) {
     var statusCode = 500,
         errors = [];
 
@@ -160,7 +160,7 @@ formatHttpErrors = function (error) {
         error = [].concat(error);
     }
 
-    _.each(error, function (errorItem) {
+    _.each(error, function each(errorItem) {
         var errorContent = {};
 
         // TODO: add logic to set the correct status code
@@ -175,7 +175,7 @@ formatHttpErrors = function (error) {
     return {errors: errors, statusCode: statusCode};
 };
 
-addHeaders = function (apiMethod, req, res, result) {
+addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
         location,
         contentDisposition;
@@ -220,8 +220,8 @@ addHeaders = function (apiMethod, req, res, result) {
  * @param {Function} apiMethod API method to call
  * @return {Function} middleware format function to be called by the route when a matching request is made
  */
-http = function (apiMethod) {
-    return function (req, res) {
+http = function http(apiMethod) {
+    return function apiHandler(req, res) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
             options = _.extend({}, req.files, req.query, req.params, {
@@ -240,7 +240,7 @@ http = function (apiMethod) {
         return apiMethod(object, options).tap(function onSuccess(response) {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
             return addHeaders(apiMethod, req, res, response);
-        }).then(function (response) {
+        }).then(function then(response) {
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
         }).catch(function onError(error) {

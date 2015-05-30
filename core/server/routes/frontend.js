@@ -5,7 +5,7 @@ var frontend    = require('../controllers/frontend'),
 
     frontendRoutes;
 
-frontendRoutes = function (middleware) {
+frontendRoutes = function frontendRoutes(middleware) {
     var router = express.Router(),
         subdir = config.paths.subdir,
         routeKeywords = config.routeKeywords,
@@ -16,19 +16,19 @@ frontendRoutes = function (middleware) {
         privateRouter = express.Router();
 
     // ### Admin routes
-    router.get(/^\/(logout|signout)\/$/, function redirect(req, res) {
+    router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signout/');
     });
-    router.get(/^\/signup\/$/, function redirect(req, res) {
+    router.get(/^\/signup\/$/, function redirectToSignup(req, res) {
         /*jslint unparam:true*/
         res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
         res.redirect(301, subdir + '/ghost/signup/');
     });
 
     // redirect to /ghost and let that do the authentication to prevent redirects to /ghost//admin etc.
-    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function (req, res) {
+    router.get(/^\/((ghost-admin|admin|wp-admin|dashboard|signin|login)\/?)$/, function redirectToAdmin(req, res) {
         /*jslint unparam:true*/
         res.redirect(subdir + '/ghost/');
     });

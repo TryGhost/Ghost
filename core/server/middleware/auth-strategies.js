@@ -14,10 +14,10 @@ var passport = require('passport'),
  * Use of the client password strategy is implemented to support ember-simple-auth.
  */
 passport.use(new ClientPasswordStrategy(
-    function (clientId, clientSecret, done) {
+    function strategy(clientId, clientSecret, done) {
         models.Client.forge({slug: clientId})
         .fetch()
-        .then(function (model) {
+        .then(function then(model) {
             if (model) {
                 var client = model.toJSON();
                 if (client.secret === clientSecret) {
@@ -38,16 +38,16 @@ passport.use(new ClientPasswordStrategy(
  * the authorizing user.
  */
 passport.use(new BearerStrategy(
-    function (accessToken, done) {
+    function strategy(accessToken, done) {
         models.Accesstoken.forge({token: accessToken})
         .fetch()
-        .then(function (model) {
+        .then(function then(model) {
             if (model) {
                 var token = model.toJSON();
                 if (token.expires > Date.now()) {
                     models.User.forge({id: token.user_id})
                     .fetch()
-                    .then(function (model) {
+                    .then(function then(model) {
                         if (model) {
                             var user = model.toJSON(),
                                 info = {scope: '*'};

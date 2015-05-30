@@ -3,20 +3,20 @@ var _       = require('lodash'),
     sitemap = require('./index');
 
 // Responsible for handling requests for sitemap files
-module.exports = function (blogApp) {
+module.exports = function handler(blogApp) {
     var resourceTypes = ['posts', 'authors', 'tags', 'pages'],
-        verifyResourceType = function (req, res, next) {
+        verifyResourceType = function verifyResourceType(req, res, next) {
             if (!_.contains(resourceTypes, req.params.resource)) {
                 return res.sendStatus(404);
             }
 
             next();
         },
-        getResourceSiteMapXml = function (type, page) {
+        getResourceSiteMapXml = function getResourceSiteMapXml(type, page) {
             return sitemap.getSiteMapXml(type, page);
         };
 
-    blogApp.get('/sitemap.xml', function (req, res) {
+    blogApp.get('/sitemap.xml', function sitemapXML(req, res) {
         res.set({
             'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
             'Content-Type': 'text/xml'
@@ -24,7 +24,7 @@ module.exports = function (blogApp) {
         res.send(sitemap.getIndexXml());
     });
 
-    blogApp.get('/sitemap-:resource.xml', verifyResourceType, function (req, res) {
+    blogApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
         var type = req.params.resource,
             page = 1,
             siteMapXml = getResourceSiteMapXml(type, page);
