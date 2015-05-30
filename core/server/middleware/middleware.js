@@ -54,7 +54,7 @@ function sslForbiddenOrRedirect(opt) {
         isForbidden: (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect),
 
         // Append the request path to the base configuration path, trimming out a double "//"
-        redirectPathname: function () {
+        redirectPathname: function redirectPathname() {
             var pathname  = baseUrl.path;
             if (reqUrl[0] === '/' && pathname[pathname.length - 1] === '/') {
                 pathname += reqUrl.slice(1);
@@ -63,7 +63,7 @@ function sslForbiddenOrRedirect(opt) {
             }
             return pathname;
         },
-        redirectUrl: function (query) {
+        redirectUrl: function redirectUrl(query) {
             return url.format({
                 protocol: 'https:',
                 hostname: baseUrl.hostname,
@@ -82,7 +82,7 @@ function verifySessionHash(salt, hash) {
         return Promise.resolve(false);
     }
 
-    return api.settings.read({context: {internal: true}, key: 'password'}).then(function (response) {
+    return api.settings.read({context: {internal: true}, key: 'password'}).then(function then(response) {
         var hasher = crypto.createHash('sha256');
 
         hasher.update(response.settings[0].value + salt, 'utf8');
@@ -97,7 +97,7 @@ middleware = {
     // authentication has to be done for /ghost/* routes with
     // exceptions for signin, signout, signup, forgotten, reset only
     // api and frontend use different authentication mechanisms atm
-    authenticate: function (req, res, next) {
+    authenticate: function authenticate(req, res, next) {
         var path,
             subPath;
 
@@ -105,14 +105,14 @@ middleware = {
         // it is stripped of anything after the two levels `/ghost/.*?/` as the reset link has an argument
         path = req.path;
         /*jslint regexp:true, unparam:true*/
-        subPath = path.replace(/^(\/.*?\/.*?\/)(.*)?/, function (match, a) {
+        subPath = path.replace(/^(\/.*?\/.*?\/)(.*)?/, function replace(match, a) {
             return a;
         });
 
         if (subPath.indexOf('/ghost/api/') === 0
             && path.indexOf('/ghost/api/v0.1/authentication/') !== 0) {
             return passport.authenticate('bearer', {session: false, failWithError: true},
-                function (err, user, info) {
+                function authenticate(err, user, info) {
                     if (err) {
                         return next(err); // will generate a 500 error
                     }
@@ -139,7 +139,7 @@ middleware = {
     // ### whenEnabled Middleware
     // Selectively use middleware
     // From https://github.com/senchalabs/connect/issues/676#issuecomment-9569658
-    whenEnabled: function (setting, fn) {
+    whenEnabled: function whenEnabled(setting, fn) {
         return function settingEnabled(req, res, next) {
             // Set from server/middleware/index.js for now
             if (blogApp.enabled(setting)) {
@@ -150,7 +150,7 @@ middleware = {
         };
     },
 
-    staticTheme: function () {
+    staticTheme: function staticTheme() {
         return function blackListStatic(req, res, next) {
             if (isBlackListedFileType(req.url)) {
                 return next();
@@ -161,8 +161,8 @@ middleware = {
     },
 
     // to allow unit testing
-    forwardToExpressStatic: function (req, res, next) {
-        api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
+    forwardToExpressStatic: function forwardToExpressStatic(req, res, next) {
+        api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function then(response) {
             var activeTheme = response.settings[0];
 
             express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: utils.ONE_YEAR_MS})(req, res, next);
@@ -171,7 +171,7 @@ middleware = {
 
     // Check to see if we should use SSL
     // and redirect if needed
-    checkSSL: function (req, res, next) {
+    checkSSL: function checkSSL(req, res, next) {
         if (isSSLrequired(res.isAdmin, config.url, config.forceAdminSSL)) {
             if (!req.secure) {
                 var response = sslForbiddenOrRedirect({
@@ -191,8 +191,8 @@ middleware = {
         next();
     },
 
-    checkIsPrivate: function (req, res, next) {
-        return api.settings.read({context: {internal: true}, key: 'isPrivate'}).then(function (response) {
+    checkIsPrivate: function checkIsPrivate(req, res, next) {
+        return api.settings.read({context: {internal: true}, key: 'isPrivate'}).then(function then(response) {
             var pass = response.settings[0];
 
             if (_.isEmpty(pass.value) || pass.value === 'false') {
@@ -209,7 +209,7 @@ middleware = {
         });
     },
 
-    filterPrivateRoutes: function (req, res, next) {
+    filterPrivateRoutes: function filterPrivateRoutes(req, res, next) {
         if (res.isAdmin || !res.isPrivateBlog || req.url.lastIndexOf('/private/', 0) === 0) {
             return next();
         }
@@ -218,7 +218,7 @@ middleware = {
         if (req.url.lastIndexOf('/rss', 0) === 0 || req.url.lastIndexOf('/sitemap', 0) === 0) {
             return errors.error404(req, res, next);
         } else if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
-            fs.readFile(path.join(config.paths.corePath, 'shared', 'private-robots.txt'), function (err, buf) {
+            fs.readFile(path.join(config.paths.corePath, 'shared', 'private-robots.txt'), function readFile(err, buf) {
                 if (err) {
                     return next(err);
                 }
@@ -234,12 +234,12 @@ middleware = {
         }
     },
 
-    authenticatePrivateSession: function (req, res, next) {
+    authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
         var hash = req.session.token || '',
             salt = req.session.salt || '',
             url;
 
-        return verifySessionHash(salt, hash).then(function (isVerified) {
+        return verifySessionHash(salt, hash).then(function then(isVerified) {
             if (isVerified) {
                 return next();
             } else {
@@ -251,7 +251,7 @@ middleware = {
     },
 
     // This is here so a call to /private/ after a session is verified will redirect to home;
-    isPrivateSessionAuth: function (req, res, next) {
+    isPrivateSessionAuth: function isPrivateSessionAuth(req, res, next) {
         if (!res.isPrivateBlog) {
             return res.redirect(config.urlFor('home', true));
         }
@@ -259,7 +259,7 @@ middleware = {
         var hash = req.session.token || '',
             salt = req.session.salt || '';
 
-        return verifySessionHash(salt, hash).then(function (isVerified) {
+        return verifySessionHash(salt, hash).then(function then(isVerified) {
             if (isVerified) {
                 // redirect to home if user is already authenticated
                 return res.redirect(config.urlFor('home', true));
@@ -269,7 +269,7 @@ middleware = {
         });
     },
 
-    authenticateProtection: function (req, res, next) {
+    authenticateProtection: function authenticateProtection(req, res, next) {
         // if errors have been generated from the previous call
         if (res.error) {
             return next();
@@ -277,7 +277,7 @@ middleware = {
 
         var bodyPass = req.body.password;
 
-        return api.settings.read({context: {internal: true}, key: 'password'}).then(function (response) {
+        return api.settings.read({context: {internal: true}, key: 'password'}).then(function then(response) {
             var pass = response.settings[0],
                 hasher = crypto.createHash('sha256'),
                 salt = Date.now().toString(),
