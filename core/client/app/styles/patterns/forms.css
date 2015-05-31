@@ -272,10 +272,11 @@ textarea {
     content: "\e00f";
     position: absolute;
     top: 50%;
-    right: 0.8em;
+    right: 1.2rem;
     margin-top: -0.5em;
     text-transform: none !important;
     font-family: "ghosticons" !important;
+    font-size: 1rem;
     line-height: 1;
     font-weight: normal !important;
     font-style: normal !important;

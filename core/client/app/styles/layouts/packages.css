@@ -320,8 +320,11 @@
 
 @media (max-width: 600px) {
     .package-grid {
-        margin: -5px -20px 4vw -20px;
+        margin: -10px -10px 4vw -10px;
         border: none;
+    }
+    .package-grid-apps {
+        margin: -10px -20px 4vw -20px;
     }
 }
 
