@@ -20,13 +20,6 @@
         "description": {
             "defaultValue": "Just a blogging platform."
         },
-        "email": {
-            "defaultValue": "ghost@example.com",
-            "validations": {
-                "isNull": false,
-                "isEmail": true
-            }
-        },
         "logo": {
             "defaultValue": ""
         },
