@@ -35,7 +35,7 @@ describe('Authentication API', function () {
                     name: 'test user',
                     email: 'test@example.com',
                     password: 'areallygoodpassword',
-                    title: 'a test blog'
+                    blogTitle: 'a test blog'
                 },
 
                 send = mail.__get__('mail.send');

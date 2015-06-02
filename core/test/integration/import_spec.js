@@ -199,8 +199,7 @@ describe('Import', function () {
                 var users = importedData[0],
                     posts = importedData[1],
                     settings = importedData[2],
-                    tags = importedData[3],
-                    exportEmail;
+                    tags = importedData[3];
 
                 // we always have 1 user, the default user we added
                 users.length.should.equal(1, 'There should only be one user');
@@ -222,10 +221,6 @@ describe('Import', function () {
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
-
-                // email address should have been overridden
-                exportEmail = _.findWhere(exportData.data.settings, {key: 'email'}).value;
-                _.findWhere(settings, {key: 'email'}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -371,8 +366,7 @@ describe('Import', function () {
                 var users = importedData[0],
                     posts = importedData[1],
                     settings = importedData[2],
-                    tags = importedData[3],
-                    exportEmail;
+                    tags = importedData[3];
 
                 // we always have 1 user, the owner user we added
                 users.length.should.equal(1, 'There should only be one user');
@@ -394,10 +388,6 @@ describe('Import', function () {
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
-
-                // email address should have been overridden
-                exportEmail = _.findWhere(exportData.data.settings, {key: 'email'}).value;
-                _.findWhere(settings, {key: 'email'}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
