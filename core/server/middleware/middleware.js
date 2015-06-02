@@ -19,10 +19,10 @@ var _           = require('lodash'),
     busboy       = require('./ghost-busboy'),
     cacheControl = require('./cache-control'),
     spamPrevention  = require('./spam-prevention'),
+    clientAuth  = require('./client-auth'),
 
     middleware,
-    blogApp,
-    oauthServer;
+    blogApp;
 
 function isBlackListedFileType(file) {
     var blackListedFileTypes = ['.hbs', '.md', '.json'],
@@ -32,10 +32,6 @@ function isBlackListedFileType(file) {
 
 function cacheBlogApp(app) {
     blogApp = app;
-}
-
-function cacheOauthServer(server) {
-    oauthServer = server;
 }
 
 function isSSLrequired(isAdmin, configUrl, forceAdminSSL) {
@@ -171,27 +167,6 @@ middleware = {
 
             express['static'](path.join(config.paths.themePath, activeTheme.value), {maxAge: utils.ONE_YEAR_MS})(req, res, next);
         });
-    },
-
-    // work around to handle missing client_secret
-    // oauth2orize needs it, but untrusted clients don't have it
-    addClientSecret: function (req, res, next) {
-        if (!req.body.client_secret) {
-            req.body.client_secret = 'not_available';
-        }
-        next();
-    },
-
-    // ### Authenticate Client Middleware
-    // authenticate client that is asking for an access token
-    authenticateClient: function (req, res, next) {
-        return passport.authenticate(['oauth2-client-password'], {session: false})(req, res, next);
-    },
-
-    // ### Generate access token Middleware
-    // register the oauth2orize middleware for password and refresh token grants
-    generateAccessToken: function (req, res, next) {
-        return oauthServer.token()(req, res, next);
     },
 
     // Check to see if we should use SSL
@@ -330,7 +305,11 @@ middleware = {
 
 module.exports = middleware;
 module.exports.cacheBlogApp = cacheBlogApp;
-module.exports.cacheOauthServer = cacheOauthServer;
+
+module.exports.addClientSecret = clientAuth.addClientSecret;
+module.exports.cacheOauthServer = clientAuth.cacheOauthServer;
+module.exports.authenticateClient = clientAuth.authenticateClient;
+module.exports.generateAccessToken = clientAuth.generateAccessToken;
 
 // SSL helper functions are exported primarily for unity testing.
 module.exports.isSSLrequired = isSSLrequired;
