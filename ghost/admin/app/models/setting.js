@@ -6,7 +6,6 @@ var Setting = DS.Model.extend(ValidationEngine, {
 
     title: DS.attr('string'),
     description: DS.attr('string'),
-    email: DS.attr('string'),
     logo: DS.attr('string'),
     cover: DS.attr('string'),
     defaultLang: DS.attr('string'),
