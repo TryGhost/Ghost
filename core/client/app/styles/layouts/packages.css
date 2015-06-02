@@ -22,15 +22,44 @@
     max-width: 1200px;
 }
 
+/* 3 col themes */
+.package-grid-themes .package-grid-cell {
+    flex: 0 0 33.3333%;
+}
+
+/* 2 col themes */
+@media (max-width: 1240px) {
+    .package-grid-themes .package-grid-cell {
+        flex: 0 0 50%;
+    }
+}
+
+/* 1 col themes */
+@media (max-width: 800px) {
+    .package-grid-themes .package-grid-cell {
+        flex: 1 1 100%;
+    }
+}
+
+/* 2 col apps */
+.package-grid-apps .package-grid-cell {
+    flex: 0 0 50%;
+}
+
+/* 1 col apps */
+@media (max-width: 1200px) {
+    .package-grid-apps .package-grid-cell {
+        flex: 1 1 100%;
+    }
+}
+
 
 /* Package Card Theme
 /* ---------------------------------------------------------- */
 
 .package-card-theme {
-    flex: 1 1 290px;
     overflow: hidden;
     margin: 10px;
-    max-width: 440px;
     border: rgba(0,0,0,0.1) 1px solid;
     border-radius: 5px;
 }
@@ -95,7 +124,6 @@
 /* ---------------------------------------------------------- */
 
 .package-card-app {
-    flex: 1 1 500px;
     overflow: hidden;
     margin: 10px;
     padding: 20px;
@@ -297,7 +325,7 @@
         border-top: #e1e1e1 1px solid;
         border-radius: 0;
     }
-    .package-card-app:first-of-type {
+    .package-grid-cell:first-of-type .package-card-app {
         border-top: none;
     }
 }
