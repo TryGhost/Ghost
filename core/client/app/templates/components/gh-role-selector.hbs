@@ -1,5 +1,5 @@
 <select id="{{selectId}}" name="{{selectName}}">
-{{#each role in roles}}
+{{#each roles as |role|}}
 <option value={{role.id}}>{{role.name}}</option>
 {{/each}}
 </select>

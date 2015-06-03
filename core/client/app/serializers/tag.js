@@ -6,7 +6,7 @@ var TagSerializer = ApplicationSerializer.extend({
         options = options || {};
         options.includeId = true;
 
-        var root = Ember.String.pluralize(type.typeKey),
+        var root = Ember.String.pluralize(type.modelName),
             data = this.serialize(record, options);
 
         // Properties that exist on the model but we don't want sent in the payload

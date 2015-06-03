@@ -1,6 +1,6 @@
 {{#if importErrors}}
 <table class="table">
-{{#each error in importErrors}}
+{{#each importErrors as |error|}}
     <tr><td>{{error.message}}</td></tr>
 {{/each}}
 </table>

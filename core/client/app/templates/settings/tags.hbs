@@ -6,7 +6,7 @@
 </header>
 
 <section class="view-container settings-tags">
-    {{#each tag in tags}}
+    {{#each tags as |tag|}}
         <div class="settings-tag">
             <button class="tag-edit-button" {{action "editTag" tag}}>
                 <span class="tag-title">{{tag.name}}</span>
