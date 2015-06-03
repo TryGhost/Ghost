@@ -114,7 +114,7 @@ CasperTest.begin('Admin navigation bar is correct', 65, function suite(test) {
                 'Markdown Help',
                 'delete modal has correct text');
 
-            test.assertExists('.modal-content .close');
+            test.assertExists('.modal-content .close', '.modal-content .close exists');
         });
 
         casper.thenClick('.modal-content .close');
