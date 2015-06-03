@@ -8,8 +8,8 @@ var UserSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
     },
 
     extractSingle: function (store, primaryType, payload) {
-        var root = this.keyForAttribute(primaryType.typeKey),
-            pluralizedRoot = Ember.String.pluralize(primaryType.typeKey);
+        var root = this.keyForAttribute(primaryType.modelName),
+            pluralizedRoot = Ember.String.pluralize(primaryType.modelName);
 
         payload[root] = payload[pluralizedRoot][0];
         delete payload[pluralizedRoot];

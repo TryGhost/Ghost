@@ -70,20 +70,21 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
     }),
 
     /*jshint unused:false */
-    publishedAtValue: Ember.computed('model.published_at', function (key, value) {
-        var pubDate = this.get('model.published_at');
+    publishedAtValue: Ember.computed('model.published_at', {
+        get: function () {
+            var pubDate = this.get('model.published_at');
 
-        // We're using a fake setter to reset
-        // the cache for this property
-        if (arguments.length > 1) {
+            if (pubDate) {
+                return formatDate(pubDate);
+            }
+
+            return formatDate(moment());
+        },
+        set: function (key, value) {
+            // We're using a fake setter to reset
+            // the cache for this property
             return formatDate(moment());
         }
-
-        if (pubDate) {
-            return formatDate(pubDate);
-        }
-
-        return formatDate(moment());
     }),
     /*jshint unused:true */
 
