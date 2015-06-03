@@ -55,12 +55,12 @@ function activateTheme(activeTheme) {
     // set view engine
     hbsOptions = {
         partialsDir: [config.paths.helperTemplates],
-        onCompile: function (exhbs, source) {
+        onCompile: function onCompile(exhbs, source) {
             return exhbs.handlebars.compile(source, {preventIndent: true});
         }
     };
 
-    fs.stat(themePartials, function (err, stats) {
+    fs.stat(themePartials, function stat(err, stats) {
         // Check that the theme has a partials directory before trying to use it
         if (!err && stats && stats.isDirectory()) {
             hbsOptions.partialsDir.push(themePartials);
@@ -111,7 +111,7 @@ function configHbsForContext(req, res, next) {
 // activates that theme's views with the hbs templating engine if it
 // is not yet activated.
 function updateActiveTheme(req, res, next) {
-    api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function (response) {
+    api.settings.read({context: {internal: true}, key: 'activeTheme'}).then(function then(response) {
         var activeTheme = response.settings[0];
 
         // Check if the theme changed
@@ -136,7 +136,7 @@ function updateActiveTheme(req, res, next) {
             }
         }
         next();
-    }).catch(function (err) {
+    }).catch(function handleError(err) {
         // Trying to start up without the active theme present, setup a simple hbs instance
         // and render an error page straight away.
         blogApp.engine('hbs', hbs.express3());
@@ -148,12 +148,12 @@ function updateActiveTheme(req, res, next) {
 function redirectToSetup(req, res, next) {
     /*jslint unparam:true*/
 
-    api.authentication.isSetup().then(function (exists) {
+    api.authentication.isSetup().then(function then(exists) {
         if (!exists.setup[0].status && !req.path.match(/\/setup\//)) {
             return res.redirect(config.paths.subdir + '/ghost/setup/');
         }
         next();
-    }).catch(function (err) {
+    }).catch(function handleError(err) {
         return next(new Error(err));
     });
 }
@@ -194,7 +194,7 @@ function serveSharedFile(file, type, maxAge) {
                 res.writeHead(200, content.headers);
                 res.end(content.body);
             } else {
-                fs.readFile(filePath, function (err, buf) {
+                fs.readFile(filePath, function readFile(err, buf) {
                     if (err) {
                         return next(err);
                     }
@@ -220,7 +220,7 @@ function serveSharedFile(file, type, maxAge) {
     };
 }
 
-setupMiddleware = function (blogAppInstance, adminApp) {
+setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     var logging = config.logging,
         corePath = config.paths.corePath,
         oauthServer = oauth2orize.createServer();
