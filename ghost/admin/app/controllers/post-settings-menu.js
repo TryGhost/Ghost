@@ -18,16 +18,16 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
 
-    initializeSelectedAuthor: function () {
+    initializeSelectedAuthor: Ember.observer('model', function () {
         var self = this;
 
         return this.get('model.author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
         });
-    }.observes('model'),
+    }),
 
-    changeAuthor: function () {
+    changeAuthor: Ember.observer('selectedAuthor', function () {
         var author = this.get('model.author'),
             selectedAuthor = this.get('selectedAuthor'),
             model = this.get('model'),
@@ -50,7 +50,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
             self.set('selectedAuthor', author);
             model.rollback();
         });
-    }.observes('selectedAuthor'),
+    }),
 
     authors: Ember.computed(function () {
         // Loaded asynchronously, so must use promise proxies.
@@ -196,11 +196,11 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
     // observe titleScratch, keeping the post's slug in sync
     // with it until saved for the first time.
-    addTitleObserver: function () {
+    addTitleObserver: Ember.observer('model', function () {
         if (this.get('model.isNew') || this.get('model.title') === '(Untitled)') {
             this.addObserver('model.titleScratch', this, 'titleObserver');
         }
-    }.observes('model'),
+    }),
 
     titleObserver: function () {
         var debounceId,
