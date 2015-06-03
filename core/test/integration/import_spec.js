@@ -671,8 +671,6 @@ describe('Import', function () {
 describe('Import (new test structure)', function () {
     before(testUtils.teardown);
 
-    after(testUtils.teardown);
-
     describe('imports multi user data onto blank ghost install', function () {
         var exportData;
 
