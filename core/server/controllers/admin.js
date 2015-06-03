@@ -9,12 +9,12 @@ adminControllers = {
     // Route: index
     // Path: /ghost/
     // Method: GET
-    index: function (req, res) {
+    index: function index(req, res) {
         /*jslint unparam:true*/
 
         function renderIndex() {
-            return api.configuration.browse().then(function (data) {
-                var apiConfig = _.omit(data.configuration, function (value) {
+            return api.configuration.browse().then(function then(data) {
+                var apiConfig = _.omit(data.configuration, function omit(value) {
                     return _.contains(['environment', 'database', 'mail', 'version'], value.key);
                 });
 
@@ -25,9 +25,9 @@ adminControllers = {
             });
         }
 
-        updateCheck().then(function () {
+        updateCheck().then(function then() {
             return updateCheck.showUpdateNotification();
-        }).then(function (updateVersion) {
+        }).then(function then(updateVersion) {
             if (!updateVersion) {
                 return;
             }
@@ -40,12 +40,12 @@ adminControllers = {
                 message: 'Ghost ' + updateVersion + ' is available! Hot Damn. <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a> to upgrade.'
             };
 
-            return api.notifications.browse({context: {internal: true}}).then(function (results) {
+            return api.notifications.browse({context: {internal: true}}).then(function then(results) {
                 if (!_.some(results.notifications, {message: notification.message})) {
                     return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
                 }
             });
-        }).finally(function () {
+        }).finally(function noMatterWhat() {
             renderIndex();
         }).catch(errors.logError);
     }

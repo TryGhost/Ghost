@@ -27,7 +27,7 @@ function isAuthor(req) {
 }
 
 function handleError(next) {
-    return function (err) {
+    return function handleError(err) {
         return next(err);
     };
 }
@@ -82,8 +82,8 @@ function getBaseUrl(req, slugParam) {
 function processUrls(html, siteUrl, itemUrl) {
     var htmlContent = cheerio.load(html, {decodeEntities: false});
     // convert relative resource urls to absolute
-    ['href', 'src'].forEach(function (attributeName) {
-        htmlContent('[' + attributeName + ']').each(function (ix, el) {
+    ['href', 'src'].forEach(function forEach(attributeName) {
+        htmlContent('[' + attributeName + ']').each(function each(ix, el) {
             var baseUrl,
                 attributeValue,
                 parsed;
@@ -127,7 +127,7 @@ function processUrls(html, siteUrl, itemUrl) {
     return htmlContent;
 }
 
-getFeedXml = function (path, data) {
+getFeedXml = function getFeedXml(path, data) {
     var dataHash = crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
     if (!feedCache[path] || feedCache[path].hash !== dataHash) {
         // We need to regenerate
@@ -140,7 +140,7 @@ getFeedXml = function (path, data) {
     return feedCache[path].xml;
 };
 
-generateFeed = function (data) {
+generateFeed = function generateFeed(data) {
     var feed = new RSS({
         title: data.title,
         description: data.description,
@@ -154,7 +154,7 @@ generateFeed = function (data) {
         }
     });
 
-    data.results.posts.forEach(function (post) {
+    data.results.posts.forEach(function forEach(post) {
         var itemUrl = config.urlFor('post', {post: post, permalinks: data.permalinks, secure: data.secure}, true),
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
@@ -196,12 +196,12 @@ generateFeed = function (data) {
         feed.item(item);
     });
 
-    return filters.doFilter('rss.feed', feed).then(function (feed) {
+    return filters.doFilter('rss.feed', feed).then(function then(feed) {
         return feed.xml();
     });
 };
 
-generate = function (req, res, next) {
+generate = function generate(req, res, next) {
     // Initialize RSS
     var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
         slugParam = req.params.slug,
@@ -213,7 +213,7 @@ generate = function (req, res, next) {
         return res.redirect(baseUrl);
     }
 
-    return getData(options).then(function (data) {
+    return getData(options).then(function then(data) {
         var maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
@@ -226,7 +226,7 @@ generate = function (req, res, next) {
         data.feedUrl = config.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
         data.secure = req.secure;
 
-        return getFeedXml(req.originalUrl, data).then(function (feedXml) {
+        return getFeedXml(req.originalUrl, data).then(function then(feedXml) {
             res.set('Content-Type', 'text/xml; charset=UTF-8');
             res.send(feedXml);
         });

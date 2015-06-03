@@ -22,7 +22,7 @@ function ghostBusBoy(req, res, next) {
     req.files = req.files || {};
     req.body = req.body || {};
 
-    busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+    busboy.on('file', function onFile(fieldname, file, filename, encoding, mimetype) {
         var filePath,
             tmpFileName,
             md5 = crypto.createHash('md5');
@@ -39,7 +39,7 @@ function ghostBusBoy(req, res, next) {
 
         filePath = path.join(tmpDir, tmpFileName || 'temp.tmp');
 
-        file.on('end', function () {
+        file.on('end', function end() {
             req.files[fieldname] = {
                 type: mimetype,
                 encoding: encoding,
@@ -48,29 +48,29 @@ function ghostBusBoy(req, res, next) {
             };
         });
 
-        file.on('error', function (error) {
+        file.on('error', function onError(error) {
             console.log('Error', 'Something went wrong uploading the file', error);
         });
 
         stream = fs.createWriteStream(filePath);
 
-        stream.on('error', function (error) {
+        stream.on('error', function onError(error) {
             console.log('Error', 'Something went wrong uploading the file', error);
         });
 
         file.pipe(stream);
     });
 
-    busboy.on('error', function (error) {
+    busboy.on('error', function onError(error) {
         console.log('Error', 'Something went wrong parsing the form', error);
         res.status(500).send({code: 500, message: 'Could not parse upload completely.'});
     });
 
-    busboy.on('field', function (fieldname, val) {
+    busboy.on('field', function onField(fieldname, val) {
         req.body[fieldname] = val;
     });
 
-    busboy.on('finish', function () {
+    busboy.on('finish', function onFinish() {
         next();
     });
 
