@@ -26,7 +26,7 @@ CasperTest.begin('Post settings menu', 10, function suite(test) {
 
     casper.waitForSelector('.notification-success', function waitForSuccess() {
         test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Saved.');
+        test.assertSelectorHasText('.notification-success', 'Saved.', '.notification-success has correct text');
         casper.click('.gh-notification-close');
     }, function onTimeout() {
         test.assert(false, 'No success notification');
@@ -67,7 +67,7 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(resource.status < 400);
+        test.assert(resource.status < 400, 'resource.status < 400');
     });
 
     casper.then(function checkValueMatches() {
@@ -75,7 +75,7 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
         var slugVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-slug');
         });
-        test.assertEqual(slugVal, 'new-url');
+        test.assertEquals(slugVal, 'new-url', 'slug has correct value');
     });
 });
 
@@ -105,7 +105,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(resource.status < 400);
+        test.assert(resource.status < 400, 'resource.status < 400');
     });
 
     casper.then(function checkValueMatches() {
@@ -113,7 +113,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
         var dateVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-date');
         });
-        test.assertEqual(dateVal, '22 May 14 @ 23:39');
+        test.assertEquals(dateVal, '22 May 14 @ 23:39', 'date is correct');
     });
 });
 
@@ -148,7 +148,7 @@ CasperTest.begin('Post can be changed to static page', 2, function suite(test) {
     }, 2000);
 });
 
-CasperTest.begin('Post url input is reset from all whitespace back to original value', 3, function suite(test) {
+CasperTest.begin('Post url input is reset from all whitespace back to original value', 4, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
@@ -176,15 +176,17 @@ CasperTest.begin('Post url input is reset from all whitespace back to original v
         this.fillSelectors('.settings-menu form', {
             '#url': '    '
         }, false);
-
-        this.click('button.post-settings');
     });
+
+    // Click in a different field
+    casper.thenClick('#post-setting-date');
 
     casper.then(function checkValueMatches() {
         // using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
         var slugVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-slug');
         });
-        test.assertEqual(slugVal, originalSlug);
+        test.assertNotEquals(slugVal, '    ', 'slug is not just spaces');
+        test.assertEquals(slugVal, originalSlug, 'slug gets reset to original value');
     });
 });
