@@ -15,8 +15,8 @@ CasperTest.begin('Ghost admin will load login page', 4, function suite(test) {
             }, '.forgotten-link');
 
             casper.echoConcise('Text' + text);
-            test.assertExists('.forgotten-link');
-            test.assertEqual(text, 'Forgot?');
+            test.assertExists('.forgotten-link', '.forgotten-link exists');
+            test.assertEquals(text, 'Forgot?', 'Forgotten text is correct');
         });
     });
 }, true);
@@ -26,7 +26,7 @@ CasperTest.begin('Ghost admin will load login page', 4, function suite(test) {
 CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     CasperTest.Routines.signout.run(test);
     casper.start(url + 'ghost/login/', function testRedirect(response) {
-        test.assertEqual(response.status, 200, 'Response status should be 200.');
+        test.assertEquals(response.status, 200, 'Response status should be 200.');
         test.assertUrlMatch(/ghost\/signin\//, 'Should be redirected to /signin/.');
     });
 }, true);
@@ -130,7 +130,7 @@ CasperTest.begin('Ensure email field form validation', 3, function suite(test) {
         });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'Invalid Email');
+        test.assertSelectorHasText('.notification-error', 'Invalid Email', '.notification-error text is correct');
     }, function onTimeout() {
         test.fail('Email validation error did not appear');
     }, 2000);
