@@ -9,7 +9,7 @@
             <th>Status</th>
         </thead>
         <tbody>
-        {{#each appController in model itemController="settings/app"}}
+        {{#each model itemController="settings/app" as |appController|}}
         <tr>
             <td>
                 {{#if appController.model.package}}{{appController.model.package.name}} - {{appController.model.package.version}}{{else}}{{appController.model.name}} - package.json missing :({{/if}}

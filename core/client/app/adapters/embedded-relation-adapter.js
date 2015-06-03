@@ -53,7 +53,7 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
     },
 
     preparePayload: function (store, type, record) {
-        var serializer = store.serializerFor(type.typeKey),
+        var serializer = store.serializerFor(type.modelName),
             payload = {};
 
         serializer.serializeIntoHash(payload, type, record);
@@ -62,7 +62,7 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
     },
 
     buildIncludeURL: function (store, type, id) {
-        var url = this.buildURL(type.typeKey, id),
+        var url = this.buildURL(type.modelName, id),
             includes = this.getEmbeddedRelations(store, type);
 
         if (includes.length) {

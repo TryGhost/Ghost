@@ -16,7 +16,7 @@
         <h3>Stack Trace</h3>
         <p><strong>{{message}}</strong></p>
         <ul class="error-stack-list">
-            {{#each item in stack}}
+            {{#each stack as |item|}}
                 <li>
                     at
                     {{#if item.function}}<em class="error-stack-function">{{item.function}}</em>{{/if}}

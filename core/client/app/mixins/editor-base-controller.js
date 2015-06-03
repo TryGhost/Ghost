@@ -120,55 +120,56 @@ export default Ember.Mixin.create({
 
     // an ugly hack, but necessary to watch all the model's properties
     // and more, without having to be explicit and do it manually
-    isDirty: Ember.computed.apply(Ember, watchedProps.concat(function (key, value) {
-        if (arguments.length > 1) {
-            return value;
-        }
+    isDirty: Ember.computed.apply(Ember, watchedProps.concat({
+        get: function () {
+            var model = this.get('model'),
+                markdown = model.get('markdown'),
+                title = model.get('title'),
+                titleScratch = model.get('titleScratch'),
+                scratch = this.get('editor').getValue(),
+                changedAttributes;
 
-        var model = this.get('model'),
-            markdown = model.get('markdown'),
-            title = model.get('title'),
-            titleScratch = model.get('titleScratch'),
-            scratch = this.get('editor').getValue(),
-            changedAttributes;
-
-        if (!this.tagNamesEqual()) {
-            return true;
-        }
-
-        if (titleScratch !== title) {
-            return true;
-        }
-
-        // since `scratch` is not model property, we need to check
-        // it explicitly against the model's markdown attribute
-        if (markdown !== scratch) {
-            return true;
-        }
-
-        // if the Adapter failed to save the model isError will be true
-        // and we should consider the model still dirty.
-        if (model.get('isError')) {
-            return true;
-        }
-
-        // models created on the client always return `isDirty: true`,
-        // so we need to see which properties have actually changed.
-        if (model.get('isNew')) {
-            changedAttributes = Ember.keys(model.changedAttributes());
-
-            if (changedAttributes.length) {
+            if (!this.tagNamesEqual()) {
                 return true;
             }
 
-            return false;
-        }
+            if (titleScratch !== title) {
+                return true;
+            }
 
-        // even though we use the `scratch` prop to show edits,
-        // which does *not* change the model's `isDirty` property,
-        // `isDirty` will tell us if the other props have changed,
-        // as long as the model is not new (model.isNew === false).
-        return model.get('isDirty');
+            // since `scratch` is not model property, we need to check
+            // it explicitly against the model's markdown attribute
+            if (markdown !== scratch) {
+                return true;
+            }
+
+            // if the Adapter failed to save the model isError will be true
+            // and we should consider the model still dirty.
+            if (model.get('isError')) {
+                return true;
+            }
+
+            // models created on the client always return `isDirty: true`,
+            // so we need to see which properties have actually changed.
+            if (model.get('isNew')) {
+                changedAttributes = Ember.keys(model.changedAttributes());
+
+                if (changedAttributes.length) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            // even though we use the `scratch` prop to show edits,
+            // which does *not* change the model's `isDirty` property,
+            // `isDirty` will tell us if the other props have changed,
+            // as long as the model is not new (model.isNew === false).
+            return model.get('isDirty');
+        },
+        set: function (key, value) {
+            return value;
+        }
     })),
 
     // used on window.onbeforeunload
