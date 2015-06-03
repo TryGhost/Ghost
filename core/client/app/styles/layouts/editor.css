@@ -5,27 +5,23 @@
 /* Title
 /* ---------------------------------------------------------- */
 
-.editor .entry-title {
-    position: relative;
-    padding: 0;
-    height: 60px;
+.gh-editor-title {
+    flex-grow: 1;
 }
 
-.editor .entry-title input {
+.gh-editor-title input {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 60px;
     border: 0;
     background: transparent;
     color: var(--darkgrey);
-    text-indent: 20px;
     letter-spacing: -1px;
-    font-size: 3.2rem;
+    font-size: 2.6rem;
     font-weight: bold;
 }
 
-.editor .entry-title input:focus {
+.gh-editor-title input:focus {
     outline: 0;
 }
 
@@ -33,127 +29,54 @@
 /* Container & Headers
 /* ---------------------------------------------------------- */
 
-@media (min-width: 401px) {
-    .editor .notifications.bottom {
-        bottom: 40px;
-    }
-}
-
-.editor .entry-markdown {
-    left: 0;
+.view-editor {
+    display: flex;
 }
 
 .editor .entry-preview {
-    right: 0;
     border-left: #e1e1e1 1px solid;
 }
 
 .editor .entry-markdown,
 .editor .entry-preview {
-    position: absolute;
-    top: 60px;
-    bottom: 40px;
-    padding: 15px;
+    position: relative; /*TODO: Remove*/
+    display: flex;
+    flex-direction: column;
     width: 50%;
+}
+
+/* Content areas at the top, and fill available space */
+.editor .entry-markdown-content,
+.editor .entry-preview-content {
+    order: 1;
+    flex-grow: 1;
+}
+
+/* Headers at the bottom, and fixed height */
+.editor .floatingheader {
+    order: 2;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    height: 40px;
     border-top: #e1e1e1 1px solid;
-    background: #fff;
-    /* Hide markdown icon + wordcount when we hit mobile */
-    /* Give the tab with the .active class the highest z-index */
-    /* Restore the normal height of the .active tab (inactive tab stays small, hidden behind) */
-    /* Restore the white bg of the currently .active tab, remove hand cursor from currently active tab */
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    line-height: 1em;
+}
+.editor .floatingheader a {
+    color: var(--midgrey);
 }
 
-@media (max-width: 400px) {
-    .editor .entry-markdown .markdown-help,
-    .editor .entry-markdown .entry-word-count,
-    .editor .entry-preview .markdown-help,
-    .editor .entry-preview .entry-word-count {
-        display: none;
-    }
-}
-
+/* Switch to 1 col editor on small screens */
 @media (max-width: 1000px) {
-    .editor .entry-markdown,
-    .editor .entry-preview {
-        /* Convert all content areas to small boxes */
-        top: 100px;
-        right: 0;
-        left: 0;
-        z-index: 100;
+    .editor .entry-markdown {
         width: 100%;
-        border: none;
-        /* Correctly colour the markdown icon when inactive and hovered */
     }
-    .editor .entry-markdown .markdown,
-    .editor .entry-markdown .entry-preview-content,
-    .editor .entry-preview .markdown,
-    .editor .entry-preview .entry-preview-content {
-        overflow: hidden;
-        height: 50px;
-    }
-    .editor .entry-markdown:not(.active) .markdown-help:hover:before,
-    .editor .entry-preview:not(.active) .markdown-help:hover:before {
-        color: #fff;
-    }
-}
-
-.editor .entry-markdown .floatingheader a,
-.editor .entry-preview .floatingheader a {
-    color: var(--brown);
-}
-
-@media (max-width: 1000px) {
-    .editor .entry-markdown .floatingheader,
-    .editor .entry-preview .floatingheader {
-        position: absolute;
-        top: -40px;
-        left: 0;
-        width: 50%;
-        background: var(--brown);
-        box-shadow: rgba(0, 0, 0, 0.1) 0 -2px 3px inset;
-        color: #fff;
-        font-weight: normal;
-        cursor: pointer;
-    }
-    .editor .entry-markdown .floatingheader a,
-    .editor .entry-preview .floatingheader a {
-        color: #fff;
-    }
-}
-
-.editor .entry-markdown .floatingheader .entry-word-count,
-.editor .entry-preview .floatingheader .entry-word-count {
-    position: relative;
-    top: 2px;
-    float: right;
-}
-
-.editor .entry-markdown.active,
-.editor .entry-preview.active {
-    z-index: 200;
-}
-
-.editor .entry-markdown.active .markdown,
-.editor .entry-markdown.active .entry-preview-content,
-.editor .entry-preview.active .markdown,
-.editor .entry-preview.active .entry-preview-content {
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    height: auto;
-}
-
-@media (max-width: 1000px) {
-    .editor .entry-markdown.active header,
-    .editor .entry-preview.active header {
-        border-top: #e1e1e1 1px solid;
-        background: #fff;
-        box-shadow: none;
-        color: var(--brown);
-        cursor: auto;
-    }
-    .editor .entry-markdown.active header a,
-    .editor .entry-preview.active header a {
-        color: var(--brown);
+    .editor .entry-preview {
+        display: none;
     }
 }
 
@@ -162,14 +85,12 @@
 /* ---------------------------------------------------------- */
 
 .editor .entry-markdown-content {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    position: relative;
+    flex-grow: 1;
 }
 
 .editor .markdown-editor {
+    /* Legacy absolute positioning */
     position: absolute;
     top: 0;
     right: 0;
@@ -177,6 +98,7 @@
     left: 0;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 21px 20px 36px 20px;
     max-width: 100%;
     height: 100%;
     border: 0;
@@ -197,68 +119,6 @@
     }
 }
 
-@media (min-width: 451px) and (max-width: 1000px) {
-    .editor .markdown-editor {
-        padding: 20px;
-    }
-}
-
-@media (min-width: 1001px) {
-    .editor .markdown-editor {
-        padding: 42px 20px 36px 20px;
-    }
-}
-
-@media (max-width: 1000px) {
-    .editor .entry-preview .floatingheader {
-        /* Align the tab of entry-preview on the right */
-        right: 0;
-        left: auto;
-        border-right: none;
-    }
-}
-
-.editor .entry-preview-content {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 40px 20px 37px 20px;
-    word-break: break-word;
-    hyphens: auto;
-    cursor: default;
-}
-
-@media (max-width: 400px) {
-    .editor .entry-preview-content {
-        padding: 15px;
-    }
-}
-
-@media (max-width: 1000px) {
-    .editor .scrolling .floatingheader {
-        box-shadow: none;
-    }
-    .editor .scrolling .floatingheader:before,
-    .editor .scrolling .floatingheader:after {
-        display: none;
-    }
-}
-
-@media (max-width: 1000px) and (max-width: 1000px) {
-    .editor .entry-preview-content {
-        box-shadow: 0 5px 5px rgba(0, 0, 0, 0.05) inset;
-    }
-}
-
-.markdown-help {
-    float: right;
-    padding: 5px;
-}
-
 
 /* FFF: Fucking Firefox Fixes
 /* ---------------------------------------------------------- */
@@ -275,6 +135,16 @@
 
 /* Preview (Right pane)
 /* ---------------------------------------------------------- */
+
+.editor .entry-preview-content {
+    flex-grow: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 19px 20px 37px 20px;
+    word-break: break-word;
+    hyphens: auto;
+    cursor: default;
+}
 
 /* The styles for the actual content inside the preview */
 .entry-preview-content,
@@ -350,71 +220,8 @@
 }
 
 
-/* Zen Mode
-/* ---------------------------------------------------------- */
-
-body.zen {
-    background: color(#e1e1e1 lightness(+3%));
-}
-
-body.zen .usermenu {
-    display: none;
-}
-
-body.zen .global-nav,
-body.zen .page-header,
-body.zen #publish-bar {
-    overflow: hidden;
-    height: 0;
-    opacity: 0;
-    transition: all 0.5s ease-out;
-}
-
-body.zen .page-content {
-    top: 0;
-    transition: all 0.5s ease-out;
-}
-
-body.zen .entry-markdown,
-body.zen .entry-preview {
-    bottom: 0;
-    transition: all 0.5s ease-out;
-}
-
-
 /* Publish Bar
 /* ---------------------------------------------------------- */
-
-#publish-bar {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 900;
-    padding: 0;
-    height: 40px;
-    border-top: #e1e1e1 1px solid;
-    background: #fff;
-    color: var(--midgrey);
-    transform: translateZ(0);
-}
-
-@media (max-width: 1000px) {
-    #publish-bar {
-        font-weight: normal;
-    }
-}
-
-#publish-bar .post-settings:hover,
-#publish-bar .post-settings.active {
-    color: var(--darkgrey);
-}
-
-#publish-bar .post-settings-menu {
-    position: absolute;
-    right: -3px;
-    bottom: 41px;
-}
 
 .extended-tags {
     /* When the tag bar is expanded */
@@ -502,23 +309,21 @@ body.zen .entry-preview {
 
 #entry-actions {
     position: relative;
+    flex-shrink: 0;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     align-content: center;
-    margin-right: 6px;
 }
 
 #entry-actions .dropdown {
     position: absolute;
+    top: 35px;
     right: 0;
-    bottom: 49px;
 }
 
 #entry-actions .dropdown .dropdown-menu {
-    top: auto;
     right: 100%;
-    bottom: 100%;
     left: auto;
 }
 
@@ -617,7 +422,7 @@ body.zen .entry-preview {
 .post-settings {
     position: relative;
     display: inline-block;
-    padding: 8px 10px;
+    padding: 5px 10px;
     color: var(--midgrey);
     transition: all 0.15s ease-out 0s;
 }
@@ -625,6 +430,13 @@ body.zen .entry-preview {
 .post-settings:hover,
 .post-settings.active {
     color: var(--darkgrey);
+}
+
+.post-settings i {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
 }
 
 .post-settings-menu .dropdown-menu {
@@ -680,8 +492,16 @@ body.zen .entry-preview {
 }
 
 
-/* Markdown Help Modal
+/* Markdown Help Icon + Modal
 /* ---------------------------------------------------------- */
+
+.markdown-help {
+    font-size: 16px;
+}
+
+.markdown-help:hover {
+    cursor: help;
+}
 
 .modal-markdown-help-table {
     margin: 0 0 20px;
