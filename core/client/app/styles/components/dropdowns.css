@@ -45,7 +45,7 @@
 
 .dropdown-menu > li > a,
 .dropdown-menu > li > button {
-    display: block;
+    display: flex;
     clear: both;
     padding: 3px 20px;
     width: 100%;

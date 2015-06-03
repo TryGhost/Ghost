@@ -142,12 +142,14 @@
 }
 
 .modal-footer {
+    display: flex;
+    justify-content: flex-end;
     margin-top: 20px;
-    text-align: right;
 }
 
 .modal-footer button {
     margin-left: 8px;
+    text-align: center;
 }
 
 
