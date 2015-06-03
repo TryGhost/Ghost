@@ -12,13 +12,13 @@ var PostContentView = Ember.View.extend({
         }));
     },
 
-    contentObserver: function () {
+    contentObserver: Ember.observer('controller.content', function () {
         var el = this.$();
 
         if (el) {
             el.closest('.content-preview').scrollTop(0);
         }
-    }.observes('controller.content'),
+    }),
 
     willDestroyElement: function () {
         var el = this.$();
