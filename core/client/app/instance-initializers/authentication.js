@@ -1,16 +1,16 @@
 import Ember from 'ember';
-import Session from 'simple-auth/session';
-import OAuth2 from 'simple-auth-oauth2/authenticators/oauth2';
 
 var AuthenticationInitializer = {
     name: 'authentication',
-    before: 'simple-auth',
-    after: 'registerTrailingLocationHistory',
 
-    initialize: function (container) {
+    initialize: function (instance) {
+        var store = instance.container.lookup('store:main'),
+            Session = instance.container.lookup('simple-auth-session:main'),
+            OAuth2 = instance.container.lookup('simple-auth-authenticator:oauth2-password-grant');
+
         Session.reopen({
             user: Ember.computed(function () {
-                return container.lookup('store:main').find('user', 'me');
+                return store.find('user', 'me');
             })
         });
 
