@@ -14,11 +14,11 @@ SettingsAppController = Ember.Controller.extend({
     appState: appStates.active,
     buttonText: '',
 
-    setAppState: function () {
+    setAppState: Ember.on('init', function () {
         this.set('appState', this.get('active') ? appStates.active : appStates.inactive);
-    }.on('init'),
+    }),
 
-    buttonTextSetter: function () {
+    buttonTextSetter: Ember.observer('appState', function () {
         switch (this.get('appState')) {
             case appStates.active:
                 this.set('buttonText', 'Deactivate');
@@ -30,7 +30,7 @@ SettingsAppController = Ember.Controller.extend({
                 this.set('buttonText', 'Working');
                 break;
         }
-    }.observes('appState').on('init'),
+    }),
 
     activeClass: Ember.computed('appState', function () {
         return this.appState === appStates.active ? true : false;
