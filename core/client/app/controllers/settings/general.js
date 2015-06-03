@@ -14,16 +14,18 @@ export default Ember.Controller.extend({
         return this.get('model.cover') || '';
     }),
 
-    isDatedPermalinks: Ember.computed('model.permalinks', function (key, value) {
-        // setter
-        if (arguments.length > 1) {
+    isDatedPermalinks: Ember.computed('model.permalinks', {
+        set: function (key, value) {
             this.set('model.permalinks', value ? '/:year/:month/:day/:slug/' : '/:slug/');
+
+            var slugForm = this.get('model.permalinks');
+            return slugForm !== '/:slug/';
+        },
+        get: function () {
+            var slugForm = this.get('model.permalinks');
+
+            return slugForm !== '/:slug/';
         }
-
-        // getter
-        var slugForm = this.get('model.permalinks');
-
-        return slugForm !== '/:slug/';
     }),
 
     themes: Ember.computed(function () {
