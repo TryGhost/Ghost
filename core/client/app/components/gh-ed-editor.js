@@ -6,7 +6,7 @@ import EditorScroll from 'ghost/mixins/ed-editor-scroll';
 var Editor;
 
 Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
-    focus: true,
+    focus: false,
 
     /**
      * Tell the controller about focusIn events, will trigger an autosave on a new document
