@@ -1467,7 +1467,7 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             res = {
-                locals: {version: ''},
+                locals: {version: '', relativeUrl: '/private/'},
                 render: sandbox.spy()
             },
             req = {
