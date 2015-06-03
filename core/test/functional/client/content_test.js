@@ -127,7 +127,7 @@ CasperTest.begin('Posts can be marked as featured', 6, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function (resource) {
-        test.assert(resource.status < 400);
+        test.assert(resource.status < 400, 'resource.status < 400');
     });
 
     casper.waitForSelector('.content-list-content li.featured:first-of-type', function () {
@@ -141,7 +141,7 @@ CasperTest.begin('Posts can be marked as featured', 6, function suite(test) {
     casper.thenClick('.content-preview .featured');
 
     casper.waitWhileSelector('.content-preview .featured', function onSuccess() {
-        test.assertDoesntExist('.content-list-content li.featured:first-of-type');
+        test.assertDoesntExist('.content-list-content li.featured:first-of-type', '.content-list-content li.featured:first-of-type does not exist');
     }, function onTimeout() {
         casper.test.fail('Couldn\'t unfeature post.');
     }, 2000);

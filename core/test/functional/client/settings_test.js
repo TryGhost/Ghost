@@ -46,7 +46,7 @@ CasperTest.begin('General settings pane is correct', 7, function suite(test) {
     });
 
     function assertImageUploaderModalThenClose() {
-        test.assertSelectorHasText('.description', 'Add image');
+        test.assertSelectorHasText('.description', 'Add image', '.description has the correct text');
         casper.click('.modal-container .js-button-accept');
         casper.waitForSelector('.notification-success', function onSuccess() {
             test.assert(true, 'Got success notification');
@@ -115,7 +115,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'too long');
+        test.assertSelectorHasText('.notification-error', 'too long', '.notification-error has correct text');
     }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
 
     casper.thenClick('.gh-notification-close');
@@ -126,7 +126,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
     });
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'too long');
+        test.assertSelectorHasText('.notification-error', 'too long', '.notification-error has correct text');
     }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
 
     casper.thenClick('.gh-notification-close');
@@ -140,7 +140,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
     casper.wait(2000);
 
     casper.then(function checkSlugInputValue() {
-        test.assertField('general[postsPerPage]', '5');
+        test.assertField('general[postsPerPage]', '5', 'posts per page is set correctly');
     });
 
     casper.fillAndSave('form#settings-general', {
@@ -150,7 +150,7 @@ CasperTest.begin('General settings validation is correct', 6, function suite(tes
     casper.wait(2000);
 
     casper.then(function checkSlugInputValue() {
-        test.assertField('general[postsPerPage]', '5');
+        test.assertField('general[postsPerPage]', '5', 'posts per page is set correctly');
     });
 });
 //
@@ -161,9 +161,9 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
         test.assertUrlMatch(/ghost\/settings\/users\/$/, 'settings.users transitions to correct url');
     });
     casper.then(function usersScreenHasContent() {
-        test.assertSelectorHasText('.settings-users .user-list .user-list-title', 'Active users');
+        test.assertSelectorHasText('.settings-users .user-list .user-list-title', 'Active users', 'active users text is correct');
         test.assertExists('.settings-users .user-list .user-list-item', 'Has an active user');
-        test.assertSelectorHasText('.settings-users .user-list-item .name', 'Test User');
+        test.assertSelectorHasText('.settings-users .user-list-item .name', 'Test User', 'test user text is correct');
         test.assertExists('.settings-users .user-list-item .role-label.owner', 'First user has owner role displayed');
 
         test.assertExists('.view-actions .btn-green', 'Add user button is on page.');
@@ -293,7 +293,7 @@ CasperTest.begin('User settings screen resets all whitespace slug to original va
 
     casper.then(function checkSlugInputValue() {
         casper.wait(250);
-        test.assertField('user', slug);
+        test.assertField('user', slug, 'user slug is correct');
     });
 });
 
@@ -320,11 +320,11 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
     casper.thenClick('body');
 
     casper.waitForResource(/\/slugs\/user\//, function testGoodResponse(resource) {
-        test.assert(resource.status < 400);
+        test.assert(resource.status < 400, 'resource.status < 400');
     });
 
     casper.then(function checkSlugInputValue() {
-        test.assertField('user', slug);
+        test.assertField('user', slug, 'user slug is correct');
     });
 });
 
@@ -356,7 +356,7 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
 
     casper.waitForSelector('.notification-error', function onSuccess() {
         test.assert(true, 'Got error notification');
-        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]', 'notification text is not broken');
     }, casper.failOnTimeout(test, 'No error notification :('));
 
     casper.then(function resetEmailToValid() {
@@ -371,7 +371,7 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
 
     casper.waitForSelector('.notification-success', function onSuccess() {
         test.assert(true, 'Got success notification');
-        test.assertSelectorDoesntHaveText('.notification-success', '[object Object]');
+        test.assertSelectorDoesntHaveText('.notification-success', '[object Object]', 'notification text is not broken');
     }, casper.failOnTimeout(test, 'No success notification :('));
 });
 
@@ -416,7 +416,7 @@ CasperTest.begin('Ensure user bio field length validation', 3, function suite(te
     casper.thenClick('.view-actions .btn-blue');
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'is too long');
+        test.assertSelectorHasText('.notification-error', 'is too long', '.notification-error text is correct');
     }, casper.failOnTimeout(test, 'Bio field length error did not appear', 2000));
 });
 
@@ -435,7 +435,7 @@ CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
     casper.thenClick('.view-actions .btn-blue');
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'not a valid url');
+        test.assertSelectorHasText('.notification-error', 'not a valid url', '.notification-error text is correct');
     }, casper.failOnTimeout(test, 'Url validation error did not appear', 2000));
 });
 
@@ -454,6 +454,6 @@ CasperTest.begin('Ensure user location field length validation', 3, function sui
     casper.thenClick('.view-actions .btn-blue');
 
     casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-        test.assertSelectorHasText('.notification-error', 'is too long');
+        test.assertSelectorHasText('.notification-error', 'is too long', '.notification-error text is correct');
     }, casper.failOnTimeout(test, 'Location field length error did not appear', 2000));
 });
