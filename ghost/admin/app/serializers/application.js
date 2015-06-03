@@ -7,7 +7,7 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         options.includeId = true;
 
         // We have a plural root in the API
-        var root = Ember.String.pluralize(type.typeKey),
+        var root = Ember.String.pluralize(type.modelName),
             data = this.serialize(record, options);
 
         // Don't ever pass uuid's

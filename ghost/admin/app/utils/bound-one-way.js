@@ -15,8 +15,13 @@ var BoundOneWay = function (upstream, transform) {
         transform = function (value) { return value; };
     }
 
-    return Ember.computed(upstream, function (key, value) {
-        return arguments.length > 1 ? value : transform(this.get(upstream));
+    return Ember.computed(upstream, {
+        get: function () {
+            return transform(this.get(upstream));
+        },
+        set: function (key, value) {
+            return value;
+        }
     });
 };
 
