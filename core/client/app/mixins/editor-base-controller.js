@@ -60,9 +60,6 @@ export default Ember.Mixin.create({
      */
     willPublish: boundOneWay('model.isPublished'),
 
-    // Make sure editor starts with markdown shown
-    isPreview: false,
-
     // set by the editor route and `isDirty`. useful when checking
     // whether the number of tags has changed for `isDirty`.
     previousTagNames: null,
@@ -359,10 +356,6 @@ export default Ember.Mixin.create({
                 }
                 editor.replaceSelection(resultSrc, replacement.start, replacement.end, cursorPosition);
             }
-        },
-
-        togglePreview: function (preview) {
-            this.set('isPreview', preview);
         },
 
         autoSaveNew: function () {

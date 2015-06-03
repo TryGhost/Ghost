@@ -190,7 +190,8 @@
     padding: 12px;
     color: var(--midgrey);
     text-align: center;
-    font-size: 1.3rem;
+    text-transform: uppercase;
+    font-size: 1rem;
     line-height: 1;
     font-weight: 200;
 }
@@ -356,8 +357,18 @@
     font-size: 1.4rem;
 }
 
+.view-actions {
+    flex-shrink: 0;
+    display: flex;
+}
+
+.view-actions .btn {
+    margin-left: 8px;
+}
+
 .view-container,
 .view-content {
+    position: relative;
     flex-grow: 1;
     overflow-x: hidden;
     overflow-y: auto;
