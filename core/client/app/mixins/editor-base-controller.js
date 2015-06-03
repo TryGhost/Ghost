@@ -236,7 +236,6 @@ export default Ember.Mixin.create({
     },
 
     shouldFocusTitle: Ember.computed.alias('model.isNew'),
-    shouldFocusEditor: Ember.computed.not('model.isNew'),
 
     actions: {
         save: function (options) {
