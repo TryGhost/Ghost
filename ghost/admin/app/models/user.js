@@ -29,16 +29,17 @@ export default DS.Model.extend(ValidationEngine, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
 
-    role: Ember.computed('roles', function (name, value) {
-        if (arguments.length > 1) {
+    role: Ember.computed('roles', {
+        get: function () {
+            return this.get('roles.firstObject');
+        },
+        set: function (key, value) {
             // Only one role per user, so remove any old data.
             this.get('roles').clear();
             this.get('roles').pushObject(value);
 
             return value;
         }
-
-        return this.get('roles.firstObject');
     }),
 
     // TODO: Once client-side permissions are in place,
