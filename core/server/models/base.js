@@ -356,9 +356,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         slug = utils.safeString(base);
 
-        // Remove trailing hyphen
-        slug = slug.charAt(slug.length - 1) === '-' ? slug.substr(0, slug.length - 1) : slug;
-
         // If it's a user, let's try to cut it down (unless this is a human request)
         if (baseName === 'user' && options && options.shortSlug && slugTryCount === 1 && slug !== 'ghost-owner') {
             longSlug = slug;
