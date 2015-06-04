@@ -40,10 +40,11 @@ export default Ember.Controller.extend(ValidationEngine, {
 
         forgotten: function () {
             var email = this.get('model.identification'),
+                notifications = this.get('notifications'),
                 self = this;
 
             if (!email) {
-                return this.notifications.showError('Enter email address to reset password.');
+                return notifications.showError('Enter email address to reset password.');
             }
 
             self.set('submitting', true);
@@ -58,10 +59,10 @@ export default Ember.Controller.extend(ValidationEngine, {
                 }
             }).then(function () {
                 self.set('submitting', false);
-                self.get('notifications').showSuccess('Please check your email for instructions.');
+                notifications.showSuccess('Please check your email for instructions.');
             }).catch(function (resp) {
                 self.set('submitting', false);
-                self.get('notifications').showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
+                notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
             });
         }
     }
