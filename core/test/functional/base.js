@@ -469,8 +469,9 @@ CasperTest.Routines = (function () {
         casper.thenOpenAndWaitForPageLoad('editor', function createTestPost() {
             casper.sendKeys('#entry-title', testPost.title);
             casper.writeContentToEditor(testPost.html);
-            casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
-            casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
+            // TODO move these into psm tests when tags have been added there
+            // casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
+            // casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
         });
 
         casper.waitForSelectorTextChange('.entry-preview .rendered-markdown');
