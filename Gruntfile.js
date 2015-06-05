@@ -77,11 +77,10 @@ var _              = require('lodash'),
                     }
                 },
                 express: {
-                    files:  ['core/server.js', 'core/server/**/*.js'],
+                    files:  ['core/ghost-server.js', 'core/server/**/*.js'],
                     tasks:  ['express:dev'],
                     options: {
-                        // **Note:** Without this option specified express won't be reloaded
-                        nospawn: true
+                        spawn: false
                     }
                 },
                 csscomb: {
