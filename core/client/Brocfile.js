@@ -34,9 +34,6 @@ app = new EmberApp({
 });
 
 // 'dem Scripts
-app.import('bower_components/loader.js/loader.js');
-app.import('bower_components/jquery/dist/jquery.js');
-app.import('bower_components/ember-load-initializers/ember-load-initializers.js');
 app.import('bower_components/validator-js/validator.js');
 app.import('bower_components/rangyinputs/rangyinputs-jquery-src.js');
 app.import('bower_components/showdown-ghost/src/showdown.js');
