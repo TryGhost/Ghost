@@ -28,6 +28,7 @@ function ConfigManager(config) {
     this._config = {};
 
     // Allow other modules to be externally accessible.
+    this.urlJoin = configUrl.urlJoin;
     this.urlFor = configUrl.urlFor;
     this.urlPathForPost = configUrl.urlPathForPost;
 
