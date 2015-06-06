@@ -16,9 +16,7 @@ pingList = [{
 }];
 
 function ping(post) {
-    var pingXML,
-        title = post.title,
-        url = config.urlFor('post', {post: post}, true);
+    var pingXML, url;
 
     // Only ping when in production and not a page
     if (process.env.NODE_ENV !== 'production' || post.page || config.isPrivacyDisabled('useRpcPing')) {
@@ -33,6 +31,11 @@ function ping(post) {
         return;
     }
 
+    url = config.urlFor('post', {post: post}, true);
+    if (!url) {
+        return;
+    }
+
     // Build XML object.
     pingXML = xml({
         methodCall: [{
@@ -41,7 +44,7 @@ function ping(post) {
             params: [{
                 param: [{
                     value: [{
-                        string: title
+                        string: post.title
                     }]
                 }]
             }, {

@@ -433,24 +433,28 @@ describe('Frontend Routing', function () {
                     var content = res.text,
                         siteTitle = '<title><![CDATA[Ghost]]></title>',
                         siteDescription = '<description><![CDATA[Just a blogging platform.]]></description>',
-                        siteUrl = '<link>http://127.0.0.1:2369/</link>',
+                        siteUrlA = '<link>http://127.0.0.1:2369/</link>',
+                        siteUrlB = '<link>http://127.0.0.1:2369/</link>',
                         postTitle = '<![CDATA[Welcome to Ghost]]>',
                         descStart = '<description><![CDATA[<p>You\'re live!',
                         postStart = '<content:encoded><![CDATA[<p>You\'re live!',
                         postEnd = 'you think :)</p>]]></content:encoded>',
-                        postLink = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
+                        postLinkA = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
+                        postLinkB = '<link>http://127.0.0.1:2369/welcome-to-ghost/</link>',
                         postCreator = '<dc:creator><![CDATA[Joe Bloggs]]>',
                         author = '<author>';
 
                     content.indexOf('<rss').should.be.above(0);
                     content.indexOf(siteTitle).should.be.above(0);
                     content.indexOf(siteDescription).should.be.above(0);
-                    content.indexOf(siteUrl).should.be.above(0);
+                    Math.max(content.indexOf(siteUrlA), content.indexOf(siteUrlB))
+                        .should.be.above(0);
                     content.indexOf(postTitle).should.be.above(0);
                     content.indexOf(descStart).should.be.above(0);
                     content.indexOf(postStart).should.be.above(0);
                     content.indexOf(postEnd).should.be.above(0);
-                    content.indexOf(postLink).should.be.above(0);
+                    Math.max(content.indexOf(postLinkA), content.indexOf(postLinkB))
+                        .should.be.above(0);
                     content.indexOf(postCreator).should.be.above(0);
                     content.indexOf('</rss>').should.be.above(0);
                     content.indexOf(author).should.be.below(0);
@@ -944,8 +948,8 @@ describe('Frontend Routing', function () {
         it('should set links to url over non-HTTPS', function (done) {
             request.get('/')
                 .expect(200)
-                .expect(/<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
-                .expect(/<a href="http:\/\/127.0.0.1:2370">Ghost<\/a\>/)
+                .expect(/<link rel="canonical" href="http:\/\/((127.0.0.1)|(localhost)):2370\/" \/\>/)
+                .expect(/<a href="http:\/\/((127.0.0.1)|(localhost)):2370">Ghost<\/a\>/)
                 .end(doEnd(done));
         });
 

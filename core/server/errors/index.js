@@ -31,6 +31,13 @@ function getConfigModule() {
     return config;
 }
 
+function shouldLog() {
+    return process.env.NODE_ENV === 'development' ||
+        process.env.NODE_ENV === 'staging' ||
+        process.env.NODE_ENV === 'production' ||
+        process.env.ENABLE_GHOST_LOGGING === 'true';
+}
+
 /**
  * Basic error handling helpers
  */
@@ -58,17 +65,13 @@ errors = {
     },
 
     logInfo: function (component, info) {
-        if ((process.env.NODE_ENV === 'development' ||
-            process.env.NODE_ENV === 'staging' ||
-            process.env.NODE_ENV === 'production')) {
+        if (shouldLog()) {
             console.info(chalk.cyan(component + ':', info));
         }
     },
 
     logWarn: function (warn, context, help) {
-        if ((process.env.NODE_ENV === 'development' ||
-            process.env.NODE_ENV === 'staging' ||
-            process.env.NODE_ENV === 'production')) {
+        if (shouldLog()) {
             warn = warn || 'no message supplied';
             var msgs = [chalk.yellow('\nWarning:', warn), '\n'];
 
@@ -119,9 +122,7 @@ errors = {
         }
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
-        if ((process.env.NODE_ENV === 'development' ||
-            process.env.NODE_ENV === 'staging' ||
-            process.env.NODE_ENV === 'production')) {
+        if (shouldLog()) {
             msgs = [chalk.red('\nERROR:', err), '\n'];
 
             if (context) {

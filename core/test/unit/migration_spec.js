@@ -3,11 +3,14 @@
 var should          = require('should'),
     _               = require('lodash'),
     crypto          = require('crypto'),
+    rewire          = require('rewire'),
 
     // Stuff we are testing
     defaultSettings = require('../../server/data/default-settings'),
     schema          = require('../../server/data/schema'),
-    permissions     = require('../../server/data/fixtures/permissions/permissions');
+    // Use 'rewire' to force a clean load.  Otherwise execution of addAllPermissions by other tests can cause
+    //    'object_type' keys to be in the hash when we check it, which the expected md5 values don't include.
+    permissions     = rewire('../../server/data/fixtures/permissions/permissions');
 
 // To stop jshint complaining
 should.equal(true, true);

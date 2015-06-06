@@ -4,17 +4,22 @@ var assert          = require('assert'),
     crypto          = require('crypto'),
     should          = require('should'),
     sinon           = require('sinon'),
+    rewire          = require('rewire'),
     Promise         = require('bluebird'),
-    middleware      = require('../../server/middleware').middleware,
+    _               = require('lodash'),
+    express         = require('express'),
     api             = require('../../server/api'),
     errors          = require('../../server/errors'),
-    fs              = require('fs');
+    fs              = require('fs'),
+    defaultConfig   = require('../../../config.example')[process.env.NODE_ENV],
+
+    // Thing we are testing
+    setupMiddleware = rewire('../../server/middleware/index'),
+    middleware      = setupMiddleware.middleware;
 
 function hash(password, salt) {
     var hasher = crypto.createHash('sha256');
-
     hasher.update(password + salt, 'utf8');
-
     return hasher.digest('hex');
 }
 
@@ -22,12 +27,94 @@ describe('Middleware', function () {
     var sandbox,
         apiSettingsStub;
 
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-    });
+    beforeEach(function () { sandbox = sinon.sandbox.create(); });
+    afterEach(function () { sandbox.restore(); });
 
-    afterEach(function () {
-        sandbox.restore();
+    describe('setupMiddleware', function () {
+        var config;
+
+        beforeEach(function () {
+            config = setupMiddleware.__get__('config');
+            config.set(_.merge({}, defaultConfig));      // isolate us from previously-run unit test file(s)
+        });
+
+        describe('when Ghost is used as an Express middleware component itself', function () {
+            var useStub, blogApp, adminApp, error404, error500;
+
+            beforeEach(function () {
+                // be middleware
+                config.asMiddleware = true;
+                delete config.server;
+
+                blogApp = express();
+                adminApp = express();
+                error404 = setupMiddleware.__get__('errors').error404;
+                error500 = setupMiddleware.__get__('errors').error500;
+
+                useStub = sandbox.stub(blogApp, 'use');
+                sandbox.stub(setupMiddleware.__get__('oauth'), 'init');  // would need lots more setup to run in tests
+            });
+
+            it('installs setPathsFromMountpath as the very first middleware used', function () {
+                var error,
+                    shortCircuit = 'don\'t bother finishing initialization in this test';
+                useStub.throws(shortCircuit);
+
+                try {
+                    setupMiddleware(blogApp, adminApp);
+                } catch (e) {
+                    error = e;
+                }
+
+                error.name.should.equal(shortCircuit);
+                useStub.calledOnce.should.be.true;
+                useStub.args[0][0].should.equal(middleware.setPathsFromMountpath);
+            });
+
+            describe('handles generate404s in the config', function () {
+                it('should configure errors.error404 as middleware when config key missing', function (done) {
+                    setupMiddleware(blogApp, adminApp);
+                    useStub.calledWith(error404).should.be.true;
+                    done();
+                });
+
+                it('should configure errors.error404 as middleware when true', function (done) {
+                    config.generate404s = true;
+                    setupMiddleware(blogApp, adminApp);
+                    useStub.calledWith(error404).should.be.true;
+                    done();
+                });
+
+                it('should NOT configure errors.error404 as middleware when false', function (done) {
+                    config.generate404s = false;
+                    setupMiddleware(blogApp, adminApp);
+                    useStub.calledWith(error404).should.be.false;
+                    done();
+                });
+            });
+
+            describe('handles generate500s in the config', function () {
+                it('should configure errors.error500 as middleware when config key missing', function (done) {
+                    setupMiddleware(blogApp, adminApp);
+                    useStub.calledWith(error500).should.be.true;
+                    done();
+                });
+
+                it('should configure errors.error500 as middleware when true', function (done) {
+                    config.generate500s = true;
+                    setupMiddleware(blogApp, adminApp);
+                    useStub.calledWith(error500).should.be.true;
+                    done();
+                });
+
+                it('should NOT configure errors.error500 as middleware when false', function (done) {
+                    config.generate500s = false;
+                    setupMiddleware(blogApp, adminApp);
+                    useStub.calledWith(error500).should.be.false;
+                    done();
+                });
+            });
+        });
     });
 
     describe('whenEnabled', function () {
@@ -69,7 +156,7 @@ describe('Middleware', function () {
 
     describe('staticTheme', function () {
         beforeEach(function () {
-            sinon.stub(middleware, 'forwardToExpressStatic').yields();
+            sandbox.stub(middleware, 'forwardToExpressStatic').yields();
         });
 
         afterEach(function () {
@@ -122,6 +209,45 @@ describe('Middleware', function () {
                 middleware.forwardToExpressStatic.calledOnce.should.be.true;
                 assert.deepEqual(middleware.forwardToExpressStatic.args[0][0], req);
                 done();
+            });
+        });
+    });
+
+    describe('checkSSL middleware', function () {
+        var checkSSL = middleware.checkSSL,
+            redirectCalled, nextCalled,
+            mockResponse,
+            nextFunction = function () { nextCalled = true; };
+
+        beforeEach(function () {
+            redirectCalled = nextCalled = false;
+            mockResponse = {
+                redirect: function () { redirectCalled = true; }
+            };
+        });
+
+        it('passes the request on if it receives an HTTPS request', function () {
+            var mockRequest = {secure: true};
+            checkSSL(mockRequest, mockResponse, nextFunction);
+            nextCalled.should.be.true;
+            redirectCalled.should.be.false;
+        });
+
+        describe('receiving a non-SSL request', function () {
+            var mockRequest = {secure: false};
+
+            it('redirects to HTTPS if it is configured with an "https" url', function () {
+                setupMiddleware.__get__('config').url = 'https://127.0.0.1:2369';
+                checkSSL(mockRequest, mockResponse, nextFunction);
+                nextCalled.should.be.false;
+                redirectCalled.should.be.true;
+            });
+
+            it('passes the request on if there is no "url" in the configuration', function () {
+                delete setupMiddleware.__get__('config').url;
+                checkSSL(mockRequest, mockResponse, nextFunction);
+                nextCalled.should.be.true;
+                redirectCalled.should.be.false;
             });
         });
     });
@@ -408,6 +534,87 @@ describe('Middleware', function () {
                     }).catch(done);
                 });
             });
+        });
+    });
+
+    describe('setPathsFromMountpath middleware', function () {
+        var setPathsFromMountpath, nextStub, config, mockRequest,
+            newPath, expectedUrl,
+            restoreUrl, restoreConfigUrl, restoreThemeUrl;
+
+        beforeEach(function () {
+            // overwrite so we have access to middleware module's internal config
+            middleware =
+                setupMiddleware.middleware =
+                    rewire('../../server/middleware/middleware');
+
+            setPathsFromMountpath = middleware.setPathsFromMountpath;
+            nextStub = sinon.stub();
+            config = middleware.__get__('config');
+            newPath = '/our/site/blog';
+
+            mockRequest = {
+                protocol: 'proto',
+                baseUrl: newPath,
+                headers: {
+                    host: 'locohostle:42'
+                },
+                get: function (key) {
+                    return mockRequest.headers[key.toLowerCase()];
+                }
+            };
+            expectedUrl = 'proto://locohostle:42/our/site/blog';
+
+            restoreConfigUrl = config._config.url;
+            restoreUrl = config.url;
+            restoreThemeUrl = config.theme.url;
+        });
+
+        afterEach(function () {
+            nextStub.called.should.be.true;
+
+            config.theme.url.should.equal(expectedUrl);
+            config.url.should.equal(expectedUrl);
+            config._config.url.should.equal(expectedUrl);
+
+            // restore global state for subsequent tests
+            config._config.url = restoreConfigUrl;
+            config.url = restoreUrl;
+            config.theme.url = restoreThemeUrl;
+        });
+
+        it('copies from blogApp.mountpath to config fields', function () {
+            middleware.__set__('blogApp', {mountpath: newPath});
+            config.paths.subdir.should.not.equal(newPath);
+
+            setPathsFromMountpath(mockRequest, {}, nextStub);
+            config.paths.subdir.should.equal(newPath);
+        });
+
+        it('uses "x-forwarded-host" instead of "host" from headers, when present', function () {
+            expectedUrl = 'proto://proxied.com/our/site/blog';
+            mockRequest.headers['x-forwarded-host'] = 'proxied.com';
+            middleware.__set__('blogApp', {mountpath: newPath});
+
+            setPathsFromMountpath(mockRequest, {}, nextStub);
+            config.paths.subdir.should.equal(newPath);
+        });
+
+        it('uses "x-forwarded-host" AND "x-forwarded-port" when both are present', function () {
+            expectedUrl = 'https://proxied.com:8080/our/site/blog';
+            mockRequest.headers['x-forwarded-host'] = 'proxied.com';
+            mockRequest.headers['x-forwarded-port'] = '8080';
+            mockRequest.protocol = 'https';
+            middleware.__set__('blogApp', {mountpath: newPath});
+
+            setPathsFromMountpath(mockRequest, {}, nextStub);
+            config.paths.subdir.should.equal(newPath);
+        });
+
+        it('makes subdir empty if the mountpath is root', function () {
+            middleware.__set__('blogApp', {mountpath: '/'});
+            setPathsFromMountpath(mockRequest, {}, nextStub);
+            config.paths.subdir.should.equal('');
         });
     });
 });

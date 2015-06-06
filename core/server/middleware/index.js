@@ -1,6 +1,6 @@
 // # Custom Middleware
 // The following custom middleware functions cannot yet be unit tested, and as such are kept separate from
-// the testable custom middleware functions in middleware.js
+// the testable custom middleware functions in ./middleware.js
 
 var api            = require('../api'),
     bodyParser     = require('body-parser'),
@@ -21,6 +21,7 @@ var api            = require('../api'),
     oauth          = require('./oauth'),
     oauth2orize    = require('oauth2orize'),
     authStrategies = require('./auth-strategies'),
+    url            = require('url'),
     utils          = require('../utils'),
     sitemapHandler = require('../data/xml/sitemap/handler'),
 
@@ -181,6 +182,46 @@ function uncapitalise(req, res, next) {
     }
 }
 
+function isSSLrequired(isAdmin) {
+    if (!config.url) {
+        return false;
+    }
+
+    var forceSSL = url.parse(config.url).protocol === 'https:' ? true : false,
+        forceAdminSSL = (isAdmin && config.forceAdminSSL);
+    if (forceSSL || forceAdminSSL) {
+        return true;
+    }
+    return false;
+}
+
+// Check to see if we should use SSL
+// and redirect if needed
+function checkSSL(req, res, next) {
+    if (isSSLrequired(res.isAdmin)) {
+        if (!req.secure) {
+            var forceAdminSSL = config.forceAdminSSL,
+                redirectUrl;
+
+            // Check if forceAdminSSL: { redirect: false } is set, which means
+            // we should just deny non-SSL access rather than redirect
+            if (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect) {
+                return res.sendStatus(403);
+            }
+
+            redirectUrl = url.parse(config.urlSSL || config.url);
+            return res.redirect(301, url.format({
+                protocol: 'https:',
+                hostname: redirectUrl.hostname,
+                port: redirectUrl.port,
+                pathname: req.path,
+                query: req.query
+            }));
+        }
+    }
+    next();
+}
+
 // ### ServeSharedFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function serveSharedFile(file, type, maxAge) {
@@ -237,6 +278,10 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
     blogApp.enable('trust proxy');
+
+    if (config.asMiddleware) {
+        blogApp.use(middleware.setPathsFromMountpath);
+    }
 
     // Logging configuration
     if (logging !== false) {
@@ -328,14 +373,20 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
 
     // ### Error handling
     // 404 Handler
-    blogApp.use(errors.error404);
+    if (config.generate404s !== false) {
+        blogApp.use(errors.error404);
+    }
 
     // 500 Handler
-    blogApp.use(errors.error500);
+    if (config.generate500s !== false) {
+        blogApp.use(errors.error500);
+    }
 };
 
 module.exports = setupMiddleware;
 // Export middleware functions directly
 module.exports.middleware = middleware;
+
 // Expose middleware functions in this file as well
 module.exports.middleware.redirectToSetup = redirectToSetup;
+module.exports.middleware.checkSSL = checkSSL;
