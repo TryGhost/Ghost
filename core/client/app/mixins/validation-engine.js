@@ -15,6 +15,8 @@ import TagSettingsValidator from 'ghost/validators/tag-settings';
 // our extensions to the validator library
 ValidatorExtensions.init();
 
+// This is here because it is used by some things that format errors from api responses
+// This function should be removed in the notifications refactor
 // format errors to be used in `notifications.showErrors`.
 // result is [{message: 'concatenated error messages'}]
 function formatErrors(errors, opts) {
@@ -79,17 +81,21 @@ export default Ember.Mixin.create({
         tag: TagSettingsValidator
     },
 
+    // This adds the Errors object to the validation engine, and shouldn't affect
+    // ember-data models because they essentially use the same thing
+    errors: DS.Errors.create(),
+
     /**
     * Passes the model to the validator specified by validationType.
     * Returns a promise that will resolve if validation succeeds, and reject if not.
     * Some options can be specified:
     *
-    * `format: false` - doesn't use formatErrors to concatenate errors for notifications.showErrors.
-    *                   will return whatever the specified validator returns.
-    *                   since notifications are a common usecase, `format` is true by default.
-    *
     * `model: Object` - you can specify the model to be validated, rather than pass the default value of `this`,
     *                   the class that mixes in this mixin.
+    *
+    * `property: String` - you can specify a specific property to validate. If
+    * 					   no property is specified, the entire model will be
+    * 					   validated
     */
     validate: function (opts) {
         // jscs:disable safeContextKeyword
@@ -113,23 +119,23 @@ export default Ember.Mixin.create({
         opts.validationType = type;
 
         return new Ember.RSVP.Promise(function (resolve, reject) {
-            var validationErrors;
+            var passed;
 
             if (!type || !validator) {
-                validationErrors = ['The validator specified, "' + type + '", did not exist!'];
-            } else {
-                validationErrors = validator.check(model);
+                return reject(['The validator specified, "' + type + '", did not exist!']);
             }
 
-            if (Ember.isEmpty(validationErrors)) {
+            passed = validator.check(model, opts.property);
+
+            if (passed) {
+                if (opts.property) {
+                    model.get('errors').remove(opts.property);
+                } else {
+                    model.get('errors').clear();
+                }
                 return resolve();
             }
-
-            if (opts.format !== false) {
-                validationErrors = formatErrors(validationErrors, opts);
-            }
-
-            return reject(validationErrors);
+            return reject();
         });
     },
 
@@ -172,5 +178,10 @@ export default Ember.Mixin.create({
 
             return Ember.RSVP.reject(result);
         });
+    },
+    actions: {
+        validate: function (property) {
+            this.validate({property: property});
+        }
     }
 });
