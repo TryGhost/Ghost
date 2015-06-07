@@ -31,19 +31,20 @@ export default Ember.Controller.extend(ValidationEngine, {
         return 'background-image: url(' + this.get('userImage') + ')';
     }),
 
+    invalidMessage: 'The password fairy does not approve',
+
     // ValidationEngine settings
     validationType: 'setup',
 
     actions: {
         setup: function () {
             var self = this,
-                notifications = this.get('notifications'),
-                data = self.getProperties('blogTitle', 'name', 'email', 'password');
-
-            notifications.closePassive();
+                data = self.getProperties('blogTitle', 'name', 'email', 'password'),
+                notifications = this.get('notifications');
 
             this.toggleProperty('submitting');
-            this.validate({format: false}).then(function () {
+            this.validate().then(function () {
+                self.set('showError', false);
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'setup'),
                     type: 'POST',
@@ -70,9 +71,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                     self.toggleProperty('submitting');
                     notifications.showAPIError(resp);
                 });
-            }).catch(function (errors) {
+            }).catch(function () {
                 self.toggleProperty('submitting');
-                notifications.showErrors(errors);
+                self.set('showError', true);
             });
         }
     }
