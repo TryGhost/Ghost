@@ -264,6 +264,10 @@ button {
     box-shadow: none;
 }
 
+i {
+    display: block;
+}
+
 img {
     max-width: 100%;
 }
