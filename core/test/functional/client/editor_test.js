@@ -249,40 +249,6 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
     // }, casper.failOnTimeout(test, 'Editor did not load'));
 });
 
-CasperTest.begin('Tag editor', 7, function suite(test) {
-    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
-        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
-    });
-
-    var tagName = 'someTagName',
-        createdTagSelector = '#entry-tags .tags .tag';
-
-    casper.then(function () {
-        test.assertExists('#entry-tags', 'should have tag label area');
-        test.assertExists('#entry-tags .tag-label', 'should have tag label icon');
-        test.assertExists('#entry-tags input.tag-input', 'should have tag input area');
-    });
-
-    casper.thenClick('#entry-tags input.tag-input');
-    casper.then(function () {
-        casper.sendKeys('#entry-tags input.tag-input', tagName, {keepFocus: true});
-    });
-    casper.then(function () {
-        casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
-    });
-
-    casper.waitForSelector(createdTagSelector, function onSuccess() {
-        test.assertSelectorHasText(createdTagSelector, tagName, 'typing enter after tag name should create tag');
-    });
-
-    casper.thenClick(createdTagSelector);
-
-    casper.waitWhileSelector(createdTagSelector, function onSuccess() {
-        test.assert(true, 'clicking the tag should delete the tag');
-    });
-});
-
 CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');

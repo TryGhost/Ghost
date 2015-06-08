@@ -1,6 +1,12 @@
 /* Content /ghost/
 /* ---------------------------------------------------------- */
 
+.content-view-container {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
 
 /* Show/Hide on Mobile // TODO: What the fuck does that mean?
 /* ---------------------------------------------------------- */
@@ -167,6 +173,12 @@
 /* Preview (Right pane)
 /* ---------------------------------------------------------- */
 
+.content-preview-content .content-preview-title a {
+    position: relative;
+    color: var(--darkgrey);
+    text-decoration: none;
+}
+
 .content-preview {
     position: absolute;
     top: 0;
@@ -185,31 +197,6 @@
         width: 100%;
         border: none;
     }
-}
-
-.content-preview .unfeatured {
-    margin: 0 7px 0 -5px;
-    padding: 3px;
-    vertical-align: -6%;
-}
-
-.content-preview .featured {
-    margin: 0 7px 0 -5px;
-    padding: 3px;
-    vertical-align: -6%;
-}
-
-.content-preview .post-published-by .status a {
-    color: inherit;
-}
-
-.content-preview .post-published-by .status a:hover {
-    text-decoration: underline;
-}
-
-.content-preview .normal {
-    margin: 0 3px;
-    text-transform: none;
 }
 
 .content-preview .content-preview-content {
@@ -236,15 +223,15 @@
 }
 
 .content-preview .post-controls {
-    position: relative;
-    top: 3px;
-    float: right;
+    position: absolute;
+    top: 25px;
+    right: 25px;
 }
 
-.content-preview .post-settings-menu {
-    position: absolute;
-    top: 35px;
-    right: -3px;
+.content-preview .post-controls .btn {
+    padding-right: 0;
+    border: none;
+    font-size: 18px;
 }
 
 .content-preview img {
@@ -252,10 +239,6 @@
     height: auto;
 }
 
-.post-preview-header {
-    display: block;
-    justify-content: space-between;
-}
 
 /* Empty State
 /* ---------------------------------------------------------- */

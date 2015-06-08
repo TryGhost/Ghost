@@ -1,4 +1,11 @@
-<div class="page-content">
+<header class="view-header">
+    <h2 class="view-title">Content</h2>
+    <section class="view-actions">
+        {{#link-to "editor.new" class="btn btn-green" title="New Post"}}New Post{{/link-to}}
+    </section>
+</header>
+
+<div class="view-container">
     <section class="content-list js-content-list {{if postListFocused 'keyboard-focused'}}">
         {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
         <ol class="posts-list">
