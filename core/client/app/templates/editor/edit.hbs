@@ -12,7 +12,7 @@
 <section class="view-container view-editor">
 
     <section class="entry-markdown js-entry-markdown">
-        <header {{action "togglePreview" false}} class="floatingheader">
+        <header class="floatingheader">
             <span>Markdown</span>
             <a class="markdown-help" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
         </header>
@@ -23,7 +23,7 @@
     </section>
 
     <section class="entry-preview js-entry-preview">
-        <header {{action "togglePreview" true}} class="floatingheader">
+        <header class="floatingheader">
             <span>Preview</span>
             <span class="entry-word-count js-entry-word-count">{{gh-count-words model.scratch}}</span>
         </header>
