@@ -5,7 +5,7 @@ var ErrorController = Ember.Controller.extend({
     }),
     message: Ember.computed('content.statusText', function () {
         if (this.get('code') === 404) {
-            return 'No Ghost Found';
+            return 'Page not found';
         }
 
         return this.get('content.statusText') !== 'error' ? this.get('content.statusText') : 'Internal Server Error';
