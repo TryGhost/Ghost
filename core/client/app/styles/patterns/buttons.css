@@ -3,7 +3,9 @@
 
 /* Base button style */
 .btn {
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 0;
     padding: 9px 15px;
     border: #e1e1e1 1px solid;
