@@ -319,7 +319,7 @@ describe('Error handling', function () {
                 view.should.match(/user-error\.hbs/);
 
                 // Test that the message is correct
-                options.message.should.equal('Page Not Found');
+                options.message.should.equal('Page not found');
                 options.code.should.equal(404);
                 this.statusCode.should.equal(404);
 
@@ -350,7 +350,7 @@ describe('Error handling', function () {
                 view.should.match(/user-error\.hbs/);
 
                 // Test that the message is correct
-                options.message.should.equal('Page Not Found');
+                options.message.should.equal('Page not found');
                 options.code.should.equal(404);
                 this.statusCode.should.equal(404);
 

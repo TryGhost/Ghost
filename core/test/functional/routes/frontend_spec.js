@@ -59,7 +59,7 @@ describe('Frontend Routing', function () {
                 request.get('/spectacular/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
-                    .expect(/Page Not Found/)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
@@ -67,7 +67,7 @@ describe('Frontend Routing', function () {
                 request.get('/spectacular/marvellous/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
-                    .expect(/Page Not Found/)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
@@ -75,7 +75,7 @@ describe('Frontend Routing', function () {
                 request.get('/tag/spectacular/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
-                    .expect(/Page Not Found/)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
@@ -83,7 +83,7 @@ describe('Frontend Routing', function () {
                 request.get('/author/spectacular/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
-                    .expect(/Page Not Found/)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
         });
@@ -178,7 +178,7 @@ describe('Frontend Routing', function () {
                 request.get('/' + date + '/welcome-to-ghost/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
-                    .expect(/Page Not Found/)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
         });
@@ -204,7 +204,7 @@ describe('Frontend Routing', function () {
                 request.get('/welcome-to-ghost/notedit/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
-                    .expect(/Page Not Found/)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
         });

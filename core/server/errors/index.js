@@ -280,7 +280,7 @@ errors = {
     },
 
     error404: function (req, res, next) {
-        var message = res.isAdmin && req.user ? 'No Ghost Found' : 'Page Not Found';
+        var message = 'Page not found';
 
         // do not cache 404 error
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
