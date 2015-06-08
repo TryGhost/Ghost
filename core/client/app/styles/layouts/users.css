@@ -229,5 +229,6 @@ a.user-list-item {
 }
 
 .invite-new-user .btn-green {
+    margin: 0;
     width: 100%;
 }
