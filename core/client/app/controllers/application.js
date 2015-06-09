@@ -8,23 +8,37 @@ export default Ember.Controller.extend({
     // jscs: enable
 
     topNotificationCount: 0,
-    showNavMenu: false,
+    showMobileMenu: false,
     showSettingsMenu: false,
 
     autoNav: false,
+    autoNavOpen: Ember.computed('autoNav', {
+        get () {
+            return false;
+        },
+        set (key, value) {
+            if (this.get('autoNav')) {
+                return value;
+            }
+            return false;
+        }
+    }),
 
     actions: {
-        topNotificationChange: function (count) {
+        topNotificationChange (count) {
             this.set('topNotificationCount', count);
         },
 
-        closeNavMenu: function () {
-            this.get('dropdown').closeDropdowns();
-            this.set('showNavMenu', false);
+        toggleAutoNav () {
+            this.toggleProperty('autoNav');
         },
 
-        navMenuToggleMaximise: function () {
-            this.toggleProperty('autoNav');
+        openAutoNav () {
+            this.set('autoNavOpen', true);
+        },
+
+        closeAutoNav () {
+            this.set('autoNavOpen', false);
         }
     }
 });

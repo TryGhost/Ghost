@@ -1,11 +1,9 @@
-{{gh-content-cover onClick="closeSettingsMenu" onMouseEnter="closeNavMenu"}}
-
 {{#gh-tabs-manager selected="showSubview" id="entry-controls" class="settings-menu-container"}}
 <div id="entry-controls">
     <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
         <div class="settings-menu-header">
             <h4>Post Settings</h4>
-            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}><span class="hidden">Close</span></button>
+            <button class="close icon-x settings-menu-header-action" {{action "closeMenus"}}><span class="hidden">Close</span></button>
         </div>
         <div class="settings-menu-content">
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add post image" image=model.image uploaderReference=uploaderReference tagName="section"}}
