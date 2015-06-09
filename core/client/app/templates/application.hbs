@@ -2,17 +2,20 @@
 
 {{gh-alerts notify="topNotificationChange"}}
 
-<div class="gh-viewport {{if autoNav 'gh-autonav'}}">
+<div class="gh-viewport {{if autoNav 'gh-autonav'}} {{if showSettingsMenu 'settings-menu-expanded'}} {{if showMobileMenu 'mobile-menu-expanded'}}">
 
     {{#unless signedOut}}
-        {{gh-nav-menu open=showNavMenu autoNav=autoNav toggleMaximise="navMenuToggleMaximise" openModal="openModal"}}
+        {{gh-nav-menu open=autoNavOpen onMouseEnter="openAutoNav" toggleMaximise="toggleAutoNav" openModal="openModal"}}
     {{/unless}}
 
-    {{#gh-main onMouseEnter="closeNavMenu" data-notification-count=topNotificationCount}}
+    {{#gh-main onMouseEnter="closeAutoNav" data-notification-count=topNotificationCount}}
         {{outlet}}
     {{/gh-main}}
 
+
     {{gh-notifications}}
+
+    {{gh-content-cover onClick="closeMenus" onMouseEnter="closeAutoNav"}}
 
     {{outlet "modal"}}
     {{outlet "settings-menu"}}
