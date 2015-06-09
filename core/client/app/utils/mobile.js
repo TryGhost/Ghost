@@ -1,3 +1,3 @@
-var mobileQuery = matchMedia('(max-width: 900px)');
+var mobileQuery = matchMedia('(max-width: 800px)');
 
 export default mobileQuery;

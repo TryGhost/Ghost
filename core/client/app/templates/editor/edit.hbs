@@ -1,6 +1,8 @@
 <header class="view-header">
-    <h2 class="view-title gh-editor-title">{{gh-trim-focus-input type="text" id="entry-title" class="gh-input" placeholder="Your Post Title" value=model.titleScratch
-    tabindex="1" focus=shouldFocusTitle}}</h2>
+    {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
+        {{gh-trim-focus-input type="text" id="entry-title" class="gh-input" placeholder="Your Post Title" value=model.titleScratch
+    tabindex="1" focus=shouldFocusTitle}}
+    {{/gh-view-title}}
     <section class="view-actions">
         <button type="button" class="post-settings" {{action "openSettingsMenu"}}>
             <i class="icon-settings"></i>

@@ -39,6 +39,10 @@ export default Ember.Controller.extend({
 
         closeAutoNav () {
             this.set('autoNavOpen', false);
+        },
+
+        closeMobileMenu () {
+            this.set('showMobileMenu', false);
         }
     }
 });
