@@ -23,6 +23,7 @@ var api            = require('../api'),
     authStrategies = require('./auth-strategies'),
     utils          = require('../utils'),
     sitemapHandler = require('../data/xml/sitemap/handler'),
+    decideIsAdmin  = require('./decide-is-admin'),
 
     blogApp,
     setupMiddleware;
@@ -74,13 +75,6 @@ function activateTheme(activeTheme) {
 
     // Set active theme variable on the express server
     blogApp.set('activeTheme', activeTheme);
-}
-// ### decideIsAdmin Middleware
-// Uses the URL to detect whether this response should be an admin response
-// This is used to ensure the right content is served, and is not for security purposes
-function decideIsAdmin(req, res, next) {
-    res.isAdmin = req.url.lastIndexOf('/ghost/', 0) === 0;
-    next();
 }
 
 // ### configHbsForContext Middleware
