@@ -18,7 +18,7 @@ describe('Unauthorized', function () {
             request = supertest.agent(ghostServer.rootApp);
 
             done();
-        });
+        }).catch(done);
     });
 
     after(function (done) {
