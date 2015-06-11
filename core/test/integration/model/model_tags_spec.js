@@ -91,6 +91,31 @@ describe('Tag Model', function () {
         });
     });
 
+    describe('findOne', function () {
+        beforeEach(function (done) {
+            testUtils.fixtures.insertPosts().then(function () {
+                done();
+            }).catch(done);
+        });
+
+        it('with slug', function (done) {
+            var firstTag;
+
+            TagModel.findPage().then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+                firstTag = results.tags[0];
+
+                return TagModel.findOne({slug: firstTag.slug});
+            }).then(function (found) {
+                should.exist(found);
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('a Post', function () {
         it('can add a tag', function (done) {
             var newPost = testUtils.DataGenerator.forModel.posts[0],
