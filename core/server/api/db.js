@@ -52,6 +52,10 @@ db = {
      */
     importContent: function (options) {
         options = options || {};
+        var meta = {
+                problems: {},
+                details: {}
+            };
 
         // Check if a file was provided
         if (!utils.checkFileExists(options, 'importfile')) {
@@ -71,8 +75,13 @@ db = {
         // Permissions check
         return canThis(options.context).importContent.db().then(function () {
             return importer.importFromFile(options.importfile)
+                .then(function (t) {
+                    meta.problems = t[0].problems;
+                    meta.details = t[0].details;
+                    return meta;
+                })
                 .then(api.settings.updateSettingsCache)
-                .return({db: []});
+                .return({db: [{meta: meta}]});
         }, function () {
             return Promise.reject(new errors.NoPermissionError('You do not have permission to import data (no rights).'));
         });

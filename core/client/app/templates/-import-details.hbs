@@ -1,0 +1,32 @@
+{{#if importStatus}}<p><strong>{{importStatus}}</strong></p>{{/if}}
+{{#if importDetails}}
+<table class="table">
+  <th>Contents of Import file:</th>
+  <tr><td>Posts: {{importDetails.posts}}</td></tr>
+  <tr><td>Tags:  {{importDetails.tags}}</td></tr>
+  <tr><td>Users: {{importDetails.users}}</td></tr>
+</table>
+{{/if}}
+{{#if importProblemsPosts}}
+    <table class="table">
+        <th>Problems: Duplicate Post Title or Slug</th>
+        {{#each importProblemsPosts as |problem|}}
+            <tr><td>Title: {{problem.title}}, Slug: {{problem.slug}}</td></tr>
+        {{/each}}
+    </table>
+{{/if}}
+{{#if importProblemsTags}}
+    <table class="table">
+        <th>Problems: Duplicate Tag Name or Slug</th>
+        {{#each importProblemsTags as |problem|}}
+            <tr><td>Name: {{problem.name}}, Id: {{problem.id}}</td></tr>
+        {{/each}}
+    </table>
+{{/if}}
+{{#if importErrors}}
+    <table class="table">
+        {{#each importErrors as |error|}}
+            <tr><td>{{error.message}}</td></tr>
+        {{/each}}
+    </table>
+{{/if}}

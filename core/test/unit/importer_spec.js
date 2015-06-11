@@ -271,11 +271,12 @@ describe('Importer', function () {
         // Step 4 of importing is generateReport
         describe('generateReport', function () {
             // generateReport is intended to create a message to show to the user about what has been imported
-            // it is currently a noop
-            it('is currently a noop', function (done) {
-                var input = {data: {}, images: []};
-                ImportManager.generateReport(input).then(function (output) {
-                    output.should.equal(input);
+            it('outputs details from import file', function (done) {
+                var input = require('../utils/fixtures/export/export-003.json');
+
+                ImportManager.generateReport([{data: input}]).then(function (output) {
+                    output[0].details.should.eql({posts: 1, tags: 1, users: 1});
+
                     done();
                 }).catch(done);
             });
