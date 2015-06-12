@@ -506,7 +506,7 @@ var _              = require('lodash'),
             }, function (error, result, code) {
                 /*jshint unused:false*/
                 if (error) {
-                    grunt.fail.fatal(result.stdout);
+                    grunt.fail.fatal(result.stderr);
                 }
                 grunt.log.writeln(result.stdout);
                 done();
