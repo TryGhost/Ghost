@@ -1,10 +1,7 @@
-import Ember from 'ember';
-import EditorViewMixin from 'ghost/mixins/editor-base-view';
+import EditorView from 'ghost/views/editor/edit';
 
-var EditorNewView = Ember.View.extend(EditorViewMixin, {
-    tagName: 'section',
-    templateName: 'editor/edit',
-    classNames: ['gh-view']
+var EditorNewView = EditorView.extend({
+    templateName: 'editor/edit'
 });
 
 export default EditorNewView;
