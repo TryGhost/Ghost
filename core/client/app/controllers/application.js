@@ -13,10 +13,10 @@ export default Ember.Controller.extend({
 
     autoNav: false,
     autoNavOpen: Ember.computed('autoNav', {
-        get () {
+        get: function () {
             return false;
         },
-        set (key, value) {
+        set: function (key, value) {
             if (this.get('autoNav')) {
                 return value;
             }
@@ -25,23 +25,23 @@ export default Ember.Controller.extend({
     }),
 
     actions: {
-        topNotificationChange (count) {
+        topNotificationChange: function (count) {
             this.set('topNotificationCount', count);
         },
 
-        toggleAutoNav () {
+        toggleAutoNav: function () {
             this.toggleProperty('autoNav');
         },
 
-        openAutoNav () {
+        openAutoNav: function () {
             this.set('autoNavOpen', true);
         },
 
-        closeAutoNav () {
+        closeAutoNav: function () {
             this.set('autoNavOpen', false);
         },
 
-        closeMobileMenu () {
+        closeMobileMenu: function () {
             this.set('showMobileMenu', false);
         }
     }

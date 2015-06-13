@@ -26,7 +26,7 @@ export default Ember.Component.extend({
         }
     }),
 
-    didInsertElement () {
+    didInsertElement: function () {
         this.set('isMobile', mobileQuery.matches);
         this.set('mqListener', Ember.run.bind(this, function (mql) {
             this.set('isMobile', mql.matches);
@@ -34,7 +34,7 @@ export default Ember.Component.extend({
         mobileQuery.addListener(this.get('mqListener'));
     },
 
-    willDestroyElement () {
+    willDestroyElement: function () {
         mobileQuery.removeListener(this.get('mqListener'));
     },
 
