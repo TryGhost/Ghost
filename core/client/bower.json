@@ -11,7 +11,7 @@
     "ember-mocha": "0.7.0",
     "ember-load-initializers": "ember-cli/ember-load-initializers#0.1.4",
     "ember-resolver": "0.1.15",
-    "ember-simple-auth": "0.8.0-beta.2",
+    "ember-simple-auth": "0.8.0-beta.3",
     "fastclick": "1.0.6",
     "google-caja": "5669.0.0",
     "jquery": "1.11.2",
