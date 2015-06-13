@@ -1,5 +1,3 @@
-/* global moment */
-
 import Ember from 'ember';
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
@@ -24,31 +22,6 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
         return this.get('model.author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
-        });
-    }),
-
-    changeAuthor: Ember.observer('selectedAuthor', function () {
-        var author = this.get('model.author'),
-            selectedAuthor = this.get('selectedAuthor'),
-            model = this.get('model'),
-            self = this;
-
-        // return if nothing changed
-        if (selectedAuthor.get('id') === author.get('id')) {
-            return;
-        }
-
-        model.set('author', selectedAuthor);
-
-        // if this is a new post (never been saved before), don't try to save it
-        if (this.get('model.isNew')) {
-            return;
-        }
-
-        model.save().catch(function (errors) {
-            self.showErrors(errors);
-            self.set('selectedAuthor', author);
-            model.rollback();
         });
     }),
 
@@ -467,6 +440,30 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
         closeNavMenu: function () {
             this.get('application').send('closeNavMenu');
+        },
+
+        changeAuthor: function (newAuthor) {
+            var author = this.get('model.author'),
+                model = this.get('model'),
+                self = this;
+
+            // return if nothing changed
+            if (newAuthor.get('id') === author.get('id')) {
+                return;
+            }
+
+            model.set('author', newAuthor);
+
+            // if this is a new post (never been saved before), don't try to save it
+            if (this.get('model.isNew')) {
+                return;
+            }
+
+            model.save().catch(function (errors) {
+                self.showErrors(errors);
+                self.set('selectedAuthor', author);
+                model.rollback();
+            });
         }
     }
 });

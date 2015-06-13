@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
-export default Ember.Controller.extend(Ember.Evented, {
+export default Ember.Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
 
@@ -63,7 +63,6 @@ export default Ember.Controller.extend(Ember.Evented, {
                 notifications.showError('Import Failed');
             }).finally(function () {
                 self.set('uploadButtonText', 'Import');
-                self.trigger('reset');
             });
         },
 
