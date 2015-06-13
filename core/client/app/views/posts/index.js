@@ -1,6 +1,6 @@
-import MobileIndexView from 'ghost/views/mobile/index-view';
+import Ember from 'ember';
 
-var PostsIndexView = MobileIndexView.extend({
+var PostsIndexView = Ember.View.extend({
     classNames: ['no-posts-box']
 });
 
