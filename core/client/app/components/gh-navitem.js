@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var NavItemComponent = Ember.Component.extend({
+
+export default Ember.Component.extend({
     classNames: 'gh-blognav-item',
 
     attributeBindings: ['order:data-order'],
@@ -9,7 +10,7 @@ var NavItemComponent = Ember.Component.extend({
         // enter key
         if (event.keyCode === 13) {
             event.preventDefault();
-            this.get('controller').send('addItem');
+            this.send('addItem');
         }
     },
 
@@ -27,5 +28,3 @@ var NavItemComponent = Ember.Component.extend({
         }
     }
 });
-
-export default NavItemComponent;

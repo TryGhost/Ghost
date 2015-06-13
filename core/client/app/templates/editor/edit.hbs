@@ -1,39 +1,46 @@
-<header class="view-header">
-    {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
-        {{gh-trim-focus-input type="text" id="entry-title" class="gh-input" placeholder="Your Post Title" value=model.titleScratch
-    tabindex="1" focus=shouldFocusTitle}}
-    {{/gh-view-title}}
-    <section class="view-actions">
-        <button type="button" class="post-settings" {{action "openSettingsMenu"}}>
-            <i class="icon-settings"></i>
-        </button>
-        {{view "editor-save-button" id="entry-actions" classNameBindings="model.isNew:unsaved"}}
-    </section>
-</header>
+{{#gh-editor editorScrollInfo=editorScrollInfo as |ghEditor|}}
+    <header class="view-header">
+        {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
+            {{gh-trim-focus-input type="text" id="entry-title" class="gh-input" placeholder="Your Post Title" value=model.titleScratch
+        tabindex="1" focus=shouldFocusTitle}}
+        {{/gh-view-title}}
+        <section class="view-actions">
+            <button type="button" class="post-settings" {{action "openSettingsMenu"}}>
+                <i class="icon-settings"></i>
+            </button>
+            {{gh-editor-save-button
+                isPublished=model.isPublished
+                willPublish=willPublish
+                postOrPage=postOrPage
+                isNew=model.isNew
+                save="save"
+                setSaveType="setSaveType"
+                delete="openDeleteModal"
+            }}
+        </section>
+    </header>
 
-<section class="view-container view-editor">
+    <section class="view-container view-editor">
+        <section class="entry-markdown js-entry-markdown">
+            <header class="floatingheader">
+                <span>Markdown</span>
+                <a class="markdown-help" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
+            </header>
+            <section id="entry-markdown-content" class="entry-markdown-content">
+                {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch setEditor="setEditor" updateScrollInfo="updateEditorScrollInfo" openModal="openModal" onFocusIn="autoSaveNew" height=height}}
+            </section>
+        </section>
 
-    <section class="entry-markdown js-entry-markdown">
-        <header class="floatingheader">
-            <span>Markdown</span>
-            <a class="markdown-help" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
-        </header>
-        <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch
-            scrollInfo=view.editorScrollInfo setEditor="setEditor" openModal="openModal" onFocusIn="autoSaveNew"}}
+        <section class="entry-preview js-entry-preview">
+            <header class="floatingheader">
+                <span>Preview</span>
+                <span class="entry-word-count js-entry-word-count">{{gh-count-words model.scratch}}</span>
+            </header>
+            <section class="entry-preview-content js-entry-preview-content">
+                {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
+                markdown=model.scratch scrollPosition=ghEditor.scrollPosition updateHeight="updateHeight"
+                uploadStarted="disableEditor" uploadFinished="enableEditor" uploadSuccess="handleImgUpload"}}
+            </section>
         </section>
     </section>
-
-    <section class="entry-preview js-entry-preview">
-        <header class="floatingheader">
-            <span>Preview</span>
-            <span class="entry-word-count js-entry-word-count">{{gh-count-words model.scratch}}</span>
-        </header>
-        <section class="entry-preview-content js-entry-preview-content">
-            {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
-            markdown=model.scratch scrollPosition=view.scrollPosition height=view.height
-            uploadStarted="disableEditor" uploadFinished="enableEditor" uploadSuccess="handleImgUpload"}}
-        </section>
-    </section>
-
-</section>
+{{/gh-editor}}

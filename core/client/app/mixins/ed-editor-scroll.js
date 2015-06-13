@@ -62,7 +62,7 @@ var EditorScroll = Ember.Mixin.create({
      */
     scrollHandler: function () {
         this.set('scrollThrottle', Ember.run.throttle(this, function () {
-            this.set('scrollInfo', this.getScrollInfo());
+            this.sendAction('updateScrollInfo', this.getScrollInfo());
         }, 10));
     },
 

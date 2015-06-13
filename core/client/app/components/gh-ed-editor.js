@@ -3,9 +3,7 @@ import EditorAPI from 'ghost/mixins/ed-editor-api';
 import EditorShortcuts from 'ghost/mixins/ed-editor-shortcuts';
 import EditorScroll from 'ghost/mixins/ed-editor-scroll';
 
-var Editor;
-
-Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
+export default Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
     focus: false,
 
     /**
@@ -59,5 +57,3 @@ Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
         textarea.removeAttribute('readonly');
     }
 });
-
-export default Editor;

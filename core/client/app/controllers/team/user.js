@@ -7,6 +7,30 @@ export default Ember.Controller.extend({
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
 
+    currentUser: Ember.computed.alias('session.user'),
+
+    isNotOwnProfile: Ember.computed('user.id', 'currentUser.id', function () {
+        return this.get('user.id') !== this.get('currentUser.id');
+    }),
+
+    isNotOwnersProfile: Ember.computed.not('user.isOwner'),
+
+    canAssignRoles: Ember.computed.or('currentUser.isAdmin', 'currentUser.isOwner'),
+
+    canMakeOwner: Ember.computed.and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
+
+    rolesDropdownIsVisible: Ember.computed.and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
+
+    deleteUserActionIsVisible: Ember.computed('currentUser', 'canAssignRoles', 'user', function () {
+        if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner')) ||
+            (this.get('currentUser.isEditor') && (this.get('isNotOwnProfile') ||
+            this.get('user.isAuthor')))) {
+            return true;
+        }
+    }),
+
+    userActionsAreVisible: Ember.computed.or('deleteUserActionIsVisible', 'canMakeOwner'),
+
     user: Ember.computed.alias('model'),
 
     email: Ember.computed.readOnly('model.email'),
@@ -14,6 +38,20 @@ export default Ember.Controller.extend({
     slugValue: boundOneWay('model.slug'),
 
     lastPromise: null,
+
+    // duplicated in gh-user-active -- find a better home and consolidate?
+
+    userDefault: Ember.computed('ghostPaths', function () {
+        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+    }),
+
+    userImageBackground: Ember.computed('user.image', 'userDefault', function () {
+        var url = this.get('user.image') || this.get('userDefault');
+
+        return `background-image: url(${url})`.htmlSafe();
+    }),
+
+    // end duplicated
 
     coverDefault: Ember.computed('ghostPaths', function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
@@ -29,28 +67,6 @@ export default Ember.Controller.extend({
         return this.get('user.name') + '\'s Cover Image';
     }),
 
-    userDefault: Ember.computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
-    }),
-
-    userImageBackground: Ember.computed('user.image', 'userDefault', function () {
-        var url = this.get('user.image') || this.get('userDefault');
-
-        return `background-image: url(${url})`.htmlSafe();
-    }),
-
-    last_login: Ember.computed('user.last_login', function () {
-        var lastLogin = this.get('user.last_login');
-
-        return lastLogin ? lastLogin.fromNow() : '(Never)';
-    }),
-
-    created_at: Ember.computed('user.created_at', function () {
-        var createdAt = this.get('user.created_at');
-
-        return createdAt ? createdAt.fromNow() : '';
-    }),
-
     // Lazy load the slug generator for slugPlaceholder
     slugGenerator: Ember.computed(function () {
         return SlugGenerator.create({
@@ -62,47 +78,6 @@ export default Ember.Controller.extend({
     actions: {
         changeRole: function (newRole) {
             this.set('model.role', newRole);
-        },
-
-        revoke: function () {
-            var self = this,
-                model = this.get('model'),
-                email = this.get('email');
-
-            // reload the model to get the most up-to-date user information
-            model.reload().then(function () {
-                if (model.get('invited')) {
-                    model.destroyRecord().then(function () {
-                        var notificationText = 'Invitation revoked. (' + email + ')';
-
-                        self.get('notifications').showSuccess(notificationText, false);
-                    }).catch(function (error) {
-                        self.get('notifications').showAPIError(error);
-                    });
-                } else {
-                    // if the user is no longer marked as "invited", then show a warning and reload the route
-                    self.get('target').send('reload');
-                    self.get('notifications').showError('This user has already accepted the invitation.', {delayed: 500});
-                }
-            });
-        },
-
-        resend: function () {
-            var self = this;
-
-            this.get('model').resendInvite().then(function (result) {
-                var notificationText = 'Invitation resent! (' + self.get('email') + ')';
-                // If sending the invitation email fails, the API will still return a status of 201
-                // but the user's status in the response object will be 'invited-pending'.
-                if (result.users[0].status === 'invited-pending') {
-                    self.get('notifications').showWarn('Invitation email was not sent.  Please try resending.');
-                } else {
-                    self.get('model').set('status', result.users[0].status);
-                    self.get('notifications').showSuccess(notificationText);
-                }
-            }).catch(function (error) {
-                self.get('notifications').showAPIError(error);
-            });
         },
 
         save: function () {

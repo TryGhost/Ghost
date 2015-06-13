@@ -30,7 +30,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     actions: {
-        openMobileMenu () {
+        openMobileMenu: function () {
             this.controller.set('showMobileMenu', true);
         },
 
@@ -38,7 +38,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.controller.set('showSettingsMenu', true);
         },
 
-        closeMenus () {
+        closeMenus: function () {
             this.get('dropdown').closeDropdowns();
             this.get('notifications').closeAll();
             this.send('closeModal');

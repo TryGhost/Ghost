@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-var PostImageUploader = Ember.Component.extend({
+export default Ember.Component.extend({
     classNames: ['image-uploader', 'js-post-image-upload'],
 
     config: Ember.inject.service(),
@@ -17,10 +17,10 @@ var PostImageUploader = Ember.Component.extend({
         var $this = this.$(),
             self = this;
 
-        this.set('uploaderReference', uploader.call($this, {
-            editor: true,
-            fileStorage: this.get('config.fileStorage')
-        }));
+        // this.set('uploaderReference', uploader.call($this, {
+        //     editor: true,
+        //     fileStorage: this.get('config.fileStorage')
+        // }));
 
         $this.on('uploadsuccess', function (event, result) {
             if (result && result !== '' && result !== 'http://') {
@@ -41,13 +41,40 @@ var PostImageUploader = Ember.Component.extend({
         $this.find('.js-cancel').off();
     },
 
+    // didInsertElement: function () {
+    //     Ember.run.scheduleOnce('afterRender', this, this.setup());
+    // },
     didInsertElement: function () {
-        this.setup();
+        this.send('initUploader');
     },
 
     willDestroyElement: function () {
         this.removeListeners();
+    },
+
+    actions: {
+        initUploader: function () {
+            var ref,
+                el,
+                self = this;
+
+            el = this.$();
+            ref = uploader.call(el, {
+                editor: true,
+                fileStorage: this.get('config.fileStorage')
+            });
+
+            el.on('uploadsuccess', function (event, result) {
+                if (result && result !== '' && result !== 'http://') {
+                    self.sendAction('uploaded', result);
+                }
+            });
+
+            el.on('imagecleared', function () {
+                self.sendAction('canceled');
+            });
+
+            this.sendAction('initUploader', this.get('uploaderReference'));
+        }
     }
 });
-
-export default PostImageUploader;

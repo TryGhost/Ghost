@@ -9,20 +9,20 @@ export default Ember.Component.extend({
 
     open: false,
 
-    mouseEnter () {
+    mouseEnter: function () {
         this.sendAction('onMouseEnter');
     },
 
     actions: {
-        toggleAutoNav () {
-            this.sendAction('toggleAutoNav');
+        toggleAutoNav: function () {
+            this.sendAction('toggleMaximise');
         },
 
-        openModal (modal) {
+        openModal: function (modal) {
             this.sendAction('openModal', modal);
         },
 
-        closeMobileMenu () {
+        closeMobileMenu: function () {
             this.sendAction('closeMobileMenu');
         }
     }
