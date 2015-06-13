@@ -1,3 +1,4 @@
+<section class="gh-view">
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}Team{{/gh-view-title}}
         <section class="view-actions">
@@ -5,60 +6,69 @@
         </section>
     </header>
 
-    {{#view "users-list"}}
+    {{#gh-infinite-scroll
+        fetch="loadNextPage"
+        isLoading=isLoading
+        tagName="section"
+        classNames="view-content settings-users"
+    }}
         {{#if invitedUsers}}
             <section class="user-list invited-users">
-
                 <h4 class="user-list-title">Invited users</h4>
-
-                {{#each invitedUsers itemController="team/user" as |user|}}
-                    <div class="user-list-item">
-                        <span class="user-list-item-icon icon-mail">ic</span>
-
-                        <div class="user-list-item-body">
-                            <span class="name">{{user.email}}</span><br>
-                                {{#if user.model.pending}}
-                                    <span class="red">Invitation not sent - please try again</span>
-                                {{else}}
-                                    <span class="description">Invitation sent: {{user.model.created_at}}</span>
-                                {{/if}}
+                {{#each invitedUsers as |user|}}
+                    {{#gh-user-invited user=user reload="reload" as |component|}}
+                        <div class="user-list-item">
+                            <span class="user-list-item-icon icon-mail">ic</span>
+                            <div class="user-list-item-body">
+                                <span class="name">{{user.email}}</span><br>
+                                    {{#if user.model.pending}}
+                                        <span class="red">Invitation not sent - please try again</span>
+                                    {{else}}
+                                        <span class="description">
+                                            Invitation sent: {{component.createdAt}}
+                                        </span>
+                                    {{/if}}
+                            </div>
+                            <aside class="user-list-item-aside">
+                                <a class="user-list-action" href="#" {{action "revoke" target=component}}>
+                                    Revoke
+                                </a>
+                                <a class="user-list-action" href="#" {{action "resend" target=component}}>
+                                    Resend
+                                </a>
+                            </aside>
                         </div>
-                        <aside class="user-list-item-aside">
-                            <a class="user-list-action" href="#" {{action "revoke"}}>Revoke</a>
-                            <a class="user-list-action" href="#" {{action "resend"}}>Resend</a>
-                        </aside>
-                    </div>
+                    {{/gh-user-invited}}
                 {{/each}}
-
             </section>
         {{/if}}
 
         <section class="user-list active-users">
-
             <h4 class="user-list-title">Active users</h4>
-
-            {{#each activeUsers itemController="team/user" as |user|}}
-                {{#link-to 'team.user' user.model class="user-list-item" }}
-                    <span class="user-list-item-figure" style={{user.userImageBackground}}>
-                        <span class="hidden">Photo of {{user.model.name}}</span>
-                    </span>
-
-                    <div class="user-list-item-body">
-                        <span class="name">
-                            {{user.model.name}}
+            {{#each activeUsers key="id" as |user|}}
+                {{#gh-user-active user=user as |component|}}
+                    {{#link-to 'team.user' user class="user-list-item" }}
+                        <span class="user-list-item-figure" style={{component.userImageBackground}}>
+                            <span class="hidden">Photo of {{user.name}}</span>
                         </span>
-                        <br>
-                        <span class="description">Last seen: {{user.last_login}}</span>
-                    </div>
-                    <aside class="user-list-item-aside">
-                        {{#unless user.model.isAuthor}}
-                            {{#each user.model.roles as |role|}}
-                                <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
-                            {{/each}}
-                        {{/unless}}
-                    </aside>
-                {{/link-to}}
-            {{/each}}
 
+                        <div class="user-list-item-body">
+                            <span class="name">
+                                {{user.name}}
+                            </span>
+                            <br>
+                            <span class="description">Last seen: {{component.lastLogin}}</span>
+                        </div>
+                        <aside class="user-list-item-aside">
+                            {{#unless user.isAuthor}}
+                                {{#each user.roles key="id" as |role|}}
+                                    <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
+                                {{/each}}
+                            {{/unless}}
+                        </aside>
+                    {{/link-to}}
+                {{/gh-user-active}}
+            {{/each}}
         </section>
-    {{/view}}
+    {{/gh-infinite-scroll}}
+</section>

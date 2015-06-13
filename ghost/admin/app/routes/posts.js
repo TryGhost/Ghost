@@ -1,22 +1,16 @@
 import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import styleBody from 'ghost/mixins/style-body';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
-var paginationSettings,
-    PostsRoute;
-
-paginationSettings = {
+var paginationSettings = {
     status: 'all',
     staticPages: 'all',
     page: 1
 };
 
-PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, PaginationRouteMixin, {
+export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationRouteMixin, {
     titleToken: 'Content',
-
-    classNames: ['manage'],
 
     model: function () {
         var self = this;
@@ -45,7 +39,7 @@ PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, PaginationRout
 
     stepThroughPosts: function (step) {
         var currentPost = this.get('controller.currentPost'),
-            posts = this.get('controller.arrangedContent'),
+            posts = this.get('controller.sortedPosts'),
             length = posts.get('length'),
             newPosition;
 
@@ -106,5 +100,3 @@ PostsRoute = AuthenticatedRoute.extend(ShortcutsRoute, styleBody, PaginationRout
         }
     }
 });
-
-export default PostsRoute;
