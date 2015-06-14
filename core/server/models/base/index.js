@@ -7,16 +7,16 @@
 // allowed to access data via the API.
 var _          = require('lodash'),
     bookshelf  = require('bookshelf'),
-    config     = require('../config'),
-    errors     = require('../errors'),
-    filters    = require('../filters'),
+    config     = require('../../config'),
+    errors     = require('../../errors'),
+    filters    = require('../../filters'),
     moment     = require('moment'),
     Promise    = require('bluebird'),
-    sanitize   = require('validator').sanitize,
-    schema     = require('../data/schema'),
-    utils      = require('../utils'),
+    sanitizer  = require('validator').sanitize,
+    schema     = require('../../data/schema'),
+    utils      = require('../../utils'),
     uuid       = require('node-uuid'),
-    validation = require('../data/validation'),
+    validation = require('../../data/validation'),
 
     ghostBookshelf;
 
@@ -35,17 +35,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     hasTimestamps: true,
 
     // Get permitted attributes from server/data/schema.js, which is where the DB schema is defined
-    permittedAttributes: function () {
+    permittedAttributes: function permittedAttributes() {
         return _.keys(schema.tables[this.tableName]);
     },
 
-    defaults: function () {
+    defaults: function defaults() {
         return {
             uuid: uuid.v4()
         };
     },
 
-    initialize: function () {
+    initialize: function initialize() {
         var self = this,
             options = arguments[1] || {};
 
@@ -55,24 +55,24 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         this.on('creating', this.creating, this);
-        this.on('saving', function (model, attributes, options) {
-            return Promise.resolve(self.saving(model, attributes, options)).then(function () {
+        this.on('saving', function onSaving(model, attributes, options) {
+            return Promise.resolve(self.saving(model, attributes, options)).then(function then() {
                 return self.validate(model, attributes, options);
             });
         });
     },
 
-    validate: function () {
+    validate: function validate() {
         return validation.validateSchema(this.tableName, this.toJSON());
     },
 
-    creating: function (newObj, attr, options) {
+    creating: function creating(newObj, attr, options) {
         if (!this.get('created_by')) {
             this.set('created_by', this.contextUser(options));
         }
     },
 
-    saving: function (newObj, attr, options) {
+    saving: function saving(newObj, attr, options) {
         // Remove any properties which don't belong on the model
         this.attributes = this.pick(this.permittedAttributes());
         // Store the previous attributes so we can tell what was updated later
@@ -83,10 +83,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Base prototype properties will go here
     // Fix problems with dates
-    fixDates: function (attrs) {
+    fixDates: function fixDates(attrs) {
         var self = this;
 
-        _.each(attrs, function (value, key) {
+        _.each(attrs, function each(value, key) {
             if (value !== null
                     && schema.tables[self.tableName].hasOwnProperty(key)
                     && schema.tables[self.tableName][key].type === 'dateTime') {
@@ -99,9 +99,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Convert integers to real booleans
-    fixBools: function (attrs) {
+    fixBools: function fixBools(attrs) {
         var self = this;
-        _.each(attrs, function (value, key) {
+        _.each(attrs, function each(value, key) {
             if (schema.tables[self.tableName].hasOwnProperty(key)
                     && schema.tables[self.tableName][key].type === 'bool') {
                 attrs[key] = value ? true : false;
@@ -112,7 +112,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // Get the user from the options object
-    contextUser: function (options) {
+    contextUser: function contextUser(options) {
         // Default to context user
         if (options.context && options.context.user) {
             return options.context.user;
@@ -125,16 +125,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     },
 
     // format date before writing to DB, bools work
-    format: function (attrs) {
+    format: function format(attrs) {
         return this.fixDates(attrs);
     },
 
     // format data and bool when fetching from DB
-    parse: function (attrs) {
+    parse: function parse(attrs) {
         return this.fixBools(this.fixDates(attrs));
     },
 
-    toJSON: function (options) {
+    toJSON: function toJSON(options) {
         var attrs = _.extend({}, this.attributes),
             self = this;
         options = options || {};
@@ -148,7 +148,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             this.include = _.union(this.include, options.include);
         }
 
-        _.each(this.relations, function (relation, key) {
+        _.each(this.relations, function each(relation, key) {
             if (key.substring(0, 7) !== '_pivot_') {
                 // if include is set, expand to full object
                 var fullKey = _.isEmpty(options.baseKey) ? key : options.baseKey + '.' + key;
@@ -161,17 +161,17 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         return attrs;
     },
 
-    sanitize: function (attr) {
-        return sanitize(this.get(attr)).xss();
+    sanitize: function sanitize(attr) {
+        return sanitizer(this.get(attr)).xss();
     },
 
     // Get attributes that have been updated (values before a .save() call)
-    updatedAttributes: function () {
+    updatedAttributes: function updatedAttributes() {
         return this._updatedAttributes || {};
     },
 
     // Get a specific updated attribute value
-    updated: function (attr) {
+    updated: function updated(attr) {
         return this.updatedAttributes()[attr];
     }
 
@@ -183,7 +183,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * Can be overridden and added to by a model's `permittedOptions` method.
      * @return {Array} Keys allowed in the `options` hash of every model's method.
      */
-    permittedOptions: function () {
+    permittedOptions: function permittedOptions() {
         // terms to whitelist for all methods.
         return ['context', 'include', 'transacting'];
     },
@@ -193,7 +193,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} data Has keys representing the model's attributes/fields in the database.
      * @return {Object} The filtered results of the passed in data, containing only what's allowed in the schema.
      */
-    filterData: function (data) {
+    filterData: function filterData(data) {
         var permittedAttributes = this.prototype.permittedAttributes(),
             filteredData = _.pick(data, permittedAttributes);
 
@@ -206,7 +206,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {String} methodName The name of the method to check valid options for.
      * @return {Object} The filtered results of `options`.
     */
-    filterOptions: function (options, methodName) {
+    filterOptions: function filterOptions(options, methodName) {
         var permittedOptions = this.permittedOptions(methodName),
             filteredOptions = _.pick(options, permittedOptions);
 
@@ -221,11 +221,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
-    findAll:  function (options) {
+    findAll:  function findAll(options) {
         options = this.filterOptions(options, 'findAll');
-        return ghostBookshelf.Collection.forge([], {model: this}).fetch(options).then(function (result) {
+        return ghostBookshelf.Collection.forge([], {model: this}).fetch(options).then(function then(result) {
             if (options.include) {
-                _.each(result.models, function (item) {
+                _.each(result.models, function each(item) {
                     item.include = options.include;
                 });
             }
@@ -240,7 +240,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Single Model
      */
-    findOne: function (data, options) {
+    findOne: function findOne(data, options) {
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
         // We pass include to forge so that toJSON has access
@@ -254,12 +254,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
-    edit: function (data, options) {
+    edit: function edit(data, options) {
         var id = options.id;
         data = this.filterData(data);
         options = this.filterOptions(options, 'edit');
 
-        return this.forge({id: id}).fetch(options).then(function (object) {
+        return this.forge({id: id}).fetch(options).then(function then(object) {
             if (object) {
                 return object.save(data, options);
             }
@@ -273,7 +273,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Newly Added Model
      */
-    add: function (data, options) {
+    add: function add(data, options) {
         data = this.filterData(data);
         options = this.filterOptions(options, 'add');
         var model = this.forge(data);
@@ -291,12 +291,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Model)} Empty Model
      */
-    destroy: function (options) {
+    destroy: function destroy(options) {
         var id = options.id;
         options = this.filterOptions(options, 'destroy');
 
         // Fetch the object before destroying it, so that the changed data is available to events
-        return this.forge({id: id}).fetch(options).then(function (obj) {
+        return this.forge({id: id}).fetch(options).then(function then(obj) {
             return obj.destroy(options);
         });
     },
@@ -309,20 +309,20 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options Options to pass to findOne
      * @return {Promise(String)} Resolves to a unique slug string
     */
-    generateSlug: function (Model, base, options) {
+    generateSlug: function generateSlug(Model, base, options) {
         var slug,
             slugTryCount = 1,
             baseName = Model.prototype.tableName.replace(/s$/, ''),
             // Look for a matching slug, append an incrementing number if so
             checkIfSlugExists, longSlug;
 
-        checkIfSlugExists = function (slugToFind) {
+        checkIfSlugExists = function checkIfSlugExists(slugToFind) {
             var args = {slug: slugToFind};
             // status is needed for posts
             if (options && options.status) {
                 args.status = options.status;
             }
-            return Model.findOne(args, options).then(function (found) {
+            return Model.findOne(args, options).then(function then(found) {
                 var trimSpace;
 
                 if (!found) {
@@ -363,12 +363,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // Check the filtered slug doesn't match any of the reserved keywords
-        return filters.doFilter('slug.reservedSlugs', config.slugs.reserved).then(function (slugList) {
+        return filters.doFilter('slug.reservedSlugs', config.slugs.reserved).then(function then(slugList) {
             // Some keywords cannot be changed
             slugList = _.union(slugList, config.slugs.protected);
 
             return _.contains(slugList, slug) ? slug + '-' + baseName : slug;
-        }).then(function (slug) {
+        }).then(function then(slug) {
             // if slug is empty after trimming use the model name
             if (!slug) {
                 slug = baseName;
