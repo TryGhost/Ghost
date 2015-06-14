@@ -170,3 +170,8 @@
 .mobile-menu-expanded .content-cover {
     transform: translate3d(235px, 0px, 0px);
 }
+@media (max-width: 500px) {
+    .mobile-menu-expanded .content-cover {
+        transform: translate3d(75vw, 0, 0);
+    }
+}
