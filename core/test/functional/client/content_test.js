@@ -14,7 +14,7 @@ CasperTest.begin('Content screen is correct', 15, function suite(test) {
     });
 
     casper.then(function testViews() {
-        test.assertExists('.content-view-container', 'Content main view is present');
+        test.assertExists('.gh-main .gh-view', 'Content main view is present');
         test.assertExists('.content-list-content', 'Content list view is present');
         test.assertExists('.gh-nav-main-editor', 'add new post button exists');
         test.assertEquals(
