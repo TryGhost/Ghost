@@ -15,7 +15,7 @@ CasperTest.begin('Settings screen is correct', 9, function suite(test) {
     });
 
     casper.then(function testViews() {
-        test.assertExists('.js-settings-content', 'Settings content view is present');
+        test.assertExists('.gh-main .gh-view', 'Settings content view is present');
         test.assertExists(generalTabDetector, 'Form is present');
         test.assertSelectorHasText('.view-title', 'General', 'Title is "General"');
     });
