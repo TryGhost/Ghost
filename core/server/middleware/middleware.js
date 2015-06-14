@@ -18,8 +18,9 @@ var _           = require('lodash'),
 
     busboy       = require('./ghost-busboy'),
     cacheControl = require('./cache-control'),
-    spamPrevention  = require('./spam-prevention'),
-    clientAuth  = require('./client-auth'),
+    spamPrevention   = require('./spam-prevention'),
+    clientAuth       = require('./client-auth'),
+    apiErrorHandlers = require('./api-error-handlers'),
 
     middleware,
     blogApp;
@@ -306,10 +307,14 @@ middleware = {
 module.exports = middleware;
 module.exports.cacheBlogApp = cacheBlogApp;
 
-module.exports.addClientSecret = clientAuth.addClientSecret;
-module.exports.cacheOauthServer = clientAuth.cacheOauthServer;
-module.exports.authenticateClient = clientAuth.authenticateClient;
-module.exports.generateAccessToken = clientAuth.generateAccessToken;
+module.exports.api = {
+    addClientSecret: clientAuth.addClientSecret,
+    cacheOauthServer: clientAuth.cacheOauthServer,
+    authenticateClient: clientAuth.authenticateClient,
+    generateAccessToken: clientAuth.generateAccessToken,
+    methodNotAllowed: apiErrorHandlers.methodNotAllowed,
+    errorHandler: apiErrorHandlers.errorHandler
+};
 
 // SSL helper functions are exported primarily for unity testing.
 module.exports.isSSLrequired = isSSLrequired;

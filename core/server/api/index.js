@@ -21,10 +21,8 @@ var _              = require('lodash'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
     dataExport     = require('../data/export'),
-    errors         = require('../errors'),
 
     http,
-    formatHttpErrors,
     addHeaders,
     cacheInvalidationHeader,
     locationHeader,
@@ -144,37 +142,6 @@ contentDispositionHeader = function contentDispositionHeader() {
     });
 };
 
-/**
- * ### Format HTTP Errors
- * Converts the error response from the API into a format which can be returned over HTTP
- *
- * @private
- * @param {Array} error
- * @return {{errors: Array, statusCode: number}}
- */
-formatHttpErrors = function formatHttpErrors(error) {
-    var statusCode = 500,
-        errors = [];
-
-    if (!_.isArray(error)) {
-        error = [].concat(error);
-    }
-
-    _.each(error, function each(errorItem) {
-        var errorContent = {};
-
-        // TODO: add logic to set the correct status code
-        statusCode = errorItem.code || 500;
-
-        errorContent.message = _.isString(errorItem) ? errorItem :
-            (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
-        errorContent.errorType = errorItem.errorType || 'InternalServerError';
-        errors.push(errorContent);
-    });
-
-    return {errors: errors, statusCode: statusCode};
-};
-
 addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
         location,
@@ -221,7 +188,7 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
  * @return {Function} middleware format function to be called by the route when a matching request is made
  */
 http = function http(apiMethod) {
-    return function apiHandler(req, res) {
+    return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
             options = _.extend({}, req.files, req.query, req.params, {
@@ -243,11 +210,9 @@ http = function http(apiMethod) {
         }).then(function then(response) {
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
-        }).catch(function onError(error) {
-            errors.logError(error);
-            var httpErrors = formatHttpErrors(error);
-            // Send a properly formatted HTTP response containing the errors
-            res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
+        }).catch(function onAPIError(error) {
+            // To be handled by the API middleware
+            next(error);
         });
     };
 };

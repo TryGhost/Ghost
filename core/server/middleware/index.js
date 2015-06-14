@@ -217,8 +217,7 @@ function serveSharedFile(file, type, maxAge) {
 setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     var logging = config.logging,
         corePath = config.paths.corePath,
-        oauthServer = oauth2orize.createServer(),
-        apiRouter;
+        oauthServer = oauth2orize.createServer();
 
     // silence JSHint without disabling unused check for the whole file
     authStrategies = authStrategies;
@@ -226,7 +225,7 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     // Cache express server instance
     blogApp = blogAppInstance;
     middleware.cacheBlogApp(blogApp);
-    middleware.cacheOauthServer(oauthServer);
+    middleware.api.cacheOauthServer(oauthServer);
     oauth.init(oauthServer, middleware.spamPrevention.resetCounter);
 
     // Make sure 'req.secure' is valid for proxied requests
@@ -311,19 +310,7 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
 
     // ### Routing
     // Set up API routes
-    apiRouter = routes.api(middleware);
-    blogApp.use(routes.apiBaseUri, apiRouter);
-    // ### Invalid method call on valid route
-    apiRouter.use(function (req, res, next) {
-        apiRouter.stack.forEach(function (item) {
-            if (item.regexp.test(req.path) && item.route !== undefined) {
-                return next(new errors.MethodNotAllowedError('Method not allowed'));
-            }
-        });
-
-        // Didn't match any path -> 404
-        res.status(404).json({errors: {type: 'NotFoundError', message: 'Unknown API endpoint.'}});
-    });
+    blogApp.use(routes.apiBaseUri, routes.api(middleware));
 
     // Mount admin express app to /ghost and set up routes
     adminApp.use(middleware.redirectToSetup);
