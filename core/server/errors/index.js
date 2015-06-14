@@ -175,6 +175,37 @@ errors = {
         };
     },
 
+    /**
+     * ### Format HTTP Errors
+     * Converts the error response from the API into a format which can be returned over HTTP
+     *
+     * @private
+     * @param {Array} error
+     * @return {{errors: Array, statusCode: number}}
+     */
+    formatHttpErrors: function formatHttpErrors(error) {
+        var statusCode = 500,
+            errors = [];
+
+        if (!_.isArray(error)) {
+            error = [].concat(error);
+        }
+
+        _.each(error, function each(errorItem) {
+            var errorContent = {};
+
+            // TODO: add logic to set the correct status code
+            statusCode = errorItem.code || 500;
+
+            errorContent.message = _.isString(errorItem) ? errorItem :
+                (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
+            errorContent.errorType = errorItem.errorType || 'InternalServerError';
+            errors.push(errorContent);
+        });
+
+        return {errors: errors, statusCode: statusCode};
+    },
+
     handleAPIError: function (error, permsMessage) {
         if (!error) {
             return this.rejectError(
@@ -342,6 +373,7 @@ _.each([
     'logErrorAndExit',
     'logErrorWithRedirect',
     'handleAPIError',
+    'formatHttpErrors',
     'renderErrorPage',
     'error404',
     'error500'
