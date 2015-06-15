@@ -110,10 +110,17 @@ Tag = ghostBookshelf.Model.extend({
     findPage: function findPage(options) {
         options = options || {};
 
+        // -- Part 0 --
+        // Step 1: Setup filter models
+        // Step 2: Setup filter model promises
+        // Step 3: Prefetch filter models
+
+        // -- Part 1 --
         var tagCollection = Tags.forge(),
             collectionPromise,
-            qb;
+            countPromise;
 
+        // Step 1: Setup pagination options
         if (options.limit && options.limit !== 'all') {
             options.limit = parseInt(options.limit, 10) || 15;
         }
@@ -122,42 +129,60 @@ Tag = ghostBookshelf.Model.extend({
             options.page = parseInt(options.page, 10) || 1;
         }
 
+        // Step 2: Filter options
         options = this.filterOptions(options, 'findPage');
-        // Set default settings for options
+
+        // Step 3: Extend defaults
         options = _.extend({
             page: 1, // pagination page
             limit: 15,
             where: {}
         }, options);
 
-        // only include a limit-query if a numeric limit is provided
+        // Step 4: Setup filters (where clauses)
+        // If there are where conditionals specified, add those to the query.
+        if (options.where) {
+            tagCollection.query('where', options.where);
+        }
+
+        // Step 5: Setup joins
+
+        // Step 6: Setup the counter to fetch the number of items in the set
+        // @TODO abstract this out
+        // tableName = _.result(postCollection, 'tableName'),
+        // idAttribute = _.result(postCollection, 'idAttribute');
+        countPromise = tagCollection.query().clone().count('tags.id as aggregate');
+
+        // -- Part 2 --
+        // Add limit, offset and other query changes which aren't required when performing a count
+
+        // Step 1: Add related objects
+        addPostCount(options, tagCollection);
+        options.withRelated = _.union(options.withRelated, options.include);
+
+        // Step 2: Add pagination options if needed
         if (_.isNumber(options.limit)) {
             tagCollection
                 .query('limit', options.limit)
                 .query('offset', options.limit * (options.page - 1));
         }
 
-        addPostCount(options, tagCollection);
+        // Step 3: add order parameters
 
+        // Step 4: Setup the promise
         collectionPromise = tagCollection.fetch(_.omit(options, 'page', 'limit'));
 
-        // Find total number of tags
-        qb = ghostBookshelf.knex('tags');
-
-        if (options.where) {
-            qb.where(options.where);
-        }
-
-        return Promise.join(collectionPromise, qb.count('tags.id as aggregate')).then(function then(results) {
+        // -- Part 3 --
+        // Step 1: Fetch the data
+        return Promise.join(collectionPromise, countPromise).then(function formatResponse(results) {
             var tagCollection = results[0],
                 data = {};
-
+            // Step 2: Format the data
             data.tags = tagCollection.toJSON(options);
             data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
 
             return data;
-        })
-        .catch(errors.logAndThrowError);
+        }).catch(errors.logAndThrowError);
     },
     destroy: function destroy(options) {
         var id = options.id;
