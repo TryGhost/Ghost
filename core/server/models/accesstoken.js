@@ -1,5 +1,5 @@
 var ghostBookshelf  = require('./base'),
-    Basetoken       = require('./basetoken'),
+    Basetoken       = require('./base/token'),
 
     Accesstoken,
     Accesstokens;

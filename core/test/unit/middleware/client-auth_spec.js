@@ -20,7 +20,7 @@ describe('Middleware: Client Auth', function () {
 
             req.body = requestBody;
 
-            middleware.addClientSecret(req, res, next);
+            middleware.api.addClientSecret(req, res, next);
 
             next.called.should.be.true;
             should(req.body).have.property('client_secret');
@@ -34,7 +34,7 @@ describe('Middleware: Client Auth', function () {
 
             req.body = requestBody;
 
-            middleware.addClientSecret(req, res, next);
+            middleware.api.addClientSecret(req, res, next);
 
             next.called.should.be.true;
             should(req.body).have.property('client_secret');

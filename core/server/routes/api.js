@@ -3,7 +3,7 @@ var express     = require('express'),
     api         = require('../api'),
     apiRoutes;
 
-apiRoutes = function (middleware) {
+apiRoutes = function apiRoutes(middleware) {
     var router = express.Router();
     // alias delete with del
     router.del = router.delete;
@@ -79,14 +79,19 @@ apiRoutes = function (middleware) {
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',
         middleware.spamPrevention.signin,
-        middleware.addClientSecret,
-        middleware.authenticateClient,
-        middleware.generateAccessToken
+        middleware.api.addClientSecret,
+        middleware.api.authenticateClient,
+        middleware.api.generateAccessToken
     );
     router.post('/authentication/revoke', api.http(api.authentication.revoke));
 
     // ## Uploads
     router.post('/uploads', middleware.busboy, api.http(api.uploads.add));
+
+    // API Router middleware
+    router.use(middleware.api.methodNotAllowed);
+
+    router.use(middleware.api.errorHandler);
 
     return router;
 };
