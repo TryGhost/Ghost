@@ -7,15 +7,15 @@ Permission = ghostBookshelf.Model.extend({
 
     tableName: 'permissions',
 
-    roles: function () {
+    roles: function roles() {
         return this.belongsToMany('Role');
     },
 
-    users: function () {
+    users: function users() {
         return this.belongsToMany('User');
     },
 
-    apps: function () {
+    apps: function apps() {
         return this.belongsToMany('App');
     }
 });
