@@ -17,14 +17,14 @@ var MobileIndexRoute = Ember.Route.extend({
         mobileQuery.removeListener(this.desktopTransitionMQ);
     },
 
-    setDesktopTransitionMQ: function () {
+    setDesktopTransitionMQ: Ember.on('init', function () {
         var self = this;
         this.set('desktopTransitionMQ', function desktopTransitionMQ() {
             if (!mobileQuery.matches) {
                 self.desktopTransition();
             }
         });
-    }.on('init')
+    })
 });
 
 export default MobileIndexRoute;
