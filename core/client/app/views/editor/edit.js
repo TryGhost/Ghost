@@ -13,7 +13,11 @@ var EditorViewMixin = Ember.View.extend({
     // http://emberjs.com/api/classes/Ember.run.html#method_next
     scheduleAfterRender: function () {
         Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
-    }.on('didInsertElement'),
+    },
+
+    didInsertElement: function () {
+        this.scheduleAfterRender();
+    },
 
     // all child views will have rendered when this fires
     afterRenderEvent: function () {
@@ -29,9 +33,10 @@ var EditorViewMixin = Ember.View.extend({
         }));
     },
 
-    removeScrollHandlers: function () {
+    willDestroyElement: function () {
+        // removes scroll handlers from the view
         this.get('$previewViewPort').off('scroll');
-    }.on('willDestroyElement'),
+    },
 
     // updated when gh-ed-editor component scrolls
     editorScrollInfo: null,
