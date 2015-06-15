@@ -10,6 +10,7 @@ var _              = require('lodash'),
     validation     = require('../data/validation'),
     config         = require('../config'),
     events         = require('../events'),
+    paginateResponse = require('./base/utils').paginateResponse,
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -331,38 +332,15 @@ User = ghostBookshelf.Model.extend({
             })
             // Format response of data
             .then(function then(results) {
-                var totalUsers = parseInt(results[1][0].aggregate, 10),
-                    calcPages = Math.ceil(totalUsers / options.limit) || 0,
-                    pagination = {},
-                    meta = {},
-                    data = {};
-
-                pagination.page = options.page;
-                pagination.limit = options.limit;
-                pagination.pages = calcPages === 0 ? 1 : calcPages;
-                pagination.total = totalUsers;
-                pagination.next = null;
-                pagination.prev = null;
+                var data = {};
 
                 data.users = userCollection.toJSON(options);
-                data.meta = meta;
-                meta.pagination = pagination;
-
-                if (pagination.pages > 1) {
-                    if (pagination.page === 1) {
-                        pagination.next = pagination.page + 1;
-                    } else if (pagination.page === pagination.pages) {
-                        pagination.prev = pagination.page - 1;
-                    } else {
-                        pagination.next = pagination.page + 1;
-                        pagination.prev = pagination.page - 1;
-                    }
-                }
+                data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
 
                 if (roleInstance) {
-                    meta.filters = {};
+                    data.meta.filters = {};
                     if (!roleInstance.isNew()) {
-                        meta.filters.roles = [roleInstance.toJSON(options)];
+                        data.meta.filters.roles = [roleInstance.toJSON(options)];
                     }
                 }
 
