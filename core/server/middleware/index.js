@@ -203,7 +203,7 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     // Cache express server instance
     blogApp = blogAppInstance;
     middleware.cacheBlogApp(blogApp);
-    middleware.cacheOauthServer(oauthServer);
+    middleware.api.cacheOauthServer(oauthServer);
     oauth.init(oauthServer, middleware.spamPrevention.resetCounter);
 
     // Make sure 'req.secure' is valid for proxied requests
