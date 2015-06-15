@@ -211,13 +211,20 @@ export default Ember.Mixin.create({
 
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status],
-            path = this.get('model.absoluteUrl'),
             type = this.get('postOrPage'),
-            notifications = this.get('notifications');
+            notifications = this.get('notifications'),
+            url,
+            verb;
 
         if (status === 'published') {
-            message += `&nbsp;<a href="${path}">View ${type}</a>`;
+            url = this.get('model.absoluteUrl');
+            verb = 'View';
+        } else {
+            url = this.get('model.previewUrl');
+            verb = 'Preview';
         }
+        // Makes "View Post" and "Preview Post" links
+        message += `&nbsp;<a target="_blank" href="${url}">${verb} ${type}</a>`;
 
         notifications.showSuccess(message.htmlSafe(), {delayed: delay});
     },
