@@ -5,6 +5,7 @@ var Settings,
     errors         = require('../errors'),
     Promise        = require('bluebird'),
     validation     = require('../data/validation'),
+    events         = require('../events'),
     internal       = {context: {internal: true}},
 
     defaultSettings;
@@ -47,6 +48,24 @@ Settings = ghostBookshelf.Model.extend({
             uuid: uuid.v4(),
             type: 'core'
         };
+    },
+
+    emitChange: function emitChange(event) {
+        events.emit('settings' + '.' + event, this);
+    },
+
+    initialize: function initialize() {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
+        this.on('created', function (model) {
+            model.emitChange('added');
+        });
+        this.on('updated', function (model) {
+            model.emitChange('edited');
+        });
+        this.on('destroyed', function (model) {
+            model.emitChange('deleted');
+        });
     },
 
     validate: function validate() {
