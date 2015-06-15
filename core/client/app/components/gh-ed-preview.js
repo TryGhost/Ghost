@@ -9,12 +9,12 @@ var Preview = Ember.Component.extend({
         Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);
     },
 
-    adjustScrollPosition: function () {
+    adjustScrollPosition: Ember.observer('scrollPosition', function () {
         var scrollWrapper = this.get('scrollWrapper'),
             scrollPosition = this.get('scrollPosition');
 
         scrollWrapper.scrollTop(scrollPosition);
-    }.observes('scrollPosition'),
+    }),
 
     dropzoneHandler: function () {
         var dropzones = $('.js-drop-zone');
@@ -35,9 +35,9 @@ var Preview = Ember.Component.extend({
 
     // fire off 'enable' API function from uploadManager
     // might need to make sure markdown has been processed first
-    reInitDropzones: function () {
+    reInitDropzones: Ember.observer('markdown', function () {
         Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);
-    }.observes('markdown')
+    })
 });
 
 export default Preview;

@@ -31,15 +31,16 @@ var PaginationViewInfiniteScrollMixin = Ember.Mixin.create({
         if (this.element.scrollHeight <= this.element.clientHeight) {
             controller.send('loadNextPage');
         }
-    }.on('didInsertElement'),
+    },
 
-    /**
-     * Unbind from the scroll event when the element is no longer in the DOM
-     */
-    detachCheckScroll: function () {
-        var el = this.$();
-        el.off('scroll');
-    }.on('willDestroyElement')
+    didInsertElement: function () {
+        this.attachCheckScroll();
+    },
+
+    willDestroyElement: function () {
+        // unbind from the scroll event when the element is no longer in the DOM
+        this.$().off('scroll');
+    }
 });
 
 export default PaginationViewInfiniteScrollMixin;

@@ -164,7 +164,7 @@ var PostTagsInputController = Ember.Controller.extend({
         }
     }),
 
-    updateSuggestionsList: function () {
+    updateSuggestionsList: Ember.observer('newTagText', function () {
         var searchTerm = this.get('newTagText'),
             matchingTags,
             // Limit the suggestions number
@@ -186,7 +186,7 @@ var PostTagsInputController = Ember.Controller.extend({
         }, this);
 
         this.set('suggestions', suggestions);
-    }.observes('newTagText'),
+    }),
 
     findMatchingTags: function (searchTerm) {
         var matchingTags,

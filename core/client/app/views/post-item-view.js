@@ -42,12 +42,14 @@ var PostItemView = Ember.View.extend({
             });
         }
     },
-    removeScrollBehaviour: function () {
+    willDestroyElement: function () {
+        // removes the scrollIntoView observer
         this.removeObserver('active', this, this.scrollIntoView);
-    }.on('willDestroyElement'),
-    addScrollBehaviour: function () {
+    },
+    didInsertElement: function () {
+        // adds the scrollIntoView observer
         this.addObserver('active', this, this.scrollIntoView);
-    }.on('didInsertElement')
+    }
 });
 
 export default PostItemView;

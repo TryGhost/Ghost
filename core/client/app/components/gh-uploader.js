@@ -10,6 +10,9 @@ var PostImageUploader = Ember.Component.extend({
         return this.get('image') || '';
     }),
 
+    /**
+     * Sets up the uploader on render
+     */
     setup: function () {
         var $this = this.$(),
             self = this;
@@ -28,14 +31,23 @@ var PostImageUploader = Ember.Component.extend({
         $this.on('imagecleared', function () {
             self.sendAction('canceled');
         });
-    }.on('didInsertElement'),
+    },
 
+    // removes event listeners from the uploader
     removeListeners: function () {
         var $this = this.$();
 
         $this.off();
         $this.find('.js-cancel').off();
-    }.on('willDestroyElement')
+    },
+
+    didInsertElement: function () {
+        this.setup();
+    },
+
+    willDestroyElement: function () {
+        this.removeListeners();
+    }
 });
 
 export default PostImageUploader;

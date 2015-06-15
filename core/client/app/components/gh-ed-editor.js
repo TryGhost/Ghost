@@ -16,18 +16,20 @@ Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
     },
 
     /**
-     * Check if the textarea should have focus, and set it if necessary
+     * Sets the focus of the textarea if needed
      */
     setFocus: function () {
         if (this.get('focus')) {
             this.$().val(this.$().val()).focus();
         }
-    }.on('didInsertElement'),
+    },
 
     /**
-     * Tell the controller about this component
+     * Sets up properties at render time
      */
     didInsertElement: function () {
+        this.setFocus();
+
         this.sendAction('setEditor', this);
 
         Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
