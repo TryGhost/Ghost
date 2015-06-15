@@ -3,6 +3,7 @@ var _              = require('lodash'),
     errors         = require('../errors'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
+    paginateResponse = require('./base/utils').paginateResponse,
 
     Tag,
     Tags;
@@ -141,7 +142,6 @@ Tag = ghostBookshelf.Model.extend({
         collectionPromise = tagCollection.fetch(_.omit(options, 'page', 'limit'));
 
         // Find total number of tags
-
         qb = ghostBookshelf.knex('tags');
 
         if (options.where) {
@@ -149,34 +149,11 @@ Tag = ghostBookshelf.Model.extend({
         }
 
         return Promise.join(collectionPromise, qb.count('tags.id as aggregate')).then(function then(results) {
-            var totalTags = results[1][0].aggregate,
-                calcPages = Math.ceil(totalTags / options.limit) || 0,
-                tagCollection = results[0],
-                pagination = {},
-                meta = {},
+            var tagCollection = results[0],
                 data = {};
 
-            pagination.page = options.page;
-            pagination.limit = options.limit;
-            pagination.pages = calcPages === 0 ? 1 : calcPages;
-            pagination.total = totalTags;
-            pagination.next = null;
-            pagination.prev = null;
-
             data.tags = tagCollection.toJSON(options);
-            data.meta = meta;
-            meta.pagination = pagination;
-
-            if (pagination.pages > 1) {
-                if (pagination.page === 1) {
-                    pagination.next = pagination.page + 1;
-                } else if (pagination.page === pagination.pages) {
-                    pagination.prev = pagination.page - 1;
-                } else {
-                    pagination.next = pagination.page + 1;
-                    pagination.prev = pagination.page - 1;
-                }
-            }
+            data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
 
             return data;
         })

@@ -8,8 +8,8 @@ var _              = require('lodash'),
     converter      = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
-
-    config          = require('../config'),
+    config         = require('../config'),
+    paginateResponse = require('./base/utils').paginateResponse,
     permalinkSetting = '',
     getPermalinkSetting,
     Post,
@@ -483,46 +483,23 @@ Post = ghostBookshelf.Model.extend({
 
                 return Promise.join(collectionPromise, countPromise);
             }).then(function then(results) {
-                var totalPosts = parseInt(results[1][0].aggregate, 10),
-                    calcPages = Math.ceil(totalPosts / options.limit) || 0,
-                    postCollection = results[0],
-                    pagination = {},
-                    meta = {},
+                var postCollection = results[0],
                     data = {};
 
-                pagination.page = options.page;
-                pagination.limit = options.limit;
-                pagination.pages = calcPages === 0 ? 1 : calcPages;
-                pagination.total = totalPosts;
-                pagination.next = null;
-                pagination.prev = null;
-
                 data.posts = postCollection.toJSON(options);
-                data.meta = meta;
-                meta.pagination = pagination;
-
-                if (pagination.pages > 1) {
-                    if (pagination.page === 1) {
-                        pagination.next = pagination.page + 1;
-                    } else if (pagination.page === pagination.pages) {
-                        pagination.prev = pagination.page - 1;
-                    } else {
-                        pagination.next = pagination.page + 1;
-                        pagination.prev = pagination.page - 1;
-                    }
-                }
+                data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
 
                 if (tagInstance) {
-                    meta.filters = {};
+                    data.meta.filters = {};
                     if (!tagInstance.isNew()) {
-                        meta.filters.tags = [tagInstance.toJSON(options)];
+                        data.meta.filters.tags = [tagInstance.toJSON(options)];
                     }
                 }
 
                 if (authorInstance) {
-                    meta.filters = {};
+                    data.meta.filters = {};
                     if (!authorInstance.isNew()) {
-                        meta.filters.author = authorInstance.toJSON(options);
+                        data.meta.filters.author = authorInstance.toJSON(options);
                     }
                 }
 
