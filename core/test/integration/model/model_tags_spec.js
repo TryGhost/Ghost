@@ -9,7 +9,7 @@ var testUtils   = require('../../utils'),
     // Stuff we are testing
     ModelsTag   = require('../../../server/models/tag'),
     ModelsPost  = require('../../../server/models/post'),
-    events          = require('../../../server/events'),
+    events      = require('../../../server/events'),
     context     = testUtils.context.admin,
     TagModel,
     PostModel,
