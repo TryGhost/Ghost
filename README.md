@@ -91,11 +91,13 @@ More general [install docs](http://support.ghost.org/installation/) here in case
 
 # Deploying Ghost
 
-The easiest way to deploy Ghost is on our official <strong><a href="https://ghost.org/pricing/">Ghost(Pro)</a></strong> hosted platform. This service funds the Ghost Foundation, which makes actively maintaining this project possible.
+![Ghost(Pro) + DigitalOcean](https://cloud.githubusercontent.com/assets/120485/8180331/d6674e32-1414-11e5-8ce4-2250e9994906.png)
 
-Also, you get to save yourself a lot of wasted time and headaches by deploying a new instance of Ghost to a managed server with a global content delivery network in just a few clicks.
+Save yourself time and headaches with our fully managed <strong><a href=“https://ghost.org/pricing/“>Ghost(Pro)</a></strong> service. Deploy a new instance of Ghost in a couple of clicks running on [DigitalOcean](https://digitalocean.com)’s rock solid infrastructure, with a worldwide CDN thrown in at no extra charge.
 
-[Other options](http://support.ghost.org/deploying-ghost/) are available if you prefer playing around with servers by yourself.
+All revenue from **Ghost(Pro**) goes to the Ghost Foundation, the non-profit org which funds the maintenance and further development of Ghost.
+
+[Other options](http://support.ghost.org/deploying-ghost/) are also available if you prefer playing around with servers by yourself.
 
 
 # Staying Up to Date
