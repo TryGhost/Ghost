@@ -177,6 +177,10 @@ describe('Tags API', function () {
     });
 
     describe('Read', function () {
+        function extractFirstTag(tags) {
+            return _.filter(tags, {id: 1})[0];
+        }
+
         it('returns post_count with include post_count', function (done) {
             TagAPI.read({context: {user: 1}, include: 'post_count', slug: 'kitchen-sink'}).then(function (results) {
                 should.exist(results);
@@ -186,6 +190,23 @@ describe('Tags API', function () {
                 testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
                 should.exist(results.tags[0].post_count);
                 results.tags[0].post_count.should.equal(2);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with slug', function (done) {
+            TagAPI.browse({context: {user: 1}}).then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+
+                var firstTag = extractFirstTag(results.tags);
+
+                return TagAPI.read({context: {user: 1}, slug: firstTag.slug});
+            }).then(function (found) {
+                should.exist(found);
+                testUtils.API.checkResponse(found.tags[0], 'tag');
 
                 done();
             }).catch(done);
