@@ -2,35 +2,49 @@
  * # Utils
  * Parts of the model code which can be split out and unit tested
  */
+var _               = require('lodash'),
+    filtering;
 
-/**
- * Takes the number of items returned and original options and calculates all of the pagination meta data
- * TODO: Could be moved to either middleware or a bookshelf plugin?
- * @param {Number} totalItems
- * @param {Object} options
- * @returns {Object} pagination
- */
-module.exports.paginateResponse = function paginateResponse(totalItems, options) {
-    var calcPages = Math.ceil(totalItems / options.limit) || 0,
-        pagination = {};
+filtering = {
+    preFetch: function preFetch(filterObjects) {
+        var promises = [];
+        _.forOwn(filterObjects, function (obj) {
+            promises.push(obj.fetch());
+        });
 
-    pagination.page = options.page || 1;
-    pagination.limit = options.limit;
-    pagination.pages = calcPages === 0 ? 1 : calcPages;
-    pagination.total = totalItems;
-    pagination.next = null;
-    pagination.prev = null;
-
-    if (pagination.pages > 1) {
-        if (pagination.page === 1) {
-            pagination.next = pagination.page + 1;
-        } else if (pagination.page === pagination.pages) {
-            pagination.prev = pagination.page - 1;
-        } else {
-            pagination.next = pagination.page + 1;
-            pagination.prev = pagination.page - 1;
+        return promises;
+    },
+    query: function query(filterObjects, itemCollection) {
+        if (filterObjects.tags) {
+            itemCollection
+                .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
+                .query('where', 'posts_tags.tag_id', '=', filterObjects.tags.id);
         }
-    }
 
-    return pagination;
+        if (filterObjects.author) {
+            itemCollection
+                .query('where', 'author_id', '=', filterObjects.author.id);
+        }
+
+        if (filterObjects.roles) {
+            itemCollection
+                .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
+                .query('where', 'roles_users.role_id', '=', filterObjects.roles.id);
+        }
+    },
+    formatResponse: function formatResponse(filterObjects, options, data) {
+        if (!_.isEmpty(filterObjects)) {
+            data.meta.filters = {};
+        }
+
+        _.forOwn(filterObjects, function (obj, key) {
+            if (!filterObjects[key].isNew()) {
+                data.meta.filters[key] = [filterObjects[key].toJSON(options)];
+            }
+        });
+
+        return data;
+    }
 };
+
+module.exports.filtering = filtering;
