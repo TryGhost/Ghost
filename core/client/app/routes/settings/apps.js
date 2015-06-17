@@ -10,7 +10,9 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     config: Ember.inject.service(),
 
-    beforeModel: function () {
+    beforeModel: function (transition) {
+        this._super(transition);
+
         if (!this.get('config.apps')) {
             return this.transitionTo('settings.general');
         }
