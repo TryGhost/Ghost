@@ -225,65 +225,12 @@ User = ghostBookshelf.Model.extend({
     findPage: function findPage(options) {
         options = options || {};
 
-        var userCollection = Users.forge(),
+        // -- Part 0 --
+        // Step 1: Setup filter models
+        var self = this,
             roleInstance = options.role !== undefined ? ghostBookshelf.model('Role').forge({name: options.role}) : false;
 
-        if (options.limit && options.limit !== 'all') {
-            options.limit = parseInt(options.limit, 10) || 15;
-        }
-
-        if (options.page) {
-            options.page = parseInt(options.page, 10) || 1;
-        }
-
-        options = this.filterOptions(options, 'findPage');
-
-        // Set default settings for options
-        options = _.extend({
-            page: 1, // pagination page
-            limit: 15,
-            status: 'active',
-            where: {},
-            whereIn: {}
-        }, options);
-
-        // TODO: there are multiple statuses that make a user "active" or "invited" - we a way to translate/map them:
-        // TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
-        // TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
-
-        // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
-        if (options.status && options.status !== 'all') {
-            // make sure that status is valid
-            // TODO: need a better way of getting a list of statuses other than hard-coding them...
-            options.status = _.indexOf(
-                ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked', 'invited', 'inactive'],
-                options.status) !== -1 ? options.status : 'active';
-        }
-
-        if (options.status === 'active') {
-            userCollection.query().whereIn('status', activeStates);
-        } else if (options.status === 'invited') {
-            userCollection.query().whereIn('status', invitedStates);
-        } else if (options.status !== 'all') {
-            options.where.status = options.status;
-        }
-
-        // If there are where conditionals specified, add those
-        // to the query.
-        if (options.where) {
-            userCollection.query('where', options.where);
-        }
-
-        // Add related objects
-        options.withRelated = _.union(options.withRelated, options.include);
-
-        // only include a limit-query if a numeric limit is provided
-        if (_.isNumber(options.limit)) {
-            userCollection
-                .query('limit', options.limit)
-                .query('offset', options.limit * (options.page - 1));
-        }
-
+        // Step 2: Setup filter model promises
         function fetchRoleQuery() {
             if (roleInstance) {
                 return roleInstance.fetch();
@@ -291,62 +238,116 @@ User = ghostBookshelf.Model.extend({
             return false;
         }
 
-        return Promise.resolve(fetchRoleQuery())
-            .then(function then() {
-                function fetchCollection() {
-                    if (roleInstance) {
-                        userCollection
-                            .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
-                            .query('where', 'roles_users.role_id', '=', roleInstance.id);
-                    }
+        // Step 3: Prefetch filter models
+        return Promise.resolve(fetchRoleQuery()).then(function setupCollectionPromises() {
+            // -- Part 1 --
+            var userCollection = Users.forge(),
+                collectionPromise,
+                countPromise;
 
-                    return userCollection
-                        .query('orderBy', 'last_login', 'DESC')
-                        .query('orderBy', 'name', 'ASC')
-                        .query('orderBy', 'created_at', 'DESC')
-                        .fetch(_.omit(options, 'page', 'limit'));
+            // Step 1: Setup pagination options
+            if (options.limit && options.limit !== 'all') {
+                options.limit = parseInt(options.limit, 10) || 15;
+            }
+
+            if (options.page) {
+                options.page = parseInt(options.page, 10) || 1;
+            }
+
+            // Step 2: Filter options
+            options = self.filterOptions(options, 'findPage');
+
+            // Step 3: Extend defaults
+            options = _.extend({
+                page: 1, // pagination page
+                limit: 15,
+                status: 'active',
+                where: {},
+                whereIn: {}
+            }, options);
+
+            // Step 4: Setup filters (where clauses)
+            // TODO: there are multiple statuses that make a user "active" or "invited" - we a way to translate/map them:
+            // TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
+            // TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
+
+            // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
+            if (options.status && options.status !== 'all') {
+                // make sure that status is valid
+                // TODO: need a better way of getting a list of statuses other than hard-coding them...
+                options.status = _.indexOf(
+                    ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked', 'invited', 'inactive'],
+                    options.status) !== -1 ? options.status : 'active';
+            }
+
+            if (options.status === 'active') {
+                userCollection.query().whereIn('status', activeStates);
+            } else if (options.status === 'invited') {
+                userCollection.query().whereIn('status', invitedStates);
+            } else if (options.status !== 'all') {
+                options.where.status = options.status;
+            }
+
+            // If there are where conditionals specified, add those to the query.
+            if (options.where) {
+                userCollection.query('where', options.where);
+            }
+
+            // Step 5: Setup joins
+            if (roleInstance) {
+                userCollection
+                    .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
+                    .query('where', 'roles_users.role_id', '=', roleInstance.id);
+            }
+
+            // Step 6: Setup the counter to fetch the number of items in the set
+            // @TODO abstract this out
+            // tableName = _.result(userCollection, 'tableName'),
+            // idAttribute = _.result(userCollection, 'idAttribute');
+            countPromise = userCollection.query().clone().count('users.id as aggregate');
+
+            // -- Part 2 --
+            // Add limit, offset and other query changes which aren't required when performing a count
+
+            // Step 1: Add related objects
+            options.withRelated = _.union(options.withRelated, options.include);
+
+            // Step 2: Add pagination options if needed
+            if (_.isNumber(options.limit)) {
+                userCollection
+                    .query('limit', options.limit)
+                    .query('offset', options.limit * (options.page - 1));
+            }
+
+            // Step 3: add order parameters
+            userCollection
+                .query('orderBy', 'last_login', 'DESC')
+                .query('orderBy', 'name', 'ASC')
+                .query('orderBy', 'created_at', 'DESC');
+
+            // Step 4: Setup the promise
+            collectionPromise = userCollection.fetch(_.omit(options, 'page', 'limit'));
+
+            // -- Part 3 --
+            // Step 1: Fetch the data
+            return Promise.join(collectionPromise, countPromise);
+        }).then(function formatResponse(results) {
+            var userCollection = results[0],
+                data = {};
+
+            // Step 2: Format the data
+            data.users = userCollection.toJSON(options);
+            data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
+
+            if (roleInstance) {
+                data.meta.filters = {};
+                if (!roleInstance.isNew()) {
+                    data.meta.filters.roles = [roleInstance.toJSON(options)];
                 }
+            }
 
-                function fetchPaginationData() {
-                    var qb,
-                        tableName = _.result(userCollection, 'tableName'),
-                        idAttribute = _.result(userCollection, 'idAttribute');
-
-                    // After we're done, we need to figure out what
-                    // the limits are for the pagination values.
-                    qb = ghostBookshelf.knex(tableName);
-
-                    if (options.where) {
-                        qb.where(options.where);
-                    }
-
-                    if (roleInstance) {
-                        qb.join('roles_users', 'roles_users.user_id', '=', 'users.id');
-                        qb.where('roles_users.role_id', '=', roleInstance.id);
-                    }
-
-                    return qb.count(tableName + '.' + idAttribute + ' as aggregate');
-                }
-
-                return Promise.join(fetchCollection(), fetchPaginationData());
-            })
-            // Format response of data
-            .then(function then(results) {
-                var data = {};
-
-                data.users = userCollection.toJSON(options);
-                data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
-
-                if (roleInstance) {
-                    data.meta.filters = {};
-                    if (!roleInstance.isNew()) {
-                        data.meta.filters.roles = [roleInstance.toJSON(options)];
-                    }
-                }
-
-                return data;
-            })
-            .catch(errors.logAndThrowError);
+            return data;
+        }).catch(errors.logAndThrowError);
     },
 
     /**
@@ -370,6 +371,7 @@ User = ghostBookshelf.Model.extend({
 
         options = options || {};
         options.withRelated = _.union(options.withRelated, options.include);
+        data = this.filterData(data);
 
         // Support finding by role
         if (lookupRole) {
@@ -385,8 +387,6 @@ User = ghostBookshelf.Model.extend({
             // We pass include to forge so that toJSON has access
             query = this.forge(data, {include: options.include});
         }
-
-        data = this.filterData(data);
 
         if (status === 'active') {
             query.query('whereIn', 'status', activeStates);
