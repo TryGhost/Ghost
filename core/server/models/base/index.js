@@ -17,6 +17,8 @@ var _          = require('lodash'),
     utils      = require('../../utils'),
     uuid       = require('node-uuid'),
     validation = require('../../data/validation'),
+    baseUtils  = require('./utils'),
+    pagination = require('./pagination'),
 
     ghostBookshelf;
 
@@ -24,27 +26,32 @@ var _          = require('lodash'),
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
 ghostBookshelf = bookshelf(config.database.knex);
 
-// Load the registry plugin, which helps us avoid circular dependencies
+// Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 
-// ### ghostBookshelf.Model
+// Load the Ghost pagination plugin, which gives us the `fetchPage` method on Models
+ghostBookshelf.plugin(pagination);
+
+// ## ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
 // including some convenience functions as static properties on the model.
 ghostBookshelf.Model = ghostBookshelf.Model.extend({
-
+    // Bookshelf `hasTimestamps` - handles created_at and updated_at properties
     hasTimestamps: true,
 
-    // Get permitted attributes from server/data/schema.js, which is where the DB schema is defined
+    // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
     permittedAttributes: function permittedAttributes() {
         return _.keys(schema.tables[this.tableName]);
     },
 
+    // Bookshelf `defaults` - default values setup on every model creation
     defaults: function defaults() {
         return {
             uuid: uuid.v4()
         };
     },
 
+    // Bookshelf `initialize` - declare a constructor-like method for model creation
     initialize: function initialize() {
         var self = this,
             options = arguments[1] || {};
@@ -174,7 +181,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     updated: function updated(attr) {
         return this.updatedAttributes()[attr];
     }
-
 }, {
     // ## Data Utility Functions
 
@@ -221,9 +227,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
-    findAll:  function findAll(options) {
+    findAll: function findAll(options) {
         options = this.filterOptions(options, 'findAll');
-        return ghostBookshelf.Collection.forge([], {model: this}).fetch(options).then(function then(result) {
+        return this.forge().fetchAll(options).then(function then(result) {
             if (options.include) {
                 _.each(result.models, function each(item) {
                     item.include = options.include;
@@ -231,6 +237,69 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
             return result;
         });
+    },
+
+    /**
+     * ### Find Page
+     * Find results by page - returns an object containing the
+     * information about the request (page, limit), along with the
+     * info needed for pagination (pages, total).
+     *
+     * **response:**
+     *
+     *     {
+     *         posts: [
+     *         {...}, ...
+     *     ],
+     *     page: __,
+     *     limit: __,
+     *     pages: __,
+     *     total: __
+     *     }
+     *
+     * @param {Object} options
+     */
+    findPage: function findPage(options) {
+        options = options || {};
+
+        var self = this,
+            itemCollection = this.forge(),
+            tableName      = _.result(this.prototype, 'tableName'),
+            filterObjects = self.setupFilters(options);
+
+        // Filter options so that only permitted ones remain
+        options = this.filterOptions(options, 'findPage');
+
+        // Extend the model defaults
+        options = _.defaults(options, this.findPageDefaultOptions());
+
+        // Run specific conversion of model query options to where options
+        options = this.processOptions(itemCollection, options);
+
+        // Prefetch filter objects
+        return Promise.all(baseUtils.filtering.preFetch(filterObjects)).then(function doQuery() {
+            // If there are `where` conditionals specified, add those to the query.
+            if (options.where) {
+                itemCollection.query('where', options.where);
+            }
+
+            // Setup filter joins / queries
+            baseUtils.filtering.query(filterObjects, itemCollection);
+
+            // Handle related objects
+            // TODO: this should just be done for all methods @ the API level
+            options.withRelated = _.union(options.withRelated, options.include);
+
+            options.order = self.orderDefaultOptions();
+
+            return itemCollection.fetchPage(options).then(function formatResponse(response) {
+                var data = {};
+                data[tableName] = response.collection.toJSON(options);
+                data.meta = {pagination: response.pagination};
+
+                return baseUtils.filtering.formatResponse(filterObjects, options, data);
+            });
+        }).catch(errors.logAndThrowError);
     },
 
     /**
