@@ -238,36 +238,23 @@
 .no-posts-box {
     position: relative;
     z-index: 600;
-    display: table;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 0 auto;
     padding: 0;
     height: 90%;
 }
 
-@media (max-width: 900px) {
-    .no-posts-box {
-        position: fixed;
-        top: 45%;
-        left: 50%;
-    }
-}
-
 .no-posts-box .no-posts {
-    display: table-cell;
-    vertical-align: middle;
-    text-align: center;
-}
-
-@media (max-width: 900px) {
-    .no-posts-box .no-posts {
-        position: relative;
-        left: -50%;
-        display: block;
-    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .no-posts-box .no-posts h3 {
-    color: var(--brown);
+    margin-bottom: 20px;
+    color: var(--midgrey);
     font-size: 2em;
     font-weight: 200;
 }
