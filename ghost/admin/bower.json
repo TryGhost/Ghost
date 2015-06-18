@@ -26,6 +26,7 @@
     "password-generator": "git://github.com/bermi/password-generator#49accd7",
     "rangyinputs": "1.2.0",
     "showdown-ghost": "0.3.6",
+    "sinonjs": "1.14.1",
     "validator-js": "3.39.0",
     "xregexp": "2.0.0"
   }

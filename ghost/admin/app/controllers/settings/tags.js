@@ -59,7 +59,7 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
 
         activeTag.set(propKey, newValue);
 
-        this.get('notifications').closePassive();
+        this.get('notifications').closeNotifications();
 
         activeTag.save().catch(function (errors) {
             self.showErrors(errors);
