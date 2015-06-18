@@ -4,7 +4,7 @@ import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 import styleBody from 'ghost/mixins/style-body';
 
 var paginationSettings,
-    UsersIndexRoute;
+    TeamIndexRoute;
 
 paginationSettings = {
     page: 1,
@@ -12,10 +12,10 @@ paginationSettings = {
     status: 'active'
 };
 
-UsersIndexRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, PaginationRouteMixin, {
+TeamIndexRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, PaginationRouteMixin, {
     titleToken: 'Team',
 
-    classNames: ['settings-view-users'],
+    classNames: ['view-users'],
 
     setupController: function (controller, model) {
         this._super(controller, model);
@@ -55,4 +55,4 @@ UsersIndexRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Pagi
     }
 });
 
-export default UsersIndexRoute;
+export default TeamIndexRoute;
