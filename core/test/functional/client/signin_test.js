@@ -52,7 +52,7 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
 
     casper.waitForText('remaining', function onSuccess() {
         test.assert(true, 'The login limit is in place.');
-        test.assertSelectorDoesntHaveText('.notification-error', '[object Object]');
+        test.assertSelectorDoesntHaveText('.gh-alert', '[object Object]');
     }, function onTimeout() {
         test.assert(false, 'We did not trip the login limit.');
     });
@@ -129,21 +129,23 @@ CasperTest.begin('Ensure email field form validation', 2, function suite(test) {
             test.fail('Login form didn\'t fade in.');
         });
 
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'Invalid Email', '.notification-error text is correct');
-    // }, function onTimeout() {
-    //     test.fail('Email validation error did not appear');
-    // }, 2000);
-    //
-    // casper.then(function testMissingEmail() {
-    //     this.fillAndSave('form.gh-signin', {
-    //         identification: ''
-    //     });
-    // });
-    //
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'Please enter an email', '.notification-error text is correct');
-    // }, function onTimeout() {
-    //     test.fail('Missing Email validation error did not appear');
-    // }, 2000);
+    // TODO: review once inline-validations are implemented
+    casper.waitForSelectorTextChange('.gh-notification-red', function onSuccess() {
+        test.assertSelectorHasText('.gh-notification-red', 'Invalid Email', '.gh-notification-red text is correct');
+    }, function onTimeout() {
+        test.fail('Email validation error did not appear');
+    }, 2000);
+
+    casper.then(function testMissingEmail() {
+        this.fillAndSave('form.gh-signin', {
+            identification: ''
+        });
+    });
+
+    // TODO: review once inline-validations are implemented
+    casper.waitForSelectorTextChange('.gh-notification-red', function onSuccess() {
+        test.assertSelectorHasText('.gh-notification-red', 'Please enter an email', '.gh-notification-red text is correct');
+    }, function onTimeout() {
+        test.fail('Missing Email validation error did not appear');
+    }, 2000);
 }, true);
