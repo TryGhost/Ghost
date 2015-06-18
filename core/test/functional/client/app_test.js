@@ -39,7 +39,7 @@ CasperTest.begin('Admin navigation bar is correct', 65, function suite(test) {
         // Users
         test.assertExists('.gh-nav-main-users', 'Users nav item exists');
         test.assertSelectorHasText('.gh-nav-main-users', 'Team', 'Users nav item has correct text');
-        test.assertEquals(usersHref, '/ghost/settings/users/', 'Users href is correct');
+        test.assertEquals(usersHref, '/ghost/team/', 'Users href is correct');
         test.assertDoesntExist('.gh-nav-main-users.active', 'Users nav item is not marked active');
 
         // Settings - General
@@ -139,7 +139,7 @@ CasperTest.begin('Admin navigation bar is correct', 65, function suite(test) {
         test.assertExists('.dropdown-item.user-menu-profile', 'Profile menu item exists');
         test.assertSelectorHasText('.dropdown-item.user-menu-profile', 'Your Profile',
             'Profile menu item has correct text');
-        test.assertEquals(profileHref, '/ghost/settings/users/' + newUser.slug + '/', 'Profile href is correct');
+        test.assertEquals(profileHref, '/ghost/team/' + newUser.slug + '/', 'Profile href is correct');
 
         test.assertExists('.user-menu-signout', 'Sign Out menu item exists');
         test.assertSelectorHasText('.user-menu-signout', 'Sign Out', 'Signout menu item has correct text');

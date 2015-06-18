@@ -1,7 +1,8 @@
 import Ember from 'ember';
-import BaseView from 'ghost/views/settings/content-base';
 
-var SettingsUserView = BaseView.extend({
+var TeamUserView = Ember.View.extend({
+    tagName: 'section',
+    classNames: ['gh-view'],
     currentUser: Ember.computed.alias('controller.session.user'),
 
     isNotOwnProfile: Ember.computed('controller.user.id', 'currentUser.id', function () {
@@ -28,4 +29,4 @@ var SettingsUserView = BaseView.extend({
 
 });
 
-export default SettingsUserView;
+export default TeamUserView;
