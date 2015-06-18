@@ -66,7 +66,7 @@ screens = {
         selector: '.gh-nav-main-content.active'
     },
     content: {
-        url: 'ghost/content/',
+        url: 'ghost/',
         linkSelector: '.gh-nav-main-content',
         selector: '.gh-nav-main-content.active'
     },
@@ -89,13 +89,13 @@ screens = {
         url: 'ghost/settings/general',
         selector: '.gh-nav-settings-general.active'
     },
-    'settings.users': {
-        url: 'ghost/settings/users',
+    team: {
+        url: 'ghost/team',
         linkSelector: '.gh-nav-main-users',
         selector: '.gh-nav-main-users.active'
     },
-    'settings.users.user': {
-        url: 'ghost/settings/users/test',
+    'team.user': {
+        url: 'ghost/team/test',
         linkSelector: '.user-menu-profile',
         selector: '.user-profile'
     },
