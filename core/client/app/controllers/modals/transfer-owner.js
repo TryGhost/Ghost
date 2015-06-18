@@ -33,7 +33,7 @@ export default Ember.Controller.extend({
                     });
                 }
 
-                self.get('notifications').showSuccess('Ownership successfully transferred to ' + user.get('name'));
+                self.get('notifications').showAlert('Ownership successfully transferred to ' + user.get('name'), {type: 'success'});
             }).catch(function (error) {
                 self.get('notifications').showAPIError(error);
             });

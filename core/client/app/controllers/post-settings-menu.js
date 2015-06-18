@@ -193,10 +193,6 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
         this.get('notifications').showErrors(errors);
     },
 
-    showSuccess: function (message) {
-        this.get('notifications').showSuccess(message);
-    },
-
     actions: {
         togglePage: function () {
             var self = this;
