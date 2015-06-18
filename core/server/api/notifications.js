@@ -50,7 +50,7 @@ notifications = {
         var defaults = {
                 dismissible: true,
                 location: 'bottom',
-                status: 'persistent'
+                status: 'alert'
             },
             addedNotifications = [];
 
@@ -61,7 +61,7 @@ notifications = {
 
                     notification = _.assign(defaults, notification, {
                         id: notificationCounter
-                        // status: 'persistent'
+                        // status: 'alert'
                     });
 
                     notificationsStore.push(notification);

@@ -22,7 +22,6 @@ export default Ember.Controller.extend(ValidationEngine, {
 
             this.get('session').authenticate(authStrategy, data).then(function () {
                 self.send('closeModal');
-                self.get('notifications').showSuccess('Login successful.');
                 self.set('password', '');
             }).catch(function () {
                 // if authentication fails a rejected promise will be returned.
@@ -41,7 +40,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             $('#login').find('input').trigger('change');
 
             this.validate({format: false}).then(function () {
-                self.get('notifications').closePassive();
+                self.get('notifications').closeNotifications();
                 self.send('authenticate');
             }).catch(function (errors) {
                 self.get('notifications').showErrors(errors);

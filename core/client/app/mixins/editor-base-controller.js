@@ -209,6 +209,7 @@ export default Ember.Mixin.create({
         }
     },
 
+    // TODO: Update for new notification click-action API
     showSaveNotification: function (prevStatus, status, delay) {
         var message = this.messageMap.success.post[prevStatus][status],
             path = this.get('model.absoluteUrl'),
@@ -219,7 +220,7 @@ export default Ember.Mixin.create({
             message += `&nbsp;<a href="${path}">View ${type}</a>`;
         }
 
-        notifications.showSuccess(message.htmlSafe(), {delayed: delay});
+        notifications.showNotification(message.htmlSafe(), {delayed: delay});
     },
 
     showErrorNotification: function (prevStatus, status, errors, delay) {
@@ -229,7 +230,7 @@ export default Ember.Mixin.create({
 
         message += '<br />' + error;
 
-        notifications.showError(message.htmlSafe(), {delayed: delay});
+        notifications.showAlert(message.htmlSafe(), {type: 'error', delayed: delay});
     },
 
     actions: {
@@ -263,7 +264,7 @@ export default Ember.Mixin.create({
                 this.set('timedSaveId', null);
             }
 
-            notifications.closePassive();
+            notifications.closeNotifications();
 
             // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.

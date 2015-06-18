@@ -74,7 +74,7 @@ describe('Notifications API', function () {
             notification.id.should.be.a.Number;
             notification.id.should.not.equal(99);
             should.exist(notification.status);
-            notification.status.should.equal('persistent');
+            notification.status.should.equal('alert');
 
             done();
         }).catch(done);

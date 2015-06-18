@@ -66,7 +66,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 this.get('notifications').showErrors(error.errors);
             } else {
                 // connection errors don't return proper status message, only req.body
-                this.get('notifications').showError('There was a problem on the server.');
+                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error'});
             }
         },
 
@@ -91,7 +91,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         sessionInvalidationFailed: function (error) {
-            this.get('notifications').showError(error.message);
+            this.get('notifications').showAlert(error.message, {type: 'error'});
         },
 
         openModal: function (modalName, model, type) {
@@ -150,19 +150,6 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     }
                 });
             }
-        },
-
-        handleErrors: function (errors) {
-            var notifications = this.get('notifications');
-
-            notifications.clear();
-            errors.forEach(function (errorObj) {
-                notifications.showError(errorObj.message || errorObj);
-
-                if (errorObj.hasOwnProperty('el')) {
-                    errorObj.el.addClass('input-error');
-                }
-            });
         },
 
         // noop default for unhandled save (used from shortcuts)

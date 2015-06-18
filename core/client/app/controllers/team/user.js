@@ -105,8 +105,6 @@ export default Ember.Controller.extend({
                 var currentPath,
                     newPath;
 
-                self.get('notifications').showSuccess('Settings successfully saved.');
-
                 // If the user's slug has changed, change the URL and replace
                 // the history so refresh and back button still work
                 if (slugChanged) {
@@ -142,13 +140,14 @@ export default Ember.Controller.extend({
                         ne2Password: ''
                     });
 
-                    self.get('notifications').showSuccess('Password updated.');
+                    self.get('notifications').showAlert('Password updated.', {type: 'success'});
 
                     return model;
                 }).catch(function (errors) {
                     self.get('notifications').showAPIError(errors);
                 });
             } else {
+                // TODO: switch to in-line validation
                 self.get('notifications').showErrors(user.get('passwordValidationErrors'));
             }
         },

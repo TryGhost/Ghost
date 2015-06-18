@@ -55,7 +55,7 @@ describe('Notifications API', function () {
 
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
                     jsonResponse.notifications[0].message.should.equal(newNotification.message);
-                    jsonResponse.notifications[0].status.should.equal('persistent');
+                    jsonResponse.notifications[0].status.should.equal('alert');
 
                     done();
                 });
@@ -66,7 +66,7 @@ describe('Notifications API', function () {
         var newNotification = {
             type: 'info',
             message: 'test notification',
-            status: 'persistent'
+            status: 'alert'
         };
 
         it('deletes a notification', function (done) {
