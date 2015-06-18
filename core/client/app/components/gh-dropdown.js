@@ -8,7 +8,7 @@ export default Ember.Component.extend(DropdownMixin, {
     name: null,
     closeOnClick: false,
 
-    // Helps track the user re-opening the menu while it's fading out.
+    // Helps track the user re-opening the menu while it's fading out /i/, /e/, /ɛ/.
     closing: false,
 
     // Helps track whether the dropdown is open or closes, or in a transition to either
