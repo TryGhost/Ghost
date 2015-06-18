@@ -340,14 +340,6 @@ ConfigManager.prototype.validate = function () {
         return Promise.reject(e);
     }
 
-    // Check if we don't even have a config
-    if (!config) {
-        errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), 'NODE_ENV=' + envVal,
-            'Ensure your config.js has a section for the current NODE_ENV value and is formatted properly.');
-
-        return Promise.reject(new Error('Unable to load config for NODE_ENV=' + envVal));
-    }
-
     // Check that our url is valid
     if (!validator.isURL(config.url, {protocols: ['http', 'https'], require_protocol: true})) {
         errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
