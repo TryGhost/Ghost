@@ -11,7 +11,7 @@
         {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
         <ol class="posts-list">
             {{#each controller itemController="posts/post" itemView="post-item-view" itemTagName="li" as |post|}}
-                {{#link-to "posts.post" post.model class="permalink" alternateActive=view.active title="Edit this post"}}
+                {{#link-to "posts.post" post.model.id class="permalink" alternateActive=view.active title="Edit this post"}}
                     <h3 class="entry-title">{{post.model.title}}</h3>
                     <section class="entry-meta">
                         <span class="avatar" style={{post.authorAvatarBackground}}>

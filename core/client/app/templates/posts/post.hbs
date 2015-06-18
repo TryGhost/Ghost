@@ -1,10 +1,10 @@
 <section class="post-controls">
-    {{#link-to "editor.edit" model class="btn btn-minor post-edit"}}<i class="icon-edit"></i>{{/link-to}}
+    {{#link-to "editor.edit" model.id class="btn btn-minor post-edit"}}<i class="icon-edit"></i>{{/link-to}}
 </section>
 
 {{#view "content-preview-content-view" tagName="section"}}
     <div class="wrapper">
-        <h1 class="content-preview-title">{{#link-to "editor.edit" model}}{{model.title}}{{/link-to}}</h1>
+        <h1 class="content-preview-title">{{#link-to "editor.edit" model.id}}{{model.title}}{{/link-to}}</h1>
         {{gh-format-html model.html}}
     </div>
 {{/view}}
