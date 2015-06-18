@@ -11,7 +11,7 @@
 
                 <h4 class="user-list-title">Invited users</h4>
 
-                {{#each invitedUsers itemController="settings/users/user" as |user|}}
+                {{#each invitedUsers itemController="team/user" as |user|}}
                     <div class="user-list-item">
                         <span class="user-list-item-icon icon-mail">ic</span>
 
@@ -37,8 +37,8 @@
 
             <h4 class="user-list-title">Active users</h4>
 
-            {{#each activeUsers itemController="settings/users/user" as |user|}}
-                {{#link-to 'settings.users.user' user.model class="user-list-item" }}
+            {{#each activeUsers itemController="team/user" as |user|}}
+                {{#link-to 'team.user' user.model class="user-list-item" }}
                     <span class="user-list-item-figure" style={{user.userImageBackground}}>
                         <span class="hidden">Photo of {{user.model.name}}</span>
                     </span>
