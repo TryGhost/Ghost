@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import PaginationControllerMixin from 'ghost/mixins/pagination-controller';
 
-var UsersIndexController = Ember.ArrayController.extend(PaginationControllerMixin, {
+var TeamIndexController = Ember.ArrayController.extend(PaginationControllerMixin, {
     init: function () {
         // let the PaginationControllerMixin know what type of model we will be paginating
         // this is necessary because we do not have access to the model inside the Controller::init method
@@ -21,4 +21,4 @@ var UsersIndexController = Ember.ArrayController.extend(PaginationControllerMixi
     })
 });
 
-export default UsersIndexController;
+export default TeamIndexController;

@@ -2,10 +2,10 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Team - User',
 
-    classNames: ['settings-view-user'],
+    classNames: ['team-view-user'],
 
     model: function (params) {
         var self = this;
@@ -17,7 +17,7 @@ var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings
             var user = result.findBy('slug', params.slug);
 
             if (!user) {
-                return self.transitionTo('error404', 'settings/users/' + params.slug);
+                return self.transitionTo('error404', 'team/' + params.slug);
             }
 
             return user;
@@ -31,15 +31,15 @@ var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings
                 isAuthor = currentUser.get('isAuthor'),
                 isEditor = currentUser.get('isEditor');
             if (isAuthor && !isOwnProfile) {
-                self.transitionTo('settings.users.user', currentUser);
+                self.transitionTo('team.user', currentUser);
             } else if (isEditor && !isOwnProfile && !user.get('isAuthor')) {
-                self.transitionTo('settings.users');
+                self.transitionTo('team');
             }
         });
     },
 
     deactivate: function () {
-        var model = this.modelFor('settings.users.user');
+        var model = this.modelFor('team.user');
 
         // we want to revert any unsaved changes on exit
         if (model && model.get('isDirty')) {
@@ -56,4 +56,4 @@ var SettingsUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings
     }
 });
 
-export default SettingsUserRoute;
+export default TeamUserRoute;
