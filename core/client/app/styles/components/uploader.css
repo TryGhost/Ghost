@@ -45,6 +45,7 @@
     position: relative;
     z-index: 700;
     display: inline-block;
+    margin-top: 10px;
     color: #fff;
 }
 
@@ -85,9 +86,9 @@
 
 .image-uploader .progress {
     position: relative;
+    top: 50%;
     display: block;
     overflow: hidden;
-    margin: -19px 0 44px 0;
     background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
     border-radius: 12px;
     box-shadow: rgba(0, 0, 0, 0.1) 0 1px 2px inset;
@@ -96,7 +97,7 @@
 .image-uploader .fileupload-loading {
     top: 50%;
     display: block;
-    margin: -28px auto 0;
+    margin: 0 auto;
     width: 35px;
     height: 28px;
     background-size: contain;
