@@ -9,7 +9,6 @@ var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
-    paginateResponse = require('./base/utils').paginateResponse,
     permalinkSetting = '',
     getPermalinkSetting,
     Post,
@@ -274,6 +273,65 @@ Post = ghostBookshelf.Model.extend({
         return attrs;
     }
 }, {
+    setupFilters: function setupFilters(options) {
+        var filterObjects = {};
+        // Deliberately switch from singular 'tag' to 'tags' and 'role' to 'roles' here
+        // TODO: make this consistent
+        if (options.tag !== undefined) {
+            filterObjects.tags = ghostBookshelf.model('Tag').forge({slug: options.tag});
+        }
+        if (options.author !== undefined) {
+            filterObjects.author = ghostBookshelf.model('User').forge({slug: options.author});
+        }
+
+        return filterObjects;
+    },
+
+    findPageDefaultOptions: function findPageDefaultOptions() {
+        return {
+            staticPages: false, // include static pages
+            status: 'published',
+            where: {}
+        };
+    },
+
+    orderDefaultOptions: function orderDefaultOptions() {
+        return {
+            status: 'ASC',
+            published_at: 'DESC',
+            updated_at: 'DESC',
+            id: 'DESC'
+        };
+    },
+
+    processOptions: function processOptions(itemCollection, options) {
+        // Step 4: Setup filters (where clauses)
+        if (options.staticPages !== 'all') {
+            // convert string true/false to boolean
+            if (!_.isBoolean(options.staticPages)) {
+                options.staticPages = _.contains(['true', '1'], options.staticPages);
+            }
+            options.where.page = options.staticPages;
+        }
+
+        if (options.featured) {
+            // convert string true/false to boolean
+            if (!_.isBoolean(options.featured)) {
+                options.featured = _.contains(['true', '1'], options.featured);
+            }
+            options.where.featured = options.featured;
+        }
+
+        // Unless `all` is passed as an option, filter on
+        // the status provided.
+        if (options.status !== 'all') {
+            // make sure that status is valid
+            options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
+            options.where.status = options.status;
+        }
+
+        return options;
+    },
 
     /**
     * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
@@ -330,178 +388,6 @@ Post = ghostBookshelf.Model.extend({
         // fetch relations passed to options.include
         options.withRelated = _.union(options.withRelated, options.include);
         return ghostBookshelf.Model.findAll.call(this, options);
-    },
-
-    /**
-     * #### findPage
-     * Find results by page - returns an object containing the
-     * information about the request (page, limit), along with the
-     * info needed for pagination (pages, total).
-     *
-     * **response:**
-     *
-     *     {
-     *         posts: [
-     *         {...}, {...}, {...}
-     *     ],
-     *     page: __,
-     *     limit: __,
-     *     pages: __,
-     *     total: __
-     *     }
-     *
-     * @param {Object} options
-     */
-    findPage: function findPage(options) {
-        options = options || {};
-
-        // -- Part 0 --
-        // Step 1: Setup filter models
-        var self = this,
-            tagInstance = options.tag !== undefined ? ghostBookshelf.model('Tag').forge({slug: options.tag}) : false,
-            authorInstance = options.author !== undefined ? ghostBookshelf.model('User').forge({slug: options.author}) : false;
-
-        // Step 2: Setup filter model promises
-        function fetchTagQuery() {
-            if (tagInstance) {
-                return tagInstance.fetch();
-            }
-            return false;
-        }
-
-        function fetchAuthorQuery() {
-            if (authorInstance) {
-                return authorInstance.fetch();
-            }
-            return false;
-        }
-
-        // Step 3: Prefetch filter models
-        return Promise.join(fetchTagQuery(), fetchAuthorQuery()).then(function setupCollectionPromises() {
-            // -- Part 1 --
-            var postCollection = Posts.forge(),
-                collectionPromise,
-                countPromise;
-
-            // Step 1: Setup pagination options
-            if (options.limit && options.limit !== 'all') {
-                options.limit = parseInt(options.limit, 10) || 15;
-            }
-
-            if (options.page) {
-                options.page = parseInt(options.page, 10) || 1;
-            }
-
-            // Step 2: Filter options
-            options = self.filterOptions(options, 'findPage');
-
-            // Step 3: Extend defaults
-            options = _.extend({
-                page: 1, // pagination page
-                limit: 15,
-                staticPages: false, // include static pages
-                status: 'published',
-                where: {}
-            }, options);
-
-            // Step 4: Setup filters (where clauses)
-            if (options.staticPages !== 'all') {
-                // convert string true/false to boolean
-                if (!_.isBoolean(options.staticPages)) {
-                    options.staticPages = options.staticPages === 'true' || options.staticPages === '1' ? true : false;
-                }
-                options.where.page = options.staticPages;
-            }
-
-            if (options.featured) {
-                // convert string true/false to boolean
-                if (!_.isBoolean(options.featured)) {
-                    options.featured = options.featured === 'true' || options.featured === '1' ? true : false;
-                }
-                options.where.featured = options.featured;
-            }
-
-            // Unless `all` is passed as an option, filter on
-            // the status provided.
-            if (options.status !== 'all') {
-                // make sure that status is valid
-                options.status = _.indexOf(['published', 'draft'], options.status) !== -1 ? options.status : 'published';
-                options.where.status = options.status;
-            }
-
-            // If there are where conditionals specified, add those to the query.
-            if (options.where) {
-                postCollection.query('where', options.where);
-            }
-
-            // Step 5: Setup joins
-            if (tagInstance) {
-                postCollection
-                    .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
-                    .query('where', 'posts_tags.tag_id', '=', tagInstance.id);
-            }
-
-            if (authorInstance) {
-                postCollection
-                    .query('where', 'author_id', '=', authorInstance.id);
-            }
-
-            // Step 6: Setup the counter to fetch the number of items in the set
-            // @TODO abstract this out
-            // tableName = _.result(postCollection, 'tableName'),
-            // idAttribute = _.result(postCollection, 'idAttribute');
-            countPromise = postCollection.query().clone().count('posts.id as aggregate');
-
-            // -- Part 2 --
-            // Add limit, offset and other query changes which aren't required when performing a count
-
-            // Step 1: Add related objects
-            options.withRelated = _.union(options.withRelated, options.include);
-
-            // Step 2: Add pagination options if needed
-            if (_.isNumber(options.limit)) {
-                postCollection
-                    .query('limit', options.limit)
-                    .query('offset', options.limit * (options.page - 1));
-            }
-
-            // Step 3: add order parameters
-            postCollection
-                .query('orderBy', 'status', 'ASC')
-                .query('orderBy', 'published_at', 'DESC')
-                .query('orderBy', 'updated_at', 'DESC')
-                .query('orderBy', 'id', 'DESC');
-
-            // Step 4: Setup the promise
-            collectionPromise = postCollection.fetch(_.omit(options, 'page', 'limit'));
-
-            // -- Part 3 --
-            // Step 1: Fetch the data
-            return Promise.join(collectionPromise, countPromise);
-        }).then(function formatResponse(results) {
-            var postCollection = results[0],
-                data = {};
-
-            // Step 2: Format the data
-            data.posts = postCollection.toJSON(options);
-            data.meta = {pagination: paginateResponse(results[1][0].aggregate, options)};
-
-            if (tagInstance) {
-                data.meta.filters = {};
-                if (!tagInstance.isNew()) {
-                    data.meta.filters.tags = [tagInstance.toJSON(options)];
-                }
-            }
-
-            if (authorInstance) {
-                data.meta.filters = {};
-                if (!authorInstance.isNew()) {
-                    data.meta.filters.author = authorInstance.toJSON(options);
-                }
-            }
-
-            return data;
-        }).catch(errors.logAndThrowError);
     },
 
     /**
