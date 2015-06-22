@@ -34,10 +34,14 @@ var PaginationViewInfiniteScrollMixin = Ember.Mixin.create({
     },
 
     didInsertElement: function () {
+        this._super();
+
         this.attachCheckScroll();
     },
 
     willDestroyElement: function () {
+        this._super();
+
         // unbind from the scroll event when the element is no longer in the DOM
         this.$().off('scroll');
     }
