@@ -28,6 +28,8 @@ Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
      * Sets up properties at render time
      */
     didInsertElement: function () {
+        this._super();
+
         this.setFocus();
 
         this.sendAction('setEditor', this);
