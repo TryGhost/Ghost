@@ -4,10 +4,11 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 ![Preview](http://i.imgur.com/b9hFHFT.png)
 
 ## Quickstart
+Available on [jsDelivr](http://www.jsdelivr.com/about.php)
 
 ```
-<link rel="stylesheet" href="/PATH/TO/simplemde.min.css">
-<script src="/PATH/TO/simplemde.min.js"></script>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/simplemde/1.1.1/simplemde.min.css">
+<script src="http://cdn.jsdelivr.net/simplemde/1.1.1/simplemde.min.js"></script>
 ```
 
 And then load SimpleMDE on the first textarea on a page
