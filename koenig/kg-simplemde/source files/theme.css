@@ -6,6 +6,9 @@
 	border-bottom-right-radius: 4px;
 	padding: 10px
 }
+.CodeMirror-scroll {
+	min-height: 300px;
+}
 :-webkit-full-screen {
 	background: #f9f9f5;
 	padding: .5em 1em;
@@ -256,6 +259,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 	padding-bottom: 30px;
 	padding-right: 30px;
 	height: 100%;
+	min-height: 300px;
 	outline: 0;
 	position: relative
 }
