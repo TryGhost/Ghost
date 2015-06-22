@@ -10,5 +10,6 @@ Minify the JS in this order:
 
 Minify the CSS in this order:
 
+1. `codemirror/codemirror.css`
 1. `theme.css`
 1. `font-awesome.css`
