@@ -5,7 +5,7 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 
 [![Preview](http://i.imgur.com/b9hFHFT.png)](http://nextstepwebs.github.io/simplemde-markdown-editor)
 
-## Quickstart
+## Quick start
 Available on [jsDelivr](http://www.jsdelivr.com/about.php)
 
 ```
@@ -45,7 +45,7 @@ simplemde.codemirror.getValue();
 ## Configuration
 
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
-- **status**: If set false, hide the statusbar. Defaults to true.
+- **status**: If set false, hide the status bar. Defaults to true.
 - **tools**: If set false, hide the toolbar. Defaults to true.
 
 ```
@@ -59,7 +59,7 @@ new SimpleMDE({
 ## How it works
 SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor) and includes a great many number of changes. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
 
-CodeMirror is the backbone of the project and parses much of the markdown syntax as it's being written. This allows us to add styles to the markdown that's being written. Additionally, a toolbar and statusbar has been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked).
+CodeMirror is the backbone of the project and parses much of the markdown syntax as it's being written. This allows us to add styles to the markdown that's being written. Additionally, a toolbar and status bar has been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked).
 
 ## What's changed?
 As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor). So you might be wondering, what's changed? Quite a bit actually. Here's some notable changes:
