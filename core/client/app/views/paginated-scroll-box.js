@@ -15,10 +15,14 @@ var PaginatedScrollBox = Ember.View.extend(PaginationViewMixin, {
     },
 
     didInsertElement: function () {
+        this._super();
+
         this.attachScrollClassHandler();
     },
 
     willDestroyElement: function () {
+        this._super();
+
         // removes scroll class handler event
         this.$().off('scroll');
     }
