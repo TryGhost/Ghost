@@ -91,10 +91,14 @@ var EditorScroll = Ember.Mixin.create({
     },
 
     didInsertElement: function () {
+        this._super();
+
         this.attachScrollHandlers();
     },
 
     willDestroyElement: function () {
+        this._super();
+
         this.detachScrollHandlers();
     }
 });
