@@ -6,148 +6,238 @@ var Promise      = require('bluebird'),
     dataProvider = require('../models'),
     errors       = require('../errors'),
     utils        = require('./utils'),
+    pipeline        = require('../utils/pipeline'),
 
     docName      = 'tags',
     allowedIncludes = ['post_count'],
     tags;
 
-// ## Helpers
-function prepareInclude(include) {
-    include = include || '';
-    include = _.intersection(include.split(','), allowedIncludes);
-
-    return include;
-}
-
 /**
- * ## Tags API Methods
+ * ### Tags API Methods
  *
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 tags = {
     /**
-     * ### Browse
+     * ## Browse
      * @param {{context}} options
-     * @returns {Promise(Tags)} Tags Collection
+     * @returns {Promise<Tags>} Tags Collection
      */
     browse: function browse(options) {
-        options = options || {};
+        var tasks;
 
-        return canThis(options.context).browse.tag().then(function () {
-            if (options.include) {
-                options.include = prepareInclude(options.include);
-            }
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).browse.tag().then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to browse tags.');
+            });
+        }
 
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
             return dataProvider.Tag.findPage(options);
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to browse tags.'));
-        });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     },
 
     /**
-     * ### Read
+     * ## Read
      * @param {{id}} options
-     * @return {Promise(Tag)} Tag
+     * @return {Promise<Tag>} Tag
      */
     read: function read(options) {
-        options = options || {};
-
         var attrs = ['id', 'slug'],
-            data = _.pick(options, attrs);
+            tasks;
 
-        return canThis(options.context).read.tag().then(function () {
-            if (options.include) {
-                options.include = prepareInclude(options.include);
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).read.tag().then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to read tags.');
+            });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Tag.findOne(options.data, _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName, attrs), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options).then(function formatResponse(result) {
+            if (result) {
+                return {tags: [result.toJSON(options)]};
             }
 
-            return dataProvider.Tag.findOne(data, options).then(function (result) {
-                if (result) {
-                    return {tags: [result.toJSON(options)]};
-                }
-
-                return Promise.reject(new errors.NotFoundError('Tag not found.'));
-            });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to read tags.'));
+            return Promise.reject(new errors.NotFoundError('Tag not found.'));
         });
     },
 
     /**
-     * ### Add tag
+     * ## Add
      * @param {Tag} object the tag to create
      * @returns {Promise(Tag)} Newly created Tag
      */
     add: function add(object, options) {
-        options = options || {};
+        var tasks;
 
-        return canThis(options.context).add.tag(object).then(function () {
-            if (options.include) {
-                options.include = prepareInclude(options.include);
-            }
-
-            return utils.checkObject(object, docName).then(function (checkedTagData) {
-                return dataProvider.Tag.add(checkedTagData.tags[0], options);
-            }).then(function (result) {
-                var tag = result.toJSON(options);
-
-                return {tags: [tag]};
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).add.tag(options.data).then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to add tags.');
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to add tags.'));
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Tag.add(options.data.tags[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            var tag = result.toJSON(options);
+
+            return {tags: [tag]};
         });
     },
 
     /**
-     * ### edit tag
+     * ## Edit
      *
      * @public
      * @param {Tag} object Tag or specific properties to update
-     * @param {{id (required), context, include,...}} options
-     * @return {Promise(Tag)} Edited Tag
+     * @param {{id, context, include}} options
+     * @return {Promise<Tag>} Edited Tag
      */
     edit: function edit(object, options) {
-        options = options || {};
+        var tasks;
 
-        return canThis(options.context).edit.tag(options.id).then(function () {
-            if (options.include) {
-                options.include = prepareInclude(options.include);
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).edit.tag(options.id).then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to edit tags.');
+            });
+        }
+
+        /**
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Tag.edit(options.data.tags[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            if (result) {
+                var tag = result.toJSON(options);
+
+                return {tags: [tag]};
             }
 
-            return utils.checkObject(object, docName, options.id).then(function (checkedTagData) {
-                return dataProvider.Tag.edit(checkedTagData.tags[0], options);
-            }).then(function (result) {
-                if (result) {
-                    var tag = result.toJSON(options);
-
-                    return {tags: [tag]};
-                }
-
-                return Promise.reject(new errors.NotFoundError('Tag not found.'));
-            });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit tags.'));
+            return Promise.reject(new errors.NotFoundError('Tag not found.'));
         });
     },
 
     /**
-     * ### Destroy
+     * ## Destroy
      *
      * @public
-     * @param {{id (required), context,...}} options
-     * @return {Promise(Tag)} Deleted Tag
+     * @param {{id, context}} options
+     * @return {Promise<Tag>} Deleted Tag
      */
     destroy: function destroy(options) {
-        options = options || {};
+        var tasks;
 
-        return canThis(options.context).destroy.tag(options.id).then(function () {
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).destroy.tag(options.id).then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to remove tags.');
+            });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
             return tags.read(options).then(function (result) {
                 return dataProvider.Tag.destroy(options).then(function () {
                     return result;
                 });
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to remove tags.'));
-        });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     }
 };
 
