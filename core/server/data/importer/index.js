@@ -343,6 +343,11 @@ _.extend(ImportManager.prototype, {
      * @returns {Promise(ImportData)}
      */
     generateReport: function (importData) {
+        importData[0].details = {
+            posts: importData[0].data.data.posts ? importData[0].data.data.posts.length : 0,
+            tags: importData[0].data.data.tags ? importData[0].data.data.tags.length : 0,
+            users: importData[0].data.data.users ? importData[0].data.data.users.length : 0
+        };
         return Promise.resolve(importData);
     },
     /**
