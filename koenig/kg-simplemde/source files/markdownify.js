@@ -313,7 +313,7 @@ function _toggleLine(cm, name) {
 }
 
 function _toggleBlock(editor, type, start_chars, end_chars) {
-	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+	if (/editor-preview-active/.test(editor.codemirror.getWrapperElement().lastChild.className))
 		return;
 	
 	end_chars = (typeof end_chars === 'undefined') ? start_chars : end_chars;
