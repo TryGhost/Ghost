@@ -216,6 +216,7 @@ function redo(editor) {
  * Preview action.
  */
 function togglePreview(editor) {
+	var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
 	var toolbar = editor.toolbar.preview;
 	var parse = editor.constructor.markdown;
 	var cm = editor.codemirror;
@@ -231,6 +232,7 @@ function togglePreview(editor) {
 			/\s*editor-preview-active\s*/g, ''
 		);
 		toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
+		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview\s*/g, '');
 	} else {
 		/* When the preview button is clicked for the first time,
 		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
@@ -240,12 +242,16 @@ function togglePreview(editor) {
 			preview.className += ' editor-preview-active'
 		}, 1);
 		toolbar.className += ' active';
+		toolbar_div.className += ' disabled-for-preview';
 	}
 	var text = cm.getValue();
 	preview.innerHTML = parse(text);
 }
 
 function _replaceSelection(cm, active, start, end) {
+	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+		return;
+	
 	var text;
 	var startPoint = cm.getCursor('start');
 	var endPoint = cm.getCursor('end');
@@ -270,6 +276,9 @@ function _replaceSelection(cm, active, start, end) {
 
 
 function _toggleLine(cm, name) {
+	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+		return;
+	
 	var stat = getState(cm);
 	var startPoint = cm.getCursor('start');
 	var endPoint = cm.getCursor('end');
@@ -304,6 +313,9 @@ function _toggleLine(cm, name) {
 }
 
 function _toggleBlock(editor, type, start_chars, end_chars) {
+	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+		return;
+	
 	end_chars = (typeof end_chars === 'undefined') ? start_chars : end_chars;
 	var cm = editor.codemirror;
 	var stat = getState(cm);
