@@ -9,8 +9,8 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 Available on [jsDelivr](http://www.jsdelivr.com/about.php)
 
 ```
-<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/1.1.4/simplemde.min.css">
-<script src="//cdn.jsdelivr.net/simplemde/1.1.4/simplemde.min.js"></script>
+<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/1.1.5/simplemde.min.css">
+<script src="//cdn.jsdelivr.net/simplemde/1.1.5/simplemde.min.js"></script>
 ```
 
 And then load SimpleMDE on the first textarea on a page
