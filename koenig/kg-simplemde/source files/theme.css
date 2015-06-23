@@ -99,6 +99,11 @@
 	position: absolute;
 	right: 10px
 }
+.editor-toolbar.disabled-for-preview a:not(.fa-eye){
+	pointer-events:none;
+	background:#fff;
+	border:none;
+}
 .editor-statusbar {
 	padding: 8px 10px;
 	font-size: 12px;
@@ -123,7 +128,7 @@
 	height: 100%;
 	top: 0;
 	left: 0;
-	background: #fff;
+	background: #fafafa;
 	z-index: 9999;
 	overflow: auto;
 	display: none
