@@ -333,7 +333,8 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
          * (#1351)
          */
         setPublishedAt: function (userInput) {
-            var errMessage = '',
+            var message = '',
+                errMessage = '',
                 newPublishedAt = parseDateString(userInput),
                 publishedAt = this.get('model.published_at'),
                 self = this;
@@ -354,7 +355,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
             }
 
             if (newPublishedAt.diff(new Date(), 'h') > 0) {
-                var message = 'Post will be visible only after ' + formatDate(newPublishedAt);
+                message = 'Post will be visible only after ' + formatDate(newPublishedAt);
                 self.showInfo(message.htmlSafe());
             }
 
