@@ -224,6 +224,10 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
         this.get('notifications').showSuccess(message);
     },
 
+    showInfo: function (message) {
+        this.get('notifications').showInfo(message);
+    },
+
     actions: {
         togglePage: function () {
             var self = this;
@@ -348,8 +352,10 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
                 errMessage = 'Published Date must be a valid date with format: ' +
                     'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
             }
+
             if (newPublishedAt.diff(new Date(), 'h') > 0) {
-                errMessage = 'Published Date cannot currently be in the future.';
+                var message = 'Post will be visible only after ' + formatDate(newPublishedAt);
+                self.showInfo(message.htmlSafe());
             }
 
             // If errors, notify and exit.

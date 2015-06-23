@@ -31,6 +31,11 @@ filtering = {
                 .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
                 .query('where', 'roles_users.role_id', '=', filterObjects.roles.id);
         }
+
+        if (filterObjects.released) {
+            itemCollection
+                .query('where', 'published_at', '<=', new Date());
+        }
     },
     formatResponse: function formatResponse(filterObjects, options, data) {
         if (!_.isEmpty(filterObjects)) {

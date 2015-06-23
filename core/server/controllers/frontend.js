@@ -154,7 +154,8 @@ function renderChannel(channelOpts) {
     return function renderChannel(req, res, next) {
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             options = {
-                page: pageParam
+                page: pageParam,
+                released: true
             },
             hasSlug,
             filter, filterKey;
