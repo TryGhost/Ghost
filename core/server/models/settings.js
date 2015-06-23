@@ -59,12 +59,15 @@ Settings = ghostBookshelf.Model.extend({
 
         this.on('created', function (model) {
             model.emitChange('added');
+            model.emitChange(model.attributes.key + '.' + 'added');
         });
         this.on('updated', function (model) {
             model.emitChange('edited');
+            model.emitChange(model.attributes.key + '.' + 'edited');
         });
         this.on('destroyed', function (model) {
             model.emitChange('deleted');
+            model.emitChange(model.attributes.key + '.' + 'deleted');
         });
     },
 
