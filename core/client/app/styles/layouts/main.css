@@ -13,6 +13,7 @@
 .gh-viewport {
     flex-grow: 1;
     display: flex;
+    max-height: 100vh;
 }
 
 .gh-main {
@@ -32,6 +33,7 @@
     flex: 0 0 235px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     border-right: #e1e1e1 1px solid;
     background: #f6f6f6;
     transform: translateX(0);
@@ -68,6 +70,7 @@
 
 .gh-nav-menu-details {
     flex-grow: 1;
+    overflow: hidden;
     padding-right: 10px;
 }
 
