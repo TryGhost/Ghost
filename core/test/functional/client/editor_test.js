@@ -182,7 +182,7 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
         casper.writeContentToEditor(markdownImageString);
     });
 
-    casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
+    casper.waitForSelector('img.js-upload-target', function () {
         var imageJQuerySelector = '.entry-preview img.js-upload-target[src="' + testFileLocation + '"]';
         test.assertExists(imageJQuerySelector, 'Uploaded image tag properly links to source location');
     });
@@ -215,7 +215,7 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
         });
     });
 
-    casper.waitForSelector('.entry-preview .js-drop-zone.pre-image-uploader', function onSuccess() {
+    casper.waitForSelector('img.js-upload-target', function onSuccess() {
         var imageJQuerySelector = '.entry-preview img.js-upload-target[src="' + imageURL + '"]';
         test.assertExists(imageJQuerySelector, 'Uploaded image tag properly links to inputted image URL');
     });
