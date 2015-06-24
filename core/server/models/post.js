@@ -239,7 +239,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // Relations
-    author_id: function authorId() {
+    author: function author() {
         return this.belongsTo('User', 'author_id');
     },
 
