@@ -144,7 +144,7 @@ hr {
     padding: 0;
     height: 1px;
     border: 0;
-    border-top: 1px solid #e1e1e1;
+    border-top: 1px solid #dfe1e3;
 }
 
 dl {
@@ -171,7 +171,7 @@ dl dd {
 blockquote {
     margin: 1.6em 0;
     padding: 0 1.6em 0 1.6em;
-    border-left: #e1e1e1 0.6em solid;;
+    border-left: #dfe1e3 0.6em solid;;
 }
 
 blockquote p {
@@ -208,7 +208,7 @@ tt {
 code,
 tt {
     padding: 0.2em 0.4em;
-    background: lighten(#e1e1e1, 2%);
+    background: lighten(#dfe1e3, 2%);
     border-radius: 2px;
     vertical-align: top;
     white-space: pre-wrap;
@@ -220,7 +220,7 @@ pre {
     margin: 1.6em 0;
     padding: 10px;
     width: 100%;
-    background: lighten(#e1e1e1, 2%);
+    background: lighten(#dfe1e3, 2%);
     border-radius: 3px;
     white-space: pre;
     font-family: var(--font-family-mono);

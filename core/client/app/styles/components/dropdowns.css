@@ -18,7 +18,7 @@
     margin: 2px 0 0;
     padding: 10px;
     min-width: 220px;
-    border: #e1e1e1 1px solid;
+    border: #dfe1e3 1px solid;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
@@ -40,7 +40,7 @@
     overflow: hidden;
     margin: 8px 0;
     height: 1px;
-    background: color(#e1e1e1 lightness(+5%));
+    background: color(#dfe1e3 lightness(+5%));
 }
 
 .dropdown-menu > li > a,

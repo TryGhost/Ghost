@@ -13,7 +13,7 @@
     z-index: 500;
     overflow: hidden;
     width: 350px;
-    border-left: #e1e1e1 1px solid;
+    border-left: #dfe1e3 1px solid;
     background: #fff;
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
     transform: translate3d(350px, 0px, 0px);
@@ -100,6 +100,10 @@
 
 .settings-menu-content .image-uploader {
     margin: 0 0 1.6rem 0;
+}
+
+.settings-menu-content .image-uploader .description {
+    font-size: 1.4rem;
 }
 
 .settings-menu-content .image-uploader.image-uploader-url {
