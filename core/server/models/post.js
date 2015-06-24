@@ -283,6 +283,9 @@ Post = ghostBookshelf.Model.extend({
         if (options.author !== undefined) {
             filterObjects.author = ghostBookshelf.model('User').forge({slug: options.author});
         }
+        if (options.released) {
+            filterObjects.released = ghostBookshelf.model('Post').forge({slug: options.released});
+        }
 
         return filterObjects;
     },
