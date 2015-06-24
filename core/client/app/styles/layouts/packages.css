@@ -315,14 +315,14 @@
     .package-grid-apps {
         overflow: hidden;
         margin: 0 0 4vw 0;
-        border: #e1e1e1 1px solid;
+        border: #dfe1e3 1px solid;
         border-radius: 5px;
     }
 
     .package-card-app {
         margin: 0;
         border: none;
-        border-top: #e1e1e1 1px solid;
+        border-top: #dfe1e3 1px solid;
         border-radius: 0;
     }
     .package-grid-cell:first-of-type .package-card-app {

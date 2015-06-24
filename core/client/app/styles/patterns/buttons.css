@@ -8,11 +8,11 @@
     align-items: center;
     margin-bottom: 0;
     padding: 9px 15px;
-    border: #e1e1e1 1px solid;
+    border: #dfe1e3 1px solid;
     background: #fff;
     background-image: none; /* Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214 */
     border-radius: var(--border-radius);
-    color: #828282;
+    color: #808284;
     text-align: center;
     text-transform: uppercase;
     text-shadow: none;
@@ -163,7 +163,7 @@ fieldset[disabled] .btn {
 .btn-minor:focus {
     border-color: #c1c1c1;
     background: #fff;
-    color: #828282;
+    color: #808284;
 }
 
 
