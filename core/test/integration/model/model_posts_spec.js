@@ -66,7 +66,7 @@ describe('Post Model', function () {
             });
 
             it('can findAll, returning all related data', function (done) {
-                PostModel.findAll({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findAll({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
                         results.length.should.be.above(0);
@@ -99,7 +99,7 @@ describe('Post Model', function () {
             });
 
             it('can findPage, returning all related data', function (done) {
-                PostModel.findPage({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findPage({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
 
@@ -268,7 +268,7 @@ describe('Post Model', function () {
             it('can findOne, returning all related data', function (done) {
                 var firstPost;
                 // TODO: should take author :-/
-                PostModel.findOne({}, {include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findOne({}, {include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (result) {
                         should.exist(result);
                         firstPost = result.toJSON();
