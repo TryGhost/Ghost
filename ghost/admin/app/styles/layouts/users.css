@@ -22,24 +22,12 @@
 }
 
 .user-list-item {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 0 15px;
+    height: 68px;
     border-top: 1px solid #dfe1e3;
-}
-
-@media (max-width: 550px) {
-    .user-list-item {
-        display: block;
-        padding: 15px 0;
-    }
-}
-
-@media (min-width: 551px) {
-    .user-list-item {
-        display: flex;
-        justify-content: start;
-        align-items: center;
-        padding: 0 15px;
-        height: 68px;
-    }
 }
 
 /* Only apply these styles to anchor tags (pending invited are divs) */
@@ -98,25 +86,11 @@ a.user-list-item {
     opacity: 0;
 }
 
-@media (max-width: 550px) {
-    .user-list-item-icon,
-    .user-list-item-figure {
-        float: left;
-        margin-right: 15px;
-    }
-}
-
 .user-list-item-body {
     flex: 1 1 auto;
     align-items: stretch;
     padding-left: 15px;
     line-height: 1;
-}
-
-@media (max-width: 550px) {
-    .user-list-item-body {
-        margin-top: 3px;
-    }
 }
 
 .user-list-item-body .name {
@@ -134,22 +108,8 @@ a.user-list-item {
     font-size: 12px;
 }
 
-@media (max-width: 550px) {
-    .user-list-item-aside {
-        float: left;
-        margin: 12px 0 0 50px;
-        width: 100%;
-    }
-}
-
 .user-list-item-aside .user-list-action:not(:first-of-type) {
     margin-left: 20px;
-}
-
-@media (min-width: 551px) {
-    .user-list-item-aside .user-list-action:not(:first-of-type) {
-        margin-left: 50px;
-    }
 }
 
 .user-list-item-aside .role-label {
