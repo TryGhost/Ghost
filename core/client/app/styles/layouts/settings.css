@@ -135,7 +135,7 @@
 
 .settings-code-editor.focused {
     outline: 0;
-    border-color: var(--brown);
+    border-color: var(--midgrey);
 }
 
 .settings-code-editor .CodeMirror {
