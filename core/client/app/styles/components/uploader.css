@@ -8,11 +8,14 @@
     padding: 55px 60px;
     width: 100%;
     height: auto;
-    border: #e1e1e1 2px dashed;
-    background: #f6f6f6;
+    background: #f6f7f8;
     border-radius: 4px;
-    color: #828282;
+    color: #808284;
     text-align: center;
+}
+
+.image-uploader .description {
+    font-size: 1.6rem;
 }
 
 .image-uploader a {
@@ -33,6 +36,7 @@
     padding: 10px;
     color: var(--midgrey);
     text-decoration: none;
+    font-size: 14px;
     line-height: 12px;
 }
 
@@ -47,10 +51,6 @@
     display: inline-block;
     margin-top: 10px;
     color: #fff;
-}
-
-.image-uploader .btn-blue {
-    margin: 0 0 0 10px;
 }
 
 .image-uploader input.main {
@@ -71,13 +71,13 @@
 }
 
 .image-uploader input.url {
-    margin: 10px 0;
+    margin: 0 0 10px 0;
     padding: 9px 7px;
     outline: 0;
     background: #fff;
     vertical-align: middle;
     font: -webkit-small-control;
-    font-size: 1.1em;
+    font-size: 1.4rem;
 }
 
 .image-uploader input.url + .btn.btn-blue {

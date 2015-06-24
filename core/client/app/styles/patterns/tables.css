@@ -26,7 +26,7 @@ table td,
 
 .table th,
 .table td {
-    border-top: 1px solid #e1e1e1;
+    border-top: 1px solid #dfe1e3;
 }
 
 .table th {
@@ -43,7 +43,7 @@ table td,
 }
 
 .table tbody + tbody {
-    border-top: 2px solid #e1e1e1;
+    border-top: 2px solid #dfe1e3;
 }
 
 .table table table {
@@ -52,7 +52,7 @@ table td,
 
 .table tbody > tr:nth-child(odd) > td,
 .table tbody > tr:nth-child(odd) > th {
-    background-color: color(#e1e1e1 lightness(+10%));
+    background-color: color(#dfe1e3 lightness(+10%));
 }
 
 .table.plain tbody > tr:nth-child(odd) > td,

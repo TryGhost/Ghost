@@ -18,11 +18,11 @@
     margin-top: 5px;
     padding: 4px;
     width: 220px;
-    border: #e1e1e1 1px solid;
+    border: #dfe1e3 1px solid;
     background: rgba(255,255,255,0.9);
     border-radius: 4px;
     box-shadow: rgba(0,0,0,0.06) 0 1px 7px;
-    color: #828282;
+    color: #808284;
     font-size: 1.2rem;
     line-height: 1.4em;
 }
@@ -111,7 +111,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 14px 15px;
-    border-bottom: #e1e1e1 1px solid;
+    border-bottom: #dfe1e3 1px solid;
 }
 
 .gh-alert-content {
