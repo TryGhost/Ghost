@@ -16,7 +16,7 @@
 
 .user-list-title {
     margin-bottom: 14px;
-    color: var(--midbrown);
+    color: #a1a1a1;
     font-size: 13px;
     font-weight: normal;
 }
@@ -74,7 +74,7 @@ a.user-list-item {
     right: 0;
     left: 0;
     margin-top: -7px;
-    color: var(--brown);
+    color: var(--midgrey);
     text-align: center;
     font-size: 14px;
 }
@@ -129,7 +129,7 @@ a.user-list-item {
 .user-list-item-body .description {
     display: inline-block;
     margin-top: 3px;
-    color: var(--midbrown);
+    color: #a1a1a1;
     white-space: nowrap;
     font-size: 12px;
 }

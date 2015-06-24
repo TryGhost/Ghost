@@ -16,7 +16,7 @@
 }
 
 .image-uploader a {
-    color: var(--brown);
+    color: var(--midgrey);
     text-decoration: none;
 }
 
@@ -31,7 +31,7 @@
     left: 0;
     display: block;
     padding: 10px;
-    color: var(--brown);
+    color: var(--midgrey);
     text-decoration: none;
     line-height: 12px;
 }
@@ -130,7 +130,7 @@
     height: auto;
     background: rgba(0, 0, 0, 0.1);
     border-radius: 2px;
-    color: var(--brown);
+    color: var(--midgrey);
 }
 
 .pre-image-uploader input {
@@ -141,7 +141,7 @@
 
 .pre-image-uploader a {
     z-index: 10000;
-    color: var(--brown);
+    color: var(--midgrey);
     text-decoration: none;
 }
 
