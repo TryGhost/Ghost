@@ -30,7 +30,7 @@ table td,
 }
 
 .table th {
-    color: var(--brown);
+    color: var(--midgrey);
 }
 
 .table caption + thead tr:first-child th,
