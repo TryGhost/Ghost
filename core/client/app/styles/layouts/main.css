@@ -404,7 +404,8 @@
 .view-title i {
     margin: 0 10px;
     color: #818181;
-    font-size: 1.4rem;
+    font-size: 14px;
+    line-height: 12px;
 }
 
 .view-actions {
