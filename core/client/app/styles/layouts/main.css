@@ -33,9 +33,9 @@
     flex: 0 0 235px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    border-right: #e1e1e1 1px solid;
-    background: #f6f6f6;
+    min-width: 0; /* TODO: This is a bullshit Firefox hack */
+    border-right: #dfe1e3 1px solid;
+    background: #f5f7f8;
     transform: translateX(0);
 }
 
@@ -70,8 +70,8 @@
 
 .gh-nav-menu-details {
     flex-grow: 1;
-    overflow: hidden;
     padding-right: 10px;
+    min-width: 0; /* TODO: This is a bullshit Firefox hack */
 }
 
 .gh-nav-menu-details-blog {
@@ -144,7 +144,7 @@
     overflow: hidden;
     margin-top: 15px;
     padding: 5px 10px 5px 15px;
-    color: #828282;
+    color: #808284;
     text-transform: uppercase;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -185,7 +185,7 @@
     display: flex;
     align-items: center;
     height: 40px;
-    border-top: #e1e1e1 1px solid;
+    border-top: #dfe1e3 1px solid;
     color: var(--midgrey);
 }
 
@@ -267,7 +267,7 @@
     padding: 5px 10px;
     width: 45px;
     height: 27px;
-    border-right: #e1e1e1 1px solid;
+    border-right: #dfe1e3 1px solid;
     line-height: 1;
     cursor: pointer;
 }
@@ -328,7 +328,7 @@
     display: flex;
     align-items: center;
     padding: 5px 10px;
-    border-left: #e1e1e1 1px solid;
+    border-left: #dfe1e3 1px solid;
     cursor: pointer;
 }
 
@@ -380,7 +380,7 @@
     align-items: center;
     padding: 0 20px;
     height: 65px;
-    border-bottom: #e1e1e1 1px solid;
+    border-bottom: #dfe1e3 1px solid;
 }
 
 .view-title {

@@ -21,7 +21,7 @@
 }
 
 .nav-list-item:hover {
-    background: color(#e1e1e1 lightness(+10%));
+    background: color(#dfe1e3 lightness(+10%));
 }
 
 .nav-list-item:first-of-type {
