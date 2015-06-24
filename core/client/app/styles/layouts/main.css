@@ -13,6 +13,7 @@
 .gh-viewport {
     flex-grow: 1;
     display: flex;
+    max-height: 100vh;
 }
 
 .gh-main {
