@@ -254,6 +254,9 @@
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
     }
+    .gh-nav-list {
+        font-size: 1.6rem;
+    }
 }
 
 
@@ -379,7 +382,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    height: 65px;
+    height: 50px;
     border-bottom: #dfe1e3 1px solid;
 }
 
