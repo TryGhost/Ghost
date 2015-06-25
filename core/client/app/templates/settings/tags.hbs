@@ -1,19 +1,26 @@
-<header class="view-header">
-    {{#gh-view-title openMobileMenu="openMobileMenu"}}Tags{{/gh-view-title}}
-    <section class="view-actions">
-        <button type="button" class="btn btn-green" {{action "newTag"}}>New Tag</button>
-    </section>
-</header>
+<section class="gh-view">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}Tags{{/gh-view-title}}
+        <section class="view-actions">
+            <button type="button" class="btn btn-green" {{action "newTag"}}>New Tag</button>
+        </section>
+    </header>
 
-<section class="view-container settings-tags">
-    {{#each tags as |tag|}}
-        <div class="settings-tag">
-            <button class="tag-edit-button" {{action "editTag" tag}}>
-                <span class="tag-title">{{tag.name}}</span>
-                <span class="label label-default">/{{tag.slug}}</span>
-                <p class="tag-description">{{tag.description}}</p>
-                <span class="tags-count">{{tag.post_count}}</span>
-            </button>
-        </div>
-    {{/each}}
+    {{#gh-infinite-scroll
+        fetch="loadNextPage"
+        isLoading=isLoading
+        tagName="section"
+        classNames="view-container settings-tags"
+    }}
+        {{#each tags as |tag|}}
+            <div class="settings-tag">
+                <button class="tag-edit-button" {{action "editTag" tag}}>
+                    <span class="tag-title">{{tag.name}}</span>
+                    <span class="label label-default">/{{tag.slug}}</span>
+                    <p class="tag-description">{{tag.description}}</p>
+                    <span class="tags-count">{{tag.post_count}}</span>
+                </button>
+            </div>
+        {{/each}}
+    {{/gh-infinite-scroll}}
 </section>

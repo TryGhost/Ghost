@@ -1,5 +1,3 @@
-/* global console */
-
 import Ember from 'ember';
 import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
@@ -14,7 +12,6 @@ PostModel.eachAttribute(function (name) {
 });
 
 export default Ember.Mixin.create({
-    postTagsInputController: Ember.inject.controller('post-tags-input'),
     postSettingsMenuController: Ember.inject.controller('post-settings-menu'),
 
     autoSaveId: null,
@@ -267,9 +264,6 @@ export default Ember.Mixin.create({
 
             notifications.closePassive();
 
-            // ensure an incomplete tag is finalised before save
-            this.get('postTagsInputController').send('addNewTag');
-
             // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.
             this.set('model.markdown', this.get('editor').getValue());
@@ -320,8 +314,6 @@ export default Ember.Mixin.create({
                 this.set('willPublish', true);
             } else if (newType === 'draft') {
                 this.set('willPublish', false);
-            } else {
-                console.warn('Received invalid save type; ignoring.');
             }
         },
 
@@ -362,6 +354,14 @@ export default Ember.Mixin.create({
             if (this.get('model.isNew')) {
                 this.send('save', {silent: true, backgroundSave: true});
             }
+        },
+
+        updateEditorScrollInfo: function (scrollInfo) {
+            this.set('editorScrollInfo', scrollInfo);
+        },
+
+        updateHeight: function (height) {
+            this.set('height', height);
         }
     }
 });

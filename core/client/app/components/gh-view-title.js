@@ -4,7 +4,7 @@ export default Ember.Component.extend({
     tagName: 'h2',
     classNames: ['view-title'],
     actions: {
-        openMobileMenu () {
+        openMobileMenu: function () {
             this.sendAction('openMobileMenu');
         }
     }

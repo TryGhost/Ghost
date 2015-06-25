@@ -1,5 +1,8 @@
 import Ember from 'ember';
-var PostTagsInputController = Ember.Controller.extend({
+
+// should be integrated into tag input component during reimplementation
+
+export default Ember.Controller.extend({
     tagEnteredOrder: Ember.A(),
 
     tags: Ember.computed('parentController.model.tags', function () {
@@ -243,5 +246,3 @@ var PostTagsInputController = Ember.Controller.extend({
         return suggestion;
     }
 });
-
-export default PostTagsInputController;

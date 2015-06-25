@@ -8,34 +8,36 @@
 
 <div class="view-container">
     <section class="content-list js-content-list {{if postListFocused 'keyboard-focused'}}">
-        {{#view "paginated-scroll-box" tagName="section" classNames="content-list-content js-content-scrollbox"}}
-        <ol class="posts-list">
-            {{#each controller itemController="posts/post" itemView="post-item-view" itemTagName="li" as |post|}}
-                {{#link-to "posts.post" post.model.id class="permalink" alternateActive=view.active title="Edit this post"}}
-                    <h3 class="entry-title">{{post.model.title}}</h3>
-                    <section class="entry-meta">
-                        <span class="avatar" style={{post.authorAvatarBackground}}>
-                            <img src="{{post.authorAvatar}}" title="{{post.authorName}}">
-                        </span>
-                        <span class="author">{{post.authorName}}</span>
-                        <span class="status">
-                            {{#if post.isPublished}}
-                                {{#if post.model.page}}
-                                    <span class="page">Page</span>
-                                {{else}}
-                                    <time datetime="{{post.model.published_at}}" class="date published">
-                                        Published {{gh-format-timeago post.model.published_at}}
-                                    </time>
-                                {{/if}}
-                            {{else}}
-                                <span class="draft">Draft</span>
-                            {{/if}}
-                        </span>
-                    </section>
-                {{/link-to}}
-            {{/each}}
-        </ol>
-        {{/view}}
+        {{#gh-infinite-scroll-box tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage"}}
+            <ol class="posts-list">
+                {{#each sortedPosts key="id" as |post|}}
+                    {{#gh-posts-list-item post=post active=(is-equal post currentPost) click="showPostContent" onDoubleClick="openEditor" as |component|}}
+                        {{#link-to "posts.post" post.id class="permalink" title="Edit this post"}}
+                            <h3 class="entry-title">{{post.title}}</h3>
+                            <section class="entry-meta">
+                                <span class="avatar" style={{component.authorAvatarBackground}}>
+                                    <img src="{{component.authorAvatar}}" title="{{component.authorName}}">
+                                </span>
+                                <span class="author">{{component.authorName}}</span>
+                                <span class="status">
+                                    {{#if component.isPublished}}
+                                        {{#if post.page}}
+                                            <span class="page">Page</span>
+                                        {{else}}
+                                            <time datetime="{{post.published_at}}" class="date published">
+                                                Published {{gh-format-timeago post.published_at}}
+                                            </time>
+                                        {{/if}}
+                                    {{else}}
+                                        <span class="draft">Draft</span>
+                                    {{/if}}
+                                </span>
+                            </section>
+                        {{/link-to}}
+                    {{/gh-posts-list-item}}
+                {{/each}}
+            </ol>
+        {{/gh-infinite-scroll-box}}
     </section>
     <section class="content-preview js-content-preview {{if postContentFocused 'keyboard-focused'}}">
         {{outlet}}

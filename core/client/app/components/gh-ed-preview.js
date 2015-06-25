@@ -13,7 +13,9 @@ var Preview = Ember.Component.extend({
         var scrollWrapper = this.get('scrollWrapper'),
             scrollPosition = this.get('scrollPosition');
 
-        scrollWrapper.scrollTop(scrollPosition);
+        if (scrollWrapper) {
+            scrollWrapper.scrollTop(scrollPosition);
+        }
     }),
 
     dropzoneHandler: function () {
@@ -30,7 +32,7 @@ var Preview = Ember.Component.extend({
         dropzones.on('uploadsuccess', Ember.run.bind(this, 'sendAction', 'uploadSuccess'));
 
         // Set the current height so we can listen
-        this.set('height', this.$().height());
+        this.sendAction('updateHeight', this.$().height());
     },
 
     // fire off 'enable' API function from uploadManager
