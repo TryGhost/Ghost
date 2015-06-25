@@ -263,9 +263,9 @@ User = ghostBookshelf.Model.extend({
 
         delete data.role;
 
-        data = _.extend({
+        data = _.defaults(data || {}, {
             status: 'active'
-        }, data || {});
+        });
 
         status = data.status;
         delete data.status;

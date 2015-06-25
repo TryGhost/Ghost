@@ -34,7 +34,7 @@ describe('Import', function () {
     describe('Resolves', function () {
         beforeEach(testUtils.setup());
         beforeEach(function () {
-            var newConfig = _.extend(config, defaultConfig);
+            var newConfig = _.extend({}, config, defaultConfig);
 
             migration.__get__('config', newConfig);
             config.set(newConfig);
