@@ -3,6 +3,7 @@
 
 var express   = require('express'),
     fs        = require('fs-extra'),
+    optimage  = require('optimage-better'),
     path      = require('path'),
     util      = require('util'),
     Promise   = require('bluebird'),
@@ -20,13 +21,29 @@ util.inherits(LocalFileStore, baseStore);
 // - image is the express image object
 // - returns a promise which ultimately returns the full url to the uploaded image
 LocalFileStore.prototype.save = function (image, targetDir) {
+    var self = this, targetFilename;
     targetDir = targetDir || this.getTargetDir(config.paths.imagesPath);
-    var targetFilename;
 
     return this.getUniqueFileName(this, image, targetDir).then(function (filename) {
         targetFilename = filename;
         return Promise.promisify(fs.mkdirs)(targetDir);
     }).then(function () {
+        return self.exists(image.path);
+    }).then(function (exists) {
+        if (exists) {
+            var extension = path.extname(image.name).toLowerCase();
+            switch (extension) {
+                case '.png':
+                case '.jpg':
+                case '.jpeg':
+                case '.gif':
+                    return Promise.promisify(optimage)({
+                        inputFile: image.path,
+                        outputFile: targetFilename,
+                        extension: path.extname(image.name)
+                    });
+            }
+        }
         return Promise.promisify(fs.copy)(image.path, targetFilename);
     }).then(function () {
         // The src for the image must be in URI format, not a file system path, which in Windows uses \
