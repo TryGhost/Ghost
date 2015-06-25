@@ -27,7 +27,7 @@ LocalFileStore.prototype.save = function (image, targetDir) {
     return this.getUniqueFileName(this, image, targetDir).then(function (filename) {
         targetFilename = filename;
         return Promise.promisify(fs.mkdirs)(targetDir);
-    }).then(function() {
+    }).then(function () {
         var extension = path.extname(image.name).toLowerCase();
         switch (extension) {
             case '.png':
