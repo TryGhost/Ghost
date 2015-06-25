@@ -17,7 +17,7 @@ describe('Local File System Storage', function () {
     var image,
         overrideConfig = function (newConfig) {
             var existingConfig = LocalFileStore.__get__('config'),
-                updatedConfig = _.extend(existingConfig, newConfig);
+                updatedConfig = _.extend({}, existingConfig, newConfig);
             config.set(updatedConfig);
             LocalFileStore.__set__('config', updatedConfig);
         };
