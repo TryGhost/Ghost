@@ -1,0 +1,14 @@
+<select {{action "change" on="change"}}>
+    {{#if prompt}}
+        <option disabled selected={{is-not selection}}>
+          {{prompt}}
+        </option>
+    {{/if}}
+
+    {{#each content as |item|}}
+        <option value="{{read-path item optionValuePath}}"
+                selected={{is-equal item selection}}>
+            {{read-path item optionLabelPath}}
+        </option>
+    {{/each}}
+</select>
