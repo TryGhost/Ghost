@@ -1,10 +1,16 @@
 import Ember from 'ember';
-var FileUpload = Ember.Component.extend({
+
+export default Ember.Component.extend({
     _file: null,
 
     uploadButtonText: 'Text',
 
     uploadButtonDisabled: true,
+
+    onUpload: null,
+    onAdd: null,
+
+    shouldResetForm: true,
 
     change: function (event) {
         this.set('uploadButtonDisabled', false);
@@ -12,18 +18,19 @@ var FileUpload = Ember.Component.extend({
         this._file = event.target.files[0];
     },
 
-    onUpload: 'onUpload',
-
     actions: {
         upload: function () {
-            if (!this.uploadButtonDisabled && this._file) {
+            if (!this.get('uploadButtonDisabled') && this._file) {
                 this.sendAction('onUpload', this._file);
             }
 
             // Prevent double post by disabling the button.
             this.set('uploadButtonDisabled', true);
+
+            // Reset form
+            if (this.get('shouldResetForm')) {
+                this.$().closest('form').get(0).reset();
+            }
         }
     }
 });
-
-export default FileUpload;

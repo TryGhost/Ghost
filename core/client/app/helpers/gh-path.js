@@ -1,22 +1,23 @@
 import Ember from 'ember';
+import ghostPaths from 'ghost/utils/ghost-paths';
+
 // Handlebars Helper {{gh-path}}
 // Usage: Assume 'http://www.myghostblog.org/myblog/'
 // {{gh-path}} or {{gh-path 'blog'}} for Ghost's root (/myblog/)
 // {{gh-path 'admin'}} for Ghost's admin root (/myblog/ghost/)
 // {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
 // {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
-import ghostPaths from 'ghost/utils/ghost-paths';
 
-function ghostPathsHelper(path, url) {
+function ghostPathsHelper(params/*, hash */) {
     var base,
-        argsLength = arguments.length,
-        paths = ghostPaths();
+        paths = ghostPaths(),
+        [path, url] = params;
 
-    // function is always invoked with at least one parameter, so if
-    // arguments.length is 1 there were 0 arguments passed in explicitly
-    if (argsLength === 1) {
+    if (!path) {
         path = 'blog';
-    } else if (argsLength === 2 && !/^(blog|admin|api)$/.test(path)) {
+    }
+
+    if (!/^(blog|admin|api)$/.test(path)) {
         url = path;
         path = 'blog';
     }
@@ -51,4 +52,4 @@ function ghostPathsHelper(path, url) {
     return Ember.String.htmlSafe(base);
 }
 
-export default ghostPathsHelper;
+export default Ember.HTMLBars.makeBoundHelper(ghostPathsHelper);

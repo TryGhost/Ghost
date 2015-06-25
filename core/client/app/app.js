@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import Resolver from 'ember/resolver';
 import loadInitializers from 'ember/load-initializers';
-import 'ghost/utils/link-view';
+import 'ghost/utils/link-component';
 import 'ghost/utils/text-field';
 import config from './config/environment';
 

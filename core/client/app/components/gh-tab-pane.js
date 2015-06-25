@@ -16,7 +16,7 @@ var TabPane = Ember.Component.extend({
 
     active: Ember.computed.alias('tab.active'),
 
-    didInsertElement: function () {
+    willRender: function () {
         // Register with the tabs manager
         this.get('tabsManager').registerTabPane(this);
     },

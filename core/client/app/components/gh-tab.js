@@ -18,7 +18,7 @@ var Tab = Ember.Component.extend({
         this.get('tabsManager').select(this);
     },
 
-    didInsertElement: function () {
+    willRender: function () {
         // register the tabs with the tab manager
         this.get('tabsManager').registerTab(this);
     },

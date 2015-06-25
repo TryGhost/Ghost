@@ -60,8 +60,12 @@ var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
     },
 
     actions: {
-        openEditor: function () {
-            this.transitionTo('editor.edit', this.get('controller.model.id'));
+        openEditor: function (post) {
+            if (!post) {
+                return;
+            }
+
+            this.transitionTo('editor.edit', post.get('id'));
         },
 
         deletePost: function () {

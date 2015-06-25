@@ -1,4 +1,5 @@
 import Ember from 'ember';
+
 function joinUrlParts(url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {
         path = '/' + path;
@@ -9,8 +10,21 @@ function joinUrlParts(url, path) {
     return url + path;
 }
 
-var NavItemUrlInputComponent = Ember.TextField.extend({
+export default Ember.TextField.extend({
     classNameBindings: ['fakePlaceholder'],
+
+    didReceiveAttrs: function () {
+        var url = this.get('url'),
+            baseUrl = this.get('baseUrl');
+
+        // if we have a relative url, create the absolute url to be displayed in the input
+        // if (this.get('isRelative')) {
+        if (!validator.isURL(url) && this.get('value').indexOf('mailto:') !== 0) {
+            url = joinUrlParts(baseUrl, url);
+        }
+
+        this.set('value', url);
+    },
 
     isBaseUrl: Ember.computed('baseUrl', 'value', function () {
         return this.get('baseUrl') === this.get('value');
@@ -23,19 +37,6 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
     isRelative: Ember.computed('value', function () {
         return !validator.isURL(this.get('value')) && this.get('value').indexOf('mailto:') !== 0;
     }),
-
-    didInsertElement: function () {
-        var url = this.get('url'),
-            baseUrl = this.get('baseUrl');
-
-        this.set('value', url);
-
-        // if we have a relative url, create the absolute url to be displayed in the input
-        if (this.get('isRelative')) {
-            url = joinUrlParts(baseUrl, url);
-            this.set('value', url);
-        }
-    },
 
     focusIn: function (event) {
         this.set('hasFocus', true);
@@ -89,5 +90,3 @@ var NavItemUrlInputComponent = Ember.TextField.extend({
         this.sendAction('change', url);
     }
 });
-
-export default NavItemUrlInputComponent;
