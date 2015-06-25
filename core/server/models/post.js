@@ -401,9 +401,9 @@ Post = ghostBookshelf.Model.extend({
         var withNext = _.contains(options.include, 'next'),
             withPrev = _.contains(options.include, 'previous');
 
-        data = _.extend({
+        data = _.defaults(data || {}, {
             status: 'published'
-        }, data || {});
+        });
 
         if (data.status === 'all') {
             delete data.status;

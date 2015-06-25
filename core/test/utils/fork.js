@@ -55,7 +55,7 @@ function forkGhost(newConfig, envName) {
         .then(function (port) {
             newConfig.server = newConfig.server || {};
             newConfig.server.port = port;
-            newConfig.url = url.format(_.extend(url.parse(newConfig.url), {port: port, host: null}));
+            newConfig.url = url.format(_.extend({}, url.parse(newConfig.url), {port: port, host: null}));
 
             var newConfigFile = path.join(config.paths.appRoot, 'config.test' + port + '.js');
 
