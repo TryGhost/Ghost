@@ -3,6 +3,7 @@
 
 var express   = require('express'),
     fs        = require('fs-extra'),
+    optimage  = require('optimage-better'),
     path      = require('path'),
     util      = require('util'),
     Promise   = require('bluebird'),
@@ -26,8 +27,21 @@ LocalFileStore.prototype.save = function (image, targetDir) {
     return this.getUniqueFileName(this, image, targetDir).then(function (filename) {
         targetFilename = filename;
         return Promise.promisify(fs.mkdirs)(targetDir);
-    }).then(function () {
-        return Promise.promisify(fs.copy)(image.path, targetFilename);
+    }).then(function() {
+        var extension = path.extname(image.name).toLowerCase();
+        switch (extension) {
+            case '.png':
+            case '.jpg':
+            case '.jpeg':
+            case '.gif':
+                return Promise.promisify(optimage)({
+                    inputFile: image.path,
+                    outputFile: targetFilename,
+                    extension: path.extname(image.name)
+                });
+            default:
+                return Promise.promisify(fs.copy)(image.path, targetFilename);
+        }
     }).then(function () {
         // The src for the image must be in URI format, not a file system path, which in Windows uses \
         // For local file system storage can use relative path so add a slash
