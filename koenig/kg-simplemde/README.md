@@ -57,7 +57,7 @@ simplemde.codemirror.getValue();
 - **autofocus**: If set `true`, autofocuses the editor. Defaults to `false`.
 - **lineWrapping**: If set `false`, disable line wrapping. Defaults to `true`.
 - **indentWithTabs**: If set `false`, indent using spaces instead of tabs. Defaults to `true`.
-- **tabSize**: If set, customize the tab size. Defaults to `'2'`.
+- **tabSize**: If set, customize the tab size. Defaults to `2`.
 
 ```JavaScript
 new SimpleMDE({
@@ -67,7 +67,7 @@ new SimpleMDE({
 	autofocus: true,
 	lineWrapping: false,
 	indentWithTabs: false,
-	tabSize: '4',
+	tabSize: 4,
 });
 ```
 
