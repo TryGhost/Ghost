@@ -510,7 +510,7 @@ SimpleMDE.prototype.render = function(el) {
 	this.codemirror = CodeMirror.fromTextArea(el, {
 		mode: 'markdown',
 		theme: 'paper',
-		tabSize: (options.tabSize != undefined) ? options.tabSize : '2',
+		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
 		lineNumbers: false,
 		autofocus: (options.autofocus === true) ? true : false,
