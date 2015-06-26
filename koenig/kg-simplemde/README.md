@@ -59,7 +59,7 @@ simplemde.value();
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
-- **autosave**: *Saves the content that users are writing, and clears it when the form is submitted*
+- **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the editor. Defaults to `false`.
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
