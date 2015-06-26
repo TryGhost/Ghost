@@ -110,6 +110,7 @@ As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](
 - Many changes to the style, appearance, and userfriendliness
 - Interface more closely resembles Bootstrap
 - Now mobile friendly
+- Option to autosave the text as you type
 - The text editor now automatically grows as you type more
 - Fixed a large amount of bugs
 - Switched to Font Awesome icons
