@@ -189,7 +189,7 @@ function drawLink(editor) {
 function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.image, '![Short description of image](http://', ')');
+	_replaceSelection(cm, stat.image, '![](http://', ')');
 }
 
 
