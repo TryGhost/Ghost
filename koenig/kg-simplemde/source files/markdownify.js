@@ -443,8 +443,11 @@ function SimpleMDE(options) {
 	if (options.element) {
 		this.element = options.element;
 	}
-
-	options.toolbar = options.toolbar || SimpleMDE.toolbar;
+	
+	if(options.toolbar === false)
+		options.toolbar = [];
+	else
+		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 	// you can customize toolbar with object
 	// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
 

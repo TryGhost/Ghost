@@ -47,13 +47,13 @@ simplemde.codemirror.getValue();
 
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **status**: If set false, hide the status bar. Defaults to true.
-- **tools**: If set false, hide the toolbar. Defaults to true.
+- **toolbar**: If set false, hide the toolbar. Defaults to true.
 
 ```
 new SimpleMDE({
-  element: document.getElementById("MyID"),
-  status: false,
-  tools: false,
+	element: document.getElementById("MyID"),
+	status: false,
+	toolbar: false,
 });
 ```
 
