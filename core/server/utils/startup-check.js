@@ -9,9 +9,56 @@ var packages = require('../../../package.json'),
 
 checks = {
     check: function check() {
+        this.nodeVersion();
+        this.nodeEnv();
         this.packages();
         this.contentPath();
         this.sqlite();
+    },
+
+    // Make sure the node version is supported
+    nodeVersion: function checkNodeVersion() {
+        // Tell users if their node version is not supported, and exit
+        try {
+            var semver = require('semver');
+            if (!semver.satisfies(process.versions.node, packages.engines.node) &&
+                !semver.satisfies(process.versions.node, packages.engines.iojs)) {
+                console.error('\x1B[31mERROR: Unsupported version of Node');
+                console.error('\x1B[31mGhost needs Node version ' + packages.engines.node +
+                              ' you are using version ' + process.versions.node + '\033[0m\n');
+                console.error('\x1B[32mPlease go to http://nodejs.org to get a supported version\033[0m');
+
+                process.exit(0);
+            }
+        } catch (e) {
+            return;
+        }
+    },
+
+    nodeEnv: function checkNodeEnvState() {
+        // Check if config path resolves, if not check for NODE_ENV in config.example.js prior to copy
+        var fd,
+            configFile,
+            config;
+
+        try {
+            fd = fs.openSync(configFilePath, 'r');
+            fs.closeSync(fd);
+        } catch (e) {
+            configFilePath = path.join(appRoot, 'config.example.js');
+        }
+
+        configFile = require(configFilePath);
+        config = configFile[mode];
+
+        if (!config) {
+            console.error('\x1B[31mERROR: Cannot find the configuration for the current NODE_ENV: ' +
+                            process.env.NODE_ENV + '\033[0m\n');
+            console.error('\x1B[32mEnsure your config.js has a section for the current NODE_ENV value' +
+                            ' and is formatted properly.\033[0m');
+
+            process.exit(0);
+        }
     },
 
     // Make sure package.json dependencies have been installed.
