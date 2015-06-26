@@ -189,7 +189,7 @@ function drawLink(editor) {
 function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.image, '![Short description of image](http://', ')');
+	_replaceSelection(cm, stat.image, '![](http://', ')');
 }
 
 
@@ -443,21 +443,22 @@ function SimpleMDE(options) {
 	if (options.element) {
 		this.element = options.element;
 	}
-
-	options.toolbar = options.toolbar || SimpleMDE.toolbar;
-	// you can customize toolbar with object
-	// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
+	
+	if(options.toolbar === false)
+		options.toolbar = false;
+	else
+		options.toolbar = options.toolbar || SimpleMDE.toolbar;
+		// you can customize toolbar with object
+		// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
 
 	if (!options.hasOwnProperty('status')) {
-		options.status = ['lines', 'words', 'cursor'];
+		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
 	this.options = options;
 
 	// If user has passed an element, it should auto rendered
-	if (this.element) {
-		this.render();
-	}
+	this.render();
 }
 
 /**
@@ -509,12 +510,12 @@ SimpleMDE.prototype.render = function(el) {
 	this.codemirror = CodeMirror.fromTextArea(el, {
 		mode: 'markdown',
 		theme: 'paper',
-		tabSize: '2',
-		indentWithTabs: true,
+		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
+		indentWithTabs: (options.indentWithTabs === false) ? false : true,
 		lineNumbers: false,
-		autofocus: false,
+		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
-		lineWrapping: true
+		lineWrapping: (options.lineWrapping === false) ? false : true
 	});
 
 	if (options.toolbar !== false) {
@@ -523,8 +524,59 @@ SimpleMDE.prototype.render = function(el) {
 	if (options.status !== false) {
 		this.createStatusbar();
 	}
+	if (options.autosave != undefined && options.autosave.enabled === true) {
+		this.autosave();
+	}
 
 	this._rendered = this.element;
+};
+
+SimpleMDE.prototype.autosave = function() {
+	var content = this.value();
+	var simplemde = this;
+	
+	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == ""){
+		console.log("SimpleMDE: You must set a unique_id to use the autosave feature");
+		return;
+	}
+	
+	if(simplemde.element.form != null && simplemde.element.form != undefined){
+		simplemde.element.form.addEventListener("submit", function(){
+			localStorage.setItem(simplemde.options.autosave.unique_id, "");
+		});
+	}
+	
+	if(this.options.autosave.loaded !== true){
+		this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
+		this.options.autosave.loaded = true;
+	}
+	
+	if(localStorage) {
+		localStorage.setItem(this.options.autosave.unique_id, content);
+	}
+	
+	var el = document.getElementById("autosaved");
+	if(el != null && el != undefined && el != ""){
+		var d = new Date();
+		var hh = d.getHours();
+		var m = d.getMinutes();
+		var dd = "am";
+		var h = hh;
+		if (h >= 12) {
+			h = hh-12;
+			dd = "pm";
+		}
+		if (h == 0) {
+			h = 12;
+		}
+		m = m<10?"0"+m:m;
+		
+		el.innerHTML = "Autosaved: "+h+":"+m+" "+dd;
+	}
+	
+	setTimeout(function() {
+		simplemde.autosave();
+	}, this.options.autosave.delay || 10000);
 };
 
 SimpleMDE.prototype.createToolbar = function(items) {
@@ -592,6 +644,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 SimpleMDE.prototype.createStatusbar = function(status) {
 	status = status || this.options.status;
+	options = this.options;
 
 	if (!status || status.length === 0) return;
 
@@ -619,10 +672,15 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 					pos = cm.getCursor();
 					el.innerHTML = pos.line + ':' + pos.ch;
 				});
+			} else if (name === 'autosave') {
+				if (options.autosave != undefined && options.autosave.enabled === true) {
+					el.setAttribute("id", "autosaved");
+				}
 			}
 			bar.appendChild(el);
 		})(status[i]);
 	}
+	
 	var cmWrapper = this.codemirror.getWrapperElement();
 	cmWrapper.parentNode.insertBefore(bar, cmWrapper.nextSibling);
 	return bar;
