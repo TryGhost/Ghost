@@ -140,12 +140,13 @@ pagination = function pagination(bookshelf) {
             // Get the table name and idAttribute for this model
             var tableName = _.result(this.constructor.prototype, 'tableName'),
                 idAttribute = _.result(this.constructor.prototype, 'idAttribute'),
-                // Create a new collection for running `this` query, ensuring we're definitely using collection,
-                // rather than model
+            // Create a new collection for running `this` query, ensuring we're definitely using collection,
+            // rather than model
                 collection = this.constructor.collection(),
-                // Clone the base query & set up a promise to get the count of total items in the full set
+            // Clone the base query & set up a promise to get the count of total items in the full set
                 countPromise = this.query().clone().count(tableName + '.' + idAttribute + ' as aggregate'),
-                collectionPromise;
+                collectionPromise,
+                self;
 
             // Clone the base query into our collection
             collection._knex = this.query().clone();
@@ -162,7 +163,22 @@ pagination = function pagination(bookshelf) {
                 });
             }
 
-            // Setup the promise to do a fetch on our collection, running the specified query.
+            this.resetQuery();
+            if (this.relatedData) {
+                collection.relatedData = this.relatedData;
+            }
+
+            // ensure that our model (self) gets the correct events fired upon it
+            self = this;
+            collection
+                .on('fetching', function (collection, columns, options) {
+                    return self.triggerThen('fetching:collection', collection, columns, options);
+                })
+                .on('fetched', function (collection, resp, options) {
+                    return self.triggerThen('fetched:collection', collection, resp, options);
+                });
+
+            // Setup the promise to do a fetch on our collection, running the specified query
             // @TODO: ensure option handling is done using an explicit pick elsewhere
             collectionPromise = collection.fetch(_.omit(options, ['page', 'limit']));
 
