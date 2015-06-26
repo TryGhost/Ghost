@@ -16,7 +16,7 @@ SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font 
 
 And then load SimpleMDE on the first textarea on a page
 
-```JavaScript
+```HTML
 <script>
 var simplemde = new SimpleMDE();
 simplemde.render();
@@ -27,7 +27,7 @@ simplemde.render();
 
 Pure JavaScript method
 
-```JavaScript
+```HTML
 <script>
 var simplemde = new SimpleMDE(document.getElementById("MyID"));
 simplemde.render();
