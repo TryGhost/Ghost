@@ -36,7 +36,7 @@ simplemde.render();
 
 jQuery method
 
-```JavaScript
+```HTML
 <script>
 var simplemde = new SimpleMDE($("#MyID")[0]);
 simplemde.render();
@@ -51,8 +51,6 @@ simplemde.codemirror.getValue();
 
 ## Configuration
 
-#### JS
-
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **status**: If set `false`, hide the status bar. Defaults to `true`.
 - **toolbar**: If set `false`, hide the toolbar. Defaults to `true`.
@@ -63,7 +61,6 @@ simplemde.codemirror.getValue();
 - **tabSize**: If set, customize the tab size. Defaults to `'2'`.
 
 ```JavaScript
-<script>
 new SimpleMDE({
 	element: document.getElementById("MyID"),
 	status: false,
@@ -74,29 +71,22 @@ new SimpleMDE({
 	indentWithTabs: false,
 	tabSize: '4',
 });
-</script>
 ```
-
-#### CSS
 
 To change the minimum height (before it starts auto-growing):
 
 ```CSS
-<style>
 .CodeMirror {
 	min-height: 300px;
 }
-</style>
 ```
 
 Or, you can keep the height static:
 
 ```CSS
-<style>
 .CodeMirror {
 	height: 300px;
 }
-</style>
 ```
 
 ## How it works
