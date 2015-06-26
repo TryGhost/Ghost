@@ -3,8 +3,6 @@
 var Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
-    semver = require('semver'),
-    packageInfo = require('../../package.json'),
     errors = require('./errors'),
     config = require('./config');
 
@@ -18,7 +16,6 @@ function GhostServer(rootApp) {
     this.httpServer = null;
     this.connections = {};
     this.connectionId = 0;
-    this.upgradeWarning = setTimeout(this.logUpgradeWarning.bind(this), 5000);
 
     // Expose config module for use externally.
     this.config = config;
@@ -78,7 +75,6 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
             self.logStartMessages();
-            clearTimeout(self.upgradeWarning);
             resolve(self);
         });
     });
@@ -167,21 +163,6 @@ GhostServer.prototype.closeConnections = function () {
  * ### Log Start Messages
  */
 GhostServer.prototype.logStartMessages = function () {
-    // Tell users if their node version is not supported, and exit
-    if (!semver.satisfies(process.versions.node, packageInfo.engines.node) &&
-        !semver.satisfies(process.versions.node, packageInfo.engines.iojs)) {
-        console.log(
-            chalk.red('\nERROR: Unsupported version of Node'),
-            chalk.red('\nGhost needs Node version'),
-            chalk.yellow(packageInfo.engines.node),
-            chalk.red('you are using version'),
-            chalk.yellow(process.versions.node),
-            chalk.green('\nPlease go to http://nodejs.org to get a supported version')
-        );
-
-        process.exit(0);
-    }
-
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(
@@ -227,20 +208,6 @@ GhostServer.prototype.logStartMessages = function () {
  */
 GhostServer.prototype.logShutdownMessages = function () {
     console.log(chalk.red('Ghost is closing connections'));
-};
-
-/**
- * ### Log Upgrade Warning
- * Warning that the API for the node module version of Ghost changed in 0.5.2
- *
- * *This should be removed soon*
- */
-GhostServer.prototype.logUpgradeWarning = function () {
-    errors.logWarn(
-        'Ghost no longer starts automatically when using it as an npm module.',
-        'If you\'re seeing this message, you may need to update your custom code.',
-        'Please see the docs at http://tinyurl.com/npm-upgrade for more information.'
-    );
 };
 
 module.exports = GhostServer;
