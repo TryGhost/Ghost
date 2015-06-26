@@ -53,6 +53,7 @@ simplemde.codemirror.getValue();
 
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **status**: If set `false`, hide the status bar. Defaults to `true`.
+  - Optionally, you can set an array of status bar elements to include like `['lines', 'words', 'cursor']`
 - **toolbar**: If set `false`, hide the toolbar. Defaults to `true`.
 - **autofocus**: If set `true`, autofocuses the editor. Defaults to `false`.
 - **lineWrapping**: If set `false`, disable line wrapping. Defaults to `true`.
@@ -63,6 +64,7 @@ simplemde.codemirror.getValue();
 new SimpleMDE({
 	element: document.getElementById("MyID"),
 	status: false,
+	status: ['lines', 'words', 'cursor'], // Optional usage
 	toolbar: false,
 	autofocus: true,
 	lineWrapping: false,
