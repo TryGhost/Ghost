@@ -452,7 +452,7 @@ function SimpleMDE(options) {
 		// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
 
 	if (!options.hasOwnProperty('status')) {
-		options.status = ['lines', 'words', 'cursor'];
+		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
 	this.options = options;
@@ -547,13 +547,31 @@ SimpleMDE.prototype.autosave = function() {
 	}
 	
 	if(this.options.autosave.loaded !== true){
-		console.log(localStorage.getItem(this.options.autosave.unique_id));
 		this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
 		this.options.autosave.loaded = true;
 	}
 	
 	if(localStorage) {
 		localStorage.setItem(this.options.autosave.unique_id, content);
+	}
+	
+	var el = document.getElementById("autosaved");
+	if(el != null && el != undefined && el != ""){
+		var d = new Date();
+		var hh = d.getHours();
+		var m = d.getMinutes();
+		var dd = "am";
+		var h = hh;
+		if (h >= 12) {
+			h = hh-12;
+			dd = "pm";
+		}
+		if (h == 0) {
+			h = 12;
+		}
+		m = m<10?"0"+m:m;
+		
+		el.innerHTML = "Autosaved: "+h+":"+m+" "+dd;
 	}
 	
 	setTimeout(function() {
@@ -626,6 +644,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 SimpleMDE.prototype.createStatusbar = function(status) {
 	status = status || this.options.status;
+	options = this.options;
 
 	if (!status || status.length === 0) return;
 
@@ -653,10 +672,15 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 					pos = cm.getCursor();
 					el.innerHTML = pos.line + ':' + pos.ch;
 				});
+			} else if (name === 'autosave') {
+				if (options.autosave != undefined && options.autosave.enabled === true) {
+					el.setAttribute("id", "autosaved");
+				}
 			}
 			bar.appendChild(el);
 		})(status[i]);
 	}
+	
 	var cmWrapper = this.codemirror.getWrapperElement();
 	cmWrapper.parentNode.insertBefore(bar, cmWrapper.nextSibling);
 	return bar;
