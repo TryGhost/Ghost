@@ -46,19 +46,23 @@ simplemde.render();
 ## Get the content
 
 ```JavaScript
-simplemde.codemirror.getValue();
+simplemde.value();
 ```
 
 ## Configuration
 
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
-- **status**: If set `false`, hide the status bar. Defaults to `true`.
+- **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include
-- **toolbar**: If set `false`, hide the toolbar. Defaults to `true`.
-- **autofocus**: If set `true`, autofocuses the editor. Defaults to `false`.
-- **lineWrapping**: If set `false`, disable line wrapping. Defaults to `true`.
-- **indentWithTabs**: If set `false`, indent using spaces instead of tabs. Defaults to `true`.
+- **toolbar**: If set to `false`, hide the toolbar. Defaults to `true`.
+- **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
+- **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
+- **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
+- **autosave**: *Saves the content that users are writing, and clears it when the form is submitted*
+  - **enabled**: If set to `true`, autosave the editor. Defaults to `false`.
+  - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
+  - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
 
 ```JavaScript
 new SimpleMDE({
@@ -70,6 +74,11 @@ new SimpleMDE({
 	lineWrapping: false,
 	indentWithTabs: false,
 	tabSize: 4,
+	autosave: {
+		enabled: true,
+		unique_id: "MyUniqueID",
+		delay: 1000,
+	},
 });
 ```
 

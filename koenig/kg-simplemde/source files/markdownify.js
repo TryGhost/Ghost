@@ -524,8 +524,41 @@ SimpleMDE.prototype.render = function(el) {
 	if (options.status !== false) {
 		this.createStatusbar();
 	}
+	if (options.autosave != undefined && options.autosave.enabled === true) {
+		this.autosave();
+	}
 
 	this._rendered = this.element;
+};
+
+SimpleMDE.prototype.autosave = function() {
+	var content = this.value();
+	var simplemde = this;
+	
+	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == ""){
+		console.log("SimpleMDE: You must set a unique_id to use the autosave feature");
+		return;
+	}
+	
+	if(simplemde.element.form != null && simplemde.element.form != undefined){
+		simplemde.element.form.addEventListener("submit", function(){
+			localStorage.setItem(simplemde.options.autosave.unique_id, "");
+		});
+	}
+	
+	if(this.options.autosave.loaded !== true){
+		console.log(localStorage.getItem(this.options.autosave.unique_id));
+		this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
+		this.options.autosave.loaded = true;
+	}
+	
+	if(localStorage) {
+		localStorage.setItem(this.options.autosave.unique_id, content);
+	}
+	
+	setTimeout(function() {
+		simplemde.autosave();
+	}, this.options.autosave.delay || 10000);
 };
 
 SimpleMDE.prototype.createToolbar = function(items) {
