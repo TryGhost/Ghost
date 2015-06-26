@@ -445,7 +445,7 @@ function SimpleMDE(options) {
 	}
 	
 	if(options.toolbar === false)
-		options.toolbar = [];
+		options.toolbar = false;
 	else
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 		// you can customize toolbar with object
@@ -458,9 +458,7 @@ function SimpleMDE(options) {
 	this.options = options;
 
 	// If user has passed an element, it should auto rendered
-	if (this.element) {
-		this.render();
-	}
+	this.render();
 }
 
 /**
