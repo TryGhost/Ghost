@@ -3,6 +3,7 @@ import randomPassword from 'ghost/utils/random-password';
 
 export default Ember.Controller.extend({
     notifications: Ember.inject.service(),
+    config: Ember.inject.service(),
 
     selectedTheme: Ember.computed('model.activeTheme', 'themes', function () {
         var activeTheme = this.get('model.activeTheme'),
@@ -63,9 +64,11 @@ export default Ember.Controller.extend({
 
     actions: {
         save: function () {
-            var notifications = this.get('notifications');
+            var notifications = this.get('notifications'),
+                config = this.get('config');
 
             return this.get('model').save().then(function (model) {
+                config.set('blogTitle', model.get('title'));
                 notifications.showSuccess('Settings successfully saved.');
 
                 return model;
