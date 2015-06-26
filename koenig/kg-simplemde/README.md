@@ -65,7 +65,7 @@ simplemde.value();
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
 
 ```JavaScript
-new SimpleMDE({
+var simplemde = new SimpleMDE({
 	element: document.getElementById("MyID"),
 	status: false,
 	status: ['lines', 'words', 'cursor'], // Optional usage
