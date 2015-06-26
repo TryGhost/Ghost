@@ -448,8 +448,8 @@ function SimpleMDE(options) {
 		options.toolbar = [];
 	else
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
-	// you can customize toolbar with object
-	// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
+		// you can customize toolbar with object
+		// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
 
 	if (!options.hasOwnProperty('status')) {
 		options.status = ['lines', 'words', 'cursor'];
@@ -512,12 +512,12 @@ SimpleMDE.prototype.render = function(el) {
 	this.codemirror = CodeMirror.fromTextArea(el, {
 		mode: 'markdown',
 		theme: 'paper',
-		tabSize: '2',
-		indentWithTabs: true,
-		lineNumbers: false,
-		autofocus: false,
+		tabSize: (options.tabSize != undefined) ? options.tabSize : '2',
+		indentWithTabs: (options.indentWithTabs === false) ? false : true,
+		lineNumbers: (options.lineNumbers === true) ? true : false,
+		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
-		lineWrapping: true
+		lineWrapping: (options.lineWrapping === false) ? false : true
 	});
 
 	if (options.toolbar !== false) {
