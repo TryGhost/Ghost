@@ -8,7 +8,7 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 ## Quick start
 SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font Awesome is available on MaxCDN.
 
-```
+```HTML
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
 <link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
@@ -16,34 +16,42 @@ SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font 
 
 And then load SimpleMDE on the first textarea on a page
 
-```
+```JavaScript
+<script>
 var simplemde = new SimpleMDE();
 simplemde.render();
+</script>
 ```
 
 #### Use a specific textarea
 
 Pure JavaScript method
 
-```
+```JavaScript
+<script>
 var simplemde = new SimpleMDE(document.getElementById("MyID"));
 simplemde.render();
+</script>
 ```
 
 jQuery method
 
-```
+```JavaScript
+<script>
 var simplemde = new SimpleMDE($("#MyID")[0]);
 simplemde.render();
+</script>
 ```
 
 ## Get the content
 
-```
+```JavaScript
 simplemde.codemirror.getValue();
 ```
 
 ## Configuration
+
+#### JS
 
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **status**: If set `false`, hide the status bar. Defaults to `true`.
@@ -54,7 +62,8 @@ simplemde.codemirror.getValue();
 - **indentWithTabs**: If set `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `'2'`.
 
-```
+```JavaScript
+<script>
 new SimpleMDE({
 	element: document.getElementById("MyID"),
 	status: false,
@@ -65,6 +74,29 @@ new SimpleMDE({
 	indentWithTabs: false,
 	tabSize: '4',
 });
+</script>
+```
+
+#### CSS
+
+To change the minimum height (before it starts auto-growing):
+
+```CSS
+<style>
+.CodeMirror {
+	min-height: 300px;
+}
+</style>
+```
+
+Or, you can keep the height static:
+
+```CSS
+<style>
+.CodeMirror {
+	height: 300px;
+}
+</style>
 ```
 
 ## How it works
@@ -85,3 +117,4 @@ As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](
 - Improved preview rendering in many ways
 - Improved as-you-type appearance of headers and code blocks
 - Simplified the toolbar
+- Many new options during instantiation
