@@ -56,7 +56,6 @@ simplemde.codemirror.getValue();
 - **toolbar**: If set `false`, hide the toolbar. Defaults to `true`.
 - **autofocus**: If set `true`, autofocuses the editor. Defaults to `false`.
 - **lineWrapping**: If set `false`, disable line wrapping. Defaults to `true`.
-- **lineNumbers**: If set `true`, shows line numbers. Defaults to `false`.
 - **indentWithTabs**: If set `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `'2'`.
 
@@ -67,7 +66,6 @@ new SimpleMDE({
 	toolbar: false,
 	autofocus: true,
 	lineWrapping: false,
-	lineNumbers: true,
 	indentWithTabs: false,
 	tabSize: '4',
 });

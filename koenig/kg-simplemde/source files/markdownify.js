@@ -512,7 +512,7 @@ SimpleMDE.prototype.render = function(el) {
 		theme: 'paper',
 		tabSize: (options.tabSize != undefined) ? options.tabSize : '2',
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
-		lineNumbers: (options.lineNumbers === true) ? true : false,
+		lineNumbers: false,
 		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
 		lineWrapping: (options.lineWrapping === false) ? false : true
