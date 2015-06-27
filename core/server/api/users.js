@@ -78,20 +78,6 @@ users = {
             tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to either be an authorised user, or only return published posts.
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).browse.user().then(function permissionGranted() {
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to browse users.');
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -104,7 +90,7 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: permittedOptions}),
-            handlePermissions,
+            utils.handlePublicPermissions(docName, 'browse'),
             utils.convertOptions(allowedIncludes),
             doQuery
         ];
@@ -122,18 +108,9 @@ users = {
         var attrs = ['id', 'slug', 'status', 'email', 'role'],
             tasks;
 
-        /**
-         * ### Handle Permissions
-         * Convert 'me' safely
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            if (options.data.id === 'me' && options.context && options.context.user) {
-                options.data.id = options.context.user;
-            }
-
-            return options;
+        // Special handling for id = 'me'
+        if (options.id === 'me' && options.context && options.context.user) {
+            options.id = options.context.user;
         }
 
         /**
@@ -149,7 +126,7 @@ users = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {attrs: attrs}),
-            handlePermissions,
+            utils.handlePublicPermissions(docName, 'read'),
             utils.convertOptions(allowedIncludes),
             doQuery
         ];

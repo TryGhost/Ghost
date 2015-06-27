@@ -14,39 +14,268 @@ var testUtils       = require('../utils'),
 
     sandbox         = sinon.sandbox.create();
 
-// TODO move to integrations or stub
-
 describe('Permissions', function () {
-    before(function (done) {
-        Models.init().then(done).catch(done);
-    });
-
     afterEach(function () {
         sandbox.restore();
     });
 
-    beforeEach(function () {
-        var permissions = _.map(testUtils.DataGenerator.Content.permissions, function (testPerm) {
-            return testUtils.DataGenerator.forKnex.createPermission(testPerm);
+    describe('actions map', function () {
+        before(function (done) {
+            Models.init().then(done).catch(done);
         });
 
-        sandbox.stub(Models.Permission, 'findAll', function () {
-            return Promise.resolve(Models.Permissions.forge(permissions));
+        beforeEach(function () {
+            var permissions = _.map(testUtils.DataGenerator.Content.permissions, function (testPerm) {
+                return testUtils.DataGenerator.forKnex.createPermission(testPerm);
+            });
+
+            sandbox.stub(Models.Permission, 'findAll', function () {
+                return Promise.resolve(Models.Permissions.forge(permissions));
+            });
+        });
+
+        it('can load an actions map from existing permissions', function (done) {
+            permissions.init().then(function (actionsMap) {
+                should.exist(actionsMap);
+
+                actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
+
+                actionsMap.should.equal(permissions.actionsMap);
+
+                done();
+            }).catch(done);
         });
     });
 
-    it('can load an actions map from existing permissions', function (done) {
-        permissions.init().then(function (actionsMap) {
-            should.exist(actionsMap);
+    describe('parseContext', function () {
+        it('should return public for no context', function () {
+            permissions.parseContext().should.eql({
+                internal: false,
+                user: null,
+                app: null,
+                public: true
+            });
+            permissions.parseContext({}).should.eql({
+                internal: false,
+                user: null,
+                app: null,
+                public: true
+            });
+        });
 
-            actionsMap.edit.sort().should.eql(['post', 'tag', 'user', 'page'].sort());
+        it('should return public for random context', function () {
+            permissions.parseContext('public').should.eql({
+                internal: false,
+                user: null,
+                app: null,
+                public: true
+            });
+            permissions.parseContext({client: 'thing'}).should.eql({
+                internal: false,
+                user: null,
+                app: null,
+                public: true
+            });
+        });
 
-            actionsMap.should.equal(permissions.actionsMap);
+        it('should return user if user populated', function () {
+            permissions.parseContext({user: 1}).should.eql({
+                internal: false,
+                user: 1,
+                app: null,
+                public: false
+            });
+        });
 
-            done();
-        }).catch(done);
+        it('should return app if app populated', function () {
+            permissions.parseContext({app: 5}).should.eql({
+                internal: false,
+                user: null,
+                app: 5,
+                public: false
+            });
+        });
+
+        it('should return internal if internal provided', function () {
+            permissions.parseContext({internal: true}).should.eql({
+                internal: true,
+                user: null,
+                app: null,
+                public: false
+            });
+
+            permissions.parseContext('internal').should.eql({
+                internal: true,
+                user: null,
+                app: null,
+                public: false
+            });
+        });
     });
 
+    describe('applyPublicRules', function () {
+        it('should return empty object for docName with no rules', function (done) {
+            permissions.applyPublicRules('test', 'test', {}).then(function (result) {
+                result.should.eql({});
+                done();
+            });
+        });
+
+        it('should return unchanged object for non-public context', function (done) {
+            var internal = {context: 'internal'},
+                user = {context: {user: 1}},
+                app =  {context: {app: 1}};
+
+            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(internal)).then(function (result) {
+                result.should.eql(internal);
+
+                return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(user));
+            }).then(function (result) {
+                result.should.eql(user);
+
+                return permissions.applyPublicRules('posts', 'browse', _.cloneDeep(app));
+            }).then(function (result) {
+                result.should.eql(app);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should return unchanged object for post with public context', function (done) {
+            var public = {context: {}};
+
+            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(public)).then(function (result) {
+                result.should.not.eql(public);
+                result.should.eql({
+                    context: {},
+                    status: 'published'
+                });
+
+                return permissions.applyPublicRules('posts', 'browse', _.extend({}, _.cloneDeep(public), {status: 'published'}));
+            }).then(function (result) {
+                result.should.eql({
+                    context: {},
+                    status: 'published'
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw an error for draft post without uuid (read)', function (done) {
+            var draft = {context: {}, data: {status: 'draft'}};
+
+            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
+                done('Did not throw an error for draft');
+            }).catch(function (err) {
+                err.should.be.a.String;
+                done();
+            });
+        });
+
+        it('should throw an error for draft post (browse)', function (done) {
+            var draft = {context: {}, status: 'draft'};
+
+            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
+                done('Did not throw an error for draft');
+            }).catch(function (err) {
+                err.should.be.a.String;
+                done();
+            });
+        });
+
+        it('should permit post draft status with uuid (read)', function (done) {
+            var draft = {context: {}, data: {status: 'draft', uuid: '1234-abcd'}};
+
+            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function (result) {
+                result.should.eql(draft);
+                done();
+            }).catch(done);
+        });
+
+        it('should permit post all status with uuid (read)', function (done) {
+            var draft = {context: {}, data: {status: 'all', uuid: '1234-abcd'}};
+
+            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function (result) {
+                result.should.eql(draft);
+                done();
+            }).catch(done);
+        });
+
+        it('should NOT permit post draft status with uuid (browse)', function (done) {
+            var draft = {context: {}, status: 'draft', uuid: '1234-abcd'};
+
+            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
+                done('Did not throw an error for draft');
+            }).catch(function (err) {
+                err.should.be.a.String;
+                done();
+            });
+        });
+
+        it('should NOT permit post all status with uuid (browse)', function (done) {
+            var draft = {context: {}, status: 'all', uuid: '1234-abcd'};
+
+            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
+                done('Did not throw an error for draft');
+            }).catch(function (err) {
+                err.should.be.a.String;
+                done();
+            });
+        });
+
+        it('should throw an error for draft post with uuid and id or slug (read)', function (done) {
+            var draft = {context: {}, data: {status: 'draft', uuid: '1234-abcd', id: 1}};
+
+            permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
+                done('Did not throw an error for draft');
+            }).catch(function (err) {
+                err.should.be.a.String;
+                draft = {context: {},  data: {status: 'draft', uuid: '1234-abcd', slug: 'abcd'}};
+
+                return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
+                    done('Did not throw an error for draft');
+                }).catch(function (err) {
+                    err.should.be.a.String;
+                    done();
+                });
+            });
+        });
+
+        it('should return unchanged object for user with public context', function (done) {
+            var public = {context: {}};
+
+            permissions.applyPublicRules('users', 'browse', _.cloneDeep(public)).then(function (result) {
+                result.should.not.eql(public);
+                result.should.eql({
+                    context: {},
+                    status: 'active'
+                });
+
+                return permissions.applyPublicRules('users', 'browse', _.extend({}, _.cloneDeep(public), {status: 'active'}));
+            }).then(function (result) {
+                result.should.eql({
+                    context: {},
+                    status: 'active'
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw an error for an inactive user', function (done) {
+            var inactive = {context: {}, status: 'inactive'};
+
+            permissions.applyPublicRules('users', 'browse', _.cloneDeep(inactive)).then(function () {
+                done('Did not throw an error for inactive');
+            }).catch(function (err) {
+                err.should.be.a.String;
+                done();
+            });
+        });
+    });
+
+    // @TODO: move to integrations or stub
     // it('does not allow edit post without permission', function (done) {
     //    var fakePage = {
     //        id: 1

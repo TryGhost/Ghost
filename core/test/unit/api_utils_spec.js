@@ -1,19 +1,16 @@
-/*globals describe, it, beforeEach, afterEach */
+/*globals describe, it, afterEach */
 /*jshint expr:true*/
 var should  = require('should'),
     sinon   = require('sinon'),
     _       = require('lodash'),
     Promise = require('bluebird'),
 
-    apiUtils = require('../../server/api/utils');
+    permissions = require('../../server/permissions'),
+    apiUtils = require('../../server/api/utils'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('API Utils', function () {
-    var sandbox;
-
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-    });
-
     afterEach(function () {
         sandbox.restore();
     });
@@ -403,6 +400,76 @@ describe('API Utils', function () {
 
         it('returns false if file has invalid type', function () {
             apiUtils.checkFileIsValid({name: 'test.txt', type: 'text'}, ['archive'], ['.txt']).should.be.false;
+        });
+    });
+
+    describe('isPublicContext', function () {
+        it('should call out to permissions', function () {
+            var permsStub = sandbox.stub(permissions, 'parseContext').returns({public: true});
+            apiUtils.isPublicContext({context: 'test'}).should.be.true;
+            permsStub.called.should.be.true;
+            permsStub.calledWith('test').should.be.true;
+        });
+    });
+
+    describe('applyPublicPermissions', function () {
+        it('should call out to permissions', function () {
+            var permsStub = sandbox.stub(permissions, 'applyPublicRules');
+            apiUtils.applyPublicPermissions('test', {});
+            permsStub.called.should.be.true;
+            permsStub.calledWith('test', {}).should.be.true;
+        });
+    });
+
+    describe('handlePublicPermissions', function () {
+        it('should return empty options if passed empty options', function (done) {
+            apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
+                options.should.eql({});
+                done();
+            }).catch(done);
+        });
+
+        it('should treat no context as public', function (done) {
+            var aPPStub = sandbox.stub(apiUtils, 'applyPublicPermissions').returns(Promise.resolve({}));
+            apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
+                aPPStub.calledOnce.should.eql(true);
+                options.should.eql({});
+                done();
+            }).catch(done);
+        });
+
+        it('should treat user context as NOT public', function (done) {
+            var cTMethodStub = {
+                    test: {
+                        test: sandbox.stub().returns(Promise.resolve())
+                    }
+                },
+                cTStub = sandbox.stub(permissions, 'canThis').returns(cTMethodStub);
+
+            apiUtils.handlePublicPermissions('tests', 'test')({context: {user: 1}}).then(function (options) {
+                cTStub.calledOnce.should.eql(true);
+                cTMethodStub.test.test.calledOnce.should.eql(true);
+                options.should.eql({context: {user: 1}});
+                done();
+            }).catch(done);
+        });
+
+        it('should throw a permissions error if permission is not granted', function (done) {
+            var cTMethodStub = {
+                    test: {
+                        test: sandbox.stub().returns(Promise.reject())
+                    }
+                },
+                cTStub = sandbox.stub(permissions, 'canThis').returns(cTMethodStub);
+
+            apiUtils.handlePublicPermissions('tests', 'test')({context: {user: 1}}).then(function () {
+                done(new Error('should throw error when no permissions'));
+            }).catch(function (err) {
+                cTStub.calledOnce.should.eql(true);
+                cTMethodStub.test.test.calledOnce.should.eql(true);
+                err.errorType.should.eql('NoPermissionError');
+                done();
+            }).catch(done);
         });
     });
 });
