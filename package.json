@@ -45,6 +45,7 @@
     "html-to-text": "1.3.0",
     "intl": "1.0.0",
     "intl-messageformat": "1.1.0",
+    "jsonpath": "0.1.8",
     "knex": "0.7.3",
     "lodash": "3.10.0",
     "moment": "2.10.3",
