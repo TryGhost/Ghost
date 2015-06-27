@@ -126,15 +126,35 @@ describe('Post API', function () {
 
         it('without context.user cannot fetch all posts', function (done) {
             PostAPI.browse({status: 'all'}).then(function (results) {
-                should.exist(results);
-                testUtils.API.checkResponse(results, 'posts');
-                should.exist(results.posts);
-                results.posts.length.should.eql(4);
-                results.posts[0].status.should.eql('published');
-                testUtils.API.checkResponse(results.posts[0], 'post');
+                should.not.exist(results);
 
+                done(new Error('should not provide results if invalid status provided'));
+            }).catch(function (err) {
+                err.errorType.should.eql('NoPermissionError');
                 done();
-            }).catch(done);
+            });
+        });
+
+        it('without context.user cannot fetch draft posts', function (done) {
+            PostAPI.browse({status: 'draft'}).then(function (results) {
+                should.not.exist(results);
+
+                done(new Error('should not provide results if invalid status provided'));
+            }).catch(function (err) {
+                err.errorType.should.eql('NoPermissionError');
+                done();
+            });
+        });
+
+        it('without context.user cannot use uuid to fetch draft posts in browse', function (done) {
+            PostAPI.browse({status: 'draft', uuid: 'imastring'}).then(function (results) {
+                should.not.exist(results);
+
+                done(new Error('should not provide results if invalid status provided'));
+            }).catch(function (err) {
+                err.errorType.should.eql('NoPermissionError');
+                done();
+            });
         });
 
         it('with context.user can fetch drafts', function (done) {
@@ -230,15 +250,13 @@ describe('Post API', function () {
         });
 
         it('without context.user cannot fetch draft', function (done) {
-            PostAPI.read({slug: 'unfinished', status: 'draft'}).then(function (results) {
-                should.not.exist(results.posts);
-                done();
+            PostAPI.read({slug: 'unfinished', status: 'draft'}).then(function () {
+                done(new Error('Should not return a result with no permission'));
             }).catch(function (err) {
                 should.exist(err);
-                err.message.should.eql('Post not found.');
-
+                err.errorType.should.eql('NoPermissionError');
                 done();
-            });
+            }).catch(done);
         });
 
         it('with context.user can fetch a draft', function (done) {
@@ -260,13 +278,13 @@ describe('Post API', function () {
 
         it('cannot fetch post with unknown id', function (done) {
             PostAPI.read({context: {user: 1}, slug: 'not-a-post'}).then(function () {
-                done();
+                done(new Error('Should not return a result with unknown id'));
             }).catch(function (err) {
                 should.exist(err);
                 err.message.should.eql('Post not found.');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can fetch post with by id', function (done) {
