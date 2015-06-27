@@ -547,7 +547,9 @@ SimpleMDE.prototype.autosave = function() {
 	}
 	
 	if(this.options.autosave.loaded !== true){
-		this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
+		if(localStorage.getItem(this.options.autosave.unique_id) != null)
+			this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
+		
 		this.options.autosave.loaded = true;
 	}
 	
