@@ -6,7 +6,7 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 [![Preview](http://i.imgur.com/b9hFHFT.png)](http://nextstepwebs.github.io/simplemde-markdown-editor)
 
 ## Quick start
-SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font Awesome is available on MaxCDN.
+SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font Awesome is available on MaxCDN. *Please note, jsDelivr may take a few days to update to the latest release.*
 
 ```HTML
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
