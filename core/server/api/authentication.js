@@ -211,7 +211,7 @@ authentication = {
             return dataProvider.User.findOne({role: 'Owner', status: 'all'});
         }).then(function (ownerUser) {
             if (ownerUser) {
-                return dataProvider.User.setup(setupUser, _.extend(internal, {id: ownerUser.id}));
+                return dataProvider.User.setup(setupUser, _.extend({id: ownerUser.id}, internal));
             } else {
                 return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
                     setupUser.roles = [ownerRole.id];
