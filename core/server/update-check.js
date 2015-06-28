@@ -56,9 +56,9 @@ function updateCheckData() {
         ops = [],
         mailConfig = config.mail;
 
-    ops.push(api.settings.read(_.extend(internal, {key: 'dbHash'})).catch(errors.rejectError));
-    ops.push(api.settings.read(_.extend(internal, {key: 'activeTheme'})).catch(errors.rejectError));
-    ops.push(api.settings.read(_.extend(internal, {key: 'activeApps'}))
+    ops.push(api.settings.read(_.extend({key: 'dbHash'}, internal)).catch(errors.rejectError));
+    ops.push(api.settings.read(_.extend({key: 'activeTheme'}, internal)).catch(errors.rejectError));
+    ops.push(api.settings.read(_.extend({key: 'activeApps'}, internal))
         .then(function (response) {
             var apps = response.settings[0];
             try {
@@ -187,7 +187,7 @@ function updateCheck() {
         // No update check
         return Promise.resolve();
     } else {
-        return api.settings.read(_.extend(internal, {key: 'nextUpdateCheck'})).then(function then(result) {
+        return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
             var nextUpdateCheck = result.settings[0];
 
             if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
@@ -204,7 +204,7 @@ function updateCheck() {
 }
 
 function showUpdateNotification() {
-    return api.settings.read(_.extend(internal, {key: 'displayUpdateNotification'})).then(function then(response) {
+    return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
         var display = response.settings[0];
 
         // Version 0.4 used boolean to indicate the need for an update. This special case is
