@@ -7,7 +7,7 @@ var SettingSerializer = ApplicationSerializer.extend({
         options = options || {};
         options.includeId = false;
 
-        var root = Ember.String.pluralize(type.typeKey),
+        var root = Ember.String.pluralize(type.modelName),
             data = this.serialize(record, options),
             payload = [];
 
@@ -26,6 +26,8 @@ var SettingSerializer = ApplicationSerializer.extend({
         _payload.settings.forEach(function (setting) {
             payload[setting.key] = setting.value;
         });
+
+        payload = this.normalize(type, payload);
 
         return [payload];
     },

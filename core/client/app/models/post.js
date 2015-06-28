@@ -1,9 +1,8 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+export default DS.Model.extend(ValidationEngine, {
     validationType: 'post',
 
     uuid: DS.attr('string'),
@@ -29,6 +28,26 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     tags: DS.hasMany('tag', {embedded: 'always'}),
     url: DS.attr('string'),
 
+    config: Ember.inject.service(),
+    ghostPaths: Ember.inject.service('ghost-paths'),
+
+    absoluteUrl: Ember.computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
+        var blogUrl = this.get('config.blogUrl'),
+            postUrl = this.get('url');
+        return this.get('ghostPaths.url').join(blogUrl, postUrl);
+    }),
+
+    previewUrl: Ember.computed('uuid', 'ghostPaths.url', 'config.blogUrl', 'config.routeKeywords.preview', function () {
+        var blogUrl = this.get('config.blogUrl'),
+            uuid = this.get('uuid'),
+            previewKeyword = this.get('config.routeKeywords.preview');
+        // New posts don't have a preview
+        if (!uuid) {
+            return '';
+        }
+        return this.get('ghostPaths.url').join(blogUrl, previewKeyword, uuid);
+    }),
+
     scratch: null,
     titleScratch: null,
 
@@ -53,5 +72,3 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
     }
 
 });
-
-export default Post;

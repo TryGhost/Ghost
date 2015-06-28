@@ -1,8 +1,8 @@
 import Ember from 'ember';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var SetupController = Ember.Controller.extend(ValidationEngine, {
+export default Ember.Controller.extend(ValidationEngine, {
     blogTitle: null,
     name: null,
     email: null,
@@ -12,12 +12,16 @@ var SetupController = Ember.Controller.extend(ValidationEngine, {
     // ValidationEngine settings
     validationType: 'setup',
 
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
+
     actions: {
         setup: function () {
             var self = this,
-                data = self.getProperties('blogTitle', 'name', 'email', 'password');
+                data = self.getProperties('blogTitle', 'name', 'email', 'password'),
+                notifications = this.get('notifications');
 
-            self.notifications.closePassive();
+            notifications.closePassive();
 
             this.toggleProperty('submitting');
             this.validate({format: false}).then(function () {
@@ -39,14 +43,12 @@ var SetupController = Ember.Controller.extend(ValidationEngine, {
                     });
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
-                    self.notifications.showAPIError(resp);
+                    notifications.showAPIError(resp);
                 });
             }).catch(function (errors) {
                 self.toggleProperty('submitting');
-                self.notifications.showErrors(errors);
+                notifications.showErrors(errors);
             });
         }
     }
 });
-
-export default SetupController;

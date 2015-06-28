@@ -66,7 +66,7 @@ describe('Post Model', function () {
             });
 
             it('can findAll, returning all related data', function (done) {
-                PostModel.findAll({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findAll({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
                         results.length.should.be.above(0);
@@ -99,7 +99,7 @@ describe('Post Model', function () {
             });
 
             it('can findPage, returning all related data', function (done) {
-                PostModel.findPage({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findPage({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
 
@@ -157,6 +157,22 @@ describe('Post Model', function () {
                     paginationResult.meta.pagination.limit.should.equal(10);
                     paginationResult.meta.pagination.pages.should.equal(1);
                     paginationResult.posts.length.should.equal(1);
+
+                    // Test featured pages
+                    return PostModel.findPage({limit: 10, featured: true});
+                }).then(function (paginationResult) {
+                    paginationResult.meta.pagination.page.should.equal(1);
+                    paginationResult.meta.pagination.limit.should.equal(10);
+                    paginationResult.meta.pagination.pages.should.equal(6);
+                    paginationResult.posts.length.should.equal(10);
+
+                    // Test both boolean formats for featured pages
+                    return PostModel.findPage({limit: 10, featured: '1'});
+                }).then(function (paginationResult) {
+                    paginationResult.meta.pagination.page.should.equal(1);
+                    paginationResult.meta.pagination.limit.should.equal(10);
+                    paginationResult.meta.pagination.pages.should.equal(6);
+                    paginationResult.posts.length.should.equal(10);
 
                     return PostModel.findPage({limit: 10, page: 2, status: 'all'});
                 }).then(function (paginationResult) {
@@ -252,7 +268,7 @@ describe('Post Model', function () {
             it('can findOne, returning all related data', function (done) {
                 var firstPost;
                 // TODO: should take author :-/
-                PostModel.findOne({}, {include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findOne({}, {include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (result) {
                         should.exist(result);
                         firstPost = result.toJSON();

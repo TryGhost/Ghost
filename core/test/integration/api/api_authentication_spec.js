@@ -35,7 +35,7 @@ describe('Authentication API', function () {
                     name: 'test user',
                     email: 'test@example.com',
                     password: 'areallygoodpassword',
-                    title: 'a test blog'
+                    blogTitle: 'a test blog'
                 },
 
                 send = mail.__get__('mail.send');
@@ -98,50 +98,50 @@ describe('Authentication API', function () {
         });
     });
 
-//    describe('Authentication', function () {
-//
-//        describe('Setup not completed', function () {
-//
-//            beforeEach(testUtils.setup());
-//
-//            it('should not allow an invitation to be accepted', function (done) {
-//                AuthAPI.acceptInvitation().then(function () {
-//                    done(new Error('Invitation was allowed to be accepted'));
-//                }).catch(function (err) {
-//                    should.exist(err);
-//
-//                    err.name.should.equal('NoPermissionError');
-//                    err.code.should.equal(403);
-//
-//                    done();
-//                });
-//            });
-//
-//            it('should not generate a password reset token', function (done) {
-//                AuthAPI.generateResetToken().then(function () {
-//                    done(new Error('Reset token was generated'));
-//                }).catch(function (err) {
-//                    should.exist(err);
-//
-//                    err.name.should.equal('NoPermissionError');
-//                    err.code.should.equal(403);
-//
-//                    done();
-//                });
-//            });
-//
-//            it('should not allow a password reset', function (done) {
-//                AuthAPI.resetPassword().then(function () {
-//                    done(new Error('Password was reset'));
-//                }).catch(function (err) {
-//                    should.exist(err);
-//
-//                    err.name.should.equal('NoPermissionError');
-//                    err.code.should.equal(403);
-//
-//                    done();
-//                });
-//            });
-//        });
-//    });
+    // describe('Authentication', function () {
+
+    //    describe('Setup not completed', function () {
+
+    //        beforeEach(testUtils.setup());
+
+    //        it('should not allow an invitation to be accepted', function (done) {
+    //            AuthAPI.acceptInvitation().then(function () {
+    //                done(new Error('Invitation was allowed to be accepted'));
+    //            }).catch(function (err) {
+    //                should.exist(err);
+
+    //                err.name.should.equal('NoPermissionError');
+    //                err.code.should.equal(403);
+
+    //                done();
+    //            });
+    //        });
+
+    //        it('should not generate a password reset token', function (done) {
+    //            AuthAPI.generateResetToken().then(function () {
+    //                done(new Error('Reset token was generated'));
+    //            }).catch(function (err) {
+    //                should.exist(err);
+
+    //                err.name.should.equal('NoPermissionError');
+    //                err.code.should.equal(403);
+
+    //                done();
+    //            });
+    //        });
+
+    //        it('should not allow a password reset', function (done) {
+    //            AuthAPI.resetPassword().then(function () {
+    //                done(new Error('Password was reset'));
+    //            }).catch(function (err) {
+    //                should.exist(err);
+
+    //                err.name.should.equal('NoPermissionError');
+    //                err.code.should.equal(403);
+
+    //                done();
+    //            });
+    //        });
+    //    });
+    // });
 });

@@ -1,78 +1,33 @@
 /*globals describe, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var assert          = require('assert'),
+    crypto          = require('crypto'),
     should          = require('should'),
     sinon           = require('sinon'),
-    middleware      = require('../../server/middleware').middleware;
+    Promise         = require('bluebird'),
+    middleware      = require('../../server/middleware').middleware,
+    api             = require('../../server/api'),
+    errors          = require('../../server/errors'),
+    fs              = require('fs');
+
+function hash(password, salt) {
+    var hasher = crypto.createHash('sha256');
+
+    hasher.update(password + salt, 'utf8');
+
+    return hasher.digest('hex');
+}
 
 describe('Middleware', function () {
-    // TODO: needs new test for ember admin
-    // describe('redirectToDashboard', function () {
-    //     var req, res;
+    var sandbox,
+        apiSettingsStub;
 
-    //     beforeEach(function () {
-    //         req = {
-    //             session: {}
-    //         };
+    beforeEach(function () {
+        sandbox = sinon.sandbox.create();
+    });
 
-    //         res = {
-    //             redirect: sinon.spy()
-    //         };
-    //     });
-
-    //     it('should redirect to dashboard', function () {
-    //         req.session.user = {};
-
-    //         middleware.redirectToDashboard(req, res, null);
-    //         assert(res.redirect.calledWithMatch('/ghost/'));
-    //     });
-
-    //     it('should call next if no user in session', function (done) {
-    //         middleware.redirectToDashboard(req, res, function (a) {
-    //             should.not.exist(a);
-    //             assert(res.redirect.calledOnce.should.be.false);
-    //             done();
-    //         });
-    //     });
-    // });
-
-    describe('cacheControl', function () {
-        var res;
-
-        beforeEach(function () {
-            res = {
-                set: sinon.spy()
-            };
-        });
-
-        it('correctly sets the public profile headers', function (done) {
-            middleware.cacheControl('public')(null, res, function (a) {
-                should.not.exist(a);
-                res.set.calledOnce.should.be.true;
-                res.set.calledWith({'Cache-Control': 'public, max-age=0'});
-                done();
-            });
-        });
-
-        it('correctly sets the private profile headers', function (done) {
-            middleware.cacheControl('private')(null, res, function (a) {
-                should.not.exist(a);
-                res.set.calledOnce.should.be.true;
-                res.set.calledWith({
-                    'Cache-Control':
-                        'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                });
-                done();
-            });
-        });
-
-        it('will not set headers without a profile', function (done) {
-            middleware.cacheControl()(null, res, function (a) {
-                should.not.exist(a);
-                res.set.called.should.be.false;
-                done();
-            });
-        });
+    afterEach(function () {
+        sandbox.restore();
     });
 
     describe('whenEnabled', function () {
@@ -234,6 +189,225 @@ describe('Middleware', function () {
                 reqUrl: '/req/path'
             });
             response.redirectUrl({a: 'b'}).should.equal('https://example.com/ssl/config/path/req/path?a=b');
+        });
+    });
+
+    describe('passProtect', function () {
+        var req, res, next;
+
+        beforeEach(function () {
+            req = {}, res = {};
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            next = sinon.spy();
+        });
+
+        it('checkIsPrivate should call next if not private', function (done) {
+            apiSettingsStub.withArgs(sinon.match.has('key', 'isPrivate')).returns(Promise.resolve({
+                settings: [{
+                    key: 'isPrivate',
+                    value: 'false'
+                }]
+            }));
+
+            middleware.checkIsPrivate(req, res, next).then(function () {
+                next.called.should.be.true;
+                res.isPrivateBlog.should.be.false;
+
+                done();
+            }).catch(done);
+        });
+
+        it('checkIsPrivate should load session if private', function (done) {
+            apiSettingsStub.withArgs(sinon.match.has('key', 'isPrivate')).returns(Promise.resolve({
+                settings: [{
+                    key: 'isPrivate',
+                    value: 'true'
+                }]
+            }));
+
+            middleware.checkIsPrivate(req, res, next).then(function () {
+                res.isPrivateBlog.should.be.true;
+
+                done();
+            }).catch(done);
+        });
+
+        describe('not private', function () {
+            beforeEach(function () {
+                res.isPrivateBlog = false;
+            });
+
+            it('filterPrivateRoutes should call next if not private', function () {
+                middleware.filterPrivateRoutes(req, res, next);
+                next.called.should.be.true;
+            });
+
+            it('isPrivateSessionAuth should redirect if blog is not private', function () {
+                res = {
+                    redirect: sinon.spy(),
+                    isPrivateBlog: false
+                };
+                middleware.isPrivateSessionAuth(req, res, next);
+                res.redirect.called.should.be.true;
+            });
+        });
+
+        describe('private', function () {
+            var errorSpy;
+
+            beforeEach(function () {
+                res.isPrivateBlog = true;
+                errorSpy = sandbox.spy(errors, 'error404');
+                res = {
+                    status: function () {
+                        return this;
+                    },
+                    send: function () {},
+                    set: function () {},
+                    isPrivateBlog: true
+                };
+            });
+
+            it('filterPrivateRoutes should call next if admin', function () {
+                res.isAdmin = true;
+                middleware.filterPrivateRoutes(req, res, next);
+                next.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should call next if is the "private" route', function () {
+                req.url = '/private/';
+                middleware.filterPrivateRoutes(req, res, next);
+                next.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should throw 404 if url is sitemap', function () {
+                req.url = '/sitemap.xml';
+                middleware.filterPrivateRoutes(req, res, next);
+                errorSpy.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should throw 404 if url is rss', function () {
+                req.url = '/rss';
+                middleware.filterPrivateRoutes(req, res, next);
+                errorSpy.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should throw 404 if url is rss plus something', function () {
+                req.url = '/rss/sometag';
+                middleware.filterPrivateRoutes(req, res, next);
+                errorSpy.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should render custom robots.txt', function () {
+                req.url = '/robots.txt';
+                res.writeHead = sinon.spy();
+                res.end = sinon.spy();
+                sandbox.stub(fs, 'readFile', function (file, cb) {
+                    cb(null, 'User-agent: * Disallow: /');
+                });
+                middleware.filterPrivateRoutes(req, res, next);
+                res.writeHead.called.should.be.true;
+                res.end.called.should.be.true;
+            });
+
+            it('authenticateProtection should call next if error', function () {
+                res.error = 'Test Error';
+                middleware.authenticateProtection(req, res, next);
+                next.called.should.be.true;
+            });
+
+            describe('with hash verification', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs(sinon.match.has('key', 'password')).returns(Promise.resolve({
+                        settings: [{
+                            key: 'password',
+                            value: 'rightpassword'
+                        }]
+                    }));
+                });
+
+                it('authenticatePrivateSession should return next if hash is verified', function (done) {
+                    var salt = Date.now().toString();
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+
+                    middleware.authenticatePrivateSession(req, res, next).then(function () {
+                        next.called.should.be.true;
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('authenticatePrivateSession should redirect if hash is not verified', function (done) {
+                    req.url = '/welcome-to-ghost';
+                    req.session = {
+                        token: 'wrongpassword',
+                        salt: Date.now().toString()
+                    };
+                    res.redirect = sinon.spy();
+
+                    middleware.authenticatePrivateSession(req, res, next).then(function () {
+                        res.redirect.called.should.be.true;
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('isPrivateSessionAuth should redirect if hash is verified', function (done) {
+                    var salt = Date.now().toString();
+
+                    req.session = {
+                        token: hash('rightpassword', salt),
+                        salt: salt
+                    };
+                    res.redirect = sandbox.spy();
+
+                    middleware.isPrivateSessionAuth(req, res, next).then(function () {
+                        res.redirect.called.should.be.true;
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('isPrivateSessionAuth should return next if hash is not verified', function (done) {
+                    req.session = {
+                        token: 'wrongpassword',
+                        salt: Date.now().toString()
+                    };
+
+                    middleware.isPrivateSessionAuth(req, res, next).then(function () {
+                        next.called.should.be.true;
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('authenticateProtection should return next if password is incorrect', function (done) {
+                    req.body = {password: 'wrongpassword'};
+
+                    middleware.authenticateProtection(req, res, next).then(function () {
+                        res.error.should.not.be.empty;
+                        next.called.should.be.true;
+
+                        done();
+                    }).catch(done);
+                });
+
+                it('authenticateProtection should redirect if password is correct', function (done) {
+                    req.body = {password: 'rightpassword'};
+                    req.session = {};
+                    res.redirect = sandbox.spy();
+
+                    middleware.authenticateProtection(req, res, next).then(function () {
+                        res.redirect.called.should.be.true;
+
+                        done();
+                    }).catch(done);
+                });
+            });
         });
     });
 });

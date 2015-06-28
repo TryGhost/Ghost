@@ -1,0 +1,162 @@
+/* Settings
+/* ---------------------------------------------------------- */
+
+
+/* Navigation
+/* ---------------------------------------------------------- */
+
+.gh-blognav {
+    margin: 20px 0;
+}
+
+.gh-blognav-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 20px;
+}
+
+.gh-blognav-grab {
+    padding: 0 16px 0 0;
+    width: 16px;
+    color: #d1d1d1;
+    text-indent: -4px;
+    font-size: 16px;
+    cursor: move;
+}
+
+.gh-blognav-url .fake-placeholder {
+    color: #c1c1c1;
+}
+
+.gh-blognav-line {
+    display: flex;
+    width: 100%;
+}
+
+.gh-blognav-label {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.gh-blognav-url {
+    flex-grow: 3;
+}
+
+.gh-blognav-delete {
+    padding: 8px 0 8px 10px;
+    color: #c1c1c1;
+    font-size: 14px;
+    transition: color 0.1s linear;
+}
+
+.gh-blognav-delete:hover,
+.gh-blognav-delete:focus {
+    color: var(--red);
+}
+
+.gh-blognav-add {
+    margin-right: -2px;
+    margin-left: 10px;
+    width: 16px;
+    height: 16px;
+    background: var(--green);
+    border-radius: 2px;
+    color: #fff;
+    text-align: center;
+    font-size: 10px;
+    line-height: 8px;
+    transition: background 0.1s linear;
+}
+
+.gh-blognav-add:hover,
+.gh-blognav-add:focus {
+    background: color(var(--green) lightness(-10%));
+}
+
+.gh-blognav-item:last-child {
+    padding-left: calc(16px + 20px);
+    /* icon-grab + nav-item padding) */
+}
+
+.gh-blognav-item:last-child .gh-blognav-grab {
+    display: none;
+}
+
+/* Remove space between inputs on smaller screens */
+@media (max-width: 800px) {
+    .gh-blognav-label {
+        margin-right: -1px;
+    }
+    .gh-blognav-label input {
+        border-right-color: #eaeaea;
+        border-radius: 4px 0 0 4px;
+    }
+    .gh-blognav-url input {
+        border-left-color: #eaeaea;
+        border-radius: 0 4px 4px 0;
+    }
+    .gh-blognav-item input:focus {
+        position: relative;
+        z-index: 100;
+    }
+}
+
+
+/* Code Injection
+/* ---------------------------------------------------------- */
+
+.settings-code {
+    max-width: 700px;
+}
+
+.settings-code p {
+    margin: 0 0 4px 0;
+}
+
+.settings-code code {
+    vertical-align: middle;
+}
+
+.settings-code-editor {
+    padding: 0;
+    min-width: 250px;
+    min-height: 300px;
+    max-width: 680px;
+    width: 100%;
+    height: auto;
+    border: 1px solid #e0dfd7;
+    border-radius: var(--border-radius);
+    line-height: 22px;
+    transition: border-color 0.15s linear;
+
+    -webkit-appearance: none;
+}
+
+.settings-code-editor.focused {
+    outline: 0;
+    border-color: var(--midgrey);
+}
+
+.settings-code-editor .CodeMirror {
+    border-radius: inherit;
+}
+
+.settings-code-editor .cm-s-xq-light span.cm-meta {
+    color: #000;
+}
+
+
+
+/* Labs
+/* ---------------------------------------------------------- */
+
+#startupload {
+    line-height: inherit;
+}
+
+@media (max-width: 400px) {
+    #startupload {
+        margin-top: 5px;
+    }
+}

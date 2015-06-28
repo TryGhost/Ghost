@@ -8,7 +8,6 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
 
     model: function (params) {
         var self = this,
-            post,
             postId,
             query;
 
@@ -16,11 +15,6 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
 
         if (!isNumber(postId) || !isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
             return this.transitionTo('error404', 'editor/' + params.post_id);
-        }
-
-        post = this.store.getById('post', postId);
-        if (post) {
-            return post;
         }
 
         query = {
@@ -43,7 +37,7 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
     afterModel: function (post) {
         var self = this;
 
-        return self.store.find('user', 'me').then(function (user) {
+        return self.get('session.user').then(function (user) {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
                 return self.replaceWith('posts.index');
             }
@@ -51,7 +45,7 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
     },
 
     actions: {
-         authorizationFailed: function () {
+        authorizationFailed: function () {
             this.send('openModal', 'signin');
         }
     }

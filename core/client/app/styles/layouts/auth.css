@@ -1,0 +1,45 @@
+/* Sign in
+/* ---------------------------------------------------------- */
+
+.gh-signin {
+    position: relative;
+    margin: 30px auto;
+    padding: 40px;
+    max-width: 400px;
+    width: 100%;
+    border: #dae1e3 1px solid;
+    background: #f8fbfd;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.gh-signin .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.gh-signin .btn {
+    margin: 0;
+    padding: 12px;
+}
+
+.forgotten-wrap {
+    position: relative;
+}
+
+.forgotten-wrap .forgotten-link {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    bottom: 10px;
+    padding: 0 12px;
+    border-left: #dae1e3 1px solid;
+    border-radius: 0;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.forgotten-link:hover {
+    border-left: #dae1e3 1px solid;
+    color: color(var(--blue) lightness(-20%));
+    text-decoration: none;
+}

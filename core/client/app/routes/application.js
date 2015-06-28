@@ -1,17 +1,23 @@
-import Ember from 'ember';
 /* global key */
+
+import Ember from 'ember';
+import ApplicationRouteMixin from 'simple-auth/mixins/application-route-mixin';
+import Configuration from 'simple-auth/configuration';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-var ApplicationRoute,
-    shortcuts = {};
+var shortcuts = {};
 
-shortcuts.esc = {action: 'closePopups', scope: 'all'};
+shortcuts.esc = {action: 'closeMenus', scope: 'all'};
 shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
 shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
 
-ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, ShortcutsRoute, {
+export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     shortcuts: shortcuts,
+
+    config: Ember.inject.service(),
+    dropdown: Ember.inject.service(),
+    notifications: Ember.inject.service(),
 
     afterModel: function (model, transition) {
         if (this.get('session').isAuthenticated) {
@@ -24,34 +30,30 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
     },
 
     actions: {
-        toggleGlobalMobileNav: function () {
-            this.toggleProperty('controller.showGlobalMobileNav');
+        openMobileMenu: function () {
+            this.controller.set('showMobileMenu', true);
         },
 
         openSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', true);
+            this.controller.set('showSettingsMenu', true);
         },
 
-        closeSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', false);
-        },
-
-        toggleSettingsMenu: function () {
-            this.toggleProperty('controller.showSettingsMenu');
-        },
-
-        closePopups: function () {
+        closeMenus: function () {
             this.get('dropdown').closeDropdowns();
             this.get('notifications').closeAll();
-
-            // Close right outlet if open
-            this.send('closeSettingsMenu');
-
             this.send('closeModal');
+            this.controller.setProperties({
+                showSettingsMenu: false,
+                showMobileMenu: false
+            });
         },
 
         signedIn: function () {
             this.send('loadServerNotifications', true);
+        },
+
+        invalidateSession: function () {
+            this.get('session').invalidate();
         },
 
         sessionAuthenticationFailed: function (error) {
@@ -61,10 +63,10 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
                     err.message = err.message.htmlSafe();
                 });
 
-                this.notifications.showErrors(error.errors);
+                this.get('notifications').showErrors(error.errors);
             } else {
                 // connection errors don't return proper status message, only req.body
-                this.notifications.showError('There was a problem on the server.');
+                this.get('notifications').showError('There was a problem on the server.');
             }
         },
 
@@ -76,20 +78,20 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
                 return;
             }
 
-            this.store.find('user', 'me').then(function (user) {
+            this.get('session.user').then(function (user) {
                 self.send('signedIn', user);
                 var attemptedTransition = self.get('session').get('attemptedTransition');
                 if (attemptedTransition) {
                     attemptedTransition.retry();
                     self.get('session').set('attemptedTransition', null);
                 } else {
-                    self.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+                    self.transitionTo(Configuration.routeAfterAuthentication);
                 }
             });
         },
 
         sessionInvalidationFailed: function (error) {
-            this.notifications.showError(error.message);
+            this.get('notifications').showError(error.message);
         },
 
         openModal: function (modalName, model, type) {
@@ -138,20 +140,24 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
             var self = this;
 
             if (this.session.isAuthenticated) {
-                this.store.findAll('notification').then(function (serverNotifications) {
-                    serverNotifications.forEach(function (notification) {
-                        self.notifications.handleNotification(notification, isDelayed);
-                    });
+                this.get('session.user').then(function (user) {
+                    if (!user.get('isAuthor') && !user.get('isEditor')) {
+                        self.store.findAll('notification').then(function (serverNotifications) {
+                            serverNotifications.forEach(function (notification) {
+                                self.get('notifications').handleNotification(notification, isDelayed);
+                            });
+                        });
+                    }
                 });
             }
         },
 
         handleErrors: function (errors) {
-            var self = this;
+            var notifications = this.get('notifications');
 
-            this.notifications.clear();
+            notifications.clear();
             errors.forEach(function (errorObj) {
-                self.notifications.showError(errorObj.message || errorObj);
+                notifications.showError(errorObj.message || errorObj);
 
                 if (errorObj.hasOwnProperty('el')) {
                     errorObj.el.addClass('input-error');
@@ -163,5 +169,3 @@ ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, Shortcut
         save: Ember.K
     }
 });
-
-export default ApplicationRoute;

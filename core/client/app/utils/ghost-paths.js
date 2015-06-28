@@ -10,7 +10,9 @@ var makeRoute = function (root, args) {
     parts = Array.prototype.slice.call(args, 0);
 
     parts.forEach(function (part) {
-        route = [route, part.replace(slashAtStart, '').replace(slashAtEnd, '')].join('/');
+        if (part) {
+            route = [route, part.replace(slashAtStart, '').replace(slashAtEnd, '')].join('/');
+        }
     });
     return route += '/';
 };
@@ -51,7 +53,8 @@ function ghostPaths() {
             },
 
             asset: assetUrl
-        }
+        },
+        count: 'https://ghost.org/count/'
     };
 }
 

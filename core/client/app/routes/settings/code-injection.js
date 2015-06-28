@@ -1,30 +1,15 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+    titleToken: 'Settings - Code Injection',
     classNames: ['settings-view-code'],
 
     beforeModel: function () {
-        var feature = this.controllerFor('feature'),
-            self = this;
-
-        if (!feature) {
-            this.generateController('feature');
-            feature = this.controllerFor('feature');
-        }
-
-        return this.currentUser()
+        return this.get('session.user')
             .then(this.transitionAuthor())
-            .then(this.transitionEditor())
-            .then(function () {
-                return feature.then(function () {
-                    if (!feature.get('codeInjectionUI')) {
-                        return self.transitionTo('settings.general');
-                    }
-                });
-            });
+            .then(this.transitionEditor());
     },
 
     model: function () {
@@ -39,5 +24,3 @@ var SettingsCodeInjectionRoute = AuthenticatedRoute.extend(styleBody, loadingInd
         }
     }
 });
-
-export default SettingsCodeInjectionRoute;

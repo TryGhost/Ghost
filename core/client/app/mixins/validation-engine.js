@@ -1,13 +1,12 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-import {getRequestErrorMessage} from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
 import PostValidator from 'ghost/validators/post';
 import SetupValidator from 'ghost/validators/setup';
 import SignupValidator from 'ghost/validators/signup';
 import SigninValidator from 'ghost/validators/signin';
-import ForgotValidator from 'ghost/validators/forgotten';
 import SettingValidator from 'ghost/validators/setting';
 import ResetValidator from 'ghost/validators/reset';
 import UserValidator from 'ghost/validators/user';
@@ -62,7 +61,7 @@ function formatErrors(errors, opts) {
 * It will be able to validate any properties on itself (or the model it passes to validate())
 * with the use of a declared validator.
 */
-var ValidationEngine = Ember.Mixin.create({
+export default Ember.Mixin.create({
     // these validators can be passed a model to validate when the class that
     // mixes in the ValidationEngine declares a validationType equal to a key on this object.
     // the model is either passed in via `this.validate({ model: object })`
@@ -74,7 +73,6 @@ var ValidationEngine = Ember.Mixin.create({
         setup: SetupValidator,
         signup: SignupValidator,
         signin: SigninValidator,
-        forgotten: ForgotValidator,
         setting: SettingValidator,
         reset: ResetValidator,
         user: UserValidator,
@@ -176,5 +174,3 @@ var ValidationEngine = Ember.Mixin.create({
         });
     }
 });
-
-export default ValidationEngine;

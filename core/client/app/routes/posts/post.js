@@ -1,10 +1,9 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute, {
+var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
     model: function (params) {
         var self = this,
             post,
@@ -42,7 +41,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
     afterModel: function (post) {
         var self = this;
 
-        return self.store.find('user', 'me').then(function (user) {
+        return self.get('session.user').then(function (user) {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
                 return self.replaceWith('posts.index');
             }
@@ -61,8 +60,12 @@ var PostsPostRoute = AuthenticatedRoute.extend(loadingIndicator, ShortcutsRoute,
     },
 
     actions: {
-        openEditor: function () {
-            this.transitionTo('editor.edit', this.get('controller.model'));
+        openEditor: function (post) {
+            if (!post) {
+                return;
+            }
+
+            this.transitionTo('editor.edit', post.get('id'));
         },
 
         deletePost: function () {

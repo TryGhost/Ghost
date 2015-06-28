@@ -44,21 +44,21 @@ templates.getThemeViewForPost = function (themePaths, post) {
     return view;
 };
 
-// Given a theme object and a tag slug this will return
+// Given a theme object and a slug this will return
 // which theme template page should be used.
 // If no default or custom tag template exists then 'index'
 // will be returned
-// If no custom tag template exists but a default does then
-// 'tag' will be returned
-// If given a tag slug and a custom tag template
+// If no custom template exists but a default does then
+// the default will be returned
+// If given a slug and a custom template
 // exits it will return that view.
-templates.getThemeViewForTag = function (themePaths, tag) {
-    var customTagView = 'tag-' + tag,
-        view = 'tag';
+templates.getThemeViewForChannel = function (themePaths, channelName, slug) {
+    var customChannelView = channelName + '-' + slug,
+        view = channelName;
 
-    if (themePaths.hasOwnProperty(customTagView + '.hbs')) {
-        view = customTagView;
-    } else if (!themePaths.hasOwnProperty('tag.hbs')) {
+    if (themePaths.hasOwnProperty(customChannelView + '.hbs')) {
+        view = customChannelView;
+    } else if (!themePaths.hasOwnProperty(channelName + '.hbs')) {
         view = 'index';
     }
 

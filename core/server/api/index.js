@@ -21,10 +21,8 @@ var _              = require('lodash'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
     dataExport     = require('../data/export'),
-    errors         = require('../errors'),
 
     http,
-    formatHttpErrors,
     addHeaders,
     cacheInvalidationHeader,
     locationHeader,
@@ -36,7 +34,7 @@ var _              = require('lodash'),
  * Initialise the API - populate the settings cache
  * @return {Promise(Settings)} Resolves to Settings Collection
  */
-init = function () {
+init = function init() {
     return settings.updateSettingsCache();
 };
 
@@ -53,11 +51,10 @@ init = function () {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-cacheInvalidationHeader = function (req, result) {
+cacheInvalidationHeader = function cacheInvalidationHeader(req, result) {
     var parsedUrl = req._parsedUrl.pathname.replace(/^\/|\/$/g, '').split('/'),
         method = req.method,
         endpoint = parsedUrl[0],
-        id = parsedUrl[1],
         cacheInvalidate,
         jsonResult = result.toJSON ? result.toJSON() : result,
         post,
@@ -80,19 +77,9 @@ cacheInvalidationHeader = function (req, result) {
 
             // Don't set x-cache-invalidate header for drafts
             if (hasStatusChanged || wasDeleted || wasPublishedUpdated) {
-                cacheInvalidate = [
-                    '/',
-                    '/' + config.routeKeywords.page + '/*',
-                    '/rss/',
-                    '/rss/*',
-                    '/' + config.routeKeywords.tag + '/*',
-                    '/' + config.routeKeywords.author + '/*',
-                    '/sitemap-*.xml'
-                ].join(', ');
-
-                if (id && post.slug && post.url) {
-                    cacheInvalidate +=  ', ' + post.url;
-                }
+                cacheInvalidate = '/*';
+            } else {
+                cacheInvalidate = '/' + config.routeKeywords.preview + '/' + post.uuid + '/';
             }
         }
     }
@@ -111,7 +98,7 @@ cacheInvalidationHeader = function (req, result) {
  * @param {Object} result API method result
  * @return {String} Resolves to header string
  */
-locationHeader = function (req, result) {
+locationHeader = function locationHeader(req, result) {
     var apiRoot = config.urlFor('api'),
         location,
         newObject;
@@ -149,44 +136,13 @@ locationHeader = function (req, result) {
  * @see http://tools.ietf.org/html/rfc598
  * @return {string}
  */
-contentDispositionHeader = function () {
-    return dataExport.fileName().then(function (filename) {
+contentDispositionHeader = function contentDispositionHeader() {
+    return dataExport.fileName().then(function then(filename) {
         return 'Attachment; filename="' + filename + '"';
     });
 };
 
-/**
- * ### Format HTTP Errors
- * Converts the error response from the API into a format which can be returned over HTTP
- *
- * @private
- * @param {Array} error
- * @return {{errors: Array, statusCode: number}}
- */
-formatHttpErrors = function (error) {
-    var statusCode = 500,
-        errors = [];
-
-    if (!_.isArray(error)) {
-        error = [].concat(error);
-    }
-
-    _.each(error, function (errorItem) {
-        var errorContent = {};
-
-        // TODO: add logic to set the correct status code
-        statusCode = errorItem.code || 500;
-
-        errorContent.message = _.isString(errorItem) ? errorItem :
-            (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
-        errorContent.type = errorItem.type || 'InternalServerError';
-        errors.push(errorContent);
-    });
-
-    return {errors: errors, statusCode: statusCode};
-};
-
-addHeaders = function (apiMethod, req, res, result) {
+addHeaders = function addHeaders(apiMethod, req, res, result) {
     var cacheInvalidation,
         location,
         contentDisposition;
@@ -231,8 +187,8 @@ addHeaders = function (apiMethod, req, res, result) {
  * @param {Function} apiMethod API method to call
  * @return {Function} middleware format function to be called by the route when a matching request is made
  */
-http = function (apiMethod) {
-    return function (req, res) {
+http = function http(apiMethod) {
+    return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
             options = _.extend({}, req.files, req.query, req.params, {
@@ -250,15 +206,13 @@ http = function (apiMethod) {
 
         return apiMethod(object, options).tap(function onSuccess(response) {
             // Add X-Cache-Invalidate, Location, and Content-Disposition headers
-            return addHeaders(apiMethod, req, res, response);
-        }).then(function (response) {
+            return addHeaders(apiMethod, req, res, (response || {}));
+        }).then(function then(response) {
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
-        }).catch(function onError(error) {
-            errors.logError(error);
-            var httpErrors = formatHttpErrors(error);
-            // Send a properly formatted HTTP response containing the errors
-            res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
+        }).catch(function onAPIError(error) {
+            // To be handled by the API middleware
+            next(error);
         });
     };
 };

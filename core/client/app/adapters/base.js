@@ -13,7 +13,7 @@ var BaseAdapter = DS.RESTAdapter.extend({
             delete query.id;
         }
 
-        return this.ajax(this.buildURL(type.typeKey, id), 'GET', {data: query});
+        return this.ajax(this.buildURL(type.modelName, id), 'GET', {data: query});
     },
 
     buildURL: function (type, id) {

@@ -3,7 +3,7 @@ import ApplicationAdapter from 'ghost/adapters/application';
 var SettingAdapter = ApplicationAdapter.extend({
     updateRecord: function (store, type, record) {
         var data = {},
-            serializer = store.serializerFor(type.typeKey);
+            serializer = store.serializerFor(type.modelName);
 
         // remove the fake id that we added onto the model.
         delete record.id;
@@ -14,7 +14,7 @@ var SettingAdapter = ApplicationAdapter.extend({
 
         // use the ApplicationAdapter's buildURL method but do not
         // pass in an id.
-        return this.ajax(this.buildURL(type.typeKey), 'PUT', {data: data});
+        return this.ajax(this.buildURL(type.modelName), 'PUT', {data: data});
     }
 });
 

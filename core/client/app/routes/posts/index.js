@@ -1,8 +1,8 @@
+import AuthenticatedRouteMixin from 'simple-auth/mixins/authenticated-route-mixin';
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import mobileQuery from 'ghost/utils/mobile';
 
-var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin, loadingIndicator, {
+var PostsIndexRoute = MobileIndexRoute.extend(AuthenticatedRouteMixin, {
     noPosts: false,
 
     // Transition to a specific post if we're not on mobile
@@ -23,7 +23,7 @@ var PostsIndexRoute = MobileIndexRoute.extend(SimpleAuth.AuthenticatedRouteMixin
             posts = this.store.all('post'),
             post;
 
-        return this.store.find('user', 'me').then(function (user) {
+        return this.get('session.user').then(function (user) {
             post = posts.find(function (post) {
                 // Authors can only see posts they've written
                 if (user.get('isAuthor')) {

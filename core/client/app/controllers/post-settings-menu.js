@@ -1,50 +1,29 @@
 import Ember from 'ember';
-/* global moment */
 import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
+export default Ember.Controller.extend(SettingsMenuMixin, {
     debounceId: null,
     lastPromise: null,
     selectedAuthor: null,
     uploaderReference: null,
 
-    initializeSelectedAuthor: function () {
+    application: Ember.inject.controller(),
+    config: Ember.inject.service(),
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
+
+    initializeSelectedAuthor: Ember.observer('model', function () {
         var self = this;
 
         return this.get('model.author').then(function (author) {
             self.set('selectedAuthor', author);
             return author;
         });
-    }.observes('model'),
-
-    changeAuthor: function () {
-        var author = this.get('model.author'),
-            selectedAuthor = this.get('selectedAuthor'),
-            model = this.get('model'),
-            self = this;
-
-        // return if nothing changed
-        if (selectedAuthor.get('id') === author.get('id')) {
-            return;
-        }
-
-        model.set('author', selectedAuthor);
-
-        // if this is a new post (never been saved before), don't try to save it
-        if (this.get('model.isNew')) {
-            return;
-        }
-
-        model.save().catch(function (errors) {
-            self.showErrors(errors);
-            self.set('selectedAuthor', author);
-            model.rollback();
-        });
-    }.observes('selectedAuthor'),
+    }),
 
     authors: Ember.computed(function () {
         // Loaded asynchronously, so must use promise proxies.
@@ -64,20 +43,21 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
     }),
 
     /*jshint unused:false */
-    publishedAtValue: Ember.computed('model.published_at', function (key, value) {
-        var pubDate = this.get('model.published_at');
+    publishedAtValue: Ember.computed('model.published_at', {
+        get: function () {
+            var pubDate = this.get('model.published_at');
 
-        // We're using a fake setter to reset
-        // the cache for this property
-        if (arguments.length > 1) {
+            if (pubDate) {
+                return formatDate(pubDate);
+            }
+
+            return formatDate(moment());
+        },
+        set: function (key, value) {
+            // We're using a fake setter to reset
+            // the cache for this property
             return formatDate(moment());
         }
-
-        if (pubDate) {
-            return formatDate(pubDate);
-        }
-
-        return formatDate(moment());
     }),
     /*jshint unused:true */
 
@@ -189,11 +169,11 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
 
     // observe titleScratch, keeping the post's slug in sync
     // with it until saved for the first time.
-    addTitleObserver: function () {
+    addTitleObserver: Ember.observer('model', function () {
         if (this.get('model.isNew') || this.get('model.title') === '(Untitled)') {
             this.addObserver('model.titleScratch', this, 'titleObserver');
         }
-    }.observes('model'),
+    }),
 
     titleObserver: function () {
         var debounceId,
@@ -210,11 +190,11 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
 
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
-        this.notifications.showErrors(errors);
+        this.get('notifications').showErrors(errors);
     },
 
     showSuccess: function (message) {
-        this.notifications.showSuccess(message);
+        this.get('notifications').showSuccess(message);
     },
 
     actions: {
@@ -456,8 +436,34 @@ var PostSettingsMenuController = Ember.Controller.extend(SettingsMenuMixin, {
 
         resetPubDate: function () {
             this.set('publishedAtValue', '');
+        },
+
+        closeNavMenu: function () {
+            this.get('application').send('closeNavMenu');
+        },
+
+        changeAuthor: function (newAuthor) {
+            var author = this.get('model.author'),
+                model = this.get('model'),
+                self = this;
+
+            // return if nothing changed
+            if (newAuthor.get('id') === author.get('id')) {
+                return;
+            }
+
+            model.set('author', newAuthor);
+
+            // if this is a new post (never been saved before), don't try to save it
+            if (this.get('model.isNew')) {
+                return;
+            }
+
+            model.save().catch(function (errors) {
+                self.showErrors(errors);
+                self.set('selectedAuthor', author);
+                model.rollback();
+            });
         }
     }
 });
-
-export default PostSettingsMenuController;

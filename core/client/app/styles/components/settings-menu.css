@@ -1,0 +1,181 @@
+/* Settings Menu
+/* ---------------------------------------------------------- */
+
+
+/* Container
+/* ---------------------------------------------------------- */
+
+.settings-menu-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+    overflow: hidden;
+    width: 350px;
+    border-left: #dfe1e3 1px solid;
+    background: #fff;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    transform: translate3d(350px, 0px, 0px);
+}
+
+.settings-menu-expanded .settings-menu-container {
+    transform: translate3d(0, 0px, 0px);
+}
+
+.settings-menu-container .settings-menu-pane {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    opacity: 1;
+    transform: translate3d(0, 0px, 0px);
+}
+
+@media (min-width: 901px) {
+    .settings-menu-container .settings-menu-pane {
+        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    }
+}
+
+.settings-menu-container .settings-menu-pane.settings-menu-pane-out-left {
+    transform: translate3d(-100%, 0px, 0px);
+}
+
+.settings-menu-container .settings-menu-pane.settings-menu-pane-out-right {
+    transform: translate3d(100%, 0px, 0px);
+}
+
+.settings-menu-container .settings-menu-pane.settings-menu-pane-in {
+    transform: translate3d(0, 0px, 0px);
+}
+
+
+/* Header
+/* ---------------------------------------------------------- */
+
+.settings-menu-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    padding: 19px 24px;
+}
+
+.settings-menu-header h4 {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.375;
+    font-weight: normal;
+}
+
+.settings-menu-header .close {
+    right: 22px;
+    font-size: 12px;
+}
+
+.settings-menu-header.subview h4 {
+    text-align: center;
+}
+
+.settings-menu-header.subview .back {
+    left: 0;
+}
+
+.settings-menu-header.subview .back:before {
+    left: 19px;
+}
+
+
+
+
+/* Content
+/* ---------------------------------------------------------- */
+
+.settings-menu-content {
+    padding: 0 24px 24px;
+}
+
+.settings-menu-content .image-uploader {
+    margin: 0 0 1.6rem 0;
+}
+
+.settings-menu-content .image-uploader .description {
+    font-size: 1.4rem;
+}
+
+.settings-menu-content .image-uploader.image-uploader-url {
+    padding: 35px 45px;
+}
+
+.settings-menu-content textarea {
+    height: 108px;
+}
+
+.settings-menu-content .tag-delete-button {
+    padding-left: 0;
+    color: var(--red);
+}
+
+.settings-menu-content .tag-delete-button:before {
+    position: relative;
+    top: -1px;
+    margin-right: 4px;
+}
+
+.settings-menu-content .tag-delete-button:hover,
+.settings-menu-content .tag-delete-button:hover:before {
+    color: color(var(--red) lightness(-10%));
+}
+
+.settings-menu-content .nav-list {
+    margin-top: 3rem;
+}
+
+.settings-menu-content .pre-image-uploader {
+    margin-top: 0;
+    min-height: 50px;
+    max-height: 250px;
+    width: auto;
+}
+
+.settings-menu-content .word-count {
+    font-weight: bold;
+}
+
+.ghost-url-preview {
+    /* Preview never wider than input */
+    overflow: hidden;
+    width: 98%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* Background
+/* ---------------------------------------------------------- */
+
+.settings-menu-expanded .content-cover,
+.mobile-menu-expanded .content-cover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    /* Not off the screen, to give a parallax effect */
+}
+.settings-menu-expanded .content-cover {
+    transform: translate3d(-350px, 0px, 0px);
+}
+.mobile-menu-expanded .content-cover {
+    transform: translate3d(235px, 0px, 0px);
+}
+@media (max-width: 500px) {
+    .mobile-menu-expanded .content-cover {
+        transform: translate3d(75vw, 0, 0);
+    }
+}

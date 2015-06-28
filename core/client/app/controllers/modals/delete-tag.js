@@ -1,5 +1,8 @@
 import Ember from 'ember';
-var DeleteTagController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
+    notifications: Ember.inject.service(),
+
     postInflection: Ember.computed('model.post_count', function () {
         return this.get('model.post_count') > 1 ? 'posts' : 'post';
     }),
@@ -10,12 +13,12 @@ var DeleteTagController = Ember.Controller.extend({
                 name = tag.get('name'),
                 self = this;
 
-            this.send('closeSettingsMenu');
+            this.send('closeMenus');
 
             tag.destroyRecord().then(function () {
-                self.notifications.showSuccess('Deleted ' + name);
+                self.get('notifications').showSuccess('Deleted ' + name);
             }).catch(function (error) {
-                self.notifications.showAPIError(error);
+                self.get('notifications').showAPIError(error);
             });
         },
 
@@ -35,5 +38,3 @@ var DeleteTagController = Ember.Controller.extend({
         }
     }
 });
-
-export default DeleteTagController;

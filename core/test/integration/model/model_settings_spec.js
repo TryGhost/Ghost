@@ -2,13 +2,18 @@
 /*jshint expr:true*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
+    sinon           = require('sinon'),
 
     // Stuff we are testing
     SettingsModel   = require('../../../server/models/settings').Settings,
     config          = require('../../../server/config'),
+    events          = require('../../../server/events'),
+    sandbox         = sinon.sandbox.create(),
     context         = testUtils.context.admin;
 
 describe('Settings Model', function () {
+    var eventSpy;
+
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
@@ -16,6 +21,14 @@ describe('Settings Model', function () {
 
     before(function () {
         should.exist(SettingsModel);
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    beforeEach(function () {
+        eventSpy = sandbox.spy(events, 'emit');
     });
 
     describe('API', function () {
@@ -67,6 +80,10 @@ describe('Settings Model', function () {
                 edited.attributes.key.should.equal('description');
                 edited.attributes.value.should.equal('new value');
 
+                eventSpy.calledTwice.should.be.true;
+                eventSpy.firstCall.calledWith('settings.edited').should.be.true;
+                eventSpy.secondCall.calledWith('settings.description.edited').should.be.true;
+
                 done();
             }).catch(done);
         });
@@ -100,6 +117,12 @@ describe('Settings Model', function () {
                 editedModel.attributes.key.should.equal(model2.key);
                 editedModel.attributes.value.should.equal(model2.value);
 
+                eventSpy.callCount.should.equal(4);
+                eventSpy.getCall(0).calledWith('settings.edited').should.be.true;
+                eventSpy.getCall(1).calledWith('settings.description.edited').should.be.true;
+                eventSpy.getCall(2).calledWith('settings.edited').should.be.true;
+                eventSpy.getCall(3).calledWith('settings.title.edited').should.be.true;
+
                 done();
             }).catch(done);
         });
@@ -116,6 +139,10 @@ describe('Settings Model', function () {
                 createdSetting.attributes.key.should.equal(newSetting.key, 'key is correct');
                 createdSetting.attributes.value.should.equal(newSetting.value, 'value is correct');
                 createdSetting.attributes.type.should.equal('core');
+
+                eventSpy.calledTwice.should.be.true;
+                eventSpy.firstCall.calledWith('settings.added').should.be.true;
+                eventSpy.secondCall.calledWith('settings.TestSetting1.added').should.be.true;
 
                 done();
             }).catch(done);

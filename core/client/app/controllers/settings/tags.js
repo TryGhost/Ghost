@@ -3,7 +3,7 @@ import PaginationMixin from 'ghost/mixins/pagination-controller';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuMixin, {
+export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
     tags: Ember.computed.alias('model'),
 
     activeTag: null,
@@ -19,9 +19,30 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
         this._super(options);
     },
 
+    application: Ember.inject.controller(),
+    config: Ember.inject.service(),
+    notifications: Ember.inject.service(),
+
+    uploaderReference: null,
+
+    // This observer loads and resets the uploader whenever the active tag changes,
+    // ensuring that we can reuse the whole settings menu.
+    updateUploader: Ember.observer('activeTag.image', 'uploaderReference', function () {
+        var uploader = this.get('uploaderReference'),
+            image = this.get('activeTag.image');
+
+        if (uploader && uploader[0]) {
+            if (image) {
+                uploader[0].uploaderUi.initWithImage();
+            } else {
+                uploader[0].uploaderUi.reset();
+            }
+        }
+    }),
+
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
-        this.notifications.showErrors(errors);
+        this.get('notifications').showErrors(errors);
     },
 
     saveActiveTagProperty: function (propKey, newValue) {
@@ -38,7 +59,7 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
 
         activeTag.set(propKey, newValue);
 
-        this.notifications.closePassive();
+        this.get('notifications').closePassive();
 
         activeTag.save().catch(function (errors) {
             self.showErrors(errors);
@@ -60,7 +81,7 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
     }),
 
     seoURL: Ember.computed('activeTagSlugScratch', function () {
-        var blogUrl = this.get('config').blogUrl,
+        var blogUrl = this.get('config.blogUrl'),
             seoSlug = this.get('activeTagSlugScratch') ? this.get('activeTagSlugScratch') : '',
             seoURL = blogUrl + '/tag/' + seoSlug;
 
@@ -128,8 +149,14 @@ var TagsController = Ember.ArrayController.extend(PaginationMixin, SettingsMenuM
 
         clearCoverImage: function () {
             this.saveActiveTagProperty('image', '');
+        },
+
+        closeNavMenu: function () {
+            this.get('application').send('closeNavMenu');
+        },
+
+        setUploaderReference: function (ref) {
+            this.set('uploaderReference', ref);
         }
     }
 });
-
-export default TagsController;

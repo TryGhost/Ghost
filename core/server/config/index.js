@@ -1,10 +1,8 @@
+// # Config
 // General entry point for all configuration data
-//
-// This file itself is a wrapper for the root level config.js file.
-// All other files that need to reference config.js should use this file.
-
 var path          = require('path'),
     Promise       = require('bluebird'),
+    chalk         = require('chalk'),
     crypto        = require('crypto'),
     fs            = require('fs'),
     url           = require('url'),
@@ -30,6 +28,7 @@ function ConfigManager(config) {
     this._config = {};
 
     // Allow other modules to be externally accessible.
+    this.urlJoin = configUrl.urlJoin;
     this.urlFor = configUrl.urlFor;
     this.urlPathForPost = configUrl.urlPathForPost;
 
@@ -205,7 +204,9 @@ ConfigManager.prototype.set = function (config) {
         routeKeywords: {
             tag: 'tag',
             author: 'author',
-            page: 'page'
+            page: 'page',
+            preview: 'p',
+            private: 'private'
         },
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..
@@ -339,14 +340,6 @@ ConfigManager.prototype.validate = function () {
         return Promise.reject(e);
     }
 
-    // Check if we don't even have a config
-    if (!config) {
-        errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), 'NODE_ENV=' + envVal,
-            'Ensure your config.js has a section for the current NODE_ENV value and is formatted properly.');
-
-        return Promise.reject(new Error('Unable to load config for NODE_ENV=' + envVal));
-    }
-
     // Check that our url is valid
     if (!validator.isURL(config.url, {protocols: ['http', 'https'], require_protocol: true})) {
         errors.logError(new Error('Your site url in config.js is invalid.'), config.url, 'Please make sure this is a valid url before restarting');
@@ -422,7 +415,7 @@ ConfigManager.prototype.displayDeprecated = function (item, properties, address)
         if (properties.length) {
             return self.displayDeprecated(item[property], properties, address);
         }
-        errorText = 'The configuration property [' + address.join('.').bold + '] has been deprecated.';
+        errorText = 'The configuration property [' + chalk.bold(address.join('.')) + '] has been deprecated.';
         explanationText =  'This will be removed in a future version, please update your config.js file.';
         helpText = 'Please check http://support.ghost.org/config for the most up-to-date example.';
         errors.logWarn(errorText, explanationText, helpText);

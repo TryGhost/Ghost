@@ -19,12 +19,14 @@ utils = {
     /**
      * Timespans in seconds and milliseconds for better readability
      */
-    ONE_HOUR_S: 3600,
-    ONE_DAY_S: 86400,
-    ONE_YEAR_S: 31536000,
-    ONE_HOUR_MS: 3600000,
-    ONE_DAY_MS: 86400000,
-    ONE_YEAR_MS: 31536000000,
+    ONE_HOUR_S:          3600,
+    ONE_DAY_S:          86400,
+    ONE_YEAR_S:      31536000,
+    ONE_HOUR_MS:      3600000,
+    ONE_DAY_MS:      86400000,
+    ONE_WEEK_MS:    604800000,
+    ONE_MONTH_MS:  2628000000,
+    ONE_YEAR_MS:  31536000000,
 
     /**
      * Return a unique identifier with the given `len`.
@@ -49,19 +51,29 @@ utils = {
         return buf.join('');
     },
     safeString: function (string) {
-        string = string.trim();
+        // Handle the £ symbol seperately, since it needs to be removed before
+        // the unicode conversion.
+        string = string.replace(/£/g, '-');
 
         // Remove non ascii characters
         string = unidecode(string);
 
-        // Remove URL reserved chars: `:/?#[]@!$&'()*+,;=` as well as `\%<>|^~£"`
-        string = string.replace(/[:\/\?#\[\]@!$&'()*+,;=\\%<>\|\^~£"]/g, '')
-            // Replace dots and spaces with a dash
-            .replace(/(\s|\.)/g, '-')
+        // Replace URL reserved chars: `:/?#[]!$&()*+,;=` as well as `\%<>|^~£"`
+        string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|–|—)/g, '-')
+            // Remove apostrophes
+            .replace(/'/g, '')
             // Convert 2 or more dashes into a single dash
             .replace(/-+/g, '-')
+            // Remove any dashes at the beginning
+            .replace(/^-/, '')
             // Make the whole thing lowercase
             .toLowerCase();
+
+        // Remove trailing dash if needed
+        string = string.charAt(string.length - 1) === '-' ? string.substr(0, string.length - 1) : string;
+
+        // Handle whitespace at the beginning or end.
+        string = string.trim();
 
         return string;
     },

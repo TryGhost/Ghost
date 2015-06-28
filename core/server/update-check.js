@@ -1,10 +1,12 @@
 // # Update Checking Service
 //
 // Makes a request to Ghost.org to check if there is a new version of Ghost available.
-// The service is provided in return for users opting in to anonymous usage data collection
-// Blog owners can opt-out of update checks by setting 'updateCheck: false' in their config.js
+// The service is provided in return for users opting in to anonymous usage data collection.
+//
+// Blog owners can opt-out of update checks by setting `privacy: { useUpdateCheck: false }` in their config.js
 //
 // The data collected is as follows:
+//
 // - blog id - a hash of the blog hostname, pathname and dbHash. No identifiable info is stored.
 // - ghost version
 // - node version
@@ -54,9 +56,9 @@ function updateCheckData() {
         ops = [],
         mailConfig = config.mail;
 
-    ops.push(api.settings.read(_.extend(internal, {key: 'dbHash'})).catch(errors.rejectError));
-    ops.push(api.settings.read(_.extend(internal, {key: 'activeTheme'})).catch(errors.rejectError));
-    ops.push(api.settings.read(_.extend(internal, {key: 'activeApps'}))
+    ops.push(api.settings.read(_.extend({key: 'dbHash'}, internal)).catch(errors.rejectError));
+    ops.push(api.settings.read(_.extend({key: 'activeTheme'}, internal)).catch(errors.rejectError));
+    ops.push(api.settings.read(_.extend({key: 'activeApps'}, internal))
         .then(function (response) {
             var apps = response.settings[0];
             try {
@@ -100,7 +102,7 @@ function updateCheckData() {
 }
 
 function updateCheckRequest() {
-    return updateCheckData().then(function (reqData) {
+    return updateCheckData().then(function then(reqData) {
         var resData = '',
             headers,
             req;
@@ -111,15 +113,15 @@ function updateCheckRequest() {
             'Content-Length': reqData.length
         };
 
-        return new Promise(function (resolve, reject) {
+        return new Promise(function p(resolve, reject) {
             req = https.request({
                 hostname: checkEndpoint,
                 method: 'POST',
                 headers: headers
-            }, function (res) {
-                res.on('error', function (error) { reject(error); });
-                res.on('data', function (chunk) { resData += chunk; });
-                res.on('end', function () {
+            }, function handler(res) {
+                res.on('error', function onError(error) { reject(error); });
+                res.on('data', function onData(chunk) { resData += chunk; });
+                res.on('end', function onEnd() {
                     try {
                         resData = JSON.parse(resData);
                         resolve(resData);
@@ -129,15 +131,15 @@ function updateCheckRequest() {
                 });
             });
 
-            req.on('socket', function (socket) {
+            req.on('socket', function onSocket(socket) {
                 // Wait a maximum of 10seconds
                 socket.setTimeout(10000);
-                socket.on('timeout', function () {
+                socket.on('timeout', function onTimeout() {
                     req.abort();
                 });
             });
 
-            req.on('error', function (error) {
+            req.on('error', function onError(error) {
                 reject(error);
             });
 
@@ -166,8 +168,8 @@ function updateCheckResponse(response) {
         ).catch(errors.rejectError)
     );
 
-    return Promise.settle(ops).then(function (descriptors) {
-        descriptors.forEach(function (d) {
+    return Promise.settle(ops).then(function then(descriptors) {
+        descriptors.forEach(function forEach(d) {
             if (d.isRejected()) {
                 errors.rejectError(d.reason());
             }
@@ -185,7 +187,7 @@ function updateCheck() {
         // No update check
         return Promise.resolve();
     } else {
-        return api.settings.read(_.extend(internal, {key: 'nextUpdateCheck'})).then(function (result) {
+        return api.settings.read(_.extend({key: 'nextUpdateCheck'}, internal)).then(function then(result) {
             var nextUpdateCheck = result.settings[0];
 
             if (nextUpdateCheck && nextUpdateCheck.value && nextUpdateCheck.value > moment().unix()) {
@@ -202,7 +204,7 @@ function updateCheck() {
 }
 
 function showUpdateNotification() {
-    return api.settings.read(_.extend(internal, {key: 'displayUpdateNotification'})).then(function (response) {
+    return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
         var display = response.settings[0];
 
         // Version 0.4 used boolean to indicate the need for an update. This special case is

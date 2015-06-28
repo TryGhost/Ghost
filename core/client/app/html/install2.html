@@ -1,0 +1,86 @@
+<!doctype html>
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>Ghost Admin</title>
+<meta name="HandheldFriendly" content="True" />
+<meta name="MobileOptimized" content="320" />
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1, minimal-ui" />
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,700" />
+<link rel="stylesheet" href="file:///Users/John/Sites/Ghost/core/built/assets/vendor.css" />
+<link rel="stylesheet" href="file:///Users/John/Sites/Ghost/core/built/assets/ghost.css" />
+</head>
+<body>
+
+
+<div class="gh-flow">
+    <header class="gh-flow-head">
+        <nav class="gh-flow-nav">
+            <a class="gh-flow-back" href="#"><i class="icon-arrow-left"></i> Back</a>
+            <ol>
+                <li><a class="step" href="#"><i class="icon-check"></i><span class="num">1</span></a></li>
+                <li class="divider"></li>
+                <li class="current"><a class="step" href="#"><i class="icon-check"></i><span class="num">2</span></a></li>
+                <li class="divider"></li>
+                <li><a class="step" href="#"><i class="icon-check"></i><span class="num">3</span></a></li>
+            </ol>
+        </nav>
+    </header>
+
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            <header>
+                <h1>Create your account</h1>
+            </header>
+
+            <form class="gh-flow-create">
+                <figure class="account-image">
+                    <div  id="account-image" class="img"  style="background-image: url(http://www.gravatar.com/avatar/75e958a6674a7d68fe0d575fb235116c?d=404&s=250)">
+                        <!-- fallback to: Ghost/core/shared/img/ghosticon.jpg -->
+                        <span class="sr-only">User imge</span>
+                    </div>
+                    <a class="edit-account-image" href="#"><i class="icon-photos "><span class="sr-only">Upload an image</span></i></a>
+                </figure>
+                <div class="form-group">
+                    <label for="email-address">Email address</label>
+                    <span class="input-icon icon-mail">
+                        <input id="email-address" class="ember-view ember-text-field gh-input" type="email" placeholder="Eg. john@example.com">
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label for="full-name">Full name</label>
+                    <span class="input-icon icon-user">
+                        <input id="full-name" class="ember-view ember-text-field gh-input" type="text" placeholder="Eg. John Smith">
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <span class="input-icon icon-lock">
+                        <input id="password" class="ember-view ember-text-field gh-input" type="password" placeholder="At least 7 characters">
+                        <div class="pw-strength">
+                            <div class="pw-strength-dot"></div>
+                            <div class="pw-strength-dot"></div>
+                            <div class="pw-strength-dot"></div>
+                            <div class="pw-strength-dot"></div>
+                            <div class="pw-strength-dot <!--pw-strength-activedot-->"></div>
+                        </div>
+                    </span>
+                </div>
+                <div class="form-group">
+                    <label for="blog-title">Blog title</label>
+                    <span class="input-icon icon-content">
+                        <input id="blog-title" class="ember-view ember-text-field gh-input" type="text" placeholder="Eg. The Daily Awesome">
+                    </span>
+                </div>
+            </form>
+
+            <a class="btn btn-green btn-lg btn-block" href="#">Last step: Invite your team <i class="icon-chevron"></i></a>
+        </section>
+    </div>
+</div>
+
+
+</body>
+</html>

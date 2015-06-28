@@ -1,0 +1,518 @@
+/* Editor /ghost/editor/
+/* ---------------------------------------------------------- */
+
+
+/* Title
+/* ---------------------------------------------------------- */
+
+.gh-editor-title {
+    flex-grow: 1;
+}
+
+.gh-editor-title input {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--darkgrey);
+    letter-spacing: -1px;
+    font-size: 2.6rem;
+    font-weight: bold;
+}
+
+.gh-editor-title input:focus {
+    outline: 0;
+}
+
+
+/* Container & Headers
+/* ---------------------------------------------------------- */
+
+.view-editor {
+    display: flex;
+}
+
+.editor .entry-preview {
+    border-left: #dfe1e3 1px solid;
+}
+
+.editor .entry-markdown,
+.editor .entry-preview {
+    position: relative; /*TODO: Remove*/
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+/* Content areas at the top, and fill available space */
+.editor .entry-markdown-content,
+.editor .entry-preview-content {
+    order: 1;
+    flex-grow: 1;
+}
+
+/* Headers at the bottom, and fixed height */
+.editor .floatingheader {
+    order: 2;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    height: 40px;
+    border-top: #dfe1e3 1px solid;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    line-height: 1em;
+}
+.editor .floatingheader a {
+    color: var(--midgrey);
+}
+
+/* Switch to 1 col editor on small screens */
+@media (max-width: 1000px) {
+    .editor .entry-markdown {
+        width: 100%;
+    }
+    .editor .entry-preview {
+        display: none;
+    }
+}
+
+
+/* Editor (Left pane)
+/* ---------------------------------------------------------- */
+
+.editor .entry-markdown-content {
+    position: relative;
+    flex-grow: 1;
+}
+
+.editor .markdown-editor {
+    /* Legacy absolute positioning */
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 21px 20px 36px 20px;
+    max-width: 100%;
+    height: 100%;
+    border: 0;
+    color: color(var(--darkgrey) lightness(+10%));
+    font-family: var(--font-family-mono);
+    font-size: 1.6rem;
+    line-height: 2.5rem;
+    resize: none;
+}
+
+.editor .markdown-editor:focus {
+    outline: 0;
+}
+
+@media (max-width: 450px) {
+    .editor .markdown-editor {
+        padding: 15px;
+    }
+}
+
+
+/* FFF: Fucking Firefox Fixes
+/* ---------------------------------------------------------- */
+
+@-moz-document url-prefix() {
+    .editor .markdown-editor {
+        top: 40px;
+        padding-top: 0;
+        padding-bottom: 0;
+        height: calc(100% - 40px);
+    }
+}
+
+
+/* Preview (Right pane)
+/* ---------------------------------------------------------- */
+
+.editor .entry-preview-content {
+    flex-grow: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 19px 20px 37px 20px;
+    word-break: break-word;
+    hyphens: auto;
+    cursor: default;
+}
+
+/* The styles for the actual content inside the preview */
+.entry-preview-content,
+.content-preview-content {
+    font-size: 1.8rem;
+    line-height: 1.5em;
+    font-weight: 200;
+}
+
+.entry-preview-content *,
+.content-preview-content * {
+    user-select: all;
+}
+
+.entry-preview-content a,
+.content-preview-content a {
+    color: var(--blue);
+    text-decoration: underline;
+}
+
+.entry-preview-content sup a,
+.content-preview-content sup a {
+    text-decoration: none;
+}
+
+.entry-preview-content .btn,
+.content-preview-content .btn {
+    color: #dfe1e3;
+    text-decoration: none;
+}
+
+.entry-preview-content .img-placeholder,
+.content-preview-content .img-placeholder {
+    position: relative;
+    height: 100px;
+    border: 5px dashed #dfe1e3;
+}
+
+.entry-preview-content .img-placeholder span,
+.content-preview-content .img-placeholder span {
+    position: absolute;
+    top: 50%;
+    display: block;
+    margin-top: -15px;
+    width: 100%;
+    height: 30px;
+    text-align: center;
+}
+
+.entry-preview-content a.image-edit,
+.content-preview-content a.image-edit {
+    width: 16px;
+    height: 16px;
+}
+
+.entry-preview-content img,
+.content-preview-content img {
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Placeholder objects for <script> & <iframe> */
+.js-embed-placeholder,
+.iframe-embed-placeholder {
+    padding: 100px 20px;
+    border: none;
+    background: #f9f9f9;
+    text-align: center;
+    font-family: var(--font-family);
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+
+/* Publish Bar
+/* ---------------------------------------------------------- */
+
+.extended-tags {
+    /* When the tag bar is expanded */
+    position: static;
+    min-height: 100%;
+}
+
+.extended-tags #entry-tags:after {
+    right: 10px;
+}
+
+.extended-tags .tags {
+    width: 281px;
+}
+
+.extended-tags .tag-input {
+    margin-top: 5px;
+    padding-top: 5px;
+    padding-left: 10px;
+    width: 100%;
+    border-top: 1px solid var(--darkgrey);
+}
+
+.extended-tags .right {
+    display: none;
+}
+
+#entry-tags input[type="text"].tag-input {
+    display: inline-block;
+    padding: 9px 9px 9px 0;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--midgrey);
+    vertical-align: top;
+    line-height: 1;
+    font-weight: 300;
+}
+
+#entry-tags input[type="text"].tag-input:focus {
+    outline: none;
+}
+
+#entry-tags .tag {
+    display: inline;
+    margin-right: 3px;
+    padding: 2px 5px;
+    background: var(--darkgrey);
+    border-radius: 3px;
+    color: var(--lightgrey);
+    white-space: nowrap;
+    font-size: 1.2rem;
+    line-height: 1.2em;
+}
+
+#entry-tags .tag:hover {
+    cursor: pointer;
+}
+
+#entry-tags .tag i {
+    font-size: 0.7rem;
+}
+
+.suggestions {
+    top: auto;
+    bottom: calc(100% + 15px);
+}
+
+.suggestions li.selected,
+.suggestions li.selected a {
+    background: var(--blue);
+    color: #fff;
+    text-decoration: none;
+}
+
+.suggestions li.selected mark {
+    color: #fff;
+}
+
+.suggestions mark {
+    background: none;
+    color: #000;
+    font-weight: bold;
+}
+
+#entry-actions {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    align-content: center;
+}
+
+#entry-actions .dropdown {
+    position: absolute;
+    top: 35px;
+    right: 0;
+}
+
+#entry-actions .dropdown .dropdown-menu {
+    right: 100%;
+    left: auto;
+}
+
+#entry-actions.unsaved {
+    padding-bottom: 0;
+}
+
+#entry-actions.unsaved .delete {
+    display: none;
+}
+
+#entry-actions-menu {
+    position: absolute;
+    right: -5px;
+    bottom: 50px;
+}
+
+.tags-wrapper {
+    white-space: nowrap;
+}
+
+.tags-wrapper span {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.tag-label {
+    position: relative;
+    display: block;
+    width: 40px;
+    height: 40px;
+}
+
+.tag-label:before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    transition: color 0.15s linear;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+.tag-label:hover {
+    cursor: pointer;
+}
+
+.publish-bar-inner {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: space-between;
+    width: 100%;
+    height: 100%;
+}
+
+.publish-bar-tags-icon {
+    flex: 0 1 auto;
+    align-self: auto;
+    min-width: 40px;
+    max-width: 40px;
+}
+
+.publish-bar-tags {
+    flex: 0 1 auto;
+    align-self: auto;
+    overflow-y: hidden;
+    margin-right: 10px;
+    height: 40px;
+}
+
+.publish-bar-tags .tags-wrapper {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 8px;
+    padding-bottom: 9px;
+    height: 70px;
+    white-space: nowrap;
+}
+
+.publish-bar-tags-input {
+    position: relative;
+    flex: 1 1 auto;
+    align-self: auto;
+}
+
+.publish-bar-actions {
+    flex: 1 0 auto;
+    align-self: auto;
+    display: flex;
+    text-align: right;
+}
+
+.post-settings {
+    position: relative;
+    display: inline-block;
+    padding: 5px 10px;
+    color: var(--midgrey);
+    transition: all 0.15s ease-out 0s;
+}
+
+.post-settings:hover,
+.post-settings.active {
+    color: var(--darkgrey);
+}
+
+.post-settings i {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.post-settings-menu .dropdown-menu {
+    top: auto;
+    right: 100%;
+    bottom: 100%;
+    left: auto;
+}
+
+.post-view-link {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    font-size: 1.3rem;
+}
+
+.post-view-link i {
+    font-size: 10px;
+}
+
+
+/* Post settings meta
+/* ---------------------------------------------------------- */
+
+/* Google Imitation */
+.seo-preview {
+    font-family: Arial, sans-serif;
+}
+
+.seo-preview-title {
+    color: #1e0fbe;
+    text-overflow: ellipses;
+    word-wrap: break-word;
+    font-size: 1.8rem;
+    line-height: 2.16rem;
+
+    -webkit-text-overflow: ellipsis;
+}
+
+.seo-preview-link {
+    margin: 1px 0 2px 0;
+    color: #006621;
+    word-wrap: break-word;
+    font-size: 1.3rem;
+    line-height: 1.6rem;
+}
+
+.seo-preview-description {
+    color: #545454;
+    word-wrap: break-word;
+    font-size: 1.3rem;
+    line-height: 1.4;
+}
+
+
+/* Markdown Help Icon + Modal
+/* ---------------------------------------------------------- */
+
+.markdown-help {
+    font-size: 16px;
+}
+
+.markdown-help:hover {
+    cursor: help;
+}
+
+.modal-markdown-help-table {
+    margin: 0 0 20px;
+    width: 100%;
+}
+
+.modal-markdown-help-table td,
+.modal-markdown-help-table th {
+    padding: 8px 0;
+}
+
+.modal-markdown-help-table th {
+    text-align: left;
+}

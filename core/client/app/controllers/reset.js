@@ -1,14 +1,17 @@
 import Ember from 'ember';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var ResetController = Ember.Controller.extend(ValidationEngine, {
+export default Ember.Controller.extend(ValidationEngine, {
     newPassword: '',
     ne2Password: '',
     token: '',
     submitting: false,
 
     validationType: 'reset',
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
 
     email: Ember.computed('token', function () {
         // The token base64 encodes the email (and some other stuff),
@@ -40,21 +43,19 @@ var ResetController = Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
-                    self.notifications.showSuccess(resp.passwordreset[0].message, true);
+                    self.get('notifications').showSuccess(resp.passwordreset[0].message, true);
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: credentials.newPassword
                     });
                 }).catch(function (response) {
-                    self.notifications.showAPIError(response);
+                    self.get('notifications').showAPIError(response);
                     self.toggleProperty('submitting');
                 });
             }).catch(function (error) {
                 self.toggleProperty('submitting');
-                self.notifications.showErrors(error);
+                self.get('notifications').showErrors(error);
             });
         }
     }
 });
-
-export default ResetController;

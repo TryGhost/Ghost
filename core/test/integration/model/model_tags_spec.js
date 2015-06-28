@@ -9,7 +9,7 @@ var testUtils   = require('../../utils'),
     // Stuff we are testing
     ModelsTag   = require('../../../server/models/tag'),
     ModelsPost  = require('../../../server/models/post'),
-    events          = require('../../../server/events'),
+    events      = require('../../../server/events'),
     context     = testUtils.context.admin,
     TagModel,
     PostModel,
@@ -85,6 +85,31 @@ describe('Tag Model', function () {
                 results.meta.pagination.pages.should.equal(1);
                 results.tags.length.should.equal(5);
                 should.exist(results.tags[0].post_count);
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('findOne', function () {
+        beforeEach(function (done) {
+            testUtils.fixtures.insertPosts().then(function () {
+                done();
+            }).catch(done);
+        });
+
+        it('with slug', function (done) {
+            var firstTag;
+
+            TagModel.findPage().then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+                firstTag = results.tags[0];
+
+                return TagModel.findOne({slug: firstTag.slug});
+            }).then(function (found) {
+                should.exist(found);
 
                 done();
             }).catch(done);

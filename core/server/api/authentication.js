@@ -211,7 +211,7 @@ authentication = {
             return dataProvider.User.findOne({role: 'Owner', status: 'all'});
         }).then(function (ownerUser) {
             if (ownerUser) {
-                return dataProvider.User.setup(setupUser, _.extend(internal, {id: ownerUser.id}));
+                return dataProvider.User.setup(setupUser, _.extend({id: ownerUser.id}, internal));
             } else {
                 return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
                     setupUser.roles = [ownerRole.id];
@@ -221,14 +221,12 @@ authentication = {
         }).then(function (user) {
             var userSettings = [];
 
-            userSettings.push({key: 'email', value: setupUser.email});
-
             // Handles the additional values set by the setup screen.
             if (!_.isEmpty(setupUser.blogTitle)) {
                 userSettings.push({key: 'title', value: setupUser.blogTitle});
                 userSettings.push({key: 'description', value: 'Thoughts, stories and ideas.'});
             }
-            setupUser = user.toJSON();
+            setupUser = user.toJSON(internal);
             return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
         }).then(function () {
             var data = {

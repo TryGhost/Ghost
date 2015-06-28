@@ -31,7 +31,7 @@ meta_title = function (options) {
         title = this.author.name + pageString + ' - ' + blog.title;
     } else if (_.contains(context, 'tag') && this.tag) {
         title = this.tag.meta_title || this.tag.name + pageString + ' - ' + blog.title;
-    } else if (_.contains(context, 'post') && this.post) {
+    } else if ((_.contains(context, 'post') || _.contains(context, 'page')) && this.post) {
         title = this.post.meta_title || this.post.title;
     } else {
         title = blog.title + pageString;

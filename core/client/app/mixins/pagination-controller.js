@@ -1,7 +1,9 @@
 import Ember from 'ember';
-import { getRequestErrorMessage } from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost/utils/ajax';
 
-var PaginationControllerMixin = Ember.Mixin.create({
+export default Ember.Mixin.create({
+    notifications: Ember.inject.service(),
+
     // set from PaginationRouteMixin
     paginationSettings: null,
 
@@ -23,7 +25,7 @@ var PaginationControllerMixin = Ember.Mixin.create({
             message += '.';
         }
 
-        this.notifications.showError(message);
+        this.get('notifications').showError(message);
     },
 
     actions: {
@@ -53,9 +55,7 @@ var PaginationControllerMixin = Ember.Mixin.create({
 
         resetPagination: function () {
             this.set('paginationSettings.page', 1);
-            this.store.setMetaDataFor('tag', {pagination: undefined});
+            this.store.setMetadataFor('tag', {pagination: undefined});
         }
     }
 });
-
-export default PaginationControllerMixin;

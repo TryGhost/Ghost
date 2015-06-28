@@ -17,6 +17,21 @@ module.exports = function (environment) {
         APP: {
               // Here you can pass flags/options to your application instance
               // when it is created
+        },
+
+        'simple-auth': {
+            authenticationRoute: 'signin',
+            routeAfterAuthentication: 'posts',
+            authorizer: 'simple-auth-authorizer:oauth2-bearer',
+
+            localStorageKey: '<overriden by initializers/simple-auth-env>'
+        },
+
+        'simple-auth-oauth2': {
+            refreshAccessTokens: true,
+
+            serverTokenEndpoint: '<overriden by initializers/simple-auth-env>',
+            serverTokenRevocationEndpoint: '<overriden by initializers/simple-auth-env>'
         }
     };
 
@@ -26,6 +41,9 @@ module.exports = function (environment) {
         ENV.APP.LOG_TRANSITIONS = true;
         ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
         ENV.APP.LOG_VIEW_LOOKUPS = true;
+        ENV.mythOptions = {
+            sourcemap: true
+        };
     }
 
     if (environment === 'test') {
@@ -38,10 +56,15 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = false;
 
         ENV.APP.rootElement = '#ember-testing';
+        ENV.mythOptions = {
+            compress: true,
+            outputFile: 'ghost.min.css'
+        };
     }
 
     if (environment === 'production') {
-        ENV.sassOptions = {
+        ENV.mythOptions = {
+            compress: true,
             outputFile: 'ghost.min.css'
         };
     }

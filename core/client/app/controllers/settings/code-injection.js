@@ -1,20 +1,21 @@
 import Ember from 'ember';
-var SettingsCodeInjectionController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
+    notifications: Ember.inject.service(),
+
     actions: {
         save: function () {
-            var self = this;
+            var notifications = this.get('notifications');
 
             return this.get('model').save().then(function (model) {
-                self.notifications.closePassive();
-                self.notifications.showSuccess('Settings successfully saved.');
+                notifications.closePassive();
+                notifications.showSuccess('Settings successfully saved.');
 
                 return model;
             }).catch(function (errors) {
-                self.notifications.closePassive();
-                self.notifications.showErrors(errors);
+                notifications.closePassive();
+                notifications.showErrors(errors);
             });
         }
     }
 });
-
-export default SettingsCodeInjectionController;
