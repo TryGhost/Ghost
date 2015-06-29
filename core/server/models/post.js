@@ -61,6 +61,7 @@ Post = ghostBookshelf.Model.extend({
 
         // Ensures local copy of permalink setting is kept up to date
         this.on('fetching', getPermalinkSetting);
+        this.on('fetching:collection', getPermalinkSetting);
 
         this.on('created', function onCreated(model) {
             model.emitChange('added');

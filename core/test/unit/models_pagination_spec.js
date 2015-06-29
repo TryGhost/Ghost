@@ -175,7 +175,7 @@ describe('pagination', function () {
     });
 
     describe('fetchPage', function () {
-        var model, bookshelf, mockQuery, fetch, colQuery;
+        var model, bookshelf, on, mockQuery, fetch, colQuery;
 
         before(function () {
             paginationUtils = pagination.__get__('paginationUtils');
@@ -197,15 +197,19 @@ describe('pagination', function () {
 
             fetch = sandbox.stub().returns(Promise.resolve({}));
             colQuery = sandbox.stub();
+            on = function () { return this; };
+            on = sandbox.spy(on);
 
             model = function () {};
             model.prototype.constructor = {
                 collection: sandbox.stub().returns({
+                    on: on,
                     fetch: fetch,
                     query: colQuery
                 })
             };
             model.prototype.query = sandbox.stub();
+            model.prototype.resetQuery = sandbox.stub();
             model.prototype.query.returns(mockQuery);
 
             bookshelf = {Model: model};
@@ -231,6 +235,8 @@ describe('pagination', function () {
                     model.prototype.query,
                     mockQuery.clone,
                     paginationUtils.query,
+                    on,
+                    on,
                     fetch,
                     paginationUtils.formatResponse
                 );
@@ -255,6 +261,10 @@ describe('pagination', function () {
                 mockQuery.count.calledOnce.should.be.true;
                 mockQuery.count.calledWith().should.be.true;
 
+                on.calledTwice.should.be.true;
+                on.firstCall.calledWith('fetching').should.be.true;
+                on.secondCall.calledWith('fetched').should.be.true;
+
                 fetch.calledOnce.should.be.true;
                 fetch.calledWith({}).should.be.true;
 
@@ -277,6 +287,8 @@ describe('pagination', function () {
                     mockQuery.clone,
                     paginationUtils.query,
                     colQuery,
+                    on,
+                    on,
                     fetch,
                     paginationUtils.formatResponse
                 );
@@ -303,6 +315,10 @@ describe('pagination', function () {
 
                 colQuery.calledOnce.should.be.true;
                 colQuery.calledWith('orderBy', 'undefined.id', 'DESC').should.be.true;
+
+                on.calledTwice.should.be.true;
+                on.firstCall.calledWith('fetching').should.be.true;
+                on.secondCall.calledWith('fetched').should.be.true;
 
                 fetch.calledOnce.should.be.true;
                 fetch.calledWith(orderOptions).should.be.true;
