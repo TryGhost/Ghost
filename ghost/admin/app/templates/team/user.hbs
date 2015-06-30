@@ -71,7 +71,12 @@
 
                 <div class="form-group">
                     <label for="user-email">Email</label>
-                    {{input type="email" value=user.email id="user-email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                    {{!-- Administrators only see text of Owner's email address but not input --}}
+                    {{#unless isAdminUserOnOwnerProfile}}
+                        {{input type="email" value=user.email id="user-email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                    {{else}}
+                        <span>{{user.email}}</span>
+                    {{/unless}}
                     <p>Used for notifications</p>
                 </div>
                 {{#if rolesDropdownIsVisible}}
@@ -108,30 +113,31 @@
                 <hr />
 
             </fieldset>
+            {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
+            {{#unless isAdminUserOnOwnerProfile}}
+                <fieldset>
+                    {{#unless isNotOwnProfile}}
+                    <div class="form-group">
+                        <label for="user-password-old">Old Password</label>
+                        {{input value=user.password type="password" id="user-password-old" class="gh-input"}}
+                    </div>
+                    {{/unless}}
 
-            <fieldset>
-                {{#unless isNotOwnProfile}}
-                <div class="form-group">
-                    <label for="user-password-old">Old Password</label>
-                    {{input value=user.password type="password" id="user-password-old" class="gh-input"}}
-                </div>
-                {{/unless}}
+                    <div class="form-group">
+                        <label for="user-password-new">New Password</label>
+                        {{input value=user.newPassword type="password" id="user-password-new" class="gh-input"}}
+                    </div>
 
-                <div class="form-group">
-                    <label for="user-password-new">New Password</label>
-                    {{input value=user.newPassword type="password" id="user-password-new" class="gh-input"}}
-                </div>
+                    <div class="form-group">
+                        <label for="user-new-password-verification">Verify Password</label>
+                        {{input value=user.ne2Password type="password" id="user-new-password-verification" class="gh-input"}}
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-red button-change-password" {{action "password"}}>Change Password</button>
+                    </div>
 
-                <div class="form-group">
-                    <label for="user-new-password-verification">Verify Password</label>
-                    {{input value=user.ne2Password type="password" id="user-new-password-verification" class="gh-input"}}
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-red button-change-password" {{action "password"}}>Change Password</button>
-                </div>
-
-            </fieldset>
-
+                </fieldset>
+            {{/unless}}
         </form>
 
     </div>
