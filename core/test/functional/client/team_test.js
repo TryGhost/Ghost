@@ -34,10 +34,10 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
         test.assertUrlMatch(/ghost\/team\/$/, 'team transitions to correct url');
     });
     casper.then(function usersScreenHasContent() {
-        test.assertSelectorHasText('.settings-users .user-list .user-list-title', 'Active users', 'active users text is correct');
-        test.assertExists('.settings-users .user-list .user-list-item', 'Has an active user');
-        test.assertSelectorHasText('.settings-users .user-list-item .name', 'Test User', 'test user text is correct');
-        test.assertExists('.settings-users .user-list-item .role-label.owner', 'First user has owner role displayed');
+        test.assertSelectorHasText('.team .user-list .user-list-title', 'Active users', 'active users text is correct');
+        test.assertExists('.team .user-list .user-list-item', 'Has an active user');
+        test.assertSelectorHasText('.team .user-list-item .name', 'Test User', 'test user text is correct');
+        test.assertExists('.team .user-list-item .role-label.owner', 'First user has owner role displayed');
 
         test.assertExists('.view-actions .btn-green', 'Add user button is on page.');
     });
