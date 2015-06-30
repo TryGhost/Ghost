@@ -27,7 +27,7 @@
         <li>{{#link-to "team" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
     </ul>
-    {{#if (gh-user-can session.user 'admin')}}
+    {{#if (gh-user-can-admin session.user)}}
         <ul class="gh-nav-list gh-nav-settings">
             <li class="gh-nav-list-h">Settings</li>
             <li>{{#link-to "settings.general" classNames="gh-nav-settings-general"}}<i class="icon-settings"></i>General{{/link-to}}</li>
