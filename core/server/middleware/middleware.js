@@ -120,13 +120,13 @@ middleware = {
                     }
                     // Generate a JSON response reflecting authentication status
                     if (!user) {
-                        var msg = {
-                            type: 'error',
-                            message: 'Please Sign In',
-                            status: 'passive'
+                        var error = {
+                            code: 401,
+                            errorType: 'NoPermissionError',
+                            message: 'Please Sign In'
                         };
-                        res.status(401);
-                        return res.send(msg);
+
+                        return apiErrorHandlers.errorHandler(error, req, res, next);
                     }
                     // TODO: figure out, why user & authInfo is lost
                     req.authInfo = info;
