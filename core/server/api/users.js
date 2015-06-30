@@ -10,19 +10,13 @@ var Promise         = require('bluebird'),
     globalUtils     = require('../utils'),
     config          = require('../config'),
     mail            = require('./mail'),
+    pipeline        = require('../utils/pipeline'),
 
     docName         = 'users',
     // TODO: implement created_by, updated_by
     allowedIncludes = ['permissions', 'roles', 'roles.permissions'],
     users,
     sendInviteEmail;
-
-// ## Helpers
-function prepareInclude(include) {
-    include = include || '';
-    include = _.intersection(include.split(','), allowedIncludes);
-    return include;
-}
 
 sendInviteEmail = function sendInviteEmail(user) {
     var emailData;
@@ -67,50 +61,89 @@ sendInviteEmail = function sendInviteEmail(user) {
     });
 };
 /**
- * ## Posts API Methods
+ * ### Users API Methods
  *
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 users = {
-
     /**
      * ## Browse
      * Fetch all users
      * @param {{context}} options (optional)
-     * @returns {Promise(Users)} Users Collection
+     * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        options = options || {};
-        return canThis(options.context).browse.user().then(function () {
-            if (options.include) {
-                options.include = prepareInclude(options.include);
-            }
+        var tasks;
+
+        /**
+         * ### Handle Permissions
+         * We need to either be an authorised user, or only return published posts.
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).browse.user().then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to browse users.');
+            });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
             return dataProvider.User.findPage(options);
-        }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to browse users.');
-        });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     },
 
     /**
-     * ### Read
+     * ## Read
      * @param {{id, context}} options
-     * @returns {Promise(User)} User
+     * @returns {Promise<Users>} User
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'email', 'status'],
-            data = _.pick(options, attrs);
+        var attrs = ['id', 'slug', 'status', 'email'],
+            tasks;
 
-        options = _.omit(options, attrs);
+        /**
+         * ### Handle Permissions
+         * Convert 'me' safely
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            if (options.data.id === 'me' && options.context && options.context.user) {
+                options.data.id = options.context.user;
+            }
 
-        if (options.include) {
-            options.include = prepareInclude(options.include);
+            return options;
         }
 
-        if (data.id === 'me' && options.context && options.context.user) {
-            data.id = options.context.user;
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.User.findOne(options.data, _.omit(options, ['data']));
         }
 
-        return dataProvider.User.findOne(data, options).then(function (result) {
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName, attrs), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options).then(function formatResponse(result) {
             if (result) {
                 return {users: [result.toJSON(options)]};
             }
@@ -120,42 +153,54 @@ users = {
     },
 
     /**
-     * ### Edit
+     * ## Edit
      * @param {User} object the user details to edit
      * @param {{id, context}} options
-     * @returns {Promise(User)}
+     * @returns {Promise<User>}
      */
     edit: function edit(object, options) {
-        var editOperation;
-        if (options.id === 'me' && options.context && options.context.user) {
-            options.id = options.context.user;
-        }
-
-        if (options.include) {
-            options.include = prepareInclude(options.include);
-        }
-
-        return utils.checkObject(object, docName, options.id).then(function (data) {
-            // Edit operation
-            editOperation = function () {
-                return dataProvider.User.edit(data.users[0], options)
-                    .then(function (result) {
-                        if (result) {
-                            return {users: [result.toJSON(options)]};
-                        }
-
-                        return Promise.reject(new errors.NotFoundError('User not found.'));
-                    });
-            };
-
-            // Check permissions
-            return canThis(options.context).edit.user(options.id).then(function () {
-                // if roles aren't in the payload, proceed with the edit
-                if (!(data.users[0].roles && data.users[0].roles[0])) {
-                    return editOperation();
+        var tasks;
+        /**
+         * ### Validate
+         * Special validation which handles roles
+         * @param {Post} object
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function validate(object, options) {
+            options = options || {};
+            return utils.checkObject(object, docName, options.id).then(function (data) {
+                if (data.users[0].roles && data.users[0].roles[0]) {
+                    options.editRoles = true;
                 }
 
-                var role = data.users[0].roles[0],
+                options.data = data;
+                return options;
+            });
+        }
+
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * Edit user allows the related role object to be updated as well, with some rules:
+         * - No change permitted to the role of the owner
+         * - no change permitted to the role of the context user (user making the request)
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            if (options.id === 'me' && options.context && options.context.user) {
+                options.id = options.context.user;
+            }
+
+            return canThis(options.context).edit.user(options.id).then(function () {
+                // if roles aren't in the payload, proceed with the edit
+                if (!(options.data.users[0].roles && options.data.users[0].roles[0])) {
+                    return options;
+                }
+
+                // @TODO move role permissions out of here
+                var role = options.data.users[0].roles[0],
                     roleId = parseInt(role.id || role, 10),
                     editedUserId = parseInt(options.id, 10);
 
@@ -176,95 +221,64 @@ users = {
                                 }
                             } else if (roleId !== contextRoleId) {
                                 return canThis(options.context).assign.role(role).then(function () {
-                                    return editOperation();
+                                    return options;
                                 });
                             }
                         }
 
-                        return editOperation();
+                        return options;
                     });
                 });
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to edit this user');
             });
-        }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to edit this user');
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.User.edit(options.data.users[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [validate, handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            if (result) {
+                return {users: [result.toJSON(options)]};
+            }
+
+            return Promise.reject(new errors.NotFoundError('User not found.'));
         });
     },
 
     /**
-     * ### Add user
+     * ## Add user
      * The newly added user is invited to join the blog via email.
      * @param {User} object the user to create
-     * @returns {Promise(User}} Newly created user
+     * @param {{context}} options
+     * @returns {Promise<User>} Newly created user
      */
     add: function add(object, options) {
-        var addOperation,
-            newUser,
-            user;
+        var tasks;
 
-        if (options.include) {
-            options.include = prepareInclude(options.include);
-        }
-
-        return utils.checkObject(object, docName).then(function (data) {
-            newUser = data.users[0];
-
-            addOperation = function () {
-                if (newUser.email) {
-                    newUser.name = object.users[0].email.substring(0, newUser.email.indexOf('@'));
-                    newUser.password = globalUtils.uid(50);
-                    newUser.status = 'invited';
-                } else {
-                    return Promise.reject(new errors.BadRequestError('No email provided.'));
-                }
-
-                return dataProvider.User.getByEmail(
-                    newUser.email
-                ).then(function (foundUser) {
-                    if (!foundUser) {
-                        return dataProvider.User.add(newUser, options);
-                    } else {
-                        // only invitations for already invited users are resent
-                        if (foundUser.get('status') === 'invited' || foundUser.get('status') === 'invited-pending') {
-                            return foundUser;
-                        } else {
-                            return Promise.reject(new errors.BadRequestError('User is already registered.'));
-                        }
-                    }
-                }).then(function (invitedUser) {
-                    user = invitedUser.toJSON(options);
-                    return sendInviteEmail(user);
-                }).then(function () {
-                    // If status was invited-pending and sending the invitation succeeded, set status to invited.
-                    if (user.status === 'invited-pending') {
-                        return dataProvider.User.edit(
-                            {status: 'invited'}, _.extend({}, options, {id: user.id})
-                        ).then(function (editedUser) {
-                            user = editedUser.toJSON(options);
-                        });
-                    }
-                }).then(function () {
-                    return Promise.resolve({users: [user]});
-                }).catch(function (error) {
-                    if (error && error.errorType === 'EmailError') {
-                        error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
-                        errors.logWarn(error.message);
-
-                        // If sending the invitation failed, set status to invited-pending
-                        return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function (user) {
-                            return dataProvider.User.findOne({id: user.id, status: 'all'}, options).then(function (user) {
-                                return {users: [user]};
-                            });
-                        });
-                    }
-                    return Promise.reject(error);
-                });
-            };
-
-            // Check permissions
-            return canThis(options.context).add.user(object).then(function () {
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            var newUser = options.data.users[0];
+            return canThis(options.context).add.user(options.data).then(function () {
                 if (newUser.roles && newUser.roles[0]) {
                     var roleId = parseInt(newUser.roles[0].id || newUser.roles[0], 10);
 
+                    // @TODO move this logic to permissible
                     // Make sure user is allowed to add a user with this role
                     return dataProvider.Role.findOne({id: roleId}).then(function (role) {
                         if (role.get('name') === 'Owner') {
@@ -273,25 +287,114 @@ users = {
 
                         return canThis(options.context).assign.role(role);
                     }).then(function () {
-                        return addOperation();
+                        return options;
                     });
                 }
 
-                return addOperation();
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to add this user');
             });
-        }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to add this user');
-        });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            var newUser = options.data.users[0],
+                user;
+
+            if (newUser.email) {
+                newUser.name = newUser.email.substring(0, newUser.email.indexOf('@'));
+                newUser.password = globalUtils.uid(50);
+                newUser.status = 'invited';
+            } else {
+                return Promise.reject(new errors.BadRequestError('No email provided.'));
+            }
+
+            return dataProvider.User.getByEmail(
+                newUser.email
+            ).then(function (foundUser) {
+                if (!foundUser) {
+                    return dataProvider.User.add(newUser, options);
+                } else {
+                    // only invitations for already invited users are resent
+                    if (foundUser.get('status') === 'invited' || foundUser.get('status') === 'invited-pending') {
+                        return foundUser;
+                    } else {
+                        return Promise.reject(new errors.BadRequestError('User is already registered.'));
+                    }
+                }
+            }).then(function (invitedUser) {
+                user = invitedUser.toJSON(options);
+                return sendInviteEmail(user);
+            }).then(function () {
+                // If status was invited-pending and sending the invitation succeeded, set status to invited.
+                if (user.status === 'invited-pending') {
+                    return dataProvider.User.edit(
+                        {status: 'invited'}, _.extend({}, options, {id: user.id})
+                    ).then(function (editedUser) {
+                            user = editedUser.toJSON(options);
+                        });
+                }
+            }).then(function () {
+                return Promise.resolve({users: [user]});
+            }).catch(function (error) {
+                if (error && error.errorType === 'EmailError') {
+                    error.message = 'Error sending email: ' + error.message + ' Please check your email settings and resend the invitation.';
+                    errors.logWarn(error.message);
+
+                    // If sending the invitation failed, set status to invited-pending
+                    return dataProvider.User.edit({status: 'invited-pending'}, {id: user.id}).then(function (user) {
+                        return dataProvider.User.findOne({id: user.id, status: 'all'}, options).then(function (user) {
+                            return {users: [user]};
+                        });
+                    });
+                }
+                return Promise.reject(error);
+            });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        return pipeline(tasks, object, options);
     },
 
     /**
-     * ### Destroy
+     * ## Destroy
      * @param {{id, context}} options
-     * @returns {Promise(User)}
+     * @returns {Promise<User>}
      */
     destroy: function destroy(options) {
-        return canThis(options.context).destroy.user(options.id).then(function () {
-            return users.read(_.merge(options, {status: 'all'})).then(function (result) {
+        var tasks;
+
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).destroy.user(options.id).then(function permissionGranted() {
+                options.status = 'all';
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error, 'You do not have permission to destroy this user.');
+            });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return users.read(options).then(function (result) {
                 return dataProvider.Base.transaction(function (t) {
                     options.transacting = t;
 
@@ -314,54 +417,124 @@ users = {
             }, function (error) {
                 return errors.handleAPIError(error);
             });
-        }).catch(function (error) {
-            return errors.handleAPIError(error, 'You do not have permission to destroy this user');
-        });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     },
 
     /**
-     * ### Change Password
+     * ## Change Password
      * @param {password} object
      * @param {{context}} options
-     * @returns {Promise(password}} success message
+     * @returns {Promise<password>} success message
      */
     changePassword: function changePassword(object, options) {
-        var oldPassword,
-            newPassword,
-            ne2Password,
-            userId;
+        var tasks;
+        /**
+         * ### Validation
+         * Ensure we have valid options - special validation just for password
+         * @TODO change User.changePassword to take an object not 4 args
+         * @param {Object} object
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function validate(object, options) {
+            options = options || {};
+            return utils.checkObject(object, 'password').then(function (data) {
+                options.data = {
+                    oldPassword: data.password[0].oldPassword,
+                    newPassword: data.password[0].newPassword,
+                    ne2Password: data.password[0].ne2Password,
+                    userId: parseInt(data.password[0].user_id)
+                };
+                return options;
+            });
+        }
 
-        return utils.checkObject(object, 'password').then(function (checkedPasswordReset) {
-            oldPassword = checkedPasswordReset.password[0].oldPassword;
-            newPassword = checkedPasswordReset.password[0].newPassword;
-            ne2Password = checkedPasswordReset.password[0].ne2Password;
-            userId = parseInt(checkedPasswordReset.password[0].user_id);
-        }).then(function () {
-            return canThis(options.context).edit.user(userId);
-        }).then(function () {
-            return dataProvider.User.changePassword(oldPassword, newPassword, ne2Password, userId, options);
-        }).then(function () {
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return canThis(options.context).edit.user(options.data.userId).then(function permissionGranted() {
+                return options;
+            }).catch(function (error) {
+                return errors.handleAPIError(error, 'You do not have permission to change the password for this user');
+            });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.User.changePassword(
+                options.data.oldPassword,
+                options.data.newPassword,
+                options.data.ne2Password,
+                options.data.userId,
+                _.omit(options, ['data'])
+            );
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [validate, handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse() {
             return Promise.resolve({password: [{message: 'Password changed successfully.'}]});
-        }).catch(function (error) {
-            // return Promise.reject(new errors.ValidationError(error.message));
-            return errors.handleAPIError(error, 'You do not have permission to change the password for this user');
         });
     },
 
     /**
-     *
+     * ## Transfer Ownership
+     * @param {owner} object
+     * @param {Object} options
+     * @returns {Promise<User>}
      */
     transferOwnership: function transferOwnership(object, options) {
-        return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
-            return canThis(options.context).assign.role(ownerRole);
-        }).then(function () {
-            return utils.checkObject(object, 'owner').then(function (checkedOwnerTransfer) {
-                return dataProvider.User.transferOwnership(checkedOwnerTransfer.owner[0], options).then(function (updatedUsers) {
-                    return Promise.resolve({users: updatedUsers});
-                }).catch(function (error) {
-                    return Promise.reject(new errors.ValidationError(error.message));
-                });
+        var tasks;
+
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function handlePermissions(options) {
+            return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+                return canThis(options.context).assign.role(ownerRole);
+            }).then(function () {
+                return options;
+            }).catch(function (error) {
+                return errors.handleAPIError(error);
             });
+        }
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.User.transferOwnership(options.data.owner[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [utils.validate('owner'), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResult(result) {
+            return Promise.resolve({users: result});
         }).catch(function (error) {
             return errors.handleAPIError(error);
         });
