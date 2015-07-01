@@ -27,7 +27,10 @@ describe('Post API', function () {
             results.posts.length.should.be.above(0);
             testUtils.API.checkResponse(results.posts[0], 'post');
             done();
-        }).catch(done);
+        }).catch(function (err) {
+            console.log(err);
+            done(err);
+        });
     });
 
     it('can read', function (done) {

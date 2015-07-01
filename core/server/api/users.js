@@ -73,7 +73,9 @@ users = {
      * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        var tasks;
+        var extraOptions = ['role', 'status'],
+            permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
+            tasks;
 
         /**
          * ### Handle Permissions
@@ -100,7 +102,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {opts: permittedOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options);
@@ -112,7 +119,7 @@ users = {
      * @returns {Promise<Users>} User
      */
     read: function read(options) {
-        var attrs = ['id', 'slug', 'status', 'email'],
+        var attrs = ['id', 'slug', 'status', 'email', 'role'],
             tasks;
 
         /**
@@ -140,7 +147,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName, attrs), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {attrs: attrs}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function formatResponse(result) {
@@ -159,24 +171,12 @@ users = {
      * @returns {Promise<User>}
      */
     edit: function edit(object, options) {
-        var tasks;
-        /**
-         * ### Validate
-         * Special validation which handles roles
-         * @param {Post} object
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function validate(object, options) {
-            options = options || {};
-            return utils.checkObject(object, docName, options.id).then(function (data) {
-                if (data.users[0].roles && data.users[0].roles[0]) {
-                    options.editRoles = true;
-                }
+        var extraOptions = ['editRoles'],
+            permittedOptions = extraOptions.concat(utils.idDefaultOptions),
+            tasks;
 
-                options.data = data;
-                return options;
-            });
+        if (object.users && object.users[0] && object.users[0].roles && object.users[0].roles[0]) {
+            options.editRoles = true;
         }
 
         /**
@@ -245,7 +245,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [validate, handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {opts: permittedOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         return pipeline(tasks, object, options).then(function formatResponse(result) {
             if (result) {
@@ -359,7 +364,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         return pipeline(tasks, object, options);
     },
@@ -420,7 +430,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options);
@@ -463,7 +478,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate('password'), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate('password'),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse() {
@@ -507,7 +527,12 @@ users = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate('owner'), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate('owner'),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResult(result) {

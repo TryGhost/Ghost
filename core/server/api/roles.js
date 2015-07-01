@@ -30,7 +30,8 @@ roles = {
      * @returns {Promise(Roles)} Roles Collection
      */
     browse: function browse(options) {
-        var tasks;
+        var permittedOptions = ['permissions'],
+            tasks;
 
         /**
          * ### Handle Permissions
@@ -57,7 +58,11 @@ roles = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, modelQuery];
+        tasks = [
+            utils.validate(docName, {opts: permittedOptions}),
+            handlePermissions,
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function formatResponse(results) {

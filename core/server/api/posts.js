@@ -17,6 +17,7 @@ var Promise         = require('bluebird'),
  *
  * **See:** [API Methods](index.js.html#api%20methods)
  */
+
 posts = {
     /**
      * ## Browse
@@ -33,7 +34,9 @@ posts = {
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
     browse: function browse(options) {
-        var tasks;
+        var extraOptions = ['tag', 'author', 'status', 'staticPages', 'featured'],
+            permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
+            tasks;
 
         /**
          * ### Handle Permissions
@@ -60,7 +63,12 @@ posts = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), modelQuery];
+        tasks = [
+            utils.validate(docName, {opts: permittedOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options);
@@ -102,7 +110,12 @@ posts = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName, attrs), handlePermissions, utils.convertOptions(allowedIncludes), modelQuery];
+        tasks = [
+            utils.validate(docName, {attrs: attrs}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function formatResponse(result) {
@@ -152,7 +165,12 @@ posts = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), modelQuery];
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse(result) {
@@ -208,7 +226,12 @@ posts = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), modelQuery];
+        tasks = [
+            utils.validate(docName),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse(result) {
@@ -263,7 +286,12 @@ posts = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), modelQuery];
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function formatResponse(result) {
