@@ -51,7 +51,12 @@ tags = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {opts: utils.browseDefaultOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options);
@@ -91,7 +96,12 @@ tags = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName, attrs), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {attrs: attrs}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function formatResponse(result) {
@@ -136,7 +146,12 @@ tags = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse(result) {
@@ -181,7 +196,12 @@ tags = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse(result) {
@@ -234,7 +254,12 @@ tags = {
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            handlePermissions,
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options);
