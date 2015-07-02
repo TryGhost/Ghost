@@ -8,7 +8,8 @@ sudo: false
 cache:
   directories:
     - node_modules
-    - bower_components
+    - core/client/node_modules
+    - core/client/bower_components
 addons:
   postgresql: "9.3"
 env:
