@@ -44,7 +44,7 @@ describe('Configuration API', function () {
             done();
         }).catch(function (error) {
             console.log(JSON.stringify(error));
-            done();
+            done(error);
         }).catch(done);
     });
 
