@@ -47,12 +47,12 @@ body {
     width: 100%;
     /* Prevent elastic scrolling on the whole page */
     height: 100%;
-    color: lighten(var(--darkgrey), 10%);
+    color: color(var(--darkgrey) lightness(+10%));
     font-size: 1.4rem;
 }
 
 ::selection {
-    background: lighten(var(--blue), 20%);
+    background: color(var(--blue) lightness(+20%));
 }
 
 
@@ -208,7 +208,7 @@ tt {
 code,
 tt {
     padding: 0.2em 0.4em;
-    background: lighten(#dfe1e3, 2%);
+    background: color(#dfe1e3 lightness(+2%));
     border-radius: 2px;
     vertical-align: top;
     white-space: pre-wrap;
@@ -220,7 +220,7 @@ pre {
     margin: 1.6em 0;
     padding: 10px;
     width: 100%;
-    background: lighten(#dfe1e3, 2%);
+    background: color(#dfe1e3 lightness(+2%));
     border-radius: 3px;
     white-space: pre;
     font-family: var(--font-family-mono);
@@ -370,7 +370,7 @@ img {
 
 @keyframes keyboard-focus-style-fade-out {
     from {
-        box-shadow: inset 0 0 30px 1px lighten(var(--midgrey), 20%);
+        box-shadow: inset 0 0 30px 1px color(var(--midgrey) lightness(+20%));
     }
     to {
         box-shadow: none;
