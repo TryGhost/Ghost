@@ -38,5 +38,15 @@ export default AuthenticatedRoute.extend(base, {
         psm.send('resetPubDate');
 
         this._super(controller, model);
+    },
+
+    actions: {
+        willTransition: function (transition) {
+            // decorate the transition object so the editor.edit route
+            // knows this was the previous active route
+            transition.data.fromNew = true;
+
+            this._super(...arguments);
+        }
     }
 });
