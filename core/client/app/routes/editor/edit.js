@@ -6,6 +6,12 @@ import isFinite from 'ghost/utils/isFinite';
 var EditorEditRoute = AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
 
+    beforeModel: function (transition) {
+        this.set('_transitionedFromNew', transition.data.fromNew);
+
+        this._super(...arguments);
+    },
+
     model: function (params) {
         var self = this,
             postId,
@@ -42,6 +48,12 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
                 return self.replaceWith('posts.index');
             }
         });
+    },
+
+    setupController: function (controller/*, model */) {
+        this._super(...arguments);
+
+        controller.set('shouldFocusEditor', this.get('_transitionedFromNew'));
     },
 
     actions: {

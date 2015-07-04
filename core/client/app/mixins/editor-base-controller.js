@@ -30,6 +30,9 @@ export default Ember.Mixin.create({
         };
     },
 
+    shouldFocusTitle: Ember.computed.alias('model.isNew'),
+    shouldFocusEditor: false,
+
     autoSave: Ember.observer('model.scratch', function () {
         // Don't save just because we swapped out models
         if (this.get('model.isDraft') && !this.get('model.isNew')) {
@@ -228,8 +231,6 @@ export default Ember.Mixin.create({
 
         notifications.showError(message.htmlSafe(), {delayed: delay});
     },
-
-    shouldFocusTitle: Ember.computed.alias('model.isNew'),
 
     actions: {
         save: function (options) {
