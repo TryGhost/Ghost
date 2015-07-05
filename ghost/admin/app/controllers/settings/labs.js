@@ -31,7 +31,8 @@ export default Ember.Controller.extend({
         onUpload: function (file) {
             var self = this,
                 formData = new FormData(),
-                notifications = this.get('notifications');
+                notifications = this.get('notifications'),
+                currentUserId = this.get('session.user.id');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
@@ -48,12 +49,9 @@ export default Ember.Controller.extend({
                 processData: false
             }).then(function () {
                 // Clear the store, so that all the new data gets fetched correctly.
-                self.store.unloadAll('post');
-                self.store.unloadAll('tag');
-                self.store.unloadAll('user');
-                self.store.unloadAll('role');
-                self.store.unloadAll('setting');
-                self.store.unloadAll('notification');
+                self.store.unloadAll();
+                // Reload currentUser and set session
+                self.set('session.user', self.store.find('user', currentUserId));
                 notifications.showSuccess('Import successful.');
             }).catch(function (response) {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
