@@ -1,18 +1,16 @@
 import NewUserValidator from 'ghost/validators/new-user';
 
-var SetupValidator = NewUserValidator.extend({
-    check: function (model) {
-        var data = model.getProperties('blogTitle'),
-            validationErrors = this._super(model);
+var SetupValidator = NewUserValidator.create({
+    properties: ['name', 'email', 'password', 'blogTitle'],
 
-        if (!validator.isLength(data.blogTitle, 1)) {
-            validationErrors.push({
-                message: 'Please enter a blog title.'
-            });
+    blogTitle: function (model) {
+        var blogTitle = model.get('blogTitle');
+
+        if (!validator.isLength(blogTitle, 1)) {
+            model.get('errors').add('blogTitle', 'Please enter a blog title.');
+            this.invalidate();
         }
-
-        return validationErrors;
     }
-}).create();
+});
 
 export default SetupValidator;
