@@ -115,7 +115,9 @@ export default Ember.Controller.extend({
 
                 return model;
             }).catch(function (errors) {
-                self.get('notifications').showErrors(errors);
+                if (errors) {
+                    self.get('notifications').showErrors(errors);
+                }
             });
 
             this.set('lastPromise', promise);
