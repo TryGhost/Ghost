@@ -34,7 +34,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                 self.get('notifications').closePassive();
                 self.send('authenticate');
             }).catch(function (errors) {
-                self.get('notifications').showErrors(errors);
+                if (errors) {
+                    self.get('notifications').showErrors(errors);
+                }
             });
         },
 
