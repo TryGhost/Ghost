@@ -1,38 +1,49 @@
-import Ember from 'ember';
-var SettingValidator = Ember.Object.create({
-    check: function (model) {
-        var validationErrors = [],
-            title = model.get('title'),
-            description = model.get('description'),
-            postsPerPage = model.get('postsPerPage'),
-            isPrivate    = model.get('isPrivate'),
-            password     = model.get('password');
+import BaseValidator from './base';
+
+var SettingValidator = BaseValidator.create({
+    properties: ['title', 'description', 'password', 'postsPerPage'],
+    title: function (model) {
+        var title = model.get('title');
 
         if (!validator.isLength(title, 0, 150)) {
-            validationErrors.push({message: 'Title is too long'});
+            model.get('errors').add('title', 'Title is too long');
+            this.invalidate();
         }
+    },
+    description: function (model) {
+        var desc = model.get('description');
 
-        if (!validator.isLength(description, 0, 200)) {
-            validationErrors.push({message: 'Description is too long'});
+        if (!validator.isLength(desc, 0, 200)) {
+            model.get('errors').add('description', 'Description is too long');
+            this.invalidate();
         }
+    },
+    password: function (model) {
+        var isPrivate = model.get('isPrivate'),
+            password = this.get('password');
 
         if (isPrivate && password === '') {
-            validationErrors.push({message: 'Password must be supplied'});
+            model.get('errors').add('password', 'Password must be supplied');
+            this.invalidate();
         }
+    },
+    postsPerPage: function (model) {
+        var postsPerPage = model.get('postsPerPage');
 
         if (postsPerPage > 1000) {
-            validationErrors.push({message: 'The maximum number of posts per page is 1000'});
+            model.get('errors').add('postsPerPage', 'The maximum number of posts per page is 1000');
+            this.invalidate();
         }
 
         if (postsPerPage < 1) {
-            validationErrors.push({message: 'The minimum number of posts per page is 1'});
+            model.get('errors').add('postsPerPage', 'The minimum number of posts per page is 1');
+            this.invalidate();
         }
 
         if (!validator.isInt(postsPerPage)) {
-            validationErrors.push({message: 'Posts per page must be a number'});
+            model.get('errors').add('postsPerPage', 'Posts per page must be a number');
+            this.invalidate();
         }
-
-        return validationErrors;
     }
 });
 
