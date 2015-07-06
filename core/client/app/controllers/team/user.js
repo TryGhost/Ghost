@@ -15,6 +15,8 @@ export default Ember.Controller.extend({
 
     isNotOwnersProfile: Ember.computed.not('user.isOwner'),
 
+    isAdminUserOnOwnerProfile: Ember.computed.and('currentUser.isAdmin', 'user.isOwner'),
+
     canAssignRoles: Ember.computed.or('currentUser.isAdmin', 'currentUser.isOwner'),
 
     canMakeOwner: Ember.computed.and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
