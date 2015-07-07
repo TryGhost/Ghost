@@ -434,26 +434,6 @@ users = {
      */
     changePassword: function changePassword(object, options) {
         var tasks;
-        /**
-         * ### Validation
-         * Ensure we have valid options - special validation just for password
-         * @TODO change User.changePassword to take an object not 4 args
-         * @param {Object} object
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function validate(object, options) {
-            options = options || {};
-            return utils.checkObject(object, 'password').then(function (data) {
-                options.data = {
-                    oldPassword: data.password[0].oldPassword,
-                    newPassword: data.password[0].newPassword,
-                    ne2Password: data.password[0].ne2Password,
-                    userId: parseInt(data.password[0].user_id)
-                };
-                return options;
-            });
-        }
 
         /**
          * ### Handle Permissions
@@ -462,7 +442,7 @@ users = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
-            return canThis(options.context).edit.user(options.data.userId).then(function permissionGranted() {
+            return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
                 return options;
             }).catch(function (error) {
                 return errors.handleAPIError(error, 'You do not have permission to change the password for this user');
@@ -477,16 +457,13 @@ users = {
          */
         function doQuery(options) {
             return dataProvider.User.changePassword(
-                options.data.oldPassword,
-                options.data.newPassword,
-                options.data.ne2Password,
-                options.data.userId,
+                options.data.password[0],
                 _.omit(options, ['data'])
             );
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [validate, handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
+        tasks = [utils.validate('password'), handlePermissions, utils.convertOptions(allowedIncludes), doQuery];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse() {
