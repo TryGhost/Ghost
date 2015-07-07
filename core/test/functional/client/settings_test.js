@@ -76,8 +76,7 @@ CasperTest.begin('General settings pane is correct', 4, function suite(test) {
 });
 
 // ## General settings validations tests
-// // TODO: Change number of tests back to 6 once the commented-out tests are fixed
-CasperTest.begin('General settings validation is correct', 4, function suite(test) {
+CasperTest.begin('General settings validation is correct', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Settings - General - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
@@ -88,24 +87,18 @@ CasperTest.begin('General settings validation is correct', 4, function suite(tes
         'general[title]': new Array(152).join('a')
     });
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification-red', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification-red', 'too long', '.gh-notification-red has correct text');
-    }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
-
-    casper.thenClick('.gh-alert-close');
+    casper.waitForText('Title is too long', function onSuccess() {
+        test.assert(true, 'Blog title length error was shown');
+    }, casper.failOnTimeout(test, 'Blog title length error did not appear'));
 
     // Ensure general blog description field length validation
     casper.fillAndSave('form#settings-general', {
         'general[description]': new Array(202).join('a')
     });
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification-red', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification-red', 'too long', '.gh-notification-red has correct text');
+    casper.waitForText('Description is too long', function onSuccess() {
+        test.assert(true, 'Blog description length error was shown');
     }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
-
-    casper.thenClick('.gh-alert-close');
 
     // TODO move these to ember tests, note: async issues - field will be often be null without a casper.wait
     // Check postsPerPage autocorrect
@@ -128,4 +121,14 @@ CasperTest.begin('General settings validation is correct', 4, function suite(tes
     casper.then(function checkSlugInputValue() {
         test.assertField('general[postsPerPage]', '5', 'posts per page is set correctly');
     });
+
+    // Ensure private blog password validation
+    casper.fillAndSave('form#settings-general', {
+        'general[isPrivate]': '1',
+        'general[password]': ''
+    });
+
+    casper.waitForText('Password must be supplied', function onSuccess() {
+        test.assert(true, 'Password required error was shown');
+    }, casper.failOnTimeout(test, 'Password required error did not appear'));
 });
