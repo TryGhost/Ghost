@@ -47,7 +47,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     actions: {
         setup: function () {
             var self = this,
-                data = self.getProperties('blogTitle', 'name', 'email', 'password'),
+                data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
                 notifications = this.get('notifications');
 
             this.toggleProperty('submitting');
