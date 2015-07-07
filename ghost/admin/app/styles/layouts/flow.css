@@ -311,6 +311,18 @@
     animation: fade-in 1s;
 }
 
+.gh-flow-content .file-uploader {
+    position: absolute;
+    right: 0;
+    margin: 0;
+    font-size: 23px;
+    opacity: 0;
+    cursor: pointer;
+    transform: scale(14);
+    transform-origin: right;
+    direction: ltr;
+}
+
 .gh-flow-content .form-group {
     margin-bottom: 2.5rem;
 }
