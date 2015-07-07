@@ -1,4 +1,3 @@
-/* global md5 */
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
@@ -16,25 +15,34 @@ export default Ember.Controller.extend(ValidationEngine, {
     notifications: Ember.inject.service(),
     application: Ember.inject.controller(),
 
-    gravatarUrl: Ember.computed('email', function () {
-        var email = this.get('email'),
-            size = this.get('size');
-
-        return 'http://www.gravatar.com/avatar/' + md5(email) + '?s=' + size + '&d=blank';
-    }),
-
-    userImage: Ember.computed('gravatarUrl', function () {
-        return this.get('image') || this.get('gravatarUrl');
-    }),
-
-    userImageBackground: Ember.computed('userImage', function () {
-        return 'background-image: url(' + this.get('userImage') + ')';
-    }),
-
-    invalidMessage: 'The password fairy does not approve',
-
     // ValidationEngine settings
     validationType: 'setup',
+
+    /**
+     * Uploads the given data image, then sends the changed user image property to the server
+     * @param  {Object} user User object, returned from the 'setup' api call
+     * @return {Ember.RSVP.Promise} A promise that takes care of both calls
+     */
+    sendImage: function (user) {
+        var self = this,
+            image = this.get('image');
+
+        return new Ember.RSVP.Promise(function (resolve, reject) {
+            image.formData = {};
+            image.submit()
+                .success(function (response) {
+                    user.image = response;
+                    ajax({
+                        url: self.get('ghostPaths.url').api('users', user.id.toString()),
+                        type: 'PUT',
+                        data: {
+                            users: [user]
+                        }
+                    }).then(resolve).catch(reject);
+                })
+                .error(reject);
+        });
+    },
 
     actions: {
         setup: function () {
@@ -56,7 +64,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                             blogTitle: data.blogTitle
                         }]
                     }
-                }).then(function () {
+                }).then(function (result) {
                     // Don't call the success handler, otherwise we will be redirected to admin
                     self.get('application').set('skipAuthSuccessHandler', true);
 
@@ -65,7 +73,17 @@ export default Ember.Controller.extend(ValidationEngine, {
                         password: self.get('password')
                     }).then(function () {
                         self.set('password', '');
-                        self.transitionToRoute('setup.three');
+
+                        if (data.image) {
+                            self.sendImage(result.users[0])
+                            .then(function () {
+                                self.transitionToRoute('setup.three');
+                            }).catch(function (resp) {
+                                notifications.showAPIError(resp);
+                            });
+                        } else {
+                            self.transitionToRoute('setup.three');
+                        }
                     });
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
@@ -75,6 +93,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                 self.toggleProperty('submitting');
                 self.set('showError', true);
             });
+        },
+        setImage: function (image) {
+            this.set('image', image);
         }
     }
 });
