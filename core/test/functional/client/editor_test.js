@@ -556,8 +556,7 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
     });
 });
 
-// TODO: Change number of tests back to 6 once the commented-out tests are fixed
-CasperTest.begin('Publish menu - existing post status is correct after failed save', 4, function suite(test) {
+CasperTest.begin('Publish menu - existing post status is correct after failed save', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');

@@ -13,19 +13,18 @@ var TrimFocusInput = Ember.TextField.extend({
         return false;
     }),
 
-    didInsertElement: function () {
+    focusField: Ember.on('didInsertElement', function () {
         // This fix is required until Mobile Safari has reliable
         // autofocus, select() or focus() support
         if (this.get('focus') && !device.ios()) {
             this.$().val(this.$().val()).focus();
         }
-    },
+    }),
 
-    focusOut: function () {
+    trimValue: Ember.on('focusOut', function () {
         var text = this.$().val();
-
         this.$().val(text.trim());
-    }
+    })
 });
 
 export default TrimFocusInput;

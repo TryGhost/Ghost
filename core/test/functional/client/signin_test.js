@@ -110,8 +110,7 @@ CasperTest.begin('Authenticated user is redirected', 6, function suite(test) {
     });
 }, true);
 
-// TODO: Change number of tests back to 4 once the commented-out tests are fixed
-CasperTest.begin('Ensure email field form validation', 2, function suite(test) {
+CasperTest.begin('Ensure email field form validation', 4, function suite(test) {
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -129,12 +128,9 @@ CasperTest.begin('Ensure email field form validation', 2, function suite(test) {
             test.fail('Login form didn\'t fade in.');
         });
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification-red', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification-red', 'Invalid Email', '.gh-notification-red text is correct');
-    }, function onTimeout() {
-        test.fail('Email validation error did not appear');
-    }, 2000);
+    casper.waitForText('Invalid email', function onSuccess() {
+        test.assert(true, 'Invalid email error was shown');
+    }, casper.failOnTimeout(test, 'Invalid email error was not shown'));
 
     casper.then(function testMissingEmail() {
         this.fillAndSave('form.gh-signin', {
@@ -142,10 +138,7 @@ CasperTest.begin('Ensure email field form validation', 2, function suite(test) {
         });
     });
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification-red', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification-red', 'Please enter an email', '.gh-notification-red text is correct');
-    }, function onTimeout() {
-        test.fail('Missing Email validation error did not appear');
-    }, 2000);
+    casper.waitForText('Please enter an email', function onSuccess() {
+        test.assert(true, 'Missing email error was shown');
+    }, casper.failOnTimeout(test, 'Missing email error was not shown'));
 }, true);

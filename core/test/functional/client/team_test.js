@@ -192,7 +192,7 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
     });
 });
 
-CasperTest.begin('User settings screen validates email', 6, function suite(test) {
+CasperTest.begin('User settings screen validates email', 4, function suite(test) {
     var email;
 
     casper.thenOpenAndWaitForPageLoad('team.user', function testTitleAndUrl() {
@@ -208,26 +208,23 @@ CasperTest.begin('User settings screen validates email', 6, function suite(test)
 
     casper.then(function setEmailToInvalid() {
         var brokenEmail = email.replace('.', '-');
-
-        casper.fillSelectors('.user-profile', {
-            '#user-email': brokenEmail
-        }, false);
+        this.fillAndSave('.user-profile', {
+            email: brokenEmail
+        });
     });
 
-    casper.thenClick('.btn-blue');
-
-    casper.waitForResource('/team/');
-
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelector('.gh-notification', function onSuccess() {
-        test.assert(true, 'Got error notification');
-        test.assertSelectorDoesntHaveText('.gh-notification', '[object Object]', 'notification text is not broken');
-    }, casper.failOnTimeout(test, 'No error notification :('));
+    casper.waitForText('Please supply a valid email address', function onSuccess() {
+        test.assert(true, 'Invalid email error was shown');
+    }, casper.failOnTimeout(test, 'Invalid email error was not shown'));
 
     casper.then(function resetEmailToValid() {
         casper.fillSelectors('.user-profile', {
             '#user-email': email
         }, false);
+    });
+
+    casper.then(function checkEmailErrorWasCleared() {
+        test.assertTextDoesntExist('Please supply a valid email address', 'Invalid email error was not cleared');
     });
 
     casper.thenClick('.view-actions .btn-blue');
@@ -275,10 +272,9 @@ CasperTest.begin('Ensure user bio field length validation', 3, function suite(te
 
     casper.thenClick('.view-actions .btn-blue');
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification', 'is too long', '.gh-notification text is correct');
-    }, casper.failOnTimeout(test, 'Bio field length error did not appear', 2000));
+    casper.waitForText('Bio is too long', function onSuccess() {
+        test.assert(true, 'Bio too long error was shown');
+    }, casper.failOnTimeout(test, 'Bio too long error was not shown'));
 });
 
 CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
@@ -295,10 +291,9 @@ CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
 
     casper.thenClick('.view-actions .btn-blue');
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification', 'not a valid url', '.gh-notification text is correct');
-    }, casper.failOnTimeout(test, 'Url validation error did not appear', 2000));
+    casper.waitForText('Website is not a valid url', function onSuccess() {
+        test.assert(true, 'Website invalid error was shown');
+    }, casper.failOnTimeout(test, 'Website invalid error was not shown'));
 });
 
 CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
@@ -315,8 +310,7 @@ CasperTest.begin('Ensure user location field length validation', 3, function sui
 
     casper.thenClick('.view-actions .btn-blue');
 
-    // TODO: review once inline-validations are implemented
-    casper.waitForSelectorTextChange('.gh-notification', function onSuccess() {
-        test.assertSelectorHasText('.gh-notification', 'is too long', '.gh-notification text is correct');
-    }, casper.failOnTimeout(test, 'Location field length error did not appear', 2000));
+    casper.waitForText('Location is too long', function onSuccess() {
+        test.assert(true, 'Location too long error was shown');
+    }, casper.failOnTimeout(test, 'Location too long error was not shown'));
 });

@@ -377,6 +377,7 @@
 }
 
 .gh-flow-content .gh-flow-invite {
+    position: relative;
     margin: 0 auto;
     max-width: 400px;
     width: 100%;

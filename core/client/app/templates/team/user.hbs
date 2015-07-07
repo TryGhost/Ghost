@@ -53,32 +53,39 @@
                     <button type="button" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</button>
                 </figure>
 
-                <div class="form-group first-form-group">
+                {{#gh-form-group class="first-form-group" errors=user.errors property="name"}}
                     <label for="user-name">Full Name</label>
-                    {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off"}}
-                    <p>Use your real name so people can recognise you</p>
-                </div>
+                    {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name")}}
+                    {{#if user.errors.name}}
+                        {{gh-error-message errors=user.errors property="name"}}
+                    {{else}}
+                        <p>Use your real name so people can recognise you</p>
+                    {{/if}}
+                {{/gh-form-group}}
 
             </fieldset>
 
             <fieldset class="user-details-bottom">
 
-                <div class="form-group">
+                {{#gh-form-group errors=user.errors property="slug"}}
                     <label for="user-slug">Slug</label>
                     {{gh-input class="gh-input user-name" id="user-slug" value=slugValue name="user" focus-out="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
                     <p>{{gh-blog-url}}/author/{{slugValue}}</p>
-                </div>
+                    {{gh-error-message errors=user.errors property="slug"}}
+                {{/gh-form-group}}
 
-                <div class="form-group">
+                {{#gh-form-group errors=user.errors property="email"}}
                     <label for="user-email">Email</label>
                     {{!-- Administrators only see text of Owner's email address but not input --}}
                     {{#unless isAdminUserOnOwnerProfile}}
-                        {{input type="email" value=user.email id="user-email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                        {{input type="email" value=user.email id="user-email" name="email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email")}}
+                        {{gh-error-message errors=user.errors property="email"}}
                     {{else}}
                         <span>{{user.email}}</span>
                     {{/unless}}
                     <p>Used for notifications</p>
-                </div>
+                {{/gh-form-group}}
+
                 {{#if rolesDropdownIsVisible}}
                     <div class="form-group">
                         <label for="user-role">Role</label>
@@ -94,26 +101,30 @@
                         <p>What permissions should this user have?</p>
                     </div>
                 {{/if}}
-                <div class="form-group">
+
+                {{#gh-form-group errors=user.errors property="location"}}
                     <label for="user-location">Location</label>
-                    {{input type="text" value=user.location id="user-location" class="gh-input"}}
+                    {{input type="text" value=user.location id="user-location" class="gh-input" focusOut=(action "validate" "location")}}
+                    {{gh-error-message errors=user.errors property="location"}}
                     <p>Where in the world do you live?</p>
-                </div>
+                {{/gh-form-group}}
 
-                <div class="form-group">
+                {{#gh-form-group errors=user.errors property="website"}}
                     <label for="user-website">Website</label>
-                    {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off"}}
+                    {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website")}}
+                    {{gh-error-message errors=user.errors property="website"}}
                     <p>Have a website or blog other than this one? Link it!</p>
-                </div>
+                {{/gh-form-group}}
 
-                <div class="form-group bio-container">
+                {{#gh-form-group class="bio-container" errors=user.errors property="bio"}}
                     <label for="user-bio">Bio</label>
-                    {{textarea id="user-bio" class="gh-input" value=user.bio}}
+                    {{textarea id="user-bio" class="gh-input" value=user.bio focusOut=(action "validate" "bio")}}
+                    {{gh-error-message errors=user.errors property="bio"}}
                     <p>
                         Write about you, in 200 characters or less.
                         {{gh-count-characters user.bio}}
                     </p>
-                </div>
+                {{/gh-form-group}}
 
                 <hr />
 

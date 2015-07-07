@@ -10,21 +10,22 @@
         <form id="settings-general" novalidate="novalidate">
             <fieldset>
 
-                <div class="form-group">
+                {{#gh-form-group errors=model.errors property="title"}}
                     <label for="blog-title">Blog Title</label>
-                    {{input id="blog-title" class="gh-input" name="general[title]" type="text" value=model.title}}
+                    {{gh-input id="blog-title" class="gh-input" name="general[title]" type="text" value=model.title focusOut=(action "validate" "title")}}
+                    {{gh-error-message errors=model.errors property="title"}}
                     <p>The name of your blog</p>
-                </div>
+                {{/gh-form-group}}
 
-                <div class="form-group description-container">
+                {{#gh-form-group class="description-container" errors=model.errors property="description"}}
                     <label for="blog-description">Blog Description</label>
-                    {{textarea id="blog-description" class="gh-input" name="general[description]" value=model.description}}
+                    {{gh-textarea id="blog-description" class="gh-input" name="general[description]" value=model.description focusOut=(action "validate" "description")}}
+                    {{gh-error-message errors=model.errors property="description"}}
                     <p>
                         Describe what your blog is about
                         {{gh-count-characters model.description}}
                     </p>
-
-                </div>
+                {{/gh-form-group}}
             </fieldset>
 
             <div class="form-group">
@@ -52,7 +53,7 @@
                 <div class="form-group">
                     <label for="postsPerPage">Posts per page</label>
                     {{! `pattern` brings up numeric keypad allowing any number of digits}}
-                    {{input id="postsPerPage" class="gh-input" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
+                    {{gh-input id="postsPerPage" class="gh-input" name="general[postsPerPage]" focus-out="checkPostsPerPage" value=model.postsPerPage min="1" max="1000" type="number" pattern="[0-9]*"}}
                     <p>How many posts should be displayed on each page</p>
                 </div>
 
@@ -92,10 +93,11 @@
                 </div>
 
                 {{#if model.isPrivate}}
-                <div class="form-group">
-                    {{input name="general[password]" type="text" value=model.password}}
+                {{#gh-form-group errors=model.errors property="password"}}
+                    {{gh-input name="general[password]" type="text" value=model.password focusOut=(action "validate" "password")}}
+                    {{gh-error-message errors=model.errors property="password"}}
                     <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
-                </div>
+                {{/gh-form-group}}
                 {{/if}}
             </fieldset>
         </form>

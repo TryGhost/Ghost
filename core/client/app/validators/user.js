@@ -10,7 +10,10 @@ var UserValidator = BaseValidator.create({
         var name = model.get('name');
 
         if (this.isActive(model)) {
-            if (!validator.isLength(name, 0, 150)) {
+            if (validator.empty(name)) {
+                model.get('errors').add('name', 'Please enter a name.');
+                this.invalidate();
+            } else if (!validator.isLength(name, 0, 150)) {
                 model.get('errors').add('name', 'Name is too long');
                 this.invalidate();
             }
