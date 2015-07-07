@@ -287,6 +287,25 @@ authentication = {
         }).then(function (result) {
             return Promise.resolve({users: [result]});
         });
+    },
+
+    revoke: function (object) {
+        var token;
+
+        if (object.token_type_hint && object.token_type_hint === 'access_token') {
+            token = dataProvider.Accesstoken;
+        } else if (object.token_type_hint && object.token_type_hint === 'refresh_token') {
+            token = dataProvider.Refreshtoken;
+        } else {
+            return errors.BadRequestError('Invalid token_type_hint given.');
+        }
+
+        return token.destroyByToken({token: object.token}).then(function () {
+            return Promise.resolve({token: object.token});
+        }, function () {
+            // On error we still want a 200. See https://tools.ietf.org/html/rfc7009#page-5
+            return Promise.resolve({token: object.token, error: 'Invalid token provided'});
+        });
     }
 };
 
