@@ -290,6 +290,7 @@ ghost_head = function (options) {
 
             // head is our main array that holds our meta data
             head.push('<link rel="canonical" href="' + metaData.url + '" />');
+            head.push('<meta name="referrer" content="origin" />');
 
             // Generate context driven pagination urls
             if (self.pagination) {
