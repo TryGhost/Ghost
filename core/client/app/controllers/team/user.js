@@ -2,8 +2,12 @@ import Ember from 'ember';
 import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
+import ValidationEngine from 'ghost/mixins/validation-engine';
 
-export default Ember.Controller.extend({
+export default Ember.Controller.extend(ValidationEngine, {
+    // ValidationEngine settings
+    validationType: 'user',
+
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
 

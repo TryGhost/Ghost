@@ -1,7 +1,9 @@
 import Ember from 'ember';
+import DS from 'ember-data';
 
 export default Ember.Controller.extend({
     notifications: Ember.inject.service(),
+    errors: DS.Errors.create(),
     users: '',
     usersArray: Ember.computed('users', function () {
         var users = this.get('users').split('\n').filter(function (email) {
@@ -62,9 +64,10 @@ export default Ember.Controller.extend({
             var self = this,
                 validationErrors = this.get('validateUsers'),
                 users = this.get('usersArray'),
-                errorMessages,
                 notifications = this.get('notifications'),
                 invitationsString;
+
+            this.get('errors').clear();
 
             if (validationErrors === true && users.length > 0) {
                 this.get('authorRole').then(function (authorRole) {
@@ -117,19 +120,15 @@ export default Ember.Controller.extend({
                     });
                 });
             } else if (users.length === 0) {
-                // TODO: switch to inline-validation
-                notifications.showAlert('No users to invite.', {type: 'error'});
+                this.get('errors').add('users', 'No users to invite.');
             } else {
-                errorMessages = validationErrors.map(function (error) {
+                validationErrors.forEach(function (error) {
                     // Only one error type here so far, but one day the errors might be more detailed
                     switch (error.error) {
                     case 'email':
-                        return {message: error.user + ' is not a valid email.'};
+                        self.get('errors').add('users', error.user + ' is not a valid email.');
                     }
                 });
-
-                // TODO: switch to inline-validation
-                notifications.showErrors(errorMessages);
             }
         }
     }
