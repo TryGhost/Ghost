@@ -33,6 +33,7 @@
 @import "layouts/main.css";
 @import "layouts/flow.css";
 @import "layouts/auth.css";
+@import "layouts/reset.css";
 @import "layouts/content.css";
 @import "layouts/editor.css";
 @import "layouts/settings.css";
