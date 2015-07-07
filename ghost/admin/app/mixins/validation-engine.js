@@ -15,49 +15,6 @@ import TagSettingsValidator from 'ghost/validators/tag-settings';
 // our extensions to the validator library
 ValidatorExtensions.init();
 
-// This is here because it is used by some things that format errors from api responses
-// This function should be removed in the notifications refactor
-// format errors to be used in `notifications.showErrors`.
-// result is [{message: 'concatenated error messages'}]
-function formatErrors(errors, opts) {
-    var message = 'There was an error';
-
-    opts = opts || {};
-
-    if (opts.wasSave && opts.validationType) {
-        message += ' saving this ' + opts.validationType;
-    }
-
-    if (Ember.isArray(errors)) {
-        // get the validator's error messages from the array.
-        // normalize array members to map to strings.
-        message = errors.map(function (error) {
-            var errorMessage;
-            if (typeof error === 'string') {
-                errorMessage = error;
-            } else {
-                errorMessage = error.message;
-            }
-
-            return Ember.Handlebars.Utils.escapeExpression(errorMessage);
-        }).join('<br />').htmlSafe();
-    } else if (errors instanceof Error) {
-        message += errors.message || '.';
-    } else if (typeof errors === 'object') {
-        // Get messages from server response
-        message += ': ' + getRequestErrorMessage(errors, true);
-    } else if (typeof errors === 'string') {
-        message += ': ' + errors;
-    } else {
-        message += '.';
-    }
-
-    // set format for notifications.showErrors
-    message = [{message: message}];
-
-    return message;
-}
-
 /**
 * The class that gets this mixin will receive these properties and functions.
 * It will be able to validate any properties on itself (or the model it passes to validate())
@@ -163,15 +120,10 @@ export default Ember.Mixin.create({
         return this.validate(options).then(function () {
             return _super.call(self, options);
         }).catch(function (result) {
-            // server save failed - validate() would have given back an array
-            if (!Ember.isArray(result)) {
-                if (options.format !== false) {
-                    // concatenate all errors into an array with a single object: [{message: 'concatted message'}]
-                    result = formatErrors(result, options);
-                } else {
-                    // return the array of errors from the server
-                    result = getRequestErrorMessage(result);
-                }
+            // server save failed or validator type doesn't exist
+            if (result && !Ember.isArray(result)) {
+                // return the array of errors from the server
+                result = getRequestErrorMessage(result);
             }
 
             return Ember.RSVP.reject(result);

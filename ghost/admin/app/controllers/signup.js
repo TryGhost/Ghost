@@ -20,8 +20,8 @@ export default Ember.Controller.extend(ValidationEngine, {
 
             notifications.closeNotifications();
 
-            this.toggleProperty('submitting');
-            this.validate({format: false}).then(function () {
+            this.validate().then(function () {
+                this.toggleProperty('submitting');
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'invitation'),
                     type: 'POST',
@@ -43,10 +43,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                     self.toggleProperty('submitting');
                     notifications.showAPIError(resp);
                 });
-            }).catch(function (errors) {
-                self.toggleProperty('submitting');
-                if (errors) {
-                    notifications.showErrors(errors);
+            }).catch(function (error) {
+                if (error) {
+                    notifications.showAPIError(error);
                 }
             });
         }
