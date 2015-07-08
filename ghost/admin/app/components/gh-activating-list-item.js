@@ -8,5 +8,13 @@ export default Ember.Component.extend({
 
     unfocusLink: function () {
         this.$('a').blur();
-    }.on('click')
+    }.on('click'),
+
+    actions: {
+        setActive: function (value) {
+            Ember.run.schedule('afterRender', this, function () {
+                this.set('active', value);
+            });
+        }
+    }
 });

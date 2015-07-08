@@ -4,7 +4,9 @@ Ember.LinkComponent.reopen({
     active: Ember.computed('attrs.params', '_routing.currentState', function () {
         var isActive = this._super();
 
-        Ember.set(this, 'alternateActive', isActive);
+        if (typeof this.attrs.alternateActive === 'function') {
+            this.attrs.alternateActive(isActive);
+        }
 
         return isActive;
     }),
