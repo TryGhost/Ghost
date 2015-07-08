@@ -466,6 +466,10 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (action === 'edit') {
+            // Owner can only be editted by owner
+            if (userModel.hasRole('Owner')) {
+                hasUserPermission = _.any(loadedPermissions.user.roles, {name: 'Owner'});
+            }
             // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
             if (_.any(loadedPermissions.user.roles, {name: 'Author'})) {
