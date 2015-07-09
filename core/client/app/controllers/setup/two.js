@@ -10,6 +10,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     password: null,
     image: null,
     submitting: false,
+    blogCreated: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -50,14 +51,15 @@ export default Ember.Controller.extend(ValidationEngine, {
             var self = this,
                 data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
                 notifications = this.get('notifications'),
-                config = this.get('config');
+                config = this.get('config'),
+                method = (this.get('blogCreated')) ? 'PUT' : 'POST';
 
             this.toggleProperty('submitting');
             this.validate().then(function () {
                 self.set('showError', false);
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'setup'),
-                    type: 'POST',
+                    type: method,
                     data: {
                         setup: [{
                             name: data.name,
@@ -76,6 +78,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                         password: self.get('password')
                     }).then(function () {
                         self.set('password', '');
+                        self.set('blogCreated', true);
 
                         if (data.image) {
                             self.sendImage(result.users[0])
