@@ -80,14 +80,19 @@
                     <p>Used for notifications</p>
                 </div>
                 {{#if rolesDropdownIsVisible}}
-                <div class="form-group">
-                    <label for="user-role">Role</label>
-                    {{gh-role-selector
-                        initialValue=user.role
-                        onChange="changeRole"
-                        selectId="user-role"}}
-                    <p>What permissions should this user have?</p>
-                </div>
+                    <div class="form-group">
+                        <label for="user-role">Role</label>
+                        <span class="gh-select" tabindex="0">
+                            {{gh-select-native id="new-user-role"
+                                content=roles
+                                optionValuePath="id"
+                                optionLabelPath="name"
+                                selection=model.role
+                                action="changeRole"
+                            }}
+                        </span>
+                        <p>What permissions should this user have?</p>
+                    </div>
                 {{/if}}
                 <div class="form-group">
                     <label for="user-location">Location</label>
