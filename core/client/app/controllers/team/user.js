@@ -77,6 +77,10 @@ export default Ember.Controller.extend({
         });
     }),
 
+    roles: Ember.computed(function () {
+        return this.store.find('role', {permissions: 'assign'});
+    }),
+
     actions: {
         changeRole: function (newRole) {
             this.set('model.role', newRole);
