@@ -27,8 +27,7 @@ CasperTest.begin('Team tab is correct', 4, function suite(test) {
     });
 });
 
-// TODO: reset to 9 tests once test is fixed
-CasperTest.begin('Users screen is correct', 8, function suite(test) {
+CasperTest.begin('Users screen is correct', 9, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general');
     casper.thenTransitionAndWaitForScreenLoad('team', function canTransition() {
         test.assert(true, 'Can transition to users screen from settings.general');
@@ -45,7 +44,7 @@ CasperTest.begin('Users screen is correct', 8, function suite(test) {
     casper.thenClick('.view-actions .btn-green');
     casper.waitForOpaque('.invite-new-user .modal-content', function then() {
         test.assertEval(function testOwnerRoleNotAnOption() {
-            var options = document.querySelectorAll('.invite-new-user select#new-user-role option'),
+            var options = document.querySelectorAll('.invite-new-user #new-user-role select option'),
                 i = 0;
             for (; i < options.length; i = i + 1) {
                 if (options[i].text === 'Owner') {
@@ -55,21 +54,22 @@ CasperTest.begin('Users screen is correct', 8, function suite(test) {
             return true;
         }, '"Owner" is not a role option for new users');
     });
-    // TODO: FIX THIS TEST!!
+
     // role options get loaded asynchronously; give them a chance to come in
-    // casper.waitForSelector('.invite-new-user select#new-user-role option', function then() {
-    //     test.assertEval(function authorIsSelectedByDefault() {
-    //         var options = document.querySelectorAll('.invite-new-user select#new-user-role option'),
-    //             i = 0;
-    //         for (; i < options.length; i = i + 1) {
-    //             if (options[i].selected) {
-    //                 return options[i].text === 'Author';
-    //             }
-    //         }
-    //         return false;
-    //     }, 'The "Author" role is selected by default when adding a new user');
-    // });
+    casper.waitForSelector('.invite-new-user #new-user-role select option', function then() {
+        test.assertEval(function authorIsSelectedByDefault() {
+            var options = document.querySelectorAll('.invite-new-user #new-user-role select option'),
+                i = 0;
+            for (; i < options.length; i = i + 1) {
+                if (options[i].selected) {
+                    return options[i].text === 'Author';
+                }
+            }
+            return false;
+        }, 'The "Author" role is selected by default when adding a new user');
+    });
 });
+
 // ### User settings tests
 CasperTest.begin('Can save settings', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('team.user', function testTitleAndUrl() {
