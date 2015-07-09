@@ -3,18 +3,25 @@ import Ember from 'ember';
 export default Ember.Controller.extend({
     notifications: Ember.inject.service(),
 
+    role: null,
+    authorRole: null,
+
+    roles: Ember.computed(function () {
+        return this.store.find('role', {permissions: 'assign'});
+    }),
+
     // Used to set the initial value for the dropdown
-    authorRole: Ember.computed(function () {
+    authorRoleObserver: Ember.observer('roles.@each.role', function () {
         var self = this;
 
-        return this.store.find('role').then(function (roles) {
+        this.get('roles').then(function (roles) {
             var authorRole = roles.findBy('name', 'Author');
 
-            // Initialize role as well.
-            self.set('role', authorRole);
             self.set('authorRole', authorRole);
 
-            return authorRole;
+            if (!self.get('role')) {
+                self.set('role', authorRole);
+            }
         });
     }),
 
