@@ -528,7 +528,6 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
     });
 });
 
-// TODO: Change number of tests back to 4 once the commented-out tests are fixed
 CasperTest.begin('Publish menu - new post status is correct after failed save', 2, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
@@ -553,27 +552,15 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
     // attempt to save
     casper.thenClick('.js-publish-button');
 
-    // ... check status, label, class
-    // TODO: re-implement these tests once #5933 is merged
-    // casper.waitForSelector('.notification-error', function onSuccess() {
-    //     test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
-    //     // wait for button to settle
-    //     casper.wait(500);
-    //     test.assertSelectorHasText('.js-publish-button', 'Save Draft', '.js-publish-button says Save Draft');
-    // }, function onTimeout() {
-    //     test.assert(false, 'Saving post with invalid title should trigger an error');
-    // });
-
     // Click on "Content" in the main nav
     casper.thenClick('.gh-nav-main-content');
 
-    // TODO: FIX THIS TEST!!!!
     // The "Are you sure?" modal appears
-    // casper.waitUntilVisible('.modal-content', function onSuccess() {
-    //     casper.thenClick('.btn-red');
-    // }, function onTimeout() {
-    //     test.assert(false, 'Are you sure you want to leave modal did not appear.');
-    // });
+    casper.waitUntilVisible('.modal-content', function onSuccess() {
+        casper.thenClick('.btn-red');
+    }, function onTimeout() {
+        test.assert(false, 'Are you sure you want to leave modal did not appear.');
+    });
 });
 
 // TODO: Change number of tests back to 6 once the commented-out tests are fixed

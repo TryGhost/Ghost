@@ -39,6 +39,17 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
                 fromNewToEdit,
                 deletedWithoutChanges;
 
+            // if a save is in-flight we don't know whether or not it's safe to leave
+            // so we abort the transition and retry after the save has completed.
+            if (state.isSaving) {
+                transition.abort();
+                return Ember.run.later(this, function () {
+                    Ember.RSVP.resolve(controller.get('lastPromise')).then(function () {
+                        transition.retry();
+                    });
+                }, 100);
+            }
+
             fromNewToEdit = this.get('routeName') === 'editor.new' &&
                 transition.targetName === 'editor.edit' &&
                 transition.intent.contexts &&
