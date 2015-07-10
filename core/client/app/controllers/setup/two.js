@@ -14,6 +14,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
     application: Ember.inject.controller(),
+    config: Ember.inject.service(),
 
     // ValidationEngine settings
     validationType: 'setup',
@@ -48,7 +49,8 @@ export default Ember.Controller.extend(ValidationEngine, {
         setup: function () {
             var self = this,
                 data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
-                notifications = this.get('notifications');
+                notifications = this.get('notifications'),
+                config = this.get('config');
 
             this.toggleProperty('submitting');
             this.validate().then(function () {
@@ -65,6 +67,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function (result) {
+                    config.set('blogTitle', data.blogTitle);
                     // Don't call the success handler, otherwise we will be redirected to admin
                     self.get('application').set('skipAuthSuccessHandler', true);
 
