@@ -1,9 +1,8 @@
 language: node_js
-# When changing node version also update it on line 35. 
+# When changing node version also update it on line 35.
 node_js:
   - "0.10"
   - "0.12"
-  - "iojs-v1.2.0"
 sudo: false
 cache:
   directories:
@@ -31,7 +30,7 @@ before_script:
   - phantomjs --version
   - casperjs --version
 after_success:
-  - | 
+  - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
         if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "0.10" ]]; then
           echo "Generate coverage..."
