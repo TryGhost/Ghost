@@ -98,6 +98,16 @@ Or, you can keep the height static:
 }
 ```
 
+## Event handling
+You can catch the following list of events: https://codemirror.net/doc/manual.html#events
+
+```
+var simplemde = new SimpleMDE();
+simplemde.codemirror.on("change", function(){
+	console.log(simplemde.value());
+});
+```
+
 ## How it works
 SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor) and includes a great many number of changes. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
 
