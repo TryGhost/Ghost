@@ -237,13 +237,9 @@ describe('Users API', function () {
                 }).catch(done);
         });
 
-        it('Admin can edit all users in all roles', function (done) {
-            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
+        it('Admin can edit Admin, Editor and Author roles', function (done) {
+            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}))
                 .then(function (response) {
-                    checkEditResponse(response);
-
-                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
-                }).then(function (response) {
                     checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
                 }).then(function (response) {
@@ -257,14 +253,20 @@ describe('Users API', function () {
                 }).catch(done);
         });
 
-        it('Admin can edit all users in all roles with roles in payload', function (done) {
-            UserAPI.edit({users: [{name: newName, roles: [roleIdFor.owner]}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
-                .then(function (response) {
+        it('Admin CANNOT edit Owner role', function (done) {
+            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Admin should not be able to edit owner account'));
+                }).catch(function (error) {
+                    error.errorType.should.eql('NoPermissionError');
+                    done();
+                });
+        });
+
+        it('Admin can edit Admin, Editor and Author roles with roles in payload', function (done) {
+            UserAPI.edit({users: [{name: newName, roles: [roleIdFor.admin]}]}, _.extend({}, context.admin, {id: userIdFor.admin})).then(function (response) {
                     checkEditResponse(response);
 
-                    return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.admin]}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
-                }).then(function (response) {
-                    checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.editor]}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
                 }).then(function (response) {
                     checkEditResponse(response);
