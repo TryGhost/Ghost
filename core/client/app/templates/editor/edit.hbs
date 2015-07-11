@@ -27,7 +27,7 @@
                 <a class="markdown-help" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
             </header>
             <section id="entry-markdown-content" class="entry-markdown-content">
-                {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch setEditor="setEditor" updateScrollInfo="updateEditorScrollInfo" openModal="openModal" onFocusIn="autoSaveNew" height=height}}
+                {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch setEditor="setEditor" updateScrollInfo="updateEditorScrollInfo" openModal="openModal" onFocusIn="autoSaveNew" height=height focus=shouldFocusEditor}}
             </section>
         </section>
 
