@@ -125,17 +125,15 @@ export default Ember.Mixin.create({
                 return reject(['The validator specified, "' + type + '", did not exist!']);
             }
 
+            if (opts.property) {
+                model.get('errors').remove(opts.property);
+            } else {
+                model.get('errors').clear();
+            }
+
             passed = validator.check(model, opts.property);
 
-            if (passed) {
-                if (opts.property) {
-                    model.get('errors').remove(opts.property);
-                } else {
-                    model.get('errors').clear();
-                }
-                return resolve();
-            }
-            return reject();
+            return (passed) ? resolve() : reject();
         });
     },
 
