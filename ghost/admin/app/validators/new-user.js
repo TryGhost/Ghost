@@ -14,7 +14,10 @@ var NewUserValidator = BaseValidator.extend({
     email: function (model) {
         var email = model.get('email');
 
-        if (!validator.isEmail(email)) {
+        if (validator.empty(email)) {
+            model.get('errors').add('email', 'Please enter an email.');
+            this.invalidate();
+        } else if (!validator.isEmail(email)) {
             model.get('errors').add('email', 'Invalid Email.');
             this.invalidate();
         }
