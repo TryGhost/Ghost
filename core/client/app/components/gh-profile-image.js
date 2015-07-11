@@ -51,8 +51,7 @@ export default Ember.Component.extend({
             previewMaxWidth: size,
             previewCrop: true,
             maxNumberOfFiles: 1,
-            autoUpload: false,
-            acceptFileTypes: /(\.|\/)(gif|jpe?g|png|svg?z)$/i
+            autoUpload: false
         })
         .on('fileuploadadd', Ember.run.bind(this, this.queueFile))
         .on('fileuploadprocessalways', Ember.run.bind(this, this.triggerPreview));
@@ -63,14 +62,17 @@ export default Ember.Component.extend({
     },
 
     queueFile: function (e, data) {
-        this.set('hasUploadedImage', true);
-        // send image data to controller
-        this.sendAction('setImage', data);
+        var fileName = data.files[0].name;
+
+        if ((/\.(gif|jpe?g|png|svg?z)$/i).test(fileName)) {
+            this.sendAction('setImage', data);
+        }
     },
 
     triggerPreview: function (e, data) {
         var file = data.files[data.index];
         if (file.preview) {
+            this.set('hasUploadedImage', true);
             // necessary jQuery code because file.preview is a raw DOM object
             // potential todo: rename 'gravatar-img' class in the CSS to be something
             // that both the gravatar and the image preview can use that's not so confusing
