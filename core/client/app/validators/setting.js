@@ -30,18 +30,14 @@ var SettingValidator = BaseValidator.create({
     postsPerPage: function (model) {
         var postsPerPage = model.get('postsPerPage');
 
-        if (postsPerPage > 1000) {
-            model.get('errors').add('postsPerPage', 'The maximum number of posts per page is 1000');
-            this.invalidate();
-        }
-
-        if (postsPerPage < 1) {
-            model.get('errors').add('postsPerPage', 'The minimum number of posts per page is 1');
-            this.invalidate();
-        }
-
         if (!validator.isInt(postsPerPage)) {
             model.get('errors').add('postsPerPage', 'Posts per page must be a number');
+            this.invalidate();
+        } else if (postsPerPage > 1000) {
+            model.get('errors').add('postsPerPage', 'The maximum number of posts per page is 1000');
+            this.invalidate();
+        } else if (postsPerPage < 1) {
+            model.get('errors').add('postsPerPage', 'The minimum number of posts per page is 1');
             this.invalidate();
         }
     }
