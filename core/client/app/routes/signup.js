@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import DS from 'ember-data';
 import {request as ajax} from 'ic-ajax';
 import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
@@ -35,6 +36,7 @@ export default Ember.Route.extend(styleBody, {
 
             model.set('email', email);
             model.set('token', params.token);
+            model.set('errors', DS.Errors.create());
 
             return ajax({
                 url: self.get('ghostPaths.url').api('authentication', 'invitation'),

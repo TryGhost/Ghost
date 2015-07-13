@@ -45,7 +45,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                 });
             }).catch(function (errors) {
                 self.toggleProperty('submitting');
-                notifications.showErrors(errors);
+                if (errors) {
+                    notifications.showErrors(errors);
+                }
             });
         }
     }
