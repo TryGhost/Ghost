@@ -217,7 +217,7 @@ function init(options) {
             errors.logError(error.message, error.context, error.help);
         });
 
-        _.each(config.paths.availableThemes._messages.warns, function (warn) {
+        _.each(config.paths.availableThemes._messages.warnings, function (warn) {
             errors.logWarn(warn.message, warn.context, warn.help);
         });
 
