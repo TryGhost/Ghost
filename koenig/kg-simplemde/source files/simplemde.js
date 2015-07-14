@@ -7,7 +7,9 @@ var shortcuts = {
 	'Cmd-Alt-I': drawImage,
 	"Cmd-'": toggleBlockquote,
 	'Cmd-Alt-L': toggleOrderedList,
-	'Cmd-L': toggleUnOrderedList
+	'Cmd-L': toggleUnorderedList,
+	'Cmd-Alt-C': toggleCodeBlock,
+	'Cmd-P': togglePreview,
 };
 
 
@@ -27,21 +29,21 @@ function fixShortcut(name) {
 /**
  * Create icon element for toolbar.
  */
-function createIcon(name, options) {
+function createIcon(options, enableTooltips) {
 	options = options || {};
 	var el = document.createElement('a');
-
-	var shortcut = options.shortcut || shortcuts[name];
-	if (shortcut) {
-		shortcut = fixShortcut(shortcut);
-		el.title = shortcut;
-		el.title = el.title.replace('Cmd', '⌘');
+	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
+	
+	if (options.title && enableTooltips) {
+		el.title = options.title;
+		
 		if (isMac) {
+			el.title = el.title.replace('Ctrl', '⌘');
 			el.title = el.title.replace('Alt', '⌥');
 		}
 	}
 
-	el.className = options.className || 'icon-' + name;
+	el.className = options.className;
 	return el;
 }
 
@@ -158,7 +160,7 @@ function toggleBlockquote(editor) {
 /**
  * Action for toggling ul.
  */
-function toggleUnOrderedList(editor) {
+function toggleUnorderedList(editor) {
 	var cm = editor.codemirror;
 	_toggleLine(cm, 'unordered-list');
 }
@@ -190,6 +192,16 @@ function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 	_replaceSelection(cm, stat.image, '![](http://', ')');
+}
+
+
+/**
+ * Action for drawing a horizontal rule.
+ */
+function drawHorizontalRule(editor) {
+	var cm = editor.codemirror;
+	var stat = getState(cm);
+	_replaceSelection(cm, stat.image, '', '\n\n-----\n\n');
 }
 
 
@@ -391,47 +403,62 @@ function wordCount(data) {
 
 
 var toolbar = [{
-		name: 'bold',
+		name: "bold",
 		action: toggleBold,
-		className: "fa fa-bold"
-	}, {
-		name: 'italic',
+		className: "fa fa-bold",
+		title: "Bold (Ctrl+B)",
+	},
+	{
+		name: "italic",
 		action: toggleItalic,
-		className: "fa fa-italic"
+		className: "fa fa-italic",
+		title: "Italic (Ctrl+I)",
 	},
-	'|',
-
+	"|",
 	{
-		name: 'quote',
+		name: "quote",
 		action: toggleBlockquote,
-		className: "fa fa-quote-left"
-	}, {
-		name: 'unordered-list',
-		action: toggleUnOrderedList,
-		className: "fa fa-list-ul"
-	}, {
-		name: 'ordered-list',
+		className: "fa fa-quote-left",
+		title: "Quote (Ctrl+')",
+	},
+	{
+		name: "unordered-list",
+		action: toggleUnorderedList,
+		className: "fa fa-list-ul",
+		title: "Generic List (Ctrl+L)",
+	},
+	{
+		name: "ordered-list",
 		action: toggleOrderedList,
-		className: "fa fa-list-ol"
+		className: "fa fa-list-ol",
+		title: "Numbered List (Ctrl+Alt+L)",
 	},
-	'|',
-
+	"|",
 	{
-		name: 'link',
+		name: "link",
 		action: drawLink,
-		className: "fa fa-link"
-	}, {
-		name: 'image',
-		action: drawImage,
-		className: "fa fa-picture-o"
+		className: "fa fa-link",
+		title: "Create Link (Ctrl+K)",
 	},
-	'|',
-
 	{
-		name: 'preview',
-		action: togglePreview,
-		className: "fa fa-eye"
+		name: "quote",
+		action: drawImage,
+		className: "fa fa-picture-o",
+		title: "Insert Image (Ctrl+Alt+I)",
 	},
+	"|",
+	{
+		name: "preview",
+		action: togglePreview,
+		className: "fa fa-eye",
+		title: "Toggle Preview (Ctrl+P)",
+	},
+	{
+		name: "guide",
+		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
+		className: "fa fa-question-circle",
+		title: "Markdown Guide",
+	}
 ];
 
 /**
@@ -444,12 +471,8 @@ function SimpleMDE(options) {
 		this.element = options.element;
 	}
 	
-	if(options.toolbar === false)
-		options.toolbar = false;
-	else
+	if (options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
-		// you can customize toolbar with object
-		// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
 
 	if (!options.hasOwnProperty('status')) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
@@ -597,14 +620,15 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	self.toolbar = {};
 
 	for (var i = 0; i < items.length; i++) {
+		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
+			continue;
+		
 		(function(item) {
 			var el;
-			if (item.name) {
-				el = createIcon(item.name, item);
-			} else if (item === '|') {
+			if (item === '|') {
 				el = createSep();
 			} else {
-				el = createIcon(item);
+				el = createIcon(item, self.options.toolbarTips);
 			}
 
 			// bind events, special for info
@@ -707,10 +731,12 @@ SimpleMDE.prototype.value = function(val) {
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
-SimpleMDE.toggleUnOrderedList = toggleUnOrderedList;
+SimpleMDE.toggleCodeBlock = toggleCodeBlock;
+SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
 SimpleMDE.drawLink = drawLink;
 SimpleMDE.drawImage = drawImage;
+SimpleMDE.drawHorizontalRule = drawHorizontalRule;
 SimpleMDE.undo = undo;
 SimpleMDE.redo = redo;
 SimpleMDE.togglePreview = togglePreview;
@@ -728,8 +754,11 @@ SimpleMDE.prototype.toggleItalic = function() {
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
 };
-SimpleMDE.prototype.toggleUnOrderedList = function() {
-	toggleUnOrderedList(this);
+SimpleMDE.prototype.toggleCodeBlock = function() {
+	toggleCodeBlock(this);
+};
+SimpleMDE.prototype.toggleUnorderedList = function() {
+	toggleUnorderedList(this);
 };
 SimpleMDE.prototype.toggleOrderedList = function() {
 	toggleOrderedList(this);
@@ -739,6 +768,9 @@ SimpleMDE.prototype.drawLink = function() {
 };
 SimpleMDE.prototype.drawImage = function() {
 	drawImage(this);
+};
+SimpleMDE.prototype.drawHorizontalRule = function() {
+	drawHorizontalRule(this);
 };
 SimpleMDE.prototype.undo = function() {
 	undo(this);

@@ -470,6 +470,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 }
 
 .CodeMirror .CodeMirror-code .cm-comment {
-	background: #eee;
+	background: rgba(0, 0, 0, .05);
 	border-radius: 2px;
 }
