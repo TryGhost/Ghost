@@ -179,7 +179,9 @@ generateFeed = function generateFeed(data) {
             }
         });
 
-        feed.item(item);
+        filters.doFilter('rss.item', item, post).then(function then(item) {
+            feed.item(item);
+        });
     });
 
     return filters.doFilter('rss.feed', feed).then(function then(feed) {
