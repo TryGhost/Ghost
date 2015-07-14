@@ -85,8 +85,8 @@ var simplemde = new SimpleMDE({
 To change the minimum height (before it starts auto-growing):
 
 ```CSS
-.CodeMirror {
-	min-height: 300px;
+.CodeMirror, .CodeMirror-scroll {
+	min-height: 200px;
 }
 ```
 
