@@ -91,6 +91,7 @@ Name | Action | Class | Tooltip
 ---- | ------ | ----- | -----
 Bold | toggleBold | fa fa-bold | Bold (Ctrl+B)
 Italic | toggleItalic | fa fa-italic | Italic (Ctrl+I)
+Code | toggleCodeBlock | fa fa-code | Code (Ctrl+Alt+C)
 Blockquote | toggleBlockquote | fa fa-quote-left | Quote (Ctrl+')
 Unordered List | toggleUnorderedList | fa fa-list-ul | Generic List (Ctrl+L)
 Numbered List | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
