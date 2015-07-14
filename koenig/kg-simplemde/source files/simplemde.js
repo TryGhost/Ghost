@@ -7,7 +7,8 @@ var shortcuts = {
 	'Cmd-Alt-I': drawImage,
 	"Cmd-'": toggleBlockquote,
 	'Cmd-Alt-L': toggleOrderedList,
-	'Cmd-L': toggleUnOrderedList
+	'Cmd-L': toggleUnOrderedList,
+	'Cmd-P': togglePreview,
 };
 
 
@@ -31,19 +32,15 @@ function createIcon(name, options, enableTooltips) {
 	options = options || {};
 	var el = document.createElement('a');
 	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
-
-	var shortcut = options.shortcut || shortcuts[name];
-	if (shortcut) {
-		shortcut = fixShortcut(shortcut);
-		el.title = shortcut;
-		el.title = el.title.replace('Cmd', '⌘');
+	
+	if (options.title && enableTooltips) {
+		el.title = options.title;
+		
 		if (isMac) {
+			el.title = el.title.replace('Ctrl', '⌘');
 			el.title = el.title.replace('Alt', '⌥');
 		}
 	}
-	
-	if(options.title && enableTooltips)
-		el.title = options.title;
 
 	el.className = options.className || 'icon-' + name;
 	return el;
@@ -395,55 +392,62 @@ function wordCount(data) {
 
 
 var toolbar = [{
-		name: 'bold',
+		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
-		title: "Bold",
+		title: "Bold (Ctrl+B)",
 	},
 	{
-		name: 'italic',
+		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
-		title: "Italic",
+		title: "Italic (Ctrl+I)",
 	},
-	'|',
+	"|",
 	{
-		name: 'quote',
+		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
-		title: "Quote",
+		title: "Quote (Ctrl+')",
 	},
 	{
-		name: 'unordered-list',
+		name: "unordered-list",
 		action: toggleUnOrderedList,
 		className: "fa fa-list-ul",
-		title: "Generic List",
+		title: "Generic List (Ctrl+L)",
 	},
 	{
-		name: 'ordered-list',
+		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
-		title: "Numbered List",
+		title: "Numbered List (Ctrl+Alt+L)",
 	},
-	'|',
+	"|",
 	{
-		name: 'link',
+		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
-		title: "Create Link",
+		title: "Create Link (Ctrl+K)",
 	},
 	{
-		name: 'image',
+		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
-		title: "Insert Image",
+		title: "Insert Image (Ctrl+Alt+I)",
 	},
-	'|',
+	"|",
 	{
-		name: 'preview',
+		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye",
-		title: "Toggle Preview",
+		title: "Toggle Preview (Ctrl+P)",
+	},
+	"|",
+	{
+		name: "guide",
+		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
+		className: "fa fa-question-circle",
+		title: "Markdown Guide",
 	}];
 
 /**
