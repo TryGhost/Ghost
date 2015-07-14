@@ -20,6 +20,35 @@
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
+/* Colour classes
+/* ---------------------------------------------------------- */
+.darkgrey {
+    color: var(--darkgrey);
+}
+
+.midgrey {
+    color: var(--midgrey);
+}
+
+.lightgrey {
+    color: var(--lightgrey);
+}
+
+.blue {
+    color: var(--blue);
+}
+
+.red {
+    color: var(--red);
+}
+
+.orange {
+    color: var(--orange);
+}
+
+.green {
+    color: var(--green);
+}
 
 /* Layout
 /* ---------------------------------------------------------- */
