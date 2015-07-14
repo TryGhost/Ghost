@@ -40,6 +40,9 @@ function createIcon(name, options) {
 			el.title = el.title.replace('Alt', '⌥');
 		}
 	}
+	
+	if(options.title)
+		el.title = options.title;
 
 	el.className = options.className || 'icon-' + name;
 	return el;
@@ -393,46 +396,54 @@ function wordCount(data) {
 var toolbar = [{
 		name: 'bold',
 		action: toggleBold,
-		className: "fa fa-bold"
-	}, {
+		className: "fa fa-bold",
+		title: "Bold",
+	},
+	{
 		name: 'italic',
 		action: toggleItalic,
-		className: "fa fa-italic"
+		className: "fa fa-italic",
+		title: "Italic",
 	},
 	'|',
-
 	{
 		name: 'quote',
 		action: toggleBlockquote,
-		className: "fa fa-quote-left"
-	}, {
+		className: "fa fa-quote-left",
+		title: "Quote",
+	},
+	{
 		name: 'unordered-list',
 		action: toggleUnOrderedList,
-		className: "fa fa-list-ul"
-	}, {
+		className: "fa fa-list-ul",
+		title: "Generic List",
+	},
+	{
 		name: 'ordered-list',
 		action: toggleOrderedList,
-		className: "fa fa-list-ol"
+		className: "fa fa-list-ol",
+		title: "Numbered List",
 	},
 	'|',
-
 	{
 		name: 'link',
 		action: drawLink,
-		className: "fa fa-link"
-	}, {
+		className: "fa fa-link",
+		title: "Create Link",
+	},
+	{
 		name: 'image',
 		action: drawImage,
-		className: "fa fa-picture-o"
+		className: "fa fa-picture-o",
+		title: "Insert Image",
 	},
 	'|',
-
 	{
 		name: 'preview',
 		action: togglePreview,
-		className: "fa fa-eye"
-	},
-];
+		className: "fa fa-eye",
+		title: "Toggle Preview",
+	}];
 
 /**
  * Interface of SimpleMDE.
