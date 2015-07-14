@@ -1,5 +1,7 @@
-// CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// NOTE: This has been modified from the original version to remove linking GitHub-only references, like references to issues using #X.
+
+
+
 (function(mod) {
 	if (typeof exports == "object" && typeof module == "object") // CommonJS
 		mod(require("../../lib/codemirror"), require("../markdown/markdown"), require("../../addon/mode/overlay"));
