@@ -473,3 +473,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
 	background: rgba(0, 0, 0, .05);
 	border-radius: 2px;
 }
+
+.CodeMirror .CodeMirror-code .cm-strikethrough {
+	text-decoration: line-through;
+}
