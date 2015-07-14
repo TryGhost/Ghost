@@ -26,8 +26,10 @@
                                 <span class="user-list-item-icon icon-mail">ic</span>
                                 <div class="user-list-item-body">
                                     <span class="name">{{user.email}}</span><br>
-                                        {{#if user.model.pending}}
-                                            <span class="red">Invitation not sent - please try again</span>
+                                        {{#if user.pending}}
+                                            <span class="description-error">
+                                                Invitation not sent - please try again
+                                            </span>
                                         {{else}}
                                             <span class="description">
                                                 Invitation sent: {{component.createdAt}}
