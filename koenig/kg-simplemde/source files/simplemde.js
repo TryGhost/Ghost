@@ -531,7 +531,7 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps['Shift-Tab'] = 'shiftTabAndIndentContinueMarkdownList';
 
 	this.codemirror = CodeMirror.fromTextArea(el, {
-		mode: 'markdown',
+		mode: 'gfm',
 		theme: 'paper',
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
