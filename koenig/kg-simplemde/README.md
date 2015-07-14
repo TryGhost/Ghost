@@ -56,6 +56,7 @@ simplemde.value();
   - Optionally, you can set an array of status bar elements to include, and in what order.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
+- **toolbarGuideIcon**: If set to `false`, disable guide icon in the toolbar. Defaults to `true`.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.

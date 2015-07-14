@@ -453,7 +453,6 @@ var toolbar = [{
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
 	},
-	"|",
 	{
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
@@ -621,6 +620,9 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	self.toolbar = {};
 
 	for (var i = 0; i < items.length; i++) {
+		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
+			continue;
+		
 		(function(item) {
 			var el;
 			if (item === '|') {
