@@ -97,7 +97,7 @@ Numbered List | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
 Link | drawLink | fa fa-link | Create Link (Ctrl+K)
 Image | drawImage | fa fa-picture-o | Insert Image (Ctrl+Alt+I)
 Preview | togglePreview | fa fa-eye | Toggle Preview (Ctrl+P)
-Markdown Guide | http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide | fa fa-question-circle | Markdown Guide
+Markdown Guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | fa fa-question-circle | Markdown Guide
 
 Customize the toolbar using the `toolbar` option like:
 
