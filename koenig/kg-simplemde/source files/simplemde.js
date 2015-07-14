@@ -7,7 +7,7 @@ var shortcuts = {
 	'Cmd-Alt-I': drawImage,
 	"Cmd-'": toggleBlockquote,
 	'Cmd-Alt-L': toggleOrderedList,
-	'Cmd-L': toggleUnOrderedList,
+	'Cmd-L': toggleUnorderedList,
 	'Cmd-P': togglePreview,
 };
 
@@ -42,7 +42,7 @@ function createIcon(name, options, enableTooltips) {
 		}
 	}
 
-	el.className = options.className || 'icon-' + name;
+	el.className = options.className;
 	return el;
 }
 
@@ -159,7 +159,7 @@ function toggleBlockquote(editor) {
 /**
  * Action for toggling ul.
  */
-function toggleUnOrderedList(editor) {
+function toggleUnorderedList(editor) {
 	var cm = editor.codemirror;
 	_toggleLine(cm, 'unordered-list');
 }
@@ -392,63 +392,55 @@ function wordCount(data) {
 
 
 var toolbar = [{
-		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
 		title: "Bold (Ctrl+B)",
 	},
 	{
-		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
 	},
 	"|",
 	{
-		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
 		title: "Quote (Ctrl+')",
 	},
 	{
-		name: "unordered-list",
-		action: toggleUnOrderedList,
+		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
 		title: "Generic List (Ctrl+L)",
 	},
 	{
-		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
 		title: "Numbered List (Ctrl+Alt+L)",
 	},
 	"|",
 	{
-		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
 		title: "Create Link (Ctrl+K)",
 	},
 	{
-		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)",
 	},
 	"|",
 	{
-		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
 	},
 	"|",
 	{
-		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
 		title: "Markdown Guide",
-	}];
+	}
+];
 
 /**
  * Interface of SimpleMDE.
@@ -460,12 +452,8 @@ function SimpleMDE(options) {
 		this.element = options.element;
 	}
 	
-	if(options.toolbar === false)
-		options.toolbar = false;
-	else
+	if (options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
-		// you can customize toolbar with object
-		// [{name: 'bold', shortcut: 'Ctrl-B', className: 'icon-bold'}]
 
 	if (!options.hasOwnProperty('status')) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
@@ -723,7 +711,7 @@ SimpleMDE.prototype.value = function(val) {
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
-SimpleMDE.toggleUnOrderedList = toggleUnOrderedList;
+SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
 SimpleMDE.drawLink = drawLink;
 SimpleMDE.drawImage = drawImage;
@@ -744,8 +732,8 @@ SimpleMDE.prototype.toggleItalic = function() {
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
 };
-SimpleMDE.prototype.toggleUnOrderedList = function() {
-	toggleUnOrderedList(this);
+SimpleMDE.prototype.toggleUnorderedList = function() {
+	toggleUnorderedList(this);
 };
 SimpleMDE.prototype.toggleOrderedList = function() {
 	toggleOrderedList(this);
