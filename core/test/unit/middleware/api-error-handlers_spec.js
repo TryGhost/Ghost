@@ -25,19 +25,6 @@ describe('Middleware: API Error Handlers', function () {
         sandbox.restore();
     });
 
-    describe('methodNotAllowed', function () {
-        it('calls next with an error', function () {
-            req.path = 'test';
-
-            middleware.api.methodNotAllowed(req, res, next);
-
-            next.calledOnce.should.be.true;
-            next.firstCall.args[0].code.should.equal(405);
-            next.firstCall.args[0].errorType.should.equal('MethodNotAllowedError');
-            next.firstCall.args[0].message.should.match(/test$/);
-        });
-    });
-
     describe('errorHandler', function () {
         it('sends a JSON error response', function () {
             errors.logError = sandbox.spy(errors, 'logError');

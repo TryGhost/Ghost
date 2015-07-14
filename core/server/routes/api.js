@@ -91,8 +91,6 @@ apiRoutes = function apiRoutes(middleware) {
     router.post('/uploads', middleware.busboy, api.http(api.uploads.add));
 
     // API Router middleware
-    router.use(middleware.api.methodNotAllowed);
-
     router.use(middleware.api.errorHandler);
 
     return router;
