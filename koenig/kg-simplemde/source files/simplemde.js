@@ -196,6 +196,16 @@ function drawImage(editor) {
 
 
 /**
+ * Action for drawing a horizontal rule.
+ */
+function drawHorizontalRule(editor) {
+	var cm = editor.codemirror;
+	var stat = getState(cm);
+	_replaceSelection(cm, stat.image, '', '\n\n-----\n\n');
+}
+
+
+/**
  * Undo action.
  */
 function undo(editor) {
@@ -719,10 +729,12 @@ SimpleMDE.prototype.value = function(val) {
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
+SimpleMDE.toggleCodeBlock = toggleCodeBlock;
 SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
 SimpleMDE.drawLink = drawLink;
 SimpleMDE.drawImage = drawImage;
+SimpleMDE.drawHorizontalRule = drawHorizontalRule;
 SimpleMDE.undo = undo;
 SimpleMDE.redo = redo;
 SimpleMDE.togglePreview = togglePreview;
@@ -740,6 +752,9 @@ SimpleMDE.prototype.toggleItalic = function() {
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
 };
+SimpleMDE.prototype.toggleCodeBlock = function() {
+	toggleCodeBlock(this);
+};
 SimpleMDE.prototype.toggleUnorderedList = function() {
 	toggleUnorderedList(this);
 };
@@ -751,6 +766,9 @@ SimpleMDE.prototype.drawLink = function() {
 };
 SimpleMDE.prototype.drawImage = function() {
 	drawImage(this);
+};
+SimpleMDE.prototype.drawHorizontalRule = function() {
+	drawHorizontalRule(this);
 };
 SimpleMDE.prototype.undo = function() {
 	undo(this);

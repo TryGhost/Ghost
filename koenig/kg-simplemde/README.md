@@ -97,6 +97,7 @@ Unordered List | toggleUnorderedList | fa fa-list-ul | Generic List (Ctrl+L)
 Numbered List | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
 Link | drawLink | fa fa-link | Create Link (Ctrl+K)
 Image | drawImage | fa fa-picture-o | Insert Image (Ctrl+Alt+I)
+Horizontal Rule | drawHorizontalRule | fa fa-minus | Insert Horizontal Line
 Preview | togglePreview | fa fa-eye | Toggle Preview (Ctrl+P)
 Markdown Guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | fa fa-question-circle | Markdown Guide
 
