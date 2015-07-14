@@ -27,9 +27,10 @@ function fixShortcut(name) {
 /**
  * Create icon element for toolbar.
  */
-function createIcon(name, options) {
+function createIcon(name, options, enableTooltips) {
 	options = options || {};
 	var el = document.createElement('a');
+	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
 
 	var shortcut = options.shortcut || shortcuts[name];
 	if (shortcut) {
@@ -41,7 +42,7 @@ function createIcon(name, options) {
 		}
 	}
 	
-	if(options.title)
+	if(options.title && enableTooltips)
 		el.title = options.title;
 
 	el.className = options.className || 'icon-' + name;
@@ -611,7 +612,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 		(function(item) {
 			var el;
 			if (item.name) {
-				el = createIcon(item.name, item);
+				el = createIcon(item.name, item, self.options.toolbarTips);
 			} else if (item === '|') {
 				el = createSep();
 			} else {
