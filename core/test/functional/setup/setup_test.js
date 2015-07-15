@@ -64,7 +64,7 @@ CasperTest.begin('Ghost setup fails properly', 10, function suite(test) {
     }, function onTimeout() {
         test.assert(false, 'No error notification after invite.');
     });
-}, true);
+}, true, true);
 
 CasperTest.begin('Authenticated user is redirected', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -91,4 +91,4 @@ CasperTest.begin('Authenticated user is redirected', 6, function suite(test) {
     }, function onTimeOut() {
         test.fail('Failed to redirect');
     });
-}, true);
+}, true, true);
