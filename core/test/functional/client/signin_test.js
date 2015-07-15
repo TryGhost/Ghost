@@ -22,7 +22,6 @@ CasperTest.begin('Ghost admin will load login page', 4, function suite(test) {
 }, true);
 
 // Note, this test applies to a global redirect, which sends us to the standard admin.
-// Once Ember becomes the standard admin, this test should still pass.
 CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     CasperTest.Routines.signout.run(test);
     casper.start(url + 'ghost/login/', function testRedirect(response) {
