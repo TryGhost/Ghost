@@ -1,0 +1,67 @@
+{
+  "name": "vinyl",
+  "description": "A virtual file format",
+  "version": "0.2.3",
+  "homepage": "http://github.com/wearefractal/vinyl",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wearefractal/vinyl.git"
+  },
+  "author": {
+    "name": "Fractal",
+    "email": "contact@wearefractal.com",
+    "url": "http://wearefractal.com/"
+  },
+  "main": "./index.js",
+  "dependencies": {
+    "clone-stats": "~0.0.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.0",
+    "should": "~2.1.1",
+    "mocha-lcov-reporter": "0.0.1",
+    "coveralls": "~2.6.1",
+    "istanbul": "~0.2.3",
+    "rimraf": "~2.2.5",
+    "jshint": "~2.4.1",
+    "buffer-equal": "0.0.0",
+    "lodash.templatesettings": "~2.4.1",
+    "event-stream": "~3.1.0"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec && jshint",
+    "coveralls": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
+  },
+  "engines": {
+    "node": ">= 0.9"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/wearefractal/vinyl/raw/master/LICENSE"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/wearefractal/vinyl/issues"
+  },
+  "_id": "vinyl@0.2.3",
+  "dist": {
+    "shasum": "bca938209582ec5a49ad538a00fa1f125e513252",
+    "tarball": "http://registry.npmjs.org/vinyl/-/vinyl-0.2.3.tgz"
+  },
+  "_from": "vinyl@>=0.2.1 <0.3.0",
+  "_npmVersion": "1.3.23",
+  "_npmUser": {
+    "name": "fractal",
+    "email": "contact@wearefractal.com"
+  },
+  "maintainers": [
+    {
+      "name": "fractal",
+      "email": "contact@wearefractal.com"
+    }
+  ],
+  "directories": {},
+  "_shasum": "bca938209582ec5a49ad538a00fa1f125e513252",
+  "_resolved": "https://registry.npmjs.org/vinyl/-/vinyl-0.2.3.tgz"
+}

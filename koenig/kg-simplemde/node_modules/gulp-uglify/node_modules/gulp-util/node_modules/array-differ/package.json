@@ -1,0 +1,61 @@
+{
+  "name": "array-differ",
+  "version": "1.0.0",
+  "description": "Create an array with values that are present in the first input array but not additional ones",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sindresorhus/array-differ"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "http://sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "array",
+    "difference",
+    "diff",
+    "differ",
+    "filter",
+    "exclude"
+  ],
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "gitHead": "e91802976c4710eef8dea2090d48e48525cf41b1",
+  "bugs": {
+    "url": "https://github.com/sindresorhus/array-differ/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/array-differ",
+  "_id": "array-differ@1.0.0",
+  "_shasum": "eff52e3758249d33be402b8bb8e564bb2b5d4031",
+  "_from": "array-differ@>=1.0.0 <2.0.0",
+  "_npmVersion": "1.4.14",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "eff52e3758249d33be402b8bb8e564bb2b5d4031",
+    "tarball": "http://registry.npmjs.org/array-differ/-/array-differ-1.0.0.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/array-differ/-/array-differ-1.0.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

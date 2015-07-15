@@ -1,0 +1,74 @@
+{
+  "name": "ansi-styles",
+  "version": "1.1.0",
+  "description": "ANSI escape codes for styling strings in the terminal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sindresorhus/ansi-styles"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "http://sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "ansi",
+    "styles",
+    "color",
+    "colour",
+    "colors",
+    "terminal",
+    "console",
+    "cli",
+    "string",
+    "tty",
+    "escape",
+    "formatting",
+    "rgb",
+    "256",
+    "shell",
+    "xterm",
+    "log",
+    "logging",
+    "command-line",
+    "text"
+  ],
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "bugs": {
+    "url": "https://github.com/sindresorhus/ansi-styles/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/ansi-styles",
+  "_id": "ansi-styles@1.1.0",
+  "_shasum": "eaecbf66cd706882760b2f4691582b8f55d7a7de",
+  "_from": "ansi-styles@>=1.1.0 <2.0.0",
+  "_npmVersion": "1.4.9",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "eaecbf66cd706882760b2f4691582b8f55d7a7de",
+    "tarball": "http://registry.npmjs.org/ansi-styles/-/ansi-styles-1.1.0.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-1.1.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

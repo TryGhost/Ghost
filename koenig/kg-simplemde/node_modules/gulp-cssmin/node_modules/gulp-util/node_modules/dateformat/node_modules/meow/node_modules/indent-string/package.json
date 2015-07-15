@@ -1,0 +1,73 @@
+{
+  "name": "indent-string",
+  "version": "1.2.2",
+  "description": "Indent each line in a string",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sindresorhus/indent-string"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "sindresorhus.com"
+  },
+  "bin": {
+    "indent-string": "cli.js"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "index.js",
+    "cli.js"
+  ],
+  "keywords": [
+    "cli-app",
+    "cli",
+    "bin",
+    "indent",
+    "string",
+    "str",
+    "pad",
+    "line"
+  ],
+  "dependencies": {
+    "get-stdin": "^4.0.1",
+    "minimist": "^1.1.0",
+    "repeating": "^1.1.0"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "gitHead": "ce73faa67c3573fa81bf88796b8f4915ba09593e",
+  "bugs": {
+    "url": "https://github.com/sindresorhus/indent-string/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/indent-string",
+  "_id": "indent-string@1.2.2",
+  "_shasum": "db99bcc583eb6abbb1e48dcbb1999a986041cb6b",
+  "_from": "indent-string@>=1.1.0 <2.0.0",
+  "_npmVersion": "2.11.2",
+  "_nodeVersion": "0.12.5",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "dist": {
+    "shasum": "db99bcc583eb6abbb1e48dcbb1999a986041cb6b",
+    "tarball": "http://registry.npmjs.org/indent-string/-/indent-string-1.2.2.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/indent-string/-/indent-string-1.2.2.tgz",
+  "readme": "ERROR: No README data found!"
+}

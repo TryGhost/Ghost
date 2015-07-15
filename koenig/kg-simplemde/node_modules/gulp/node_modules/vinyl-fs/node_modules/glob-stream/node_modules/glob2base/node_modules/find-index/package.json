@@ -1,0 +1,52 @@
+{
+  "name": "find-index",
+  "version": "0.1.1",
+  "description": "finds an item in an array matching a predicate function, and returns its index",
+  "main": "index.js",
+  "keywords": [
+    "array",
+    "findindex"
+  ],
+  "files": [
+    "index.js",
+    "last.js"
+  ],
+  "scripts": {
+    "test": "node test/test"
+  },
+  "homepage": "https://github.com/jsdf/find-index",
+  "bugs": {
+    "url": "https://github.com/jsdf/find-index/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jsdf/find-index.git"
+  },
+  "author": {
+    "name": "James Friend",
+    "email": "james@jsdf.co",
+    "url": "http://jsdf.co/"
+  },
+  "license": "MIT",
+  "_id": "find-index@0.1.1",
+  "dist": {
+    "shasum": "675d358b2ca3892d795a1ab47232f8b6e2e0dde4",
+    "tarball": "http://registry.npmjs.org/find-index/-/find-index-0.1.1.tgz"
+  },
+  "_from": "find-index@>=0.1.1 <0.2.0",
+  "_npmVersion": "1.4.3",
+  "_npmUser": {
+    "name": "jsdf",
+    "email": "james@jsdf.co"
+  },
+  "maintainers": [
+    {
+      "name": "jsdf",
+      "email": "james@jsdf.co"
+    }
+  ],
+  "directories": {},
+  "_shasum": "675d358b2ca3892d795a1ab47232f8b6e2e0dde4",
+  "_resolved": "https://registry.npmjs.org/find-index/-/find-index-0.1.1.tgz",
+  "readme": "ERROR: No README data found!"
+}

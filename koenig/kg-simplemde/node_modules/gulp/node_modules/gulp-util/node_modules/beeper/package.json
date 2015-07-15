@@ -1,0 +1,68 @@
+{
+  "name": "beeper",
+  "version": "1.1.0",
+  "description": "Make your terminal beep",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sindresorhus/beeper"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "beep",
+    "beeper",
+    "boop",
+    "terminal",
+    "term",
+    "cli",
+    "console",
+    "ding",
+    "ping",
+    "alert",
+    "gulpfriendly"
+  ],
+  "devDependencies": {
+    "hooker": "^0.2.3",
+    "tape": "^4.0.0"
+  },
+  "gitHead": "8beb0413a8028ca2d52dbb86c75f42069535591b",
+  "bugs": {
+    "url": "https://github.com/sindresorhus/beeper/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/beeper",
+  "_id": "beeper@1.1.0",
+  "_shasum": "9ee6fc1ce7f54feaace7ce73588b056037866a2c",
+  "_from": "beeper@>=1.0.0 <2.0.0",
+  "_npmVersion": "2.10.1",
+  "_nodeVersion": "0.12.4",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "dist": {
+    "shasum": "9ee6fc1ce7f54feaace7ce73588b056037866a2c",
+    "tarball": "http://registry.npmjs.org/beeper/-/beeper-1.1.0.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/beeper/-/beeper-1.1.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

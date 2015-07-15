@@ -1,0 +1,80 @@
+{
+  "name": "gulp-rename",
+  "version": "1.2.2",
+  "description": "Rename files",
+  "keywords": [
+    "gulpplugin"
+  ],
+  "homepage": "https://github.com/hparra/gulp-rename",
+  "bugs": {
+    "url": "https://github.com/hparra/gulp-rename/issues"
+  },
+  "author": {
+    "name": "Hector Guillermo Parra Alvarez",
+    "email": "hector@hectorparra.com",
+    "url": "https://github.com/hparra"
+  },
+  "main": "./index.js",
+  "files": [
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hparra/gulp-rename.git"
+  },
+  "scripts": {
+    "pretest": "jshint index.js test/",
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "gulp": ">=3.0.0",
+    "gulp-sourcemaps": "^1.5.0",
+    "gulp-util": "^3.0.4",
+    "jshint": "^2.6.3",
+    "map-stream": ">=0.0.4",
+    "mocha": ">=1.15.0",
+    "should": ">=2.1.0"
+  },
+  "engines": {
+    "node": ">=0.10.0",
+    "npm": ">=1.2.10"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "gitHead": "e1fb4e41dd107b38e96f1156fcbee70ebcf16fb6",
+  "_id": "gulp-rename@1.2.2",
+  "_shasum": "3ad4428763f05e2764dec1c67d868db275687817",
+  "_from": "gulp-rename@*",
+  "_npmVersion": "1.4.28",
+  "_npmUser": {
+    "name": "fractal",
+    "email": "contact@wearefractal.com"
+  },
+  "maintainers": [
+    {
+      "name": "hparra",
+      "email": "hector@hectorparra.com"
+    },
+    {
+      "name": "contra",
+      "email": "contra@wearefractal.com"
+    },
+    {
+      "name": "shinnn",
+      "email": "snnskwtnb@gmail.com"
+    },
+    {
+      "name": "fractal",
+      "email": "contact@wearefractal.com"
+    }
+  ],
+  "dist": {
+    "shasum": "3ad4428763f05e2764dec1c67d868db275687817",
+    "tarball": "http://registry.npmjs.org/gulp-rename/-/gulp-rename-1.2.2.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/gulp-rename/-/gulp-rename-1.2.2.tgz"
+}

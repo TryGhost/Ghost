@@ -1,0 +1,78 @@
+{
+  "name": "supports-color",
+  "version": "0.2.0",
+  "description": "Detect whether a terminal supports color",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sindresorhus/supports-color"
+  },
+  "bin": {
+    "supports-color": "cli.js"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "http://sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "index.js",
+    "cli.js"
+  ],
+  "keywords": [
+    "cli",
+    "bin",
+    "color",
+    "colour",
+    "colors",
+    "terminal",
+    "console",
+    "cli",
+    "ansi",
+    "styles",
+    "tty",
+    "rgb",
+    "256",
+    "shell",
+    "xterm",
+    "command-line",
+    "support",
+    "supports",
+    "capability",
+    "detect"
+  ],
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "bugs": {
+    "url": "https://github.com/sindresorhus/supports-color/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/supports-color",
+  "_id": "supports-color@0.2.0",
+  "_shasum": "d92de2694eb3f67323973d7ae3d8b55b4c22190a",
+  "_from": "supports-color@>=0.2.0 <0.3.0",
+  "_npmVersion": "1.4.9",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "d92de2694eb3f67323973d7ae3d8b55b4c22190a",
+    "tarball": "http://registry.npmjs.org/supports-color/-/supports-color-0.2.0.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/supports-color/-/supports-color-0.2.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

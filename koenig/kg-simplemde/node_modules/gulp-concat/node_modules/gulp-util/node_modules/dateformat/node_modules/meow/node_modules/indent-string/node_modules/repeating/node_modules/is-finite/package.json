@@ -1,0 +1,68 @@
+{
+  "name": "is-finite",
+  "version": "1.0.1",
+  "description": "ES6 Number.isFinite() ponyfill",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sindresorhus/is-finite.git"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "es6",
+    "ecmascript",
+    "harmony",
+    "ponyfill",
+    "polyfill",
+    "shim",
+    "number",
+    "finite",
+    "is"
+  ],
+  "dependencies": {
+    "number-is-nan": "^1.0.0"
+  },
+  "devDependencies": {
+    "ava": "0.0.4"
+  },
+  "gitHead": "7d952746a66df2f9955a59a0d013ed14b3ad1f60",
+  "bugs": {
+    "url": "https://github.com/sindresorhus/is-finite/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/is-finite#readme",
+  "_id": "is-finite@1.0.1",
+  "_shasum": "6438603eaebe2793948ff4a4262ec8db3d62597b",
+  "_from": "is-finite@>=1.0.0 <2.0.0",
+  "_npmVersion": "2.10.0",
+  "_nodeVersion": "0.12.3",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "dist": {
+    "shasum": "6438603eaebe2793948ff4a4262ec8db3d62597b",
+    "tarball": "http://registry.npmjs.org/is-finite/-/is-finite-1.0.1.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/is-finite/-/is-finite-1.0.1.tgz",
+  "readme": "ERROR: No README data found!"
+}

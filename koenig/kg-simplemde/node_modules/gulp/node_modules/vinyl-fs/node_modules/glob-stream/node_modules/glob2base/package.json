@@ -1,0 +1,73 @@
+{
+  "name": "glob2base",
+  "description": "Extracts a base path from a node-glob instance",
+  "version": "0.0.12",
+  "homepage": "http://github.com/wearefractal/glob2base",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wearefractal/glob2base.git"
+  },
+  "author": {
+    "name": "Fractal",
+    "email": "contact@wearefractal.com",
+    "url": "http://wearefractal.com/"
+  },
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "dependencies": {
+    "find-index": "^0.1.1"
+  },
+  "devDependencies": {
+    "coveralls": "^2.6.1",
+    "istanbul": "^0.3.2",
+    "jshint": "^2.4.1",
+    "jshint-stylish": "^1.0.0",
+    "mocha": "^2.0.0",
+    "mocha-lcov-reporter": "^0.0.1",
+    "glob": "^4.0.0",
+    "should": "^4.0.0"
+  },
+  "scripts": {
+    "lint": "jshint index.js --reporter node_modules/jshint-stylish/stylish.js --exclude node_modules",
+    "test": "npm run-script lint && mocha --reporter spec",
+    "coveralls": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
+  },
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/wearefractal/glob2base/raw/master/LICENSE"
+    }
+  ],
+  "gitHead": "d3fadacea415f4676fd431c90cd2205a2f1e6b26",
+  "bugs": {
+    "url": "https://github.com/wearefractal/glob2base/issues"
+  },
+  "_id": "glob2base@0.0.12",
+  "_shasum": "9d419b3e28f12e83a362164a277055922c9c0d56",
+  "_from": "glob2base@>=0.0.12 <0.0.13",
+  "_npmVersion": "2.1.6",
+  "_nodeVersion": "0.10.33",
+  "_npmUser": {
+    "name": "fractal",
+    "email": "contact@wearefractal.com"
+  },
+  "maintainers": [
+    {
+      "name": "fractal",
+      "email": "contact@wearefractal.com"
+    }
+  ],
+  "dist": {
+    "shasum": "9d419b3e28f12e83a362164a277055922c9c0d56",
+    "tarball": "http://registry.npmjs.org/glob2base/-/glob2base-0.0.12.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/glob2base/-/glob2base-0.0.12.tgz",
+  "readme": "ERROR: No README data found!"
+}

@@ -1,0 +1,8 @@
+/node_modules/
+/lib/filesize.min.js
+/lib/filesize.map
+/src/
+/test/
+.jshintrc
+.travis.yml
+Gruntfile.js

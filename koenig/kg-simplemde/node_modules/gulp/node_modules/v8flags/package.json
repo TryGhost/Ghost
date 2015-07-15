@@ -1,0 +1,69 @@
+{
+  "name": "v8flags",
+  "description": "Get available v8 flags.",
+  "version": "2.0.9",
+  "homepage": "https://github.com/tkellen/node-v8flags",
+  "author": {
+    "name": "Tyler Kellen",
+    "url": "http://goingslowly.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tkellen/node-v8flags.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tkellen/node-v8flags/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/tkellen/node-v8flags/blob/master/LICENSE"
+    }
+  ],
+  "scripts": {
+    "test": "_mocha -R spec test.js"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "keywords": [
+    "v8 flags",
+    "harmony flags"
+  ],
+  "devDependencies": {
+    "async": "^0.9.0",
+    "chai": "~1.9.1",
+    "mocha": "~1.21.4"
+  },
+  "dependencies": {
+    "user-home": "^1.1.1"
+  },
+  "gitHead": "b74e923334b9a9e575941cca428d8f6788fe1c30",
+  "_id": "v8flags@2.0.9",
+  "_shasum": "6191ad59f56ae909c7dd735c2fd43fc2d1ce7159",
+  "_from": "v8flags@>=2.0.2 <3.0.0",
+  "_npmVersion": "2.7.4",
+  "_nodeVersion": "0.12.4",
+  "_npmUser": {
+    "name": "tkellen",
+    "email": "tyler@sleekcode.net"
+  },
+  "maintainers": [
+    {
+      "name": "tkellen",
+      "email": "tyler@sleekcode.net"
+    },
+    {
+      "name": "phated",
+      "email": "blaine@iceddev.com"
+    }
+  ],
+  "dist": {
+    "shasum": "6191ad59f56ae909c7dd735c2fd43fc2d1ce7159",
+    "tarball": "http://registry.npmjs.org/v8flags/-/v8flags-2.0.9.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/v8flags/-/v8flags-2.0.9.tgz",
+  "readme": "ERROR: No README data found!"
+}

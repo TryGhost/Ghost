@@ -1,0 +1,57 @@
+{
+  "name": "duplexer2",
+  "version": "0.0.2",
+  "description": "Like duplexer (http://npm.im/duplexer) but using streams2",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R tap"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/deoxxa/duplexer2.git"
+  },
+  "keywords": [
+    "duplex",
+    "stream",
+    "join",
+    "combine"
+  ],
+  "author": {
+    "name": "Conrad Pankoff",
+    "email": "deoxxa@fknsrs.biz",
+    "url": "http://www.fknsrs.biz/"
+  },
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/deoxxa/duplexer2/issues"
+  },
+  "devDependencies": {
+    "chai": "~1.7.2",
+    "mocha": "~1.12.1"
+  },
+  "dependencies": {
+    "readable-stream": "~1.1.9"
+  },
+  "homepage": "https://github.com/deoxxa/duplexer2",
+  "_id": "duplexer2@0.0.2",
+  "dist": {
+    "shasum": "c614dcf67e2fb14995a91711e5a617e8a60a31db",
+    "tarball": "http://registry.npmjs.org/duplexer2/-/duplexer2-0.0.2.tgz"
+  },
+  "_from": "duplexer2@0.0.2",
+  "_npmVersion": "1.4.3",
+  "_npmUser": {
+    "name": "deoxxa",
+    "email": "deoxxa@fknsrs.biz"
+  },
+  "maintainers": [
+    {
+      "name": "deoxxa",
+      "email": "deoxxa@fknsrs.biz"
+    }
+  ],
+  "directories": {},
+  "_shasum": "c614dcf67e2fb14995a91711e5a617e8a60a31db",
+  "_resolved": "https://registry.npmjs.org/duplexer2/-/duplexer2-0.0.2.tgz",
+  "readme": "ERROR: No README data found!"
+}

@@ -1,0 +1,72 @@
+{
+  "author": {
+    "name": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/"
+  },
+  "name": "glob",
+  "description": "a little globber",
+  "version": "4.3.5",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/isaacs/node-glob.git"
+  },
+  "main": "glob.js",
+  "files": [
+    "glob.js",
+    "sync.js",
+    "common.js"
+  ],
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "inflight": "^1.0.4",
+    "inherits": "2",
+    "minimatch": "^2.0.1",
+    "once": "^1.3.0"
+  },
+  "devDependencies": {
+    "mkdirp": "0",
+    "rimraf": "^2.2.8",
+    "tap": "^0.5.0",
+    "tick": "0.0.6"
+  },
+  "scripts": {
+    "prepublish": "npm run benchclean",
+    "profclean": "rm -f v8.log profile.txt",
+    "test": "npm run profclean && tap test/*.js",
+    "test-regen": "npm run profclean && TEST_REGEN=1 node test/00-setup.js",
+    "bench": "bash benchmark.sh",
+    "prof": "bash prof.sh && cat profile.txt",
+    "benchclean": "bash benchclean.sh"
+  },
+  "license": "ISC",
+  "gitHead": "9de4cb6bfeb9c8458cf188fe91447b99bf8f3cfd",
+  "bugs": {
+    "url": "https://github.com/isaacs/node-glob/issues"
+  },
+  "homepage": "https://github.com/isaacs/node-glob",
+  "_id": "glob@4.3.5",
+  "_shasum": "80fbb08ca540f238acce5d11d1e9bc41e75173d3",
+  "_from": "glob@>=4.3.0 <4.4.0",
+  "_npmVersion": "2.2.0",
+  "_nodeVersion": "0.10.35",
+  "_npmUser": {
+    "name": "isaacs",
+    "email": "i@izs.me"
+  },
+  "maintainers": [
+    {
+      "name": "isaacs",
+      "email": "i@izs.me"
+    }
+  ],
+  "dist": {
+    "shasum": "80fbb08ca540f238acce5d11d1e9bc41e75173d3",
+    "tarball": "http://registry.npmjs.org/glob/-/glob-4.3.5.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/glob/-/glob-4.3.5.tgz",
+  "readme": "ERROR: No README data found!"
+}

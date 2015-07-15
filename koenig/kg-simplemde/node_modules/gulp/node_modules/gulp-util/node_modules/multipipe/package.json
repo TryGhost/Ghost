@@ -1,0 +1,46 @@
+{
+  "name": "multipipe",
+  "version": "0.1.2",
+  "description": "pipe streams with centralized error handling",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juliangruber/multipipe"
+  },
+  "dependencies": {
+    "duplexer2": "0.0.2"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.0"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "gitHead": "df434f568b85de914ee7f6ad714343b8736e3315",
+  "bugs": {
+    "url": "https://github.com/juliangruber/multipipe/issues"
+  },
+  "homepage": "https://github.com/juliangruber/multipipe",
+  "_id": "multipipe@0.1.2",
+  "_shasum": "2a8f2ddf70eed564dff2d57f1e1a137d9f05078b",
+  "_from": "multipipe@>=0.1.2 <0.2.0",
+  "_npmVersion": "2.1.5",
+  "_nodeVersion": "0.10.32",
+  "_npmUser": {
+    "name": "juliangruber",
+    "email": "julian@juliangruber.com"
+  },
+  "maintainers": [
+    {
+      "name": "juliangruber",
+      "email": "julian@juliangruber.com"
+    }
+  ],
+  "dist": {
+    "shasum": "2a8f2ddf70eed564dff2d57f1e1a137d9f05078b",
+    "tarball": "http://registry.npmjs.org/multipipe/-/multipipe-0.1.2.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/multipipe/-/multipipe-0.1.2.tgz",
+  "readme": "ERROR: No README data found!"
+}

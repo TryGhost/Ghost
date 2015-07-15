@@ -1,0 +1,81 @@
+{
+  "name": "orchestrator",
+  "description": "A module for sequencing and executing tasks and dependencies in maximum concurrency",
+  "version": "0.3.7",
+  "homepage": "https://github.com/robrich/orchestrator",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/robrich/orchestrator.git"
+  },
+  "author": {
+    "name": "Rob Richardson",
+    "url": "http://robrich.org/"
+  },
+  "main": "./index.js",
+  "keywords": [
+    "async",
+    "task",
+    "parallel",
+    "compose"
+  ],
+  "dependencies": {
+    "end-of-stream": "~0.1.5",
+    "sequencify": "~0.0.7",
+    "stream-consume": "~0.1.0"
+  },
+  "devDependencies": {
+    "event-stream": "~3.1.5",
+    "gulp-jshint": "~1.6.3",
+    "map-stream": "~0.1.0",
+    "merge-stream": "~0.1.2",
+    "mocha": "~1.17.0",
+    "q": "~1.0.0",
+    "should": "~3.0.1",
+    "vinyl-fs": "~0.3.4"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "engines": {
+    "node": ">= 0.8"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/robrich/orchestrator/raw/master/LICENSE"
+    }
+  ],
+  "gitHead": "f3fcb93e3560afd0bc0c4acd5c5db7bd109414e7",
+  "bugs": {
+    "url": "https://github.com/robrich/orchestrator/issues"
+  },
+  "_id": "orchestrator@0.3.7",
+  "_shasum": "c45064e22c5a2a7b99734f409a95ffedc7d3c3df",
+  "_from": "orchestrator@>=0.3.0 <0.4.0",
+  "_npmVersion": "1.4.14",
+  "_npmUser": {
+    "name": "phated",
+    "email": "blaine@iceddev.com"
+  },
+  "maintainers": [
+    {
+      "name": "robrich",
+      "email": "robrich@robrich.org"
+    },
+    {
+      "name": "phated",
+      "email": "blaine@iceddev.com"
+    },
+    {
+      "name": "contra",
+      "email": "contra@wearefractal.com"
+    }
+  ],
+  "dist": {
+    "shasum": "c45064e22c5a2a7b99734f409a95ffedc7d3c3df",
+    "tarball": "http://registry.npmjs.org/orchestrator/-/orchestrator-0.3.7.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/orchestrator/-/orchestrator-0.3.7.tgz",
+  "readme": "ERROR: No README data found!"
+}

@@ -1,0 +1,69 @@
+{
+  "name": "findup-sync",
+  "description": "Find the first file matching a given pattern in the current directory or the nearest ancestor directory.",
+  "version": "0.2.1",
+  "homepage": "https://github.com/cowboy/node-findup-sync",
+  "author": {
+    "name": "\"Cowboy\" Ben Alman",
+    "url": "http://benalman.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cowboy/node-findup-sync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cowboy/node-findup-sync/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/cowboy/node-findup-sync/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "lib/findup-sync",
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "scripts": {
+    "test": "grunt nodeunit"
+  },
+  "dependencies": {
+    "glob": "~4.3.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.4",
+    "grunt-contrib-jshint": "~0.9.2",
+    "grunt-contrib-nodeunit": "~0.3.3"
+  },
+  "keywords": [
+    "find",
+    "glob",
+    "file"
+  ],
+  "gitHead": "c392a8a921d4d2655b4fe17e3d1a2f4ced14f858",
+  "_id": "findup-sync@0.2.1",
+  "_shasum": "e0a90a450075c49466ee513732057514b81e878c",
+  "_from": "findup-sync@>=0.2.1 <0.3.0",
+  "_npmVersion": "2.0.0",
+  "_npmUser": {
+    "name": "tkellen",
+    "email": "tyler@sleekcode.net"
+  },
+  "maintainers": [
+    {
+      "name": "cowboy",
+      "email": "cowboy@rj3.net"
+    },
+    {
+      "name": "tkellen",
+      "email": "tyler@sleekcode.net"
+    }
+  ],
+  "dist": {
+    "shasum": "e0a90a450075c49466ee513732057514b81e878c",
+    "tarball": "http://registry.npmjs.org/findup-sync/-/findup-sync-0.2.1.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/findup-sync/-/findup-sync-0.2.1.tgz",
+  "readme": "ERROR: No README data found!"
+}
