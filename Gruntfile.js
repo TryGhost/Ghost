@@ -799,8 +799,6 @@ var _              = require('lodash'),
         // Builds the github contributors partial template used on the Settings/About page,
         // and downloads the avatar for each of the users.
         // Run by any task that compiles the ember assets or manually via `grunt buildAboutPage`.
-        // Change which version you're working against by setting the "releaseTag" below.
-        //
         // Only builds if the contributors template does not exist.
         // To force a build regardless, supply the --force option.
         //     `grunt buildAboutPage --force`
@@ -808,7 +806,7 @@ var _              = require('lodash'),
             var done = this.async(),
                 templatePath = 'core/client/app/templates/-contributors.hbs',
                 imagePath = 'core/client/public/assets/img/contributors/',
-                timeSpan = Date.now() - (1000 * 60 * 60 * 24 * 180),
+                timeSpan = moment().subtract(90, 'days').format('YYYY-MM-DD'),
                 oauthKey = process.env.GITHUB_OAUTH_KEY;
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
@@ -825,7 +823,7 @@ var _              = require('lodash'),
                     user: 'tryghost',
                     repo: 'ghost',
                     oauthKey: oauthKey,
-                    releaseDate: timeSpan,
+                    sinceDate: timeSpan,
                     count: 18,
                     retry: true
                 })
