@@ -347,23 +347,23 @@ CasperTest = (function () {
     });
 
     // Wrapper around `casper.test.begin`
-    function begin(testName, expect, suite, doNotAutoLogin) {
+    function begin(testName, expect, suite, doNotAutoLogin, doNotRunSetup) {
         _beforeDoneHandler = _noop;
 
         var runTest = function (test) {
             test.filename = testName.toLowerCase().replace(/ /g, '-').concat('.png');
 
             casper.start('about:blank').viewport(1280, 1024);
+            // Only call register once for the lifetime of CasperTest
+            if (!_isUserRegistered && !doNotRunSetup) {
+                CasperTest.Routines.signout.run();
+                CasperTest.Routines.setup.run();
+                CasperTest.Routines.signout.run();
+
+                _isUserRegistered = true;
+            }
 
             if (!doNotAutoLogin) {
-                // Only call register once for the lifetime of CasperTest
-                if (!_isUserRegistered) {
-                    CasperTest.Routines.signout.run();
-                    CasperTest.Routines.setup.run();
-
-                    _isUserRegistered = true;
-                }
-
                 /* Ensure we're logged out at the start of every test or we may get
                  unexpected failures. */
                 CasperTest.Routines.signout.run();
