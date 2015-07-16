@@ -9,7 +9,6 @@ export default Ember.Controller.extend(ValidationEngine, {
     email: '',
     password: null,
     image: null,
-    submitting: false,
     blogCreated: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
@@ -52,9 +51,8 @@ export default Ember.Controller.extend(ValidationEngine, {
                 data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
                 notifications = this.get('notifications'),
                 config = this.get('config'),
-                method = (this.get('blogCreated')) ? 'PUT' : 'POST';
+                method = this.get('blogCreated') ? 'PUT' : 'POST';
 
-            this.toggleProperty('submitting');
             this.validate().then(function () {
                 self.set('showError', false);
                 ajax({
@@ -72,14 +70,12 @@ export default Ember.Controller.extend(ValidationEngine, {
                     config.set('blogTitle', data.blogTitle);
                     // Don't call the success handler, otherwise we will be redirected to admin
                     self.get('application').set('skipAuthSuccessHandler', true);
-
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: self.get('password')
                     }).then(function () {
                         self.set('password', '');
                         self.set('blogCreated', true);
-
                         if (data.image) {
                             self.sendImage(result.users[0])
                             .then(function () {
@@ -92,11 +88,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }
                     });
                 }).catch(function (resp) {
-                    self.toggleProperty('submitting');
                     notifications.showAPIError(resp);
                 });
             }).catch(function () {
-                self.toggleProperty('submitting');
                 self.set('showError', true);
             });
         },

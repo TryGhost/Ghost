@@ -1,12 +1,11 @@
-<section class="gh-flow-content">
-    <header>
-        <h1>Create your account</h1>
-    </header>
+<header>
+    <h1>Create your account</h1>
+</header>
 
-    <form id="setup" class="gh-flow-create">
-        {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
-        <input style="display:none;" type="text" name="fakeusernameremembered"/>
-        <input style="display:none;" type="password" name="fakepasswordremembered"/>
+<form id="setup" class="gh-flow-create">
+    {{!-- Horrible hack to prevent Chrome from incorrectly auto-filling inputs --}}
+    <input style="display:none;" type="text" name="fakeusernameremembered"/>
+    <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
         {{gh-profile-image fileStorage=config.fileStorage email=email setImage="setImage"}}
         {{#gh-form-group errors=errors property="email"}}
@@ -46,8 +45,5 @@
         {{/gh-form-group}}
     </form>
 
-    <button type="submit" class="btn btn-green btn-lg btn-block" {{action "setup"}} {{submitting}}>Last step: Invite your team <i class="icon-chevron"></i></button>
-    {{#if showError}}
-    <p class="main-error">{{invalidMessage}}</p>
-    {{/if}}
-</section>
+<button type="submit" class="btn btn-green btn-lg btn-block" {{action "setup"}}>Last step: Invite your team <i class="icon-chevron"></i></button>
+<p class="main-error">{{#if showError}}{{invalidMessage}}{{/if}}</p>
