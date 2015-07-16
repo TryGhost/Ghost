@@ -1,5 +1,5 @@
 # SimpleMDE - Markdown Editor
-A drop-in JavaScript textarea replacement for writing beautiful and understandable markdown. The WYSIWYG-esque editor allows users to modify the markdown with toolbar buttons and shortcuts. WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, but is less visually clear while editing. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning Markdown syntax.
+A drop-in JavaScript textarea replacement for writing beautiful and understandable markdown. The WYSIWYG-esque editor allows users to modify the markdown with toolbar buttons and shortcuts. WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, but is less visually clear while editing. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning markdown syntax.
 
 [Demo](http://nextstepwebs.github.io/simplemde-markdown-editor)
 
