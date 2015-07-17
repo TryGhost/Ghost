@@ -190,6 +190,9 @@ describe('RSS', function () {
                 // relative URL - <a href="/about#nowhere" title="Relative URL">
                 xmlData.should.match(/<a href="http:\/\/my-ghost-blog.com\/about#nowhere" title="Relative URL">/);
 
+                // protocol relative URL - <a href="//somewhere.com/link#nowhere" title="Protocol Relative URL">
+                xmlData.should.match(/<a href="\/\/somewhere.com\/link#nowhere" title="Protocol Relative URL">/);
+
                 // absolute URL - <a href="http://somewhere.com/link#nowhere" title="Absolute URL">
                 xmlData.should.match(/<a href="http:\/\/somewhere.com\/link#nowhere" title="Absolute URL">/);
 
