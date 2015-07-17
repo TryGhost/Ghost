@@ -19,7 +19,7 @@ export default Ember.TextField.extend({
 
         // if we have a relative url, create the absolute url to be displayed in the input
         // if (this.get('isRelative')) {
-        if (!validator.isURL(url) && this.get('value').indexOf('mailto:') !== 0) {
+        if (!validator.isURL(url) && url.indexOf('mailto:') !== 0) {
             url = joinUrlParts(baseUrl, url);
         }
 
