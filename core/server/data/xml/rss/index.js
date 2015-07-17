@@ -96,6 +96,11 @@ function processUrls(html, siteUrl, itemUrl) {
                 if (parsed.protocol) {
                     return;
                 }
+
+                // Do not convert protocol relative URLs
+                if (_.startsWith(attributeValue, '//')) {
+                    return;
+                }
             } catch (e) {
                 return;
             }
