@@ -1,12 +1,12 @@
 <figure class="account-image js-file-upload">
     {{#unless hasUploadedImage}}
-    <div class="placeholder-img" style={{defaultImage}}></div>
+        <div class="placeholder-img" style={{defaultImage}}></div>
 
-    {{#if hasEmail}}
-    <div id="account-image" class="gravatar-img" style={{imageBackground}}>
-        <span class="sr-only">User image</span>
-    </div>
-    {{/if}}
+        {{#if hasEmail}}
+            <div id="account-image" class="gravatar-img" style={{imageBackground}}>
+                <span class="sr-only">User image</span>
+            </div>
+        {{/if}}
     {{/unless}}
 
     <div class="js-img-preview"></div>
@@ -16,5 +16,5 @@
             <span class="sr-only">Upload an image</span>
         </i>
     </span>
-    <input type="file" class="file-uploader js-file-input" name="uploadimage">
+    {{#if fileStorage}}<input type="file" class="file-uploader js-file-input" name="uploadimage">{{/if}}
 </figure>
