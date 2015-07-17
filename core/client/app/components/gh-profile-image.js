@@ -18,6 +18,7 @@ export default Ember.Component.extend({
     email: '',
     size: 90,
     hasUploadedImage: false,
+    fileStorage: true,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     hasEmail: Ember.computed.notEmpty('email'),
