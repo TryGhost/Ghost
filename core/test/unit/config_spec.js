@@ -382,6 +382,10 @@ describe('Config', function () {
                 config.set({url: 'http://my-ghost-blog.com/blog'});
                 testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
                 config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                config.set({url: 'http://my-ghost-blog.com/'});
+                testData = {nav: {url: 'mailto:marshmallow@my-ghost-blog.com'}};
+                config.urlFor(testContext, testData).should.equal('mailto:marshmallow@my-ghost-blog.com');
             });
 
             it('should return other known paths when requested', function () {
