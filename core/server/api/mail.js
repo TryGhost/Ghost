@@ -1,6 +1,6 @@
 // # Mail API
 // API for sending Mail
-var _            = require('lodash'),
+var _            = require('lodash').runInContext(),
     Promise      = require('bluebird'),
     config       = require('../config'),
     canThis      = require('../permissions').canThis,
@@ -99,12 +99,12 @@ mail = {
                 }
 
                 // insert user-specific data into the email
-                var htmlContent = _.template(fileContent, emailData),
+                var compiled = _.template(fileContent),
+                    htmlContent = compiled(emailData),
                     textContent;
 
                 // generate a plain-text version of the same email
                 textContent = htmlToText.fromString(htmlContent);
-
                 resolve({
                     html: htmlContent,
                     text: textContent
