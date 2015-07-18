@@ -9,6 +9,7 @@ var express     = require('express'),
     uuid        = require('node-uuid'),
     _           = require('lodash'),
     Promise     = require('bluebird'),
+    i18n        = require('./i18n'),
 
     api         = require('./api'),
     config      = require('./config'),
@@ -185,6 +186,9 @@ function init(options) {
         );
     }).then(function () {
         var adminHbs = hbs.create();
+
+        // Initialize Internationalization
+        i18n.init();
 
         // Output necessary notifications on init
         initNotifications();

@@ -43,6 +43,8 @@
     "fs-extra": "0.18.4",
     "glob": "4.3.2",
     "html-to-text": "1.3.0",
+    "intl": "1.0.0",
+    "intl-messageformat": "1.1.0",
     "knex": "0.7.3",
     "lodash": "3.10.0",
     "moment": "2.10.3",
