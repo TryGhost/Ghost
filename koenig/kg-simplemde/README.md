@@ -139,7 +139,7 @@ Or, you can keep the height static:
 ## Event handling
 You can catch the following list of events: https://codemirror.net/doc/manual.html#events
 
-```
+```JavaScript
 var simplemde = new SimpleMDE();
 simplemde.codemirror.on("change", function(){
 	console.log(simplemde.value());
