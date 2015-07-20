@@ -155,7 +155,7 @@ CodeMirror is the backbone of the project and parses much of the markdown syntax
 As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor). So you might be wondering, what's changed? Quite a bit actually. Here's some notable changes:
 
 - Upgraded from CodeMirror 3 to CodeMirror 5
-- Many changes to the style, appearance, and userfriendliness
+- Many changes to the style, appearance, and user friendliness
 - Interface more closely resembles Bootstrap
 - Now mobile friendly
 - Option to autosave the text as you type
@@ -166,3 +166,5 @@ As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](
 - Improved as-you-type appearance of headers and code blocks
 - Simplified the toolbar
 - Many new options during instantiation
+- New icons and tooltips
+- Additional keyboard shortcuts
