@@ -1,6 +1,8 @@
-/*globals describe, before, it*/
+/*globals describe, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var should         = require('should'),
+    sinon          = require('sinon'),
+    _              = require('lodash'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
 
@@ -9,157 +11,350 @@ var should         = require('should'),
     helpers        = require('../../../server/helpers');
 
 describe('{{#foreach}} helper', function () {
+    var options, context, _this, resultData, sandbox = sinon.sandbox.create();
+
     before(function () {
         utils.loadHelpers();
     });
 
-    // passed into the foreach helper.  takes the input string along with the metadata about
-    // the current row and builds a csv output string that can be used to check the results.
-    function fn(input, data) {
-        data = data.data;
+    afterEach(function () {
+        sandbox.restore();
+    });
 
-        // if there was no private data passed into the helper, no metadata
-        // was created, so just return the input
-        if (!data) {
-            return input + '\n';
+    describe('(function call)', function () {
+        beforeEach(function () {
+            context = [];
+            _this = {};
+            resultData = [];
+
+            function fn(input, data) {
+                resultData.push(_.cloneDeep(data));
+            }
+
+            options = {
+                fn: sandbox.spy(fn),
+                inverse: sandbox.spy(),
+                data: {}
+            };
+        });
+
+        function runTest(self, context, options) {
+            helpers.foreach.call(self, context, options);
         }
 
-        return input + ',' + data.first + ',' + data.rowEnd + ',' + data.rowStart + ',' +
-            data.last + ',' + data.even + ',' + data.odd + '\n';
-    }
+        it('is loaded', function () {
+            should.exist(handlebars.helpers.foreach);
+        });
 
-    function inverse(input) {
-        return input;
-    }
+        it('should not populate data if no private data is supplied (array)', function () {
+            delete options.data;
+            options.hash = {
+                columns: 0
+            };
 
-    it('is loaded', function () {
-        should.exist(handlebars.helpers.foreach);
+            // test with context as an array
+            context = 'hello world this is ghost'.split(' ');
+
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.true;
+            options.fn.getCalls().length.should.eql(_.size(context));
+
+            _.each(context, function (value, index) {
+                options.fn.getCall(index).args[0].should.eql(value);
+                should(options.fn.getCall(index).args[1].data).be.undefined;
+            });
+        });
+
+        it('should not populate data if no private data is supplied (object)', function () {
+            delete options.data;
+            options.hash = {
+                columns: 0
+            };
+
+            context = {
+                one: 'hello',
+                two: 'world',
+                three: 'this',
+                four: 'is',
+                five: 'ghost'
+            };
+
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.true;
+            options.fn.getCalls().length.should.eql(_.size(context));
+
+            _.each(_.keys(context), function (value, index) {
+                options.fn.getCall(index).args[0].should.eql(context[value]);
+                should(options.fn.getCall(index).args[1].data).be.undefined;
+            });
+        });
+
+        it('should populate data when private data is supplied (array)', function () {
+            var expected = [
+                {first: true, last: false, even: false, odd: true, rowStart: false, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: false},
+                {first: false, last: false, even: false, odd: true, rowStart: false, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: false},
+                {first: false, last: true, even: false, odd: true, rowStart: false, rowEnd: false}
+            ];
+
+            options.hash = {
+                columns: 0
+            };
+
+            context = 'hello world this is ghost'.split(' ');
+
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.true;
+            options.fn.getCalls().length.should.eql(_.size(context));
+
+            _.each(context, function (value, index) {
+                options.fn.getCall(index).args[0].should.eql(value);
+                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+
+                // Expected properties
+                resultData[index].data.should.containEql(expected[index]);
+
+                // Incrementing properties
+                resultData[index].data.should.have.property('key', index);
+                resultData[index].data.should.have.property('index', index);
+                resultData[index].data.should.have.property('number', index + 1);
+            });
+
+            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+        });
+
+        it('should populate data when private data is supplied (object)', function () {
+            var expected = [
+                {first: true, last: false, even: false, odd: true, rowStart: false, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: false},
+                {first: false, last: false, even: false, odd: true, rowStart: false, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: false},
+                {first: false, last: true, even: false, odd: true, rowStart: false, rowEnd: false}
+            ];
+
+            options.hash = {
+                columns: 0
+            };
+
+            context = {
+                one: 'hello',
+                two: 'world',
+                three: 'this',
+                four: 'is',
+                five: 'ghost'
+            };
+
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.true;
+            options.fn.getCalls().length.should.eql(_.size(context));
+
+            _.each(_.keys(context), function (value, index) {
+                options.fn.getCall(index).args[0].should.eql(context[value]);
+                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+
+                // Expected properties
+                resultData[index].data.should.containEql(expected[index]);
+
+                // Incrementing properties
+                resultData[index].data.should.have.property('key', value);
+                resultData[index].data.should.have.property('index', index);
+                resultData[index].data.should.have.property('number', index + 1);
+            });
+
+            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+        });
+
+        it('should handle rowStart and rowEnd for multiple columns (array)', function () {
+            var expected = [
+                {first: true, last: false, even: false, odd: true, rowStart: true, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: true},
+                {first: false, last: false, even: false, odd: true, rowStart: true, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: true},
+                {first: false, last: true, even: false, odd: true, rowStart: true, rowEnd: false}
+            ];
+            options.hash = {
+                columns: 2
+            };
+
+            // test with context as an array
+            context = 'hello world this is ghost'.split(' ');
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.true;
+            options.fn.getCalls().length.should.eql(_.size(context));
+
+            _.each(context, function (value, index) {
+                options.fn.getCall(index).args[0].should.eql(value);
+                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+
+                // Expected properties
+                resultData[index].data.should.containEql(expected[index]);
+
+                // Incrementing properties
+                resultData[index].data.should.have.property('key', index);
+                resultData[index].data.should.have.property('index', index);
+                resultData[index].data.should.have.property('number', index + 1);
+            });
+
+            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+        });
+
+        it('should handle rowStart and rowEnd for multiple columns (array)', function () {
+            var expected = [
+                {first: true, last: false, even: false, odd: true, rowStart: true, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: true},
+                {first: false, last: false, even: false, odd: true, rowStart: true, rowEnd: false},
+                {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: true},
+                {first: false, last: true, even: false, odd: true, rowStart: true, rowEnd: false}
+            ];
+            options.hash = {
+                columns: 2
+            };
+
+            // test with context as an object
+            context = {
+                one: 'hello',
+                two: 'world',
+                three: 'this',
+                four: 'is',
+                five: 'ghost'
+            };
+
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.true;
+            options.fn.getCalls().length.should.eql(_.size(context));
+
+            _.each(_.keys(context), function (value, index) {
+                options.fn.getCall(index).args[0].should.eql(context[value]);
+                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+
+                // Expected properties
+                resultData[index].data.should.containEql(expected[index]);
+
+                // Incrementing properties
+                resultData[index].data.should.have.property('key', value);
+                resultData[index].data.should.have.property('index', index);
+                resultData[index].data.should.have.property('number', index + 1);
+            });
+
+            resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
+        });
+
+        it('should return the correct inverse result if no context is provided', function () {
+            _this = 'the inverse data';
+            options.hash = {
+                columns: 0
+            };
+
+            runTest(_this, context, options);
+
+            options.fn.called.should.be.false;
+            options.inverse.called.should.be.true;
+            options.inverse.calledOnce.should.be.true;
+        });
     });
 
-    it('should return the correct result when no private data is supplied', function () {
-        var options = {},
-            context = [],
-            _this = {},
-            rendered;
+    describe('(compile)', function () {
+        function shouldCompileToExpected(templateString, hash, expected) {
+            var template = handlebars.compile(templateString),
+                result = template(hash);
 
-        options.fn = fn;
-        options.inverse = inverse;
-        options.hash = {
-            columns: 0
-        };
+            result.should.eql(expected);
+        }
 
-        // test with context as an array
+        /** Many of these are copied direct from the handlebars spec */
+        it('foreach with object and @key', function () {
+            var templateString = '<ul>{{#foreach posts}}<li>{{@key}} {{title}}</li>{{/foreach}}</ul>',
+                hash = {posts: {first: {title: 'first'}, second: {title: 'second'}}},
+                expected = '<ul><li>first first</li><li>second second</li></ul>';
 
-        context = 'hello world this is ghost'.split(' ');
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        rendered = helpers.foreach.call(_this, context, options);
-        rendered.should.equal('hello\nworld\nthis\nis\nghost\n');
+        it('foreach with @index', function () {
+            var templateString = '<ul>{{#foreach posts}}<li>{{@index}} {{title}}</li>{{/foreach}}</ul>',
+                hash = {posts: [{title: 'first'}, {title: 'second'}]},
+                expected = '<ul><li>0 first</li><li>1 second</li></ul>';
 
-        // test with context as an object
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        context = {
-            one: 'hello',
-            two: 'world',
-            three: 'this',
-            four: 'is',
-            five: 'ghost'
-        };
+        it('foreach with @number', function () {
+            var templateString = '<ul>{{#foreach posts}}<li>{{@number}} {{title}}</li>{{/foreach}}</ul>',
+                hash = {posts: [{title: 'first'}, {title: 'second'}]},
+                expected = '<ul><li>1 first</li><li>2 second</li></ul>';
 
-        rendered = helpers.foreach.call(_this, context, options);
-        rendered.should.equal('hello\nworld\nthis\nis\nghost\n');
-    });
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-    it('should return the correct result when private data is supplied', function () {
-        var options = {},
-            context = [],
-            _this = {},
-            rendered,
-            result;
+        it('foreach with nested @index', function () {
+            var templateString = '{{#foreach goodbyes}}{{@index}}. {{text}}! {{#foreach ../goodbyes}}{{@index}} {{/foreach}}After {{@index}} {{/foreach}}{{@index}}cruel {{world}}!',
+                hash = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}, {text: 'GOODBYE'}], world: 'world'},
+                expected = '0. goodbye! 0 1 2 After 0 1. Goodbye! 0 1 2 After 1 2. GOODBYE! 0 1 2 After 2 cruel world!';
 
-        options.fn = fn;
-        options.inverse = inverse;
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        options.hash = {
-            columns: 0
-        };
+        it('foreach with block params', function () {
+            var templateString = '{{#foreach goodbyes as |value index|}}{{index}}. {{value.text}}! {{#foreach ../goodbyes as |childValue childIndex|}} {{index}} {{childIndex}}{{/foreach}} After {{index}} {{/foreach}}{{index}}cruel {{world}}!',
+                hash = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}], world: 'world'},
+                expected = '0. goodbye!  0 0 0 1 After 0 1. Goodbye!  1 0 1 1 After 1 cruel world!';
 
-        options.data = {};
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        context = 'hello world this is ghost'.split(' ');
+        it('foreach with @first', function () {
+            var templateString = '{{#foreach goodbyes}}{{#if @first}}{{text}}! {{/if}}{{/foreach}}cruel {{world}}!',
+                hash = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}, {text: 'GOODBYE'}], world: 'world'},
+                expected = 'goodbye! cruel world!';
 
-        rendered = helpers.foreach.call(_this, context, options);
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        result = rendered.split('\n');
-        result[0].should.equal('hello,true,false,false,false,false,true');
-        result[1].should.equal('world,false,false,false,false,true,false');
-        result[2].should.equal('this,false,false,false,false,false,true');
-        result[3].should.equal('is,false,false,false,false,true,false');
-        result[4].should.equal('ghost,false,false,false,true,false,true');
-    });
+        it('foreach with nested @first', function () {
+            var templateString = '{{#foreach goodbyes}}({{#if @first}}{{text}}! {{/if}}{{#foreach ../goodbyes}}{{#if @first}}{{text}}!{{/if}}{{/foreach}}{{#if @first}} {{text}}!{{/if}}) {{/foreach}}cruel {{world}}!',
+                hash = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}, {text: 'GOODBYE'}], world: 'world'},
+                expected = '(goodbye! goodbye! goodbye!) (goodbye!) (goodbye!) cruel world!';
 
-    it('should return the correct result when private data is supplied & there are multiple columns', function () {
-        var options = {},
-            context = [],
-            _this = {},
-            rendered,
-            result;
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        options.fn = fn;
-        options.inverse = inverse;
+        it('foreach object with @first', function () {
+            var templateString = '{{#foreach goodbyes}}{{#if @first}}{{text}}! {{/if}}{{/foreach}}cruel {{world}}!',
+                hash = {goodbyes: {foo: {text: 'goodbye'}, bar: {text: 'Goodbye'}}, world: 'world'},
+                expected = 'goodbye! cruel world!';
 
-        options.hash = {
-            columns: 2
-        };
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        options.data = {};
+        it('foreach with @last', function () {
+            var templateString = '{{#foreach goodbyes}}{{#if @last}}{{text}}! {{/if}}{{/foreach}}cruel {{world}}!',
+                hash = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}, {text: 'GOODBYE'}], world: 'world'},
+                expected = 'GOODBYE! cruel world!';
 
-        // test with context as an array
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        context = 'hello world this is ghost'.split(' ');
+        it('foreach object with @last', function () {
+            var templateString = '{{#foreach goodbyes}}{{#if @last}}{{text}}! {{/if}}{{/foreach}}cruel {{world}}!',
+                hash = {goodbyes: {foo: {text: 'goodbye'}, bar: {text: 'Goodbye'}}, world: 'world'},
+                expected = 'Goodbye! cruel world!';
 
-        rendered = helpers.foreach.call(_this, context, options);
+            shouldCompileToExpected(templateString, hash, expected);
+        });
 
-        result = rendered.split('\n');
-        result[0].should.equal('hello,true,false,true,false,false,true');
-        result[1].should.equal('world,false,true,false,false,true,false');
-        result[2].should.equal('this,false,false,true,false,false,true');
-        result[3].should.equal('is,false,true,false,false,true,false');
-        result[4].should.equal('ghost,false,false,true,true,false,true');
+        it('foreach with nested @last', function () {
+            var templateString = '{{#foreach goodbyes}}({{#if @last}}{{text}}! {{/if}}{{#foreach ../goodbyes}}{{#if @last}}{{text}}!{{/if}}{{/foreach}}{{#if @last}} {{text}}!{{/if}}) {{/foreach}}cruel {{world}}!',
+                hash = {goodbyes: [{text: 'goodbye'}, {text: 'Goodbye'}, {text: 'GOODBYE'}], world: 'world'},
+                expected = '(GOODBYE!) (GOODBYE!) (GOODBYE! GOODBYE! GOODBYE!) cruel world!';
 
-        // test with context as an object
-
-        context = {
-            one: 'hello',
-            two: 'world',
-            three: 'this',
-            four: 'is',
-            five: 'ghost'
-        };
-
-        rendered = helpers.foreach.call(_this, context, options);
-
-        result = rendered.split('\n');
-        result[0].should.equal('hello,true,false,true,false,false,true');
-        result[1].should.equal('world,false,true,false,false,true,false');
-        result[2].should.equal('this,false,false,true,false,false,true');
-        result[3].should.equal('is,false,true,false,false,true,false');
-        result[4].should.equal('ghost,false,false,true,true,false,true');
-    });
-
-    it('should return the correct inverse result if no context is provided', function () {
-        var options = {},
-            context = [],
-            _this = 'the inverse data',
-            rendered;
-
-        options.fn = function () {};
-        options.inverse = inverse;
-        options.hash = {
-            columns: 0
-        };
-        options.data = {};
-
-        rendered = helpers.foreach.call(_this, context, options);
-        rendered.should.equal(_this);
+            shouldCompileToExpected(templateString, hash, expected);
+        });
     });
 });
