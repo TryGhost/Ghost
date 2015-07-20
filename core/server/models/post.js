@@ -107,7 +107,6 @@ Post = ghostBookshelf.Model.extend({
             if (model.previous('status') === 'published') {
                 model.emitChange('unpublished');
             }
-
             model.emitChange('deleted');
         });
     },
