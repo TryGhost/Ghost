@@ -18,6 +18,15 @@ describe('API Utils', function () {
         sandbox.restore();
     });
 
+    describe('Default Options', function () {
+        it('should provide a set of default options', function () {
+            apiUtils.globalDefaultOptions.should.eql(['context', 'include']);
+            apiUtils.browseDefaultOptions.should.eql(['page', 'limit']);
+            apiUtils.dataDefaultOptions.should.eql(['data']);
+            apiUtils.idDefaultOptions.should.eql(['id']);
+        });
+    });
+
     describe('validate', function () {
         it('should create options when passed no args', function (done) {
             apiUtils.validate()().then(function (options) {
@@ -27,8 +36,25 @@ describe('API Utils', function () {
         });
 
         it('should pick data attrs when passed them', function (done) {
-            apiUtils.validate('test', ['id'])(
+            apiUtils.validate('test', {attrs: ['id']})(
                 {id: 'test', status: 'all', uuid: 'other-test'}
+            ).then(function (options) {
+                options.should.have.ownProperty('data');
+                options.data.should.have.ownProperty('id');
+                options.should.not.have.ownProperty('id');
+                options.data.id.should.eql('test');
+
+                options.data.should.not.have.ownProperty('status');
+                options.should.not.have.ownProperty('status');
+
+                options.should.not.have.ownProperty('uuid');
+                done();
+            }).catch(done);
+        });
+
+        it('should pick data attrs & leave options if passed', function (done) {
+            apiUtils.validate('test', {attrs: ['id'], opts: ['status', 'uuid']})(
+                {id: 'test', status: 'all', uuid: 'ffecea44-393c-4273-b784-e1928975ecfb'}
             ).then(function (options) {
                 options.should.have.ownProperty('data');
                 options.data.should.have.ownProperty('id');
@@ -40,7 +66,7 @@ describe('API Utils', function () {
                 options.status.should.eql('all');
 
                 options.should.have.ownProperty('uuid');
-                options.uuid.should.eql('other-test');
+                options.uuid.should.eql('ffecea44-393c-4273-b784-e1928975ecfb');
                 done();
             }).catch(done);
         });
@@ -76,6 +102,139 @@ describe('API Utils', function () {
                 options.data.should.have.ownProperty('test');
                 done();
             }).catch(done);
+        });
+
+        it('should remove unknown options', function (done) {
+            apiUtils.validate('test')({magic: 'stuff', rubbish: 'stuff'}).then(function (options) {
+                options.should.not.have.ownProperty('data');
+                options.should.not.have.ownProperty('rubbish');
+                options.should.not.have.ownProperty('magic');
+                done();
+            }).catch(done);
+        });
+
+        it('should always allow context & include options', function (done) {
+            apiUtils.validate('test')({context: 'stuff', include: 'stuff'}).then(function (options) {
+                options.should.not.have.ownProperty('data');
+                options.should.have.ownProperty('context');
+                options.context.should.eql('stuff');
+                options.should.have.ownProperty('include');
+                options.include.should.eql('stuff');
+                done();
+            }).catch(done);
+        });
+
+        it('should allow page & limit options when browseDefaultOptions passed', function (done) {
+            apiUtils.validate('test', {opts: apiUtils.browseDefaultOptions})(
+                {context: 'stuff', include: 'stuff', page: 1, limit: 5}
+            ).then(function (options) {
+                options.should.not.have.ownProperty('data');
+                options.should.have.ownProperty('context');
+                options.context.should.eql('stuff');
+                options.should.have.ownProperty('include');
+                options.include.should.eql('stuff');
+                options.should.have.ownProperty('page');
+                options.page.should.eql(1);
+                options.should.have.ownProperty('limit');
+                options.limit.should.eql(5);
+                done();
+            }).catch(done);
+        });
+
+        it('should allow idDefaultOptions when passed', function (done) {
+            // test read
+            apiUtils.validate('test', {opts: apiUtils.idDefaultOptions})(
+                {id: 5, context: 'stuff'}
+            ).then(function (options) {
+                options.should.not.have.ownProperty('data');
+                options.should.not.have.ownProperty('include');
+                options.should.not.have.ownProperty('page');
+                options.should.not.have.ownProperty('limit');
+
+                options.should.have.ownProperty('context');
+                options.context.should.eql('stuff');
+                options.should.have.ownProperty('id');
+                options.id.should.eql(5);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should reject if invalid options are passed', function (done) {
+            apiUtils.validate('test', {opts: apiUtils.browseDefaultOptions})(
+                {context: 'internal', include: 'stuff', page: 1, limit: 'none'}
+            ).then(function () {
+                done(new Error('Should have thrown a validation error'));
+            }).catch(function (err) {
+                err.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+                done();
+            });
+        });
+    });
+
+    describe('validateOptions', function () {
+        var valid, invalid;
+
+        function check(key, valid, invalid) {
+            _.each(valid, function (value) {
+                var options = {};
+                options[key] = value;
+                apiUtils.validateOptions(options).should.eql([]);
+            });
+
+            _.each(invalid, function (value) {
+                var options = {}, errors;
+                options[key] = value;
+
+                errors = apiUtils.validateOptions(options);
+                errors.should.be.an.Array.and.have.lengthOf(1);
+                errors.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+            });
+        }
+
+        it('can validate `id`', function () {
+            valid = [1, '1', 304, '304'];
+            invalid = ['test', 'de305d54'];
+
+            check('id', valid, invalid);
+        });
+
+        it('can validate `uuid`', function () {
+            valid = ['de305d54-75b4-431b-adb2-eb6b9e546014'];
+            invalid = ['de305d54-75b4-431b-adb2'];
+
+            check('uuid', valid, invalid);
+        });
+
+        it('can validate `page`', function () {
+            valid = [1, '1', 304, '304'];
+            invalid = ['me', 'test', 'de305d54', -1, '-1'];
+
+            check('page', valid, invalid);
+        });
+
+        it('can validate `limit`', function () {
+            valid = [1, '1', 304, '304', 'all'];
+            invalid = ['me', 'test', 'de305d54', -1, '-1'];
+
+            check('limit', valid, invalid);
+        });
+
+        it('can validate `slug` or `status` or `author` etc as a-z, 0-9 and -', function () {
+            valid = ['hello-world', 'hello', '1-2-3', 1, '-1', -1];
+            invalid = ['hello_world', '!things', '?other-things', 'thing"', '`ticks`'];
+
+            check('slug', valid, invalid);
+            check('status', valid, invalid);
+            check('author', valid, invalid);
+        });
+
+        it('gives no errors for `context`, `include` and `data`', function () {
+            apiUtils.validateOptions({
+                context: {user: 1},
+                include: '"super,@random!,string?and',
+                data: {object: 'thing'}
+            }).should.eql([]);
         });
     });
 
