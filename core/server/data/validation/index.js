@@ -162,6 +162,7 @@ validate = function validate(value, key, validations) {
 };
 
 module.exports = {
+    validate: validate,
     validator: validator,
     validateSchema: validateSchema,
     validateSettings: validateSettings,

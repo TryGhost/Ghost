@@ -26,7 +26,9 @@ slugs = {
      * @returns {Promise(String)} Unique string
      */
     generate: function (options) {
-        var tasks;
+        var opts = ['type'],
+            attrs = ['name'],
+            tasks;
 
         // `allowedTypes` is used to define allowed slug types and map them against its model class counterpart
         allowedTypes = {
@@ -60,11 +62,15 @@ slugs = {
          * @returns {Object} options
          */
         function modelQuery(options) {
-            return dataProvider.Base.Model.generateSlug(allowedTypes[options.type], options.name, {status: 'all'});
+            return dataProvider.Base.Model.generateSlug(allowedTypes[options.type], options.data.name, {status: 'all'});
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
-        tasks = [utils.validate(docName), handlePermissions, modelQuery];
+        tasks = [
+            utils.validate(docName, {opts: opts, attrs: attrs}),
+            handlePermissions,
+            modelQuery
+        ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, options).then(function (slug) {
