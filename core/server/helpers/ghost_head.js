@@ -48,7 +48,7 @@ function getPaginationUrls(pagination, relativeUrl, secure, head) {
         prev = (pagination.prev > 1 ? '/page/' + pagination.prev + '/' : '/');
         prev = (trimmedUrl) ? trimmedUrl + prev : prev;
         head.push('<link rel="prev" href="' +
-                config.urlFor({relativeUrl: prev, secure: secure}, true) + '" />'
+                config.urlFor({relativeUrl: prev, secure: secure}, true) + '">'
         );
     }
     if (pagination.next) {
@@ -59,7 +59,7 @@ function getPaginationUrls(pagination, relativeUrl, secure, head) {
             next = relativeUrl.slice(0, -1) + next;
         }
         head.push('<link rel="next" href="' +
-                config.urlFor({relativeUrl: next, secure: secure}, true) + '" />'
+                config.urlFor({relativeUrl: next, secure: secure}, true) + '">'
         );
     }
     return head;
@@ -234,13 +234,13 @@ function finaliseStructuredData(structuredData, tags, head) {
             _.each(tags, function (tag) {
                 if (tag !== '') {
                     tag = hbs.handlebars.Utils.escapeExpression(tag.trim());
-                    head.push('<meta property="' + property + '" content="' + tag + '" />');
+                    head.push('<meta property="' + property + '" content="' + tag + '">');
                 }
             });
             head.push('');
         } else if (content !== null && content !== undefined) {
             type = property.substring(0, 7) === 'twitter' ? 'name' : 'property';
-            head.push('<meta ' + type + '="' + property + '" content="' + content + '" />');
+            head.push('<meta ' + type + '="' + property + '" content="' + content + '">');
         }
     });
     return head;
@@ -289,8 +289,8 @@ ghost_head = function (options) {
             }
 
             // head is our main array that holds our meta data
-            head.push('<link rel="canonical" href="' + metaData.url + '" />');
-            head.push('<meta name="referrer" content="origin" />');
+            head.push('<link rel="canonical" href="' + metaData.url + '">');
+            head.push('<meta name="referrer" content="origin">');
 
             // Generate context driven pagination urls
             if (self.pagination) {
@@ -311,9 +311,9 @@ ghost_head = function (options) {
                 finaliseSchema(schema, head);
             }
         }
-        head.push('<meta name="generator" content="Ghost ' + safeVersion + '" />');
+        head.push('<meta name="generator" content="Ghost ' + safeVersion + '">');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-            title  + '" href="' + config.urlFor('rss', null, true) + '" />');
+            title  + '" href="' + config.urlFor('rss', null, true) + '">');
     }).then(function () {
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {
