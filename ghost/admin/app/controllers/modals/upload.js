@@ -12,7 +12,7 @@ export default Ember.Controller.extend({
             this.get('model').save().then(function (model) {
                 return model;
             }).catch(function (err) {
-                notifications.showErrors(err);
+                notifications.showAPIError(err);
             });
         },
 

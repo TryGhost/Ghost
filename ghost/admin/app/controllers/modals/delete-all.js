@@ -16,7 +16,7 @@ export default Ember.Controller.extend({
                 self.store.unloadAll('post');
                 self.store.unloadAll('tag');
             }).catch(function (response) {
-                self.get('notifications').showErrors(response);
+                self.get('notifications').showAPIError(response);
             });
         },
 
