@@ -136,7 +136,12 @@ authentication = {
 
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
-                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+                return dataProvider.User.resetPassword({
+                    token: resetToken,
+                    newPassword: newPassword,
+                    ne2Password: ne2Password,
+                    dbHash: dbHash
+                });
             }).then(function () {
                 return Promise.resolve({passwordreset: [{message: 'Password changed successfully.'}]});
             }).catch(function (error) {
@@ -174,7 +179,12 @@ authentication = {
 
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
-                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+                return dataProvider.User.resetPassword({
+                    token: resetToken,
+                    newPassword: newPassword,
+                    ne2Password: ne2Password,
+                    dbHash: dbHash
+                });
             }).then(function (user) {
                 // Setting the slug to '' has the model regenerate the slug from the user's name
                 return dataProvider.User.edit({name: name, email: email, slug: ''}, {id: user.id});
