@@ -534,6 +534,7 @@ SimpleMDE.prototype.render = function(el) {
 		mode: 'gfm',
 		theme: 'paper',
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
+		indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
 		lineNumbers: false,
 		autofocus: (options.autofocus === true) ? true : false,
