@@ -61,6 +61,7 @@ simplemde.value();
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
+- **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
@@ -159,6 +160,7 @@ As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](
 - Interface more closely resembles Bootstrap
 - Now mobile friendly
 - Option to autosave the text as you type
+- Now spell checks what you write
 - The text editor now automatically grows as you type more
 - Fixed a large amount of bugs
 - Switched to Font Awesome icons

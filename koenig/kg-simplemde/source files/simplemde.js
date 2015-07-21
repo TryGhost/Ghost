@@ -529,9 +529,18 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps["Enter"] = "newlineAndIndentContinueMarkdownList";
 	keyMaps['Tab'] = 'tabAndIndentContinueMarkdownList';
 	keyMaps['Shift-Tab'] = 'shiftTabAndIndentContinueMarkdownList';
-
+	
+	var mode = "spell-checker";
+	var backdrop = "gfm";
+	
+	if (options.spellChecker === false) {
+		mode = "gfm";
+		backdrop = undefined;
+	}
+	
 	this.codemirror = CodeMirror.fromTextArea(el, {
-		mode: 'gfm',
+		mode: mode,
+		backdrop: backdrop,
 		theme: 'paper',
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
