@@ -65,7 +65,7 @@
 	setGuttersForLineNumbers(options);
 
 	var doc = options.value;
-	if (typeof doc == "string") doc = new Doc(doc, options.mode);
+	if (typeof doc == "string") doc = new Doc(doc, options.mode, null, options.lineSeparator);
 	this.doc = doc;
 
 	var input = new CodeMirror.inputStyles[options.inputStyle](this);
@@ -714,7 +714,7 @@
 	// width and height.
 	removeChildren(display.cursorDiv);
 	removeChildren(display.selectionDiv);
-	display.gutters.style.height = 0;
+	display.gutters.style.height = display.sizer.style.minHeight = 0;
 
 	if (different) {
 	  display.lastWrapHeight = update.wrapperHeight;
@@ -955,12 +955,22 @@
 	  lineView.node.removeChild(lineView.gutter);
 	  lineView.gutter = null;
 	}
+	if (lineView.gutterBackground) {
+	  lineView.node.removeChild(lineView.gutterBackground);
+	  lineView.gutterBackground = null;
+	}
+	if (lineView.line.gutterClass) {
+	  var wrap = ensureLineWrapped(lineView);
+	  lineView.gutterBackground = elt("div", null, "CodeMirror-gutter-background " + lineView.line.gutterClass,
+									  "left: " + (cm.options.fixedGutter ? dims.fixedPos : -dims.gutterTotalWidth) +
+									  "px; width: " + dims.gutterTotalWidth + "px");
+	  wrap.insertBefore(lineView.gutterBackground, lineView.text);
+	}
 	var markers = lineView.line.gutterMarkers;
 	if (cm.options.lineNumbers || markers) {
 	  var wrap = ensureLineWrapped(lineView);
 	  var gutterWrap = lineView.gutter = elt("div", null, "CodeMirror-gutter-wrapper", "left: " +
-											 (cm.options.fixedGutter ? dims.fixedPos : -dims.gutterTotalWidth) +
-											 "px; width: " + dims.gutterTotalWidth + "px");
+											 (cm.options.fixedGutter ? dims.fixedPos : -dims.gutterTotalWidth) + "px");
 	  cm.display.input.setUneditable(gutterWrap);
 	  wrap.insertBefore(gutterWrap, lineView.text);
 	  if (lineView.line.gutterClass)
@@ -1082,13 +1092,18 @@
 	if (!sel) sel = doc.sel;
 
 	var paste = cm.state.pasteIncoming || origin == "paste";
-	var textLines = splitLines(inserted), multiPaste = null;
+	var textLines = doc.splitLines(inserted), multiPaste = null;
 	// When pasing N lines into N selections, insert one line per selection
 	if (paste && sel.ranges.length > 1) {
-	  if (lastCopied && lastCopied.join("\n") == inserted)
-		multiPaste = sel.ranges.length % lastCopied.length == 0 && map(lastCopied, splitLines);
-	  else if (textLines.length == sel.ranges.length)
+	  if (lastCopied && lastCopied.join("\n") == inserted) {
+		if (sel.ranges.length % lastCopied.length == 0) {
+		  multiPaste = [];
+		  for (var i = 0; i < lastCopied.length; i++)
+			multiPaste.push(doc.splitLines(lastCopied[i]));
+		}
+	  } else if (textLines.length == sel.ranges.length) {
 		multiPaste = map(textLines, function(l) { return [l]; });
+	  }
 	}
 
 	// Normal behavior is to insert the new text into every selection
@@ -1388,7 +1403,7 @@
 	  // will be the case when there is a lot of text in the textarea,
 	  // in which case reading its value would be expensive.
 	  if (this.contextMenuPending || !cm.state.focused ||
-		  (hasSelection(input) && !prevInput) ||
+		  (hasSelection(input) && !prevInput && !this.composing) ||
 		  isReadOnly(cm) || cm.options.disableInput || cm.state.keySeq)
 		return false;
 
@@ -1756,7 +1771,7 @@
 		var toNode = display.view[toIndex + 1].node.previousSibling;
 	  }
 
-	  var newText = splitLines(domTextBetween(cm, fromNode, toNode, fromLine, toLine));
+	  var newText = cm.doc.splitLines(domTextBetween(cm, fromNode, toNode, fromLine, toLine));
 	  var oldText = getBetween(cm.doc, Pos(fromLine, 0), Pos(toLine, getLine(cm.doc, toLine).text.length));
 	  while (newText.length > 1 && oldText.length > 1) {
 		if (lst(newText) == lst(oldText)) { newText.pop(); oldText.pop(); toLine--; }
@@ -1912,7 +1927,7 @@
   }
 
   function domTextBetween(cm, from, to, fromLine, toLine) {
-	var text = "", closing = false;
+	var text = "", closing = false, lineSep = cm.doc.lineSeparator();
 	function recognizeMarker(id) { return function(marker) { return marker.id == id; }; }
 	function walk(node) {
 	  if (node.nodeType == 1) {
@@ -1926,7 +1941,7 @@
 		if (markerID) {
 		  var found = cm.findMarks(Pos(fromLine, 0), Pos(toLine + 1, 0), recognizeMarker(+markerID));
 		  if (found.length && (range = found[0].find()))
-			text += getBetween(cm.doc, range.from, range.to).join("\n");
+			text += getBetween(cm.doc, range.from, range.to).join(lineSep);
 		  return;
 		}
 		if (node.getAttribute("contenteditable") == "false") return;
@@ -1938,7 +1953,7 @@
 		var val = node.nodeValue;
 		if (!val) return;
 		if (closing) {
-		  text += "\n";
+		  text += lineSep;
 		  closing = false;
 		}
 		text += val;
@@ -2545,10 +2560,12 @@
   function prepareMeasureForLine(cm, line) {
 	var lineN = lineNo(line);
 	var view = findViewForLine(cm, lineN);
-	if (view && !view.text)
+	if (view && !view.text) {
 	  view = null;
-	else if (view && view.changes)
+	} else if (view && view.changes) {
 	  updateLineForChanges(cm, view, lineN, getDimensions(cm));
+	  cm.curOp.forceUpdate = true;
+	}
 	if (!view)
 	  view = updateExternalMeasurement(cm, line);
 
@@ -3785,7 +3802,9 @@
 		  text[i] = reader.result;
 		  if (++read == n) {
 			pos = clipPos(cm.doc, pos);
-			var change = {from: pos, to: pos, text: splitLines(text.join("\n")), origin: "paste"};
+			var change = {from: pos, to: pos,
+						  text: cm.doc.splitLines(text.join(cm.doc.lineSeparator())),
+						  origin: "paste"};
 			makeChange(cm.doc, change);
 			setSelectionReplaceHistory(cm.doc, simpleSelection(pos, changeEnd(change)));
 		  }
@@ -4468,7 +4487,7 @@
   function replaceRange(doc, code, from, to, origin) {
 	if (!to) to = from;
 	if (cmp(to, from) < 0) { var tmp = to; to = from; from = tmp; }
-	if (typeof code == "string") code = splitLines(code);
+	if (typeof code == "string") code = doc.splitLines(code);
 	makeChange(doc, {from: from, to: to, text: code, origin: origin});
   }
 
@@ -5263,6 +5282,22 @@
 	clearCaches(cm);
 	regChange(cm);
   }, true);
+  option("lineSeparator", null, function(cm, val) {
+	cm.doc.lineSep = val;
+	if (!val) return;
+	var newBreaks = [], lineNo = cm.doc.first;
+	cm.doc.iter(function(line) {
+	  for (var pos = 0;;) {
+		var found = line.text.indexOf(val, pos);
+		if (found == -1) break;
+		pos = found + val.length;
+		newBreaks.push(Pos(lineNo, found));
+	  }
+	  lineNo++;
+	});
+	for (var i = newBreaks.length - 1; i >= 0; i--)
+	  replaceRange(cm.doc, val, newBreaks[i], Pos(newBreaks[i].line, newBreaks[i].ch + val.length))
+  });
   option("specialChars", /[\t\u0000-\u0019\u00ad\u200b-\u200f\u2028\u2029\ufeff]/g, function(cm, val, old) {
 	cm.state.specialChars = new RegExp(val.source + (val.test("\t") ? "" : "|\t"), "g");
 	if (old != CodeMirror.Init) cm.refresh();
@@ -5613,7 +5648,8 @@
 			} else if (cur.line > cm.doc.first) {
 			  var prev = getLine(cm.doc, cur.line - 1).text;
 			  if (prev)
-				cm.replaceRange(line.charAt(0) + "\n" + prev.charAt(prev.length - 1),
+				cm.replaceRange(line.charAt(0) + cm.doc.lineSeparator() +
+								prev.charAt(prev.length - 1),
 								Pos(cur.line - 1, prev.length - 1), Pos(cur.line, 1), "+transpose");
 			}
 		  }
@@ -5627,7 +5663,7 @@
 		var len = cm.listSelections().length;
 		for (var i = 0; i < len; i++) {
 		  var range = cm.listSelections()[i];
-		  cm.replaceRange("\n", range.anchor, range.head, "+input");
+		  cm.replaceRange(cm.doc.lineSeparator(), range.anchor, range.head, "+input");
 		  cm.indentLine(range.from().line + 1, null, true);
 		  ensureCursorVisible(cm);
 		}
@@ -6881,6 +6917,10 @@
 		  txt.setAttribute("role", "presentation");
 		  txt.setAttribute("cm-text", "\t");
 		  builder.col += tabWidth;
+		} else if (m[0] == "\r" || m[0] == "\n") {
+		  var txt = content.appendChild(elt("span", m[0] == "\r" ? "␍" : "␤", "cm-invalidchar"));
+		  txt.setAttribute("cm-text", m[0]);
+		  builder.col += 1;
 		} else {
 		  var txt = builder.cm.options.specialCharPlaceholder(m[0]);
 		  txt.setAttribute("cm-text", m[0]);
@@ -7226,8 +7266,8 @@
   };
 
   var nextDocId = 0;
-  var Doc = CodeMirror.Doc = function(text, mode, firstLine) {
-	if (!(this instanceof Doc)) return new Doc(text, mode, firstLine);
+  var Doc = CodeMirror.Doc = function(text, mode, firstLine, lineSep) {
+	if (!(this instanceof Doc)) return new Doc(text, mode, firstLine, lineSep);
 	if (firstLine == null) firstLine = 0;
 
 	BranchChunk.call(this, [new LeafChunk([new Line("", null)])]);
@@ -7241,8 +7281,9 @@
 	this.history = new History(null);
 	this.id = ++nextDocId;
 	this.modeOption = mode;
+	this.lineSep = lineSep;
 
-	if (typeof text == "string") text = splitLines(text);
+	if (typeof text == "string") text = this.splitLines(text);
 	updateDoc(this, {from: start, to: start, text: text});
 	setSelection(this, simpleSelection(start), sel_dontScroll);
   };
@@ -7272,12 +7313,12 @@
 	getValue: function(lineSep) {
 	  var lines = getLines(this, this.first, this.first + this.size);
 	  if (lineSep === false) return lines;
-	  return lines.join(lineSep || "\n");
+	  return lines.join(lineSep || this.lineSeparator());
 	},
 	setValue: docMethodOp(function(code) {
 	  var top = Pos(this.first, 0), last = this.first + this.size - 1;
 	  makeChange(this, {from: top, to: Pos(last, getLine(this, last).text.length),
-						text: splitLines(code), origin: "setValue", full: true}, true);
+						text: this.splitLines(code), origin: "setValue", full: true}, true);
 	  setSelection(this, simpleSelection(top));
 	}),
 	replaceRange: function(code, from, to, origin) {
@@ -7288,7 +7329,7 @@
 	getRange: function(from, to, lineSep) {
 	  var lines = getBetween(this, clipPos(this, from), clipPos(this, to));
 	  if (lineSep === false) return lines;
-	  return lines.join(lineSep || "\n");
+	  return lines.join(lineSep || this.lineSeparator());
 	},
 
 	getLine: function(line) {var l = this.getLineHandle(line); return l && l.text;},
@@ -7354,13 +7395,13 @@
 		lines = lines ? lines.concat(sel) : sel;
 	  }
 	  if (lineSep === false) return lines;
-	  else return lines.join(lineSep || "\n");
+	  else return lines.join(lineSep || this.lineSeparator());
 	},
 	getSelections: function(lineSep) {
 	  var parts = [], ranges = this.sel.ranges;
 	  for (var i = 0; i < ranges.length; i++) {
 		var sel = getBetween(this, ranges[i].from(), ranges[i].to());
-		if (lineSep !== false) sel = sel.join(lineSep || "\n");
+		if (lineSep !== false) sel = sel.join(lineSep || this.lineSeparator());
 		parts[i] = sel;
 	  }
 	  return parts;
@@ -7375,7 +7416,7 @@
 	  var changes = [], sel = this.sel;
 	  for (var i = 0; i < sel.ranges.length; i++) {
 		var range = sel.ranges[i];
-		changes[i] = {from: range.from(), to: range.to(), text: splitLines(code[i]), origin: origin};
+		changes[i] = {from: range.from(), to: range.to(), text: this.splitLines(code[i]), origin: origin};
 	  }
 	  var newSel = collapse && collapse != "end" && computeReplacedSel(this, changes, collapse);
 	  for (var i = changes.length - 1; i >= 0; i--)
@@ -7525,7 +7566,8 @@
 	},
 
 	copy: function(copyHistory) {
-	  var doc = new Doc(getLines(this, this.first, this.first + this.size), this.modeOption, this.first);
+	  var doc = new Doc(getLines(this, this.first, this.first + this.size),
+						this.modeOption, this.first, this.lineSep);
 	  doc.scrollTop = this.scrollTop; doc.scrollLeft = this.scrollLeft;
 	  doc.sel = this.sel;
 	  doc.extend = false;
@@ -7541,7 +7583,7 @@
 	  var from = this.first, to = this.first + this.size;
 	  if (options.from != null && options.from > from) from = options.from;
 	  if (options.to != null && options.to < to) to = options.to;
-	  var copy = new Doc(getLines(this, from, to), options.mode || this.modeOption, from);
+	  var copy = new Doc(getLines(this, from, to), options.mode || this.modeOption, from, this.lineSep);
 	  if (options.sharedHist) copy.history = this.history;
 	  (this.linked || (this.linked = [])).push({doc: copy, sharedHist: options.sharedHist});
 	  copy.linked = [{doc: this, isParent: true, sharedHist: options.sharedHist}];
@@ -7570,7 +7612,13 @@
 	iterLinkedDocs: function(f) {linkedDocs(this, f);},
 
 	getMode: function() {return this.mode;},
-	getEditor: function() {return this.cm;}
+	getEditor: function() {return this.cm;},
+
+	splitLines: function(str) {
+	  if (this.lineSep) return str.split(this.lineSep);
+	  return splitLinesAuto(str);
+	},
+	lineSeparator: function() { return this.lineSep || "\n"; }
   });
 
   // Public alias.
@@ -8269,7 +8317,12 @@
 	} while (child = child.parentNode);
   };
 
-  function activeElt() { return document.activeElement; }
+  function activeElt() {
+	var activeElement = document.activeElement;
+	while (activeElement && activeElement.root && activeElement.root.activeElement)
+	  activeElement = activeElement.root.activeElement;
+	return activeElement;
+  }
   // Older versions of IE throws unspecified error when touching
   // document.activeElement in some cases (during loading, in iframe)
   if (ie && ie_version < 11) activeElt = function() {
@@ -8371,7 +8424,7 @@
 
   // See if "".split is the broken IE version, if so, provide an
   // alternative way to split lines.
-  var splitLines = CodeMirror.splitLines = "\n\nb".split(/\n/).length != 3 ? function(string) {
+  var splitLinesAuto = CodeMirror.splitLines = "\n\nb".split(/\n/).length != 3 ? function(string) {
 	var pos = 0, result = [], l = string.length;
 	while (pos <= l) {
 	  var nl = string.indexOf("\n", pos);
@@ -8729,7 +8782,7 @@
 
   // THE END
 
-  CodeMirror.version = "5.4.1";
+  CodeMirror.version = "5.5.1";
 
   return CodeMirror;
 });
