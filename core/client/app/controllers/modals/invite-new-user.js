@@ -78,6 +78,10 @@ export default Ember.Controller.extend({
                         }
                     }).catch(function (errors) {
                         newUser.deleteRecord();
+                        // TODO: user model includes ValidationEngine mixin so
+                        // save is overridden in order to validate, we probably
+                        // want to use inline-validations here and only show an
+                        // alert if we have an actual error
                         self.get('notifications').showErrors(errors);
                     });
                 }
