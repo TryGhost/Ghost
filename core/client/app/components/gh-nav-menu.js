@@ -24,6 +24,10 @@ export default Ember.Component.extend({
 
         closeMobileMenu: function () {
             this.sendAction('closeMobileMenu');
+        },
+
+        closeMenus: function () {
+            this.sendAction('closeMenus');
         }
     }
 });
