@@ -118,10 +118,15 @@ describe('Settings Model', function () {
                 editedModel.attributes.value.should.equal(model2.value);
 
                 eventSpy.callCount.should.equal(4);
-                eventSpy.getCall(0).calledWith('settings.edited').should.be.true;
-                eventSpy.getCall(1).calledWith('settings.description.edited').should.be.true;
-                eventSpy.getCall(2).calledWith('settings.edited').should.be.true;
-                eventSpy.getCall(3).calledWith('settings.title.edited').should.be.true;
+
+                // We can't rely on the order of updates.
+                // We can however expect the first and third call to
+                // to be `settings.edited`.
+                eventSpy.firstCall.calledWith('settings.edited').should.be.true;
+                eventSpy.thirdCall.calledWith('settings.edited').should.be.true;
+
+                eventSpy.calledWith('settings.description.edited').should.be.true;
+                eventSpy.calledWith('settings.title.edited').should.be.true;
 
                 done();
             }).catch(done);
