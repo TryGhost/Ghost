@@ -1,20 +1,18 @@
-<section class="gh-flow-content">
-    <header>
-        <h1>Invite your team</h1>
-        <p>Ghost works best when shared with others. Collaborate, get feedback on your posts &amp; work together on ideas.</p>
-    </header>
+<header>
+    <h1>Invite your team</h1>
+    <p>Ghost works best when shared with others. Collaborate, get feedback on your posts &amp; work together on ideas.</p>
+</header>
 
-    <img class="gh-flow-faces" src="{{gh-path 'admin' 'img/users.png'}}" alt="" />
+<img class="gh-flow-faces" src="{{gh-path 'admin' 'img/users.png'}}" alt="" />
 
-    <form class="gh-flow-invite">
-        <label>Enter one email address per line, we’ll handle the rest! <i class="icon-mail"></i></label>
-        {{textarea class="gh-input" name="users" value=users required="required"}}
-    </form>
+<form class="gh-flow-invite">
+    <label>Enter one email address per line, we’ll handle the rest! <i class="icon-mail"></i></label>
+    {{textarea class="gh-input" name="users" value=users required="required"}}
+</form>
 
-    <button {{action 'invite'}} class="btn btn-default btn-lg btn-block {{buttonClass}}">
-        {{buttonText}}
-    </button>
-    {{#link-to "posts" class="gh-flow-skip"}}
-      I'll do this later, take me to my blog!
-    {{/link-to}}
-</section>
+<button {{action 'invite'}} class="btn btn-default btn-lg btn-block {{buttonClass}}">
+    {{buttonText}}
+</button>
+{{#link-to "posts" class="gh-flow-skip"}}
+    I'll do this later, take me to my blog!
+{{/link-to}}
