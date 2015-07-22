@@ -478,7 +478,9 @@ doAuth = function doAuth() {
     delete options[0];
     // No DB setup, but override the owner
     options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
-        result[val] = true;
+        if (val) {
+            result[val] = true;
+        }
     }));
 
     fixtureOps = getFixtureOps(options);

@@ -832,7 +832,7 @@ describe('Config', function () {
 
         it('displays warning when updateCheck exists and is falsy', function () {
             config.set({
-                updateCheck: undefined
+                updateCheck: false
             });
             // Run the test code
             config.checkDeprecated();
@@ -865,13 +865,14 @@ describe('Config', function () {
         it('displays warning when mail.fromaddress exists and is falsy', function () {
             config.set({
                 mail: {
-                    fromaddress: undefined
+                    fromaddress: false
                 }
             });
             // Run the test code
             config.checkDeprecated();
 
             logStub.calledOnce.should.be.true;
+
             logStub.calledWithMatch('mail.fromaddress').should.be.true;
 
             // Future tests: This is important here!
