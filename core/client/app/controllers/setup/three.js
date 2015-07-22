@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-var SetupThreeController = Ember.Controller.extend({
+export default Ember.Controller.extend({
     notifications: Ember.inject.service(),
     users: '',
     usersArray: Ember.computed('users', function () {
@@ -133,4 +133,3 @@ var SetupThreeController = Ember.Controller.extend({
     }
 });
 
-export default SetupThreeController;
