@@ -36,8 +36,7 @@ excerpt = function (options) {
         excerpt = excerpt.replace(/<\/?[^>]+>/gi, '');
         excerpt = excerpt.replace(/(\r\n|\n|\r)+/gm, ' ');
         excerpt = downsize(excerpt, truncateOptions);
-    }
-    else {
+    } else {
         excerpt = downsize(excerpt, truncateOptions);
         // Strip other html
         excerpt = excerpt.replace(/<\/?[^>]+>/gi, '');
