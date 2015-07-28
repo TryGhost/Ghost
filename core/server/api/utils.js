@@ -23,7 +23,7 @@ utils = {
     // ### Manual Default Options
     // These must be provided by the endpoint
     // browseDefaultOptions - valid for all browse api endpoints
-    browseDefaultOptions: ['page', 'limit', 'fields'],
+    browseDefaultOptions: ['page', 'limit', 'fields', 'filter'],
     // idDefaultOptions - valid whenever an id is valid
     idDefaultOptions: ['id'],
 
@@ -117,7 +117,7 @@ utils = {
                 name: {}
             },
             // these values are sanitised/validated separately
-            noValidation = ['data', 'context', 'include'],
+            noValidation = ['data', 'context', 'include', 'filter'],
             errors = [];
 
         _.each(options, function (value, key) {
