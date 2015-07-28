@@ -19,6 +19,7 @@ var _          = require('lodash'),
     validation = require('../../data/validation'),
     baseUtils  = require('./utils'),
     pagination = require('./pagination'),
+    gql        = require('ghost-gql'),
 
     ghostBookshelf;
 
@@ -278,14 +279,24 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options = this.processOptions(itemCollection, options);
 
         // Prefetch filter objects
-        return Promise.all(baseUtils.filtering.preFetch(filterObjects)).then(function doQuery() {
+        return Promise.all(baseUtils.oldFiltering.preFetch(filterObjects)).then(function doQuery() {
             // If there are `where` conditionals specified, add those to the query.
             if (options.where) {
                 itemCollection.query('where', options.where);
             }
 
+            // Apply FILTER
+            if (options.filter) {
+                options.filter = gql.parse(options.filter);
+                itemCollection.query(function (qb) {
+                    gql.knexify(qb, options.filter);
+                });
+
+                baseUtils.processGQLResult(itemCollection, options);
+            }
+
             // Setup filter joins / queries
-            baseUtils.filtering.query(filterObjects, itemCollection);
+            baseUtils.oldFiltering.query(filterObjects, itemCollection);
 
             // Handle related objects
             // TODO: this should just be done for all methods @ the API level
@@ -298,7 +309,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                 data[tableName] = response.collection.toJSON(options);
                 data.meta = {pagination: response.pagination};
 
-                return baseUtils.filtering.formatResponse(filterObjects, options, data);
+                return baseUtils.oldFiltering.formatResponse(filterObjects, options, data);
             });
         }).catch(errors.logAndThrowError);
     },

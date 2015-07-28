@@ -48,10 +48,10 @@ paginationUtils = {
     /**
      * ### Query
      * Apply the necessary parameters to paginate the query
-     * @param {Bookshelf.Model, Bookshelf.Collection} itemCollection
+     * @param {Bookshelf.Model|Bookshelf.Collection} itemCollection
      * @param {options} options
      */
-    query: function query(itemCollection, options) {
+    addLimitAndOffset: function addLimitAndOffset(itemCollection, options) {
         if (_.isNumber(options.limit)) {
             itemCollection
                 .query('limit', options.limit)
@@ -151,7 +151,10 @@ pagination = function pagination(bookshelf) {
             // Add any where or join clauses which need to be included with the aggregate query
 
             // Clone the base query & set up a promise to get the count of total items in the full set
-            countPromise = this.query().clone().count(tableName + '.' + idAttribute + ' as aggregate');
+            // Due to lack of support for count distinct, this is pretty complex.
+            countPromise = this.query().clone().select(
+                bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
+            );
 
             // Clone the base query into our collection
             collection._knex = this.query().clone();
@@ -160,12 +163,18 @@ pagination = function pagination(bookshelf) {
             // Add any where or join clauses which need to NOT be included with the aggregate query
 
             // Setup the pagination parameters so that we return the correct items from the set
-            paginationUtils.query(collection, options);
+            paginationUtils.addLimitAndOffset(collection, options);
 
             // Apply ordering options if they are present
             if (options.order && !_.isEmpty(options.order)) {
                 _.forOwn(options.order, function (direction, property) {
                     collection.query('orderBy', tableName + '.' + property, direction);
+                });
+            }
+
+            if (options.groups && !_.isEmpty(options.groups)) {
+                _.each(options.groups, function (group) {
+                    collection.query('groupBy', group);
                 });
             }
 
@@ -195,7 +204,7 @@ pagination = function pagination(bookshelf) {
                 // Format the collection & count result into `{collection: [], pagination: {}}`
                 return {
                     collection: results[0],
-                    pagination: paginationUtils.formatResponse(results[1][0].aggregate, options)
+                    pagination: paginationUtils.formatResponse(results[1][0] ? results[1][0].aggregate : 0, options)
                 };
             });
         }
