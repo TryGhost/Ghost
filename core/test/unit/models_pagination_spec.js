@@ -36,7 +36,7 @@ describe('pagination', function () {
             });
 
             it('returns correct pagination object for single page', function () {
-                formatResponse(5, {limit: 10, page: 1}).should.eql({
+                formatResponse(5, {limit: 10, offset: 0}).should.eql({
                     limit: 10,
                     next: null,
                     page: 1,
@@ -47,7 +47,7 @@ describe('pagination', function () {
             });
 
             it('returns correct pagination object for first page of many', function () {
-                formatResponse(44, {limit: 5, page: 1}).should.eql({
+                formatResponse(44, {limit: 5, offset: 0}).should.eql({
                     limit: 5,
                     next: 2,
                     page: 1,
@@ -58,7 +58,7 @@ describe('pagination', function () {
             });
 
             it('returns correct pagination object for middle page of many', function () {
-                formatResponse(44, {limit: 5, page: 9}).should.eql({
+                formatResponse(44, {limit: 5, offset: 40}).should.eql({
                     limit: 5,
                     next: null,
                     page: 9,
@@ -69,7 +69,7 @@ describe('pagination', function () {
             });
 
             it('returns correct pagination object for last page of many', function () {
-                formatResponse(44, {limit: 5, page: 3}).should.eql({
+                formatResponse(44, {limit: 5, offset: 10}).should.eql({
                     limit: 5,
                     next: 4,
                     page: 3,
@@ -112,27 +112,27 @@ describe('pagination', function () {
             it('should use defaults if no options are passed', function () {
                 parseOptions().should.eql({
                     limit: 15,
-                    page: 1
+                    offset: 0
                 });
             });
 
-            it('should accept numbers for limit and page', function () {
+            it('should accept numbers for limit and offset', function () {
                 parseOptions({
                     limit: 10,
-                    page: 2
+                    offset: 2
                 }).should.eql({
                         limit: 10,
-                        page: 2
+                        offset: 2
                     });
             });
 
             it('should use defaults if bad options are passed', function () {
                 parseOptions({
                     limit: 'thelma',
-                    page: 'louise'
+                    offset: 'louise'
                 }).should.eql({
                         limit: 15,
-                        page: 1
+                        offset: 0
                     });
             });
 
@@ -141,7 +141,7 @@ describe('pagination', function () {
                     limit: 'all'
                 }).should.eql({
                         limit: 'all',
-                        page: 1
+                        offset: 0
                     });
             });
         });
@@ -159,7 +159,7 @@ describe('pagination', function () {
             });
 
             it('should add query options if limit is set', function () {
-                query(collection, {limit: 5, page: 1});
+                query(collection, {limit: 5, offset: 0});
 
                 collection.query.calledTwice.should.be.true;
                 collection.query.firstCall.calledWith('limit', 5).should.be.true;

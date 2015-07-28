@@ -346,7 +346,7 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'status', 'staticPages', 'featured'],
+                findPage: ['offset', 'limit', 'status', 'staticPages', 'featured'],
                 add: ['importing']
             };
 

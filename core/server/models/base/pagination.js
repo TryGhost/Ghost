@@ -17,7 +17,7 @@ var _          = require('lodash'),
  * @property {Number|String} `limit` \- no. results per page (default: 15)
  */
 defaults = {
-    page: 1,
+    offset: 0,
     limit: 15
 };
 
@@ -40,7 +40,7 @@ paginationUtils = {
             options.limit = parseInt(options.limit, 10) || defaults.limit;
         }
 
-        options.page = parseInt(options.page, 10) || defaults.page;
+        options.offset = parseInt(options.offset, 10) || defaults.offset;
 
         return options;
     },
@@ -54,7 +54,7 @@ paginationUtils = {
         if (_.isNumber(options.limit)) {
             itemCollection
                 .query('limit', options.limit)
-                .query('offset', options.limit * (options.page - 1));
+                .query('offset', options.offset);
         }
     },
 
@@ -67,8 +67,9 @@ paginationUtils = {
      */
     formatResponse: function formatResponse(totalItems, options) {
         var calcPages = Math.ceil(totalItems / options.limit) || 0,
+            calcCurrentPage = (options.offset / options.limit) + 1 || 1,
             pagination = {
-                page:  options.page || defaults.page,
+                page: calcCurrentPage,
                 limit: options.limit,
                 pages: calcPages === 0 ? 1 : calcPages,
                 total: totalItems,

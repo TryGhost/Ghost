@@ -21,7 +21,7 @@ utils = {
     // ### Manual Default Options
     // These must be provided by the endpoint
     // browseDefaultOptions - valid for all browse api endpoints
-    browseDefaultOptions: ['page', 'limit'],
+    browseDefaultOptions: ['offset', 'limit'],
     // idDefaultOptions - valid whenever an id is valid
     idDefaultOptions: ['id'],
 
