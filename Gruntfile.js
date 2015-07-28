@@ -270,10 +270,20 @@ var _              = require('lodash'),
                     src: ['core/test/unit'],
                     options: {
                         mask: '**/*_spec.js',
-                        coverageFolder: 'core/test/coverage',
+                        coverageFolder: 'core/test/coverage/unit',
                         mochaOptions: ['--timeout=15000'],
                         excludes: ['core/client/**']
                     }
+                },
+                coverage_integration: {
+                    src: ['core/test/integration/api'],
+                    options: {
+                        coverageFolder: 'core/test/coverage/integration',
+                        mask: '**/*_spec.js',
+                        mochaOptions: ['--timeout=15000'],
+                        excludes: ['core/client/**', 'core/server/built', 'core/server/apps', 'core/server/config', 'core/server/data']
+                    }
+
                 }
             },
 
@@ -780,6 +790,10 @@ var _              = require('lodash'),
 
         grunt.registerTask('coverage', 'Generate unit and integration (mocha) tests coverage report',
             ['test-setup', 'mocha_istanbul:coverage']
+        );
+
+        grunt.registerTask('coverage-integration', 'Generate unit and integration tests coverage report',
+            ['test-setup', 'mocha_istanbul:coverage_integration']
         );
 
         // #### Master Warning *(Utility Task)*
