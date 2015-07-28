@@ -52,6 +52,20 @@ filtering = {
                 .query('where', 'roles_users.role_id', '=', filterObjects.roles.id);
         }
     },
+    joins: function joins(joinTables, itemCollection) {
+        if (joinTables && joinTables.indexOf('tags') > -1) {
+            itemCollection
+                .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
+                .query('join', 'tags', 'posts_tags.tag_id', '=', 'tags.id')
+                .query('groupBy', 'posts.id')
+                .query('orderByRaw', 'count(tags.id) DESC');
+        }
+
+        if (joinTables && joinTables.indexOf('author') > -1) {
+            itemCollection
+                .query('join', 'users as author', 'author.id', '=', 'posts.author_id');
+        }
+    },
     formatResponse: function formatResponse(filterObjects, options, data) {
         if (!_.isEmpty(filterObjects)) {
             data.meta.filters = {};

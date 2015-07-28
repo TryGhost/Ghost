@@ -358,7 +358,7 @@ Post = ghostBookshelf.Model.extend({
             if (!_.isBoolean(options.staticPages)) {
                 options.staticPages = _.contains(['true', '1'], options.staticPages);
             }
-            options.where.page = options.staticPages;
+            options.where['posts.page'] = options.staticPages;
         }
 
         if (_.has(options, 'featured')) {
@@ -366,7 +366,7 @@ Post = ghostBookshelf.Model.extend({
             if (!_.isBoolean(options.featured)) {
                 options.featured = _.contains(['true', '1'], options.featured);
             }
-            options.where.featured = options.featured;
+            options.where['posts.featured'] = options.featured;
         }
 
         // Unless `all` is passed as an option, filter on
@@ -374,7 +374,7 @@ Post = ghostBookshelf.Model.extend({
         if (options.status !== 'all') {
             // make sure that status is valid
             options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
-            options.where.status = options.status;
+            options.where['posts.status'] = options.status;
         }
 
         return options;
@@ -393,7 +393,7 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'columns', 'status', 'staticPages', 'featured'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'status', 'staticPages', 'featured'],
                 add: ['importing']
             };
 

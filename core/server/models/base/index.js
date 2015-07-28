@@ -19,6 +19,7 @@ var _          = require('lodash'),
     validation = require('../../data/validation'),
     baseUtils  = require('./utils'),
     pagination = require('./pagination'),
+    gql        = require('ghost-gql'),
 
     ghostBookshelf;
 
@@ -281,6 +282,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             // If there are `where` conditionals specified, add those to the query.
             if (options.where) {
                 itemCollection.query('where', options.where);
+            }
+
+            // Apply FILTER
+            if (options.filter) {
+                options.filter = gql.parse(options.filter);
+                itemCollection.query(function (qb) {
+                    gql.knexify(qb, options.filter);
+                });
+
+                baseUtils.filtering.joins(options.filter.joins, itemCollection);
             }
 
             // Setup filter joins / queries
