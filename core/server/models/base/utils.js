@@ -3,7 +3,26 @@
  * Parts of the model code which can be split out and unit tested
  */
 var _               = require('lodash'),
-    filtering;
+    collectionQuery,
+    filtering,
+    addPostCount;
+
+addPostCount = function addPostCount(options, itemCollection) {
+    if (options.include && options.include.indexOf('post_count') > -1) {
+        itemCollection.query('columns', 'tags.*', function (qb) {
+            qb.count('posts_tags.post_id').from('posts_tags').whereRaw('tag_id = tags.id').as('post_count');
+        });
+
+        options.withRelated = _.pull([].concat(options.withRelated), 'post_count');
+        options.include = _.pull([].concat(options.include), 'post_count');
+    }
+};
+
+collectionQuery = {
+    count: function count(collection, options) {
+        addPostCount(options, collection);
+    }
+};
 
 filtering = {
     preFetch: function preFetch(filterObjects) {
@@ -48,3 +67,5 @@ filtering = {
 };
 
 module.exports.filtering = filtering;
+module.exports.collectionQuery = collectionQuery;
+module.exports.addPostCount = addPostCount;
