@@ -19,6 +19,25 @@ describe('Post API', function () {
 
     should.exist(PostAPI);
 
+    it('browse can fetch featured posts', function (done) {
+        PostAPI.browse({context: {user: 1}, featured: true}).then(function (results) {
+            should.exist(results.posts);
+            results.posts.length.should.eql(4);
+            results.posts[0].featured.should.eql(true);
+
+            done();
+        }).catch(done);
+    });
+
+    it('browse can exclude featured posts', function (done) {
+        PostAPI.browse({context: {user: 1}, status: 'all', featured: false}).then(function (results) {
+            should.exist(results.posts);
+            results.posts.length.should.eql(1);
+
+            done();
+        }).catch(done);
+    });
+
     it('can browse', function (done) {
         PostAPI.browse().then(function (results) {
             should.exist(results);
