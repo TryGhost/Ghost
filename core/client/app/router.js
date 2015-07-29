@@ -11,7 +11,7 @@ var Router = Ember.Router.extend({
     clearNotifications: Ember.on('didTransition', function () {
         var notifications = this.get('notifications');
 
-        notifications.closePassive();
+        notifications.closeNotifications();
         notifications.displayDelayed();
     })
 });

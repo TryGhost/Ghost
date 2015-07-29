@@ -2,12 +2,21 @@
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content fade-in">
             <form id="reset" class="gh-signin" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
-                <div class="form-group">
-                    {{input value=newPassword class="gh-input password" type="password" placeholder="Password" name="newpassword" autofocus="autofocus" }}
-                </div>
-                <div class="form-group">
-                    {{input value=ne2Password class="gh-input password" type="password" placeholder="Confirm Password" name="ne2password" }}
-                </div>
+                {{#gh-form-group errors=errors property="newPassword"}}
+                    {{input value=newPassword class="gh-input password" type="password" placeholder="Password" name="newpassword" autofocus="autofocus" focusOut=(action "validate" "newPassword")}}
+                    <div class="pw-strength">
+                        <div class="pw-strength-dot"></div>
+                        <div class="pw-strength-dot"></div>
+                        <div class="pw-strength-dot"></div>
+                        <div class="pw-strength-dot"></div>
+                        <div class="pw-strength-dot <!--pw-strength-activedot-->"></div>
+                    </div>
+                    {{gh-error-message errors=errors property="newPassword"}}
+                {{/gh-form-group}}
+                {{#gh-form-group errors=errors property="ne2Password"}}
+                    {{input value=ne2Password class="gh-input password" type="password" placeholder="Confirm Password" name="ne2password" focusOut=(action "validate" "ne2Password")}}
+                    {{gh-error-message errors=errors property="ne2Password"}}
+                {{/gh-form-group}}
                 <button class="btn btn-blue btn-block" type="submit" disabled={{submitting}}>Reset Password</button>
             </form>
         </section>

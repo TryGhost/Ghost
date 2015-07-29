@@ -411,9 +411,9 @@ CasperTest.Routines = (function () {
 
             casper.captureScreenshot('setting_up2.png');
 
-            casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
+            casper.waitForSelectorTextChange('.gh-alert-success', function onSuccess() {
                 var errorText = casper.evaluate(function () {
-                    return document.querySelector('.notification-error').innerText;
+                    return document.querySelector('.gh-alert').innerText;
                 });
                 casper.echoConcise('Setup failed. Error text: ' + errorText);
             }, function onTimeout() {

@@ -1,136 +1,92 @@
 import Ember from 'ember';
-import Notification from 'ghost/models/notification';
 
 export default Ember.Service.extend({
     delayedNotifications: Ember.A(),
     content: Ember.A(),
-    timeout: 3000,
 
-    pushObject: function (object) {
-        // object can be either a DS.Model or a plain JS object, so when working with
-        // it, we need to handle both cases.
+    alerts: Ember.computed.filter('content', function (notification) {
+        var status = Ember.get(notification, 'status');
+        return status === 'alert';
+    }),
 
-        // make sure notifications have all the necessary properties set.
-        if (typeof object.toJSON === 'function') {
-            // working with a DS.Model
-
-            if (object.get('location') === '') {
-                object.set('location', 'bottom');
-            }
-        } else {
-            if (!object.location) {
-                object.location = 'bottom';
-            }
-        }
-
-        this._super(object);
-    },
+    notifications: Ember.computed.filter('content', function (notification) {
+        var status = Ember.get(notification, 'status');
+        return status === 'notification';
+    }),
 
     handleNotification: function (message, delayed) {
-        if (typeof message.toJSON === 'function') {
-            // If this is a persistent message from the server, treat it as html safe
-            if (message.get('status') === 'persistent') {
-                message.set('message', message.get('message').htmlSafe());
-            }
+        // If this is an alert message from the server, treat it as html safe
+        if (typeof message.toJSON === 'function' && message.get('status') === 'alert') {
+            message.set('message', message.get('message').htmlSafe());
+        }
 
-            if (!message.get('status')) {
-                message.set('status', 'passive');
-            }
-        } else {
-            if (!message.status) {
-                message.status = 'passive';
-            }
+        if (!Ember.get(message, 'status')) {
+            Ember.set(message, 'status', 'notification');
         }
 
         if (!delayed) {
             this.get('content').pushObject(message);
         } else {
-            this.delayedNotifications.pushObject(message);
+            this.get('delayedNotifications').pushObject(message);
         }
     },
 
-    showError: function (message, options) {
+    showAlert: function (message, options) {
         options = options || {};
 
-        if (!options.doNotClosePassive) {
-            this.closePassive();
-        }
-
         this.handleNotification({
-            type: 'error',
-            message: message
+            message: message,
+            status: 'alert',
+            type: options.type
         }, options.delayed);
     },
 
+    showNotification: function (message, options) {
+        options = options || {};
+
+        if (!options.doNotCloseNotifications) {
+            this.closeNotifications();
+        }
+
+        this.handleNotification({
+            message: message,
+            status: 'notification',
+            type: options.type
+        }, options.delayed);
+    },
+
+    // TODO: review whether this can be removed once no longer used by validations
     showErrors: function (errors, options) {
         options = options || {};
 
-        if (!options.doNotClosePassive) {
-            this.closePassive();
+        if (!options.doNotCloseNotifications) {
+            this.closeNotifications();
         }
 
         for (var i = 0; i < errors.length; i += 1) {
-            this.showError(errors[i].message || errors[i], {doNotClosePassive: true});
+            this.showNotification(errors[i].message || errors[i], {type: 'error', doNotCloseNotifications: true});
         }
     },
 
     showAPIError: function (resp, options) {
         options = options || {};
+        options.type = options.type || 'error';
 
-        if (!options.doNotClosePassive) {
-            this.closePassive();
+        if (!options.doNotCloseNotifications) {
+            this.closeNotifications();
         }
 
         options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
 
         if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.error) {
-            this.showError(resp.jqXHR.responseJSON.error, options);
+            this.showAlert(resp.jqXHR.responseJSON.error, options);
         } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
             this.showErrors(resp.jqXHR.responseJSON.errors, options);
         } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.message) {
-            this.showError(resp.jqXHR.responseJSON.message, options);
+            this.showAlert(resp.jqXHR.responseJSON.message, options);
         } else {
-            this.showError(options.defaultErrorText, {doNotClosePassive: true});
+            this.showAlert(options.defaultErrorText, {type: options.type, doNotCloseNotifications: true});
         }
-    },
-
-    showInfo: function (message, options) {
-        options = options || {};
-
-        if (!options.doNotClosePassive) {
-            this.closePassive();
-        }
-
-        this.handleNotification({
-            type: 'info',
-            message: message
-        }, options.delayed);
-    },
-
-    showSuccess: function (message, options) {
-        options = options || {};
-
-        if (!options.doNotClosePassive) {
-            this.closePassive();
-        }
-
-        this.handleNotification({
-            type: 'success',
-            message: message
-        }, options.delayed);
-    },
-
-    showWarn: function (message, options) {
-        options = options || {};
-
-        if (!options.doNotClosePassive) {
-            this.closePassive();
-        }
-
-        this.handleNotification({
-            type: 'warn',
-            message: message
-        }, options.delayed);
     },
 
     displayDelayed: function () {
@@ -145,7 +101,7 @@ export default Ember.Service.extend({
     closeNotification: function (notification) {
         var content = this.get('content');
 
-        if (notification instanceof Notification) {
+        if (typeof notification.toJSON === 'function') {
             notification.deleteRecord();
             notification.save().finally(function () {
                 content.removeObject(notification);
@@ -155,12 +111,8 @@ export default Ember.Service.extend({
         }
     },
 
-    closePassive: function () {
-        this.set('content', this.get('content').rejectBy('status', 'passive'));
-    },
-
-    closePersistent: function () {
-        this.set('content', this.get('content').rejectBy('status', 'persistent'));
+    closeNotifications: function () {
+        this.set('content', this.get('content').rejectBy('status', 'notification'));
     },
 
     closeAll: function () {

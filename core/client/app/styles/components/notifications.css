@@ -63,6 +63,16 @@
     color: var(--red);
 }
 
+.gh-notification-passive {
+    animation: fade-out;
+    animation-delay: 5s;
+    animation-iteration-count: 1;
+}
+
+.gh-notification-passive:hover {
+    animation: fade-in;
+}
+
 /* Red notification
 /* ---------------------------------------------------------- */
 

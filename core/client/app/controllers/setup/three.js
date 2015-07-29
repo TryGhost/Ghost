@@ -1,7 +1,9 @@
 import Ember from 'ember';
+import DS from 'ember-data';
 
 export default Ember.Controller.extend({
     notifications: Ember.inject.service(),
+    errors: DS.Errors.create(),
     users: '',
     usersArray: Ember.computed('users', function () {
         var users = this.get('users').split('\n').filter(function (email) {
@@ -62,9 +64,10 @@ export default Ember.Controller.extend({
             var self = this,
                 validationErrors = this.get('validateUsers'),
                 users = this.get('usersArray'),
-                errorMessages,
                 notifications = this.get('notifications'),
                 invitationsString;
+
+            this.get('errors').clear();
 
             if (validationErrors === true && users.length > 0) {
                 this.get('authorRole').then(function (authorRole) {
@@ -104,30 +107,28 @@ export default Ember.Controller.extend({
                         if (erroredEmails.length > 0) {
                             message = 'Failed to send ' + erroredEmails.length + ' invitations: ';
                             message += erroredEmails.join(', ');
-                            notifications.showError(message, {delayed: successCount > 0});
+                            notifications.showAlert(message, {type: 'error', delayed: successCount > 0});
                         }
 
                         if (successCount > 0) {
                             // pluralize
                             invitationsString = successCount > 1 ? 'invitations' : 'invitation';
 
-                            notifications.showSuccess(successCount + ' ' + invitationsString + ' sent!', {delayed: true});
+                            notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true});
                             self.transitionTo('posts.index');
                         }
                     });
                 });
             } else if (users.length === 0) {
-                notifications.showError('No users to invite.');
+                this.get('errors').add('users', 'No users to invite.');
             } else {
-                errorMessages = validationErrors.map(function (error) {
+                validationErrors.forEach(function (error) {
                     // Only one error type here so far, but one day the errors might be more detailed
                     switch (error.error) {
                     case 'email':
-                        return {message: error.user + ' is not a valid email.'};
+                        self.get('errors').add('users', error.user + ' is not a valid email.');
                     }
                 });
-
-                notifications.showErrors(errorMessages);
             }
         }
     }

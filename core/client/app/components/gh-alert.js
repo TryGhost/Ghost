@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
     tagName: 'article',
-    classNames: ['gh-alert', 'gh-alert-blue'],
+    classNames: ['gh-alert'],
     classNameBindings: ['typeClass'],
 
     notifications: Ember.inject.service(),
@@ -10,22 +10,18 @@ export default Ember.Component.extend({
     typeClass: Ember.computed(function () {
         var classes = '',
             message = this.get('message'),
-            type,
-            dismissible;
+            type = Ember.get(message, 'type'),
+            typeMapping;
 
-        // Check to see if we're working with a DS.Model or a plain JS object
-        if (typeof message.toJSON === 'function') {
-            type = message.get('type');
-            dismissible = message.get('dismissible');
-        } else {
-            type = message.type;
-            dismissible = message.dismissible;
-        }
+        typeMapping = {
+            success: 'green',
+            error: 'red',
+            warn: 'yellow',
+            info: 'blue'
+        };
 
-        classes += 'notification-' + type;
-
-        if (type === 'success' && dismissible !== false) {
-            classes += ' notification-passive';
+        if (typeMapping[type] !== undefined) {
+            classes += 'gh-alert-' + typeMapping[type];
         }
 
         return classes;

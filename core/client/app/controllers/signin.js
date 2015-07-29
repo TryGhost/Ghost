@@ -3,12 +3,13 @@ import ValidationEngine from 'ghost/mixins/validation-engine';
 import {request as ajax} from 'ic-ajax';
 
 export default Ember.Controller.extend(ValidationEngine, {
-    validationType: 'signin',
-
     submitting: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+
+    // ValidationEngine settings
+    validationType: 'signin',
 
     actions: {
         authenticate: function () {
@@ -30,12 +31,12 @@ export default Ember.Controller.extend(ValidationEngine, {
             // browsers and password managers that don't send proper events on autofill
             $('#login').find('input').trigger('change');
 
-            this.validate({format: false}).then(function () {
-                self.get('notifications').closePassive();
+            this.validate().then(function () {
+                self.get('notifications').closeNotifications();
                 self.send('authenticate');
-            }).catch(function (errors) {
-                if (errors) {
-                    self.get('notifications').showErrors(errors);
+            }).catch(function (error) {
+                if (error) {
+                    self.get('notifications').showAPIError(error);
                 }
             });
         },
@@ -45,26 +46,24 @@ export default Ember.Controller.extend(ValidationEngine, {
                 notifications = this.get('notifications'),
                 self = this;
 
-            if (!email) {
-                return notifications.showError('Enter email address to reset password.');
-            }
+            this.validate({property: 'identification'}).then(function () {
+                self.set('submitting', true);
 
-            self.set('submitting', true);
-
-            ajax({
-                url: self.get('ghostPaths.url').api('authentication', 'passwordreset'),
-                type: 'POST',
-                data: {
-                    passwordreset: [{
-                        email: email
-                    }]
-                }
-            }).then(function () {
-                self.set('submitting', false);
-                notifications.showSuccess('Please check your email for instructions.');
-            }).catch(function (resp) {
-                self.set('submitting', false);
-                notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
+                ajax({
+                    url: self.get('ghostPaths.url').api('authentication', 'passwordreset'),
+                    type: 'POST',
+                    data: {
+                        passwordreset: [{
+                            email: email
+                        }]
+                    }
+                }).then(function () {
+                    self.set('submitting', false);
+                    notifications.showAlert('Please check your email for instructions.', {type: 'info'});
+                }).catch(function (resp) {
+                    self.set('submitting', false);
+                    notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
+                });
             });
         }
     }

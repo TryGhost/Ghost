@@ -20,7 +20,7 @@ var SettingValidator = BaseValidator.create({
     },
     password: function (model) {
         var isPrivate = model.get('isPrivate'),
-            password = this.get('password');
+            password = model.get('password');
 
         if (isPrivate && password === '') {
             model.get('errors').add('password', 'Password must be supplied');

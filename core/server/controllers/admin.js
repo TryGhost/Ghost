@@ -36,7 +36,7 @@ adminControllers = {
                 type: 'upgrade',
                 location: 'settings-about-upgrade',
                 dismissible: false,
-                status: 'persistent',
+                status: 'alert',
                 message: 'Ghost ' + updateVersion + ' is available! Hot Damn. <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a> to upgrade.'
             };
 

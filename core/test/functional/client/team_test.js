@@ -71,7 +71,7 @@ CasperTest.begin('Users screen is correct', 9, function suite(test) {
 });
 
 // ### User settings tests
-CasperTest.begin('Can save settings', 7, function suite(test) {
+CasperTest.begin('Can save settings', 5, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('team.user', function testTitleAndUrl() {
         test.assertTitle('Team - User - Test Blog', 'Ghost Admin title is correct');
         test.assertUrlMatch(/ghost\/team\/test\/$/, 'team.user has correct URL');
@@ -96,21 +96,15 @@ CasperTest.begin('Can save settings', 7, function suite(test) {
     });
 
     casper.thenClick('.btn-blue');
-    casper.waitFor(function successNotification() {
-        return this.evaluate(function () {
-            return document.querySelectorAll('.gh-notification').length > 0;
-        });
+    casper.waitForResource(/\/users\/\d\/\?include=roles/, function onSuccess() {
+        test.assert(true, 'Saving the user pane triggered a save request');
     }, function doneWaiting() {
-        test.pass('Waited for notification');
-    }, casper.failOnTimeout(test, 'Saving the user pane did not result in a notification'));
+        test.fail('Saving the user pane did not trigger a save request');
+    });
 
     casper.then(function checkUserWasSaved() {
         casper.removeListener('resource.requested', handleUserRequest);
     });
-
-    casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assert(true, 'Got success notification');
-    }, casper.failOnTimeout(test, 'No success notification :('));
 
     casper.thenClick('.gh-nav-settings-general').then(function testTransitionToGeneral() {
         casper.waitForSelector(generalTabDetector, function then() {
@@ -122,21 +116,16 @@ CasperTest.begin('Can save settings', 7, function suite(test) {
             casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
     });
 
-    casper.thenClick('.btn-blue').waitFor(function successNotification() {
-        return this.evaluate(function () {
-            return document.querySelectorAll('.gh-notification').length > 0;
-        });
+    casper.thenClick('.btn-blue');
+    casper.waitForResource(/\/users\/\d\/\?include=roles/, function onSuccess() {
+        test.assert(true, 'Saving the user pane triggered a save request');
     }, function doneWaiting() {
-        test.pass('Waited for notification');
-    }, casper.failOnTimeout(test, 'Saving the general pane did not result in a notification'));
+        test.fail('Saving the user pane did not trigger a save request');
+    });
 
     casper.then(function checkSettingsWereSaved() {
         casper.removeListener('resource.requested', handleSettingsRequest);
     });
-
-    casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assert(true, 'Got success notification');
-    }, casper.failOnTimeout(test, 'No success notification :('));
 
     CasperTest.beforeDone(function () {
         casper.removeListener('resource.requested', handleUserRequest);
@@ -203,7 +192,6 @@ CasperTest.begin('User settings screen change slug handles duplicate slug', 4, f
     });
 });
 
-// TODO: Change number of tests back to 6 once the commented-out tests are fixed
 CasperTest.begin('User settings screen validates email', 4, function suite(test) {
     var email;
 
@@ -220,21 +208,14 @@ CasperTest.begin('User settings screen validates email', 4, function suite(test)
 
     casper.then(function setEmailToInvalid() {
         var brokenEmail = email.replace('.', '-');
-
-        casper.fillSelectors('.user-profile', {
-            '#user-email': brokenEmail
-        }, false);
+        this.fillAndSave('.user-profile', {
+            email: brokenEmail
+        });
     });
 
-    casper.thenClick('.btn-blue');
-
-    casper.waitForResource('/team/');
-
-    // TODO: Re-implement after inlin-errors is merged
-    // casper.waitForSelector('.notification-error', function onSuccess() {
-    //     test.assert(true, 'Got error notification');
-    //     test.assertSelectorDoesntHaveText('.notification-error', '[object Object]', 'notification text is not broken');
-    // }, casper.failOnTimeout(test, 'No error notification :('));
+    casper.waitForText('Please supply a valid email address', function onSuccess() {
+        test.assert(true, 'Invalid email error was shown');
+    }, casper.failOnTimeout(test, 'Invalid email error was not shown'));
 
     casper.then(function resetEmailToValid() {
         casper.fillSelectors('.user-profile', {
@@ -242,14 +223,13 @@ CasperTest.begin('User settings screen validates email', 4, function suite(test)
         }, false);
     });
 
+    casper.then(function checkEmailErrorWasCleared() {
+        test.assertTextDoesntExist('Please supply a valid email address', 'Invalid email error was not cleared');
+    });
+
     casper.thenClick('.view-actions .btn-blue');
 
     casper.waitForResource(/users/);
-
-    casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assert(true, 'Got success notification');
-        test.assertSelectorDoesntHaveText('.notification-success', '[object Object]', 'notification text is not broken');
-    }, casper.failOnTimeout(test, 'No success notification :('));
 });
 
 // TODO: user needs to be loaded whenever it is edited (multi user)
@@ -278,8 +258,7 @@ CasperTest.begin('User settings screen shows remaining characters for Bio proper
     });
 });
 
-// TODO: Change number of tests back to 3 once the commented-out tests are fixed
-CasperTest.begin('Ensure user bio field length validation', 2, function suite(test) {
+CasperTest.begin('Ensure user bio field length validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('team.user', function testTitleAndUrl() {
         test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/team\/test\/$/, 'Ghost doesn\'t require login this time');
@@ -293,14 +272,12 @@ CasperTest.begin('Ensure user bio field length validation', 2, function suite(te
 
     casper.thenClick('.view-actions .btn-blue');
 
-    // TODO: re-implement after inline-errors is complete
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'is too long', '.notification-error text is correct');
-    // }, casper.failOnTimeout(test, 'Bio field length error did not appear', 2000));
+    casper.waitForText('Bio is too long', function onSuccess() {
+        test.assert(true, 'Bio too long error was shown');
+    }, casper.failOnTimeout(test, 'Bio too long error was not shown'));
 });
 
-// TODO: Change number of tests back to 3 once the commented-out tests are fixed
-CasperTest.begin('Ensure user url field validation', 2, function suite(test) {
+CasperTest.begin('Ensure user url field validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('team.user', function testTitleAndUrl() {
         test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/team\/test\/$/, 'Ghost doesn\'t require login this time');
@@ -314,14 +291,12 @@ CasperTest.begin('Ensure user url field validation', 2, function suite(test) {
 
     casper.thenClick('.view-actions .btn-blue');
 
-    // TODO: re-implement after inline-errors is complete
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'not a valid url', '.notification-error text is correct');
-    // }, casper.failOnTimeout(test, 'Url validation error did not appear', 2000));
+    casper.waitForText('Website is not a valid url', function onSuccess() {
+        test.assert(true, 'Website invalid error was shown');
+    }, casper.failOnTimeout(test, 'Website invalid error was not shown'));
 });
 
-// TODO: Change number of tests back to 3 once the commented-out tests are fixed
-CasperTest.begin('Ensure user location field length validation', 2, function suite(test) {
+CasperTest.begin('Ensure user location field length validation', 3, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('team.user', function testTitleAndUrl() {
         test.assertTitle('Team - User - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/team\/test\/$/, 'Ghost doesn\'t require login this time');
@@ -335,8 +310,7 @@ CasperTest.begin('Ensure user location field length validation', 2, function sui
 
     casper.thenClick('.view-actions .btn-blue');
 
-    // TODO: re-implement after inline-errors is complete
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'is too long', '.notification-error text is correct');
-    // }, casper.failOnTimeout(test, 'Location field length error did not appear', 2000));
+    casper.waitForText('Location is too long', function onSuccess() {
+        test.assert(true, 'Location too long error was shown');
+    }, casper.failOnTimeout(test, 'Location too long error was not shown'));
 });

@@ -8,6 +8,7 @@
 <form class="gh-flow-invite">
     <label>Enter one email address per line, we’ll handle the rest! <i class="icon-mail"></i></label>
     {{textarea class="gh-input" name="users" value=users required="required"}}
+    {{gh-error-message errors=errors property="users"}}
 </form>
 
 <button {{action 'invite'}} class="btn btn-default btn-lg btn-block {{buttonClass}}">
