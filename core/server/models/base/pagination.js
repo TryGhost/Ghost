@@ -3,6 +3,7 @@
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
 var _          = require('lodash'),
     Promise    = require('bluebird'),
+    baseUtils  = require('./utils'),
 
     defaults,
     paginationUtils,
@@ -140,28 +141,36 @@ pagination = function pagination(bookshelf) {
             // Get the table name and idAttribute for this model
             var tableName = _.result(this.constructor.prototype, 'tableName'),
                 idAttribute = _.result(this.constructor.prototype, 'idAttribute'),
-            // Create a new collection for running `this` query, ensuring we're definitely using collection,
-            // rather than model
+            // Create a new collection for running `this` query, ensuring we're using collection, rather than model
                 collection = this.constructor.collection(),
-            // Clone the base query & set up a promise to get the count of total items in the full set
-                countPromise = this.query().clone().count(tableName + '.' + idAttribute + ' as aggregate'),
+                countPromise,
                 collectionPromise,
-                self;
+                self = this;
+
+            // #### Pre count clauses
+            // Add any where or join clauses which need to be included with the aggregate query
+
+            // Clone the base query & set up a promise to get the count of total items in the full set
+            countPromise = this.query().clone().count(tableName + '.' + idAttribute + ' as aggregate');
 
             // Clone the base query into our collection
             collection._knex = this.query().clone();
+
+            // #### Post count clauses
+            // Add any where or join clauses which need to NOT be included with the aggregate query
 
             // Setup the pagination parameters so that we return the correct items from the set
             paginationUtils.query(collection, options);
 
             // Apply ordering options if they are present
-            // This is an optimisation, adding order before cloning for the count query would mean the count query
-            // was also ordered, when that is unnecessary.
-            if (options.order) {
+            if (options.order && !_.isEmpty(options.order)) {
                 _.forOwn(options.order, function (direction, property) {
                     collection.query('orderBy', tableName + '.' + property, direction);
                 });
             }
+
+            // Apply count options if they are present
+            baseUtils.collectionQuery.count(collection, options);
 
             this.resetQuery();
             if (this.relatedData) {
@@ -169,7 +178,6 @@ pagination = function pagination(bookshelf) {
             }
 
             // ensure that our model (self) gets the correct events fired upon it
-            self = this;
             collection
                 .on('fetching', function (collection, columns, options) {
                     return self.triggerThen('fetching:collection', collection, columns, options);
