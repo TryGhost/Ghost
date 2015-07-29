@@ -21,7 +21,7 @@ CasperTest.begin('Settings screen is correct', 5, function suite(test) {
 });
 
 // ## General settings tests
-CasperTest.begin('General settings pane is correct', 7, function suite(test) {
+CasperTest.begin('General settings pane is correct', 4, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
     });
@@ -29,9 +29,6 @@ CasperTest.begin('General settings pane is correct', 7, function suite(test) {
     function assertImageUploaderModalThenClose() {
         test.assertSelectorHasText('.description', 'Add image', '.description has the correct text');
         casper.click('.modal-container .js-button-accept');
-        casper.waitForSelector('.notification-success', function onSuccess() {
-            test.assert(true, 'Got success notification');
-        }, casper.failOnTimeout(test, 'No success notification'));
     }
 
     // Ensure image upload modals display correctly
@@ -65,27 +62,21 @@ CasperTest.begin('General settings pane is correct', 7, function suite(test) {
 
     // Ensure can save
     casper.waitForSelector('header .btn-blue').then(function () {
-        casper.thenClick('header .btn-blue').waitFor(function successNotification() {
-            return this.evaluate(function () {
-                return document.querySelectorAll('.gh-notification').length > 0;
-            });
+        casper.thenClick('header .btn-blue');
+        casper.waitForResource('settings/', function onSuccess() {
+            test.assert(true, 'Settings were saved');
         }, function doneWaiting() {
-            test.pass('Waited for notification');
-        }, casper.failOnTimeout(test, 'Saving the general pane did not result in a notification'));
+            test.fail('Settings were not saved');
+        });
     });
 
-    casper.then(function checkSettingsWereSaved() {
+    casper.then(function stopListeningForRequests() {
         casper.removeListener('resource.requested', handleSettingsRequest);
     });
-
-    casper.waitForSelector('.notification-success', function onSuccess() {
-        test.assert(true, 'Got success notification');
-    }, casper.failOnTimeout(test, 'No success notification :('));
 });
 
 // ## General settings validations tests
-// // TODO: Change number of tests back to 6 once the commented-out tests are fixed
-CasperTest.begin('General settings validation is correct', 4, function suite(test) {
+CasperTest.begin('General settings validation is correct', 7, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.general', function testTitleAndUrl() {
         test.assertTitle('Settings - General - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/settings\/general\/$/, 'Landed on the correct URL');
@@ -96,24 +87,18 @@ CasperTest.begin('General settings validation is correct', 4, function suite(tes
         'general[title]': new Array(152).join('a')
     });
 
-    // TODO: re-implement once #5933 is merged
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'too long', '.notification-error has correct text');
-    // }, casper.failOnTimeout(test, 'Blog title length error did not appear'), 2000);
-
-    casper.thenClick('.gh-notification-close');
+    casper.waitForText('Title is too long', function onSuccess() {
+        test.assert(true, 'Blog title length error was shown');
+    }, casper.failOnTimeout(test, 'Blog title length error did not appear'));
 
     // Ensure general blog description field length validation
     casper.fillAndSave('form#settings-general', {
         'general[description]': new Array(202).join('a')
     });
 
-    // TODO: re-implement once #5933 is merged
-    // casper.waitForSelectorTextChange('.notification-error', function onSuccess() {
-    //     test.assertSelectorHasText('.notification-error', 'too long', '.notification-error has correct text');
-    // }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
-
-    casper.thenClick('.gh-notification-close');
+    casper.waitForText('Description is too long', function onSuccess() {
+        test.assert(true, 'Blog description length error was shown');
+    }, casper.failOnTimeout(test, 'Blog description length error did not appear'));
 
     // TODO move these to ember tests, note: async issues - field will be often be null without a casper.wait
     // Check postsPerPage autocorrect
@@ -136,4 +121,14 @@ CasperTest.begin('General settings validation is correct', 4, function suite(tes
     casper.then(function checkSlugInputValue() {
         test.assertField('general[postsPerPage]', '5', 'posts per page is set correctly');
     });
+
+    // Ensure private blog password validation
+    casper.fillAndSave('form#settings-general', {
+        'general[isPrivate]': '1',
+        'general[password]': ''
+    });
+
+    casper.waitForText('Password must be supplied', function onSuccess() {
+        test.assert(true, 'Password required error was shown');
+    }, casper.failOnTimeout(test, 'Password required error did not appear'));
 });

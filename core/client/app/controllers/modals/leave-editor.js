@@ -19,7 +19,7 @@ export default Ember.Controller.extend({
             }
 
             if (!transition || !editorController) {
-                this.get('notifications').showError('Sorry, there was an error in the application. Please let the Ghost team know what happened.');
+                this.get('notifications').showNotification('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
 
                 return true;
             }

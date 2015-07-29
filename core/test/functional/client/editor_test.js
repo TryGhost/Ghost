@@ -26,7 +26,7 @@ CasperTest.begin('Ghost editor functions correctly', 16, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function onSuccess() {
+    casper.waitForSelector('.gh-notification', function onSuccess() {
         test.assert(true, 'Can save with no title.');
         test.assertEvalEquals(function () {
             return document.getElementById('entry-title').value;
@@ -58,7 +58,7 @@ CasperTest.begin('Ghost editor functions correctly', 16, function suite(test) {
 
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function onSuccess() {
+    casper.waitForSelector('.gh-notification', function onSuccess() {
         test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
         test.assertEvalEquals(function () {
             return document.querySelector('#entry-title').value;
@@ -223,7 +223,7 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
     // Save the post with the image
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function onSuccess() {
+    casper.waitForSelector('.gh-notification', function onSuccess() {
         test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
     }, casper.failOnTimeout(test, 'Post was not successfully created'));
 
@@ -385,7 +385,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
     // Create a post in draft status
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function checkPostWasCreated() {
+    casper.waitForSelector('.gh-notification', function checkPostWasCreated() {
         test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
     });
 
@@ -429,7 +429,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
     // Do publish
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function checkPostWasCreated() {
+    casper.waitForSelector('.gh-notification', function checkPostWasCreated() {
         test.assertUrlMatch(/ghost\/editor\/\d+\/$/, 'got an id on our URL');
     });
 
@@ -461,7 +461,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
     // Do unpublish
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success', function checkPostWasCreated() {
+    casper.waitForSelector('.gh-notification', function checkPostWasCreated() {
         // ... check status, label, class
         casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
             test.assertExists('.js-publish-button.btn-blue', 'Publish button should have .btn-blue');
@@ -472,7 +472,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
     });
 });
 
-CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test) {
+CasperTest.begin('Publish menu - delete post', 6, function testDeleteModal(test) {
     // Create a post that can be deleted
     CasperTest.Routines.createTestPost.run(false);
 
@@ -515,15 +515,8 @@ CasperTest.begin('Publish menu - delete post', 7, function testDeleteModal(test)
         // Delete the post
         this.click('.modal-content .js-button-accept');
 
-        casper.waitForSelector('.notification-success', function onSuccess() {
-            test.assert(true, 'Got success notification from delete post');
-            test.assertSelectorHasText(
-                '.gh-notification-content',
-                'Your post has been deleted.',
-                '.gh-notification-content has correct text'
-            );
-        }, function onTimeout() {
-            test.fail('No success notification from delete post');
+        casper.waitWhileVisible('.modal-container', function onSuccess() {
+            test.assert(true, 'clicking delete button should close the delete post modal');
         });
     });
 });
@@ -563,8 +556,7 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
     });
 });
 
-// TODO: Change number of tests back to 6 once the commented-out tests are fixed
-CasperTest.begin('Publish menu - existing post status is correct after failed save', 4, function suite(test) {
+CasperTest.begin('Publish menu - existing post status is correct after failed save', 6, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
@@ -579,7 +571,7 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
     // save
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success');
+    casper.waitForSelector('.gh-notification');
 
     casper.then(function updateTitle() {
         casper.sendKeys('#entry-title', new Array(160).join('y'));
@@ -607,15 +599,14 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
     casper.thenClick('.js-publish-button');
 
     // ... check status, label, class
-    // TODO: re-implement these once #5933 is merged
-    // casper.waitForSelector('.notification-error', function onSuccess() {
-    //     test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
-    //     // wait for button to settle
-    //     casper.wait(500);
-    //     test.assertSelectorHasText('.js-publish-button', 'Save Draft', '.js-publish-button says Save Draft');
-    // }, function onTimeout() {
-    //     test.assert(false, 'Saving post with invalid title should trigger an error');
-    // });
+    casper.waitForSelector('.gh-alert-red', function onSuccess() {
+        test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
+        // wait for button to settle
+        casper.wait(500);
+        test.assertSelectorHasText('.js-publish-button', 'Save Draft', '.js-publish-button says Save Draft');
+    }, function onTimeout() {
+        test.assert(false, 'Saving post with invalid title should trigger an error');
+    });
 });
 
 // test the markdown help modal
@@ -660,7 +651,7 @@ CasperTest.begin('Title input is set correctly after using the Post-Settings-Men
     // save draft
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success');
+    casper.waitForSelector('.gh-notification');
 
     // change the title
     casper.then(function updateTitle() {
@@ -707,7 +698,7 @@ CasperTest.begin('Editor content is set correctly after using the Post-Settings-
     // save draft
     casper.thenClick('.js-publish-button');
 
-    casper.waitForSelector('.notification-success');
+    casper.waitForSelector('.gh-notification');
 
     // change the content
     casper.then(function updateContent() {

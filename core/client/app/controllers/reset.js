@@ -33,8 +33,8 @@ export default Ember.Controller.extend(ValidationEngine, {
             var credentials = this.getProperties('newPassword', 'ne2Password', 'token'),
                 self = this;
 
-            this.toggleProperty('submitting');
-            this.validate({format: false}).then(function () {
+            this.validate().then(function () {
+                self.toggleProperty('submitting');
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'passwordreset'),
                     type: 'PUT',
@@ -43,7 +43,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
-                    self.get('notifications').showSuccess(resp.passwordreset[0].message, true);
+                    self.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true});
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: credentials.newPassword
@@ -52,9 +52,6 @@ export default Ember.Controller.extend(ValidationEngine, {
                     self.get('notifications').showAPIError(response);
                     self.toggleProperty('submitting');
                 });
-            }).catch(function (error) {
-                self.toggleProperty('submitting');
-                self.get('notifications').showErrors(error);
             });
         }
     }

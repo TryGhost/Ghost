@@ -36,7 +36,7 @@ export default Ember.Controller.extend({
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
-            notifications.closePassive();
+            notifications.closeNotifications();
 
             formData.append('importfile', file);
 
@@ -52,13 +52,14 @@ export default Ember.Controller.extend({
                 self.store.unloadAll();
                 // Reload currentUser and set session
                 self.set('session.user', self.store.find('user', currentUserId));
-                notifications.showSuccess('Import successful.');
+                // TODO: keep as notification, add link to view content
+                notifications.showNotification('Import successful.');
             }).catch(function (response) {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
                     self.set('importErrors', response.jqXHR.responseJSON.errors);
                 }
 
-                notifications.showError('Import Failed');
+                notifications.showAlert('Import Failed', {type: 'error'});
             }).finally(function () {
                 self.set('uploadButtonText', 'Import');
             });
@@ -82,7 +83,7 @@ export default Ember.Controller.extend({
             ajax(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
             }).then(function () {
-                notifications.showSuccess('Check your email for the test message.');
+                notifications.showAlert('Check your email for the test message.', {type: 'info'});
             }).catch(function (error) {
                 if (typeof error.jqXHR !== 'undefined') {
                     notifications.showAPIError(error);

@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, __utils__ */
 
-CasperTest.begin('Post settings menu', 10, function suite(test) {
+CasperTest.begin('Post settings menu', 8, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
@@ -23,16 +23,6 @@ CasperTest.begin('Post settings menu', 10, function suite(test) {
         casper.sendKeys('#entry-title', 'aTitle');
         casper.thenClick('.js-publish-button');
     });
-
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Saved.', '.notification-success has correct text');
-        casper.click('.gh-notification-close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
-    });
-
-    casper.waitWhileSelector('.notification-success');
 
     casper.thenClick('.post-settings');
 
