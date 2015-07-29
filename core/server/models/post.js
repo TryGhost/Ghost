@@ -314,7 +314,7 @@ Post = ghostBookshelf.Model.extend({
             options.where.page = options.staticPages;
         }
 
-        if (options.featured) {
+        if (_.has(options, 'featured')) {
             // convert string true/false to boolean
             if (!_.isBoolean(options.featured)) {
                 options.featured = _.contains(['true', '1'], options.featured);
