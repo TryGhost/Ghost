@@ -12,11 +12,11 @@ export default Ember.Controller.extend({
             ajax(this.get('ghostPaths.url').api('db'), {
                 type: 'DELETE'
             }).then(function () {
-                self.get('notifications').showSuccess('All content deleted from database.');
+                self.get('notifications').showAlert('All content deleted from database.', {type: 'success'});
                 self.store.unloadAll('post');
                 self.store.unloadAll('tag');
             }).catch(function (response) {
-                self.get('notifications').showErrors(response);
+                self.get('notifications').showAPIError(response);
             });
         },
 

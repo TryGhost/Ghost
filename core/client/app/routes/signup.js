@@ -12,7 +12,7 @@ export default Ember.Route.extend(styleBody, {
 
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.get('notifications').showWarn('You need to sign out to register as a new user.', {delayed: true});
+            this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true});
             this.transitionTo(Configuration.routeAfterAuthentication);
         }
     },
@@ -26,7 +26,7 @@ export default Ember.Route.extend(styleBody, {
 
         return new Ember.RSVP.Promise(function (resolve) {
             if (!re.test(params.token)) {
-                self.get('notifications').showError('Invalid token.', {delayed: true});
+                self.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true});
 
                 return resolve(self.transitionTo('signin'));
             }
@@ -47,7 +47,7 @@ export default Ember.Route.extend(styleBody, {
                 }
             }).then(function (response) {
                 if (response && response.invitation && response.invitation[0].valid === false) {
-                    self.get('notifications').showError('The invitation does not exist or is no longer valid.', {delayed: true});
+                    self.get('notifications').showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true});
 
                     return resolve(self.transitionTo('signin'));
                 }

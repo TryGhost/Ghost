@@ -7,6 +7,7 @@ var SigninValidator = BaseValidator.create({
 
         if (validator.empty(id)) {
             model.get('errors').add('identification', 'Please enter an email');
+            this.invalidate();
         } else if (!validator.isEmail(id)) {
             model.get('errors').add('identification', 'Invalid email');
             this.invalidate();
