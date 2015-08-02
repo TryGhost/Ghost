@@ -30,7 +30,7 @@ var express     = require('express'),
 function doFirstRun() {
     var firstRunMessage = [
         i18n.t('notices.index.welcomeToGhost'),
-        i18n.t('notices.index.youAreRunningUnder' {environment: process.env.NODE_ENV}),
+        i18n.t('notices.index.youAreRunningUnder', {environment: process.env.NODE_ENV}),
         i18n.t('notices.index.yourURLisSetTo', {url: config.url}),
         i18n.t('common.seeLinkForInstructions', {link: '<a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a>'})
     ];

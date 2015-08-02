@@ -36,7 +36,7 @@ var _        = require('lodash'),
                         messages.errors.push({
                             message: i18n.t('errors.require-tree.nameOrVersionMissing.error'),
                             context: path,
-                            help: i18n.t('errors.general.requiredOnFuture',{link: 'http://docs.ghost.org/themes/'})
+                            help: i18n.t('errors.general.requiredOnFuture', {link: 'http://docs.ghost.org/themes/'})
                         });
                         resolve(false);
                     }
@@ -44,7 +44,7 @@ var _        = require('lodash'),
                     messages.errors.push({
                         message: i18n.t('errors.require-tree.themePackageJsonMalformed.error'),
                         context: path,
-                        help: i18n.t('errors.general.requiredOnFuture', {link: 'http://docs.ghost.org/themes/'}) 
+                        help: i18n.t('errors.general.requiredOnFuture', {link: 'http://docs.ghost.org/themes/'})
                     });
                     resolve(false);
                 }

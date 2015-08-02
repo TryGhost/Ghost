@@ -25,7 +25,7 @@ checks = {
             if (!semver.satisfies(process.versions.node, packages.engines.node) &&
                 !semver.satisfies(process.versions.node, packages.engines.iojs)) {
                 console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.error'));
-                console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.context', 
+                console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.context',
                                      {neededVersion: packages.engines.node, usedVersion: process.versions.node}));
                 console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.help'));
                 process.exit(0);
@@ -81,7 +81,7 @@ checks = {
 
         errors = errors.join('\n  ');
 
-        console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.error',{error : errors}));
+        console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.error', {error: errors}));
         console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.explain'));
         console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.help'));
 

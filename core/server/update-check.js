@@ -32,8 +32,7 @@ var crypto   = require('crypto'),
     api      = require('./api'),
     config   = require('./config'),
     errors   = require('./errors'),
-    i18n     = require('./i18n');
-
+    i18n     = require('./i18n'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org',
@@ -46,7 +45,7 @@ function updateCheckError(error) {
     ).catch(errors.rejectError);
 
     errors.logError(
-        error, 
+        error,
         i18n.t('errors.update-check.checkingForUpdatesFailed.error'),
         i18n.t('errors.update-check.checkingForUpdatesFailed.help')
     );
@@ -127,7 +126,7 @@ function updateCheckRequest() {
                         resData = JSON.parse(resData);
                         resolve(resData);
                     } catch (e) {
-                        reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error');
+                        reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
                     }
                 });
             });

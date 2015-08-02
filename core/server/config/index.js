@@ -296,8 +296,8 @@ ConfigManager.prototype.writeFile = function () {
             read = fs.createReadStream(configExamplePath);
             read.on('error', function (err) {
                 errors.logError(
-                    new Error(i18n.t('errors.config.coultNotOpenForReading.error', {file: 'config.example.js'})), 
-                    appRoot, 
+                    new Error(i18n.t('errors.config.coultNotOpenForReading.error', {file: 'config.example.js'})),
+                    appRoot,
                     i18n.t('errors.config.coultNotOpenConfigFile.help'));
 
                 reject(err);
@@ -306,9 +306,9 @@ ConfigManager.prototype.writeFile = function () {
             write = fs.createWriteStream(configPath);
             write.on('error', function (err) {
                 errors.logError(
-                    new Error(i18n.t('errors.config.coultNotOpenForWriting.error', {file: 'config.js'})), 
-                    appRoot, 
-                    i18n.t('errors.config.coultNotOpenForWriting.help');
+                    new Error(i18n.t('errors.config.coultNotOpenForWriting.error', {file: 'config.js'})),
+                    appRoot,
+                    i18n.t('errors.config.coultNotOpenForWriting.help'));
 
                 reject(err);
             });
@@ -350,9 +350,9 @@ ConfigManager.prototype.validate = function () {
     // Check that our url is valid
     if (!validator.isURL(config.url, {protocols: ['http', 'https'], require_protocol: true})) {
         errors.logError(
-            new Error(i18n.t('errors.config.invalidUrlInConfig.description'), 
-            config.url, 
-            i18n.t('errors.config.invalidUrlInConfig.help'));
+            new Error(i18n.t('errors.config.invalidUrlInConfig.description'),
+            config.url,
+            i18n.t('errors.config.invalidUrlInConfig.help')));
 
         return Promise.reject(new Error(i18n.t('errors.config.invalidUrlInConfig.error')));
     }
@@ -361,9 +361,9 @@ ConfigManager.prototype.validate = function () {
 
     if (/\/ghost(\/|$)/.test(parsedUrl.pathname)) {
         errors.logError(
-            new Error(i18n.t('errors.config.urlCannotContainGhostSubdir.description'), 
-            config.url, 
-            i18n.t('errors.config.urlCannotContainGhostSubdir.help'));
+            new Error(i18n.t('errors.config.urlCannotContainGhostSubdir.description'),
+            config.url,
+            i18n.t('errors.config.urlCannotContainGhostSubdir.help')));
 
         return Promise.reject(new Error(i18n.t('errors.config.urlCannotContainGhostSubdir.error')));
     }
@@ -371,8 +371,8 @@ ConfigManager.prototype.validate = function () {
     // Check that we have database values
     if (!config.database || !config.database.client) {
         errors.logError(
-            new Error(i18n.t('errors.config.dbConfigInvalid.description')), 
-            JSON.stringify(config.database), 
+            new Error(i18n.t('errors.config.dbConfigInvalid.description')),
+            JSON.stringify(config.database),
             i18n.t('errors.config.dbConfigInvalid.help'));
 
         return Promise.reject(new Error(i18n.t('errors.config.dbConfigInvalid.error')));
@@ -384,8 +384,8 @@ ConfigManager.prototype.validate = function () {
     // Check for valid server host and port values
     if (!config.server || !(hasHostAndPort || hasSocket)) {
         errors.logError(
-            new Error(i18n.t('errors.config.invalidServerValues.description')), 
-            JSON.stringify(config.server), 
+            new Error(i18n.t('errors.config.invalidServerValues.description')),
+            JSON.stringify(config.server),
             i18n.t('errors.config.invalidServerValues.help'));
 
         return Promise.reject(new Error(i18n.t('errors.config.invalidServerValues.error')));
@@ -434,7 +434,7 @@ ConfigManager.prototype.displayDeprecated = function (item, properties, address)
         if (properties.length) {
             return self.displayDeprecated(item[property], properties, address);
         }
-        errorText = i18n.t('errors.config.deprecatedProperty.error', {property: chalk.bold(address.join('.')) });
+        errorText = i18n.t('errors.config.deprecatedProperty.error', {property: chalk.bold(address.join('.'))});
         explanationText =  i18n.t('errors.config.deprecatedProperty.explanation');
         helpText = i18n.t('errors.config.deprecatedProperty.help');
         errors.logWarn(errorText, explanationText, helpText);
