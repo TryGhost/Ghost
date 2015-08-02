@@ -5,7 +5,7 @@ var Promise = require('bluebird'),
     fs = require('fs'),
     errors = require('./errors'),
     config = require('./config'),
-    i18n   = require('/i18n');
+    i18n   = require('./i18n');
 
 /**
  * ## GhostServer
