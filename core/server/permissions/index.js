@@ -5,6 +5,7 @@ var _                   = require('lodash'),
     Promise             = require('bluebird'),
     Models              = require('../models'),
     effectivePerms      = require('./effective'),
+    i18n                = require('../i18n'),
     init,
     refresh,
     canThis,
@@ -152,7 +153,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     context = parseContext(context);
 
     if (!hasActionsMap()) {
-        throw new Error('No actions map found, please call permissions.init() before use.');
+        throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
     }
 
     // Kick off loading of effective user permissions if necessary

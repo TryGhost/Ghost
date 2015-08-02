@@ -1,14 +1,204 @@
 {
     "common": {
-
+        "mail":{
+            "title": "Ghost at {domain}"
+        },
+        "seeLinkForInstructions": "See {link} for instructions.",
+        "time": {
+            "seconds": "seconds"
+        }
     },
+    
     "errors": {
-
+        "config": {
+            "couldNotLocateConfigFile": {
+                "error": "Could not locate a configuration file.",
+                "help": "Please check your deployment for config.js or config.example.js."
+            },
+            "couldNotOpenForReading": {
+                "error": "Could not open {file} for read.",
+                "help": "Please check your deployment for config.js or config.example.js."
+            },
+            "couldNotOpenForWriting": {
+                "error": "Could not open {file} for write.",
+                "help": "Please check your deployment for config.js or config.example.js."
+            },
+            "invalidUrlInConfig": {
+                "error": "invalid site url",
+                "description": "Your site url in config.js is invalid.",
+                "help": "Please make sure this is a valid url before restarting"
+            },
+            "urlCannotContainGhostSubdir": {
+                "error": "ghost subdirectory not allowed",
+                "description": "Your site url in config.js cannot contain a subdirectory called ghost.",
+                "help": "Please rename the subdirectory before restarting"
+            
+            },
+            "dbConfigInvalid": {
+                "error": "invalid database configuration",
+                "description": "Your database configuration in config.js is invalid.",
+                "help": "Please make sure this is a valid Bookshelf database configuration"
+            },
+            
+            "deprecatedProperty": {
+                "error": "The configuration property [{property}] has been deprecated.",
+                "explanation": "This will be removed in a future version, please update your config.js file.",
+                "help": "Please check http://support.ghost.org/config for the most up-to-date example."
+            },
+            
+            "invalidServerValues": {
+                "error": "invalid server configuration",
+                "description": "Your server values (socket, or host and port) in config.js are invalid.",
+                "help": "Please provide them before restarting."
+                
+            
+            }
+        
+            
+        },
+        "general": {
+            "moreInfo": "\nMore info: {info}",
+            "requiredOnFuture": 'This will be required in future. Please see {link}"
+        },
+        "httpServer": {
+            "addressInUse": {
+                "error": "(EADDRINUSE) Cannot start Ghost.",
+                "context" : "Port {port} is already in use by another program.",
+                "help": "Is another Ghost instance already running?"
+            },
+            "otherError": {
+                "error": "(Code: {errorNumber})",
+                "context" : "There was an error starting your server.",
+                "help": "Please use the error code above to search for a solution."
+            }
+        },
+        "index": {
+            "javascriptFilesNotBuilt": {
+            "error": "Javascript files have not been built.",
+            "help": "\nPlease read the getting started instructions at: {link}"
+            }
+        },
+        "mail": {
+            "noEmailTransportConfigured": {
+                "error": "Email Error: No e-mail transport configured."
+            },
+            "incompleteMessageData": {
+                "error": "Email Error: Incomplete message data."
+            },
+            "failedSendingEmail":{
+                "error": "Email Error: Failed sending email"
+            },
+            "noMailServerAtAddress": {
+                "error": ": there is no mail server at this address: {domain}"
+            },
+            "messageNotSent": {
+                "error": "Email Error: message was not sent, requeued. Probably will not be sent. :("
+            }
+        },
+        "permissions": {
+            "noActionsMapFound": {
+                "error": "No actions map found, please call permissions.init() before use."
+            }
+        },
+        "require-tree": {
+            "couldNotReadPackageJson": {
+                "error": "Could not read package.json file"
+            },
+            "nameOrVersionMissing": {
+                "error": "\"name\" or \"version\" is missing from theme package.json file.",
+            },
+            "themePackageJsonMalformed": {
+                "error": "Theme package.json file is malformed.",
+            },
+            "foundThemeWithNoPackageJson": {
+                "error": "Found a theme with no package.json file.",
+                "context": "Theme name: {theme}"
+            }
     },
+        "update-check": {
+            
+            "checkingForUpdatesFailed": {
+            
+                "error": "Checking for updates failed, your blog will continue to function.",
+                "help": "If you get this error repeatedly, please seek help from https://ghost.org/forum."
+            },
+            "unableToDecodeUpdateResponse": {
+                "error": "Unable to decode update response"
+            
+            }
+        
+        },
+        "utils": {
+            "startup-check": {
+                "unsupportedNodeVersion": {
+                    "error": "\x1B[31mERROR: Unsupported version of Node",
+                    "context": "\x1B[31mGhost needs Node version {neededVersion} you are using version {usedVersion} \033[0m\n",
+                    "help": "\x1B[32mPlease go to http://nodejs.org to get a supported version\033[0m"
+                },
+                "cannotFindConfigForCurrentNode": {
+                    "error": "\x1B[31mERROR: Cannot find the configuration for the current NODE_ENV: {nodeEnv} \033[0m\n",
+                    "help": "\x1B[32mEnsure your config.js has a section for the current NODE_ENV value and is formatted properly.\033[0m"
+                },
+                "ghostMissingDependencies": {
+                    "error": "\x1B[31mERROR: Ghost is unable to start due to missing dependencies:\033[0m\n  {error}",
+                    "explain": "\x1B[32m\nPlease run `npm install --production` and try starting Ghost again.", 
+                    "help": "'\x1B[32mHelp and documentation can be found at http://support.ghost.org.\033[0m\n"
+                },
+                "unableToAccessContentPath": {
+                    "error": "\x1B[31mERROR: Unable to access Ghost\'s content path:\033[0m",
+                    "help": "\x1B[32mCheck that the content path exists and file system permissions are correct. \nHelp and documentation can be found at http://support.ghost.org.\033[0m"
+                    
+                },
+                "unableToOpenSqlite3Db": {
+                    "error": "\x1B[31mERROR: Unable to open sqlite3 database file for read/write\033[0m",
+                    "help": "\n\x1B[32mCheck that the sqlite3 database file permissions allow read and write access. \nHelp and documentation can be found at http://support.ghost.org.\033[0m"
+                }
+                
+            
+            }
+                
+        }
+    },
+    
     "warnings": {
 
+        "index": {
+            "usingDirectMethodToSendEmail": 'Ghost is attempting to use a direct method to send e-mail. It is recommended that you explicitly configure an e-mail service.',
+            "unableToSendEmail": 'Ghost is currently unable to send e-mail.' 
+        }
+        
     },
+    
     "notices": {
-
+        "controllers": {
+            "newVersionAvailable": "Ghost {version} is available! Hot Damn. {link} to upgrade.'
+        },
+        
+        "index":{
+            "welcomeToGhost": "Welcome to Ghost.",
+            "youAreRunningUnderEnvironment": "You\'re running under the <strong> {environment} </strong> environment.",
+            "yourURLisSetTo": "Your URL is set to <strong> {url} </strong>.",
+        },
+        "httpServer": {
+            "cantTouchThis": "Can\'t touch this",
+            "ghostIsRunning": "Ghost is running...",
+            "yourBlogIsAvailableOn": "\nYour blog is now available on {url}",
+            "ctrlCToShutDown": "\nCtrl+C to shut down",
+            "ghostIsRunningIn": "Ghost is running in {env}...",
+            "listeningOn": "\nListening on",
+            "urlConfiguredAs": "\nUrl configured as: {url}",
+            "ghostHasShutdown": "\nGhost has shut down",
+            "yourBlogIsNowOffline": "\nYour blog is now offline",
+            "ghostWasRunningFor": "\nGhost was running for",
+            "ghostIsClosingConnections": "Ghost is closing connections"
+            
+            
+        },
+        
+        "mail": {
+            "messageAcceptedByMailServer": 'Message was accepted by the mail server. Make sure to check inbox and spam folders. :)'
+        
+        }
+        
     }
 }
