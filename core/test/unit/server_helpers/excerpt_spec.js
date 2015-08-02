@@ -38,6 +38,16 @@ describe('{{excerpt}} Helper', function () {
         rendered.string.should.equal(expected);
     });
 
+    it('strips style and script tags and their contents', function () {
+        var html = '<script type="text/javascript>console.log("testing");</script>' +
+                '<style type="text/css">\n.content{color:red;}\n</style>This should be output',
+            expected = 'This should be output',
+            rendered = helpers.excerpt.call({html: html});
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
     it('strips multiple inline footnotes', function () {
         var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>, my footnotes. And stuff. Footnote<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup><a href="http://google.com">with a link</a> right after.',
             expected = 'Testing, my footnotes. And stuff. Footnotewith a link right after.',
