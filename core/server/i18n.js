@@ -83,7 +83,6 @@ I18n = {
         // read file for current locale and keep its content in memory
         blos = fs.readFileSync(__dirname + '/translations/' + currentLocale + '.json');
         blos = JSON.parse(blos);
-        
         if (global.Intl) {
             // Determine if the built-in `Intl` has the locale data we need.
             var hasBuiltInLocaleData,
