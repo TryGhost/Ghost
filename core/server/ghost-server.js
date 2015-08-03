@@ -173,10 +173,10 @@ GhostServer.prototype.logStartMessages = function () {
         );
     } else {
         console.log(
-            chalk.green(i18n('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
-            i18n('notices.httpServer.listeningOn'),
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            i18n.t('notices.httpServer.listeningOn'),
                 config.getSocket() || config.server.host + ':' + config.server.port,
-            i18n('notices.httpServer.urlConfiguredAs', {url: config.url}),
+            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.url}),
             chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     }

@@ -78,7 +78,7 @@ function builtFilesExist() {
 
     function checkExist(fileName) {
         var errorMessage = i18n.t('errors.index.javascriptFilesNotBuilt.error'),
-            errorHelp = i18n.t('errors.index.javascriptFilesNotBuilt.help', {link: '\nhttps://github.com/TryGhost/Ghost#getting-started'}) ;
+            errorHelp = i18n.t('errors.index.javascriptFilesNotBuilt.help', {link: '\nhttps://github.com/TryGhost/Ghost#getting-started'});
 
         return new Promise(function (resolve, reject) {
             fs.stat(fileName, function (statErr) {
