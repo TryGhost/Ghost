@@ -173,7 +173,7 @@ GhostServer.prototype.logStartMessages = function () {
         );
     } else {
         console.log(
-            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {envmt: process.env.NODE_ENV})),
             i18n.t('notices.httpServer.listeningOn'),
                 config.getSocket() || config.server.host + ':' + config.server.port,
             i18n.t('notices.httpServer.urlConfiguredAs', {url: config.url}),
@@ -189,7 +189,7 @@ GhostServer.prototype.logStartMessages = function () {
             );
         } else {
             console.log(
-                i18n.t('notices.httpServer.yourBlogWasRunningFor'),
+                i18n.t('notices.httpServer.ghostWasRunningFor'),
                 Math.round(process.uptime()),
                 i18n.t('common.time.seconds')
             );

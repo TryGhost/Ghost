@@ -8,8 +8,33 @@
             "seconds": "seconds"
         }
     },
-    
     "errors": {
+        "utils": {
+            "startupcheck": {
+                "unsupportedNodeVersion": {
+                    "error": "ERROR: Unsupported version of Node",
+                    "context": "Ghost needs Node version {neededVersion} you are using version {usedVersion}\n",
+                    "help": "Please go to http://nodejs.org to get a supported version"
+                },
+                "cannotFindConfigForCurrentNode": {
+                    "error": "ERROR: Cannot find the configuration for the current NODE_ENV: {nodeEnv}\n",
+                    "help": "Ensure your config.js has a section for the current NODE_ENV value and is formatted properly."
+                },
+                "ghostMissingDependencies": {
+                    "error": "ERROR: Ghost is unable to start due to missing dependencies:\n  {error}",
+                    "explain": "\nPlease run `npm install --production` and try starting Ghost again.", 
+                    "help": "Help and documentation can be found at http://support.ghost.org.\n"
+                },
+                "unableToAccessContentPath": {
+                    "error": "ERROR: Unable to access Ghost's content path:",
+                    "help": "Check that the content path exists and file system permissions are correct. \nHelp and documentation can be found at http://support.ghost.org"
+                },
+                "unableToOpenSqlite3Db": {
+                    "error": "ERROR: Unable to open sqlite3 database file for read/write",
+                    "help": "\nCheck that the sqlite3 database file permissions allow read and write access. \nHelp and documentation can be found at http://support.ghost.org."
+                }
+            }
+        },
         "config": {
             "couldNotLocateConfigFile": {
                 "error": "Could not locate a configuration file.",
@@ -49,9 +74,7 @@
             "invalidServerValues": {
                 "error": "invalid server configuration",
                 "description": "Your server values (socket, or host and port) in config.js are invalid.",
-                "help": "Please provide them before restarting."
-                
-            
+                "help": "Please provide them before restarting."    
             }
         
             
@@ -127,33 +150,8 @@
             
             }
         
-        },
-        "utils": {
-            "startup-check": {
-                "unsupportedNodeVersion": {
-                    "error": "ERROR: Unsupported version of Node",
-                    "context": "Ghost needs Node version {neededVersion} you are using version {usedVersion}\n",
-                    "help": "Please go to http://nodejs.org to get a supported version"
-                },
-                "cannotFindConfigForCurrentNode": {
-                    "error": "ERROR: Cannot find the configuration for the current NODE_ENV: {nodeEnv}\n",
-                    "help": "Ensure your config.js has a section for the current NODE_ENV value and is formatted properly."
-                },
-                "ghostMissingDependencies": {
-                    "error": "ERROR: Ghost is unable to start due to missing dependencies:\n  {error}",
-                    "explain": "\nPlease run `npm install --production` and try starting Ghost again.", 
-                    "help": "Help and documentation can be found at http://support.ghost.org.\n"
-                },
-                "unableToAccessContentPath": {
-                    "error": "ERROR: Unable to access Ghost's content path:",
-                    "help": "Check that the content path exists and file system permissions are correct. \nHelp and documentation can be found at http://support.ghost.org"
-                },
-                "unableToOpenSqlite3Db": {
-                    "error": "ERROR: Unable to open sqlite3 database file for read/write",
-                    "help": "\nCheck that the sqlite3 database file permissions allow read and write access. \nHelp and documentation can be found at http://support.ghost.org."
-                }
-            }
         }
+        
     },
     "warnings": {
         "index": {
@@ -175,7 +173,7 @@
             "ghostIsRunning": "Ghost is running...",
             "yourBlogIsAvailableOn": "\nYour blog is now available on {url}",
             "ctrlCToShutDown": "\nCtrl+C to shut down",
-            "ghostIsRunningIn": "Ghost is running in {envmt}...",
+            "ghostIsRunningIn": "Ghost is running in {envmt} ...",
             "listeningOn": "\nListening on",
             "urlConfiguredAs": "\nUrl configured as: {url}",
             "ghostHasShutdown": "\nGhost has shut down",

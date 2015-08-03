@@ -24,10 +24,10 @@ checks = {
             var semver = require('semver');
             if (!semver.satisfies(process.versions.node, packages.engines.node) &&
                 !semver.satisfies(process.versions.node, packages.engines.iojs)) {
-                console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.error'));
-                console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.context',
+                console.error(i18n.t('errors.utils.startupcheck.unsupportedNodeVersion.error'));
+                console.error(i18n.t('errors.utils.startupcheck.unsupportedNodeVersion.context',
                                      {neededVersion: packages.engines.node, usedVersion: process.versions.node}));
-                console.error(i18n.t('errors.utils.startup-check.unsupportedNodeVersion.help'));
+                console.error(i18n.t('errors.utils.startupcheck.unsupportedNodeVersion.help'));
                 process.exit(0);
             }
         } catch (e) {
@@ -52,9 +52,9 @@ checks = {
         config = configFile[mode];
 
         if (!config) {
-            console.error(i18n.t('errors.utils.startup-check.cannotFindConfigForCurrentNode.error',
+            console.error(i18n.t('errors.utils.startupcheck.cannotFindConfigForCurrentNode.error',
                                  {nodeEnv: process.env.NODE_ENV}));
-            console.error(i18n.t('errors.utils.startup-check.cannotFindConfigForCurrentNode.help'));
+            console.error(i18n.t('errors.utils.startupcheck.cannotFindConfigForCurrentNode.help'));
             process.exit(0);
         }
     },
@@ -81,9 +81,9 @@ checks = {
 
         errors = errors.join('\n  ');
 
-        console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.error', {error: errors}));
-        console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.explain'));
-        console.error(i18n.t('errors.utils.startup-check.ghostMissingDependencies.help'));
+        console.error(i18n.t('errors.utils.startupcheck.ghostMissingDependencies.error', {error: errors}));
+        console.error(i18n.t('errors.utils.startupcheck.ghostMissingDependencies.explain'));
+        console.error(i18n.t('errors.utils.startupcheck.ghostMissingDependencies.help'));
 
         process.exit(0);
     },
@@ -99,8 +99,8 @@ checks = {
             contentPath,
             contentSubPaths = ['apps', 'data', 'images', 'themes'],
             fd,
-            errorHeader = i18n.t('errors.utils.startup-check.unableToAccessContentPath.error'),
-            errorHelp = i18n.t('errors.utils.startup-check.unableToAccessContentPath.help');
+            errorHeader = i18n.t('errors.utils.startupcheck.unableToAccessContentPath.error'),
+            errorHelp = i18n.t('errors.utils.startupcheck.unableToAccessContentPath.help');
 
         // Get the content path to test.  If it's defined in config.js use that, if not use the default
         try {
@@ -193,9 +193,9 @@ checks = {
                 return;
             }
 
-            console.error(i18n.t('errors.utils.startup-check.unableToOpenSqlite3Db.error'));
+            console.error(i18n.t('errors.utils.startupcheck.unableToOpenSqlite3Db.error'));
             console.error('  ' + e.message);
-            console.error(i18n.t('errors.utils.startup-check.unableToOpenSqlite3Db.help'));
+            console.error(i18n.t('errors.utils.startupcheck.unableToOpenSqlite3Db.help'));
 
             process.exit(0);
         }
