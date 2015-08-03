@@ -51,7 +51,6 @@ I18n = {
      */
     findString: function findString(msgPath) {
         var matchingString, path;
-
         // no path? no string
         if (_.isEmpty(msgPath) || !_.isString(msgPath)) {
             chalk.yellow('i18n:t() - received an empty path.');

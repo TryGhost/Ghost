@@ -21,6 +21,7 @@ checks = {
     nodeVersion: function checkNodeVersion() {
         // Tell users if their node version is not supported, and exit
         try {
+            i18n.init();
             var semver = require('semver');
             if (!semver.satisfies(process.versions.node, packages.engines.node) &&
                 !semver.satisfies(process.versions.node, packages.engines.iojs)) {
