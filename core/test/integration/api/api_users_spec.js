@@ -49,15 +49,15 @@ describe('Users API', function () {
     });
 
     describe('Browse', function () {
-        function checkBrowseResponse(response, count) {
+        function checkBrowseResponse(response, count, additional, missing) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'users');
             should.exist(response.users);
             response.users.should.have.length(count);
-            testUtils.API.checkResponse(response.users[0], 'user');
-            testUtils.API.checkResponse(response.users[1], 'user');
-            testUtils.API.checkResponse(response.users[2], 'user');
-            testUtils.API.checkResponse(response.users[3], 'user');
+            testUtils.API.checkResponse(response.users[0], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[1], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[2], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[3], 'user', additional, missing);
         }
 
         it('Owner can browse', function (done) {
@@ -88,9 +88,16 @@ describe('Users API', function () {
             }).catch(done);
         });
 
-        it('No-auth CANNOT browse', function (done) {
-            UserAPI.browse().then(function () {
-                done(new Error('Browse users is not denied without authentication.'));
+        it('No-auth CAN browse, but only gets filtered active users', function (done) {
+            UserAPI.browse().then(function (response) {
+                checkBrowseResponse(response, 7, null, ['email']);
+                done();
+            }).catch(done);
+        });
+
+        it('No-auth CANNOT browse non-active users', function (done) {
+            UserAPI.browse({status: 'invited'}).then(function () {
+                done(new Error('Browse non-active users is not denied without authentication.'));
             }, function () {
                 done();
             }).catch(done);
@@ -109,21 +116,6 @@ describe('Users API', function () {
                     done();
                 }).catch(done);
             });
-        });
-
-        it('Author can browse', function (done) {
-            UserAPI.browse(context.author).then(function (response) {
-                checkBrowseResponse(response, 7);
-                done();
-            }).catch(done);
-        });
-
-        it('No-auth CANNOT browse', function (done) {
-            UserAPI.browse().then(function () {
-                done(new Error('Browse users is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
         });
 
         it('Can browse all', function (done) {
