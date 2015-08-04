@@ -39,20 +39,6 @@ posts = {
             tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to either be an authorised user, or only return published posts.
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            if (!(options.context && options.context.user)) {
-                options.status = 'published';
-            }
-
-            return options;
-        }
-
-        /**
          * ### Model Query
          *  Make the call to the Model layer
          * @param {Object} options
@@ -65,7 +51,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: permittedOptions}),
-            handlePermissions,
+            utils.handlePublicPermissions(docName, 'browse'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -87,19 +73,6 @@ posts = {
             tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to either be an authorised user, or only return published posts.
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            if (!options.data.uuid && !(options.context && options.context.user)) {
-                options.data.status = 'published';
-            }
-            return options;
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -112,7 +85,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {attrs: attrs}),
-            handlePermissions,
+            utils.handlePublicPermissions(docName, 'read'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
