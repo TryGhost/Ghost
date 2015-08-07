@@ -87,6 +87,7 @@
 	  focused: false,
 	  suppressEdits: false, // used to disable editing during key handlers when in readOnly mode
 	  pasteIncoming: false, cutIncoming: false, // help recognize paste/cut edits in input.poll
+	  selectingText: false,
 	  draggingText: false,
 	  highlight: new Delayed(), // stores highlight worker timeout
 	  keySeq: null,  // Unfinished key sequence
@@ -1135,7 +1136,8 @@
 	var pasted = e.clipboardData && e.clipboardData.getData("text/plain");
 	if (pasted) {
 	  e.preventDefault();
-	  runInOp(cm, function() { applyTextInput(cm, pasted, 0, null, "paste"); });
+	  if (!isReadOnly(cm) && !cm.options.disableInput)
+		runInOp(cm, function() { applyTextInput(cm, pasted, 0, null, "paste"); });
 	  return true;
 	}
   }
@@ -2270,7 +2272,7 @@
 	  var range = doc.sel.ranges[i];
 	  var collapsed = range.empty();
 	  if (collapsed || cm.options.showCursorWhenSelecting)
-		drawSelectionCursor(cm, range, curFragment);
+		drawSelectionCursor(cm, range.head, curFragment);
 	  if (!collapsed)
 		drawSelectionRange(cm, range, selFragment);
 	}
@@ -2278,8 +2280,8 @@
   }
 
   // Draws a cursor for the given range
-  function drawSelectionCursor(cm, range, output) {
-	var pos = cursorCoords(cm, range.head, "div", null, null, !cm.options.singleCursorHeightPerLine);
+  function drawSelectionCursor(cm, head, output) {
+	var pos = cursorCoords(cm, head, "div", null, null, !cm.options.singleCursorHeightPerLine);
 
 	var cursor = output.appendChild(elt("div", "\u00a0", "CodeMirror-cursor"));
 	cursor.style.left = pos.left + "px";
@@ -2978,12 +2980,12 @@
 	var callbacks = group.delayedCallbacks, i = 0;
 	do {
 	  for (; i < callbacks.length; i++)
-		callbacks[i]();
+		callbacks[i].call(null);
 	  for (var j = 0; j < group.ops.length; j++) {
 		var op = group.ops[j];
 		if (op.cursorActivityHandlers)
 		  while (op.cursorActivityCalled < op.cursorActivityHandlers.length)
-			op.cursorActivityHandlers[op.cursorActivityCalled++](op.cm);
+			op.cursorActivityHandlers[op.cursorActivityCalled++].call(null, op.cm);
 	  }
 	} while (i < callbacks.length);
   }
@@ -3443,9 +3445,11 @@
 	on(d.wrapper, "scroll", function() { d.wrapper.scrollTop = d.wrapper.scrollLeft = 0; });
 
 	d.dragFunctions = {
-	  simple: function(e) {if (!signalDOMEvent(cm, e)) e_stop(e);},
+	  enter: function(e) {if (!signalDOMEvent(cm, e)) e_stop(e);},
+	  over: function(e) {if (!signalDOMEvent(cm, e)) { onDragOver(cm, e); e_stop(e); }},
 	  start: function(e){onDragStart(cm, e);},
-	  drop: operation(cm, onDrop)
+	  drop: operation(cm, onDrop),
+	  leave: function() {clearDragCursor(cm);}
 	};
 
 	var inp = d.input.getField();
@@ -3462,8 +3466,9 @@
 	  var funcs = cm.display.dragFunctions;
 	  var toggle = value ? on : off;
 	  toggle(cm.display.scroller, "dragstart", funcs.start);
-	  toggle(cm.display.scroller, "dragenter", funcs.simple);
-	  toggle(cm.display.scroller, "dragover", funcs.simple);
+	  toggle(cm.display.scroller, "dragenter", funcs.enter);
+	  toggle(cm.display.scroller, "dragover", funcs.over);
+	  toggle(cm.display.scroller, "dragleave", funcs.leave);
 	  toggle(cm.display.scroller, "drop", funcs.drop);
 	}
   }
@@ -3536,7 +3541,10 @@
 
 	switch (e_button(e)) {
 	case 1:
-	  if (start)
+	  // #3261: make sure, that we're not starting a second selection
+	  if (cm.state.selectingText)
+		cm.state.selectingText(e);
+	  else if (start)
 		leftButtonDown(cm, e, start);
 	  else if (e_target(e) == display.scroller)
 		e_preventDefault(e);
@@ -3734,6 +3742,7 @@
 	}
 
 	function done(e) {
+	  cm.state.selectingText = false;
 	  counter = Infinity;
 	  e_preventDefault(e);
 	  display.input.focus();
@@ -3747,6 +3756,7 @@
 	  else extend(e);
 	});
 	var up = operation(cm, done);
+	cm.state.selectingText = up;
 	on(document, "mousemove", move);
 	on(document, "mouseup", up);
   }
@@ -3786,6 +3796,7 @@
 
   function onDrop(e) {
 	var cm = this;
+	clearDragCursor(cm);
 	if (signalDOMEvent(cm, e) || eventInWidget(cm.display, e))
 	  return;
 	e_preventDefault(e);
@@ -3855,6 +3866,25 @@
 	  }
 	  e.dataTransfer.setDragImage(img, 0, 0);
 	  if (presto) img.parentNode.removeChild(img);
+	}
+  }
+
+  function onDragOver(cm, e) {
+	var pos = posFromMouse(cm, e);
+	if (!pos) return;
+	var frag = document.createDocumentFragment();
+	drawSelectionCursor(cm, pos, frag);
+	if (!cm.display.dragCursor) {
+	  cm.display.dragCursor = elt("div", null, "CodeMirror-cursors CodeMirror-dragcursors");
+	  cm.display.lineSpace.insertBefore(cm.display.dragCursor, cm.display.cursorDiv);
+	}
+	removeChildrenAndAdd(cm.display.dragCursor, frag);
+  }
+
+  function clearDragCursor(cm) {
+	if (cm.display.dragCursor) {
+	  cm.display.lineSpace.removeChild(cm.display.dragCursor);
+	  cm.display.dragCursor = null;
 	}
   }
 
@@ -5064,7 +5094,7 @@
 
 	execCommand: function(cmd) {
 	  if (commands.hasOwnProperty(cmd))
-		return commands[cmd](this);
+		return commands[cmd].call(null, this);
 	},
 
 	triggerElectric: methodOp(function(text) { triggerElectric(this, text); }),
