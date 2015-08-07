@@ -627,7 +627,8 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	var self = this;
 
 	var el;
-	self.toolbar = {};
+	var toolbar_data = {};
+	self.toolbar = items;
 
 	for (var i = 0; i < items.length; i++) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
@@ -652,7 +653,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 					el.target = '_blank';
 				}
 			}
-			self.toolbar[item.name || item] = el;
+			toolbar_data[item.name || item] = el;
 			bar.appendChild(el);
 		})(items[i]);
 	}
@@ -661,9 +662,9 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	cm.on('cursorActivity', function() {
 		var stat = getState(cm);
 
-		for (var key in self.toolbar) {
+		for (var key in toolbar_data) {
 			(function(key) {
-				var el = self.toolbar[key];
+				var el = toolbar_data[key];
 				if (stat[key]) {
 					el.className += ' active';
 				} else {
