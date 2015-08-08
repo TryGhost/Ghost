@@ -3,6 +3,7 @@ Minify the JS in this order:
 
 1. `codemirror/codemirror.js`
 1. `codemirror/continuelist.js`
+1. `codemirror/fullscreen.js`
 1. `codemirror/markdown.js`
 1. `codemirror/overlay.js`
 1. `codemirror/gfm.js`
