@@ -11,6 +11,17 @@
 	min-height: 300px
 }
 
+.CodeMirror-fullscreen {
+	background:#fff;
+	position: fixed !important;
+	top: 50px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: auto;
+	z-index: 9;
+}
+
 :-webkit-full-screen {
 	background: #f9f9f5;
 	padding: .5em 1em;
@@ -74,6 +85,16 @@
 	opacity: .8
 }
 
+.editor-toolbar.fullscreen {
+	width: 100%;
+	background: #fff;
+	border: 0;
+	position: fixed;
+	top: 0;
+	left: 0;
+	opacity: 1;
+}
+
 .editor-toolbar a {
 	display: inline-block;
 	text-align: center;
@@ -111,7 +132,7 @@
 	right: 10px;
 }
 
-.editor-toolbar.disabled-for-preview a:not(.fa-eye) {
+.editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt) {
 	pointer-events: none;
 	background: #fff;
 	border: none;

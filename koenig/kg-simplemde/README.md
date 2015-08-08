@@ -100,6 +100,7 @@ numbered-list | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
 link | drawLink | fa fa-link | Create Link (Ctrl+K)
 image | drawImage | fa fa-picture-o | Insert Image (Ctrl+Alt+I)
 horizontal-rule | drawHorizontalRule | fa fa-minus | Insert Horizontal Line
+fullscreen | toggleFullScreen | fa fa-arrows-alt | Toggle Fullscreen (F11)
 preview | togglePreview | fa fa-eye | Toggle Preview (Ctrl+P)
 guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | fa fa-question-circle | Markdown Guide
 

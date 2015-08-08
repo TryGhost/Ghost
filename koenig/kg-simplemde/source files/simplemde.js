@@ -94,33 +94,16 @@ function getState(cm, pos) {
  * Toggle full screen of the editor.
  */
 function toggleFullScreen(editor) {
-	var el = editor.codemirror.getWrapperElement();
-
-	// https://developer.mozilla.org/en-US/docs/DOM/Using_fullscreen_mode
-	var doc = document;
-	var isFull = doc.fullScreen || doc.mozFullScreen || doc.webkitFullScreen;
-	var request = function() {
-		if (el.requestFullScreen) {
-			el.requestFullScreen();
-		} else if (el.mozRequestFullScreen) {
-			el.mozRequestFullScreen();
-		} else if (el.webkitRequestFullScreen) {
-			el.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-		}
-	};
-	var cancel = function() {
-		if (doc.cancelFullScreen) {
-			doc.cancelFullScreen();
-		} else if (doc.mozCancelFullScreen) {
-			doc.mozCancelFullScreen();
-		} else if (doc.webkitCancelFullScreen) {
-			doc.webkitCancelFullScreen();
-		}
-	};
-	if (!isFull) {
-		request();
-	} else if (cancel) {
-		cancel();
+	var cm = editor.codemirror;
+	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+	
+	var toolbarButton = editor.toolbarElements.fullscreen;
+	
+	if (!/active/.test(toolbarButton.className)) {
+		toolbarButton.className += " active";
+	}
+	else {
+		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
 	}
 }
 
@@ -229,7 +212,7 @@ function redo(editor) {
  */
 function togglePreview(editor) {
 	var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
-	var toolbar = editor.toolbar.preview;
+	var toolbar = editor.toolbarElements.preview;
 	var parse = editor.constructor.markdown;
 	var cm = editor.codemirror;
 	var wrapper = cm.getWrapperElement();
@@ -244,7 +227,7 @@ function togglePreview(editor) {
 			/\s*editor-preview-active\s*/g, ''
 		);
 		toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
-		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview\s*/g, '');
+		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
 	} else {
 		/* When the preview button is clicked for the first time,
 		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
@@ -454,6 +437,12 @@ var toolbar = [{
 		title: "Toggle Preview (Ctrl+P)",
 	},
 	{
+		name: "fullscreen",
+		action: toggleFullScreen,
+		className: "fa fa-arrows-alt",
+		title: "Toggle Fullscreen (F11)",
+	},
+	{
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
@@ -527,8 +516,14 @@ SimpleMDE.prototype.render = function(el) {
 	}
 
 	keyMaps["Enter"] = "newlineAndIndentContinueMarkdownList";
-	keyMaps['Tab'] = 'tabAndIndentContinueMarkdownList';
-	keyMaps['Shift-Tab'] = 'shiftTabAndIndentContinueMarkdownList';
+	keyMaps["Tab"] = "tabAndIndentContinueMarkdownList";
+	keyMaps["Shift-Tab"] = "shiftTabAndIndentContinueMarkdownList";
+	keyMaps["F11"] = function(cm) {
+		toggleFullScreen(cm);
+	};
+	keyMaps["Esc"] = function(cm) {
+		if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+	};
 	
 	var mode = "spell-checker";
 	var backdrop = "gfm";
@@ -657,6 +652,8 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			bar.appendChild(el);
 		})(items[i]);
 	}
+	
+	self.toolbarElements = toolbar_data;
 
 	var cm = this.codemirror;
 	cm.on('cursorActivity', function() {
