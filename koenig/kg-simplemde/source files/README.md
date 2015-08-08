@@ -15,5 +15,6 @@ Minify the JS in this order:
 
 Minify the CSS in this order:
 
-1. `theme.css`
+1. `codemirror/codemirror.css`
+1. `simplemde.css`
 1. `spell-checker/spell-checker.css`
