@@ -90,7 +90,7 @@ var simplemde = new SimpleMDE({
 Below are the available toolbar icons, which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. The `Ctrl` and `Alt` in the title tags will be changed automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
 Name | Action | Class | Tooltip
----- | ------ | ----- | -----
+:--- | :----- | :---- | :------
 bold | toggleBold | fa fa-bold | Bold (Ctrl+B)
 italic | toggleItalic | fa fa-italic | Italic (Ctrl+I)
 code | toggleCodeBlock | fa fa-code | Code (Ctrl+Alt+C)
@@ -100,6 +100,7 @@ numbered-list | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
 link | drawLink | fa fa-link | Create Link (Ctrl+K)
 image | drawImage | fa fa-picture-o | Insert Image (Ctrl+Alt+I)
 horizontal-rule | drawHorizontalRule | fa fa-minus | Insert Horizontal Line
+fullscreen | toggleFullScreen | fa fa-arrows-alt | Toggle Fullscreen (F11)
 preview | togglePreview | fa fa-eye | Toggle Preview (Ctrl+P)
 guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | fa fa-question-circle | Markdown Guide
 

@@ -3,6 +3,7 @@ Minify the JS in this order:
 
 1. `codemirror/codemirror.js`
 1. `codemirror/continuelist.js`
+1. `codemirror/fullscreen.js`
 1. `codemirror/markdown.js`
 1. `codemirror/overlay.js`
 1. `codemirror/gfm.js`
@@ -14,5 +15,6 @@ Minify the JS in this order:
 
 Minify the CSS in this order:
 
-1. `theme.css`
+1. `codemirror/codemirror.css`
+1. `simplemde.css`
 1. `spell-checker/spell-checker.css`
