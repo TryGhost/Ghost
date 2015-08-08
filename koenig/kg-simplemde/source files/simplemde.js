@@ -664,7 +664,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 				var el = toolbar_data[key];
 				if (stat[key]) {
 					el.className += ' active';
-				} else {
+				} else if(key != "fullscreen") {
 					el.className = el.className.replace(/\s*active\s*/g, '');
 				}
 			})(key);
