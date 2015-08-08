@@ -134,12 +134,15 @@
 .editor-preview {
 	padding: 10px;
 	position: absolute;
+	width:100%;
+	height:100%;
 	top: 0;
 	left: 0;
 	background: #fafafa;
 	z-index: 9999;
 	overflow: auto;
 	display: none;
+	box-sizing: border-box;
 }
 
 .editor-preview-active {
