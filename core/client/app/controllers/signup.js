@@ -21,7 +21,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             notifications.closeNotifications();
 
             this.validate().then(function () {
-                this.toggleProperty('submitting');
+                self.toggleProperty('submitting');
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'invitation'),
                     type: 'POST',
