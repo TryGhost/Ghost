@@ -45,7 +45,6 @@ middleware = {
         cacheOauthServer: clientAuth.cacheOauthServer,
         authenticateClient: clientAuth.authenticateClient,
         generateAccessToken: clientAuth.generateAccessToken,
-        methodNotAllowed: apiErrorHandlers.methodNotAllowed,
         errorHandler: apiErrorHandlers.errorHandler
     }
 };
@@ -56,7 +55,8 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
         oauthServer = oauth2orize.createServer();
 
     // silence JSHint without disabling unused check for the whole file
-    authStrategies = authStrategies;
+    passport.use(authStrategies.clientPasswordStrategy);
+    passport.use(authStrategies.bearerStrategy);
 
     // Cache express server instance
     blogApp = blogAppInstance;
