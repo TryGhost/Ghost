@@ -36,13 +36,13 @@ frontendRoutes = function frontendRoutes(middleware) {
     // password-protected frontend route
     privateRouter.route('/')
         .get(
-            middleware.isPrivateSessionAuth,
+            middleware.privateBlogging.isPrivateSessionAuth,
             frontend.private
         )
         .post(
-            middleware.isPrivateSessionAuth,
+            middleware.privateBlogging.isPrivateSessionAuth,
             middleware.spamPrevention.protected,
-            middleware.authenticateProtection,
+            middleware.privateBlogging.authenticateProtection,
             frontend.private
         );
 
