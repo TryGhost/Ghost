@@ -9,26 +9,27 @@ var should         = require('should'),
 // Stuff we are testing
     handlebars     = hbs.handlebars,
     helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api');
+    api            = require('../../../server/api'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{prev_post}} helper', function () {
-    describe('with valid post data - ', function () {
-        var sandbox;
+    var readPostStub;
 
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    describe('with valid post data - ', function () {
         beforeEach(function () {
-            sandbox = sinon.sandbox.create();
             utils.loadHelpers();
-            sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include === 'previous') {
+            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
+                if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({
                         posts: [{slug: '/current/', title: 'post 2', previous: {slug: '/previous/', title: 'post 1'}}]
                     });
                 }
             });
-        });
-
-        afterEach(function () {
-            sandbox.restore();
         });
 
         it('has loaded prev_post helper', function () {
@@ -47,8 +48,12 @@ describe('{{prev_post}} helper', function () {
                 slug: 'current',
                 created_at: new Date(0),
                 url: '/current/'}, optionsData).then(function () {
-                fn.called.should.be.true;
-                inverse.called.should.be.false;
+                fn.calledOnce.should.be.true;
+                inverse.calledOnce.should.be.false;
+
+                readPostStub.calledOnce.should.be.true;
+                readPostStub.firstCall.args[0].include.should.eql('previous,previous.author,previous.tags');
+
                 done();
             }).catch(function (err) {
                 console.log('err ', err);
@@ -58,20 +63,13 @@ describe('{{prev_post}} helper', function () {
     });
 
     describe('for valid post with no previous post', function () {
-        var sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.sandbox.create();
             utils.loadHelpers();
-            sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include === 'previous') {
+            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
+                if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({posts: [{slug: '/current/', title: 'post 2'}]});
                 }
             });
-        });
-
-        afterEach(function () {
-            sandbox.restore();
         });
 
         it('shows \'else\' template', function (done) {
@@ -96,20 +94,13 @@ describe('{{prev_post}} helper', function () {
     });
 
     describe('for invalid post data', function () {
-        var sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.sandbox.create();
             utils.loadHelpers();
-            sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include === 'previous') {
+            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
+                if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({});
                 }
             });
-        });
-
-        afterEach(function () {
-            sandbox.restore();
         });
 
         it('shows \'else\' template', function (done) {
@@ -120,6 +111,7 @@ describe('{{prev_post}} helper', function () {
             helpers.prev_post.call({}, optionsData).then(function () {
                 fn.called.should.be.false;
                 inverse.called.should.be.true;
+                readPostStub.called.should.be.false;
                 done();
             }).catch(function (err) {
                 done(err);
@@ -128,20 +120,13 @@ describe('{{prev_post}} helper', function () {
     });
 
     describe('for unpublished post', function () {
-        var sandbox;
-
         beforeEach(function () {
-            sandbox = sinon.sandbox.create();
             utils.loadHelpers();
-            sandbox.stub(api.posts, 'read', function (options) {
-                if (options.include === 'previous') {
+            readPostStub = sandbox.stub(api.posts, 'read', function (options) {
+                if (options.include.indexOf('previous') === 0) {
                     return Promise.resolve({posts: [{slug: '/current/', title: 'post 2',  previous: {slug: '/previous/', title: 'post 1'}}]});
                 }
             });
-        });
-
-        afterEach(function () {
-            sandbox.restore();
         });
 
         it('shows \'else\' template', function (done) {

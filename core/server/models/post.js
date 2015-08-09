@@ -399,7 +399,21 @@ Post = ghostBookshelf.Model.extend({
         options = options || {};
 
         var withNext = _.contains(options.include, 'next'),
-            withPrev = _.contains(options.include, 'previous');
+            withPrev = _.contains(options.include, 'previous'),
+            nextRelations = _.transform(options.include, function (relations, include) {
+                if (include === 'next.tags') {
+                    relations.push('tags');
+                } else if (include === 'next.author') {
+                    relations.push('author');
+                }
+            }, []),
+            prevRelations = _.transform(options.include, function (relations, include) {
+            if (include === 'previous.tags') {
+                relations.push('tags');
+            } else if (include === 'previous.author') {
+                relations.push('author');
+            }
+        }, []);
 
         data = _.defaults(data || {}, {
             status: 'published'
@@ -410,7 +424,10 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // Add related objects, excluding next and previous as they are not real db objects
-        options.withRelated = _.union(options.withRelated, _.pull([].concat(options.include), 'next', 'previous'));
+        options.withRelated = _.union(options.withRelated, _.pull(
+            [].concat(options.include),
+            'next', 'next.author', 'next.tags', 'previous', 'previous.author', 'previous.tags')
+        );
 
         return ghostBookshelf.Model.findOne.call(this, data, options).then(function then(post) {
             if ((withNext || withPrev) && post && !post.page) {
@@ -425,7 +442,7 @@ Post = ghostBookshelf.Model.extend({
                             .andWhere('published_at', '>', publishedAt)
                             .orderBy('published_at', 'asc')
                             .limit(1);
-                    }).fetch();
+                    }).fetch({withRelated: nextRelations});
                 }
 
                 if (withPrev) {
@@ -435,7 +452,7 @@ Post = ghostBookshelf.Model.extend({
                             .andWhere('published_at', '<', publishedAt)
                             .orderBy('published_at', 'desc')
                             .limit(1);
-                    }).fetch();
+                    }).fetch({withRelated: prevRelations});
                 }
 
                 return Promise.join(next, prev)
