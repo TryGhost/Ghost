@@ -125,6 +125,7 @@ select.error {
 }
 
 .gh-input:focus,
+.gh-input.focus,
 .gh-select:focus,
 select:focus {
     outline: 0;
