@@ -3,8 +3,12 @@ import DS from 'ember-data';
 
 export default Ember.Controller.extend({
     notifications: Ember.inject.service(),
+    two: Ember.inject.controller('setup/two'),
+
     errors: DS.Errors.create(),
     users: '',
+
+    ownerEmail: Ember.computed.alias('two.email'),
     usersArray: Ember.computed('users', function () {
         var users = this.get('users').split('\n').filter(function (email) {
             return email.trim().length > 0;
@@ -17,11 +21,12 @@ export default Ember.Controller.extend({
             return validator.isEmail(user);
         });
     }),
-    validateUsers: Ember.computed('usersArray', function () {
-        var errors = [];
+    validateUsers: Ember.computed('usersArray', 'ownerEmail', function () {
+        var errors = [],
+            self = this;
 
         this.get('usersArray').forEach(function (user) {
-            if (!validator.isEmail(user)) {
+            if (!validator.isEmail(user) || user === self.get('ownerEmail')) {
                 errors.push({
                     user: user,
                     error: 'email'
@@ -115,6 +120,7 @@ export default Ember.Controller.extend({
                             invitationsString = successCount > 1 ? 'invitations' : 'invitation';
 
                             notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true});
+                            self.send('loadServerNotifications');
                             self.transitionTo('posts.index');
                         }
                     });
@@ -130,7 +136,10 @@ export default Ember.Controller.extend({
                     }
                 });
             }
+        },
+        skipInvite: function () {
+            this.send('loadServerNotifications');
+            this.transitionTo('posts.index');
         }
     }
 });
-
