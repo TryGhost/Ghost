@@ -49,7 +49,7 @@ spamPrevention = {
                 'Too many login attempts.'
             );
             message += rateSigninPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
-            return next(new errors.UnauthorizedError(message));
+            return next(new errors.TooManyRequestsError(message));
         }
         next();
     },
@@ -110,7 +110,7 @@ spamPrevention = {
 
         if (deniedEmailRateLimit || deniedRateLimit) {
             message += rateForgottenPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
-            return next(new errors.UnauthorizedError(message));
+            return next(new errors.TooManyRequestsError(message));
         }
 
         next();
