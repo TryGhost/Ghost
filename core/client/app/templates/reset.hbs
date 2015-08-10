@@ -17,7 +17,7 @@
                     {{input value=ne2Password class="gh-input password" type="password" placeholder="Confirm Password" name="ne2password" focusOut=(action "validate" "ne2Password")}}
                     {{gh-error-message errors=errors property="ne2Password"}}
                 {{/gh-form-group}}
-                <button class="btn btn-blue btn-block" type="submit" disabled={{submitting}}>Reset Password</button>
+                {{gh-spin-button class="btn btn-blue btn-block" type="submit" submitting=submitting buttonText="Reset Password" autoWidth=false}}
             </form>
         </section>
     </div>

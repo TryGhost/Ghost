@@ -9,6 +9,7 @@ export default Ember.Component.extend({
     isPublished: null,
     willPublish: null,
     postOrPage: null,
+    submitting: false,
 
     // Tracks whether we're going to change the state of the post on save
     isDangerous: Ember.computed('isPublished', 'willPublish', function () {

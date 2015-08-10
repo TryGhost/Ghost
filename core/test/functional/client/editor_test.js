@@ -273,13 +273,13 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
         // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-        casper.waitForOpaque('.js-publish-splitbutton .open');
+        casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
 
         // Select the publish post button
         casper.thenClick('.js-publish-splitbutton li:first-child a');
 
         // ... check status, label, class
-        casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
+        casper.waitForSelector('.js-publish-splitbutton .js-publish-button:not([disabled])', function onSuccess() {
             test.assertExists('.js-publish-button.btn-red', 'Publish button should have .btn-red');
             test.assertSelectorHasText('.js-publish-button', 'Publish Now', '.js-publish-button says Publish Now');
         }, function onTimeout() {
@@ -291,7 +291,7 @@ CasperTest.begin('Publish menu - new post', 10, function suite(test) {
     casper.thenClick('.js-publish-button');
 
     // ... check status, label, class
-    casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
+    casper.waitForSelector('.js-publish-splitbutton .js-publish-button:not([disabled])', function onSuccess() {
         test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
         test.assertSelectorHasText('.js-publish-button', 'Update Post', '.js-publish-button says Update Post');
     }, function onTimeout() {
@@ -329,13 +329,13 @@ CasperTest.begin('Publish menu - new page', 10, function suite(test) {
         // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-        casper.waitForOpaque('.js-publish-splitbutton .open');
+        casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
 
         // Select the publish post button
         casper.thenClick('.js-publish-splitbutton li:first-child a');
 
         // ... check status, label, class
-        casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
+        casper.waitForSelector('.js-publish-splitbutton .js-publish-button:not([disabled])', function onSuccess() {
             test.assertExists('.js-publish-button.btn-red', 'Publish button should have .btn-red');
             test.assertSelectorHasText('.js-publish-button', 'Publish Now', '.js-publish-button says Publish Now');
         }, function onTimeout() {
@@ -347,7 +347,7 @@ CasperTest.begin('Publish menu - new page', 10, function suite(test) {
     casper.thenClick('.js-publish-button');
 
     // ... check status, label, class
-    casper.waitForSelector('.js-publish-splitbutton', function onSuccess() {
+    casper.waitForSelector('.js-publish-splitbutton .js-publish-button:not([disabled])', function onSuccess() {
         test.assertExists('.js-publish-button.btn-blue', 'Update button should have .btn-blue');
         test.assertSelectorHasText('.js-publish-button', 'Update Page', '.js-publish-button says Update Page');
     }, function onTimeout() {
@@ -399,7 +399,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
 
     casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-    casper.waitForOpaque('.js-publish-splitbutton .open', function onSuccess() {
+    casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu', function onSuccess() {
         test.assert(true, 'delete post button should be visible for saved drafts');
         test.assertVisible(
             '.js-publish-splitbutton .delete', 'delete post button should be visible on saved drafts'
@@ -412,7 +412,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
         // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-        casper.waitForOpaque('.js-publish-splitbutton .open');
+        casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
 
         // Select the publish post button
         casper.thenClick('.js-publish-splitbutton li:first-child a');
@@ -445,7 +445,7 @@ CasperTest.begin('Publish menu - existing post', 23, function suite(test) {
         // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-        casper.waitForOpaque('.js-publish-splitbutton .open');
+        casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
 
         // Select the publish post button
         casper.thenClick('.js-publish-splitbutton li:nth-child(2) a');
@@ -488,7 +488,7 @@ CasperTest.begin('Publish menu - delete post', 6, function testDeleteModal(test)
 
     // Open post settings menu
     casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
-    casper.waitForOpaque('.js-publish-splitbutton .open');
+    casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
     casper.thenClick('.js-publish-splitbutton li:nth-child(4) a');
 
     casper.waitUntilVisible('.modal-container', function onSuccess() {
@@ -506,7 +506,7 @@ CasperTest.begin('Publish menu - delete post', 6, function testDeleteModal(test)
 
     // Test delete
     casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
-    casper.waitForOpaque('.js-publish-splitbutton .open');
+    casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
     casper.thenClick('.js-publish-splitbutton li:nth-child(4) a');
 
     casper.waitForSelector('.modal-container .modal-content', function onSuccess() {
@@ -536,7 +536,7 @@ CasperTest.begin('Publish menu - new post status is correct after failed save', 
         // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-        casper.waitForOpaque('.js-publish-splitbutton .open');
+        casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
 
         // Select the publish post button
         casper.thenClick('.js-publish-splitbutton li:first-child a');
@@ -581,7 +581,7 @@ CasperTest.begin('Publish menu - existing post status is correct after failed sa
         // Open the publish options menu;
         casper.thenClick('.js-publish-splitbutton .dropdown-toggle');
 
-        casper.waitForOpaque('.js-publish-splitbutton .open');
+        casper.waitForOpaque('.js-publish-splitbutton .dropdown-menu');
 
         // Select the publish post button
         casper.thenClick('.js-publish-splitbutton li:first-child a');

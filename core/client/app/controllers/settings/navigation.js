@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import SettingsSaveMixin from 'ghost/mixins/settings-save';
 
 var NavItem = Ember.Object.extend({
     label: '',
@@ -10,7 +11,7 @@ var NavItem = Ember.Object.extend({
     })
 });
 
-export default Ember.Controller.extend({
+export default Ember.Controller.extend(SettingsSaveMixin, {
     config: Ember.inject.service(),
     notifications: Ember.inject.service(),
 
@@ -54,6 +55,65 @@ export default Ember.Controller.extend({
         });
     }),
 
+    save: function () {
+        var navSetting,
+            blogUrl = this.get('config').blogUrl,
+            blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
+            navItems = this.get('navigationItems'),
+            message = 'One of your navigation items has an empty label. ' +
+                '<br /> Please enter a new label or delete the item before saving.',
+            match,
+            notifications = this.get('notifications');
+
+        // Don't save if there's a blank label.
+        if (navItems.find(function (item) {return !item.get('isComplete') && !item.get('last');})) {
+            notifications.showAlert(message.htmlSafe(), {type: 'error'});
+            return;
+        }
+
+        navSetting = navItems.map(function (item) {
+            var label,
+                url;
+
+            if (!item || !item.get('isComplete')) {
+                return;
+            }
+
+            label = item.get('label').trim();
+            url = item.get('url').trim();
+
+            // is this an internal URL?
+            match = url.match(blogUrlRegex);
+
+            if (match) {
+                url = match[1];
+
+                // if the last char is not a slash, then add one,
+                // as long as there is no # or . in the URL (anchor or file extension)
+                // this also handles the empty case for the homepage
+                if (url[url.length - 1] !== '/' && url.indexOf('#') === -1 && url.indexOf('.') === -1) {
+                    url += '/';
+                }
+            } else if (!validator.isURL(url) && url !== '' && url[0] !== '/' && url.indexOf('mailto:') !== 0) {
+                url = '/' + url;
+            }
+
+            return {label: label, url: url};
+        }).compact();
+
+        this.set('model.navigation', JSON.stringify(navSetting));
+
+        // trigger change event because even if the final JSON is unchanged
+        // we need to have navigationItems recomputed.
+        this.get('model').notifyPropertyChange('navigation');
+
+        notifications.closeNotifications();
+
+        return this.get('model').save().catch(function (err) {
+            notifications.showErrors(err);
+        });
+    },
+
     actions: {
         addItem: function () {
             var navItems = this.get('navigationItems'),
@@ -94,65 +154,6 @@ export default Ember.Controller.extend({
             }
 
             navItem.set('url', url);
-        },
-
-        save: function () {
-            var navSetting,
-                blogUrl = this.get('config').blogUrl,
-                blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
-                navItems = this.get('navigationItems'),
-                message = 'One of your navigation items has an empty label. ' +
-                    '<br /> Please enter a new label or delete the item before saving.',
-                match,
-                notifications = this.get('notifications');
-
-            // Don't save if there's a blank label.
-            if (navItems.find(function (item) {return !item.get('isComplete') && !item.get('last');})) {
-                notifications.showAlert(message.htmlSafe(), {type: 'error'});
-                return;
-            }
-
-            navSetting = navItems.map(function (item) {
-                var label,
-                    url;
-
-                if (!item || !item.get('isComplete')) {
-                    return;
-                }
-
-                label = item.get('label').trim();
-                url = item.get('url').trim();
-
-                // is this an internal URL?
-                match = url.match(blogUrlRegex);
-
-                if (match) {
-                    url = match[1];
-
-                    // if the last char is not a slash, then add one,
-                    // as long as there is no # or . in the URL (anchor or file extension)
-                    // this also handles the empty case for the homepage
-                    if (url[url.length - 1] !== '/' && url.indexOf('#') === -1 && url.indexOf('.') === -1) {
-                        url += '/';
-                    }
-                } else if (!validator.isURL(url) && url !== '' && url[0] !== '/' && url.indexOf('mailto:') !== 0) {
-                    url = '/' + url;
-                }
-
-                return {label: label, url: url};
-            }).compact();
-
-            this.set('model.navigation', JSON.stringify(navSetting));
-
-            // trigger change event because even if the final JSON is unchanged
-            // we need to have navigationItems recomputed.
-            this.get('model').notifyPropertyChange('navigation');
-
-            notifications.closeNotifications();
-
-            this.get('model').save().catch(function (err) {
-                notifications.showErrors(err);
-            });
         }
     }
 });

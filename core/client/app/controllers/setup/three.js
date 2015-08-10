@@ -9,6 +9,7 @@ export default Ember.Controller.extend({
     users: '',
 
     ownerEmail: Ember.computed.alias('two.email'),
+    submitting: false,
     usersArray: Ember.computed('users', function () {
         var users = this.get('users').split('\n').filter(function (email) {
             return email.trim().length > 0;
@@ -75,6 +76,7 @@ export default Ember.Controller.extend({
             this.get('errors').clear();
 
             if (validationErrors === true && users.length > 0) {
+                this.toggleProperty('submitting');
                 this.get('authorRole').then(function (authorRole) {
                     Ember.RSVP.Promise.all(
                         users.map(function (user) {
@@ -123,6 +125,8 @@ export default Ember.Controller.extend({
                             self.send('loadServerNotifications');
                             self.transitionTo('posts.index');
                         }
+
+                        self.toggleProperty('submitting');
                     });
                 });
             } else if (users.length === 0) {
