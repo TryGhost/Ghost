@@ -1,20 +1,9 @@
 var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
-
+    baseUtils      = require('./base/utils'),
     Tag,
     Tags;
-
-function addPostCount(options, obj) {
-    if (options.include && options.include.indexOf('post_count') > -1) {
-        obj.query('select', 'tags.*');
-        obj.query('count', 'posts_tags.id as post_count');
-        obj.query('leftJoin', 'posts_tags', 'tag_id', 'tags.id');
-        obj.query('groupBy', 'tag_id', 'tags.id');
-
-        options.include = _.pull([].concat(options.include), 'post_count');
-    }
-}
 
 Tag = ghostBookshelf.Model.extend({
 
@@ -83,7 +72,6 @@ Tag = ghostBookshelf.Model.extend({
     },
 
     processOptions: function processOptions(itemCollection, options) {
-        addPostCount(options, itemCollection);
         return options;
     },
 
@@ -115,7 +103,7 @@ Tag = ghostBookshelf.Model.extend({
 
         var tag = this.forge(data);
 
-        addPostCount(options, tag);
+        baseUtils.addPostCount(options, tag);
 
         // Add related objects
         options.withRelated = _.union(options.withRelated, options.include);
