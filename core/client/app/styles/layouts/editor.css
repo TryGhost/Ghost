@@ -249,7 +249,48 @@
     display: none;
 }
 
-#entry-tags input[type="text"].tag-input {
+/* Tags input CSS (TODO: needs some revision)
+/* ------------------------------------------------------ */
+.tags-input-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.tags-input-list li {
+    flex: 1 0 auto;
+}
+
+.label-tag {
+    margin-right: 0.3em;
+    padding: 0.2em 0.6em 0.3em;
+    background-color: var(--darkgrey);
+    border-radius: 0.25em;
+    color: var(--lightgrey);
+    text-align: center;
+    font-weight: 300;
+}
+
+.label-tag.highlight {
+    background: var(--midgrey);
+    color: #fff;
+}
+
+.tag-input {
+    margin-top: 5px;
+    border: none;
+    font-weight: 300;
+    cursor: default;
+}
+
+.tag-input:focus {
+    outline: 0;
+}
+
+/* TODO: can be removed once tag-component css is fixed */
+/*#entry-tags input[type="text"].tag-input {
     display: inline-block;
     padding: 9px 9px 9px 0;
     width: 100%;
@@ -410,7 +451,7 @@
     position: relative;
     flex: 1 1 auto;
     align-self: auto;
-}
+} */
 
 .publish-bar-actions {
     flex: 1 0 auto;
