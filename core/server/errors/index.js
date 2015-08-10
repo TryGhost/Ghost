@@ -16,6 +16,7 @@ var _                          = require('lodash'),
     UnsupportedMediaTypeError  = require('./unsupported-media-type-error'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
+    TooManyRequestsError       = require('./too-many-requests-error'),
     config,
     errors,
 
@@ -393,3 +394,4 @@ module.exports.UnsupportedMediaTypeError  = UnsupportedMediaTypeError;
 module.exports.EmailError                 = EmailError;
 module.exports.DataImportError            = DataImportError;
 module.exports.MethodNotAllowedError      = MethodNotAllowedError;
+module.exports.TooManyRequestsError       = TooManyRequestsError;
