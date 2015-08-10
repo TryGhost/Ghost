@@ -406,6 +406,15 @@ img {
     }
 }
 
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .fade-in {
     animation: fade-in 0.2s;
     animation-fill-mode: forwards;
