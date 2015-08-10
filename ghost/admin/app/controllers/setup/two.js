@@ -11,6 +11,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     password: null,
     image: null,
     blogCreated: false,
+    submitting: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -54,6 +55,8 @@ export default Ember.Controller.extend(ValidationEngine, {
                 config = this.get('config'),
                 method = this.get('blogCreated') ? 'PUT' : 'POST';
 
+            this.toggleProperty('submitting');
+
             this.validate().then(function () {
                 self.set('showError', false);
                 ajax({
@@ -80,18 +83,23 @@ export default Ember.Controller.extend(ValidationEngine, {
                         if (data.image) {
                             self.sendImage(result.users[0])
                             .then(function () {
+                                self.toggleProperty('submitting');
                                 self.transitionToRoute('setup.three');
                             }).catch(function (resp) {
+                                self.toggleProperty('submitting');
                                 notifications.showAPIError(resp);
                             });
                         } else {
+                            self.toggleProperty('submitting');
                             self.transitionToRoute('setup.three');
                         }
                     });
                 }).catch(function (resp) {
+                    self.toggleProperty('submitting');
                     notifications.showAPIError(resp);
                 });
             }).catch(function () {
+                self.toggleProperty('submitting');
                 self.set('showError', true);
             });
         },

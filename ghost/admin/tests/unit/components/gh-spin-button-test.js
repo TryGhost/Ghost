@@ -6,15 +6,11 @@ import {
 } from 'ember-mocha';
 
 describeComponent(
-    'gh-editor-save-button',
-    'GhEditorSaveButtonComponent',
+    'gh-spin-button',
+    'GhSpinButtonComponent',
     {
-        needs: [
-            'component:gh-dropdown-button',
-            'component:gh-dropdown',
-            'component:gh-spin-button',
-            'service:dropdown'
-        ]
+        // specify the other units that are required for this test
+        // needs: ['component:foo', 'helper:bar']
     },
     function () {
         it('renders', function () {

@@ -37,7 +37,7 @@
             <fieldset>
                 <div class="form-group">
                     <label>Send a test email</label>
-                    <button type="button" id="sendtestmail" class="btn btn-blue" {{action "sendTestEmail"}}>Send</button>
+                    {{gh-spin-button type="button" id="sendtestemail" class="btn btn-blue" action="sendTestEmail" buttonText="Send" submitting=submitting}}
                     <p>Sends a test email to your address.</p>
                 </div>
             </fieldset>

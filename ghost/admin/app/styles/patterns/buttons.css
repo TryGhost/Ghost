@@ -200,3 +200,27 @@ input[type="reset"].btn-block,
 input[type="button"].btn-block {
     width: 100%;
 }
+
+/* Spin Buttons!
+/* ---------------------------------------------------------- */
+.spinner {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    margin: -2px 0;
+    width: 14px;
+    height: 14px;
+    border: rgba(0,0,0,0.2) solid 4px;
+    border-radius: 100px;
+    animation: spin 1s linear infinite;
+}
+
+.spinner:before {
+    content: "";
+    display: block;
+    margin-top: 6px;
+    width: 4px;
+    height: 4px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 100px;
+}
