@@ -48,7 +48,7 @@
                 {{/gh-form-group}}
             </form>
 
-            <button type="submit" class="btn btn-green btn-lg btn-block" {{action "signup"}} disabled={{submitting}}>Create Account</button>
+            {{gh-spin-button type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting autoWidth=false}}
         </section>
     </div>
 

@@ -1,7 +1,8 @@
 import Ember from 'ember';
+import SettingsSaveMixin from 'ghost/mixins/settings-save';
 import randomPassword from 'ghost/utils/random-password';
 
-export default Ember.Controller.extend({
+export default Ember.Controller.extend(SettingsSaveMixin, {
     notifications: Ember.inject.service(),
     config: Ember.inject.service(),
 
@@ -62,24 +63,24 @@ export default Ember.Controller.extend({
         }
     }),
 
+    save: function () {
+        var notifications = this.get('notifications'),
+            config = this.get('config');
+
+        return this.get('model').save().then(function (model) {
+            config.set('blogTitle', model.get('title'));
+
+            return model;
+        }).catch(function (error) {
+            if (error) {
+                notifications.showAPIError(error);
+            }
+        });
+    },
+
     actions: {
         validate: function () {
             this.get('model').validate(arguments);
-        },
-
-        save: function () {
-            var notifications = this.get('notifications'),
-                config = this.get('config');
-
-            return this.get('model').save().then(function (model) {
-                config.set('blogTitle', model.get('title'));
-
-                return model;
-            }).catch(function (error) {
-                if (error) {
-                    notifications.showAPIError(error);
-                }
-            });
         },
 
         checkPostsPerPage: function () {
