@@ -37,6 +37,7 @@
             {{gh-error-message errors=errors property="blogTitle"}}
         {{/gh-form-group}}
     </form>
-
-<button type="submit" class="btn btn-green btn-lg btn-block" {{action "setup"}}>Last step: Invite your team <i class="icon-chevron"></i></button>
+{{#gh-spin-button type="button" class="btn btn-green btn-lg btn-block" action="setup" submitting=submitting autoWidth=false}}
+    Last step: Invite your team <i class="icon-chevron"></i>
+{{/gh-spin-button}}
 <p class="main-error">{{#if showError}}{{invalidMessage}}{{/if}}</p>

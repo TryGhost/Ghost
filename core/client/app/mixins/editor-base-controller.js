@@ -17,6 +17,7 @@ export default Ember.Mixin.create({
     autoSaveId: null,
     timedSaveId: null,
     editor: null,
+    submitting: false,
 
     notifications: Ember.inject.service(),
 
@@ -247,6 +248,8 @@ export default Ember.Mixin.create({
 
             options = options || {};
 
+            this.toggleProperty('submitting');
+
             if (options.backgroundSave) {
                 // do not allow a post's status to be set to published by a background save
                 status = 'draft';
@@ -294,6 +297,7 @@ export default Ember.Mixin.create({
                         self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
                     }
 
+                    self.toggleProperty('submitting');
                     return model;
                 });
             }).catch(function (errors) {
@@ -303,6 +307,7 @@ export default Ember.Mixin.create({
 
                 self.set('model.status', prevStatus);
 
+                self.toggleProperty('submitting');
                 return self.get('model');
             });
 
