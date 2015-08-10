@@ -62,10 +62,8 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 error.errors.forEach(function (err) {
                     err.message = err.message.htmlSafe();
                 });
-
-                this.get('notifications').showErrors(error.errors);
             } else {
-                // connection errors don't return proper status message, only req.body
+                // Connection errors don't return proper status message, only req.body
                 this.get('notifications').showAlert('There was a problem on the server.', {type: 'error'});
             }
         },
