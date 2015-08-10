@@ -4,6 +4,7 @@ import {request as ajax} from 'ic-ajax';
 
 export default Ember.Controller.extend(ValidationEngine, {
     submitting: false,
+    loggingIn: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -19,12 +20,15 @@ export default Ember.Controller.extend(ValidationEngine, {
                 authStrategy = 'simple-auth-authenticator:oauth2-password-grant',
                 data = model.getProperties('identification', 'password');
 
-            this.get('session').authenticate(authStrategy, data).catch(function (err) {
+            this.get('session').authenticate(authStrategy, data).then(function () {
+                self.toggleProperty('loggingIn');
+            }).catch(function (err) {
+                self.toggleProperty('loggingIn');
+
                 if (err.errors) {
                     self.set('flowErrors', err.errors[0].message.string);
                 }
-
-                // If authentication fails a rejected promise will be returned.
+                // if authentication fails a rejected promise will be returned.
                 // it needs to be caught so it doesn't generate an exception in the console,
                 // but it's actually "handled" by the sessionAuthenticationFailed action handler.
             });
@@ -39,6 +43,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
             this.validate().then(function () {
                 self.get('notifications').closeNotifications();
+                self.toggleProperty('loggingIn');
                 self.send('authenticate');
             }).catch(function (error) {
                 if (error) {
@@ -56,7 +61,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
             this.set('flowErrors', '');
             this.validate({property: 'identification'}).then(function () {
-                self.set('submitting', true);
+                self.toggleProperty('submitting');
 
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'passwordreset'),
@@ -67,10 +72,10 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
-                    self.set('submitting', false);
+                    self.toggleProperty('submitting');
                     notifications.showAlert('Please check your email for instructions.', {type: 'info'});
                 }).catch(function (resp) {
-                    self.set('submitting', false);
+                    self.toggleProperty('submitting');
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
                         self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
                     } else {
