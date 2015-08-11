@@ -473,10 +473,10 @@ function SimpleMDE(options) {
 	this.render();
 
   // The codemirror component is only available after rendering
-  // so, the setter for the defaultValue can only run after
+  // so, the setter for the initialValue can only run after
   // the element has been rendered
-  if (options.defaultValue) {
-    this.value(options.defaultValue);
+  if (options.initialValue) {
+	this.value(options.initialValue);
   }
 }
 
