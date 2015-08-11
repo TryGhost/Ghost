@@ -467,10 +467,17 @@ function SimpleMDE(options) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
-	this.options = options;
+  this.options = options;
 
 	// If user has passed an element, it should auto rendered
 	this.render();
+
+  // The codemirror component is only available after rendering
+  // so, the setter for the defaultValue can only run after
+  // the element has been rendered
+  if (options.defaultValue) {
+    this.value(options.defaultValue);
+  }
 }
 
 /**
