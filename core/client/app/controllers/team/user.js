@@ -124,7 +124,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     window.history.replaceState({path: newPath}, '', newPath);
                 }
 
-                this.toggleProperty('submitting');
+                self.toggleProperty('submitting');
 
                 return model;
             }).catch(function (errors) {
@@ -132,7 +132,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     self.get('notifications').showErrors(errors);
                 }
 
-                this.toggleProperty('submitting');
+                self.toggleProperty('submitting');
             });
 
             this.set('lastPromise', promise);
