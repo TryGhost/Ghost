@@ -3,7 +3,6 @@
 var Promise         = require('bluebird'),
     _               = require('lodash'),
     dataProvider    = require('../models'),
-    canThis         = require('../permissions').canThis,
     errors          = require('../errors'),
     utils           = require('./utils'),
     pipeline        = require('../utils/pipeline'),
@@ -114,20 +113,6 @@ posts = {
         var tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).edit.post(options.id).then(function permissionGranted() {
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to edit posts.');
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -140,7 +125,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            handlePermissions,
+            utils.handlePermissions(docName, 'edit'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -175,20 +160,6 @@ posts = {
         var tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).add.post().then(function permissionGranted() {
-                return options;
-            }).catch(function () {
-                return Promise.reject(new errors.NoPermissionError('You do not have permission to add posts.'));
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -201,7 +172,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName),
-            handlePermissions,
+            utils.handlePermissions(docName, 'add'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
@@ -230,27 +201,14 @@ posts = {
         var tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).destroy.post(options.id).then(function permissionGranted() {
-                options.status = 'all';
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to remove posts.');
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
          * @returns {Object} options
          */
         function modelQuery(options) {
+            // Removing a post needs to include all posts.
+            options.status = 'all';
             return posts.read(options).then(function (result) {
                 return dataProvider.Post.destroy(options).then(function () {
                     return result;
@@ -261,7 +219,7 @@ posts = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            handlePermissions,
+            utils.handlePermissions(docName, 'destroy'),
             utils.convertOptions(allowedIncludes),
             modelQuery
         ];
