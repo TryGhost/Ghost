@@ -29,7 +29,7 @@ Pure JavaScript method
 
 ```HTML
 <script>
-var simplemde = new SimpleMDE({ element: document.getElementById("MyID") });
+var simplemde = new SimpleMDE( {element: document.getElementById("MyID")} );
 simplemde.render();
 </script>
 ```
@@ -38,7 +38,7 @@ jQuery method
 
 ```HTML
 <script>
-var simplemde = new SimpleMDE({ element: $("#MyID")[0] });
+var simplemde = new SimpleMDE( {element: $("#MyID")[0]} );
 simplemde.render();
 </script>
 ```

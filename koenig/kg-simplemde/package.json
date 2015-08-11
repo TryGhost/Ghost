@@ -1,0 +1,14 @@
+{
+  "name" : "simplemde-markdown-editor",
+  "main" : "gulpfile.js",
+  "dependencies" : {
+    "gulp" : "*",
+    "gulp-minify-css" : "*",
+    "gulp-uglify" : "*",
+    "gulp-concat" : "*"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/NextStepWebs/simplemde-markdown-editor"
+  }
+}

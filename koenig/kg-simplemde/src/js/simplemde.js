@@ -33,10 +33,10 @@ function createIcon(options, enableTooltips) {
 	options = options || {};
 	var el = document.createElement('a');
 	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
-	
+
 	if (options.title && enableTooltips) {
 		el.title = options.title;
-		
+
 		if (isMac) {
 			el.title = el.title.replace('Ctrl', '⌘');
 			el.title = el.title.replace('Alt', '⌥');
@@ -96,9 +96,9 @@ function getState(cm, pos) {
 function toggleFullScreen(editor) {
 	var cm = editor.codemirror;
 	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-	
+
 	var toolbarButton = editor.toolbarElements.fullscreen;
-	
+
 	if (!/active/.test(toolbarButton.className)) {
 		toolbarButton.className += " active";
 	}
@@ -246,7 +246,7 @@ function togglePreview(editor) {
 function _replaceSelection(cm, active, start, end) {
 	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
-	
+
 	var text;
 	var startPoint = cm.getCursor('start');
 	var endPoint = cm.getCursor('end');
@@ -273,7 +273,7 @@ function _replaceSelection(cm, active, start, end) {
 function _toggleLine(cm, name) {
 	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
-	
+
 	var stat = getState(cm);
 	var startPoint = cm.getCursor('start');
 	var endPoint = cm.getCursor('end');
@@ -310,7 +310,7 @@ function _toggleLine(cm, name) {
 function _toggleBlock(editor, type, start_chars, end_chars) {
 	if (/editor-preview-active/.test(editor.codemirror.getWrapperElement().lastChild.className))
 		return;
-	
+
 	end_chars = (typeof end_chars === 'undefined') ? start_chars : end_chars;
 	var cm = editor.codemirror;
 	var stat = getState(cm);
@@ -459,7 +459,7 @@ function SimpleMDE(options) {
 	if (options.element) {
 		this.element = options.element;
 	}
-	
+
 	if (options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 
@@ -467,10 +467,17 @@ function SimpleMDE(options) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
-	this.options = options;
+  this.options = options;
 
 	// If user has passed an element, it should auto rendered
 	this.render();
+
+  // The codemirror component is only available after rendering
+  // so, the setter for the defaultValue can only run after
+  // the element has been rendered
+  if (options.defaultValue) {
+    this.value(options.defaultValue);
+  }
 }
 
 /**
@@ -524,15 +531,15 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps["Esc"] = function(cm) {
 		if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
 	};
-	
+
 	var mode = "spell-checker";
 	var backdrop = "gfm";
-	
+
 	if (options.spellChecker === false) {
 		mode = "gfm";
 		backdrop = undefined;
 	}
-	
+
 	this.codemirror = CodeMirror.fromTextArea(el, {
 		mode: mode,
 		backdrop: backdrop,
@@ -562,29 +569,29 @@ SimpleMDE.prototype.render = function(el) {
 SimpleMDE.prototype.autosave = function() {
 	var content = this.value();
 	var simplemde = this;
-	
+
 	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == ""){
 		console.log("SimpleMDE: You must set a unique_id to use the autosave feature");
 		return;
 	}
-	
+
 	if(simplemde.element.form != null && simplemde.element.form != undefined){
 		simplemde.element.form.addEventListener("submit", function(){
 			localStorage.setItem(simplemde.options.autosave.unique_id, "");
 		});
 	}
-	
+
 	if(this.options.autosave.loaded !== true){
 		if(localStorage.getItem(this.options.autosave.unique_id) != null)
 			this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
-		
+
 		this.options.autosave.loaded = true;
 	}
-	
+
 	if(localStorage) {
 		localStorage.setItem(this.options.autosave.unique_id, content);
 	}
-	
+
 	var el = document.getElementById("autosaved");
 	if(el != null && el != undefined && el != ""){
 		var d = new Date();
@@ -600,10 +607,10 @@ SimpleMDE.prototype.autosave = function() {
 			h = 12;
 		}
 		m = m<10?"0"+m:m;
-		
+
 		el.innerHTML = "Autosaved: "+h+":"+m+" "+dd;
 	}
-	
+
 	setTimeout(function() {
 		simplemde.autosave();
 	}, this.options.autosave.delay || 10000);
@@ -628,7 +635,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	for (var i = 0; i < items.length; i++) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
 			continue;
-		
+
 		(function(item) {
 			var el;
 			if (item === '|') {
@@ -652,7 +659,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			bar.appendChild(el);
 		})(items[i]);
 	}
-	
+
 	self.toolbarElements = toolbar_data;
 
 	var cm = this.codemirror;
@@ -714,7 +721,7 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 			bar.appendChild(el);
 		})(status[i]);
 	}
-	
+
 	var cmWrapper = this.codemirror.getWrapperElement();
 	cmWrapper.parentNode.insertBefore(bar, cmWrapper.nextSibling);
 	return bar;
@@ -724,11 +731,11 @@ SimpleMDE.prototype.createStatusbar = function(status) {
  * Get or set the text content.
  */
 SimpleMDE.prototype.value = function(val) {
-	if (val) {
+	if (val === undefined) {
+		return this.codemirror.getValue();
+	} else {
 		this.codemirror.getDoc().setValue(val);
 		return this;
-	} else {
-		return this.codemirror.getValue();
 	}
 };
 
