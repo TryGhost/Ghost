@@ -211,11 +211,11 @@ function redo(editor) {
  * Preview action.
  */
 function togglePreview(editor) {
-	var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
-	var toolbar = editor.toolbarElements.preview;
-	var parse = editor.constructor.markdown;
 	var cm = editor.codemirror;
 	var wrapper = cm.getWrapperElement();
+	var toolbar_div = wrapper.previousSibling;
+	var toolbar = editor.toolbarElements.preview;
+	var parse = editor.constructor.markdown;
 	var preview = wrapper.lastChild;
 	if (!/editor-preview/.test(preview.className)) {
 		preview = document.createElement('div');

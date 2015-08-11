@@ -27,7 +27,7 @@
 	wrap.style.height = "auto";
 	wrap.className += " CodeMirror-fullscreen";
 	document.documentElement.style.overflow = "hidden";
-	document.getElementsByClassName("editor-toolbar")[0].className += " fullscreen";
+	wrap.previousSibling.className += " fullscreen";
 	cm.refresh();
   }
 
@@ -38,7 +38,7 @@
 	var info = cm.state.fullScreenRestore;
 	wrap.style.width = info.width; wrap.style.height = info.height;
 	window.scrollTo(info.scrollLeft, info.scrollTop);
-	document.getElementsByClassName("editor-toolbar")[0].className = document.getElementsByClassName("editor-toolbar")[0].className.replace(/\s*fullscreen\b/, "");
+	wrap.previousSibling.className = wrap.previousSibling.className.replace(/\s*fullscreen\b/, "");
 	cm.refresh();
   }
 });
