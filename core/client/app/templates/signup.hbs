@@ -21,7 +21,7 @@
                 {{#gh-form-group errors=model.errors property="email"}}
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" enter=(action "signup") autofocus="autofocus" autocorrect="off" value=model.email focusOut=(action "validate" "email")}}
+                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" enter=(action "signup") disabled=true autocorrect="off" value=model.email focusOut=(action "validate" "email")}}
                     </span>
                     {{gh-error-message errors=model.errors property="email"}}
                 {{/gh-form-group}}
