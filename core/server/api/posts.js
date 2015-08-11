@@ -9,7 +9,10 @@ var Promise         = require('bluebird'),
     pipeline        = require('../utils/pipeline'),
 
     docName         = 'posts',
-    allowedIncludes = ['created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields', 'next', 'previous'],
+    allowedIncludes = [
+        'created_by', 'updated_by', 'published_by', 'author', 'tags', 'fields',
+        'next', 'previous', 'next.author', 'next.tags', 'previous.author', 'previous.tags'
+    ],
     posts;
 
 /**

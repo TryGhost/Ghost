@@ -320,10 +320,55 @@ describe('Post API', function () {
             }).catch(done);
         });
 
+        it('can include next post with author and tags', function (done) {
+            PostAPI.read({context: {user: 1}, id: 3, include: 'next,next.tags,next.author'}).then(function (results) {
+                should.exist(results.posts[0].next.slug);
+                results.posts[0].next.slug.should.eql('not-so-short-bit-complex');
+                results.posts[0].next.author.should.be.an.Object;
+                results.posts[0].next.tags.should.be.an.Array;
+                done();
+            }).catch(done);
+        });
+
+        it('can include next post with just tags', function (done) {
+            PostAPI.read({context: {user: 1}, id: 2, include: 'next,next.tags'}).then(function (results) {
+                should.exist(results.posts[0].next.slug);
+                results.posts[0].next.slug.should.eql('short-and-sweet');
+                results.posts[0].next.author.should.eql(1);
+                results.posts[0].next.tags.should.be.an.Array;
+                results.posts[0].next.tags[0].name.should.eql('chorizo');
+                done();
+            }).catch(done);
+        });
+
         it('can include previous post', function (done) {
             PostAPI.read({context: {user: 1}, id: 3, include: 'previous'}).then(function (results) {
                 should.exist(results.posts[0].previous.slug);
                 results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
+                done();
+            }).catch(done);
+        });
+
+        it('can include previous post with author and tags', function (done) {
+            PostAPI.read({context: {user: 1}, id: 3, include: 'previous,previous.author,previous.tags'}).then(function (results) {
+                should.exist(results.posts[0].previous.slug);
+                results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
+                results.posts[0].previous.author.should.be.an.Object;
+                results.posts[0].previous.author.name.should.eql('Joe Bloggs');
+                results.posts[0].previous.tags.should.be.an.Array;
+                results.posts[0].previous.tags.should.have.lengthOf(2);
+                results.posts[0].previous.tags[0].slug.should.eql('kitchen-sink');
+                done();
+            }).catch(done);
+        });
+
+        it('can include previous post with just author', function (done) {
+            PostAPI.read({context: {user: 1}, id: 3, include: 'previous,previous.author'}).then(function (results) {
+                should.exist(results.posts[0].previous.slug);
+                should.not.exist(results.posts[0].previous.tags);
+                results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
+                results.posts[0].previous.author.should.be.an.Object;
+                results.posts[0].previous.author.name.should.eql('Joe Bloggs');
                 done();
             }).catch(done);
         });
