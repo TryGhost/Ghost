@@ -3,7 +3,6 @@
 var Promise         = require('bluebird'),
     canThis         = require('../permissions').canThis,
     dataProvider    = require('../models'),
-    errors          = require('../errors'),
     pipeline        = require('../utils/pipeline'),
     utils           = require('./utils'),
     docName         = 'roles',
@@ -34,20 +33,6 @@ roles = {
             tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user.
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).browse.role().then(function () {
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to browse roles.');
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -60,7 +45,7 @@ roles = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: permittedOptions}),
-            handlePermissions,
+            utils.handlePermissions(docName, 'browse'),
             modelQuery
         ];
 

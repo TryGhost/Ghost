@@ -185,6 +185,37 @@ utils = {
         };
     },
 
+    /**
+     * ## Handle Permissions
+     * @param {String} docName
+     * @param {String} method (browse || read || edit || add || destroy)
+     * @returns {Function}
+     */
+    handlePermissions: function handlePermissions(docName, method) {
+        var singular = docName.replace(/s$/, '');
+
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        return function doHandlePermissions(options) {
+            var permsPromise = permissions.canThis(options.context)[method][singular](options.id);
+
+            return permsPromise.then(function permissionGranted() {
+                return options;
+            }).catch(errors.NoPermissionError, function handleNoPermissionError(error) {
+                // pimp error message
+                error.message = 'You do not have permission to ' + method + ' ' + docName;
+                // forward error to next catch()
+                return Promise.reject(error);
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error);
+            });
+        };
+    },
+
     prepareInclude: function prepareInclude(include, allowedIncludes) {
         include = include || '';
         include = _.intersection(include.split(','), allowedIncludes);

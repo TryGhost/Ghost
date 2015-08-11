@@ -3,6 +3,7 @@
 
 var _                   = require('lodash'),
     Promise             = require('bluebird'),
+    errors              = require('../errors'),
     Models              = require('../models'),
     effectivePerms      = require('./effective'),
     init,
@@ -194,7 +195,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject();
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
             });
         };
 

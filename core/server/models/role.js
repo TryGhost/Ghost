@@ -75,7 +75,7 @@ Role = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject();
+        return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
     }
 });
 
