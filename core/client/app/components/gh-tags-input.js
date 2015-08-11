@@ -187,7 +187,7 @@ export default Ember.Component.extend({
         }, {
             name: 'tags',
             source: tags
-        }).bind('typeahead:selected', Ember.run.bind(this, 'typeaheadAdd'));
+        }).bind('typeahead:select', Ember.run.bind(this, 'typeaheadAdd'));
     },
 
     destroyTypeahead: function () {
@@ -195,6 +195,7 @@ export default Ember.Component.extend({
     },
 
     reloadTypeahead: function (refocus) {
+        refocus = (typeof refocus !== 'undefined') ? refocus : true; // set default refocus value
         this.set('isReloading', true);
         this.destroyTypeahead();
         this.initTypeahead();
@@ -216,7 +217,7 @@ export default Ember.Component.extend({
     },
 
     // Used for typeahead selection
-    typeaheadAdd: function (obj, datum) {
+    typeaheadAdd: function (event, datum) {
         if (datum) {
             // this is needed so two tags with the same name aren't added
             this.$('#tag-input').typeahead('val', '');
@@ -228,9 +229,10 @@ export default Ember.Component.extend({
         addTag: function (tagName) {
             var tagToAdd, checkTag;
 
+            this.$('#tag-input').typeahead('val', '');
+
             // Prevent multiple tags with the same name occuring
             if (this.get('currentTags').findBy('name', tagName)) {
-                this.$('#tag-input').typeahead('val', '');
                 return;
             }
 
@@ -247,7 +249,6 @@ export default Ember.Component.extend({
             this.set('isDirty', true);
             this.set('highlightIndex', null);
             this.get('currentTags').pushObject(tagToAdd);
-            this.$('#tag-input').typeahead('val', '');
         },
 
         deleteTag: function (tag) {
