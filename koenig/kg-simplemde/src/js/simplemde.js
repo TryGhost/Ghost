@@ -17,7 +17,7 @@ var shortcuts = {
  * Fix shortcut. Mac use Command, others use Ctrl.
  */
 function fixShortcut(name) {
-	if (isMac) {
+	if(isMac) {
 		name = name.replace('Ctrl', 'Cmd');
 	} else {
 		name = name.replace('Cmd', 'Ctrl');
@@ -34,10 +34,10 @@ function createIcon(options, enableTooltips) {
 	var el = document.createElement('a');
 	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
 
-	if (options.title && enableTooltips) {
+	if(options.title && enableTooltips) {
 		el.title = options.title;
 
-		if (isMac) {
+		if(isMac) {
 			el.title = el.title.replace('Ctrl', '⌘');
 			el.title = el.title.replace('Alt', '⌥');
 		}
@@ -61,28 +61,28 @@ function createSep() {
 function getState(cm, pos) {
 	pos = pos || cm.getCursor('start');
 	var stat = cm.getTokenAt(pos);
-	if (!stat.type) return {};
+	if(!stat.type) return {};
 
 	var types = stat.type.split(' ');
 
 	var ret = {},
 		data, text;
-	for (var i = 0; i < types.length; i++) {
+	for(var i = 0; i < types.length; i++) {
 		data = types[i];
-		if (data === 'strong') {
+		if(data === 'strong') {
 			ret.bold = true;
-		} else if (data === 'variable-2') {
+		} else if(data === 'variable-2') {
 			text = cm.getLine(pos.line);
-			if (/^\s*\d+\.\s/.test(text)) {
+			if(/^\s*\d+\.\s/.test(text)) {
 				ret['ordered-list'] = true;
 			} else {
 				ret['unordered-list'] = true;
 			}
-		} else if (data === 'atom') {
+		} else if(data === 'atom') {
 			ret.quote = true;
-		} else if (data === 'em') {
+		} else if(data === 'em') {
 			ret.italic = true;
-		} else if (data === 'quote') {
+		} else if(data === 'quote') {
 			ret.quote = true;
 		}
 	}
@@ -99,10 +99,9 @@ function toggleFullScreen(editor) {
 
 	var toolbarButton = editor.toolbarElements.fullscreen;
 
-	if (!/active/.test(toolbarButton.className)) {
+	if(!/active/.test(toolbarButton.className)) {
 		toolbarButton.className += " active";
-	}
-	else {
+	} else {
 		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
 	}
 }
@@ -217,12 +216,12 @@ function togglePreview(editor) {
 	var toolbar = editor.toolbarElements.preview;
 	var parse = editor.constructor.markdown;
 	var preview = wrapper.lastChild;
-	if (!/editor-preview/.test(preview.className)) {
+	if(!/editor-preview/.test(preview.className)) {
 		preview = document.createElement('div');
 		preview.className = 'editor-preview';
 		wrapper.appendChild(preview);
 	}
-	if (/editor-preview-active/.test(preview.className)) {
+	if(/editor-preview-active/.test(preview.className)) {
 		preview.className = preview.className.replace(
 			/\s*editor-preview-active\s*/g, ''
 		);
@@ -244,13 +243,13 @@ function togglePreview(editor) {
 }
 
 function _replaceSelection(cm, active, start, end) {
-	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
 
 	var text;
 	var startPoint = cm.getCursor('start');
 	var endPoint = cm.getCursor('end');
-	if (active) {
+	if(active) {
 		text = cm.getLine(startPoint.line);
 		start = text.slice(0, startPoint.ch);
 		end = text.slice(startPoint.ch);
@@ -271,7 +270,7 @@ function _replaceSelection(cm, active, start, end) {
 
 
 function _toggleLine(cm, name) {
-	if (/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
 
 	var stat = getState(cm);
@@ -287,10 +286,10 @@ function _toggleLine(cm, name) {
 		'unordered-list': '* ',
 		'ordered-list': '1. '
 	};
-	for (var i = startPoint.line; i <= endPoint.line; i++) {
+	for(var i = startPoint.line; i <= endPoint.line; i++) {
 		(function(i) {
 			var text = cm.getLine(i);
-			if (stat[name]) {
+			if(stat[name]) {
 				text = text.replace(repl[name], '$1');
 			} else {
 				text = map[name] + text;
@@ -308,7 +307,7 @@ function _toggleLine(cm, name) {
 }
 
 function _toggleBlock(editor, type, start_chars, end_chars) {
-	if (/editor-preview-active/.test(editor.codemirror.getWrapperElement().lastChild.className))
+	if(/editor-preview-active/.test(editor.codemirror.getWrapperElement().lastChild.className))
 		return;
 
 	end_chars = (typeof end_chars === 'undefined') ? start_chars : end_chars;
@@ -322,14 +321,14 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 	var startPoint = cm.getCursor('start');
 	var endPoint = cm.getCursor('end');
 
-	if (stat[type]) {
+	if(stat[type]) {
 		text = cm.getLine(startPoint.line);
 		start = text.slice(0, startPoint.ch);
 		end = text.slice(startPoint.ch);
-		if (type == "bold") {
+		if(type == "bold") {
 			start = start.replace(/(\*\*|__)(?![\s\S]*(\*\*|__))/, "");
 			end = end.replace(/(\*\*|__)/, "");
-		} else if (type == "italic") {
+		} else if(type == "italic") {
 			start = start.replace(/(\*|_)(?![\s\S]*(\*|_))/, "");
 			end = end.replace(/(\*|_)/, "");
 		}
@@ -341,19 +340,19 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 			ch: 99999999999999
 		});
 
-		if (type == "bold") {
+		if(type == "bold") {
 			startPoint.ch -= 2;
 			endPoint.ch -= 2;
-		} else if (type == "italic") {
+		} else if(type == "italic") {
 			startPoint.ch -= 1;
 			endPoint.ch -= 1;
 		}
 	} else {
 		text = cm.getSelection();
-		if (type == "bold") {
+		if(type == "bold") {
 			text = text.split("**").join("");
 			text = text.split("__").join("");
-		} else if (type == "italic") {
+		} else if(type == "italic") {
 			text = text.split("*").join("");
 			text = text.split("_").join("");
 		}
@@ -373,9 +372,9 @@ function wordCount(data) {
 	var pattern = /[a-zA-Z0-9_\u0392-\u03c9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
 	var m = data.match(pattern);
 	var count = 0;
-	if (m === null) return count;
-	for (var i = 0; i < m.length; i++) {
-		if (m[i].charCodeAt(0) >= 0x4E00) {
+	if(m === null) return count;
+	for(var i = 0; i < m.length; i++) {
+		if(m[i].charCodeAt(0) >= 0x4E00) {
 			count += m[i].length;
 		} else {
 			count += 1;
@@ -390,59 +389,50 @@ var toolbar = [{
 		action: toggleBold,
 		className: "fa fa-bold",
 		title: "Bold (Ctrl+B)",
-	},
-	{
+	}, {
 		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
 	},
-	"|",
-	{
+	"|", {
 		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
 		title: "Quote (Ctrl+')",
-	},
-	{
+	}, {
 		name: "unordered-list",
 		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
 		title: "Generic List (Ctrl+L)",
-	},
-	{
+	}, {
 		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
 		title: "Numbered List (Ctrl+Alt+L)",
 	},
-	"|",
-	{
+	"|", {
 		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
 		title: "Create Link (Ctrl+K)",
-	},
-	{
+	}, {
 		name: "quote",
 		action: drawImage,
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)",
 	},
-	"|",
-	{
+	"|", {
 		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
-	},
-	{
+	}, {
 		name: "fullscreen",
 		action: toggleFullScreen,
 		className: "fa fa-arrows-alt",
 		title: "Toggle Fullscreen (F11)",
-	},
-	{
+	}, {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
@@ -456,28 +446,28 @@ var toolbar = [{
 function SimpleMDE(options) {
 	options = options || {};
 
-	if (options.element) {
+	if(options.element) {
 		this.element = options.element;
 	}
 
-	if (options.toolbar !== false)
+	if(options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 
-	if (!options.hasOwnProperty('status')) {
+	if(!options.hasOwnProperty('status')) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
-  this.options = options;
+	this.options = options;
 
 	// If user has passed an element, it should auto rendered
 	this.render();
 
-  // The codemirror component is only available after rendering
-  // so, the setter for the initialValue can only run after
-  // the element has been rendered
-  if (options.initialValue) {
-	this.value(options.initialValue);
-  }
+	// The codemirror component is only available after rendering
+	// so, the setter for the initialValue can only run after
+	// the element has been rendered
+	if(options.initialValue) {
+		this.value(options.initialValue);
+	}
 }
 
 /**
@@ -489,7 +479,7 @@ SimpleMDE.toolbar = toolbar;
  * Default markdown render.
  */
 SimpleMDE.markdown = function(text) {
-	if (window.marked) {
+	if(window.marked) {
 		// use marked as markdown parser
 		return marked(text);
 	}
@@ -499,11 +489,11 @@ SimpleMDE.markdown = function(text) {
  * Render editor to the given element.
  */
 SimpleMDE.prototype.render = function(el) {
-	if (!el) {
+	if(!el) {
 		el = this.element || document.getElementsByTagName('textarea')[0];
 	}
 
-	if (this._rendered && this._rendered === el) {
+	if(this._rendered && this._rendered === el) {
 		// Already rendered.
 		return;
 	}
@@ -514,7 +504,7 @@ SimpleMDE.prototype.render = function(el) {
 	var self = this;
 	var keyMaps = {};
 
-	for (var key in shortcuts) {
+	for(var key in shortcuts) {
 		(function(key) {
 			keyMaps[fixShortcut(key)] = function(cm) {
 				shortcuts[key](self);
@@ -529,13 +519,13 @@ SimpleMDE.prototype.render = function(el) {
 		toggleFullScreen(cm);
 	};
 	keyMaps["Esc"] = function(cm) {
-		if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+		if(cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
 	};
 
 	var mode = "spell-checker";
 	var backdrop = "gfm";
 
-	if (options.spellChecker === false) {
+	if(options.spellChecker === false) {
 		mode = "gfm";
 		backdrop = undefined;
 	}
@@ -553,13 +543,13 @@ SimpleMDE.prototype.render = function(el) {
 		lineWrapping: (options.lineWrapping === false) ? false : true
 	});
 
-	if (options.toolbar !== false) {
+	if(options.toolbar !== false) {
 		this.createToolbar();
 	}
-	if (options.status !== false) {
+	if(options.status !== false) {
 		this.createStatusbar();
 	}
-	if (options.autosave != undefined && options.autosave.enabled === true) {
+	if(options.autosave != undefined && options.autosave.enabled === true) {
 		this.autosave();
 	}
 
@@ -570,18 +560,18 @@ SimpleMDE.prototype.autosave = function() {
 	var content = this.value();
 	var simplemde = this;
 
-	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == ""){
+	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == "") {
 		console.log("SimpleMDE: You must set a unique_id to use the autosave feature");
 		return;
 	}
 
-	if(simplemde.element.form != null && simplemde.element.form != undefined){
-		simplemde.element.form.addEventListener("submit", function(){
+	if(simplemde.element.form != null && simplemde.element.form != undefined) {
+		simplemde.element.form.addEventListener("submit", function() {
 			localStorage.setItem(simplemde.options.autosave.unique_id, "");
 		});
 	}
 
-	if(this.options.autosave.loaded !== true){
+	if(this.options.autosave.loaded !== true) {
 		if(localStorage.getItem(this.options.autosave.unique_id) != null)
 			this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
 
@@ -593,22 +583,22 @@ SimpleMDE.prototype.autosave = function() {
 	}
 
 	var el = document.getElementById("autosaved");
-	if(el != null && el != undefined && el != ""){
+	if(el != null && el != undefined && el != "") {
 		var d = new Date();
 		var hh = d.getHours();
 		var m = d.getMinutes();
 		var dd = "am";
 		var h = hh;
-		if (h >= 12) {
-			h = hh-12;
+		if(h >= 12) {
+			h = hh - 12;
 			dd = "pm";
 		}
-		if (h == 0) {
+		if(h == 0) {
 			h = 12;
 		}
-		m = m<10?"0"+m:m;
+		m = m < 10 ? "0" + m : m;
 
-		el.innerHTML = "Autosaved: "+h+":"+m+" "+dd;
+		el.innerHTML = "Autosaved: " + h + ":" + m + " " + dd;
 	}
 
 	setTimeout(function() {
@@ -619,7 +609,7 @@ SimpleMDE.prototype.autosave = function() {
 SimpleMDE.prototype.createToolbar = function(items) {
 	items = items || this.options.toolbar;
 
-	if (!items || items.length === 0) {
+	if(!items || items.length === 0) {
 		return;
 	}
 
@@ -632,25 +622,25 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	var toolbar_data = {};
 	self.toolbar = items;
 
-	for (var i = 0; i < items.length; i++) {
+	for(var i = 0; i < items.length; i++) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
 			continue;
 
 		(function(item) {
 			var el;
-			if (item === '|') {
+			if(item === '|') {
 				el = createSep();
 			} else {
 				el = createIcon(item, self.options.toolbarTips);
 			}
 
 			// bind events, special for info
-			if (item.action) {
-				if (typeof item.action === 'function') {
+			if(item.action) {
+				if(typeof item.action === 'function') {
 					el.onclick = function(e) {
 						item.action(self);
 					};
-				} else if (typeof item.action === 'string') {
+				} else if(typeof item.action === 'string') {
 					el.href = item.action;
 					el.target = '_blank';
 				}
@@ -666,10 +656,10 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	cm.on('cursorActivity', function() {
 		var stat = getState(cm);
 
-		for (var key in toolbar_data) {
+		for(var key in toolbar_data) {
 			(function(key) {
 				var el = toolbar_data[key];
-				if (stat[key]) {
+				if(stat[key]) {
 					el.className += ' active';
 				} else if(key != "fullscreen") {
 					el.className = el.className.replace(/\s*active\s*/g, '');
@@ -687,34 +677,34 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 	status = status || this.options.status;
 	options = this.options;
 
-	if (!status || status.length === 0) return;
+	if(!status || status.length === 0) return;
 
 	var bar = document.createElement('div');
 	bar.className = 'editor-statusbar';
 
 	var pos, cm = this.codemirror;
-	for (var i = 0; i < status.length; i++) {
+	for(var i = 0; i < status.length; i++) {
 		(function(name) {
 			var el = document.createElement('span');
 			el.className = name;
-			if (name === 'words') {
+			if(name === 'words') {
 				el.innerHTML = '0';
 				cm.on('update', function() {
 					el.innerHTML = wordCount(cm.getValue());
 				});
-			} else if (name === 'lines') {
+			} else if(name === 'lines') {
 				el.innerHTML = '0';
 				cm.on('update', function() {
 					el.innerHTML = cm.lineCount();
 				});
-			} else if (name === 'cursor') {
+			} else if(name === 'cursor') {
 				el.innerHTML = '0:0';
 				cm.on('cursorActivity', function() {
 					pos = cm.getCursor();
 					el.innerHTML = pos.line + ':' + pos.ch;
 				});
-			} else if (name === 'autosave') {
-				if (options.autosave != undefined && options.autosave.enabled === true) {
+			} else if(name === 'autosave') {
+				if(options.autosave != undefined && options.autosave.enabled === true) {
 					el.setAttribute("id", "autosaved");
 				}
 			}
@@ -731,7 +721,7 @@ SimpleMDE.prototype.createStatusbar = function(status) {
  * Get or set the text content.
  */
 SimpleMDE.prototype.value = function(val) {
-	if (val === undefined) {
+	if(val === undefined) {
 		return this.codemirror.getValue();
 	} else {
 		this.codemirror.getDoc().setValue(val);
