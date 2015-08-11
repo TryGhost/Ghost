@@ -4,13 +4,6 @@ var gulp = require('gulp'),
     concat = require('gulp-concat');
 
 gulp.task('scripts', function() {
-/*  var js_files = [
-    './src/js/codemirror/*.js',
-    './src/js/typo.js',
-    './src/js/spell-checker.js',
-    './src/js/marked.js',
-    './src/js/simplemde.js'];*/
-
   var js_files = [
     './src/js/codemirror/codemirror.js',
     './src/js/codemirror/continuelist.js',
