@@ -14,7 +14,7 @@ gulp.task('scripts', function() {
   var js_files = [
     './src/js/codemirror/codemirror.js',
     './src/js/codemirror/continuelist.js',
-    './src/codemirror/fullscreen.js',
+    './src/js/codemirror/fullscreen.js',
     './src/js/codemirror/markdown.js',
     './src/js/codemirror/overlay.js',
     './src/js/codemirror/gfm.js',
