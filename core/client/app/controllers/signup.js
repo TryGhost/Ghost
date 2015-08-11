@@ -44,7 +44,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-                        self.set('flowErrors', 'That email address is already in use.');
+                        self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
                     } else {
                         notifications.showAPIError(resp);
                     }
