@@ -2,7 +2,6 @@
 // RESTful API for the Tag resource
 var Promise      = require('bluebird'),
     _            = require('lodash'),
-    canThis      = require('../permissions').canThis,
     dataProvider = require('../models'),
     errors       = require('../errors'),
     utils        = require('./utils'),
@@ -94,20 +93,6 @@ tags = {
         var tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).add.tag(options.data).then(function permissionGranted() {
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to add tags.');
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -120,7 +105,7 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName),
-            handlePermissions,
+            utils.handlePermissions(docName, 'add'),
             utils.convertOptions(allowedIncludes),
             doQuery
         ];
@@ -145,20 +130,6 @@ tags = {
         var tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).edit.tag(options.id).then(function permissionGranted() {
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to edit tags.');
-            });
-        }
-
-        /**
          * Make the call to the Model layer
          * @param {Object} options
          * @returns {Object} options
@@ -170,7 +141,7 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            handlePermissions,
+            utils.handlePermissions(docName, 'edit'),
             utils.convertOptions(allowedIncludes),
             doQuery
         ];
@@ -198,20 +169,6 @@ tags = {
         var tasks;
 
         /**
-         * ### Handle Permissions
-         * We need to be an authorised user to perform this action
-         * @param {Object} options
-         * @returns {Object} options
-         */
-        function handlePermissions(options) {
-            return canThis(options.context).destroy.tag(options.id).then(function permissionGranted() {
-                return options;
-            }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to remove tags.');
-            });
-        }
-
-        /**
          * ### Model Query
          * Make the call to the Model layer
          * @param {Object} options
@@ -228,7 +185,7 @@ tags = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            handlePermissions,
+            utils.handlePermissions(docName, 'destroy'),
             utils.convertOptions(allowedIncludes),
             doQuery
         ];

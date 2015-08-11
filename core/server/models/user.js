@@ -489,7 +489,7 @@ User = ghostBookshelf.Model.extend({
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
             if (userModel.hasRole('Owner')) {
-                return Promise.reject();
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
@@ -506,7 +506,7 @@ User = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject();
+        return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
     },
 
     setWarning: function setWarning(user, options) {
