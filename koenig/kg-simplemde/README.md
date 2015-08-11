@@ -61,6 +61,7 @@ simplemde.value();
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
+- **initialValue**: If set, will customize the initial value of the editor.
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
@@ -73,10 +74,14 @@ var simplemde = new SimpleMDE({
 	status: false,
 	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
 	toolbar: false,
+	toolbarTips: false,
+	toolbarGuideIcon: false,
 	autofocus: true,
 	lineWrapping: false,
 	indentWithTabs: false,
 	tabSize: 4,
+	initialValue: "Hello world!",
+	spellChecker: false,
 	autosave: {
 		enabled: true,
 		unique_id: "MyUniqueID",
