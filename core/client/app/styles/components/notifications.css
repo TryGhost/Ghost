@@ -128,13 +128,13 @@
     font-size: 1.4rem;
     line-height: 1.3em;
     font-weight: 200;
-    user-select: all;
+    user-select: text;
 }
 
 .gh-alert a {
     text-decoration: underline;
     font-weight: 400;
-    user-select: all;
+    user-select: text;
 }
 
 .gh-alert-close {
