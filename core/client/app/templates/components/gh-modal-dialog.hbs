@@ -8,13 +8,8 @@
             </section>
             {{#if confirm}}
             <footer class="modal-footer">
-                <button type="button" class="{{rejectButtonClass}} btn-minor js-button-reject" {{action "confirm" "reject"}}>
-                    {{confirm.reject.text}}
-                </button><!--
-                Required to strip the white-space between buttons
-                --><button type="button" class="{{acceptButtonClass}} js-button-accept" {{action "confirm" "accept"}}>
-                    {{confirm.accept.text}}
-                </button>
+                {{! Buttons must be on one line to prevent white-space errors }}
+                <button type="button" class="{{rejectButtonClass}} btn-minor js-button-reject" {{action "confirm" "reject"}}>{{confirm.reject.text}}</button><button type="button" class="{{acceptButtonClass}} js-button-accept" {{action "confirm" "accept"}}>{{confirm.accept.text}}</button>
             </footer>
             {{/if}}
         </section>
