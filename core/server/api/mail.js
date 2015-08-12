@@ -9,7 +9,7 @@ var _            = require('lodash').runInContext(),
     Models       = require('../models'),
     path         = require('path'),
     fs           = require('fs'),
-    templatesDir = path.resolve(__dirname, '..', 'email-templates'),
+    templatesDir = path.resolve(__dirname, '..', 'mail', 'templates'),
     htmlToText   = require('html-to-text'),
     mail;
 
@@ -79,7 +79,7 @@ mail = {
      *
      * @param {Object} options {
      *              data: JSON object representing the data that will go into the email
-     *              template: which email template to load (files are stored in /core/server/email-templates/)
+     *              template: which email template to load (files are stored in /core/server/mail/templates/)
      *          }
      * @returns {*}
      */
