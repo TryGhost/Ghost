@@ -216,11 +216,12 @@
 
 .content-preview .post-controls {
     position: absolute;
-    top: 25px;
+    top: 5px;
     right: 25px;
 }
 
-.content-preview .post-controls .btn {
+.content-preview .post-controls .post-edit {
+    padding-top: 0;
     padding-right: 0;
     border: none;
     font-size: 18px;
