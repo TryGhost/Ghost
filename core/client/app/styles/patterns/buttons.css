@@ -3,9 +3,6 @@
 
 /* Base button style */
 .btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     margin-bottom: 0;
     padding: 9px 15px;
     border: #dfe1e3 1px solid;
@@ -163,6 +160,7 @@ fieldset[disabled] .btn {
 .btn-minor:focus {
     border-color: #c1c1c1;
     background: #fff;
+    box-shadow: none;
     color: #808284;
 }
 

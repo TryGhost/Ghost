@@ -192,7 +192,7 @@
 .gh-nav-footer-sitelink {
     flex-grow: 1;
     padding: 12px;
-    color: var(--midgrey);
+    color: color(var(--midgrey) lightness(-10%));
     text-align: center;
     text-transform: uppercase;
     font-size: 1rem;
@@ -327,13 +327,12 @@
 .gh-help-menu {
     display: flex;
     align-items: center;
-    padding: 5px 10px;
     border-left: #dfe1e3 1px solid;
     cursor: pointer;
 }
 
 .gh-help-button {
-    padding: 0 5px;
+    padding: 5px 15px;
     color: var(--midgrey);
     text-align: center;
     font-size: 1.4rem;

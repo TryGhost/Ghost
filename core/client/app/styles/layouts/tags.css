@@ -109,7 +109,7 @@
 
 .settings-tag .tag-description {
     margin: 0;
-    color: #dfe1e3;
+    color: color(#dfe1e3 lightness(-10%));
     font-size: 13px;
 }
 
@@ -117,6 +117,6 @@
     position: absolute;
     top: 20px;
     right: 12px;
-    color: #dfe1e3;
+    color: color(#dfe1e3 lightness(-10%));
     font-size: 16px;
 }
