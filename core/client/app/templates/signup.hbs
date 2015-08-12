@@ -11,17 +11,11 @@
                 <input style="display:none;" type="text" name="fakeusernameremembered"/>
                 <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                <figure class="account-image">
-                    <div  id="account-image" class="img"  style="background-image: url(http://www.gravatar.com/avatar/75e958a6674a7d68fe0d575fb235116c?d=404&s=250)">
-                        <!-- fallback to: Ghost/core/shared/img/ghosticon.jpg -->
-                        <span class="sr-only">User image</span>
-                    </div>
-                    <a class="edit-account-image" href="#"><i class="icon-photos "><span class="sr-only">Upload an image</span></i></a>
-                </figure>
+                {{gh-profile-image fileStorage=config.fileStorage email=validEmail setImage="setImage"}}
                 {{#gh-form-group errors=model.errors property="email"}}
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" enter=(action "signup") disabled=true autocorrect="off" value=model.email focusOut=(action "validate" "email")}}
+                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" enter=(action "signup") disabled=true autocorrect="off" value=model.email focusOut=(action "handleEmail")}}
                     </span>
                     {{gh-error-message errors=model.errors property="email"}}
                 {{/gh-form-group}}
