@@ -25,6 +25,12 @@
     outline: 0;
 }
 
+.editor-options .dropdown-menu {
+    top: 35px;
+    right: 0;
+    left: auto;
+}
+
 
 /* Container & Headers
 /* ---------------------------------------------------------- */
@@ -217,36 +223,6 @@
     font-family: var(--font-family);
     font-size: 1.6rem;
     font-weight: bold;
-}
-
-
-/* Publish Bar
-/* ---------------------------------------------------------- */
-
-.extended-tags {
-    /* When the tag bar is expanded */
-    position: static;
-    min-height: 100%;
-}
-
-.extended-tags #entry-tags:after {
-    right: 10px;
-}
-
-.extended-tags .tags {
-    width: 281px;
-}
-
-.extended-tags .tag-input {
-    margin-top: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    width: 100%;
-    border-top: 1px solid var(--darkgrey);
-}
-
-.extended-tags .right {
-    display: none;
 }
 
 /* Tags input CSS (TODO: needs some revision)
