@@ -16,6 +16,7 @@ var express     = require('express'),
     errors      = require('./errors'),
     helpers     = require('./helpers'),
     mailer      = require('./mail'),
+    publisher   = require('./publisher'),
     middleware  = require('./middleware'),
     migrations  = require('./data/migration'),
     models      = require('./models'),
@@ -175,6 +176,8 @@ function init(options) {
         return Promise.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
+            // Initialize scheduled posts publisher
+            publisher.init(),
             // Initialize mail
             mailer.init(),
             // Initialize apps
