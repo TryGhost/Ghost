@@ -6,7 +6,7 @@
     </div>
     <i class="icon-arrow"></i>
 {{/gh-dropdown-button}}
-{{#gh-dropdown tagName="div" classNames="dropdown" name="user-menu" closeOnClick="true"}}
+{{#gh-dropdown tagName="div" name="user-menu" closeOnClick="true"}}
     <ul class="dropdown-menu dropdown-triangle-top js-user-menu-dropdown-menu" role="menu" style="right:-50%;left:auto;margin-right:40px">
         <li role="presentation">{{#link-to "about" classNames="gh-nav-menu-about dropdown-item js-nav-item" role="menuitem" tabindex="-1"}}<i class="icon-shop"></i> About Ghost{{/link-to}}</li>
         <li class="divider"></li>
@@ -48,7 +48,7 @@
                 <i class="icon-question"><span class="hidden">Help</span></i>
             </div>
         {{/gh-dropdown-button}}
-        {{#gh-dropdown tagName="div" classNames="dropdown" name="help-menu" closeOnClick="true"}}
+        {{#gh-dropdown tagName="div" name="help-menu" closeOnClick="true"}}
             <ul class="dropdown-menu dropdown-triangle-bottom" role="menu">
                 <li role="presentation"><a class="dropdown-item help-menu-support" role="menuitem" tabindex="-1" href="http://support.ghost.org/" target="_blank"><i class="icon-ambulance"></i> Support Center</a></li>
                 <li role="presentation"><a class="dropdown-item help-menu-tweet" role="menuitem" tabindex="-1" href="https://twitter.com/intent/tweet?text=%40TryGhost+Hi%21+Can+you+help+me+with+&related=TryGhost" target="_blank" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="icon-twitter"></i> Tweet @TryGhost!</a></li>
