@@ -152,6 +152,10 @@
     text-align: center;
 }
 
+.modal-footer button:first-of-type {
+    margin-left: 0;
+}
+
 
 /* Modifiers
 /* ---------------------------------------------------------- */
