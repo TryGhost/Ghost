@@ -24,6 +24,7 @@
 }
 
 .gh-env-help .btn {
+    display: block;
     margin: 5px 0;
 }
 
@@ -35,6 +36,9 @@
     .gh-env-help {
         margin: 1em 0;
         max-width: none;
+    }
+    .gh-env-help .btn {
+        display: inline-block;
     }
 }
 
