@@ -25,6 +25,12 @@
     outline: 0;
 }
 
+.editor-options .dropdown-menu {
+    top: 35px;
+    right: 0;
+    left: auto;
+}
+
 
 /* Container & Headers
 /* ---------------------------------------------------------- */
@@ -219,36 +225,6 @@
     font-weight: bold;
 }
 
-
-/* Publish Bar
-/* ---------------------------------------------------------- */
-
-.extended-tags {
-    /* When the tag bar is expanded */
-    position: static;
-    min-height: 100%;
-}
-
-.extended-tags #entry-tags:after {
-    right: 10px;
-}
-
-.extended-tags .tags {
-    width: 281px;
-}
-
-.extended-tags .tag-input {
-    margin-top: 5px;
-    padding-top: 5px;
-    padding-left: 10px;
-    width: 100%;
-    border-top: 1px solid var(--darkgrey);
-}
-
-.extended-tags .right {
-    display: none;
-}
-
 /* Tags input CSS (TODO: needs some revision)
 /* ------------------------------------------------------ */
 .tags-input-list {
@@ -288,170 +264,6 @@
 .tag-input:focus {
     outline: 0;
 }
-
-/* TODO: can be removed once tag-component css is fixed */
-/*#entry-tags input[type="text"].tag-input {
-    display: inline-block;
-    padding: 9px 9px 9px 0;
-    width: 100%;
-    border: none;
-    background: transparent;
-    color: var(--midgrey);
-    vertical-align: top;
-    line-height: 1;
-    font-weight: 300;
-}
-
-#entry-tags input[type="text"].tag-input:focus {
-    outline: none;
-}
-
-#entry-tags .tag {
-    display: inline;
-    margin-right: 3px;
-    padding: 2px 5px;
-    background: var(--darkgrey);
-    border-radius: 3px;
-    color: var(--lightgrey);
-    white-space: nowrap;
-    font-size: 1.2rem;
-    line-height: 1.2em;
-}
-
-#entry-tags .tag:hover {
-    cursor: pointer;
-}
-
-#entry-tags .tag i {
-    font-size: 0.7rem;
-}
-
-.suggestions {
-    top: auto;
-    bottom: calc(100% + 15px);
-}
-
-.suggestions li.selected,
-.suggestions li.selected a {
-    background: var(--blue);
-    color: #fff;
-    text-decoration: none;
-}
-
-.suggestions li.selected mark {
-    color: #fff;
-}
-
-.suggestions mark {
-    background: none;
-    color: #000;
-    font-weight: bold;
-}
-
-#entry-actions {
-    position: relative;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    align-content: center;
-}
-
-#entry-actions .dropdown {
-    position: absolute;
-    top: 35px;
-    right: 0;
-}
-
-#entry-actions .dropdown .dropdown-menu {
-    right: 100%;
-    left: auto;
-}
-
-#entry-actions.unsaved {
-    padding-bottom: 0;
-}
-
-#entry-actions.unsaved .delete {
-    display: none;
-}
-
-#entry-actions-menu {
-    position: absolute;
-    right: -5px;
-    bottom: 50px;
-}
-
-.tags-wrapper {
-    white-space: nowrap;
-}
-
-.tags-wrapper span {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.tag-label {
-    position: relative;
-    display: block;
-    width: 40px;
-    height: 40px;
-}
-
-.tag-label:before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    color: var(--midgrey);
-    font-size: 1.3rem;
-    transition: color 0.15s linear;
-    transform: translateX(-50%) translateY(-50%);
-}
-
-.tag-label:hover {
-    cursor: pointer;
-}
-
-.publish-bar-inner {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    align-content: space-between;
-    width: 100%;
-    height: 100%;
-}
-
-.publish-bar-tags-icon {
-    flex: 0 1 auto;
-    align-self: auto;
-    min-width: 40px;
-    max-width: 40px;
-}
-
-.publish-bar-tags {
-    flex: 0 1 auto;
-    align-self: auto;
-    overflow-y: hidden;
-    margin-right: 10px;
-    height: 40px;
-}
-
-.publish-bar-tags .tags-wrapper {
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-top: 8px;
-    padding-bottom: 9px;
-    height: 70px;
-    white-space: nowrap;
-}
-
-.publish-bar-tags-input {
-    position: relative;
-    flex: 1 1 auto;
-    align-self: auto;
-} */
 
 .publish-bar-actions {
     flex: 1 0 auto;

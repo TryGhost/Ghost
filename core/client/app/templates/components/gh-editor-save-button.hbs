@@ -4,7 +4,7 @@
     <i class="options icon-arrow2"></i>
     <span class="sr-only">Toggle Settings Menu</span>
 {{/gh-dropdown-button}}
-{{#gh-dropdown name="post-save-menu" closeOnClick="true" tagName="div" classNames="dropdown editor-options"}}
+{{#gh-dropdown name="post-save-menu" closeOnClick="true" classNames="editor-options"}}
     <ul class="dropdown-menu dropdown-triangle-bottom-right">
         <li class="post-save-publish {{if willPublish 'active'}}">
             <a {{action "setSaveType" "publish"}} href="#">{{publishText}}</a>

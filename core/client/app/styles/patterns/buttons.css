@@ -59,6 +59,11 @@ fieldset[disabled] .btn {
     pointer-events: none;
 }
 
+.btn i {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 
 /* Blue button
 /* ---------------------------------------------------------- */
