@@ -63,8 +63,8 @@
 
 .user-cover-edit {
     position: absolute;
-    right: 35px;
-    bottom: 29px;
+    top: 30px;
+    left: 35px;
     z-index: 2;
     min-height: 37px;
     height: 37px;
@@ -73,12 +73,6 @@
     border-radius: var(--border-radius);
     color: rgba(255, 255, 255, 0.8);
     transition: color 0.3s ease, background 0.3s ease;
-}
-
-@media (max-width: 1000px) {
-    .user-cover-edit {
-        right: 15px;
-    }
 }
 
 .user-cover-edit:hover {
@@ -90,26 +84,13 @@
 /* Edit user
 /* ---------------------------------------------------------- */
 
-.first-form-group {
-    max-width: 500px;
-}
-
 @media (min-width: 651px) {
     .first-form-group {
-        left: 40px;
-        min-width: 285px;
+        margin-right: 20px;
+        padding-left: 40px;
     }
-}
-
-@media (min-width: 651px) and (max-width: 1000px) {
-    .first-form-group {
-        width: calc(100% - 201px);
-    }
-}
-
-@media (min-width: 1001px) {
-    .first-form-group {
-        width: calc(100% - 181px);
+    .first-form-group input {
+        max-width: 100%;
     }
 }
 
@@ -141,12 +122,6 @@
     }
 }
 
-@media (min-width: 901px) {
-    .user-details-top .user-name {
-        width: calc(100% - 20px);
-    }
-}
-
 .user-profile {
     position: relative;
     z-index: 1;
@@ -154,6 +129,7 @@
 
 @media (min-width: 651px) {
     .user-profile {
+        padding-right: 20px;
         padding-left: 143px;
     }
 }
@@ -203,8 +179,10 @@
 
 @media (max-width: 650px) {
     .user-image {
-        top: -159px;
-        left: 21px;
+        top: -135px;
+        left: 50%;
+        margin-right: 0;
+        margin-left: -63px;
     }
 }
 
