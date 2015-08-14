@@ -4,6 +4,8 @@ var shortcuts = {
 	'Cmd-B': toggleBold,
 	'Cmd-I': toggleItalic,
 	'Cmd-K': drawLink,
+	'Cmd-H': toggleHeadingSmaller,
+	'Cmd-Alt-H': toggleHeadingBigger,
 	'Cmd-Alt-I': drawImage,
 	"Cmd-'": toggleBlockquote,
 	'Cmd-Alt-L': toggleOrderedList,
@@ -137,6 +139,21 @@ function toggleBlockquote(editor) {
 	_toggleLine(cm, 'quote');
 }
 
+/**
+ * Action for toggling heading size: normal -> h1 -> h2 -> h3 -> h4 -> h5 -> h6 -> normal
+ */
+function toggleHeadingSmaller(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, 'smaller');
+}
+
+/**
+ * Action for toggling heading size: normal -> h6 -> h5 -> h4 -> h3 -> h2 -> h1 -> normal
+ */
+function toggleHeadingBigger(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, 'bigger');
+}
 
 
 /**
@@ -269,6 +286,44 @@ function _replaceSelection(cm, active, start, end) {
 }
 
 
+function _toggleHeading(cm, direction) {
+	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+		return;
+
+	var startPoint = cm.getCursor('start');
+	var endPoint = cm.getCursor('end');
+	for(var i = startPoint.line; i <= endPoint.line; i++) {
+		(function(i) {
+			var text = cm.getLine(i);
+			var currHeadingLevel = text.search(/[^#]/);
+			if (currHeadingLevel <= 0) {
+				if (direction == 'bigger') {
+					text = '###### ' + text;
+				} else {
+					text = '# ' + text;
+				}
+			} else if ((currHeadingLevel == 6 && direction == 'smaller') || (currHeadingLevel == 1 && direction == 'bigger')) {
+				text = text.substr(7);
+			} else {
+				if (direction == 'bigger') {
+					text = text.substr(1);
+				} else {
+					text = '#' + text;
+				}
+			}
+			cm.replaceRange(text, {
+				line: i,
+				ch: 0
+			}, {
+				line: i,
+				ch: 99999999999999
+			});
+		})(i);
+	}
+	cm.focus();
+}
+
+
 function _toggleLine(cm, name) {
 	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
@@ -394,6 +449,11 @@ var toolbar = [{
 		action: toggleItalic,
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
+	}, {
+		name: "headingSmaller",
+		action: toggleHeadingSmaller,
+		className: "fa fa-header",
+		title: "Heading 1-6 (Ctrl+H and Ctrl+Alt+H)",
 	},
 	"|", {
 		name: "quote",
@@ -736,6 +796,8 @@ SimpleMDE.prototype.value = function(val) {
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
+SimpleMDE.toggleHeadingSmaller = toggleHeadingSmaller;
+SimpleMDE.toggleHeadingBigger = toggleHeadingBigger;
 SimpleMDE.toggleCodeBlock = toggleCodeBlock;
 SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
@@ -758,6 +820,12 @@ SimpleMDE.prototype.toggleItalic = function() {
 };
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
+};
+SimpleMDE.prototype.toggleHeadingSmaller = function() {
+	toggleHeadingSmaller(this);
+};
+SimpleMDE.prototype.toggleHeadingBigger = function() {
+	toggleHeadingBigger(this);
 };
 SimpleMDE.prototype.toggleCodeBlock = function() {
 	toggleCodeBlock(this);
