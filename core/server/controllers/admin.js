@@ -1,8 +1,9 @@
-var _             = require('lodash'),
-    api           = require('../api'),
-    errors        = require('../errors'),
-    updateCheck   = require('../update-check'),
-    config        = require('../config'),
+var _                   = require('lodash'),
+    api                 = require('../api'),
+    errors              = require('../errors'),
+    updateCheck         = require('../update-check'),
+    config              = require('../config'),
+    updateNotifications = require('../update-notifications'),
     adminControllers;
 
 adminControllers = {
@@ -34,25 +35,9 @@ adminControllers = {
         }
 
         updateCheck().then(function then() {
-            return updateCheck.showUpdateNotification();
-        }).then(function then(updateVersion) {
-            if (!updateVersion) {
-                return;
-            }
-
-            var notification = {
-                type: 'upgrade',
-                location: 'settings-about-upgrade',
-                dismissible: false,
-                status: 'alert',
-                message: 'Ghost ' + updateVersion + ' is available! Hot Damn. <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a> to upgrade.'
-            };
-
-            return api.notifications.browse({context: {internal: true}}).then(function then(results) {
-                if (!_.some(results.notifications, {message: notification.message})) {
-                    return api.notifications.add({notifications: [notification]}, {context: {internal: true}});
-                }
-            });
+            return updateCheck.getUpdateNotifications();
+        }).then(function then(notifications) {
+            return updateNotifications.process(notifications);
         }).finally(function noMatterWhat() {
             renderIndex();
         }).catch(errors.logError);

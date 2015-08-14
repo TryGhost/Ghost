@@ -67,7 +67,9 @@ function updateCheckData() {
                 return errors.rejectError(e);
             }
 
-            return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
+            return _.reduce(apps, function (memo, item) {
+                return memo === '' ? memo + item : memo + ', ' + item;
+            }, '');
         }).catch(errors.rejectError));
     ops.push(api.posts.browse().catch(errors.rejectError));
     ops.push(api.users.browse(internal).catch(errors.rejectError));
@@ -203,24 +205,26 @@ function updateCheck() {
     }
 }
 
-function showUpdateNotification() {
+function getUpdateNotifications() {
     return api.settings.read(_.extend({key: 'displayUpdateNotification'}, internal)).then(function then(response) {
-        var display = response.settings[0];
+        var notifications = [];
 
-        // Version 0.4 used boolean to indicate the need for an update. This special case is
-        // translated to the version string.
-        // TODO: remove in future version.
-        if (display.value === 'false' || display.value === 'true' || display.value === '1' || display.value === '0') {
-            display.value = '0.4.0';
-        }
+        _.each(response.settings, function (notification) {
+            // Version 0.4 used boolean to indicate the need for an update. This special case is
+            // translated to the version string.
+            // TODO: remove in future version.
+            if (notification.value === 'false' || notification.value === 'true' || notification.value === '1' || notification.value === '0') {
+                notification.value = '0.4.0';
+            }
 
-        if (display && display.value && currentVersion && semver.gt(display.value, currentVersion)) {
-            return display.value;
-        }
+            if (notification && notification.value && currentVersion && semver.gt(notification.value, currentVersion)) {
+                notifications.push(notification);
+            }
+        });
 
-        return false;
+        return notifications;
     });
 }
 
 module.exports = updateCheck;
-module.exports.showUpdateNotification = showUpdateNotification;
+module.exports.getUpdateNotifications = getUpdateNotifications;

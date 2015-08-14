@@ -88,5 +88,10 @@
         "password": {
             "defaultValue": ""
         }
+    },
+    "notifications": {
+        "seenNotifications": {
+            "defaultValue": "[]"
+        }
     }
 }
