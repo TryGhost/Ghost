@@ -5,7 +5,7 @@ var shortcuts = {
 	'Cmd-I': toggleItalic,
 	'Cmd-K': drawLink,
 	'Cmd-H': toggleHeadingSmaller,
-	'Cmd-Alt-H': toggleHeadingBigger,
+	'Shift-Cmd-H': toggleHeadingBigger,
 	'Cmd-Alt-I': drawImage,
 	"Cmd-'": toggleBlockquote,
 	'Cmd-Alt-L': toggleOrderedList,
@@ -453,7 +453,7 @@ var toolbar = [{
 		name: "headingSmaller",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header",
-		title: "Heading 1-6 (Ctrl+H and Ctrl+Alt+H)",
+		title: "Heading (Ctrl+H)",
 	},
 	"|", {
 		name: "quote",
