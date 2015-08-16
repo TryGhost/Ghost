@@ -8,15 +8,43 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     submitting: false,
     flowErrors: '',
+    image: null,
+    validEmail: '',
 
     ghostPaths: Ember.inject.service('ghost-paths'),
+    config: Ember.inject.service(),
     notifications: Ember.inject.service(),
+
+    sendImage: function () {
+        var self = this,
+            image = this.get('image');
+
+        this.get('session.user').then(function (user) {
+            return new Ember.RSVP.Promise(function (resolve, reject) {
+                image.formData = {};
+                image.submit()
+                    .success(function (response) {
+                        user.image = response;
+                        ajax({
+                            url: self.get('ghostPaths.url').api('users', user.id.toString()),
+                            type: 'PUT',
+                            data: {
+                                users: [user]
+                            }
+                        }).then(resolve).catch(reject);
+                    })
+                    .error(reject);
+            });
+        });
+    },
 
     actions: {
         signup: function () {
             var self = this,
                 model = this.get('model'),
                 data = model.getProperties('name', 'email', 'password', 'token'),
+                image = this.get('image'),
+
                 notifications = this.get('notifications');
 
             this.set('flowErrors', '');
@@ -40,6 +68,12 @@ export default Ember.Controller.extend(ValidationEngine, {
                     self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
                         identification: self.get('model.email'),
                         password: self.get('model.password')
+                    }).then(function () {
+                        if (image) {
+                            self.sendImage();
+                        }
+                    }).catch(function (resp) {
+                        notifications.showAPIError(resp);
                     });
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
@@ -51,6 +85,16 @@ export default Ember.Controller.extend(ValidationEngine, {
                 });
             }).catch(function () {
                 self.set('flowErrors', 'Please fill out the form to complete your sign-up');
+            });
+        },
+        setImage: function (image) {
+            this.set('image', image);
+        },
+        handleEmail: function () {
+            var self = this;
+
+            this.validate({property: 'email'}).then(function () {
+                self.set('validEmail', self.get('email'));
             });
         }
     }
