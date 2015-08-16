@@ -37,7 +37,6 @@ var testUtils       = require('../../utils'),
             options: {}
         }]
     };
-	
 i18n.init();
 
 describe('Mail API', function () {
