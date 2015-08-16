@@ -68,3 +68,4 @@ config.js
 
 # Coverage reports
 coverage.html
+core/server/ghost-server.js

@@ -1,0 +1,6 @@
+<ul class="tags-input-list">
+    {{#each currentTags as |tag index|}}
+        <li class="label-tag {{if (is-equal highlightIndex index) 'highlight'}}" {{action "deleteTag" tag.name}}>{{tag.name}}</li>
+    {{/each}}
+    <li><input type="text" id="tag-input"></li>
+</ul>

@@ -12,6 +12,7 @@ describeComponent(
         needs: [
             'component:gh-dropdown-button',
             'component:gh-dropdown',
+            'component:gh-spin-button',
             'service:dropdown'
         ]
     },

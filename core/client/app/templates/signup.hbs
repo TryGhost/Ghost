@@ -11,31 +11,25 @@
                 <input style="display:none;" type="text" name="fakeusernameremembered"/>
                 <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                <figure class="account-image">
-                    <div  id="account-image" class="img"  style="background-image: url(http://www.gravatar.com/avatar/75e958a6674a7d68fe0d575fb235116c?d=404&s=250)">
-                        <!-- fallback to: Ghost/core/shared/img/ghosticon.jpg -->
-                        <span class="sr-only">User image</span>
-                    </div>
-                    <a class="edit-account-image" href="#"><i class="icon-photos "><span class="sr-only">Upload an image</span></i></a>
-                </figure>
+                {{gh-profile-image fileStorage=config.fileStorage email=validEmail setImage="setImage"}}
                 {{#gh-form-group errors=model.errors property="email"}}
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" autofocus="autofocus" autocorrect="off" value=model.email focusOut=(action "validate" "email")}}
+                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" enter=(action "signup") disabled=true autocorrect="off" value=model.email focusOut=(action "handleEmail")}}
                     </span>
                     {{gh-error-message errors=model.errors property="email"}}
                 {{/gh-form-group}}
                 {{#gh-form-group errors=model.errors property="name"}}
                     <label for="full-name">Full name</label>
                     <span class="input-icon icon-user">
-                        {{gh-input type="text" name="name" placeholder="Eg. John H. Watson" class="gh-input" autofocus="autofocus" autocorrect="off" value=model.name focusOut=(action "validate" "name")}}
+                        {{gh-input type="text" name="name" placeholder="Eg. John H. Watson" class="gh-input" enter=(action "signup") autofocus="autofocus" autocorrect="off" value=model.name focusOut=(action "validate" "name")}}
                     </span>
                     {{gh-error-message errors=model.errors property="name"}}
                 {{/gh-form-group}}
                 {{#gh-form-group errors=model.errors property="password"}}
                     <label for="password">Password</label>
                     <span class="input-icon icon-lock">
-                        {{input class="gh-input" type="password" name="password" autofocus="autofocus" autocorrect="off" value=model.password focusOut=(action "validate" "password")}}
+                        {{input class="gh-input" type="password" name="password" autofocus="autofocus" enter=(action "signup") autocorrect="off" value=model.password focusOut=(action "validate" "password")}}
                         <div class="pw-strength">
                             <div class="pw-strength-dot"></div>
                             <div class="pw-strength-dot"></div>
@@ -48,7 +42,8 @@
                 {{/gh-form-group}}
             </form>
 
-            <button type="submit" class="btn btn-green btn-lg btn-block" {{action "signup"}} disabled={{submitting}}>Create Account</button>
+            {{gh-spin-button type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting buttonText="Create Account" autoWidth=false}}
+            <p class="main-error">{{{flowErrors}}}</p>
         </section>
     </div>
 

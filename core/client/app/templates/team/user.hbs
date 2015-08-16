@@ -1,8 +1,8 @@
 <section class="gh-view">
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}
-            {{link-to "team" "team"}}
-            <i class="icon-arrow-right"></i> {{user.name}}
+            {{link-to "Team" "team"}}
+            <i class="icon-arrow-right"></i> <span>{{user.name}}</span>
         {{/gh-view-title}}
         <section class="view-actions">
             {{#if userActionsAreVisible}}
@@ -30,7 +30,7 @@
                 </span>
             {{/if}}
 
-            <button class="btn btn-blue" {{action "save"}}>Save</button>
+            {{gh-spin-button class="btn btn-blue" action="save" buttonText="Save" submitting=submitting}}
         </section>
     </header>
 

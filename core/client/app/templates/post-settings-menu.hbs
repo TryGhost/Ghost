@@ -33,6 +33,11 @@
                 </span>
             </div>
 
+            <div class="form-group">
+                <label for="tag-input">Tags</label>
+                {{gh-tags-input post=model}}
+            </div>
+
             {{#unless session.user.isAuthor}}
             <div class="form-group for-select">
                 <label for="author-list">Author</label>

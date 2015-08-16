@@ -11,6 +11,8 @@ export default Ember.Controller.extend(ValidationEngine, {
     password: null,
     image: null,
     blogCreated: false,
+    submitting: false,
+    flowErrors: '',
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -54,8 +56,10 @@ export default Ember.Controller.extend(ValidationEngine, {
                 config = this.get('config'),
                 method = this.get('blogCreated') ? 'PUT' : 'POST';
 
+            this.toggleProperty('submitting');
+            this.set('flowErrors', '');
+
             this.validate().then(function () {
-                self.set('showError', false);
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'setup'),
                     type: method,
@@ -80,19 +84,28 @@ export default Ember.Controller.extend(ValidationEngine, {
                         if (data.image) {
                             self.sendImage(result.users[0])
                             .then(function () {
+                                self.toggleProperty('submitting');
                                 self.transitionToRoute('setup.three');
                             }).catch(function (resp) {
+                                self.toggleProperty('submitting');
                                 notifications.showAPIError(resp);
                             });
                         } else {
+                            self.toggleProperty('submitting');
                             self.transitionToRoute('setup.three');
                         }
                     });
                 }).catch(function (resp) {
-                    notifications.showAPIError(resp);
+                    self.toggleProperty('submitting');
+                    if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
+                        self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
+                    } else {
+                        notifications.showAPIError(resp);
+                    }
                 });
             }).catch(function () {
-                self.set('showError', true);
+                self.toggleProperty('submitting');
+                self.set('flowErrors', 'Please fill out the form to setup your blog.');
             });
         },
         setImage: function (image) {

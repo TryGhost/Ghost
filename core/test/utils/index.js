@@ -3,6 +3,7 @@ var Promise       = require('bluebird'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
+    uuid          = require('node-uuid'),
     migration     = require('../../server/data/migration/'),
     Models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
@@ -127,6 +128,25 @@ fixtures = {
         return sequence(_.times(posts.length, function (index) {
             return function () {
                 return knex('posts').insert(posts[index]);
+            };
+        }));
+    },
+
+    insertMoreTags: function insertMoreTags(max) {
+        max = max || 50;
+        var tags = [],
+            tagName,
+            i,
+            knex = config.database.knex;
+
+        for (i = 0; i < max; i += 1) {
+            tagName = uuid.v4().split('-')[0];
+            tags.push(DataGenerator.forKnex.createBasic({name: tagName, slug: tagName}));
+        }
+
+        return sequence(_.times(tags.length, function (index) {
+            return function () {
+                return knex('tags').insert(tags[index]);
             };
         }));
     },
@@ -376,6 +396,7 @@ toDoList = {
 
     posts: function insertPosts() { return fixtures.insertPosts(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
+    tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
     settings: function populateSettings() {
         return Models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });

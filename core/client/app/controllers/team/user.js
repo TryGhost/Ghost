@@ -7,6 +7,7 @@ import ValidationEngine from 'ghost/mixins/validation-engine';
 export default Ember.Controller.extend(ValidationEngine, {
     // ValidationEngine settings
     validationType: 'user',
+    submitting: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -103,6 +104,8 @@ export default Ember.Controller.extend(ValidationEngine, {
                 user.set('slug', slugValue);
             }
 
+            this.toggleProperty('submitting');
+
             promise = Ember.RSVP.resolve(afterUpdateSlug).then(function () {
                 return user.save({format: false});
             }).then(function (model) {
@@ -121,11 +124,15 @@ export default Ember.Controller.extend(ValidationEngine, {
                     window.history.replaceState({path: newPath}, '', newPath);
                 }
 
+                self.toggleProperty('submitting');
+
                 return model;
             }).catch(function (errors) {
                 if (errors) {
                     self.get('notifications').showErrors(errors);
                 }
+
+                self.toggleProperty('submitting');
             });
 
             this.set('lastPromise', promise);

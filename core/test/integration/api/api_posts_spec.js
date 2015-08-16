@@ -126,15 +126,35 @@ describe('Post API', function () {
 
         it('without context.user cannot fetch all posts', function (done) {
             PostAPI.browse({status: 'all'}).then(function (results) {
-                should.exist(results);
-                testUtils.API.checkResponse(results, 'posts');
-                should.exist(results.posts);
-                results.posts.length.should.eql(4);
-                results.posts[0].status.should.eql('published');
-                testUtils.API.checkResponse(results.posts[0], 'post');
+                should.not.exist(results);
 
+                done(new Error('should not provide results if invalid status provided'));
+            }).catch(function (err) {
+                err.errorType.should.eql('NoPermissionError');
                 done();
-            }).catch(done);
+            });
+        });
+
+        it('without context.user cannot fetch draft posts', function (done) {
+            PostAPI.browse({status: 'draft'}).then(function (results) {
+                should.not.exist(results);
+
+                done(new Error('should not provide results if invalid status provided'));
+            }).catch(function (err) {
+                err.errorType.should.eql('NoPermissionError');
+                done();
+            });
+        });
+
+        it('without context.user cannot use uuid to fetch draft posts in browse', function (done) {
+            PostAPI.browse({status: 'draft', uuid: 'imastring'}).then(function (results) {
+                should.not.exist(results);
+
+                done(new Error('should not provide results if invalid status provided'));
+            }).catch(function (err) {
+                err.errorType.should.eql('NoPermissionError');
+                done();
+            });
         });
 
         it('with context.user can fetch drafts', function (done) {
@@ -230,15 +250,13 @@ describe('Post API', function () {
         });
 
         it('without context.user cannot fetch draft', function (done) {
-            PostAPI.read({slug: 'unfinished', status: 'draft'}).then(function (results) {
-                should.not.exist(results.posts);
-                done();
+            PostAPI.read({slug: 'unfinished', status: 'draft'}).then(function () {
+                done(new Error('Should not return a result with no permission'));
             }).catch(function (err) {
                 should.exist(err);
-                err.message.should.eql('Post not found.');
-
+                err.errorType.should.eql('NoPermissionError');
                 done();
-            });
+            }).catch(done);
         });
 
         it('with context.user can fetch a draft', function (done) {
@@ -260,13 +278,13 @@ describe('Post API', function () {
 
         it('cannot fetch post with unknown id', function (done) {
             PostAPI.read({context: {user: 1}, slug: 'not-a-post'}).then(function () {
-                done();
+                done(new Error('Should not return a result with unknown id'));
             }).catch(function (err) {
                 should.exist(err);
                 err.message.should.eql('Post not found.');
 
                 done();
-            });
+            }).catch(done);
         });
 
         it('can fetch post with by id', function (done) {
@@ -302,10 +320,55 @@ describe('Post API', function () {
             }).catch(done);
         });
 
+        it('can include next post with author and tags', function (done) {
+            PostAPI.read({context: {user: 1}, id: 3, include: 'next,next.tags,next.author'}).then(function (results) {
+                should.exist(results.posts[0].next.slug);
+                results.posts[0].next.slug.should.eql('not-so-short-bit-complex');
+                results.posts[0].next.author.should.be.an.Object;
+                results.posts[0].next.tags.should.be.an.Array;
+                done();
+            }).catch(done);
+        });
+
+        it('can include next post with just tags', function (done) {
+            PostAPI.read({context: {user: 1}, id: 2, include: 'next,next.tags'}).then(function (results) {
+                should.exist(results.posts[0].next.slug);
+                results.posts[0].next.slug.should.eql('short-and-sweet');
+                results.posts[0].next.author.should.eql(1);
+                results.posts[0].next.tags.should.be.an.Array;
+                results.posts[0].next.tags[0].name.should.eql('chorizo');
+                done();
+            }).catch(done);
+        });
+
         it('can include previous post', function (done) {
             PostAPI.read({context: {user: 1}, id: 3, include: 'previous'}).then(function (results) {
                 should.exist(results.posts[0].previous.slug);
                 results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
+                done();
+            }).catch(done);
+        });
+
+        it('can include previous post with author and tags', function (done) {
+            PostAPI.read({context: {user: 1}, id: 3, include: 'previous,previous.author,previous.tags'}).then(function (results) {
+                should.exist(results.posts[0].previous.slug);
+                results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
+                results.posts[0].previous.author.should.be.an.Object;
+                results.posts[0].previous.author.name.should.eql('Joe Bloggs');
+                results.posts[0].previous.tags.should.be.an.Array;
+                results.posts[0].previous.tags.should.have.lengthOf(2);
+                results.posts[0].previous.tags[0].slug.should.eql('kitchen-sink');
+                done();
+            }).catch(done);
+        });
+
+        it('can include previous post with just author', function (done) {
+            PostAPI.read({context: {user: 1}, id: 3, include: 'previous,previous.author'}).then(function (results) {
+                should.exist(results.posts[0].previous.slug);
+                should.not.exist(results.posts[0].previous.tags);
+                results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
+                results.posts[0].previous.author.should.be.an.Object;
+                results.posts[0].previous.author.name.should.eql('Joe Bloggs');
                 done();
             }).catch(done);
         });

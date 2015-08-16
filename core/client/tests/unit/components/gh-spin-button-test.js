@@ -6,8 +6,8 @@ import {
 } from 'ember-mocha';
 
 describeComponent(
-    'gh-post-tags-input',
-    'GhPostTagsInputComponent',
+    'gh-spin-button',
+    'GhSpinButtonComponent',
     {
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']

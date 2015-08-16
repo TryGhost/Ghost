@@ -1,8 +1,8 @@
 {{#gh-navigation moveItem="moveItem"}}
     <header class="view-header">
-        {{#gh-view-title openMobileMenu="openMobileMenu"}}Navigation{{/gh-view-title}}
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Navigation</span>{{/gh-view-title}}
         <section class="view-actions">
-            <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
+            {{gh-spin-button type="button" class="btn btn-blue" action="save" buttonText="Save" submitting=submitting}}
         </section>
     </header>
 

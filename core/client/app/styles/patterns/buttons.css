@@ -3,9 +3,6 @@
 
 /* Base button style */
 .btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     margin-bottom: 0;
     padding: 9px 15px;
     border: #dfe1e3 1px solid;
@@ -60,6 +57,11 @@ fieldset[disabled] .btn {
     opacity: 0.65;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+.btn i {
+    display: inline-block;
+    vertical-align: middle;
 }
 
 
@@ -163,6 +165,7 @@ fieldset[disabled] .btn {
 .btn-minor:focus {
     border-color: #c1c1c1;
     background: #fff;
+    box-shadow: none;
     color: #808284;
 }
 
@@ -199,4 +202,28 @@ input[type="submit"].btn-block,
 input[type="reset"].btn-block,
 input[type="button"].btn-block {
     width: 100%;
+}
+
+/* Spin Buttons!
+/* ---------------------------------------------------------- */
+.spinner {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    margin: -2px 0;
+    width: 14px;
+    height: 14px;
+    border: rgba(0,0,0,0.2) solid 4px;
+    border-radius: 100px;
+    animation: spin 1s linear infinite;
+}
+
+.spinner:before {
+    content: "";
+    display: block;
+    margin-top: 6px;
+    width: 4px;
+    height: 4px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 100px;
 }

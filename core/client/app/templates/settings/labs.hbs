@@ -1,6 +1,6 @@
 <section class="gh-view">
     <header class="view-header">
-        {{#gh-view-title openMobileMenu="openMobileMenu"}}Labs{{/gh-view-title}}
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Labs</span>{{/gh-view-title}}
     </header>
 
     <section class="view-content settings-debug">
@@ -37,7 +37,7 @@
             <fieldset>
                 <div class="form-group">
                     <label>Send a test email</label>
-                    <button type="button" id="sendtestmail" class="btn btn-blue" {{action "sendTestEmail"}}>Send</button>
+                    {{gh-spin-button type="button" id="sendtestemail" class="btn btn-blue" action="sendTestEmail" buttonText="Send" submitting=submitting}}
                     <p>Sends a test email to your address.</p>
                 </div>
             </fieldset>

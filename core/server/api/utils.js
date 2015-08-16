@@ -1,10 +1,12 @@
 // # API Utils
 // Shared helpers for working with the API
-var Promise    = require('bluebird'),
-    _          = require('lodash'),
-    path       = require('path'),
-    errors     = require('../errors'),
-    validation = require('../data/validation'),
+var Promise = require('bluebird'),
+    _       = require('lodash'),
+    path    = require('path'),
+    errors  = require('../errors'),
+    permissions = require('../permissions'),
+    validation  = require('../data/validation'),
+
     utils;
 
 utils = {
@@ -131,13 +133,98 @@ utils = {
         return errors;
     },
 
+    /**
+     * ## Is Public Context?
+     * If this is a public context, return true
+     * @param {Object} options
+     * @returns {Boolean}
+     */
+    isPublicContext: function isPublicContext(options) {
+        return permissions.parseContext(options.context).public;
+    },
+    /**
+     * ## Apply Public Permissions
+     * Update the options object so that the rules reflect what is permitted to be retrieved from a public request
+     * @param {String} docName
+     * @param {String} method (read || browse)
+     * @param {Object} options
+     * @returns {Object} options
+     */
+    applyPublicPermissions: function applyPublicPermissions(docName, method, options) {
+        return permissions.applyPublicRules(docName, method, options);
+    },
+
+    /**
+     * ## Handle Public Permissions
+     * @param {String} docName
+     * @param {String} method (read || browse)
+     * @returns {Function}
+     */
+    handlePublicPermissions: function handlePublicPermissions(docName, method) {
+        var singular = docName.replace(/s$/, '');
+
+        /**
+         * Check if this is a public request, if so use the public permissions, otherwise use standard canThis
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        return function doHandlePublicPermissions(options) {
+            var permsPromise;
+
+            if (utils.isPublicContext(options)) {
+                permsPromise = utils.applyPublicPermissions(docName, method, options);
+            } else {
+                permsPromise = permissions.canThis(options.context)[method][singular](options.data);
+            }
+
+            return permsPromise.then(function permissionGranted() {
+                return options;
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error);
+            });
+        };
+    },
+
+    /**
+     * ## Handle Permissions
+     * @param {String} docName
+     * @param {String} method (browse || read || edit || add || destroy)
+     * @returns {Function}
+     */
+    handlePermissions: function handlePermissions(docName, method) {
+        var singular = docName.replace(/s$/, '');
+
+        /**
+         * ### Handle Permissions
+         * We need to be an authorised user to perform this action
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        return function doHandlePermissions(options) {
+            var permsPromise = permissions.canThis(options.context)[method][singular](options.id);
+
+            return permsPromise.then(function permissionGranted() {
+                return options;
+            }).catch(errors.NoPermissionError, function handleNoPermissionError(error) {
+                // pimp error message
+                error.message = 'You do not have permission to ' + method + ' ' + docName;
+                // forward error to next catch()
+                return Promise.reject(error);
+            }).catch(function handleError(error) {
+                return errors.handleAPIError(error);
+            });
+        };
+    },
+
     prepareInclude: function prepareInclude(include, allowedIncludes) {
         include = include || '';
         include = _.intersection(include.split(','), allowedIncludes);
 
         return include;
     },
+
     /**
+     * ## Convert Options
      * @param {Array} allowedIncludes
      * @returns {Function} doConversion
      */

@@ -115,7 +115,7 @@ User = ghostBookshelf.Model.extend({
         } else if (this.get('id')) {
             return this.get('id');
         } else {
-            errors.logAndThrowError(new Error('missing context'));
+            errors.logAndThrowError(new errors.NotFoundError('missing context'));
         }
     },
 
@@ -489,7 +489,7 @@ User = ghostBookshelf.Model.extend({
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
             if (userModel.hasRole('Owner')) {
-                return Promise.reject();
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
@@ -506,7 +506,7 @@ User = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject();
+        return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
     },
 
     setWarning: function setWarning(user, options) {
@@ -541,7 +541,7 @@ User = ghostBookshelf.Model.extend({
             if (user.get('status') === 'invited' || user.get('status') === 'invited-pending' ||
                     user.get('status') === 'inactive'
                 ) {
-                return Promise.reject(new Error('The user with that email address is inactive.'));
+                return Promise.reject(new errors.NoPermissionError('The user with that email address is inactive.'));
             }
             if (user.get('status') !== 'locked') {
                 return bcryptCompare(object.password, user.get('password')).then(function then(matched) {
@@ -664,25 +664,25 @@ User = ghostBookshelf.Model.extend({
 
         // Check if invalid structure
         if (!parts || parts.length !== 3) {
-            return Promise.reject(new Error('Invalid token structure'));
+            return Promise.reject(new errors.BadRequestError('Invalid token structure'));
         }
 
         expires = parseInt(parts[0], 10);
         email = parts[1];
 
         if (isNaN(expires)) {
-            return Promise.reject(new Error('Invalid token expiration'));
+            return Promise.reject(new errors.BadRequestError('Invalid token expiration'));
         }
 
         // Check if token is expired to prevent replay attacks
         if (expires < Date.now()) {
-            return Promise.reject(new Error('Expired token'));
+            return Promise.reject(new errors.ValidationError('Expired token'));
         }
 
         // to prevent brute force attempts to reset the password the combination of email+expires is only allowed for
         // 10 attempts
         if (tokenSecurity[email + '+' + expires] && tokenSecurity[email + '+' + expires].count >= 10) {
-            return Promise.reject(new Error('Token locked'));
+            return Promise.reject(new errors.NoPermissionError('Token locked'));
         }
 
         return this.generateResetToken(email, expires, dbHash).then(function then(generatedToken) {
@@ -707,7 +707,7 @@ User = ghostBookshelf.Model.extend({
             tokenSecurity[email + '+' + expires] = {
                 count: tokenSecurity[email + '+' + expires] ? tokenSecurity[email + '+' + expires].count + 1 : 1
             };
-            return Promise.reject(new Error('Invalid token'));
+            return Promise.reject(new errors.BadRequestError('Invalid token'));
         });
     },
 
@@ -719,7 +719,7 @@ User = ghostBookshelf.Model.extend({
             dbHash = options.dbHash;
 
         if (newPassword !== ne2Password) {
-            return Promise.reject(new Error('Your new passwords do not match'));
+            return Promise.reject(new errors.ValidationError('Your new passwords do not match'));
         }
 
         if (!validatePasswordLength(newPassword)) {
@@ -735,7 +735,7 @@ User = ghostBookshelf.Model.extend({
             );
         }).then(function then(results) {
             if (!results[0]) {
-                return Promise.reject(new Error('User not found'));
+                return Promise.reject(new errors.NotFoundError('User not found'));
             }
 
             // Update the user with the new password hash
