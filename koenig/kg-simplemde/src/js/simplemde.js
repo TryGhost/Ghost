@@ -452,66 +452,76 @@ function wordCount(data) {
 }
 
 
-var toolbar = [{
+var toolbarDefaults = {
+	"bold": {
 		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
 		title: "Bold (Ctrl+B)",
-	}, {
+	},
+	"italic": {
 		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
-	}, {
-		name: "headingSmaller",
+	},
+	"heading": {
+		name: "heading",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header",
 		title: "Heading (Ctrl+H)",
 	},
-	"|", {
+	"quote": {
 		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
 		title: "Quote (Ctrl+')",
-	}, {
+	},
+	"unordered-list": {
 		name: "unordered-list",
 		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
 		title: "Generic List (Ctrl+L)",
-	}, {
+	},
+	"ordered-list": {
 		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
 		title: "Numbered List (Ctrl+Alt+L)",
 	},
-	"|", {
+	"link": {
 		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
 		title: "Create Link (Ctrl+K)",
-	}, {
-		name: "quote",
+	},
+	"image": {
+		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)",
 	},
-	"|", {
+	"preview": {
 		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
-	}, {
+	},
+	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
 		className: "fa fa-arrows-alt",
 		title: "Toggle Fullscreen (F11)",
-	}, {
+	},
+	"guide": {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
 		title: "Markdown Guide",
 	}
-];
+};
+
+var toolbar = ["bold", "italic", "heading",	"|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|",  "preview", "fullscreen", "guide"];
 
 /**
  * Interface of SimpleMDE.
@@ -684,6 +694,12 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 	if(!items || items.length === 0) {
 		return;
+	}
+	
+	for(var i = 0; i < items.length; i++) {
+		if(toolbarDefaults[items[i]] != undefined){
+			items[i] = toolbarDefaults[items[i]];
+		}
 	}
 
 	var bar = document.createElement('div');

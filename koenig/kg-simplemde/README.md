@@ -113,6 +113,12 @@ guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/mark
 Customize the toolbar using the `toolbar` option like:
 
 ```JavaScript
+// Customize only the order of existing buttons
+var simplemde = new SimpleMDE({
+	toolbar: ["bold", "italic", "heading", "|", "quote"],
+});
+
+// Customize all information and/or add your own icons
 var simplemde = new SimpleMDE({
 	toolbar: [{
 			name: "bold",
