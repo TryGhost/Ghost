@@ -59,6 +59,7 @@
 
 .editor-toolbar.fullscreen {
 	width: 100%;
+	min-height: 50px;
 	background: #fff;
 	border: 0;
 	position: fixed;
