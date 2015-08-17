@@ -9,6 +9,41 @@
         }
     },
     "errors": {
+        "apps": {
+            "failedToParseActiveAppsSettings": {
+                    "error": "Failed to parse activeApps setting value: {message}",
+                    "context": "Your apps will not be loaded.",
+                    "help": "Check your settings table for typos in the activeApps value. It should look like: [\"app-1\", \"app2\"] (double quotes required)."
+            },
+            "appWillNotBeLoaded": {
+                "error": "The app will not be loaded",
+                "help": "Check with the app creator, or read the app documentation for more details on app requirements"
+            
+            },
+            "permissionsErrorLoadingApp": {
+                "error": "Error loading app named {name}; problem reading permissions: {message}"
+            },
+            "noInstallMethodLoadingApp": {
+                "error": "Error loading app named {name}; no install() method defined."
+            },
+            "noActivateMethodLoadingApp": {
+                "error": "Error loading app named {name}; no activate() method defined."
+            },
+            "accessResourceWithoutPermission": {
+                "error": "The App \"{name}\" attempted to perform an action or access a resource ({perm}.{method}) without permission."
+            },
+            "mustProvideAppName": {
+                "error": "Must provide an app name for api context"
+            },
+            "mustProvideAppPermissions": {
+                "error": "Must provide app permissions"
+            },
+            "unsafeAppRequire": {
+                "error": "Unsafe App require: {msg}"
+            }
+            
+            },
+        
         "utils": {
             "startupcheck": {
                 "unsupportedNodeVersion": {
