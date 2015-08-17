@@ -96,9 +96,22 @@ function getState(cm, pos) {
  * Toggle full screen of the editor.
  */
 function toggleFullScreen(editor) {
+	// Set fullscreen
 	var cm = editor.codemirror;
 	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+	
+	
+	// Update toolbar class
+	var wrap = cm.getWrapperElement();
+	
+	if(!/fullscreen/.test(wrap.previousSibling.className)) {
+		wrap.previousSibling.className += " fullscreen";
+	} else {
+		wrap.previousSibling.className = wrap.previousSibling.className.replace(/\s*fullscreen\b/, "");
+	}
 
+	
+	// Update toolbar button
 	var toolbarButton = editor.toolbarElements.fullscreen;
 
 	if(!/active/.test(toolbarButton.className)) {

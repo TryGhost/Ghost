@@ -1,6 +1,5 @@
-// NOTE: This has been modified from the original version to add fullscreen class to the status bar too
-
-
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -27,7 +26,6 @@
 	wrap.style.height = "auto";
 	wrap.className += " CodeMirror-fullscreen";
 	document.documentElement.style.overflow = "hidden";
-	wrap.previousSibling.className += " fullscreen";
 	cm.refresh();
   }
 
@@ -38,7 +36,6 @@
 	var info = cm.state.fullScreenRestore;
 	wrap.style.width = info.width; wrap.style.height = info.height;
 	window.scrollTo(info.scrollLeft, info.scrollTop);
-	wrap.previousSibling.className = wrap.previousSibling.className.replace(/\s*fullscreen\b/, "");
 	cm.refresh();
   }
 });
