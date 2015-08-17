@@ -9,6 +9,7 @@
 var _ = require('lodash'),
     errors    = require('../errors'),
     config    = require('../config'),
+    i18n      = require('../i18n'),
     loginSecurity = [],
     forgottenSecurity = [],
     protectedSecurity = [],
@@ -22,7 +23,7 @@ spamPrevention = {
             remoteAddress = req.connection.remoteAddress,
             deniedRateLimit = '',
             ipCount = '',
-            message = 'Too many attempts.',
+            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
             rateSigninPeriod = config.rateSigninPeriod || 3600,
             rateSigninAttempts = config.rateSigninAttempts || 10;
 
@@ -31,7 +32,7 @@ spamPrevention = {
         } else if (req.body.grant_type === 'refresh_token') {
             return next();
         } else {
-            return next(new errors.BadRequestError('No username.'));
+            return next(new errors.BadRequestError(i18n.t('errors.middleware.spamprevention.noUsername')));
         }
 
         // filter entries that are older than rateSigninPeriod
@@ -45,10 +46,10 @@ spamPrevention = {
 
         if (deniedRateLimit) {
             errors.logError(
-                'Only ' + rateSigninAttempts + ' tries per IP address every ' + rateSigninPeriod + ' seconds.',
-                'Too many login attempts.'
+                i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error', {rateSigninAttempts: rateSigninAttempts, rateSigninPeriod: rateSigninPeriod}),
+                i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
             );
-            message += rateSigninPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
+            message += rateSigninPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
             return next(new errors.TooManyRequestsError(message));
         }
         next();
@@ -65,7 +66,7 @@ spamPrevention = {
             ipCount = '',
             deniedRateLimit = '',
             deniedEmailRateLimit = '',
-            message = 'Too many attempts.',
+            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
             index = _.findIndex(forgottenSecurity, function findIndex(logTime) {
                 return (logTime.ip === remoteAddress && logTime.email === email);
             });
@@ -77,7 +78,7 @@ spamPrevention = {
                 forgottenSecurity.push({ip: remoteAddress, time: currentTime, email: email, count: 0});
             }
         } else {
-            return next(new errors.BadRequestError('No email.'));
+            return next(new errors.BadRequestError(i18n.t('errors.middleware.spamprevention.noEmail')));
         }
 
         // filter entries that are older than rateForgottenPeriod
@@ -95,21 +96,20 @@ spamPrevention = {
 
         if (deniedEmailRateLimit) {
             errors.logError(
-                'Only ' + rateForgottenAttempts + ' forgotten password attempts per email every ' +
-                rateForgottenPeriod + ' seconds.',
-                'Forgotten password reset attempt failed'
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error', {rfa: rateForgottenAttempts, rfp: rateForgottenPeriod}),
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
             );
         }
 
         if (deniedRateLimit) {
             errors.logError(
-                'Only ' + rateForgottenAttempts + ' tries per IP address every ' + rateForgottenPeriod + ' seconds.',
-                'Forgotten password reset attempt failed'
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateForgottenAttempts, rpp: rateForgottenPeriod}),
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
             );
         }
 
         if (deniedEmailRateLimit || deniedRateLimit) {
-            message += rateForgottenPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
+            message += rateForgottenPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
             return next(new errors.TooManyRequestsError(message));
         }
 
@@ -122,7 +122,7 @@ spamPrevention = {
             rateProtectedPeriod = config.rateProtectedPeriod || 3600,
             rateProtectedAttempts = config.rateProtectedAttempts || 10,
             ipCount = '',
-            message = 'Too many attempts.',
+            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
             deniedRateLimit = '',
             password = req.body.password;
 
@@ -130,7 +130,7 @@ spamPrevention = {
             protectedSecurity.push({ip: remoteAddress, time: currentTime});
         } else {
             res.error = {
-                message: 'No password entered'
+                message: i18n.t('errors.middleware.spamprevention.noPassword')
             };
             return next();
         }
@@ -145,10 +145,10 @@ spamPrevention = {
 
         if (deniedRateLimit) {
             errors.logError(
-                'Only ' + rateProtectedAttempts + ' tries per IP address every ' + rateProtectedPeriod + ' seconds.',
-                'Too many login attempts.'
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateProtectedAttempts, rpp: rateProtectedPeriod}),
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
             );
-            message += rateProtectedPeriod === 3600 ? ' Please wait 1 hour.' : ' Please try again later';
+            message += rateProtectedPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
             res.error = {
                 message: message
             };

@@ -43,7 +43,45 @@
             }
             
             },
-        
+        "middleware": {
+            "ghostbusboy": {
+                "fileUploadingError": "Something went wrong uploading the file"
+            
+            },
+            "oauth": {
+                "invalidClient": "Invalid client.",
+                "invalidRefreshToken": "Invalid refresh token.",
+                "refreshTokenExpired": "Refresh token expired."
+            },
+            "privateblogging": {
+                "wrongPassword": "Wrong password"
+            },
+            "spamprevention": {
+                "tooManyAttempts": "Too many attempts.",
+                "noUsername": "No username.",
+                "noPassword": "No password entered",
+                "tooManySigninAttempts": {
+                    "error": "Only {rateSigninAttempts} tries per IP address every {rateSigninPeriod} seconds.",
+                    "context": "Too many login attempts."
+                },
+                "tryAgainLater": " Please try again later",
+                "waitOneHour": " Please wait 1 hour.",
+                "noEmail": "No email.",
+                "forgottenPasswordEmail": {
+                    "error": "Only {rfa} forgotten password attempts per email every {rfp} seconds.",
+                    "context": "Forgotten password reset attempt failed"
+                },
+                "forgottenPasswordIp": {
+                    "error": "Only {rfa} tries per IP address every {rpp} seconds.",
+                    "context": "Forgotten password reset attempt failed"
+                }
+                
+            },
+            "themehandler": {
+                "missingTheme": "The currently active theme {theme} is missing."
+            
+            }
+        },
         "utils": {
             "startupcheck": {
                 "unsupportedNodeVersion": {
@@ -192,7 +230,18 @@
         "index": {
             "usingDirectMethodToSendEmail": "Ghost is attempting to use a direct method to send e-mail. \nIt is recommended that you explicitly configure an e-mail service.",
             "unableToSendEmail": "Ghost is currently unable to send e-mail."
-        }  
+        },
+        "helpers": {
+            "foreach": {
+                "iteratorNeeded": "Need to pass an iterator to #foreach"
+            },
+            "has": {
+                "invalidAttribute": "Invalid or no attribute given to has helper"
+            },
+            "index": {
+                "missingHelper": "Missing helper: \"{arg}\""
+            }
+        }
     },
     "notices": {
         "controllers": {

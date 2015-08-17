@@ -2,6 +2,7 @@ var oauth2orize = require('oauth2orize'),
     models      = require('../models'),
     utils       = require('../utils'),
     errors      = require('../errors'),
+    i18n        = require('../i18n'),
 
     oauth;
 
@@ -24,7 +25,7 @@ oauth = {
             .fetch()
             .then(function then(client) {
                 if (!client) {
-                    return done(new errors.NoPermissionError('Invalid client.'), false);
+                    return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidClient')), false);
                 }
                 // Validate the user
                 return models.User.check({email: username, password: password}).then(function then(user) {
@@ -61,7 +62,7 @@ oauth = {
             .fetch()
             .then(function then(model) {
                 if (!model) {
-                    return done(new errors.NoPermissionError('Invalid refresh token.'), false);
+                    return done(new errors.NoPermissionError(i18n.t('errors.middleware.oauth.invalidRefreshToken')), false);
                 } else {
                     var token = model.toJSON(),
                         accessToken = utils.uid(256),
@@ -82,7 +83,7 @@ oauth = {
                             return done(error, false);
                         });
                     } else {
-                        done(new errors.UnauthorizedError('Refresh token expired.'), false);
+                        done(new errors.UnauthorizedError(i18n.t('errors.middleware.oauth.refreshTokenExpired')), false);
                     }
                 }
             });
