@@ -60,6 +60,11 @@ app.import('bower_components/xregexp/xregexp-all.js');
 app.import('bower_components/password-generator/lib/password-generator.js');
 app.import('bower_components/blueimp-md5/js/md5.js');
 app.import('bower_components/typeahead.js/dist/typeahead.bundle.js');
+app.import('bower_components/typeahead.js/dist/bloodhound.js');
+app.import('bower_components/typeahead.js-es6-shim/typeahead-shim.js', {
+  exports: { 'bloodhound': ['default'] }
+});
+
 
 // 'dem Styles
 app.import('bower_components/codemirror/lib/codemirror.css');

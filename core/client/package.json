@@ -33,6 +33,7 @@
     "ember-cli-mocha": "^0.7.0",
     "ember-cli-simple-auth": "0.8.0",
     "ember-cli-simple-auth-oauth2": "0.8.0",
+    "ember-cli-styleless-tokenfield": "https://github.com/kevinansfield/ember-cli-styleless-tokenfield/tarball/55b6f81253d5e65bbfa5f6b972393e74db56f5e9",
     "ember-cli-uglify": "^1.0.1",
     "ember-data": "1.0.0-beta.18",
     "ember-export-application-global": "^1.0.2",
