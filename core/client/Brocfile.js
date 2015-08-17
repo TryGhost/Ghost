@@ -44,7 +44,7 @@ app.import('bower_components/showdown-ghost/src/extensions/highlight.js');
 app.import('bower_components/moment/moment.js');
 app.import('bower_components/keymaster/keymaster.js');
 app.import('bower_components/devicejs/lib/device.js');
-app.import('bower_components/jquery-ui/ui/jquery-ui.js');
+app.import('bower_components/jquery-ui/jquery-ui.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload.js');
 app.import('bower_components/blueimp-load-image/js/load-image.all.min.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload-process.js');
