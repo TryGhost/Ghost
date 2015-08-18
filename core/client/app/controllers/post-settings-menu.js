@@ -189,7 +189,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
     },
 
     // query for all existing tags applicable to tag input's autocomplete
-    availableTags: Ember.computed(function() {
+    availableTags: Ember.computed(function () {
         return this.get('store').find('tag', {limit: 'all'});
     }),
 
@@ -467,10 +467,10 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
             });
         },
 
-        addTag: function(tagName) {
+        addTag: function (tagName) {
             var self = this,
                 currentTags = this.get('model.tags'),
-                currentTagNames = currentTags.map(function(tag) { return tag.get('name').toLowerCase(); }),
+                currentTagNames = currentTags.map(function (tag) { return tag.get('name').toLowerCase(); }),
                 availableTagNames = null,
                 tagToAdd = null;
 
@@ -479,12 +479,12 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('availableTags').then(function(availableTags) {
-                availableTagNames = availableTags.map(function(tag) { return tag.get('name').toLowerCase(); });
+            this.get('availableTags').then(function (availableTags) {
+                availableTagNames = availableTags.map(function (tag) { return tag.get('name').toLowerCase(); });
 
                 // find existing tag or create new
                 if (availableTagNames.contains(tagName.toLowerCase())) {
-                    tagToAdd = availableTags.find(function(tag) {
+                    tagToAdd = availableTags.find(function (tag) {
                         return tag.get('name').toLowerCase() === tagName.toLowerCase();
                     });
                 } else {
@@ -498,13 +498,13 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
             });
         },
 
-        removeTag: function(tagName) {
-            var tagName = tagName.toLowerCase(),
+        removeTag: function (tagName) {
+            var lowercaseTagName = tagName.toLowerCase(),
                 currentTags = this.get('model.tags'),
                 tagToRemove = null;
 
-            tagToRemove = currentTags.find(function(tag) {
-                return tag.get('name').toLowerCase() === tagName;
+            tagToRemove = currentTags.find(function (tag) {
+                return tag.get('name').toLowerCase() === lowercaseTagName;
             });
 
             currentTags.removeObject(tagToRemove);
