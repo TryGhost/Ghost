@@ -191,6 +191,56 @@
                 "error": "Email Error: message was not sent, requeued. Probably will not be sent. :("
             }
         },
+        "models": {
+            "post": {
+                "noUserFound": "No user found",
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
+            "role": {
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
+            "settings": {
+                "valueCannotBeBlank": "Value in [settings.key] cannot be blank.",
+                "unableToFindSetting": "Unable to find setting to update: {key}",
+                "unableToFindDefaultSetting": "Unable to find default setting: {key}"
+            },
+            "user": {
+                "missingContext": "missing context",
+                "onlyOneRolePerUserSupported": "Only one role per user is supported at the moment.",
+                "methodDoesNotSupportOwnerRole": "This method does not support assigning the owner role",
+                "passwordDoesNotComplyLength": "Your password must be at least 8 characters long.",
+                "notEnoughPermission": "You do not have permission to perform this action",
+                "noUserWithEnteredEmailAddr": "There is no user with that email address.",
+                "userIsInactive": "The user with that email address is inactive.",
+                "incorrectPassword": "Your password is incorrect. <br /> {remaining} attempt{s} remaining!",
+                "userUpdateError": {
+                    "context": "Error thrown from user update during login",
+                    "help": "Visit and save your profile after logging in to check for problems."
+                },
+                "incorrectPassword2": "Your password is incorrect.",
+                "accountLocked": "Your account is locked. Please reset your password to log in again by clicking the 'Forgotten password?' link!",
+                "newPasswordsDoNotMatch": "Your new passwords do not match",
+                "passwordRequiredForOperation": "Password is required for this operation",
+                "invalidTokenStructure": "Invalid token structure",
+                "invalidTokenExpiration": "Invalid token expiration",
+                "expiredToken": "Expired token",
+                "tokenLocked": "Token locked",
+                "invalidToken": "Invalid token",
+                "userNotFound": "User not found",
+                "onlyOwnerCanTransferOwnerRole": "Only owners are able to transfer the owner role.",
+                "onlyAdmCanBeAssignedOwnerRole": "Only administrators can be assigned the owner role."
+                
+            },
+            "base": {
+                "index": {
+                    "missingContext": "missing context"
+                },
+                "token": {
+                    "noUserFound": "No user found",
+                    "tokenNotFound": "Token not found"
+                }
+            }
+        },
         "permissions": {
             "noActionsMapFound": {
                 "error": "No actions map found, please call permissions.init() before use."
@@ -224,6 +274,7 @@
             }
         
         }
+        
         
     },
     "warnings": {
