@@ -161,16 +161,22 @@ var db = {
             uuid: {type: 'string', maxlength: 36, nullable: false},
             name: {type: 'string', maxlength: 150, nullable: false, unique: true},
             slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
-            secret: {type: 'string', maxlength: 150, nullable: false, unique: true},
+            secret: {type: 'string', maxlength: 150, nullable: false},
             redirection_uri: {type: 'string', maxlength: 2000, nullable: true},
             logo: {type: 'string', maxlength: 2000, nullable: true},
             status: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'development'},
-            type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'Client-Side'},
+            type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'ua'},
             description: {type: 'string', maxlength: 200, nullable: true},
             created_at: {type: 'dateTime', nullable: false},
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},
             updated_by: {type: 'integer', nullable: true}
+        },
+        client_trusteddomains: {
+            id: {type: 'increments', nullable: false, primary: true},
+            uuid: {type: 'string', maxlength: 36, nullable: false},
+            client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
+            trusted_domain: {type: 'string', maxlength: 2000, nullable: true}
         },
         accesstokens: {
             id: {type: 'increments', nullable: false, primary: true},
