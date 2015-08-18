@@ -239,7 +239,27 @@
                 "invalidAttribute": "Invalid or no attribute given to has helper"
             },
             "index": {
-                "missingHelper": "Missing helper: \"{arg}\""
+                "missingHelper": "Missing helper: '{arg}'"
+            },
+            "is": {
+                "invalidAttribute": "Invalid or no attribute given to is helper"
+            },
+            "navigation": {
+                "invalidData": "navigation data is not an object or is a function",
+                "valuesMustBeDefined": "All values must be defined for label, url and current",
+                "valuesMustBeString": "Invalid value, Url and Label must be strings"
+            },
+            "pagination": {
+                "invalidData": "pagination data is not an object or is a function",
+                "valuesMustBeDefined": "All values must be defined for page, pages, limit and total",
+                "nextPrevValuesMustBeNumeric": "Invalid value, Next/Prev must be a number",
+                "valuesMustBeNumeric": "Invalid value, check page, pages, limit and total are numbers"
+            },
+            "plural": {
+                "valuesMustBeDefined": "All values must be defined for empty, singular and plural"
+            },
+            "template": {
+                "templateNotFound": "Template {name} not found."
             }
         }
     },

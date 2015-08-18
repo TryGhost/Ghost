@@ -4,13 +4,14 @@
 // Block helper designed for looping through posts
 var hbs             = require('express-hbs'),
     errors          = require('../errors'),
+    i18n            = require('../i18n'),
 
     hbsUtils        = hbs.handlebars.Utils,
     foreach;
 
 foreach = function (context, options) {
     if (!options) {
-        errors.logWarn('Need to pass an iterator to #foreach');
+        errors.logWarn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
     }
 
     var fn = options.fn,
