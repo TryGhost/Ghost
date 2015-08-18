@@ -102,7 +102,11 @@ describe('Tags API', function () {
     });
 
     describe('Browse', function () {
-        beforeEach(testUtils.setup('tags'));
+        beforeEach(function (done) {
+            testUtils.fixtures.insertMoreTags().then(function () {
+                done();
+            });
+        });
 
         it('can browse (internal)', function (done) {
             TagAPI.browse(testUtils.context.internal).then(function (results) {
