@@ -9,14 +9,17 @@ var Promise     = require('bluebird'),
     sequence    = require('../../utils/sequence'),
     _           = require('lodash'),
     errors      = require('../../errors'),
+    config      = require('../../config'),
     utils       = require('../../utils'),
     models      = require('../../models'),
     fixtures    = require('./fixtures'),
     permissions = require('./permissions'),
+    notifications = require('../../api/notifications'),
 
     // Private
     logInfo,
     to003,
+    to004,
     convertAdminToOwner,
     createOwner,
     options = {context: {internal: true}},
@@ -125,7 +128,7 @@ to003 = function () {
         Role = models.Role,
         Client = models.Client;
 
-    logInfo('Upgrading fixtures');
+    logInfo('Upgrading fixtures to 003');
 
     // Add the client fixture if missing
     upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
@@ -156,13 +159,61 @@ to003 = function () {
     });
 };
 
+/**
+ * Update ghost_foot to include a CDN of jquery if the DB is migrating from
+ * @return {Promise}
+ */
+to004 = function () {
+    var value,
+        jquery = [
+            '<!-- You can safely delete this line if your theme does not require jQuery -->\n',
+            '<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>\n\n'
+        ],
+        privacyMessage = [
+            'jQuery has been removed from Ghost core and is now being loaded from the jQuery Foundation\'s CDN.',
+            'This can be changed or removed in your <strong>Code Injection</strong> settings area.'
+        ];
+
+    logInfo('Upgrading fixtures to 004');
+
+    return models.Settings.findOne('ghost_foot').then(function (setting) {
+        if (setting) {
+            value = setting.attributes.value;
+            // Only add jQuery if it's not already in there
+            if (value.indexOf(jquery.join('')) === -1) {
+                logInfo('Adding jQuery link to ghost_foot');
+                value = jquery.join('') + value;
+                return models.Settings.edit({key: 'ghost_foot', value: value}, options).then(function () {
+                    if (_.isEmpty(config.privacy)) {
+                        return Promise.resolve();
+                    }
+                    logInfo(privacyMessage.join(' ').replace(/<\/?strong>/g, ''));
+                    return notifications.add({notifications: [{
+                        type: 'info',
+                        message: privacyMessage.join(' ')
+                    }]}, options);
+                });
+            }
+        }
+    });
+};
+
 update = function (fromVersion, toVersion) {
+    var ops = [];
+
     logInfo('Updating fixtures');
     // Are we migrating to, or past 003?
     if ((fromVersion < '003' && toVersion >= '003') ||
         fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
-        return to003();
+        ops.push(to003);
     }
+
+    if (fromVersion < '004' && toVersion === '004' ||
+        fromVersion === '004' && toVersion === '004' && process.env.FORCE_MIGRATION) {
+        ops.push(to004);
+    }
+
+    return sequence(ops);
 };
 
 module.exports = {
