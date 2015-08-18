@@ -1,9 +1,12 @@
 # SimpleMDE - Markdown Editor
-A drop-in JavaScript textarea replacement for writing beautiful and understandable markdown. The WYSIWYG-esque editor allows users to modify the markdown with toolbar buttons and shortcuts. WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, but is less visually clear while editing. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning markdown syntax.
+A drop-in JavaScript textarea replacement for writing beautiful and understandable markdown. The WYSIWYG-esque editor allows users who may be less experienced with markdown to use familiar toolbar buttons and shortcuts. In addition, the the syntax is rendered while editing to clearly show the expected result. Headings are larger, emphasized words are italicized, links are underlined, etc. SimpleMDE is one of the first editors to feature both built-in autosaving and spell checking.
 
 [Demo](http://nextstepwebs.github.io/simplemde-markdown-editor)
 
 [![Preview](http://i.imgur.com/b9hFHFT.png)](http://nextstepwebs.github.io/simplemde-markdown-editor)
+
+## Why not a WYSIWYG editor or pure Markdown?
+WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, plus Markdown can be rendered natively on more platforms than HTML. However, Markdown is not a syntax that an average user will be familiar with, nor is it visually clear while editing. In otherwords, for an unfamiliar user, the syntax they write will make little sense until they click the preview button. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning markdown syntax.
 
 ## Quick start
 SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font Awesome is available on MaxCDN. *Please note, jsDelivr may take a few days to update to the latest release.*
