@@ -98,7 +98,9 @@ Name | Action | Class | Tooltip
 :--- | :----- | :---- | :------
 bold | toggleBold | fa fa-bold | Bold (Ctrl+B)
 italic | toggleItalic | fa fa-italic | Italic (Ctrl+I)
-headingSmaller | toggleHeadingSmaller | fa fa-header | Heading (Ctrl+H)
+heading | toggleHeadingSmaller | fa fa-header | Heading (Ctrl+H)
+heading-smaller | toggleHeadingSmaller | fa fa-header | Smaller Heading (Ctrl+H)
+heading-bigger | toggleHeadingBigger | fa fa-lg fa-header | Bigger Heading (Shift+Ctrl+H)
 code | toggleCodeBlock | fa fa-code | Code (Ctrl+Alt+C)
 quote | toggleBlockquote | fa fa-quote-left | Quote (Ctrl+')
 unordered-list | toggleUnorderedList | fa fa-list-ul | Generic List (Ctrl+L)
