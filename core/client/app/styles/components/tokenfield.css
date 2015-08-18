@@ -1,0 +1,415 @@
+.form-control {
+    display: block;
+    padding: 6px 12px;
+    width: 100%;
+    height: 34px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    background-image: none;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    color: #555;
+    font-size: 14px;
+    line-height: 1.42857143;
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+
+.form-control:focus {
+    outline: 0;
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+
+.form-control::-moz-placeholder {
+    color: #999;
+    opacity: 1;
+}
+
+.form-control:-ms-input-placeholder {
+    color: #999;
+}
+
+.form-control::-webkit-input-placeholder {
+    color: #999;
+}
+
+.form-control[disabled],
+.form-control[readonly],
+fieldset[disabled] .form-control {
+    background-color: #eee;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/*!
+ * bootstrap-tokenfield
+ * https://github.com/sliptree/bootstrap-tokenfield
+ * Copyright 2013-2014 Sliptree and other contributors; Licensed MIT
+ */
+@-webkit-keyframes blink {
+    0% {
+        border-color: #ededed;
+    }
+    100% {
+        border-color: #b94a48;
+    }
+}
+@-moz-keyframes blink {
+    0% {
+        border-color: #ededed;
+    }
+    100% {
+        border-color: #b94a48;
+    }
+}
+@keyframes blink {
+    0% {
+        border-color: #ededed;
+    }
+    100% {
+        border-color: #b94a48;
+    }
+}
+.tokenfield {
+    padding-bottom: 0;
+    min-height: 34px;
+    height: auto;
+}
+.tokenfield.focus {
+    outline: 0;
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+.tokenfield .token {
+    display: inline-block;
+    box-sizing: border-box;
+    margin: -1px 5px 5px 0;
+    height: 22px;
+    border: 1px solid #d9d9d9;
+    background-color: #ededed;
+    border-radius: 3px;
+    vertical-align: top;
+    white-space: nowrap;
+    cursor: default;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+}
+.tokenfield .token:hover {
+    border-color: #b9b9b9;
+}
+.tokenfield .token.active {
+    border-color: #52a8ec;
+    border-color: rgba(82, 168, 236, 0.8);
+}
+.tokenfield .token.duplicate {
+    border-color: #ebccd1;
+    animation-name: blink;
+    animation-duration: 0.1s;
+    animation-timing-function: ease;
+    animation-iteration-count: infinite;
+    animation-direction: normal;
+
+    -webkit-animation-name: blink;
+    -webkit-animation-duration: 0.1s;
+    -webkit-animation-direction: normal;
+    -webkit-animation-timing-function: ease;
+    -webkit-animation-iteration-count: infinite;
+}
+.tokenfield .token.invalid {
+    border: 1px solid transparent;
+    border-bottom: 1px dotted #d9534f;
+    background: none;
+    border-radius: 0;
+
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+}
+.tokenfield .token.invalid.active {
+    border: 1px solid #ededed;
+    background: #ededed;
+    border-radius: 3px;
+
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+}
+.tokenfield .token .token-label {
+    display: inline-block;
+    overflow: hidden;
+    padding-left: 4px;
+    vertical-align: top;
+    text-overflow: ellipsis;
+}
+.tokenfield .token .close {
+    display: inline-block;
+    float: none;
+    margin-left: 5px;
+    padding-right: 4px;
+    height: 100%;
+    vertical-align: top;
+    font-family: Arial;
+    font-size: 1.1em;
+    line-height: 100%;
+    line-height: 1.49em;
+}
+.tokenfield .token-input {
+    margin-bottom: 6px;
+    padding: 0;
+    min-width: 60px;
+    width: 60px;
+    height: 20px;
+    border: 0;
+    background: none;
+    box-shadow: none;
+
+    -webkit-box-shadow: none;
+}
+.tokenfield .token-input:focus {
+    outline: 0;
+    border-color: transparent;
+    box-shadow: none;
+    /* IE6-9 */
+
+    -webkit-box-shadow: none;
+}
+.tokenfield.disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+}
+.tokenfield.disabled .token-input {
+    cursor: not-allowed;
+}
+.tokenfield.disabled .token:hover {
+    border-color: #d9d9d9;
+    cursor: not-allowed;
+}
+.tokenfield.disabled .token:hover .close {
+    opacity: 0.2;
+    filter: alpha(opacity=20);
+    cursor: not-allowed;
+}
+.has-warning .tokenfield.focus {
+    border-color: #66512c;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
+}
+.has-error .tokenfield.focus {
+    border-color: #843534;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
+}
+.has-success .tokenfield.focus {
+    border-color: #2b542c;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
+}
+.tokenfield.input-sm,
+.input-group-sm .tokenfield {
+    padding-bottom: 0;
+    min-height: 30px;
+}
+.input-group-sm .token,
+.tokenfield.input-sm .token {
+    margin-bottom: 4px;
+    height: 20px;
+}
+.input-group-sm .token-input,
+.tokenfield.input-sm .token-input {
+    margin-bottom: 5px;
+    height: 18px;
+}
+.tokenfield.input-lg,
+.input-group-lg .tokenfield {
+    padding-bottom: 4px;
+    min-height: 45px;
+    height: auto;
+}
+.input-group-lg .token,
+.tokenfield.input-lg .token {
+    height: 25px;
+}
+.input-group-lg .token-label,
+.tokenfield.input-lg .token-label {
+    line-height: 23px;
+}
+.input-group-lg .token .close,
+.tokenfield.input-lg .token .close {
+    line-height: 1.3em;
+}
+.input-group-lg .token-input,
+.tokenfield.input-lg .token-input {
+    margin-bottom: 6px;
+    height: 23px;
+    vertical-align: top;
+    line-height: 23px;
+}
+.tokenfield.rtl {
+    text-align: right;
+    direction: rtl;
+}
+.tokenfield.rtl .token {
+    margin: -1px 0 5px 5px;
+}
+.tokenfield.rtl .token .token-label {
+    padding-right: 4px;
+    padding-left: 0;
+}
+
+/*!
+ * bootstrap-tokenfield
+ * https://github.com/sliptree/bootstrap-tokenfield
+ * Copyright 2013-2014 Sliptree and other contributors; Licensed MIT
+ */
+/* General Typeahead styling, from http://jsfiddle.net/ragulka/Dy9au/1/ */
+.twitter-typeahead {
+    position: relative;
+    width: 100%;
+    vertical-align: top;
+}
+.twitter-typeahead .tt-input,
+.twitter-typeahead .tt-hint {
+    margin: 0;
+    width: 100%;
+    background-color: #fff;
+    vertical-align: middle;
+}
+.twitter-typeahead .tt-hint {
+    z-index: 1;
+    /*border: 1px solid transparent;*/
+    color: #999;
+}
+.twitter-typeahead .tt-input {
+    z-index: 2;
+    color: #555;
+}
+.twitter-typeahead .tt-input,
+.twitter-typeahead .tt-hint {
+    padding: 6px 4px;
+    /*height: 34px;*/
+    font-size: 14px;
+    line-height: 1.428571429;
+}
+.twitter-typeahead .input-sm.tt-input,
+.twitter-typeahead .hint-sm.tt-hint {
+    border-radius: 3px;
+}
+.twitter-typeahead .input-lg.tt-input,
+.twitter-typeahead .hint-lg.tt-hint {
+    border-radius: 6px;
+}
+.input-group .twitter-typeahead:first-child .tt-input,
+.input-group .twitter-typeahead:first-child .tt-hint {
+    border-radius: 4px 0 0 4px !important;
+}
+.input-group .twitter-typeahead:last-child .tt-input,
+.input-group .twitter-typeahead:last-child .tt-hint {
+    border-radius: 0 4px 4px 0 !important;
+}
+.input-group.input-group-sm .twitter-typeahead:first-child .tt-input,
+.input-group.input-group-sm .twitter-typeahead:first-child .tt-hint {
+    border-radius: 3px 0 0 3px !important;
+}
+.input-group.input-group-sm .twitter-typeahead:last-child .tt-input,
+.input-group.input-group-sm .twitter-typeahead:last-child .tt-hint {
+    border-radius: 0 3px 3px 0 !important;
+}
+.input-sm.tt-input,
+.hint-sm.tt-hint,
+.input-group.input-group-sm .tt-input,
+.input-group.input-group-sm .tt-hint {
+    padding: 5px 10px;
+    height: 30px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.input-group.input-group-lg .twitter-typeahead:first-child .tt-input,
+.input-group.input-group-lg .twitter-typeahead:first-child .tt-hint {
+    border-radius: 6px 0 0 6px !important;
+}
+.input-group.input-group-lg .twitter-typeahead:last-child .tt-input,
+.input-group.input-group-lg .twitter-typeahead:last-child .tt-hint {
+    border-radius: 0 6px 6px 0 !important;
+}
+.input-lg.tt-input,
+.hint-lg.tt-hint,
+.input-group.input-group-lg .tt-input,
+.input-group.input-group-lg .tt-hint {
+    padding: 10px 16px;
+    height: 45px;
+    font-size: 18px;
+    line-height: 1.33;
+}
+.tt-dropdown-menu {
+    margin-top: 2px;
+    padding: 5px 0;
+    min-width: 160px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+
+    *border-right-width: 2px;
+    *border-bottom-width: 2px;
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+}
+.tt-suggestion {
+    display: block;
+    padding: 3px 20px;
+}
+.tt-suggestion.tt-cursor,
+.tt-suggestion:hover {
+    background-image: -webkit-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
+    background-image: linear-gradient(to bottom, #f5f5f5 0%, #e8e8e8 100%);
+    background-repeat: repeat-x;
+    color: #262626;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#ffe8e8e8', GradientType=0);
+    cursor: pointer;
+}
+.tt-suggestion.tt-cursor a {
+    color: #fff;
+}
+.tt-suggestion p {
+    margin: 0;
+}
+/* Tokenfield-specific Typeahead styling */
+.tokenfield .twitter-typeahead {
+    width: auto;
+}
+/*
+.tokenfield .twitter-typeahead .tt-hint {
+    padding: 0;
+    height: 20px;
+}
+*/
+.tokenfield.input-sm .twitter-typeahead .tt-input,
+.tokenfield.input-sm .twitter-typeahead .tt-hint {
+    height: 18px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.tokenfield.input-lg .twitter-typeahead .tt-input,
+.tokenfield.input-lg .twitter-typeahead .tt-hint {
+    height: 23px;
+    font-size: 18px;
+    line-height: 1.33;
+}
+.tokenfield .twitter-typeahead .tt-suggestions {
+    font-size: 14px;
+}

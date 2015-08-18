@@ -44,7 +44,7 @@ app.import('bower_components/showdown-ghost/src/extensions/highlight.js');
 app.import('bower_components/moment/moment.js');
 app.import('bower_components/keymaster/keymaster.js');
 app.import('bower_components/devicejs/lib/device.js');
-app.import('bower_components/jquery-ui/ui/jquery-ui.js');
+app.import('bower_components/jquery-ui/jquery-ui.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload.js');
 app.import('bower_components/blueimp-load-image/js/load-image.all.min.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload-process.js');
@@ -60,6 +60,10 @@ app.import('bower_components/xregexp/xregexp-all.js');
 app.import('bower_components/password-generator/lib/password-generator.js');
 app.import('bower_components/blueimp-md5/js/md5.js');
 app.import('bower_components/typeahead.js/dist/typeahead.bundle.js');
+app.import('bower_components/typeahead.js/dist/bloodhound.js');
+app.import('bower_components/typeahead.js-es6-shim/typeahead-shim.js', {
+    exports: {bloodhound: ['default']}
+});
 
 // 'dem Styles
 app.import('bower_components/codemirror/lib/codemirror.css');
