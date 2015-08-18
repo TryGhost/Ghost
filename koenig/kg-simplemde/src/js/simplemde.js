@@ -452,7 +452,7 @@ function wordCount(data) {
 }
 
 
-var toolbarDefaults = {
+var toolbarBuiltInButtons = {
 	"bold": {
 		name: "bold",
 		action: toggleBold,
@@ -472,16 +472,22 @@ var toolbarDefaults = {
 		title: "Heading (Ctrl+H)",
 	},
 	"heading-smaller": {
-		name: "headingSmaller",
+		name: "heading-smaller",
 		action: toggleHeadingSmaller,
-		className: "fa fa-lg fa-header",
-		title: "Heading (Ctrl+H)",
+		className: "fa fa-header",
+		title: "Smaller Heading (Ctrl+H)",
 	},
 	"heading-bigger": {
-		name: "headingBigger",
+		name: "heading-bigger",
 		action: toggleHeadingBigger,
-		className: "fa fa-header",
-		title: "Heading (Shift+Ctrl+H)",
+		className: "fa fa-lg fa-header",
+		title: "Bigger Heading (Shift+Ctrl+H)",
+	},
+	"code": {
+		name: "code",
+		action: toggleCodeBlock,
+		className: "fa fa-code",
+		title: "Code (Ctrl+Alt+C)",
 	},
 	"quote": {
 		name: "quote",
@@ -715,8 +721,8 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	}
 	
 	for(var i = 0; i < items.length; i++) {
-		if(toolbarDefaults[items[i]] != undefined){
-			items[i] = toolbarDefaults[items[i]];
+		if(toolbarBuiltInButtons[items[i]] != undefined){
+			items[i] = toolbarBuiltInButtons[items[i]];
 		}
 	}
 
