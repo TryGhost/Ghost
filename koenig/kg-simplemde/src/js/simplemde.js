@@ -471,6 +471,18 @@ var toolbarDefaults = {
 		className: "fa fa-header",
 		title: "Heading (Ctrl+H)",
 	},
+	"heading-smaller": {
+		name: "headingSmaller",
+		action: toggleHeadingSmaller,
+		className: "fa fa-lg fa-header",
+		title: "Heading (Ctrl+H)",
+	},
+	"heading-bigger": {
+		name: "headingBigger",
+		action: toggleHeadingBigger,
+		className: "fa fa-header",
+		title: "Heading (Shift+Ctrl+H)",
+	},
 	"quote": {
 		name: "quote",
 		action: toggleBlockquote,
@@ -500,6 +512,12 @@ var toolbarDefaults = {
 		action: drawImage,
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)",
+	},
+	"horizontal-rule": {
+		name: "horizontal-rule",
+		action: drawHorizontalRule,
+		className: "fa fa-minus",
+		title: "Insert Horizontal Line",
 	},
 	"preview": {
 		name: "preview",
