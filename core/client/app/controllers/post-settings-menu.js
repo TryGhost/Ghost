@@ -188,6 +188,11 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
         this.set('debounceId', debounceId);
     },
 
+    // query for all existing tags applicable to tag input's autocomplete
+    availableTags: Ember.computed(function() {
+        return this.get('store').find('tag', {limit: 'all'});
+    }),
+
     showErrors: function (errors) {
         errors = Ember.isArray(errors) ? errors : [errors];
         this.get('notifications').showErrors(errors);
@@ -460,6 +465,53 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
                 self.set('selectedAuthor', author);
                 model.rollback();
             });
+        },
+
+        addTag: function(tagName) {
+            var self = this,
+                currentTags = this.get('model.tags'),
+                currentTagNames = currentTags.map(function(tag) { return tag.get('name').toLowerCase(); }),
+                availableTagNames = null,
+                tagToAdd = null;
+
+            // abort if tag is already selected
+            if (currentTagNames.contains(tagName.toLowerCase())) {
+                return;
+            }
+
+            this.get('availableTags').then(function(availableTags) {
+                availableTagNames = availableTags.map(function(tag) { return tag.get('name').toLowerCase(); });
+
+                // find existing tag or create new
+                if (availableTagNames.contains(tagName.toLowerCase())) {
+                    tagToAdd = availableTags.find(function(tag) {
+                        return tag.get('name').toLowerCase() === tagName.toLowerCase();
+                    });
+                } else {
+                    tagToAdd = self.get('store').createRecord('tag', {
+                        name: tagName
+                    });
+                }
+
+                // push tag onto post relationship
+                if (tagToAdd) { self.get('model.tags').pushObject(tagToAdd); }
+            });
+        },
+
+        removeTag: function(tagName) {
+            var tagName = tagName.toLowerCase(),
+                currentTags = this.get('model.tags'),
+                tagToRemove = null;
+
+            tagToRemove = currentTags.find(function(tag) {
+                return tag.get('name').toLowerCase() === tagName;
+            });
+
+            currentTags.removeObject(tagToRemove);
+
+            if (tagToRemove.get('isNew')) {
+                tagToRemove.destroyRecord();
+            }
         }
     }
 });
