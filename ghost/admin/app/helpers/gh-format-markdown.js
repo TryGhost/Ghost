@@ -2,12 +2,9 @@ import Ember from 'ember';
 /* global Showdown, html_sanitize*/
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-var showdown,
-    formatMarkdown;
+var showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
-showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
-
-formatMarkdown = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
     if (!arr || !arr.length) {
         return;
     }
@@ -31,5 +28,3 @@ formatMarkdown = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) 
 
     return Ember.String.htmlSafe(escapedhtml);
 });
-
-export default formatMarkdown;

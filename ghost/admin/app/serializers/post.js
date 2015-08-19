@@ -2,7 +2,7 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import ApplicationSerializer from 'ghost/serializers/application';
 
-var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
+export default ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.
     attrs: {
         tags: {embedded: 'always'}
@@ -52,5 +52,3 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
         hash[root] = [data];
     }
 });
-
-export default PostSerializer;

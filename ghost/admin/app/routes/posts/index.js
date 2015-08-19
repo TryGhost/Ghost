@@ -2,7 +2,7 @@ import AuthenticatedRouteMixin from 'simple-auth/mixins/authenticated-route-mixi
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
 import mobileQuery from 'ghost/utils/mobile';
 
-var PostsIndexRoute = MobileIndexRoute.extend(AuthenticatedRouteMixin, {
+export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
     noPosts: false,
 
     // Transition to a specific post if we're not on mobile
@@ -46,5 +46,3 @@ var PostsIndexRoute = MobileIndexRoute.extend(AuthenticatedRouteMixin, {
         this.goToPost();
     }
 });
-
-export default PostsIndexRoute;
