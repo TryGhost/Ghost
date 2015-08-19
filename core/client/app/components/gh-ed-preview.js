@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-var Preview = Ember.Component.extend({
+export default Ember.Component.extend({
     config: Ember.inject.service(),
 
     didInsertElement: function () {
@@ -41,5 +41,3 @@ var Preview = Ember.Component.extend({
         Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);
     })
 });
-
-export default Preview;

@@ -1,7 +1,6 @@
 import ghostPaths from 'ghost/utils/ghost-paths';
 
 var UploadUi,
-    upload,
     Ghost = ghostPaths();
 
 UploadUi = function ($dropzone, settings) {
@@ -248,7 +247,7 @@ UploadUi = function ($dropzone, settings) {
     });
 };
 
-upload = function (options) {
+export default function (options) {
     var settings = $.extend({
         progressbar: true,
         editor: false,
@@ -263,6 +262,4 @@ upload = function (options) {
         this.uploaderUi = ui;
         ui.init();
     });
-};
-
-export default upload;
+}

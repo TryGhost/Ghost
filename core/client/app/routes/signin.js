@@ -3,7 +3,7 @@ import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 import DS from 'ember-data';
 
-var SigninRoute = Ember.Route.extend(styleBody, {
+export default Ember.Route.extend(styleBody, {
     titleToken: 'Sign In',
 
     classNames: ['ghost-login'],
@@ -33,5 +33,3 @@ var SigninRoute = Ember.Route.extend(styleBody, {
         controller.set('model.password', '');
     }
 });
-
-export default SigninRoute;

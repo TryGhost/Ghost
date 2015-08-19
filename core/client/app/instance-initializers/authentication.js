@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-var AuthenticationInitializer = {
+export default {
     name: 'authentication',
 
     initialize: function (instance) {
@@ -14,5 +14,3 @@ var AuthenticationInitializer = {
         });
     }
 };
-
-export default AuthenticationInitializer;

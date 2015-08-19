@@ -4,7 +4,7 @@ import Ember from 'ember';
  * Base validator that all validators should extend
  * Handles checking of individual properties or the entire model
  */
-var BaseValidator = Ember.Object.extend({
+export default Ember.Object.extend({
     properties: [],
     passed: false,
 
@@ -36,5 +36,3 @@ var BaseValidator = Ember.Object.extend({
         this.set('passed', false);
     }
 });
-
-export default BaseValidator;
