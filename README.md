@@ -57,25 +57,25 @@ cd ghost
 Install grunt. No prizes here.
 
 ```bash
-npm install -g grunt-cli
+sudo npm install -g grunt-cli
 ```
 
 Install Ghost. If you're running locally, use [master](https://github.com/TryGhost/Ghost/tree/master). For production, use [stable](https://github.com/TryGhost/Ghost/tree/stable). :no_entry_sign::rocket::microscope:
 
 ```bash
-npm install
+sudo npm install
 ```
 
 Build the things!
 
 ```bash
-grunt init
+sudo grunt init
 ```
 
 Minify that shit for production?
 
 ```bash
-grunt prod
+sudo grunt prod
 ```
 
 Start your engines.
