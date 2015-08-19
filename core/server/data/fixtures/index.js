@@ -131,12 +131,10 @@ to003 = function () {
     logInfo('Upgrading fixtures to 003');
 
     // Add the client fixture if missing
-    upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
+    upgradeOp = Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
         if (!client) {
-            logInfo('Adding client fixture');
-            _.each(fixtures.clients, function (client) {
-                return Client.add(client, options);
-            });
+            logInfo('Adding ghost-admin client fixture');
+            return Client.add(fixtures.clients[0], options);
         }
     });
     ops.push(upgradeOp);
@@ -165,6 +163,8 @@ to003 = function () {
  */
 to004 = function () {
     var value,
+        ops = [],
+        upgradeOp,
         jquery = [
             '<!-- You can safely delete this line if your theme does not require jQuery -->\n',
             '<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>\n\n'
@@ -176,7 +176,8 @@ to004 = function () {
 
     logInfo('Upgrading fixtures to 004');
 
-    return models.Settings.findOne('ghost_foot').then(function (setting) {
+    // add jquery setting and privacy info
+    upgradeOp = models.Settings.findOne('ghost_foot').then(function (setting) {
         if (setting) {
             value = setting.attributes.value;
             // Only add jQuery if it's not already in there
@@ -196,6 +197,29 @@ to004 = function () {
             }
         }
     });
+    ops.push(upgradeOp);
+
+    // Update ghost-admin client fixture
+    // ghost-admin should exist from 003 version
+    upgradeOp = models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
+        if (client) {
+            logInfo('Update ghost-admin client fixture');
+            return models.Client.edit(fixtures.clients[0], _.extend({}, options, {id: client.id}));
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // add ghost-frontend client if missing
+    upgradeOp = models.Client.findOne({slug: fixtures.clients[1].slug}).then(function (client) {
+        if (!client) {
+            logInfo('Add ghost-frontend client fixture');
+            return models.Client.add(fixtures.clients[1], options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+    return Promise.all(ops);
 };
 
 update = function (fromVersion, toVersion) {
