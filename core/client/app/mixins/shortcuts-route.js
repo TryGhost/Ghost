@@ -42,7 +42,7 @@ key.setScope('default');
  * To have all your shortcut work in all scopes, give it the scope "all".
  * Find out more at the keymaster docs
  */
-var ShortcutsRoute = Ember.Mixin.create({
+export default Ember.Mixin.create({
     registerShortcuts: function () {
         var self = this,
             shortcuts = this.get('shortcuts');
@@ -84,5 +84,3 @@ var ShortcutsRoute = Ember.Mixin.create({
         this.removeShortcuts();
     }
 });
-
-export default ShortcutsRoute;

@@ -11,7 +11,7 @@ import BaseAdapter from 'ghost/adapters/base';
 // If a model has an embedded hasMany relation, the related type will be included:
 // roles: DS.hasMany('role', { embedded: 'always' }) => ?include=roles
 
-var EmbeddedRelationAdapter = BaseAdapter.extend({
+export default BaseAdapter.extend({
     find: function (store, type, id) {
         return this.ajax(this.buildIncludeURL(store, type, id), 'GET');
     },
@@ -119,5 +119,3 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
         return ret;
     }
 });
-
-export default EmbeddedRelationAdapter;

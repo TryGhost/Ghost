@@ -3,7 +3,7 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
+export default AuthenticatedRoute.extend(ShortcutsRoute, {
     model: function (params) {
         var self = this,
             post,
@@ -75,5 +75,3 @@ var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
         }
     }
 });
-
-export default PostsPostRoute;

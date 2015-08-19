@@ -1,6 +1,6 @@
 import ApplicationAdapter from 'ghost/adapters/application';
 
-var SettingAdapter = ApplicationAdapter.extend({
+export default ApplicationAdapter.extend({
     updateRecord: function (store, type, record) {
         var data = {},
             serializer = store.serializerFor(type.modelName);
@@ -17,5 +17,3 @@ var SettingAdapter = ApplicationAdapter.extend({
         return this.ajax(this.buildURL(type.modelName), 'PUT', {data: data});
     }
 });
-
-export default SettingAdapter;

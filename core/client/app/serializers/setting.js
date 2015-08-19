@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import ApplicationSerializer from 'ghost/serializers/application';
 
-var SettingSerializer = ApplicationSerializer.extend({
+export default ApplicationSerializer.extend({
     serializeIntoHash: function (hash, type, record, options) {
         // Settings API does not want ids
         options = options || {};
@@ -36,5 +36,3 @@ var SettingSerializer = ApplicationSerializer.extend({
         return this.extractArray(store, type, payload).pop();
     }
 });
-
-export default SettingSerializer;
