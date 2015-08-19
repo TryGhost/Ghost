@@ -40,11 +40,6 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
         }
     }),
 
-    showErrors: function (errors) {
-        errors = Ember.isArray(errors) ? errors : [errors];
-        this.get('notifications').showErrors(errors);
-    },
-
     saveActiveTagProperty: function (propKey, newValue) {
         var activeTag = this.get('activeTag'),
             currentValue = activeTag.get(propKey),
@@ -59,10 +54,10 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
 
         activeTag.set(propKey, newValue);
 
-        this.get('notifications').closeNotifications();
-
-        activeTag.save().catch(function (errors) {
-            self.showErrors(errors);
+        activeTag.save().catch(function (error) {
+            if (error) {
+                self.notifications.showAPIError(error);
+            }
         });
     },
 
