@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 
-var NewUserValidator = BaseValidator.extend({
+export default BaseValidator.extend({
     properties: ['name', 'email', 'password'],
 
     name: function (model) {
@@ -31,5 +31,3 @@ var NewUserValidator = BaseValidator.extend({
         }
     }
 });
-
-export default NewUserValidator;

@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var ErrorController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
     code: Ember.computed('content.status', function () {
         return this.get('content.status') > 200 ? this.get('content.status') : 500;
     }),
@@ -12,5 +13,3 @@ var ErrorController = Ember.Controller.extend({
     }),
     stack: false
 });
-
-export default ErrorController;

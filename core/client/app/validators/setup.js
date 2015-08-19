@@ -1,6 +1,6 @@
 import NewUserValidator from 'ghost/validators/new-user';
 
-var SetupValidator = NewUserValidator.create({
+export default NewUserValidator.create({
     properties: ['name', 'email', 'password', 'blogTitle'],
 
     blogTitle: function (model) {
@@ -12,5 +12,3 @@ var SetupValidator = NewUserValidator.create({
         }
     }
 });
-
-export default SetupValidator;

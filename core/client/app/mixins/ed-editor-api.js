@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-var EditorAPI = Ember.Mixin.create({
+export default Ember.Mixin.create({
     /**
      * Get Value
      *
@@ -132,5 +132,3 @@ var EditorAPI = Ember.Mixin.create({
         this.sendAction('onChange');
     }
 });
-
-export default EditorAPI;

@@ -2,7 +2,7 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var NavigationRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Settings - Navigation',
 
     classNames: ['settings-view-navigation'],
@@ -29,5 +29,3 @@ var NavigationRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, 
         }
     }
 });
-
-export default NavigationRoute;

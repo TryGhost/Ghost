@@ -4,7 +4,7 @@
 // **target:** The element in which the class is applied. Defaults to scrolled element.
 // **class-name:** The class which is applied.
 // **offset:** How far the user has to scroll before the class is applied.
-var setScrollClassName = function (options) {
+export default function (options) {
     var $target = options.target || this,
         offset = options.offset,
         className = options.className || 'scrolling';
@@ -14,6 +14,4 @@ var setScrollClassName = function (options) {
     } else {
         $target.removeClass(className);
     }
-};
-
-export default setScrollClassName;
+}

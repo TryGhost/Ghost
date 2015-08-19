@@ -1,7 +1,7 @@
 import DS from 'ember-data';
 import ghostPaths from 'ghost/utils/ghost-paths';
 
-var BaseAdapter = DS.RESTAdapter.extend({
+export default DS.RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
@@ -41,5 +41,3 @@ var BaseAdapter = DS.RESTAdapter.extend({
         });
     }
 });
-
-export default BaseAdapter;

@@ -1,4 +1,5 @@
 import Ember from 'ember';
+
 function init() {
     // Provide a few custom validators
     //
