@@ -6,6 +6,7 @@ var Promise            = require('bluebird'),
     config             = require('../config'),
     errors             = require('../errors'),
     settings           = require('./settings'),
+    i18n               = require('../i18n'),
     themes;
 
 /**
@@ -55,7 +56,7 @@ themes = {
                 return {themes: themes};
             });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.themes.noPermissionToBrowseThemes')));
         });
     },
 
@@ -71,7 +72,7 @@ themes = {
 
         // Check whether the request is properly formatted.
         if (!_.isArray(object.themes)) {
-            return Promise.reject({type: 'BadRequest', message: 'Invalid request.'});
+            return Promise.reject({type: 'BadRequest', message: i18n.t('errors.api.themes.invalidRequest')});
         }
 
         themeName = object.themes[0].uuid;
@@ -86,7 +87,7 @@ themes = {
                 });
 
                 if (!theme) {
-                    return Promise.reject(new errors.BadRequestError('Theme does not exist.'));
+                    return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.themes.themeDoesNotExist')));
                 }
 
                 // Activate the theme
@@ -98,7 +99,7 @@ themes = {
                 });
             });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit themes.'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.themes.noPermissionToEditThemes')));
         });
     }
 };

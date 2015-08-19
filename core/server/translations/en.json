@@ -6,7 +6,23 @@
         "seeLinkForInstructions": "See {link} for instructions.",
         "time": {
             "seconds": "seconds"
-        }
+        },
+        "api": {
+            "authentication": {
+                "sampleBlogDescription": "Thoughts, stories and ideas.",
+                "mail": {
+                    "resetPassword": "Reset Password",
+                    "checkEmailForInstructions": "Check your email for further instructions.",
+                    "passwordChanged": "Password changed successfully.",
+                    "invitationAccepted": "Invitation accepted.",
+                    "yourNewGhostBlog": "Your New Ghost Blog"
+                    
+                }
+            },
+            "mail": {
+                "testGhostEmail": "Test Ghost Email"
+            }
+    }
     },
     "errors": {
         "apps": {
@@ -273,9 +289,74 @@
             
             }
         
+        },
+        "api": {
+            "authentication": {
+                "setupMustBeCompleted": "Setup must be completed before making this request.",
+                "noEmailProvided": "No email provided.",
+                "invalidEmailReceived": "The server did not receive a valid email",
+                "setupAlreadyCompleted": "Setup has already been completed.",
+                "unableToSendWelcomeEmail": "Unable to send welcome email, your blog will continue to function.",
+                "checkEmailConfigInstructions": "Please see http://support.ghost.org/mail/ for instructions on configuring email.",
+                "notLoggedIn": "You are not logged in.",
+                "notTheBlogOwner": "You are not the blog owner.",
+                "invalidTokenTypeHint": "Invalid token_type_hint given.",
+                "invalidTokenProvided": "Invalid token provided"
+            },
+            "configuration": {
+                "invalidKey": "Invalid key"
+            },
+            "db": {
+                "noPermissionToExportData": "You do not have permission to export data (no rights).",
+                "noPermissionToImportData": "You do not have permission to import data (no rights).",
+                "selectFileToImport": "Please select a file to import.",
+                "unsupportedFile": "Unsupported file. Please try any of the following formats: "
+            },
+            "mail": {
+                "noPermissionToSendEmail": "You do not have permission to send mail.",
+                "cannotFindCurrentUser": "Could not find the current user"
+            },
+            "notifications": {
+                "noPermissionToBrowseNotif": "You do not have permission to browse notifications.",
+                "noPermissionToAddNotif": "You do not have permission to add notifications.",
+                "noPermissionToDestroyNotif": "You do not have permission to destroy notifications.",
+                "noPermissionToDismissNotif": "You do not have permission to dismiss this notification.",
+                "notificationDoesNotExist": "Notification does not exist."
+            },
+            "posts": {
+                "postNotFound": "Post not found."
+            },
+            "settings": {
+                "problemFindingSetting": "Problem finding setting: {key}",
+                "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",
+                "noPermissionToEditSettings": "You do not have permission to edit settings.",
+                "noPermissionToReadSettings": "You do not have permission to read settings.",
+                "couldNotGenerateSlug": "Could not generate slug."
+            },
+            "slugs": {
+                "unknownSlugType": "Unknown slug type '{type}'."
+            },
+            "tags": {
+                "tagNotFound": "Tag not found."
+            },
+            "themes": {
+                "noPermissionToBrowseThemes": "You do not have permission to browse themes.",
+                "noPermissionToEditThemes": "You do not have permission to edit themes.",
+                "themeDoesNotExist": "Theme does not exist.",
+                "invalidRequest": "Invalid request."
+            },
+            "upload": {
+                "pleaseSelectImage": "Please select an image.",
+                "pleaseSelectValidImage": "Please select a valid image."
+            },
+            "users": {},
+            "utils": {
+                "noPermissionToCall": "You do not have permission to {method} {docName}",
+                "notRootKeyProvided": "No root key ('{docName}') provided.",
+                "invalidIdProvided": "Invalid id provided."
+            }
+            
         }
-        
-        
     },
     "warnings": {
         "index": {
@@ -339,7 +420,7 @@
         
         "mail": {
             "messageAcceptedByMailServer": "Message was accepted by the mail server. Make sure to check inbox and spam folders. :)"
-        
         }
     }
+
 }
