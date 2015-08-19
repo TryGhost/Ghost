@@ -35,7 +35,15 @@
 
             <div class="form-group">
                 <label for="tag-input">Tags</label>
-                {{gh-tags-input post=model}}
+                {{ember-selectize
+                    id="tag-input"
+                    multiple=true
+                    selection=model.tags
+                    content=availableTags
+                    optionValuePath="content.name"
+                    optionLabelPath="content.name"
+                    create-item="addTag"
+                    remove-item="removeTag"}}
             </div>
 
             {{#unless session.user.isAuthor}}
