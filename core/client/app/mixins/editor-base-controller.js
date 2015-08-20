@@ -248,6 +248,13 @@ export default Ember.Mixin.create({
 
             options = options || {};
 
+            // when navigating quickly between pages autoSave will occasionally
+            // try to run after the editor has been torn down so bail out here
+            // before we throw errors
+            if (!this.get('editor').$()) {
+                return 0;
+            }
+
             this.toggleProperty('submitting');
 
             if (options.backgroundSave) {
