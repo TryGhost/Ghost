@@ -4,7 +4,7 @@ var _          = require('lodash'),
     Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
     validator  = require('validator'),
-    config     = require('./config');
+    config     = require('../config');
 
 function GhostMailer(opts) {
     opts = opts || {};
