@@ -5,7 +5,7 @@
 
     <div class="gh-viewport {{if autoNav 'gh-autonav'}} {{if showSettingsMenu 'settings-menu-expanded'}} {{if showMobileMenu 'mobile-menu-expanded'}}">
         {{#unless signedOut}}
-            {{gh-nav-menu open=autoNavOpen onMouseEnter="openAutoNav" toggleMaximise="toggleAutoNav" openModal="openModal"}}
+            {{gh-nav-menu open=autoNavOpen onMouseEnter="openAutoNav" toggleMaximise="toggleAutoNav" openModal="openModal" closeMobileMenu="closeMobileMenu"}}
         {{/unless}}
 
         {{#gh-main onMouseEnter="closeAutoNav" data-notification-count=topNotificationCount}}
