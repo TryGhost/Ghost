@@ -26,6 +26,10 @@
     position: relative;
 }
 
+.forgotten-wrap input {
+    padding-right: 7rem;
+}
+
 .forgotten-wrap .forgotten-link {
     position: absolute;
     top: 10px;
