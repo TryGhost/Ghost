@@ -41,7 +41,7 @@ export default Ember.Component.extend({
     // scrollPosition value such that when either scrolling or typing-at-the-end of the text editor the preview pane
     // stays in sync
     scrollPosition: Ember.computed('editorScrollInfo', 'height', function () {
-        if (!this.get('editorScrollInfo')) {
+        if (!this.get('editorScrollInfo') || !this.get('$previewContent') || !this.get('$previewViewPort')) {
             return 0;
         }
 
