@@ -289,13 +289,11 @@
     .gh-autonav .gh-nav {
         position: absolute;
         top: 0;
-        left: 0;
+        left: -220px;
         z-index: 1000;
         width: 235px;
         height: 100%;
-        transition: transform 0.20s;
-        /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
-        transform: translate3d(-220px,0,0);
+        transition: left 0.20s;
     }
 
     /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
@@ -310,8 +308,8 @@
 
     /* Bring it back on hover */
     .gh-autonav .gh-nav.open {
-        transition: transform 0.15s;
-        transform: translate3d(0,0,0);
+        left: 0;
+        transition: left 0.15s;
     }
 
     /* Move main content over for the closed-nav trigger bar */
