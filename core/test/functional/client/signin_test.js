@@ -30,7 +30,7 @@ CasperTest.begin('Redirects login to signin', 2, function suite(test) {
     });
 }, true);
 
-CasperTest.begin('Login limit is in place', 4, function suite(test) {
+CasperTest.begin('Login limit is in place', 7, function suite(test) {
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -53,6 +53,9 @@ CasperTest.begin('Login limit is in place', 4, function suite(test) {
     casper.waitForText('remaining', function onSuccess() {
         test.assert(true, 'The login limit is in place.');
         test.assertSelectorDoesntHaveText('.gh-alert', '[object Object]');
+        test.assertTextExists('password is incorrect');
+        test.assertDoesntExist('.form-group.error input[name="identification"]', 'email field was highlighted');
+        test.assertExists('.form-group.error input[name="password"]', 'password field was not highlighted');
     }, function onTimeout() {
         test.assert(false, 'We did not trip the login limit.');
     });
@@ -110,7 +113,7 @@ CasperTest.begin('Authenticated user is redirected', 6, function suite(test) {
     });
 }, true);
 
-CasperTest.begin('Ensure email field form validation', 4, function suite(test) {
+CasperTest.begin('Validates unknown email for sign-in', 5, function suite(test) {
     CasperTest.Routines.signout.run(test);
 
     casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
@@ -119,26 +122,125 @@ CasperTest.begin('Ensure email field form validation', 4, function suite(test) {
     });
 
     casper.waitForOpaque('.gh-signin',
-        function then() {
+        function testUnknownEmail() {
             this.fillAndSave('form.gh-signin', {
-                identification: 'notanemail'
+                identification: 'unknown@ghost.org',
+                password: 'testing'
             });
         },
         function onTimeout() {
             test.fail('Login form didn\'t fade in.');
         });
 
-    casper.waitForText('Invalid email', function onSuccess() {
-        test.assert(true, 'Invalid email error was shown');
-    }, casper.failOnTimeout(test, 'Invalid email error was not shown'));
+    casper.waitForText('no user with that email address', function onSuccess() {
+        test.assert(true, 'Unknown email error was shown');
+        test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
+        test.assertDoesntExist('.form-group.error input[name="password"]', 'password field was highlighted');
+    }, casper.failOnTimeout(test, 'Uknown email error was not shown'));
+}, true);
+
+CasperTest.begin('Validates missing details for sign-in', 11, function suite(test) {
+    CasperTest.Routines.signout.run(test);
+
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Sign In - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
+
+    casper.waitForOpaque('.gh-signin',
+        function testMissingEverything() {
+            this.fillAndSave('form.gh-signin', {
+                identification: '',
+                password: ''
+            });
+        },
+        function onTimeout() {
+            test.fail('Login form didn\'t fade in.');
+        });
+
+    casper.waitForText('fill out the form', function onSuccess() {
+        test.assert(true, 'Missing details error was shown');
+        test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
+        test.assertExists('.form-group.error input[name="password"]', 'password field was not highlighted');
+    }, casper.failOnTimeout(test, 'Missing details error was not shown'));
 
     casper.then(function testMissingEmail() {
         this.fillAndSave('form.gh-signin', {
-            identification: ''
+            identification: '',
+            password: 'testing'
         });
     });
 
-    casper.waitForText('Please enter an email', function onSuccess() {
+    casper.waitForText('fill out the form', function onSuccess() {
+        test.assert(true, 'Missing details error was shown');
+        test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
+        test.assertDoesntExist('.form-group.error input[name="password"]', 'password field was still highlighted');
+    }, casper.failOnTimeout(test, 'Missing details error was not shown'));
+
+    casper.then(function testMissingPassword() {
+        this.fillAndSave('form.gh-signin', {
+            identification: 'test@test.com',
+            password: ''
+        });
+    });
+
+    casper.waitForText('fill out the form', function onSuccess() {
+        test.assert(true, 'Missing details error was shown');
+        test.assertDoesntExist('.form-group.error input[name="identification"]', 'email field was still highlighted');
+        test.assertExists('.form-group.error input[name="password"]', 'password field was not highlighted');
+    }, casper.failOnTimeout(test, 'Missing details error was not shown'));
+}, true);
+
+CasperTest.begin('Validates missing details for forgotten password', 5, function suite(test) {
+    CasperTest.Routines.signout.run(test);
+
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Sign In - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
+
+    casper.waitForOpaque('.gh-signin',
+        function testMissingEmail() {
+            casper.fill('form.gh-signin', {
+                identification: '',
+                password: ''
+            });
+            casper.click('.forgotten-link');
+        },
+        function onTimeout() {
+            test.fail('Login form didn\'t fade in.');
+        });
+
+    casper.waitForText('enter an email address', function onSuccess() {
         test.assert(true, 'Missing email error was shown');
+        test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
+        test.assertDoesntExist('.form-group.error input[name="password"]', 'password field was highlighted');
     }, casper.failOnTimeout(test, 'Missing email error was not shown'));
+}, true);
+
+CasperTest.begin('Validates unknown email for forgotten password', 5, function suite(test) {
+    CasperTest.Routines.signout.run(test);
+
+    casper.thenOpenAndWaitForPageLoad('signin', function testTitleAndUrl() {
+        test.assertTitle('Sign In - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/signin\/$/, 'Landed on the correct URL');
+    });
+
+    casper.waitForOpaque('.gh-signin',
+        function testMissingEmail() {
+            casper.fill('form.gh-signin', {
+                identification: 'unknown@ghost.org',
+                password: ''
+            });
+            casper.click('.forgotten-link');
+        },
+        function onTimeout() {
+            test.fail('Login form didn\'t fade in.');
+        });
+
+    casper.waitForText('no user with that email address', function onSuccess() {
+        test.assert(true, 'Unknown email error was shown');
+        test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
+        test.assertDoesntExist('.form-group.error input[name="password"]', 'password field was highlighted');
+    }, casper.failOnTimeout(test, 'Uknown email error was not shown'));
 }, true);
