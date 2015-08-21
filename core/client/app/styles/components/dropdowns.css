@@ -128,3 +128,11 @@
 .closed > .dropdown-menu {
     display: none;
 }
+
+
+/* Selectize
+/* ---------------------------------------------------------- */
+
+.selectize-dropdown {
+    z-index: 200;
+}
