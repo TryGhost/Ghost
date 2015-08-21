@@ -27,7 +27,7 @@ app = new EmberApp({
         source: './app/styles/app.css',
         inputFile: 'app.css',
         browsers: 'last 2 versions',
-        outputFile: 'ghost.css'
+        outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
     },
     hinting: false,
     fingerprint: disabled
