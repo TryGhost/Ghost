@@ -48,6 +48,10 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             });
         },
 
+        didTransition: function () {
+            this.send('closeMenus');
+        },
+
         signedIn: function () {
             this.send('loadServerNotifications', true);
         },
