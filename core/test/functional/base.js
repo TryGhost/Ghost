@@ -89,6 +89,10 @@ screens = {
         url: 'ghost/settings/general',
         selector: '.gh-nav-settings-general.active'
     },
+    'settings.tags': {
+        url: 'ghost/settings/tags',
+        selector: '.gh-nav-settings-tags.active'
+    },
     team: {
         url: 'ghost/team',
         linkSelector: '.gh-nav-main-users',
