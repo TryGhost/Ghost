@@ -1,6 +1,6 @@
 <div>
     {{#gh-tabs-manager selected="showSubview" class="settings-menu-container"}}
-        <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
+        <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
             <div class="settings-menu-header">
                 <h4>Tag Settings</h4>
                 <button class="close icon-x settings-menu-header-action" {{action "closeMenus"}}>
@@ -10,25 +10,26 @@
             <div class="settings-menu-content">
                 {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=activeTag.image initUploader="setUploaderReference" tagName="section"}}
                 <form>
-                    <div class="form-group">
-                        <label>Name</label>
-                        {{gh-input class="gh-input" type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
-                    </div>
+                    {{#gh-form-group errors=activeTag.errors property="name"}}
+                        <label for="tag-name">Name</label>
+                        {{gh-input id="tag-name" name="name" type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
+                        {{gh-error-message errors=activeTag.errors property="name"}}
+                    {{/gh-form-group}}
 
                     <div class="form-group">
-                        <label>URL</label>
-                        {{gh-input class="gh-input" type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
+                        <label for="tag-url">URL</label>
+                        {{gh-input id="tag-url" name="url" type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
                         {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
                     </div>
 
                     <div class="form-group">
-                        <label>Description</label>
-                        {{gh-textarea class="gh-input" value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
+                        <label for="tag-description">Description</label>
+                        {{gh-textarea id="tag-description" name="description" value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
                     </div>
 
                     <ul class="nav-list nav-list-block">
                         {{#gh-tab tagName="li" classNames="nav-list-item"}}
-                            <button type="button">
+                            <button type="button" class="meta-data-button">
                                 <b>Meta Data</b>
                                 <span>Extra content for SEO and social media.</span>
                             </button>
@@ -43,7 +44,7 @@
             </div>
         </div>{{! .settings-menu-pane }}
 
-        <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane">
+        <div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane tag-meta-settings-pane">
             {{#gh-tab-pane}}
                 <div class="settings-menu-header subview">
                     <button {{action "closeSubview"}} class="back icon-arrow-left settings-menu-header-action"><span class="hidden">Back</span></button>
@@ -53,17 +54,19 @@
 
                 <div class="settings-menu-content">
                     <form>
-                    <div class="form-group">
+                    {{#gh-form-group errors=activeTag.errors property="meta_title"}}
                         <label for="meta-title">Meta Title</label>
-                        {{gh-input class="gh-input" type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
+                        {{gh-input id="meta-title" name="meta_title" type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
+                        {{gh-error-message errors=activeTag.errors property="meta_title"}}
                         <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters activeTagMetaTitleScratch 70}}</p>
-                    </div>
+                    {{/gh-form-group}}
 
-                    <div class="form-group">
+                    {{#gh-form-group errors=activeTag.errors property="meta_description"}}
                         <label for="meta-description">Meta Description</label>
-                        {{gh-textarea class="gh-input" value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
+                        {{gh-textarea id="meta-description" name="meta_description" value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
+                        {{gh-error-message errors=activeTag.errors property="meta_description"}}
                         <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters activeTagMetaDescriptionScratch 156}}</p>
-                    </div>
+                    {{/gh-form-group}}
 
                     <div class="form-group">
                         <label>Search Engine Result Preview</label>
