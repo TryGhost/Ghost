@@ -31,6 +31,9 @@ var bodyParser      = require('body-parser'),
     themeHandler     = require('./theme-handler'),
     privateBlogging  = require('./private-blogging'),
 
+    ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
+    BearerStrategy          = require('passport-http-bearer').Strategy,
+
     blogApp,
     middleware,
     setupMiddleware;
@@ -55,8 +58,8 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
         oauthServer = oauth2orize.createServer();
 
     // silence JSHint without disabling unused check for the whole file
-    passport.use(authStrategies.clientPasswordStrategy);
-    passport.use(authStrategies.bearerStrategy);
+    passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
+    passport.use(new BearerStrategy(authStrategies.bearerStrategy));
 
     // Cache express server instance
     blogApp = blogAppInstance;

@@ -362,6 +362,14 @@ fixtures = {
         return knex('permissions').insert(permsToInsert).then(function () {
             return knex('permissions_roles').insert(permissionsRoles);
         });
+    },
+    insertClients: function insertClients() {
+        var knex = config.database.knex;
+        return knex('clients').insert(DataGenerator.forKnex.clients);
+    },
+    insertAccessToken: function insertAccessToken(override) {
+        var knex = config.database.knex;
+        return knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
     }
 };
 
@@ -410,7 +418,8 @@ toDoList = {
     'perms:init': function initPermissions() { return permissions.init(); },
     perms: function permissionsFor(obj) {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
-    }
+    },
+    clients: function insertClients() { return fixtures.insertClients(); }
 };
 
 /**
