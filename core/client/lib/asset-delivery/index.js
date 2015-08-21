@@ -2,15 +2,20 @@ module.exports = {
     name: 'asset-delivery',
     postBuild: function (results) {
         var fs = this.project.require('fs-extra'),
-            cpd = this.project.require('ember-cli-copy-dereference'),
+            walkSync = this.project.require('walk-sync'),
+            assetsIn = results.directory + '/assets',
             templateOut = '../server/views/default.hbs',
-            assetsOut = '../built/assets';
+            assetsOut = '../built/assets',
+            assets = walkSync(assetsIn);
 
-        fs.removeSync(templateOut);
-        fs.removeSync(assetsOut);
         fs.ensureDirSync(assetsOut);
 
-        cpd.sync(results.directory + '/index.html', templateOut);
-        cpd.sync(results.directory + '/assets', assetsOut);
+        fs.copySync(results.directory + '/index.html', templateOut, {clobber: true});
+
+        assets.forEach(function (relativePath) {
+            if (relativePath.slice(-1) === '/') { return; }
+
+            fs.copySync(assetsIn + '/' + relativePath, assetsOut + '/' + relativePath, {clobber:true});
+        });
     }
 };
