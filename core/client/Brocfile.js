@@ -1,7 +1,9 @@
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
-    isProduction = EmberApp.env() === 'production',
+    environment = EmberApp.env(),
+    isProduction = environment === 'production',
+    mythCompress = isProduction || environment === 'test',
     disabled = {enabled: false},
     assetLocation,
     app;
@@ -27,7 +29,9 @@ app = new EmberApp({
         source: './app/styles/app.css',
         inputFile: 'app.css',
         browsers: 'last 2 versions',
-        outputFile: 'ghost.css'
+        sourcemap: !mythCompress,
+        compress: mythCompress,
+        outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
     },
     hinting: false,
     fingerprint: disabled
