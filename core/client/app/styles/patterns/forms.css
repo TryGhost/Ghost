@@ -37,6 +37,10 @@ input {
     user-select: text;
 }
 
+.form-group.error .response {
+    color: var(--red);
+}
+
 
 /* Form Groups
 /* ---------------------------------------------------------- */
@@ -119,6 +123,7 @@ select {
 }
 
 .gh-input.error,
+.form-group.error .gh-input,
 .gh-select.error,
 select.error {
     border-color: var(--red);
