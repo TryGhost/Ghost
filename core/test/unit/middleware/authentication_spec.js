@@ -31,16 +31,6 @@ function registerUnsuccessfulBearerStrategy() {
     ));
 }
 
-function registerSuccessfulBearerStrategy() {
-    // register fake BearerStrategy which always authenticates
-    passport.use(new BearerStrategy(
-        function strategy(accessToken, done) {
-            accessToken.should.eql(token);
-            return done(null, user, info);
-        }
-    ));
-}
-
 describe('authenticate', function () {
     var res, req, next, sandbox;
 
