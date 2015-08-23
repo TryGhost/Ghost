@@ -21,8 +21,13 @@
             },
             "mail": {
                 "testGhostEmail": "Test Ghost Email"
+            },
+            "users": {
+                "mail": {
+                    "invitedByName": "{invitedByName} has invited you to join {blogName}"
+                }
             }
-    }
+        }
     },
     "errors": {
         "apps": {
@@ -349,14 +354,88 @@
                 "pleaseSelectImage": "Please select an image.",
                 "pleaseSelectValidImage": "Please select a valid image."
             },
-            "users": {},
+            "users": {
+                "userNotFound": "User not found.",
+                "cannotChangeOwnRole": "You cannot change your own role.",
+                "cannotChangeOwnersRole": "Cannot change Owner's role",
+                "noPermissionToEditUser": "You do not have permission to edit this user",
+                "notAllowedToCreateOwner": "Not allowed to create an owner user.",
+                "noPermissionToAddUser": "You do not have permission to add this user",
+                "noEmailProvided": "No email provided.",
+                "userAlreadyRegistered": "User is already registered.",
+                "errorSendingEmail": {
+                    "error": "Error sending email: {message}",
+                    "help": "Please check your email settings and resend the invitation."
+                },
+                "noPermissionToDestroyUser": "You do not have permission to destroy this user.",
+                "noPermissionToChangeUsersPwd": "You do not have permission to change the password for this user"
+            
+            },
             "utils": {
                 "noPermissionToCall": "You do not have permission to {method} {docName}",
                 "notRootKeyProvided": "No root key ('{docName}') provided.",
                 "invalidIdProvided": "Invalid id provided."
             }
             
-        }
+        },
+        "data": {
+            "export": {
+                "errorExportingData": "Error exporting data"
+            },
+            "fixtures": {
+                "populatingPermissions": "Populating permissions",
+                "upgradingPermissions": "Upgrading permissions",
+                "removingOldPermissions": "Removing old permissions"
+            },
+			"import": {
+				
+				"dataImporter": {
+					"unableToFindOwner": "Unable to find an owner"
+				},
+				"index": {
+					"duplicateEntryFound": "Duplicate entry found. Multiple values of '{value}' found for {offendingProperty}."
+				},
+				"utils": {
+					"dataLinkedToUnknownUser": "Attempting to import data linked to unknown user id {userToMap}"
+					
+				}
+			},
+			"importer": {
+				"index": {
+					"couldNotCleanUpFile": {
+						"error": "Import could not clean up file ",
+						"context": "Your blog will continue to work as expected"
+					},
+					"unsupportedRoonExport": "Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.",
+					"noContentToImport": "Zip did not include any content to import.",
+					"invalidZipStructure": "Invalid zip file structure.",
+					"invalidZipFileBaseDirectory": "Invalid zip file: base directory read failed",
+					"zipContainsMultipleDataFormat": "Zip file contains multiple data formats. Please split up and import separately."
+				},
+				"handlers": {
+				    "json": {
+					    "invalidJsonFormat": "Invalid JSON format, expected `{ db: [exportedData] }`",
+					    "apiDbImportContent": "API DB import content",
+					    "checkImportJsonIsValid": "check that the import file is valid JSON.",
+					    "failedToParseImportJson": "Failed to parse the import JSON file."
+				    }
+			    }
+			},
+			"versioning": {
+				"index": {
+					"dbVersionNotRecognized": "Database version is not recognized",
+					"settingsTableDoesNotExist": "Settings table does not exist"
+				}
+			},
+			"xml": {
+				"xmlrpc": {
+					"pingUpdateFailed": {
+						"error": "Pinging services for updates on your blog failed, your blog will continue to function.",
+						"help": "If you get this error repeatedly, please seek help from {url}."
+					}
+				}
+			}
+		}
     },
     "warnings": {
         "index": {
@@ -420,7 +499,66 @@
         
         "mail": {
             "messageAcceptedByMailServer": "Message was accepted by the mail server. Make sure to check inbox and spam folders. :)"
-        }
+        },
+        "api": {
+            "users": {
+                "pwdChangedSuccessfully": "Password changed successfully."
+            }
+        },
+		"data": {
+		    "fixtures": {
+			    "migrations": "Migrations",
+				"convertingAdmToOwner": "Converting admin to owner",
+				"creatingOwner": "Creating owner",
+				"populatingFixtures": "Populating fixtures",
+				"upgradingFixtures": "Upgrading fixtures",
+				"addingClientFixture": "Adding client fixture",
+				"addingOwnerRoleFixture": "Adding owner role fixture",
+				"updatingFixtures": "Updating fixtures"
+			},
+			"migration": {
+				"commands": {
+					"migrations": "Migrations",
+					"deletingTable": "Deleting table: {table}",
+					"creatingTable": "Creating table: {table}",
+					"addingColumn": "Adding column: {column}",
+					"addingUnique": "Adding unique on: {table}.{column}",
+					"droppingUnique": "Dropping unique on: {table}.{column}"	
+				},
+				"index": {
+					"migrations": "Migrations",
+					"complete": "Complete",
+					"populatingDefaultSettings": "Populating default settings",
+					"creatingDatabaseBackup": "Creating database backup",
+					"databaseBackupDestination": "Database backup written to: {filename}",
+					"databaseUpgradeRequire": "Database upgrade required from version {dbVersion} to {defaultVersion}",
+					"upToDataAtVersion": "Up to date at version {dbVersion}",
+					"databaseNotCompatible": {
+					    "error": "Your database is not compatible with this version of Ghost",
+						"help": "You will need to create a new database"
+					},
+					"dbInitialisationRequired": "Database initialisation required for version {version}",
+					"problemWithDatabase": "There is a problem with the database",
+					"creatingTable": "creating table: {table}",
+					"creatingTables": "Creating tables...",
+					"runningMigrations": "Running migrations"	
+				}
+			},
+			"utils": {
+				"index": {
+					"noSuppportForDatabase": "No support for database client {client}"
+				}
+			},
+			"validation": {
+				"index": {
+					"valueCannotBeBlank": "Value in [{tableName}.{columnKey}] cannot be blank.",
+					"valueExceedsMaxLength": "Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.",
+					"valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
+					"themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",
+					"validationFailed": "Validation ({validationName}) failed for  {key}"
+					}
+			}
+		}
     }
 
 }

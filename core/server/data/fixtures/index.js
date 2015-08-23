@@ -13,6 +13,7 @@ var Promise     = require('bluebird'),
     models      = require('../../models'),
     fixtures    = require('./fixtures'),
     permissions = require('./permissions'),
+    i18n        = require('../../i18n'),
 
     // Private
     logInfo,
@@ -26,7 +27,7 @@ var Promise     = require('bluebird'),
     update;
 
 logInfo = function logInfo(message) {
-    errors.logInfo('Migrations', message);
+    errors.logInfo(i18n.t('notices.data.fixtures.migrations'), message);
 };
 
 /**
@@ -42,7 +43,7 @@ convertAdminToOwner = function () {
         return models.Role.findOne({name: 'Owner'});
     }).then(function (ownerRole) {
         if (adminUser) {
-            logInfo('Converting admin to owner');
+            logInfo(i18n.t('notices.data.fixtures.convertingAdmToOwner'));
             return adminUser.roles().updatePivot({role_id: ownerRole.id});
         }
     });
@@ -60,7 +61,7 @@ createOwner = function () {
         user.roles = [ownerRole.id];
         user.password = utils.uid(50);
 
-        logInfo('Creating owner');
+        logInfo(i18n.t('notices.data.fixtures.creatingOwner'));
         return models.User.add(user, options);
     });
 };
@@ -73,7 +74,7 @@ populate = function () {
         Role = models.Role,
         Client = models.Client;
 
-    logInfo('Populating fixtures');
+    logInfo(i18n.t('notices.data.fixtures.populatingFixtures'));
 
     _.each(fixtures.posts, function (post) {
         ops.push(Post.add(post, options));
@@ -125,12 +126,12 @@ to003 = function () {
         Role = models.Role,
         Client = models.Client;
 
-    logInfo('Upgrading fixtures');
+    logInfo(i18n.t('notices.data.fixtures.upgradingFixtures'));
 
     // Add the client fixture if missing
     upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
         if (!client) {
-            logInfo('Adding client fixture');
+            logInfo(i18n.t('notices.data.fixtures.addingClientFixture'));
             _.each(fixtures.clients, function (client) {
                 return Client.add(client, options);
             });
@@ -141,7 +142,7 @@ to003 = function () {
     // Add the owner role if missing
     upgradeOp = Role.findOne({name: fixtures.roles[3].name}).then(function (owner) {
         if (!owner) {
-            logInfo('Adding owner role fixture');
+            logInfo(i18n.t('notices.data.fixtures.addingOwnerRoleFixture'));
             _.each(fixtures.roles.slice(3), function (role) {
                 return Role.add(role, options);
             });
@@ -157,7 +158,7 @@ to003 = function () {
 };
 
 update = function (fromVersion, toVersion) {
-    logInfo('Updating fixtures');
+    logInfo(i18n.t('notices.data.fixtures.updatingFixture'));
     // Are we migrating to, or past 003?
     if ((fromVersion < '003' && toVersion >= '003') ||
         fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
