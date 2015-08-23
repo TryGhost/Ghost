@@ -1,6 +1,4 @@
-var BearerStrategy          = require('passport-http-bearer').Strategy,
-    ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
-    models                  = require('../models'),
+var models = require('../models'),
     strategies;
 
 strategies = {
@@ -14,9 +12,8 @@ strategies = {
      * HTTP Basic scheme to authenticate (not implemented yet).
      * Use of the client password strategy is implemented to support ember-simple-auth.
      */
-    clientPasswordStrategy: new ClientPasswordStrategy(
-        function strategy(clientId, clientSecret, done) {
-            models.Client.forge({slug: clientId})
+    clientPasswordStrategy: function clientPasswordStrategy(clientId, clientSecret, done) {
+        return models.Client.forge({slug: clientId})
             .fetch()
             .then(function then(model) {
                 if (model) {
@@ -27,8 +24,7 @@ strategies = {
                 }
                 return done(null, false);
             });
-        }
-    ),
+    },
 
     /**
      * BearerStrategy
@@ -38,24 +34,23 @@ strategies = {
      * application, which is issued an access token to make requests on behalf of
      * the authorizing user.
      */
-    bearerStrategy: new BearerStrategy(
-        function strategy(accessToken, done) {
-            models.Accesstoken.forge({token: accessToken})
+    bearerStrategy: function bearerStrategy(accessToken, done) {
+        return models.Accesstoken.forge({token: accessToken})
             .fetch()
             .then(function then(model) {
                 if (model) {
                     var token = model.toJSON();
                     if (token.expires > Date.now()) {
-                        models.User.forge({id: token.user_id})
-                        .fetch()
-                        .then(function then(model) {
-                            if (model) {
-                                var user = model.toJSON(),
-                                    info = {scope: '*'};
-                                return done(null, {id: user.id}, info);
-                            }
-                            return done(null, false);
-                        });
+                        return models.User.forge({id: token.user_id})
+                            .fetch()
+                            .then(function then(model) {
+                                if (model) {
+                                    var user = model.toJSON(),
+                                        info = {scope: '*'};
+                                    return done(null, {id: user.id}, info);
+                                }
+                                return done(null, false);
+                            });
                     } else {
                         return done(null, false);
                     }
@@ -63,8 +58,7 @@ strategies = {
                     return done(null, false);
                 }
             });
-        }
-    )
+    }
 };
 
 module.exports = strategies;
