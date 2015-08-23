@@ -52,7 +52,7 @@ validateSchema = function validateSchema(tableName, model) {
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(model[columnKey], 0, schema[tableName][columnKey].maxlength)) {
                     message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
-                                     {tableName: tableName, columnKey: columnKey, maxLength: schema[tableName][columnKey]});
+                                     {tableName: tableName, columnKey: columnKey, maxlength: schema[tableName][columnKey].maxlength});
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
                 }
             }
