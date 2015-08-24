@@ -4,6 +4,7 @@ export default Ember.Component.extend({
     tagName: 'button',
     buttonText: '',
     submitting: false,
+    showSpinner: false,
     autoWidth: true,
 
     // Disable Button when isLoading equals true
@@ -20,19 +21,14 @@ export default Ember.Component.extend({
         return true;
     },
 
-    setSize: function () {
-        if (!this.get('submitting') && this.get('autoWidth')) {
-            // this exists so that the spinner doesn't change the size of the button
-            this.$().width(this.$().width()); // sets width of button
-            this.$().height(this.$().height()); // sets height of button
+    setSize: Ember.observer('submitting', function () {
+        if (this.get('submitting') && this.get('autoWidth')) {
+            this.$().width(this.$().width());
+            this.$().height(this.$().height());
+        } else {
+            this.$().width('');
+            this.$().height('');
         }
-    },
-
-    width: Ember.observer('buttonText', 'autoWidth', function () {
-        this.setSize();
-    }),
-
-    didInsertElement: function () {
-        this.setSize();
-    }
+        this.set('showSpinner', this.get('submitting'));
+    })
 });

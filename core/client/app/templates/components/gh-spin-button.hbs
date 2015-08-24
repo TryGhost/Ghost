@@ -1,9 +1,9 @@
-{{#unless submitting}}
+{{#if showSpinner}}
+    <span class="spinner"></span>
+{{else}}
     {{#if buttonText}}
         {{buttonText}}
     {{else}}
         {{{yield}}}
     {{/if}}
-{{else}}
-    <span class="spinner"></span>
-{{/unless}}
+{{/if}}
