@@ -29,7 +29,8 @@ app = new EmberApp({
         source: './app/styles/app.css',
         inputFile: 'app.css',
         browsers: 'last 2 versions',
-        sourcemap: !mythCompress,
+        // @TODO: enable sourcemaps for development without including them in the release
+        sourcemap: false,
         compress: mythCompress,
         outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
     },
