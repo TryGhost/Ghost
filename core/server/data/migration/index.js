@@ -33,7 +33,7 @@ logInfo = function logInfo(message) {
 populateDefaultSettings = function populateDefaultSettings() {
     // Initialise the default settings
     logInfo('Populating default settings');
-    return models.Settings.populateDefault('databaseVersion').then(function () {
+    return models.Settings.populateDefaults().then(function () {
         logInfo('Complete');
     });
 };
@@ -178,9 +178,11 @@ migrateUp = function (fromVersion, toVersion) {
             return sequence(migrateOps);
         }
     }).then(function () {
-        return fixtures.update(fromVersion, toVersion);
-    }).then(function () {
+        // Ensure all of the current default settings are created (these are fixtures, so should be inserted first)
         return populateDefaultSettings();
+    }).then(function () {
+        // Finally, run any updates to the fixtures, including default settings
+        return fixtures.update(fromVersion, toVersion);
     });
 };
 
