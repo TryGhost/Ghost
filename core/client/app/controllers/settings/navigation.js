@@ -107,8 +107,6 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
         // we need to have navigationItems recomputed.
         this.get('model').notifyPropertyChange('navigation');
 
-        notifications.closeNotifications();
-
         return this.get('model').save().catch(function (err) {
             notifications.showErrors(err);
         });
