@@ -48,7 +48,6 @@ export default Ember.Controller.extend(ValidationEngine, {
                 notifications = this.get('notifications');
 
             this.set('flowErrors', '');
-            notifications.closeNotifications();
 
             this.validate().then(function () {
                 self.toggleProperty('submitting');

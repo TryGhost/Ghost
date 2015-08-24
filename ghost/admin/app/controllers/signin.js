@@ -50,7 +50,6 @@ export default Ember.Controller.extend(ValidationEngine, {
             $('#login').find('input').trigger('change');
 
             this.validate({property: 'signin'}).then(function () {
-                self.get('notifications').closeNotifications();
                 self.toggleProperty('loggingIn');
                 self.send('authenticate');
             }).catch(function (error) {

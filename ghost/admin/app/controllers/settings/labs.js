@@ -37,7 +37,6 @@ export default Ember.Controller.extend({
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
-            notifications.closeNotifications();
 
             formData.append('importfile', file);
 
