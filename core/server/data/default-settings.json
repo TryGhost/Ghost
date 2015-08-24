@@ -66,12 +66,6 @@
         },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
-        },
-        "isPrivate": {
-            "defaultValue": "false"
-        },
-        "password": {
-            "defaultValue": ""
         }
     },
     "theme": {
@@ -85,6 +79,14 @@
         },
         "installedApps": {
             "defaultValue": "[]"
+        }
+    },
+    "private": {
+        "isPrivate": {
+            "defaultValue": "false"
+        },
+        "password": {
+            "defaultValue": ""
         }
     }
 }
