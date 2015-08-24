@@ -27,6 +27,14 @@ export default Ember.Controller.extend(ValidationEngine, {
 
                 if (err.errors) {
                     self.set('flowErrors', err.errors[0].message.string);
+
+                    if (err.errors[0].message.string.match(/no user with that email/)) {
+                        self.get('model.errors').add('identification', '');
+                    }
+
+                    if (err.errors[0].message.string.match(/password is incorrect/)) {
+                        self.get('model.errors').add('password', '');
+                    }
                 }
                 // if authentication fails a rejected promise will be returned.
                 // it needs to be caught so it doesn't generate an exception in the console,
@@ -41,7 +49,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             // browsers and password managers that don't send proper events on autofill
             $('#login').find('input').trigger('change');
 
-            this.validate().then(function () {
+            this.validate({property: 'signin'}).then(function () {
                 self.get('notifications').closeNotifications();
                 self.toggleProperty('loggingIn');
                 self.send('authenticate');
@@ -60,7 +68,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 self = this;
 
             this.set('flowErrors', '');
-            this.validate({property: 'identification'}).then(function () {
+            this.validate({property: 'forgotPassword'}).then(function () {
                 self.toggleProperty('submitting');
 
                 ajax({
@@ -77,7 +85,13 @@ export default Ember.Controller.extend(ValidationEngine, {
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-                        self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
+                        var message = resp.jqXHR.responseJSON.errors[0].message;
+
+                        self.set('flowErrors', message);
+
+                        if (message.match(/no user with that email/)) {
+                            self.get('model.errors').add('identification', '');
+                        }
                     } else {
                         notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
                     }
