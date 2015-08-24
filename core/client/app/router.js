@@ -8,11 +8,8 @@ var Router = Ember.Router.extend({
 
     notifications: Ember.inject.service(),
 
-    clearNotifications: Ember.on('didTransition', function () {
-        var notifications = this.get('notifications');
-
-        notifications.closeNotifications();
-        notifications.displayDelayed();
+    displayDelayedNotifications: Ember.on('didTransition', function () {
+        this.get('notifications').displayDelayed();
     })
 });
 
