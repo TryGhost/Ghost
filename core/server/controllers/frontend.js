@@ -282,13 +282,23 @@ frontendControllers = {
             var permalink = response.settings[0].value,
                 editFormat,
                 postLookup,
-                match;
+                match,
+                urlPattern;
 
             editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?';
 
+            urlPattern = permalink;
             // Convert saved permalink into a path-match function
             permalink = routeMatch(permalink + editFormat);
             match = permalink(postPath);
+
+            if (match === false) {
+                permalink = urlPattern === '/:year/:month/:day/:slug/' ?
+                  '/:slug/' :
+                  '/:year/:month/:day/:slug/';
+                permalink = routeMatch(permalink + editFormat);
+                match = permalink(postPath);
+            }
 
             // Check if the path matches the permalink structure.
             //
@@ -354,6 +364,8 @@ frontendControllers = {
             // Check if the url provided with the post object matches req.path
             // If it does, render the post
             // If not, return 404
+            // TODO - find best approach to by pass this check since the post URL might not match the
+            // requested URL since we are matching with and without the date
             if (post.url && post.url === postUrl) {
                 return render();
             } else {
