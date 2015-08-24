@@ -243,8 +243,7 @@ export default Ember.Mixin.create({
                 timedSaveId = this.get('timedSaveId'),
                 self = this,
                 psmController = this.get('postSettingsMenuController'),
-                promise,
-                notifications = this.get('notifications');
+                promise;
 
             options = options || {};
 
@@ -273,8 +272,6 @@ export default Ember.Mixin.create({
                 Ember.run.cancel(timedSaveId);
                 this.set('timedSaveId', null);
             }
-
-            notifications.closeNotifications();
 
             // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.
