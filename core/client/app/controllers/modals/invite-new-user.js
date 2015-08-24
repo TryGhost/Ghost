@@ -74,7 +74,7 @@ export default Ember.Controller.extend({
                         if (newUser.get('status') === 'invited-pending') {
                             self.get('notifications').showAlert('Invitation email was not sent.  Please try resending.', {type: 'error'});
                         } else {
-                            self.get('notifications').showAlert(notificationText, {type: 'success'});
+                            self.get('notifications').showNotification(notificationText);
                         }
                     }).catch(function (errors) {
                         newUser.deleteRecord();
