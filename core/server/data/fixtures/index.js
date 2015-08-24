@@ -37,7 +37,7 @@ logInfo = function logInfo(message) {
  * Changes an admin user to have the owner role
  * @returns {Promise|*}
  */
-convertAdminToOwner = function () {
+convertAdminToOwner = function convertAdminToOwner() {
     var adminUser;
 
     return models.User.findOne({role: 'Administrator'}).then(function (user) {
@@ -56,7 +56,7 @@ convertAdminToOwner = function () {
  * Creates the user fixture and gives it the owner role
  * @returns {Promise|*}
  */
-createOwner = function () {
+createOwner = function createOwner() {
     var user = fixtures.users[0];
 
     return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
@@ -68,7 +68,7 @@ createOwner = function () {
     });
 };
 
-populate = function () {
+populate = function populate() {
     var ops = [],
         relations = [],
         Post = models.Post,
@@ -122,7 +122,7 @@ populate = function () {
  * Note: At the moment this is pretty adhoc & untestable, in future it would be better to have a config based system.
  * @returns {Promise|*}
  */
-to003 = function () {
+to003 = function to003() {
     var ops = [],
         upgradeOp,
         Role = models.Role,
@@ -161,7 +161,7 @@ to003 = function () {
  * Update ghost_foot to include a CDN of jquery if the DB is migrating from
  * @return {Promise}
  */
-to004 = function () {
+to004 = function to004() {
     var value,
         ops = [],
         upgradeOp,
@@ -196,6 +196,26 @@ to004 = function () {
     });
     ops.push(upgradeOp);
 
+    // change `type` for protected blog `isPrivate` setting
+    upgradeOp = models.Settings.findOne('isPrivate').then(function (setting) {
+        if (setting) {
+            logInfo('Update isPrivate setting');
+            return models.Settings.edit({key: 'isPrivate', type: 'private'}, options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // change `type` for protected blog `password` setting
+    upgradeOp = models.Settings.findOne('password').then(function (setting) {
+        if (setting) {
+            logInfo('Update password setting');
+            return models.Settings.edit({key: 'password', type: 'private'}, options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
     // Update ghost-admin client fixture
     // ghost-admin should exist from 003 version
     upgradeOp = models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
@@ -219,7 +239,7 @@ to004 = function () {
     return Promise.all(ops);
 };
 
-update = function (fromVersion, toVersion) {
+update = function update(fromVersion, toVersion) {
     var ops = [];
 
     logInfo('Updating fixtures');
