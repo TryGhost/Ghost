@@ -4,6 +4,7 @@ export default Ember.Component.extend({
     tagName: '',
 
     user: null,
+    isSending: false,
 
     notifications: Ember.inject.service(),
 
@@ -16,8 +17,10 @@ export default Ember.Component.extend({
     actions: {
         resend: function () {
             var user = this.get('user'),
-                notifications = this.get('notifications');
+                notifications = this.get('notifications'),
+                self = this;
 
+            this.set('isSending', true);
             user.resendInvite().then(function (result) {
                 var notificationText = 'Invitation resent! (' + user.get('email') + ')';
 
@@ -31,6 +34,8 @@ export default Ember.Component.extend({
                 }
             }).catch(function (error) {
                 notifications.showAPIError(error);
+            }).finally(function () {
+                self.set('isSending', false);
             });
         },
 
