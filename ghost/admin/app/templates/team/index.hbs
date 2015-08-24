@@ -37,12 +37,16 @@
                                         {{/if}}
                                 </div>
                                 <aside class="user-list-item-aside">
-                                    <a class="user-list-action" href="#" {{action "revoke" target=component}}>
-                                        Revoke
-                                    </a>
-                                    <a class="user-list-action" href="#" {{action "resend" target=component}}>
-                                        Resend
-                                    </a>
+                                    {{#if component.isSending}}
+                                        <span>Sending Invite...</span>
+                                    {{else}}
+                                        <a class="user-list-action" href="#" {{action "revoke" target=component}}>
+                                            Revoke
+                                        </a>
+                                        <a class="user-list-action" href="#" {{action "resend" target=component}}>
+                                            Resend
+                                        </a>
+                                    {{/if}}
                                 </aside>
                             </div>
                         {{/gh-user-invited}}
