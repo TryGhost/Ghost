@@ -11,7 +11,7 @@
     {{gh-error-message errors=errors property="users"}}
 </form>
 
-{{gh-spin-button type="button" classNameBindings=":btn :btn-default :btn-lg :btn-block buttonClass" action="invite" buttonText=buttonText submitting=submitting autoWidth=false}}
+{{#gh-spin-button classNameBindings=":btn :btn-default :btn-lg :btn-block buttonClass" action="invite" submitting=submitting autoWidth="false"}}{{buttonText}}{{/gh-spin-button}}
 
 <button class="gh-flow-skip" {{action "skipInvite"}}>
     I'll do this later, take me to my blog!

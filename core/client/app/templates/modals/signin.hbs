@@ -5,7 +5,7 @@
             <div class="password-wrap">
                 {{input class="gh-input password" type="password" placeholder="Password" name="password" value=password}}
             </div>
-            {{gh-spin-button class="btn btn-blue" type="submit" action="validateAndAuthenticate" submitting=submitting buttonText="Log in"}}
+            {{#gh-spin-button class="btn btn-blue" type="submit" action="validateAndAuthenticate" submitting=submitting}}Log in{{/gh-spin-button}}
        </form>
 
 {{/gh-modal-dialog}}
