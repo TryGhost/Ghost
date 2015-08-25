@@ -493,6 +493,10 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
                     tagToAdd = self.get('store').createRecord('tag', {
                         name: tagName
                     });
+
+                    // we need to set a UUID so that selectize has a unique value
+                    // it will be ignored when sent to the server
+                    tagToAdd.set('uuid', Ember.guidFor(tagToAdd));
                 }
 
                 // push tag onto post relationship
