@@ -145,6 +145,9 @@ function init(options) {
     // It returns a promise that is resolved when the application
     // has finished starting up.
 
+    // Initialize Internationalization
+    i18n.init();
+
     // Load our config.js file from the local file system.
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
@@ -182,9 +185,6 @@ function init(options) {
         );
     }).then(function () {
         var adminHbs = hbs.create();
-
-        // Initialize Internationalization
-        i18n.init();
 
         // Output necessary notifications on init
         initNotifications();
