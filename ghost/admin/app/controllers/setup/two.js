@@ -79,7 +79,6 @@ export default Ember.Controller.extend(ValidationEngine, {
                         identification: self.get('email'),
                         password: self.get('password')
                     }).then(function () {
-                        self.set('password', '');
                         self.set('blogCreated', true);
                         if (data.image) {
                             self.sendImage(result.users[0])
