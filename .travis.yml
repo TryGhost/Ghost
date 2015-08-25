@@ -36,7 +36,7 @@ after_success:
           echo "Generate coverage..."
           grunt coverage
           npm install -g codeclimate-test-reporter
-          codeclimate-test-reporter < core/test/coverage/lcov.info
+          codeclimate-test-reporter < core/test/coverage/unit/lcov.info
         else
           echo "False DB and NODE_VERSION. No coverage generated."
         fi
