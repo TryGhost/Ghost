@@ -123,7 +123,7 @@ export default Ember.Controller.extend({
 
                             notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true});
                             self.send('loadServerNotifications');
-                            self.transitionTo('posts.index');
+                            self.transitionToRoute('posts.index');
                         }
 
                         self.toggleProperty('submitting');
@@ -143,7 +143,7 @@ export default Ember.Controller.extend({
         },
         skipInvite: function () {
             this.send('loadServerNotifications');
-            this.transitionTo('posts.index');
+            this.transitionToRoute('posts.index');
         }
     }
 });

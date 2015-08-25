@@ -31,5 +31,9 @@ export default Ember.Route.extend(styleBody, {
                 return self.transitionTo('signin');
             }
         });
+    },
+    deactivate: function () {
+        this._super();
+        this.controllerFor('setup/two').set('password', '');
     }
 });
