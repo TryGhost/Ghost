@@ -41,8 +41,7 @@
     border-radius: 0;
     text-transform: none;
     letter-spacing: 0;
-    /* Needs white BG to hide browser-extension password tools like
-    lastpass and safari-password manager */
+    /* Needs white BG to hide ugly lastpass icon */
 }
 
 .forgotten-link:hover {

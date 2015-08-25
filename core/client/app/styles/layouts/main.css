@@ -13,6 +13,7 @@
 .gh-viewport {
     flex-grow: 1;
     display: flex;
+    overflow: hidden;
     max-height: 100vh;
 }
 
@@ -218,11 +219,15 @@
 }
 
 @media (max-width: 800px) {
+    .view-header {
+        padding-left: 0 !important;
+    }
+
     .gh-mobilemenu-button {
         flex-shrink: 0;
         display: block;
-        margin: 0 5px 0 -10px;
-        padding: 10px;
+        margin: 0;
+        padding: 24px;
         font-size: 18px;
         line-height: 18px;
     }
@@ -236,23 +241,51 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 235px;
+        width: 270px;
         height: 100%;
         transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-        transform: translate3d(-235px, 0px, 0px);
+        transform: translate3d(-270px, 0px, 0px);
     }
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
+    }
+
+    .gh-nav-list a {
+        padding: 7px 10px 7px 15px;
+        border-radius: 0 4px 4px 0;
     }
 }
 
 @media (max-width: 500px) {
+    .gh-mobilemenu-button {
+        padding: 24px 15px 24px 16px;
+    }
+
     .gh-nav {
-        width: 75vw;
-        transform: translate3d(-75vw, 0px, 0px);
+        width: 80vw;
+        transform: translate3d(-80vw, 0px, 0px);
     }
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
+    }
+    .mobile-menu-expanded .content-cover {
+        transform: translate3d(80vw, 0, 0);
+    }
+
+    .gh-nav-list {
+        font-size: 1.5rem;
+    }
+
+    .gh-nav-list-h {
+        font-size: 1.4rem;
+    }
+
+    .gh-nav-list i {
+        margin-right: 8px;
+        width: 17px;
+        height: 17px;
+        text-align: center;
+        font-size: 17px;
     }
 }
 
@@ -344,8 +377,8 @@
 }
 
 .gh-help-menu .dropdown {
-    right: 112px;
     bottom: 215px;
+    left: -180px;
 }
 
 .gh-help-menu .dropdown .dropdown-menu {
@@ -382,7 +415,7 @@
 
 .view-title {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     overflow: hidden;
     margin: 0;
     padding: 0;
@@ -433,4 +466,17 @@
 .view-content p,
 .view-content p * {
     user-select: text;
+}
+
+@media (max-width: 400px) {
+    .view-header {
+        padding: 0 7px;
+        height: 50px;
+    }
+    .view-title {
+        font-size: 1.8rem;
+    }
+    .view-content {
+        padding: 15px;
+    }
 }
