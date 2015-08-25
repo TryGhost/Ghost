@@ -28,7 +28,6 @@
     "selectize": "~0.12.1",
     "showdown-ghost": "0.3.6",
     "sinonjs": "1.14.1",
-    "typeahead.js": "0.11.1",
     "validator-js": "3.39.0",
     "xregexp": "2.0.0"
   }
