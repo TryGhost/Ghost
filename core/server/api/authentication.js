@@ -269,7 +269,7 @@ authentication = {
                     }]
                 };
 
-            return mail.send(payload, {context: {internal: true}}).catch(function (error) {
+            mail.send(payload, {context: {internal: true}}).catch(function (error) {
                 errors.logError(
                     error.message,
                     'Unable to send welcome email, your blog will continue to function.',
