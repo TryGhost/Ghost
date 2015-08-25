@@ -11,33 +11,33 @@
         {{#gh-form-group errors=errors property="email"}}
             <label for="email-address">Email address</label>
             <span class="input-icon icon-mail">
-                {{gh-input type="email" name="email" enter=(action "setup") placeholder="Eg. john@example.com" class="gh-input" autofocus="autofocus" autocorrect="off" value=email focusOut=(action "handleEmail")}}
+                {{gh-trim-focus-input tabindex="1" type="email" name="email" enter=(action "setup") placeholder="Eg. john@example.com" autocorrect="off" value=email focusOut=(action "handleEmail")}}
             </span>
             {{gh-error-message errors=errors property="email"}}
         {{/gh-form-group}}
         {{#gh-form-group errors=errors property="name"}}
             <label for="full-name">Full name</label>
             <span class="input-icon icon-user">
-                {{gh-input type="text" name="name" enter=(action "setup") placeholder="Eg. John H. Watson" class="gh-input" autofocus="autofocus" autocorrect="off" value=name focusOut=(action "validate" "name")}}
+                {{gh-input tabindex="2" type="text" name="name" enter=(action "setup") placeholder="Eg. John H. Watson"  autocorrect="off" value=name focusOut=(action "validate" "name")}}
             </span>
             {{gh-error-message errors=errors property="name"}}
         {{/gh-form-group}}
         {{#gh-form-group errors=errors property="password"}}
             <label for="password">Password</label>
             <span class="input-icon icon-lock">
-                {{gh-input type="password" name="password" enter=(action "setup") placeholder="At least 8 characters" class="gh-input" autofocus="autofocus" autocorrect="off" value=password focusOut=(action "validate" "password")}}
+                {{gh-input tabindex="3" type="password" name="password" enter=(action "setup") placeholder="At least 8 characters" autocorrect="off" value=password focusOut=(action "validate" "password")}}
             </span>
             {{gh-error-message errors=errors property="password"}}
         {{/gh-form-group}}
         {{#gh-form-group errors=errors property="blogTitle"}}
             <label for="blog-title">Blog title</label>
             <span class="input-icon icon-content">
-                {{gh-input type="text" name="blog-title" enter=(action "setup") placeholder="Eg. The Daily Awesome" class="gh-input" autofocus="autofocus" autocorrect="off" value=blogTitle focusOut=(action "validate" "blogTitle")}}
+                {{gh-input tabindex="4" type="text" name="blog-title" enter=(action "setup") placeholder="Eg. The Daily Awesome" autocorrect="off" value=blogTitle focusOut=(action "validate" "blogTitle")}}
             </span>
             {{gh-error-message errors=errors property="blogTitle"}}
         {{/gh-form-group}}
     </form>
-{{#gh-spin-button type="button" class="btn btn-green btn-lg btn-block" action="setup" submitting=submitting autoWidth=false}}
+{{#gh-spin-button type="submit" tabindex="5" class="btn btn-green btn-lg btn-block" action="setup" submitting=submitting autoWidth="false"}}
     Last step: Invite your team <i class="icon-chevron"></i>
 {{/gh-spin-button}}
 
