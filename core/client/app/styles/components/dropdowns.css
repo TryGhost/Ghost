@@ -66,6 +66,17 @@
     line-height: 1em;
 }
 
+@media (max-width: 500px) {
+    .dropdown-menu > li > a,
+    .dropdown-menu > li > button {
+        padding: 7px 8px;
+        font-size: 1.5rem;
+    }
+    .dropdown-menu i {
+        font-size: 16px;
+    }
+}
+
 
 /* States
 /* ---------------------------------------------------------- */
