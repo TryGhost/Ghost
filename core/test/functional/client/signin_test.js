@@ -136,7 +136,7 @@ CasperTest.begin('Validates unknown email for sign-in', 5, function suite(test) 
         test.assert(true, 'Unknown email error was shown');
         test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
         test.assertDoesntExist('.form-group.error input[name="password"]', 'password field was highlighted');
-    }, casper.failOnTimeout(test, 'Uknown email error was not shown'));
+    }, casper.failOnTimeout(test, 'Unknown email error was not shown'));
 }, true);
 
 CasperTest.begin('Validates missing details for sign-in', 11, function suite(test) {
@@ -242,5 +242,5 @@ CasperTest.begin('Validates unknown email for forgotten password', 5, function s
         test.assert(true, 'Unknown email error was shown');
         test.assertExists('.form-group.error input[name="identification"]', 'email field was not highlighted');
         test.assertDoesntExist('.form-group.error input[name="password"]', 'password field was highlighted');
-    }, casper.failOnTimeout(test, 'Uknown email error was not shown'));
+    }, casper.failOnTimeout(test, 'Unknown email error was not shown'));
 }, true);

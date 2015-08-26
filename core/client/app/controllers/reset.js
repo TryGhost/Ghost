@@ -7,6 +7,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     ne2Password: '',
     token: '',
     submitting: false,
+    flowErrors: '',
 
     validationType: 'reset',
 
@@ -32,7 +33,7 @@ export default Ember.Controller.extend(ValidationEngine, {
         submit: function () {
             var credentials = this.getProperties('newPassword', 'ne2Password', 'token'),
                 self = this;
-
+            this.set('flowErrors', '');
             this.validate().then(function () {
                 self.toggleProperty('submitting');
                 ajax({
@@ -52,6 +53,14 @@ export default Ember.Controller.extend(ValidationEngine, {
                     self.get('notifications').showAPIError(response);
                     self.toggleProperty('submitting');
                 });
+            }).catch(function () {
+                if (self.get('errors.newPassword')) {
+                    self.set('flowErrors', self.get('errors.newPassword')[0].message);
+                }
+
+                if (self.get('errors.ne2Password')) {
+                    self.set('flowErrors', self.get('errors.ne2Password')[0].message);
+                }
             });
         }
     }
