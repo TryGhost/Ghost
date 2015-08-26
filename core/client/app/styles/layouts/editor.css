@@ -275,7 +275,7 @@
 .post-settings {
     position: relative;
     display: inline-block;
-    padding: 5px 10px;
+    padding: 15px;
     color: var(--midgrey);
     transition: all 0.15s ease-out 0s;
 }
