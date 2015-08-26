@@ -9,7 +9,7 @@
                     {{gh-input type="password" name="ne2password" placeholder="Confirm Password" class="password" autocorrect="off" autofocus="autofocus" value=ne2Password}}
                 {{/gh-form-group}}
 
-                {{gh-spin-button class="btn btn-blue btn-block" type="submit" submitting=submitting buttonText="Reset Password" autoWidth=false}}
+                {{#gh-spin-button class="btn btn-blue btn-block" type="submit" submitting=submitting autoWidth="false"}}Reset Password{{/gh-spin-button}}
             </form>
 
             <p class="main-error">{{{flowErrors}}}</p>
