@@ -61,7 +61,8 @@
     position: relative;
     display: flex;
     justify-content: space-between;
-    padding: 19px 24px;
+    align-items: center;
+    padding: 15px 24px;
 }
 
 .settings-menu-header h4 {
@@ -72,8 +73,10 @@
 }
 
 .settings-menu-header .close {
-    right: 22px;
+    margin-right: -15px;
+    padding: 10px 15px;
     font-size: 12px;
+    line-height: 12px;
 }
 
 .settings-menu-header.subview h4 {
@@ -81,12 +84,12 @@
 }
 
 .settings-menu-header.subview .back {
-    left: 0;
+    margin-left: -15px;
+    padding: 10px 15px;
+    font-size: 14px;
+    line-height: 14px;
 }
 
-.settings-menu-header.subview .back:before {
-    left: 19px;
-}
 
 
 
