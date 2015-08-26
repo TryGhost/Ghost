@@ -15,34 +15,27 @@
                 {{#gh-form-group errors=model.errors property="email"}}
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" class="gh-input" enter=(action "signup") disabled=true autocorrect="off" value=model.email focusOut=(action "handleEmail")}}
+                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" enter=(action "signup") disabled="disabled" autocorrect="off" value=model.email focusOut=(action "handleEmail")}}
                     </span>
                     {{gh-error-message errors=model.errors property="email"}}
                 {{/gh-form-group}}
                 {{#gh-form-group errors=model.errors property="name"}}
                     <label for="full-name">Full name</label>
                     <span class="input-icon icon-user">
-                        {{gh-input type="text" name="name" placeholder="Eg. John H. Watson" class="gh-input" enter=(action "signup") autofocus="autofocus" autocorrect="off" value=model.name focusOut=(action "validate" "name")}}
+                        {{gh-trim-focus-input tabindex="1" type="text" name="name" placeholder="Eg. John H. Watson" enter=(action "signup") autocorrect="off" value=model.name focusOut=(action "validate" "name")}}
                     </span>
                     {{gh-error-message errors=model.errors property="name"}}
                 {{/gh-form-group}}
                 {{#gh-form-group errors=model.errors property="password"}}
                     <label for="password">Password</label>
                     <span class="input-icon icon-lock">
-                        {{input class="gh-input" type="password" name="password" autofocus="autofocus" enter=(action "signup") autocorrect="off" value=model.password focusOut=(action "validate" "password")}}
-                        <div class="pw-strength">
-                            <div class="pw-strength-dot"></div>
-                            <div class="pw-strength-dot"></div>
-                            <div class="pw-strength-dot"></div>
-                            <div class="pw-strength-dot"></div>
-                            <div class="pw-strength-dot <!--pw-strength-activedot-->"></div>
-                        </div>
+                        {{gh-input tabindex="2" type="password" name="password" enter=(action "signup") autocorrect="off" value=model.password focusOut=(action "validate" "password")}}
                     </span>
                     {{gh-error-message errors=model.errors property="password"}}
                 {{/gh-form-group}}
             </form>
 
-            {{gh-spin-button type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting buttonText="Create Account" autoWidth=false}}
+            {{#gh-spin-button tabindex="3" type="submit" class="btn btn-green btn-lg btn-block" action="signup" submitting=submitting autoWidth="false"}}Create Account{{/gh-spin-button}}
             <p class="main-error">{{{flowErrors}}}</p>
         </section>
     </div>

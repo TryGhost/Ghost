@@ -13,7 +13,7 @@
                         <button type="button" {{action "forgotten"}} class="forgotten-link btn btn-link"  tabindex="4" disabled={{submitting}}>Forgot?</button>
                     </span>
                 {{/gh-form-group}}
-                {{gh-spin-button class="login btn btn-blue btn-block" type="submit" tabindex="3" buttonText="Sign in" submitting=loggingIn autoWidth=false}}
+                {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in{{/gh-spin-button}}
             </form>
 
             <p class="main-error">{{{flowErrors}}}</p>
