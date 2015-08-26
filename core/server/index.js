@@ -27,24 +27,6 @@ var express     = require('express'),
 
     dbHash;
 
-function doFirstRun() {
-    var firstRunMessage = [
-        'Welcome to Ghost.',
-        'You\'re running under the <strong>',
-        process.env.NODE_ENV,
-        '</strong>environment.',
-
-        'Your URL is set to',
-        '<strong>' + config.url + '</strong>.',
-        'See <a href="http://support.ghost.org/" target="_blank">http://support.ghost.org</a> for instructions.'
-    ];
-
-    return api.notifications.add({notifications: [{
-        type: 'info',
-        message: firstRunMessage.join(' ')
-    }]}, {context: {internal: true}});
-}
-
 function initDbHashAndFirstRun() {
     return api.settings.read({key: 'dbHash', context: {internal: true}}).then(function (response) {
         var hash = response.settings[0].value,
@@ -58,7 +40,8 @@ function initDbHashAndFirstRun() {
                 .then(function (response) {
                     dbHash = response.settings[0].value;
                     return dbHash;
-                }).then(doFirstRun);
+                    // Use `then` here to do 'first run' actions
+                });
         }
 
         return dbHash;
