@@ -59,6 +59,7 @@ export default DS.Model.extend(ValidationEngine, {
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
     // when returned from the server with ids.
+    // https://github.com/emberjs/data/issues/1829
     updateTags: function () {
         var tags = this.get('tags'),
             oldTags = tags.filterBy('id', null);
