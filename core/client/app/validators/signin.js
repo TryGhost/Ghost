@@ -19,12 +19,12 @@ var SigninValidator = BaseValidator.create({
         model.get('errors').clear();
 
         if (validator.empty(id)) {
-            model.get('errors').add('identification', '');
+            model.get('errors').add('identification', 'Please enter an email');
             this.invalidate();
         }
 
         if (validator.empty(password)) {
-            model.get('errors').add('password', '');
+            model.get('errors').add('password', 'Please enter a password');
             this.invalidate();
         }
     },
@@ -35,7 +35,7 @@ var SigninValidator = BaseValidator.create({
         model.get('errors').clear();
 
         if (validator.empty(id) || !validator.isEmail(id)) {
-            model.get('errors').add('identification', '');
+            model.get('errors').add('identification', 'Invalid email');
             this.invalidate();
         }
     }
