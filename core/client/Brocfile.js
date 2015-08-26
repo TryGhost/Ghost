@@ -35,7 +35,10 @@ app = new EmberApp({
         outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
     },
     hinting: false,
-    fingerprint: disabled
+    fingerprint: disabled,
+    'ember-cli-selectize': {
+        theme: false
+    }
 });
 
 // 'dem Scripts
