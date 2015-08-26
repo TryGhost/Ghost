@@ -8,7 +8,7 @@ export default Ember.Component.extend({
     autoWidth: true,
 
     // Disable Button when isLoading equals true
-    attributeBindings: ['disabled'],
+    attributeBindings: ['disabled', 'type', 'tabindex'],
 
     // Must be set on the controller
     disabled: Ember.computed.equal('submitting', true),
