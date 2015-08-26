@@ -9,6 +9,7 @@ var should         = require('should'),
     rewire         = require('rewire'),
 
     testUtils      = require('../utils'),
+	i18n            = require('../../server/i18n'),
 
     // Thing we are testing
     defaultConfig  = require('../../../config.example')[process.env.NODE_ENV],
@@ -16,7 +17,7 @@ var should         = require('should'),
     origConfig     = _.cloneDeep(config),
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
-
+i18n.init();
 // To stop jshint complaining
 should.equal(true, true);
 

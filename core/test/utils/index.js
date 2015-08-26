@@ -13,6 +13,7 @@ var Promise       = require('bluebird'),
     API           = require('./api'),
     fork          = require('./fork'),
     config        = require('../../server/config'),
+    i18n          = require('../../server/i18n'),
 
     fixtures,
     getFixtureOps,
@@ -375,6 +376,7 @@ fixtures = {
 
 /** Test Utility Functions **/
 initData = function initData() {
+    i18n.init();
     return migration.init();
 };
 

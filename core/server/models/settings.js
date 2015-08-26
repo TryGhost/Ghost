@@ -7,6 +7,7 @@ var Settings,
     validation     = require('../data/validation'),
     events         = require('../events'),
     internal       = {context: {internal: true}},
+    i18n           = require('../i18n'),
 
     defaultSettings;
 
@@ -119,7 +120,7 @@ Settings = ghostBookshelf.Model.extend({
             // Accept an array of models as input
             if (item.toJSON) { item = item.toJSON(); }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return Promise.reject(new errors.ValidationError('Value in [settings.key] cannot be blank.'));
+                return Promise.reject(new errors.ValidationError(i18n.t('errors.models.settings.valueCannotBeBlank')));
             }
 
             item = self.filterData(item);
@@ -129,14 +130,14 @@ Settings = ghostBookshelf.Model.extend({
                     return setting.save({value: item.value}, options);
                 }
 
-                return Promise.reject(new errors.NotFoundError('Unable to find setting to update: ' + item.key));
+                return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})));
             }, errors.logAndThrowError);
         });
     },
 
     populateDefault: function (key) {
         if (!getDefaultSettings()[key]) {
-            return Promise.reject(new errors.NotFoundError('Unable to find default setting: ' + key));
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.settings.unableToFindDefaultSetting', {key: key})));
         }
 
         return this.findOne({key: key}).then(function then(foundSetting) {

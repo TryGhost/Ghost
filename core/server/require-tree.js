@@ -4,6 +4,7 @@ var _        = require('lodash'),
     fs       = require('fs'),
     path     = require('path'),
     Promise  = require('bluebird'),
+    i18n     = require('./i18n'),
     readdirAsync  = Promise.promisify(fs.readdir),
     lstatAsync    = Promise.promisify(fs.lstat),
     readlinkAsync = Promise.promisify(fs.readlink),
@@ -21,7 +22,7 @@ var _        = require('lodash'),
             fs.readFile(path, function (error, data) {
                 if (error) {
                     messages.errors.push({
-                        message: 'Could not read package.json file',
+                        message: i18n.t('errors.require-tree.couldNotReadPackageJson'),
                         context: path
                     });
                     resolve(false);
@@ -33,17 +34,17 @@ var _        = require('lodash'),
                         resolve(jsonContainer);
                     } else {
                         messages.errors.push({
-                            message: '"name" or "version" is missing from theme package.json file.',
+                            message: i18n.t('errors.require-tree.nameOrVersionMissing.error'),
                             context: path,
-                            help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                            help: i18n.t('errors.general.requiredOnFuture', {link: 'http://docs.ghost.org/themes/'})
                         });
                         resolve(false);
                     }
                 } catch (e) {
                     messages.errors.push({
-                        message: 'Theme package.json file is malformed',
+                        message: i18n.t('errors.require-tree.themePackageJsonMalformed.error'),
                         context: path,
-                        help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                        help: i18n.t('errors.general.requiredOnFuture', {link: 'http://docs.ghost.org/themes/'})
                     });
                     resolve(false);
                 }
@@ -114,9 +115,9 @@ var _        = require('lodash'),
                 _.each(paths, function (path, index) {
                     if (typeof path === 'object' && !path.hasOwnProperty('package.json') && index.indexOf('.') !== 0) {
                         messages.warns.push({
-                            message: 'Found a theme with no package.json file',
-                            context: 'Theme name: ' + index,
-                            help: 'This will be required in future. Please see http://docs.ghost.org/themes/'
+                            message: i18n.t('errors.require-tree.foundThemeWithNoPackageJson.error'),
+                            context: i18n.t('errors.require-tree.foundThemeWithNoPackageJson.error', {theme: index}),
+                            help: i18n.t('errors.general.requiredOnFuture', {link: 'http://docs.ghost.org/themes/'})
                         });
                     }
                 });

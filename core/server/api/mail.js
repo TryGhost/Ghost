@@ -11,6 +11,7 @@ var _            = require('lodash').runInContext(),
     fs           = require('fs'),
     templatesDir = path.resolve(__dirname, '..', 'mail', 'templates'),
     htmlToText   = require('html-to-text'),
+    i18n         = require('../i18n'),
     mail;
 
 /**
@@ -45,7 +46,7 @@ mail = {
                     return Promise.reject(new errors.EmailError(error.message));
                 });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to send mail.'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.mail.noPermissionToSendEmail')));
         });
     },
 
@@ -63,7 +64,7 @@ mail = {
                 var payload = {mail: [{
                     message: {
                         to: result.get('email'),
-                        subject: 'Test Ghost Email',
+                        subject: i18n.t('common.api.mail.testGhostEmail'),
                         html: emailContent.html,
                         text: emailContent.text
                     }
@@ -71,7 +72,7 @@ mail = {
                 return mail.send(payload, options);
             });
         }, function () {
-            return Promise.reject(new errors.NotFoundError('Could not find the current user'));
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.mail.cannotFindCurrentUser')));
         });
     },
 

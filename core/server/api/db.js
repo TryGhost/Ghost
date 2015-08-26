@@ -8,6 +8,7 @@ var _                = require('lodash'),
     errors           = require('../errors'),
     canThis          = require('../permissions').canThis,
     utils            = require('./utils'),
+    i18n             = require('../i18n'),
 
     api              = {},
     db;
@@ -39,7 +40,7 @@ db = {
                 return Promise.reject(new errors.InternalServerError(error.message || error));
             });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data (no rights).'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.db.noPermissionToExportData')));
         });
     },
     /**
@@ -55,13 +56,13 @@ db = {
 
         // Check if a file was provided
         if (!utils.checkFileExists(options, 'importfile')) {
-            return Promise.reject(new errors.NoPermissionError('Please select a file to import.'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.db.selectFileToImport')));
         }
 
         // Check if the file is valid
         if (!utils.checkFileIsValid(options.importfile, importer.getTypes(), importer.getExtensions())) {
             return Promise.reject(new errors.UnsupportedMediaTypeError(
-                'Unsupported file. Please try any of the following formats: ' +
+                i18n.t('errors.api.db.unsupportedFile') +
                     _.reduce(importer.getExtensions(), function (memo, ext) {
                         return memo ? memo + ', ' + ext : ext;
                     })
@@ -74,7 +75,7 @@ db = {
                 .then(api.settings.updateSettingsCache)
                 .return({db: []});
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to import data (no rights).'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.db.noPermissionToImportData')));
         });
     },
     /**
@@ -95,7 +96,7 @@ db = {
                     return Promise.reject(new errors.InternalServerError(error.message || error));
                 });
         }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data (no rights).'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.db.noPermissionToExportData')));
         });
     }
 };

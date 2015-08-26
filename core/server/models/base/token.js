@@ -1,6 +1,7 @@
 var Promise         = require('bluebird'),
     ghostBookshelf  = require('./index'),
     errors          = require('../../errors'),
+    i18n            = require('../../i18n'),
 
     Basetoken;
 
@@ -56,7 +57,7 @@ Basetoken = ghostBookshelf.Model.extend({
                 });
         }
 
-        return Promise.reject(new errors.NotFoundError('No user found'));
+        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.base.token.noUserFound')));
     },
 
     /**
@@ -77,7 +78,7 @@ Basetoken = ghostBookshelf.Model.extend({
                 });
         }
 
-        return Promise.reject(new errors.NotFoundError('Token not found'));
+        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.base.token.tokenNotFound')));
     }
 });
 

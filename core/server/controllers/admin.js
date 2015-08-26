@@ -3,6 +3,7 @@ var _             = require('lodash'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
     config        = require('../config'),
+    i18n          = require('../i18n'),
     adminControllers;
 
 adminControllers = {
@@ -37,8 +38,8 @@ adminControllers = {
                 location: 'settings-about-upgrade',
                 dismissible: false,
                 status: 'alert',
-                message: 'Ghost ' + updateVersion + ' is available! Hot Damn. <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a> to upgrade.'
-            };
+                message: i18n.t('notices.controllers.newVersionAvailable',
+                                {version: updateVersion, link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'})};
 
             return api.notifications.browse({context: {internal: true}}).then(function then(results) {
                 if (!_.some(results.notifications, {message: notification.message})) {

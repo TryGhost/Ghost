@@ -9,6 +9,7 @@ var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
+    i18n           = require('../i18n'),
     permalinkSetting = '',
     getPermalinkSetting,
     Post,
@@ -542,7 +543,7 @@ Post = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.InternalServerError(error.message || error));
             });
         }
-        return Promise.reject(new errors.NotFoundError('No user found'));
+        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.post.noUserFound')));
     },
 
     permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
@@ -573,7 +574,7 @@ Post = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
+        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.post.notEnoughPermission')));
     }
 });
 
