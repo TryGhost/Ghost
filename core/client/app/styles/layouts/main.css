@@ -381,10 +381,6 @@
     left: -180px;
 }
 
-.gh-help-menu .dropdown .dropdown-menu {
-    min-width: 200px;
-}
-
 .gh-help-menu .dropdown.fade-in-scale {
     animation-duration: 0.1s;
 }
