@@ -30,6 +30,17 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     actions: {
+        loading: function () {
+            var timer = Ember.run.later(this, function () {
+                $('.gh-main').prepend('<div id="gh-main-loading"><h1>Loading all the things!</h1></div>');
+            }, 250);
+
+            this.router.one('didTransition', function () {
+                Ember.run.cancel(timer);
+                $('#gh-main-loading').remove();
+            });
+        },
+
         openMobileMenu: function () {
             this.controller.set('showMobileMenu', true);
         },
