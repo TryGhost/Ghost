@@ -1,11 +1,11 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: installation
 meta_title: Como instalar o Ghost no seu Servidor - Ghost Docs
 meta_description: Tudo o que você precisa saber para colocar sua plataforma Ghost funcionando no seu ambiente local, ou em um ambiente remoto.
 heading: Instalando o Ghost &amp; Começando
 subheading: Os primeiros passos para configurar o seu Blog pela primeira vez.
-permalink: /pt-BR/installation/linux/
+permalink: /pt_BR/installation/linux/
 chapter: installation
 section: linux
 prev_section: windows

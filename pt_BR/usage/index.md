@@ -1,5 +1,5 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: usage
 meta_title: Como Usar o Ghost - Ghost Docs
 meta_description: Um guia mais a fundo para usar a plataforma de blog Ghost. Escolheu o Ghost mas não sabe por onde começar? Comece aqui!

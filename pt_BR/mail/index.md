@@ -1,5 +1,5 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: default
 meta_title: Configurar Email
 meta_description: Como configurar o servidor de e-mail e enviar e-mails com o Ghost. Tudo o que você precisa saber.

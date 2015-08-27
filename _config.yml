@@ -25,7 +25,7 @@ languages:
     - name: '繁體中文'
       key: 'zh_TW'
     - name: 'Português'
-      key: 'pt-BR'
+      key: 'pt_BR'
 
 port:         4478
 
@@ -166,15 +166,32 @@ translations:
     writing:      '寫作'
     back:         '上一章'
     next:         '下一章'
-  pt-BR:
-    site_title:   'Guia Ghost'
-    installation: 'Instalação'
-    usage:        'Uso'
-    email:        'Email'
-    themes:       'Temas'
-    help:         'Ajuda'
-    upgrading:    'Atualizando'
+  pt_BR:
+    site_title:      'Guia Ghost'
+    installation:    'Instalação'
+    usage:           'Uso'
+    email:           'Email'
+    themes:          'Temas'
+    apps:            'Apps'
+    api:             'API'
+    translations:    'Traduções'
+    help:            'Ajuda'
+    mac:             'Mac'
+    windows:         'Windows'
+    linux:           'Linux'
+    deploy:          'Deploy'
+    upgrading:       'Atualizando'
     troubleshooting: 'Resolução de Problemas'
+    configuration:   'Configuração'
+    faq:             'Perguntas Frequentes'
+    managing:        'Gerenciamento'
+    settings:        'Configurações'
+    writing:         'Escrevendo'
+    getting-started: 'Começando'
+    handlebars:      'Handlebars'
+    structure:       'Estrutura'
+    helpers:         'Helpers'
+    changelog:       'Registro de Alterações'
 
 # If running locally, simply comment out the line below to make all urls relative
 
