@@ -27,11 +27,11 @@ CasperTest.begin('Ghost setup fails properly', 11, function suite(test) {
         casper.thenClick('.gh-flow-content .btn');
     });
 
-    casper.waitForText('No users to invite.', function onSuccess() {
+    casper.waitForText('No users to invite', function onSuccess() {
         test.assert(true, 'Got error message');
 
         test.assertExists('.gh-flow-content .btn-minor', 'Submit button is not minor');
-        test.assertSelectorHasText('.gh-flow-content .btn', 'Invite some users', 'Submit button has wrong text');
+        test.assertSelectorHasText('.gh-flow-content .btn', 'No users to invite', 'Submit button has wrong text');
     }, function onTimeout() {
         test.assert(false, 'No error message for empty invitation list');
     });
@@ -41,7 +41,7 @@ CasperTest.begin('Ghost setup fails properly', 11, function suite(test) {
         casper.thenClick('.gh-flow-content .btn');
     });
 
-    casper.waitForText('test is not a valid email.', function onSuccess() {
+    casper.waitForText('1 invalid email address', function onSuccess() {
         test.assert(true, 'Got invalid email error');
     }, casper.failOnTimeout(test, 'Invalid email error not shown'));
 
