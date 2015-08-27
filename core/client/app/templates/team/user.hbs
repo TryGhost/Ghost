@@ -53,7 +53,7 @@
                     <button type="button" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</button>
                 </figure>
 
-                {{#gh-form-group class="first-form-group" errors=user.errors property="name"}}
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
                     <label for="user-name">Full Name</label>
                     {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name")}}
                     {{#if user.errors.name}}
@@ -67,14 +67,14 @@
 
             <fieldset class="user-details-bottom">
 
-                {{#gh-form-group errors=user.errors property="slug"}}
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="slug"}}
                     <label for="user-slug">Slug</label>
                     {{gh-input class="gh-input user-name" id="user-slug" value=slugValue name="user" focus-out="updateSlug" placeholder="Slug" selectOnClick="true" autocorrect="off"}}
                     <p>{{gh-blog-url}}/author/{{slugValue}}</p>
                     {{gh-error-message errors=user.errors property="slug"}}
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=user.errors property="email"}}
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="email"}}
                     <label for="user-email">Email</label>
                     {{!-- Administrators only see text of Owner's email address but not input --}}
                     {{#unless isAdminUserOnOwnerProfile}}
@@ -102,21 +102,21 @@
                     </div>
                 {{/if}}
 
-                {{#gh-form-group errors=user.errors property="location"}}
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
                     <label for="user-location">Location</label>
                     {{input type="text" value=user.location id="user-location" class="gh-input" focusOut=(action "validate" "location")}}
                     {{gh-error-message errors=user.errors property="location"}}
                     <p>Where in the world do you live?</p>
                 {{/gh-form-group}}
 
-                {{#gh-form-group errors=user.errors property="website"}}
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
                     <label for="user-website">Website</label>
                     {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website")}}
                     {{gh-error-message errors=user.errors property="website"}}
                     <p>Have a website or blog other than this one? Link it!</p>
                 {{/gh-form-group}}
 
-                {{#gh-form-group class="bio-container" errors=user.errors property="bio"}}
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
                     <label for="user-bio">Bio</label>
                     {{textarea id="user-bio" class="gh-input" value=user.bio focusOut=(action "validate" "bio")}}
                     {{gh-error-message errors=user.errors property="bio"}}
@@ -155,6 +155,5 @@
                 </fieldset>
             {{/unless}}
         </form>
-
     </div>
 </section>

@@ -42,6 +42,10 @@ export default Ember.Mixin.create({
     // ember-data models because they essentially use the same thing
     errors: DS.Errors.create(),
 
+    // Store whether a property has been validated yet, so that we know whether or not
+    // to show error / success validation for a field
+    hasValidated: Ember.A(),
+
     /**
     * Passes the model to the validator specified by validationType.
     * Returns a promise that will resolve if validation succeeds, and reject if not.
@@ -60,7 +64,8 @@ export default Ember.Mixin.create({
 
         var model = this,
             type,
-            validator;
+            validator,
+            hasValidated;
 
         if (opts.model) {
             model = opts.model;
@@ -72,6 +77,7 @@ export default Ember.Mixin.create({
 
         type = this.get('validationType') || model.get('validationType');
         validator = this.get('validators.' + type) || model.get('validators.' + type);
+        hasValidated = this.get('hasValidated');
 
         opts.validationType = type;
 
@@ -83,6 +89,8 @@ export default Ember.Mixin.create({
             }
 
             if (opts.property) {
+                // If property isn't in `hasValidated`, add it to mark that this field can show a validation result
+                hasValidated.addObject(opts.property);
                 model.get('errors').remove(opts.property);
             } else {
                 model.get('errors').clear();
