@@ -1,27 +1,8 @@
-/**
- * selectize.css (v0.12.1)
- * Copyright (c) 2013–2015 Brian Reavis & contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at:
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- *
- * @author Brian Reavis <brian@thirdroute.com>
- */
-
 .selectize-control.plugin-drag_drop.multi > .selectize-input > div.ui-sortable-placeholder {
     visibility: visible !important;
     border: 0 none !important;
     background: #f2f2f2 !important;
     background: rgba(0, 0, 0, 0.06) !important;
-    box-shadow: inset 0 0 12px 4px #fff;
-
-    -webkit-box-shadow: inset 0 0 12px 4px #fff;
 }
 .selectize-control.plugin-drag_drop .ui-sortable-placeholder::after {
     content: "!";
@@ -29,18 +10,13 @@
 }
 .selectize-control.plugin-drag_drop .ui-sortable-helper {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-
-    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 .selectize-dropdown-header {
     position: relative;
     padding: 5px 8px;
     border-bottom: 1px solid #d0d0d0;
     background: #f8f8f8;
-    border-radius: 3px 3px 0 0;
-
-    -webkit-border-radius: 3px 3px 0 0;
-    -moz-border-radius: 3px 3px 0 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 .selectize-dropdown-header-close {
     position: absolute;
@@ -60,9 +36,6 @@
     box-sizing: border-box;
     border-top: 0 none;
     border-right: 1px solid #f2f2f2;
-
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
 }
 .selectize-dropdown.plugin-optgroup_columns .optgroup:last-child {
     border-right: 0 none;
@@ -75,20 +48,19 @@
 }
 .selectize-control.plugin-remove_button [data-value] {
     position: relative;
-    padding-right: 24px !important;
+    padding-right: 20px !important;
 }
 .selectize-control.plugin-remove_button [data-value] .remove {
-    /* fixes ie bug (see #392) */
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     z-index: 1;
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     box-sizing: border-box;
-    padding: 2px 0 0 0;
     width: 17px;
-    border-left: 1px solid #d0d0d0;
     border-radius: 0 2px 2px 0;
     color: inherit;
     vertical-align: middle;
@@ -96,342 +68,6 @@
     text-decoration: none;
     font-size: 12px;
     font-weight: bold;
-
-    -webkit-border-radius: 0 2px 2px 0;
-    -moz-border-radius: 0 2px 2px 0;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-}
-.selectize-control.plugin-remove_button [data-value] .remove:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-.selectize-control.plugin-remove_button [data-value].active .remove {
-    border-left-color: #cacaca;
-}
-.selectize-control.plugin-remove_button .disabled [data-value] .remove:hover {
-    background: none;
-}
-.selectize-control.plugin-remove_button .disabled [data-value] .remove {
-    border-left-color: #fff;
-}
-.selectize-control {
-    position: relative;
-}
-.selectize-dropdown,
-.selectize-input,
-.selectize-input input {
-    color: #303030;
-    font-family: inherit;
-    font-size: 13px;
-    line-height: 18px;
-
-    -webkit-font-smoothing: inherit;
-}
-.selectize-input,
-.selectize-control.single .selectize-input.input-active {
-    display: inline-block;
-    background: #fff;
-    cursor: text;
-}
-.selectize-input {
-    position: relative;
-    z-index: 1;
-    display: inline-block;
-    overflow: hidden;
-    box-sizing: border-box;
-    padding: 8px 8px;
-    width: 100%;
-    border: 1px solid #d0d0d0;
-    border-radius: 3px;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
-
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-}
-.selectize-control.multi .selectize-input.has-items {
-    padding: 6px 8px 3px;
-}
-.selectize-input.full {
-    background-color: #fff;
-}
-.selectize-input.disabled,
-.selectize-input.disabled * {
-    cursor: default !important;
-}
-.selectize-input.focus {
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-}
-.selectize-input.dropdown-active {
-    border-radius: 3px 3px 0 0;
-
-    -webkit-border-radius: 3px 3px 0 0;
-    -moz-border-radius: 3px 3px 0 0;
-}
-.selectize-input > * {
-    display: -moz-inline-stack;
-    display: inline-block;
-    vertical-align: baseline;
-    zoom: 1;
-
-    *display: inline;
-}
-.selectize-control.multi .selectize-input > div {
-    margin: 0 3px 3px 0;
-    padding: 2px 6px;
-    border: 0 solid #d0d0d0;
-    background: #f2f2f2;
-    color: #303030;
-    cursor: pointer;
-}
-.selectize-control.multi .selectize-input > div.active {
-    border: 0 solid #cacaca;
-    background: #e8e8e8;
-    color: #303030;
-}
-.selectize-control.multi .selectize-input.disabled > div,
-.selectize-control.multi .selectize-input.disabled > div.active {
-    border: 0 solid #fff;
-    background: #fff;
-    color: #7d7d7d;
-}
-.selectize-input > input {
-    display: inline-block !important;
-    margin: 0 2px 0 0 !important;
-    padding: 0 !important;
-    min-height: 0 !important;
-    max-width: 100% !important;
-    max-height: none !important;
-    border: 0 none !important;
-    background: none !important;
-    box-shadow: none !important;
-    text-indent: 0 !important;
-    line-height: inherit !important;
-
-    -webkit-user-select: auto !important;
-    -webkit-box-shadow: none !important;
-}
-.selectize-input > input::-ms-clear {
-    display: none;
-}
-.selectize-input > input:focus {
-    outline: none !important;
-}
-.selectize-input::after {
-    content: " ";
-    display: block;
-    clear: left;
-}
-.selectize-input.dropdown-active::before {
-    content: " ";
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: block;
-    height: 1px;
-    background: #f0f0f0;
-}
-.selectize-dropdown {
-    position: absolute;
-    z-index: 10;
-    box-sizing: border-box;
-    margin: -1px 0 0 0;
-    border: 1px solid #d0d0d0;
-    border-top: 0 none;
-    background: #fff;
-    border-radius: 0 0 3px 3px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 0 0 3px 3px;
-    -moz-border-radius: 0 0 3px 3px;
-}
-.selectize-dropdown [data-selectable] {
-    overflow: hidden;
-    cursor: pointer;
-}
-.selectize-dropdown [data-selectable] .highlight {
-    background: rgba(125, 168, 208, 0.2);
-    border-radius: 1px;
-
-    -webkit-border-radius: 1px;
-    -moz-border-radius: 1px;
-}
-.selectize-dropdown [data-selectable],
-.selectize-dropdown .optgroup-header {
-    padding: 5px 8px;
-}
-.selectize-dropdown .optgroup:first-child .optgroup-header {
-    border-top: 0 none;
-}
-.selectize-dropdown .optgroup-header {
-    background: #fff;
-    color: #303030;
-    cursor: default;
-}
-.selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
-}
-.selectize-dropdown .active.create {
-    color: #495c68;
-}
-.selectize-dropdown .create {
-    color: rgba(48, 48, 48, 0.5);
-}
-.selectize-dropdown-content {
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: 200px;
-}
-.selectize-control.single .selectize-input,
-.selectize-control.single .selectize-input input {
-    cursor: pointer;
-}
-.selectize-control.single .selectize-input.input-active,
-.selectize-control.single .selectize-input.input-active input {
-    cursor: text;
-}
-.selectize-control.single .selectize-input:after {
-    content: " ";
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    display: block;
-    margin-top: -3px;
-    width: 0;
-    height: 0;
-    border-width: 5px 5px 0 5px;
-    border-style: solid;
-    border-color: #808080 transparent transparent transparent;
-}
-.selectize-control.single .selectize-input.dropdown-active:after {
-    margin-top: -4px;
-    border-width: 0 5px 5px 5px;
-    border-color: transparent transparent #808080 transparent;
-}
-.selectize-control.rtl.single .selectize-input:after {
-    right: auto;
-    left: 15px;
-}
-.selectize-control.rtl .selectize-input > input {
-    margin: 0 4px 0 -2px !important;
-}
-.selectize-control .selectize-input.disabled {
-    background-color: #fafafa;
-    opacity: 0.5;
-}
-
-
-/**
- * selectize.default.css (v0.12.1) - Default Theme
- * Copyright (c) 2013–2015 Brian Reavis & contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at:
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- *
- * @author Brian Reavis <brian@thirdroute.com>
- */
-.selectize-control.plugin-drag_drop.multi > .selectize-input > div.ui-sortable-placeholder {
-    visibility: visible !important;
-    border: 0 none !important;
-    background: #f2f2f2 !important;
-    background: rgba(0, 0, 0, 0.06) !important;
-    box-shadow: inset 0 0 12px 4px #fff;
-
-    -webkit-box-shadow: inset 0 0 12px 4px #fff;
-}
-.selectize-control.plugin-drag_drop .ui-sortable-placeholder::after {
-    content: "!";
-    visibility: hidden;
-}
-.selectize-control.plugin-drag_drop .ui-sortable-helper {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-
-    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-.selectize-dropdown-header {
-    position: relative;
-    padding: 5px 8px;
-    border-bottom: 1px solid #d0d0d0;
-    background: #f8f8f8;
-    border-radius: 3px 3px 0 0;
-
-    -webkit-border-radius: 3px 3px 0 0;
-    -moz-border-radius: 3px 3px 0 0;
-}
-.selectize-dropdown-header-close {
-    position: absolute;
-    top: 50%;
-    right: 8px;
-    margin-top: -12px;
-    color: #303030;
-    font-size: 20px !important;
-    line-height: 20px;
-    opacity: 0.4;
-}
-.selectize-dropdown-header-close:hover {
-    color: #000;
-}
-.selectize-dropdown.plugin-optgroup_columns .optgroup {
-    float: left;
-    box-sizing: border-box;
-    border-top: 0 none;
-    border-right: 1px solid #f2f2f2;
-
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-}
-.selectize-dropdown.plugin-optgroup_columns .optgroup:last-child {
-    border-right: 0 none;
-}
-.selectize-dropdown.plugin-optgroup_columns .optgroup:before {
-    display: none;
-}
-.selectize-dropdown.plugin-optgroup_columns .optgroup-header {
-    border-top: 0 none;
-}
-.selectize-control.plugin-remove_button [data-value] {
-    position: relative;
-    padding-right: 24px !important;
-}
-.selectize-control.plugin-remove_button [data-value] .remove {
-    /* fixes ie bug (see #392) */
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1;
-    display: inline-block;
-    box-sizing: border-box;
-    padding: 2px 0 0 0;
-    width: 17px;
-    border-left: 1px solid #0073bb;
-    border-radius: 0 2px 2px 0;
-    color: inherit;
-    vertical-align: middle;
-    text-align: center;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: bold;
-
-    -webkit-border-radius: 0 2px 2px 0;
-    -moz-border-radius: 0 2px 2px 0;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
 }
 .selectize-control.plugin-remove_button [data-value] .remove:hover {
     background: rgba(0, 0, 0, 0.05);
@@ -453,10 +89,7 @@
 .selectize-input input {
     color: #303030;
     font-family: inherit;
-    font-size: 13px;
-    line-height: 18px;
-
-    -webkit-font-smoothing: inherit;
+    font-size: 1.4rem;
 }
 .selectize-input,
 .selectize-control.single .selectize-input.input-active {
@@ -470,20 +103,20 @@
     display: inline-block;
     overflow: hidden;
     box-sizing: border-box;
-    padding: 8px 8px;
+    padding: 8px 10px;
     width: 100%;
-    border: 1px solid #d0d0d0;
-    border-radius: 3px;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
-
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
+    height: 37px;
+    border: 1px solid #dfe1e3;
+    border-radius: var(--border-radius);
+    color: #666;
+    transition: border-color 0.15s linear;
+}
+.selectize-input.focus {
+    border-color: #b1b1b1;
 }
 .selectize-control.multi .selectize-input.has-items {
     padding: 5px 8px 2px;
+    height: auto;
 }
 .selectize-input.full {
     background-color: #fff;
@@ -492,16 +125,8 @@
 .selectize-input.disabled * {
     cursor: default !important;
 }
-.selectize-input.focus {
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-
-    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-}
 .selectize-input.dropdown-active {
-    border-radius: 3px 3px 0 0;
-
-    -webkit-border-radius: 3px 3px 0 0;
-    -moz-border-radius: 3px 3px 0 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 .selectize-input > * {
     display: -moz-inline-stack;
@@ -513,15 +138,15 @@
 }
 .selectize-control.multi .selectize-input > div {
     margin: 0 3px 3px 0;
-    padding: 2px 6px;
-    border: 1px solid #0073bb;
-    background: #1da7ee;
+    padding: 1px 4px;
+    background: var(--blue);
     color: #fff;
     cursor: pointer;
 }
+
+/* Active tag - selected state when tag is clicked */
 .selectize-control.multi .selectize-input > div.active {
-    border: 1px solid #00578d;
-    background: #92c836;
+    background: color(var(--blue) lightness(-10%));
     color: #fff;
 }
 .selectize-control.multi .selectize-input.disabled > div,
@@ -542,9 +167,6 @@
     box-shadow: none !important;
     text-indent: 0 !important;
     line-height: inherit !important;
-
-    -webkit-user-select: auto !important;
-    -webkit-box-shadow: none !important;
 }
 .selectize-input > input::-ms-clear {
     display: none;
@@ -569,20 +191,14 @@
 }
 .selectize-dropdown {
     position: absolute;
-    z-index: 10;
+    z-index: 1000;
     box-sizing: border-box;
     margin: -1px 0 0 0;
-    border: 1px solid #d0d0d0;
+    border: 1px solid #b1b1b1;
     border-top: 0 none;
     background: #fff;
-    border-radius: 0 0 3px 3px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    -webkit-border-radius: 0 0 3px 3px;
-    -moz-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 .selectize-dropdown [data-selectable] {
     overflow: hidden;
@@ -591,9 +207,6 @@
 .selectize-dropdown [data-selectable] .highlight {
     background: rgba(125, 168, 208, 0.2);
     border-radius: 1px;
-
-    -webkit-border-radius: 1px;
-    -moz-border-radius: 1px;
 }
 .selectize-dropdown [data-selectable],
 .selectize-dropdown .optgroup-header {
@@ -608,11 +221,11 @@
     cursor: default;
 }
 .selectize-dropdown .active {
-    background-color: #f5fafd;
-    color: #495c68;
+    background: color(var(--blue) alpha(-85%));
+    color: var(--darkgrey);
 }
 .selectize-dropdown .active.create {
-    color: #495c68;
+    color: #666;
 }
 .selectize-dropdown .create {
     color: rgba(48, 48, 48, 0.5);
@@ -668,8 +281,6 @@
     box-shadow: none;
     color: #999;
     text-shadow: none;
-
-    -webkit-box-shadow: none;
 }
 .selectize-control.multi .selectize-input.disabled [data-value],
 .selectize-control.multi .selectize-input.disabled [data-value] .remove {
@@ -679,44 +290,14 @@
     background: none;
 }
 .selectize-control.multi .selectize-input [data-value] {
-    background-color: #1b9dec;
-    background-image: -moz-linear-gradient(top, #1da7ee, #178ee9);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#1da7ee), to(#178ee9));
-    background-image: -webkit-linear-gradient(top, #1da7ee, #178ee9);
-    background-image: -o-linear-gradient(top, #1da7ee, #178ee9);
-    background-image: linear-gradient(to bottom, #1da7ee, #178ee9);
-    background-repeat: repeat-x;
+    background: var(--blue);
     border-radius: 3px;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.2),inset 0 1px rgba(255,255,255,0.03);
-    text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1da7ee', endColorstr='#ff178ee9', GradientType=0);
-
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.2),inset 0 1px rgba(255,255,255,0.03);
 }
 .selectize-control.multi .selectize-input [data-value].active {
-    background-color: #0085d4;
-    background-image: -moz-linear-gradient(top, #008fd8, #0075cf);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#008fd8), to(#0075cf));
-    background-image: -webkit-linear-gradient(top, #008fd8, #0075cf);
-    background-image: -o-linear-gradient(top, #008fd8, #0075cf);
-    background-image: linear-gradient(to bottom, #008fd8, #0075cf);
-    background-repeat: repeat-x;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff008fd8', endColorstr='#ff0075cf', GradientType=0);
+    background: color(var(--blue) lightness(-10%));
 }
 .selectize-control.single .selectize-input {
-    background-color: #f9f9f9;
-    background-image: -moz-linear-gradient(top, #fefefe, #f2f2f2);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#fefefe), to(#f2f2f2));
-    background-image: -webkit-linear-gradient(top, #fefefe, #f2f2f2);
-    background-image: -o-linear-gradient(top, #fefefe, #f2f2f2);
-    background-image: linear-gradient(to bottom, #fefefe, #f2f2f2);
-    background-repeat: repeat-x;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fffefefe', endColorstr='#fff2f2f2', GradientType=0);
-
-    -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
+    background: #f9f9f9;
 }
 .selectize-control.single .selectize-input,
 .selectize-dropdown.single {
