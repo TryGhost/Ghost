@@ -3,6 +3,7 @@
 
 /* Base button style */
 .btn {
+    display: inline-block;
     margin-bottom: 0;
     padding: 9px 15px;
     border: #dfe1e3 1px solid;
