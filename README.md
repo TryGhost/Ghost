@@ -38,7 +38,7 @@ More [install docs](http://support.ghost.org/installation/) here in case you got
 <a name="getting-started"></a>
 # Developer Install (from git)
 
-Install Node.js. 
+Install Node.js.
 
 ```bash
 # Node v0.10.x - full support
@@ -97,7 +97,7 @@ More general [install docs](http://support.ghost.org/installation/) here in case
 
 Save yourself time and headaches with our fully managed **[Ghost(Pro)](https://ghost.org/pricing/)** service. Deploy a new instance of Ghost in a couple of clicks running on [DigitalOcean](https://digitalocean.com)’s rock solid infrastructure, with a worldwide CDN thrown in at no extra charge.
 
-All revenue from **Ghost(Pro**) goes to the Ghost Foundation, the non-profit org which funds the maintenance and further development of Ghost.
+All revenue from **Ghost(Pro)** goes to the Ghost Foundation, the non-profit org which funds the maintenance and further development of Ghost.
 
 [Other options](http://support.ghost.org/deploying-ghost/) are also available if you prefer playing around with servers by yourself.
 
