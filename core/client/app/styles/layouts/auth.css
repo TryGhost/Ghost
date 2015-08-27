@@ -41,6 +41,8 @@
     border-radius: 0;
     text-transform: none;
     letter-spacing: 0;
+    font-size: 1.1rem;
+    line-height: 1.2rem;
     /* Needs white BG to hide ugly lastpass icon */
 }
 
