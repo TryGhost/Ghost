@@ -9,14 +9,17 @@ var Promise     = require('bluebird'),
     sequence    = require('../../utils/sequence'),
     _           = require('lodash'),
     errors      = require('../../errors'),
+    config      = require('../../config'),
     utils       = require('../../utils'),
     models      = require('../../models'),
     fixtures    = require('./fixtures'),
     permissions = require('./permissions'),
+    notifications = require('../../api/notifications'),
 
     // Private
     logInfo,
     to003,
+    to004,
     convertAdminToOwner,
     createOwner,
     options = {context: {internal: true}},
@@ -128,12 +131,10 @@ to003 = function () {
     logInfo('Upgrading fixtures');
 
     // Add the client fixture if missing
-    upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
+    upgradeOp = Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
         if (!client) {
-            logInfo('Adding client fixture');
-            _.each(fixtures.clients, function (client) {
-                return Client.add(client, options);
-            });
+            logInfo('Adding ghost-admin client fixture');
+            return Client.add(fixtures.clients[0], options);
         }
     });
     ops.push(upgradeOp);
@@ -156,13 +157,81 @@ to003 = function () {
     });
 };
 
+/**
+ * Update ghost_foot to include a CDN of jquery if the DB is migrating from
+ * @return {Promise}
+ */
+to004 = function () {
+    var value,
+        ops = [],
+        upgradeOp,
+        jquery = [
+            '<!-- only delete this line if you are ABSOLUTELY SURE your theme doesn\'t require jQuery -->\n',
+            '<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>\n\n'
+        ],
+        privacyMessage = [
+            'Because jQuery is no longer included for Ghost themes by default,',
+            'a link to the jQuery library via a CDN has been added to your code-injection setting,',
+            'If you wish to remove it for privacy reasons, please ensure it is not required by your theme.'
+        ];
+
+    // add jquery setting and privacy info
+    upgradeOp = models.Settings.findOne('ghost_foot').then(function (setting) {
+        if (setting) {
+            value = setting.attributes.value;
+            value = jquery.join('') + value;
+            return models.Settings.edit({key: 'ghost_foot', value: value}, options).then(function () {
+                if (_.isEmpty(config.privacy)) {
+                    return Promise.resolve();
+                }
+                return notifications.add({notifications: [{
+                    type: 'info',
+                    message: privacyMessage.join(' ')
+                }]}, options);
+            });
+        }
+    });
+    ops.push(upgradeOp);
+
+    // Update ghost-admin client fixture
+    // ghost-admin should exist from 003 version
+    upgradeOp = models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
+        if (client) {
+            logInfo('Update ghost-admin client fixture');
+            return models.Client.edit(fixtures.clients[0], _.extend(options, {id: client.id}));
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // add ghost-frontend client if missing
+    upgradeOp = models.Client.findOne({slug: fixtures.clients[1].slug}).then(function (client) {
+        if (!client) {
+            logInfo('Add ghost-frontend client fixture');
+            return models.Client.add(fixtures.clients[1], options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+    return Promise.all(ops);
+};
+
 update = function (fromVersion, toVersion) {
+    var ops = [];
+
     logInfo('Updating fixtures');
     // Are we migrating to, or past 003?
     if ((fromVersion < '003' && toVersion >= '003') ||
         fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
-        return to003();
+        ops.push(to003);
     }
+
+    if (fromVersion < '004' && toVersion === '004' ||
+        fromVersion === '004' && toVersion === '004' && process.env.FORCE_MIGRATION) {
+        ops.push(to004);
+    }
+
+    return sequence(ops);
 };
 
 module.exports = {
