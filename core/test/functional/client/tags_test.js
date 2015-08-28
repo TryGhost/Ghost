@@ -17,7 +17,7 @@ CasperTest.begin('Tags screen is correct', 6, function suite(test) {
     });
 });
 
-CasperTest.begin('Tag creation', 14, function suite(test) {
+CasperTest.begin('Tag creation', 16, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('settings.tags');
 
     casper.thenClick('.view-actions .btn-green');
@@ -44,7 +44,7 @@ CasperTest.begin('Tag creation', 14, function suite(test) {
         test.assertSelectorHasText('.settings-tags .tags-count', '0');
     });
 
-    casper.then(function testNameValidation() {
+    casper.then(function testMissingNameValidation() {
         casper.fill('.tag-settings-pane form', {
             name: ''
         });
@@ -53,6 +53,18 @@ CasperTest.begin('Tag creation', 14, function suite(test) {
             test.assert(true, 'Error displayed for missing tag name');
         }, function doneWaiting() {
             test.fail('Error not displayed for missing tag name');
+        });
+    });
+
+    casper.then(function testNameStartsWithCommaValidation() {
+        casper.fill('.tag-settings-pane form', {
+            name: ',, commas'
+        });
+        casper.waitForText('Tag names can\'t start with commas.', function onSuccess() {
+            test.assertExists('.form-group.error input[name="name"]');
+            test.assert(true, 'Error displayed for tag name starting with comma');
+        }, function doneWaiting() {
+            test.fail('Error not displayed for tag name starting with comma');
         });
     });
 
