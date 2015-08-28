@@ -2405,8 +2405,8 @@
 
 	doc.iter(doc.frontier, Math.min(doc.first + doc.size, cm.display.viewTo + 500), function(line) {
 	  if (doc.frontier >= cm.display.viewFrom) { // Visible
-		var oldStyles = line.styles;
-		var highlighted = highlightLine(cm, line, state, true);
+		var oldStyles = line.styles, tooLong = line.text.length > cm.options.maxHighlightLength;
+		var highlighted = highlightLine(cm, line, tooLong ? copyState(doc.mode, state) : state, true);
 		line.styles = highlighted.styles;
 		var oldCls = line.styleClasses, newCls = highlighted.classes;
 		if (newCls) line.styleClasses = newCls;
@@ -2415,9 +2415,10 @@
 		  oldCls != newCls && (!oldCls || !newCls || oldCls.bgClass != newCls.bgClass || oldCls.textClass != newCls.textClass);
 		for (var i = 0; !ischange && i < oldStyles.length; ++i) ischange = oldStyles[i] != line.styles[i];
 		if (ischange) changedLines.push(doc.frontier);
-		line.stateAfter = copyState(doc.mode, state);
+		line.stateAfter = tooLong ? state : copyState(doc.mode, state);
 	  } else {
-		processLine(cm, line.text, state);
+		if (line.text.length <= cm.options.maxHighlightLength)
+		  processLine(cm, line.text, state);
 		line.stateAfter = doc.frontier % 5 == 0 ? copyState(doc.mode, state) : null;
 	  }
 	  ++doc.frontier;
@@ -3664,7 +3665,8 @@
 	  setSelection(doc, normalizeSelection(ranges.concat([ourRange]), ourIndex),
 				   {scroll: false, origin: "*mouse"});
 	} else if (ranges.length > 1 && ranges[ourIndex].empty() && type == "single" && !e.shiftKey) {
-	  setSelection(doc, normalizeSelection(ranges.slice(0, ourIndex).concat(ranges.slice(ourIndex + 1)), 0));
+	  setSelection(doc, normalizeSelection(ranges.slice(0, ourIndex).concat(ranges.slice(ourIndex + 1)), 0),
+				   {scroll: false, origin: "*mouse"});
 	  startSel = doc.sel;
 	} else {
 	  replaceOneSelection(doc, ourIndex, ourRange, sel_mouse);
@@ -6813,7 +6815,9 @@
 
   function getLineStyles(cm, line, updateFrontier) {
 	if (!line.styles || line.styles[0] != cm.state.modeGen) {
-	  var result = highlightLine(cm, line, line.stateAfter = getStateBefore(cm, lineNo(line)));
+	  var state = getStateBefore(cm, lineNo(line));
+	  var result = highlightLine(cm, line, line.text.length > cm.options.maxHighlightLength ? copyState(cm.doc.mode, state) : state);
+	  line.stateAfter = state;
 	  line.styles = result.styles;
 	  if (result.classes) line.styleClasses = result.classes;
 	  else if (line.styleClasses) line.styleClasses = null;
@@ -6830,7 +6834,7 @@
 	var stream = new StringStream(text, cm.options.tabSize);
 	stream.start = stream.pos = startAt || 0;
 	if (text == "") callBlankLine(mode, state);
-	while (!stream.eol() && stream.pos <= cm.options.maxHighlightLength) {
+	while (!stream.eol()) {
 	  readToken(mode, stream, state);
 	  stream.start = stream.pos;
 	}
@@ -6948,7 +6952,7 @@
 		  txt.setAttribute("cm-text", "\t");
 		  builder.col += tabWidth;
 		} else if (m[0] == "\r" || m[0] == "\n") {
-		  var txt = content.appendChild(elt("span", m[0] == "\r" ? "␍" : "␤", "cm-invalidchar"));
+		  var txt = content.appendChild(elt("span", m[0] == "\r" ? "\u240d" : "\u2424", "cm-invalidchar"));
 		  txt.setAttribute("cm-text", m[0]);
 		  builder.col += 1;
 		} else {
@@ -8207,7 +8211,7 @@
 
   // The inverse of countColumn -- find the offset that corresponds to
   // a particular column.
-  function findColumn(string, goal, tabSize) {
+  var findColumn = CodeMirror.findColumn = function(string, goal, tabSize) {
 	for (var pos = 0, col = 0;;) {
 	  var nextTab = string.indexOf("\t", pos);
 	  if (nextTab == -1) nextTab = string.length;
@@ -8812,7 +8816,7 @@
 
   // THE END
 
-  CodeMirror.version = "5.5.1";
+  CodeMirror.version = "5.6.1";
 
   return CodeMirror;
 });
