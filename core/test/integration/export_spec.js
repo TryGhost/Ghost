@@ -43,7 +43,7 @@ describe('Exporter', function () {
 
             should.exist(dbVersionSetting);
 
-            dbVersionSetting.value.should.equal('003');
+            dbVersionSetting.value.should.equal('004');
 
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);
