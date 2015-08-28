@@ -17,7 +17,7 @@ export default Ember.Controller.extend(ValidationEngine, {
         authenticate: function () {
             var self = this,
                 model = this.get('model'),
-                authStrategy = 'simple-auth-authenticator:oauth2-password-grant',
+                authStrategy = 'ghost-authenticator:oauth2-password-grant',
                 data = model.getProperties('identification', 'password');
 
             this.get('session').authenticate(authStrategy, data).then(function () {
