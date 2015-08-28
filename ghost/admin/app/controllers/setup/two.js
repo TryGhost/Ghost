@@ -49,6 +49,16 @@ export default Ember.Controller.extend(ValidationEngine, {
     },
 
     actions: {
+        preValidate: function (model) {
+            var self = this;
+            if (this.get(model)) {
+                if (model === 'email') {
+                    self.send('handleEmail');
+                }
+                this.validate({property: model});
+            }
+        },
+
         setup: function () {
             var self = this,
                 data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
