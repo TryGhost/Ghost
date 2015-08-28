@@ -1,4 +1,4 @@
-<section class="gh-view content-view-container">
+{{#gh-content-view-container as |container|}}
 <header class="view-header">
     {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Content</span>{{/gh-view-title}}
     <section class="view-actions">
@@ -11,8 +11,8 @@
         {{#gh-infinite-scroll-box tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage"}}
             <ol class="posts-list">
                 {{#each sortedPosts key="id" as |post|}}
-                    {{#gh-posts-list-item post=post active=(is-equal post currentPost) click="showPostContent" onDoubleClick="openEditor" as |component|}}
-                        {{#link-to "posts.post" post.id class="permalink" title="Edit this post"}}
+                    {{#gh-posts-list-item post=post active=(is-equal post currentPost) previewIsHidden=container.previewIsHidden as |component|}}
+                        {{#link-to component.viewOrEdit post.id class="permalink" title="Edit this post"}}
                             <h3 class="entry-title">{{post.title}}</h3>
                             <section class="entry-meta">
                                 <span class="avatar" style={{component.authorAvatarBackground}}>
@@ -43,4 +43,4 @@
         {{outlet}}
     </section>
 </div>
-</section>
+{{/gh-content-view-container}}
