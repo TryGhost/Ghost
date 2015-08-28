@@ -185,6 +185,7 @@
 
 @media (max-width: 900px) {
     .content-preview {
+        display: none;
         overflow: visible;
         width: 100%;
         border: none;
