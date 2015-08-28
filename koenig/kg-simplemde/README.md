@@ -1,9 +1,12 @@
 # SimpleMDE - Markdown Editor
-A drop-in JavaScript textarea replacement for writing beautiful and understandable markdown. The WYSIWYG-esque editor allows users to modify the markdown with toolbar buttons and shortcuts. WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, but is less visually clear while editing. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning markdown syntax.
+A drop-in JavaScript textarea replacement for writing beautiful and understandable markdown. The WYSIWYG-esque editor allows users who may be less experienced with Markdown to use familiar toolbar buttons and shortcuts. In addition, the the syntax is rendered while editing to clearly show the expected result. Headings are larger, emphasized words are italicized, links are underlined, etc. SimpleMDE is one of the first editors to feature both built-in autosaving and spell checking.
 
-[Demo](http://nextstepwebs.github.io/simplemde-markdown-editor)
+[**Demo**](http://nextstepwebs.github.io/simplemde-markdown-editor)
 
 [![Preview](http://i.imgur.com/b9hFHFT.png)](http://nextstepwebs.github.io/simplemde-markdown-editor)
+
+## Why not a WYSIWYG editor or pure Markdown?
+WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, plus Markdown can be rendered natively on more platforms than HTML. However, Markdown is not a syntax that an average user will be familiar with, nor is it visually clear while editing. In otherwords, for an unfamiliar user, the syntax they write will make little sense until they click the preview button. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning Markdown syntax.
 
 ## Quick start
 SimpleMDE is available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). Font Awesome is available on MaxCDN. *Please note, jsDelivr may take a few days to update to the latest release.*
@@ -92,12 +95,15 @@ var simplemde = new SimpleMDE({
 
 #### Toolbar icons
 
-Below are the available toolbar icons, which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. The `Ctrl` and `Alt` in the title tags will be changed automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
+Below are the built-in toolbar icons, which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. The `Ctrl` and `Alt` in the title tags will be changed automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
 Name | Action | Class | Tooltip
 :--- | :----- | :---- | :------
 bold | toggleBold | fa fa-bold | Bold (Ctrl+B)
 italic | toggleItalic | fa fa-italic | Italic (Ctrl+I)
+heading | toggleHeadingSmaller | fa fa-header | Heading (Ctrl+H)
+heading-smaller | toggleHeadingSmaller | fa fa-header | Smaller Heading (Ctrl+H)
+heading-bigger | toggleHeadingBigger | fa fa-lg fa-header | Bigger Heading (Shift+Ctrl+H)
 code | toggleCodeBlock | fa fa-code | Code (Ctrl+Alt+C)
 quote | toggleBlockquote | fa fa-quote-left | Quote (Ctrl+')
 unordered-list | toggleUnorderedList | fa fa-list-ul | Generic List (Ctrl+L)
@@ -112,6 +118,12 @@ guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/mark
 Customize the toolbar using the `toolbar` option like:
 
 ```JavaScript
+// Customize only the order of existing buttons
+var simplemde = new SimpleMDE({
+	toolbar: ["bold", "italic", "heading", "|", "quote"],
+});
+
+// Customize all information and/or add your own icons
 var simplemde = new SimpleMDE({
 	toolbar: [{
 			name: "bold",
@@ -156,7 +168,7 @@ simplemde.codemirror.on("change", function(){
 ## How it works
 SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor) and includes a great many number of changes. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
 
-CodeMirror is the backbone of the project and parses much of the markdown syntax as it's being written. This allows us to add styles to the markdown that's being written. Additionally, a toolbar and status bar have been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked).
+CodeMirror is the backbone of the project and parses much of the Markdown syntax as it's being written. This allows us to add styles to the Markdown that's being written. Additionally, a toolbar and status bar have been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked).
 
 ## What's changed?
 As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor). So you might be wondering, what's changed? Quite a bit actually. Here's some notable changes:

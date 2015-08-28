@@ -4,6 +4,8 @@ var shortcuts = {
 	'Cmd-B': toggleBold,
 	'Cmd-I': toggleItalic,
 	'Cmd-K': drawLink,
+	'Cmd-H': toggleHeadingSmaller,
+	'Shift-Cmd-H': toggleHeadingBigger,
 	'Cmd-Alt-I': drawImage,
 	"Cmd-'": toggleBlockquote,
 	'Cmd-Alt-L': toggleOrderedList,
@@ -94,9 +96,22 @@ function getState(cm, pos) {
  * Toggle full screen of the editor.
  */
 function toggleFullScreen(editor) {
+	// Set fullscreen
 	var cm = editor.codemirror;
 	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+	
+	
+	// Update toolbar class
+	var wrap = cm.getWrapperElement();
+	
+	if(!/fullscreen/.test(wrap.previousSibling.className)) {
+		wrap.previousSibling.className += " fullscreen";
+	} else {
+		wrap.previousSibling.className = wrap.previousSibling.className.replace(/\s*fullscreen\b/, "");
+	}
 
+	
+	// Update toolbar button
 	var toolbarButton = editor.toolbarElements.fullscreen;
 
 	if(!/active/.test(toolbarButton.className)) {
@@ -137,6 +152,21 @@ function toggleBlockquote(editor) {
 	_toggleLine(cm, 'quote');
 }
 
+/**
+ * Action for toggling heading size: normal -> h1 -> h2 -> h3 -> h4 -> h5 -> h6 -> normal
+ */
+function toggleHeadingSmaller(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, 'smaller');
+}
+
+/**
+ * Action for toggling heading size: normal -> h6 -> h5 -> h4 -> h3 -> h2 -> h1 -> normal
+ */
+function toggleHeadingBigger(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, 'bigger');
+}
 
 
 /**
@@ -269,6 +299,44 @@ function _replaceSelection(cm, active, start, end) {
 }
 
 
+function _toggleHeading(cm, direction) {
+	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+		return;
+
+	var startPoint = cm.getCursor('start');
+	var endPoint = cm.getCursor('end');
+	for(var i = startPoint.line; i <= endPoint.line; i++) {
+		(function(i) {
+			var text = cm.getLine(i);
+			var currHeadingLevel = text.search(/[^#]/);
+			if (currHeadingLevel <= 0) {
+				if (direction == 'bigger') {
+					text = '###### ' + text;
+				} else {
+					text = '# ' + text;
+				}
+			} else if ((currHeadingLevel == 6 && direction == 'smaller') || (currHeadingLevel == 1 && direction == 'bigger')) {
+				text = text.substr(7);
+			} else {
+				if (direction == 'bigger') {
+					text = text.substr(1);
+				} else {
+					text = '#' + text;
+				}
+			}
+			cm.replaceRange(text, {
+				line: i,
+				ch: 0
+			}, {
+				line: i,
+				ch: 99999999999999
+			});
+		})(i);
+	}
+	cm.focus();
+}
+
+
 function _toggleLine(cm, name) {
 	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
@@ -384,61 +452,100 @@ function wordCount(data) {
 }
 
 
-var toolbar = [{
+var toolbarBuiltInButtons = {
+	"bold": {
 		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
 		title: "Bold (Ctrl+B)",
-	}, {
+	},
+	"italic": {
 		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
 	},
-	"|", {
+	"heading": {
+		name: "heading",
+		action: toggleHeadingSmaller,
+		className: "fa fa-header",
+		title: "Heading (Ctrl+H)",
+	},
+	"heading-smaller": {
+		name: "heading-smaller",
+		action: toggleHeadingSmaller,
+		className: "fa fa-header",
+		title: "Smaller Heading (Ctrl+H)",
+	},
+	"heading-bigger": {
+		name: "heading-bigger",
+		action: toggleHeadingBigger,
+		className: "fa fa-lg fa-header",
+		title: "Bigger Heading (Shift+Ctrl+H)",
+	},
+	"code": {
+		name: "code",
+		action: toggleCodeBlock,
+		className: "fa fa-code",
+		title: "Code (Ctrl+Alt+C)",
+	},
+	"quote": {
 		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
 		title: "Quote (Ctrl+')",
-	}, {
+	},
+	"unordered-list": {
 		name: "unordered-list",
 		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
 		title: "Generic List (Ctrl+L)",
-	}, {
+	},
+	"ordered-list": {
 		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
 		title: "Numbered List (Ctrl+Alt+L)",
 	},
-	"|", {
+	"link": {
 		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
 		title: "Create Link (Ctrl+K)",
-	}, {
-		name: "quote",
+	},
+	"image": {
+		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)",
 	},
-	"|", {
+	"horizontal-rule": {
+		name: "horizontal-rule",
+		action: drawHorizontalRule,
+		className: "fa fa-minus",
+		title: "Insert Horizontal Line",
+	},
+	"preview": {
 		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
-	}, {
+	},
+	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
 		className: "fa fa-arrows-alt",
 		title: "Toggle Fullscreen (F11)",
-	}, {
+	},
+	"guide": {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
 		title: "Markdown Guide",
 	}
-];
+};
+
+var toolbar = ["bold", "italic", "heading",	"|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|",  "preview", "fullscreen", "guide"];
 
 /**
  * Interface of SimpleMDE.
@@ -612,6 +719,12 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	if(!items || items.length === 0) {
 		return;
 	}
+	
+	for(var i = 0; i < items.length; i++) {
+		if(toolbarBuiltInButtons[items[i]] != undefined){
+			items[i] = toolbarBuiltInButtons[items[i]];
+		}
+	}
 
 	var bar = document.createElement('div');
 	bar.className = 'editor-toolbar';
@@ -736,6 +849,8 @@ SimpleMDE.prototype.value = function(val) {
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
+SimpleMDE.toggleHeadingSmaller = toggleHeadingSmaller;
+SimpleMDE.toggleHeadingBigger = toggleHeadingBigger;
 SimpleMDE.toggleCodeBlock = toggleCodeBlock;
 SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
@@ -758,6 +873,12 @@ SimpleMDE.prototype.toggleItalic = function() {
 };
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
+};
+SimpleMDE.prototype.toggleHeadingSmaller = function() {
+	toggleHeadingSmaller(this);
+};
+SimpleMDE.prototype.toggleHeadingBigger = function() {
+	toggleHeadingBigger(this);
 };
 SimpleMDE.prototype.toggleCodeBlock = function() {
 	toggleCodeBlock(this);
