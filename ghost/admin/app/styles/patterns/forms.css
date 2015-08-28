@@ -109,7 +109,7 @@ input {
 .gh-select,
 select {
     display: block;
-    padding: 8px 10px;
+    padding: 4px 10px;
     width: 100%;
     border: 1px solid #dfe1e3;
     border-radius: var(--border-radius);
