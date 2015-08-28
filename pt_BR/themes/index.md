@@ -1,5 +1,5 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: themes
 meta_title: Fazendo temas para o Ghost - Ghost Docs
 meta_description: Um guia aprofundado para fazer temas para a plataforma de blog Ghost. Tudo o que você precisa saber para construir temas para Ghost.

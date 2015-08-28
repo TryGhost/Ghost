@@ -1,5 +1,5 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: installation
 meta_title: Como instalar o Ghost no seu Servidor - Ghost Docs
 meta_description: Tudo o que você precisa saber para colocar sua plataforma Ghost funcionando no seu ambiente local, ou em um ambiente remoto.

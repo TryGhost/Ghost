@@ -1,11 +1,11 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: installation
 meta_title: Como instalar o Ghost no seu Servidor - Ghost Docs
-meta_description: Tudo o que você precisa saber para colocar sua plataforma Ghost funcionando no seu ambiente local, ou em um ambiente remoto.
+meta_description: Tudo o que você precisa saber para colocar sua plataforma Ghost funcionando no seu ambiente local ou em um ambiente remoto.
 heading: Instalando o Ghost &amp; Começando
 subheading: Os primeiros passos para configurar o seu Blog pela primeira vez.
-permalink: /pt-BR/installation/deploy/
+permalink: /pt_BR/installation/deploy/
 chapter: installation
 section: deploy
 prev_section: linux
@@ -127,7 +127,7 @@ Sistemas Linux utilizam scripts init para rodar um processo quando o sistema ini
     $ sudo service ghost status
     ```
 
-*   Para iniciar o Ghost quando o sistema iniciar o script de inicialização recém-criado tem que ser registrado logo no começo. 
+*   Para iniciar o Ghost quando o sistema iniciar o script de inicialização recém-criado tem que ser registrado logo no começo.
     Digite os dois comandos a seguir com linha de comando:
 
     ```
@@ -136,6 +136,7 @@ Sistemas Linux utilizam scripts init para rodar um processo quando o sistema ini
     ```
 
 *   Vamos ter certeza que seu usuário pode alterar arquivos, config.js por exemplo, no diretório do Ghost, atribuindo-lhe para o grupo do ghost:
+
     ```
     $ sudo adduser USERNAME ghost
     ```
@@ -146,7 +147,7 @@ Sistemas Linux utilizam scripts init para rodar um processo quando o sistema ini
 ## Configurando o Ghost com um domínio <a id="nginx-domain"></a>
 
 Se você configurou o Ghost para rodar para sempre, você também pode configurar um servidor web como um proxy para servir o seu blog com o seu domínio.
-Neste exemplo, vamos supor que você está usando o **Ubuntu 12.04** e usa o **nginx** como servidor web. 
+Neste exemplo, vamos supor que você está usando o **Ubuntu 12.04** e usa o **nginx** como servidor web.
 Ele também assume que o Ghost é executado em segundo plano com uma das formas acima mencionadas.
 
 *   Instalando o nginx

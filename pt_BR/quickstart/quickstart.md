@@ -1,5 +1,5 @@
 ---
-lang: pt-BR
+lang: pt_BR
 layout: quickstart
 meta_title: Guia de Início Rápido para o Ghost
 heading: Início Rápido para o Ghost
