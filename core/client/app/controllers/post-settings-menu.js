@@ -476,6 +476,8 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
                 availableTagNames = null,
                 tagToAdd = null;
 
+            tagName = tagName.trim();
+
             // abort if tag is already selected
             if (currentTagNames.contains(tagName.toLowerCase())) {
                 return;

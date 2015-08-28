@@ -100,7 +100,7 @@ var db = {
         tags: {
             id: {type: 'increments', nullable: false, primary: true},
             uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
-            name: {type: 'string', maxlength: 150, nullable: false},
+            name: {type: 'string', maxlength: 150, nullable: false, validations: {matches: /^([^,]|$)/}},
             slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
             description: {type: 'string', maxlength: 200, nullable: true},
             image: {type: 'text', maxlength: 2000, nullable: true},
