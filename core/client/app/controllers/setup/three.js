@@ -167,7 +167,8 @@ export default Ember.Controller.extend({
                         });
 
                         if (erroredEmails.length > 0) {
-                            message = 'Failed to send ' + erroredEmails.length + ' invitations: ';
+                            invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
+                            message = 'Failed to send ' + erroredEmails.length + invitationsString;
                             message += erroredEmails.join(', ');
                             notifications.showAlert(message, {type: 'error', delayed: successCount > 0});
                         }
