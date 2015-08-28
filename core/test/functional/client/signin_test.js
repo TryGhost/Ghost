@@ -11,7 +11,7 @@ CasperTest.begin('Ghost admin will load login page', 4, function suite(test) {
 
         casper.then(function testLink() {
             var text = this.evaluate(function (selector) {
-                return document.querySelector(selector).innerHTML;
+                return document.querySelector(selector).innerText;
             }, '.forgotten-link');
 
             casper.echoConcise('Text' + text);
