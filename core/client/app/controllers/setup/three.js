@@ -176,13 +176,11 @@ export default Ember.Controller.extend({
                         if (successCount > 0) {
                             // pluralize
                             invitationsString = successCount > 1 ? 'invitations' : 'invitation';
-
                             notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true});
-                            self.send('loadServerNotifications');
-                            self.transitionToRoute('posts.index');
                         }
-
+                        self.send('loadServerNotifications');
                         self.toggleProperty('submitting');
+                        self.transitionToRoute('posts.index');
                     });
                 });
             } else if (users.length === 0) {
