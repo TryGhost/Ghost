@@ -32,6 +32,13 @@ module.exports = function (environment) {
 
             serverTokenEndpoint: '<overriden by initializers/simple-auth-env>',
             serverTokenRevocationEndpoint: '<overriden by initializers/simple-auth-env>'
+        },
+
+        resizeServiceDefaults: {
+            debounceTimeout: 100,
+            heightSensitive: false,
+            widthSensitive: true,
+            injectionFactories: []
         }
     };
 

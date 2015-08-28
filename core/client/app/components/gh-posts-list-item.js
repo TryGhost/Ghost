@@ -6,6 +6,7 @@ export default Ember.Component.extend({
 
     post: null,
     active: false,
+    previewIsHidden: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
 
@@ -25,6 +26,10 @@ export default Ember.Component.extend({
 
     authorAvatarBackground: Ember.computed('authorAvatar', function () {
         return `background-image: url(${this.get('authorAvatar')})`.htmlSafe();
+    }),
+
+    viewOrEdit: Ember.computed('previewIsHidden', function () {
+        return this.get('previewIsHidden') ? 'editor.edit' : 'posts.post';
     }),
 
     click: function () {
