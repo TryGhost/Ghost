@@ -27,6 +27,10 @@ function getPostPage(options) {
         if (!isNaN(postsPerPage) && postsPerPage > 0) {
             options.limit = postsPerPage;
         }
+
+        // translating page parameter in offset
+        options.offset = (options.page * options.limit) - options.limit;
+
         options.include = 'author,tags,fields';
         return api.posts.browse(options);
     });

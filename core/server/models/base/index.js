@@ -242,7 +242,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * ### Find Page
      * Find results by page - returns an object containing the
-     * information about the request (page, limit), along with the
+     * information about the request (offset, limit), along with the
      * info needed for pagination (pages, total).
      *
      * **response:**

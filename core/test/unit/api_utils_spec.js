@@ -18,7 +18,7 @@ describe('API Utils', function () {
     describe('Default Options', function () {
         it('should provide a set of default options', function () {
             apiUtils.globalDefaultOptions.should.eql(['context', 'include']);
-            apiUtils.browseDefaultOptions.should.eql(['page', 'limit']);
+            apiUtils.browseDefaultOptions.should.eql(['offset', 'limit']);
             apiUtils.dataDefaultOptions.should.eql(['data']);
             apiUtils.idDefaultOptions.should.eql(['id']);
         });
@@ -121,17 +121,17 @@ describe('API Utils', function () {
             }).catch(done);
         });
 
-        it('should allow page & limit options when browseDefaultOptions passed', function (done) {
+        it('should allow offset & limit options when browseDefaultOptions passed', function (done) {
             apiUtils.validate('test', {opts: apiUtils.browseDefaultOptions})(
-                {context: 'stuff', include: 'stuff', page: 1, limit: 5}
+                {context: 'stuff', include: 'stuff', offset: 0, limit: 5}
             ).then(function (options) {
                 options.should.not.have.ownProperty('data');
                 options.should.have.ownProperty('context');
                 options.context.should.eql('stuff');
                 options.should.have.ownProperty('include');
                 options.include.should.eql('stuff');
-                options.should.have.ownProperty('page');
-                options.page.should.eql(1);
+                options.should.have.ownProperty('offset');
+                options.offset.should.eql(0);
                 options.should.have.ownProperty('limit');
                 options.limit.should.eql(5);
                 done();
