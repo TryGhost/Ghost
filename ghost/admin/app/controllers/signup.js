@@ -64,7 +64,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
-                    self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
+                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
                         identification: self.get('model.email'),
                         password: self.get('model.password')
                     }).then(function () {
