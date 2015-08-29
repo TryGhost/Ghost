@@ -264,11 +264,18 @@ Post = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(options) {
+        options = options || {};
+
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
-        attrs.author = attrs.author || attrs.author_id;
-        attrs.url = config.urlPathForPost(attrs, permalinkSetting);
-        delete attrs.author_id;
+        if (!options.columns || (options.columns && options.columns.indexOf('author') > -1)) {
+            attrs.author = attrs.author || attrs.author_id;
+            delete attrs.author_id;
+        }
+
+        if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
+            attrs.url = config.urlPathForPost(attrs, permalinkSetting);
+        }
 
         return attrs;
     }
@@ -346,7 +353,7 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'status', 'staticPages', 'featured'],
+                findPage: ['page', 'limit', 'columns', 'status', 'staticPages', 'featured'],
                 add: ['importing']
             };
 

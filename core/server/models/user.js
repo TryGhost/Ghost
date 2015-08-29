@@ -120,6 +120,8 @@ User = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(options) {
+        options = options || {};
+
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
         // remove password hash for security reasons
         delete attrs.password;
@@ -229,7 +231,7 @@ User = ghostBookshelf.Model.extend({
                 findAll: ['withRelated'],
                 setup: ['id'],
                 edit: ['withRelated', 'id'],
-                findPage: ['page', 'limit', 'status']
+                findPage: ['page', 'limit', 'columns', 'status']
             };
 
         if (validOptions[methodName]) {
