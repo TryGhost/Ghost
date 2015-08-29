@@ -23,7 +23,7 @@ utils = {
     // ### Manual Default Options
     // These must be provided by the endpoint
     // browseDefaultOptions - valid for all browse api endpoints
-    browseDefaultOptions: ['page', 'limit'],
+    browseDefaultOptions: ['page', 'limit', 'fields'],
     // idDefaultOptions - valid whenever an id is valid
     idDefaultOptions: ['id'],
 
@@ -112,6 +112,7 @@ utils = {
                 uuid: {isUUID: true},
                 page: {matches: /^\d+$/},
                 limit: {matches: /^\d+|all$/},
+                fields: {matches: /^[a-z0-9_,]+$/},
                 name: {}
             },
             // these values are sanitised/validated separately
@@ -223,6 +224,15 @@ utils = {
         return include;
     },
 
+    prepareFields: function prepareFields(fields) {
+        fields = fields || '';
+        if (_.isString(fields)) {
+            fields = fields.split(',');
+        }
+
+        return fields;
+    },
+
     /**
      * ## Convert Options
      * @param {Array} allowedIncludes
@@ -237,6 +247,10 @@ utils = {
         return function doConversion(options) {
             if (options.include) {
                 options.include = utils.prepareInclude(options.include, allowedIncludes);
+            }
+            if (options.fields) {
+                options.columns = utils.prepareFields(options.fields);
+                delete options.fields;
             }
             return options;
         };
