@@ -18,7 +18,7 @@ describe('API Utils', function () {
     describe('Default Options', function () {
         it('should provide a set of default options', function () {
             apiUtils.globalDefaultOptions.should.eql(['context', 'include']);
-            apiUtils.browseDefaultOptions.should.eql(['page', 'limit']);
+            apiUtils.browseDefaultOptions.should.eql(['page', 'limit', 'fields']);
             apiUtils.dataDefaultOptions.should.eql(['data']);
             apiUtils.idDefaultOptions.should.eql(['id']);
         });
