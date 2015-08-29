@@ -29,7 +29,7 @@ function setupTasks(object) {
         } else {
             return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
                 setupUser.roles = [ownerRole.id];
-                return dataProvider.User.add(setupUser, internal);
+                return dataProvider.User.setup(setupUser, internal);
             });
         }
     }).then(function (user) {
