@@ -36,16 +36,15 @@ describe('User Model', function run() {
         beforeEach(testUtils.setup('roles'));
 
         it('can add first', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[0]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
             });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                createdUser.attributes.password.should.not.equal(testUtils.DataGenerator.forModel.users[0].password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
                 done();
@@ -53,7 +52,7 @@ describe('User Model', function run() {
         });
 
         it('shortens slug if possible', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[2]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
@@ -68,7 +67,7 @@ describe('User Model', function run() {
         });
 
         it('does not short slug if not possible', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[2]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
@@ -97,7 +96,7 @@ describe('User Model', function run() {
         });
 
         it('does NOT lowercase email', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[2]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
@@ -112,7 +111,7 @@ describe('User Model', function run() {
         });
 
         it('can find gravatar', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
@@ -130,7 +129,7 @@ describe('User Model', function run() {
         });
 
         it('can handle no gravatar', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[0];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[0]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
@@ -145,8 +144,8 @@ describe('User Model', function run() {
         });
 
         it('can find by email and is case insensitive', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[2],
-                email = testUtils.DataGenerator.forModel.users[2].email;
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[2]),
+                email = _.clone(testUtils.DataGenerator.forModel.users[2].email);
 
             UserModel.add(userData, context).then(function () {
                 // Test same case
@@ -183,7 +182,6 @@ describe('User Model', function run() {
 
         it('sets last login time on successful login', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
-
             UserModel.check({email: userData.email, password: userData.password}).then(function (activeUser) {
                 should.exist(activeUser.get('last_login'));
                 done();
@@ -331,7 +329,7 @@ describe('User Model', function run() {
         });
 
         it('can invite user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
@@ -340,7 +338,7 @@ describe('User Model', function run() {
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                createdUser.attributes.password.should.not.equal(testUtils.DataGenerator.forModel.users[4].password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
                 eventSpy.calledOnce.should.be.true;
@@ -351,7 +349,7 @@ describe('User Model', function run() {
         });
 
         it('can add active user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4];
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
                 return Promise.resolve(userData);
@@ -364,7 +362,7 @@ describe('User Model', function run() {
             }).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.get('password').should.not.equal(userData.password, 'password was hashed');
+                createdUser.get('password').should.not.equal(testUtils.DataGenerator.forModel.users[4], 'password was hashed');
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
                 createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
 
@@ -400,7 +398,7 @@ describe('User Model', function run() {
         });
 
         it('can edit invited user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]),
                 userId;
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
@@ -410,7 +408,7 @@ describe('User Model', function run() {
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                createdUser.attributes.password.should.not.equal(testUtils.DataGenerator.forModel.users[4].password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 createdUser.attributes.status.should.equal('invited');
 
@@ -430,7 +428,7 @@ describe('User Model', function run() {
         });
 
         it('can activate invited user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]),
                 userId;
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
@@ -440,7 +438,7 @@ describe('User Model', function run() {
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                createdUser.attributes.password.should.not.equal(testUtils.DataGenerator.forModel.users[4].password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 createdUser.attributes.status.should.equal('invited');
 
@@ -489,7 +487,7 @@ describe('User Model', function run() {
         });
 
         it('can destroy invited user', function (done) {
-            var userData = testUtils.DataGenerator.forModel.users[4],
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]),
                 userId;
 
             sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
@@ -499,7 +497,7 @@ describe('User Model', function run() {
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
+                createdUser.attributes.password.should.not.equal(testUtils.DataGenerator.forModel.users[4].password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
                 createdUser.attributes.status.should.equal('invited');
 

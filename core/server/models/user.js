@@ -364,7 +364,7 @@ User = ghostBookshelf.Model.extend({
      */
     add: function add(data, options) {
         var self = this,
-            userData = this.filterData(data),
+            userData = data,
             roles;
 
         options = this.filterOptions(options, 'add');
@@ -388,9 +388,9 @@ User = ghostBookshelf.Model.extend({
         roles = data.roles || getAuthorRole();
         delete data.roles;
 
-        return generatePasswordHash(userData.password).then(function then(results) {
+        return generatePasswordHash(userData.password).then(function then(hash) {
             // Assign the hashed password
-            userData.password = results[1];
+            userData.password = hash;
             // LookupGravatar
             return self.gravatarLookup(userData);
         }).then(function then(userData) {
@@ -421,7 +421,7 @@ User = ghostBookshelf.Model.extend({
 
     setup: function setup(data, options) {
         var self = this,
-            userData = this.filterData(data);
+            userData = data;
 
         if (!validatePasswordLength(userData.password)) {
             return Promise.reject(new errors.ValidationError('Your password must be at least 8 characters long.'));
@@ -431,17 +431,20 @@ User = ghostBookshelf.Model.extend({
         options.withRelated = _.union(options.withRelated, options.include);
         options.shortSlug = true;
 
-        return generatePasswordHash(data.password).then(function then(hash) {
-            // Assign the hashed password
-            userData.password = hash;
-
-            return Promise.join(self.gravatarLookup(userData),
-                                ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options));
-        }).then(function then(results) {
+        return Promise.join(self.gravatarLookup(userData),
+                            ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options)
+        ).then(function then(results) {
             userData = results[0];
             userData.slug = results[1];
-
-            return self.edit.call(self, userData, options);
+            if (options.id) {
+                return generatePasswordHash(data.password).then(function then(hash) {
+                    // Assign the hashed password
+                    userData.password = hash;
+                }).then(function () {
+                    return self.edit.call(self, userData, options);
+                });
+            }
+            return self.add.call(self, userData, options);
         });
     },
 
