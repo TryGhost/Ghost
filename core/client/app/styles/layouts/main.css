@@ -177,8 +177,17 @@
     margin-right: 8px;
     width: 15px;
     height: 15px;
+    color: rgba(0,0,0,0.6);
     text-align: center;
     font-size: 15px;
+}
+
+.gh-nav-list .active i {
+    color: #fff;
+}
+
+.gh-nav-list a:not(.active):hover i {
+    color: var(--darkgrey);
 }
 
 .gh-nav-footer {
