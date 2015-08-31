@@ -31,8 +31,8 @@ export default Ember.Component.extend({
             this.set('showSpinnerTimeout', Ember.run.later(this, function () {
                 if (!this.get('submitting')) {
                     this.set('showSpinner', false);
-                    this.set('showSpinnerTimeout', null);
                 }
+                this.set('showSpinnerTimeout', null);
             }, 1000));
         } else if (!submitting && timeout === null) {
             this.set('showSpinner', false);
