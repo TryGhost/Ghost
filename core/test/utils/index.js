@@ -525,7 +525,7 @@ login = function login(request) {
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
-            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin', client_secret: 'not_available'})
             .end(function (err, res) {
                 if (err) {
                     return reject(err);

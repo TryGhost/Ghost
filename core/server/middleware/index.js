@@ -44,7 +44,6 @@ middleware = {
     spamPrevention: spamPrevention,
     privateBlogging: privateBlogging,
     api: {
-        addClientSecret: clientAuth.addClientSecret,
         cacheOauthServer: clientAuth.cacheOauthServer,
         authenticateClient: clientAuth.authenticateClient,
         generateAccessToken: clientAuth.generateAccessToken,
