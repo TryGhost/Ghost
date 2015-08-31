@@ -6,6 +6,7 @@
 // making them.
 
 var Promise     = require('bluebird'),
+    crypto      = require('crypto'),
     sequence    = require('../../utils/sequence'),
     _           = require('lodash'),
     errors      = require('../../errors'),
@@ -224,7 +225,9 @@ to004 = function to004() {
     upgradeOp = models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
         if (client) {
             logInfo('Update ghost-admin client fixture');
-            return models.Client.edit(fixtures.clients[0], _.extend({}, options, {id: client.id}));
+            var adminClient = fixtures.clients[0];
+            adminClient.secret = crypto.randomBytes(6).toString('hex');
+            return models.Client.edit(adminClient, _.extend({}, options, {id: client.id}));
         }
         return Promise.resolve();
     });
@@ -234,7 +237,9 @@ to004 = function to004() {
     upgradeOp = models.Client.findOne({slug: fixtures.clients[1].slug}).then(function (client) {
         if (!client) {
             logInfo('Add ghost-frontend client fixture');
-            return models.Client.add(fixtures.clients[1], options);
+            var frontendClient = fixtures.clients[1];
+            frontendClient.secret = crypto.randomBytes(6).toString('hex');
+            return models.Client.add(frontendClient, options);
         }
         return Promise.resolve();
     });
