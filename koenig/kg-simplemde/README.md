@@ -103,6 +103,7 @@ Name | Action | Class | Tooltip
 :--- | :----- | :---- | :------
 bold | toggleBold | fa fa-bold | Bold (Ctrl+B)
 italic | toggleItalic | fa fa-italic | Italic (Ctrl+I)
+strikethrough | toggleStrikethrough | fa fa-strikethrough | Strikethrough
 heading | toggleHeadingSmaller | fa fa-header | Heading (Ctrl+H)
 heading-smaller | toggleHeadingSmaller | fa fa-header | Smaller Heading (Ctrl+H)
 heading-bigger | toggleHeadingBigger | fa fa-lg fa-header | Bigger Heading (Shift+Ctrl+H)

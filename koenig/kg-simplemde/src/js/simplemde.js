@@ -86,6 +86,8 @@ function getState(cm, pos) {
 			ret.italic = true;
 		} else if(data === 'quote') {
 			ret.quote = true;
+		} else if(data === 'strikethrough') {
+			ret.strikethrough = true;
 		}
 	}
 	return ret;
@@ -135,6 +137,14 @@ function toggleBold(editor) {
  */
 function toggleItalic(editor) {
 	_toggleBlock(editor, 'italic', '*');
+}
+
+
+/**
+ * Action for toggling strikethrough.
+ */
+function toggleStrikethrough(editor) {
+	_toggleBlock(editor, 'strikethrough', '~~');
 }
 
 /**
@@ -464,6 +474,9 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 		} else if(type == "italic") {
 			start = start.replace(/(\*|_)(?![\s\S]*(\*|_))/, "");
 			end = end.replace(/(\*|_)/, "");
+		} else if(type == "strikethrough") {
+			start = start.replace(/(\*\*|~~)(?![\s\S]*(\*\*|~~))/, "");
+			end = end.replace(/(\*\*|~~)/, "");
 		}
 		cm.replaceRange(start + end, {
 			line: startPoint.line,
@@ -473,7 +486,7 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 			ch: 99999999999999
 		});
 
-		if(type == "bold") {
+		if(type == "bold" || type == "strikethrough") {
 			startPoint.ch -= 2;
 			endPoint.ch -= 2;
 		} else if(type == "italic") {
@@ -488,6 +501,8 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 		} else if(type == "italic") {
 			text = text.split("*").join("");
 			text = text.split("_").join("");
+		} else if(type == "strikethrough") {
+			text = text.split("~~").join("");
 		}
 		cm.replaceSelection(start + text + end);
 
@@ -530,10 +545,16 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
 	},
+	"strikethrough": {
+		name: "strikethrough",
+		action: toggleStrikethrough,
+		className: "fa fa-strikethrough",
+		title: "Strikethrough",
+	},
 	"heading": {
 		name: "heading",
 		action: toggleHeadingSmaller,
-		className: "fa fa-header",
+		className: "fa fa-heade`r",
 		title: "Heading (Ctrl+H)",
 	},
 	"heading-smaller": {
@@ -937,6 +958,7 @@ SimpleMDE.prototype.value = function(val) {
  */
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
+SimpleMDE.toggleStrikethrough = toggleStrikethrough;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
 SimpleMDE.toggleHeadingSmaller = toggleHeadingSmaller;
 SimpleMDE.toggleHeadingBigger = toggleHeadingBigger;
@@ -962,6 +984,9 @@ SimpleMDE.prototype.toggleBold = function() {
 };
 SimpleMDE.prototype.toggleItalic = function() {
 	toggleItalic(this);
+};
+SimpleMDE.prototype.toggleStrikethrough = function() {
+	toggleStrikethrough(this);
 };
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
