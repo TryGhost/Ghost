@@ -104,9 +104,24 @@
 	margin: 0 6px;
 }
 
-.editor-toolbar a.icon-fullscreen {
-	position: absolute;
-	right: 10px;
+.editor-toolbar a.fa-header-x:after {
+	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+	font-size: 65%;
+	vertical-align: text-bottom;
+	position:relative;
+	top:2px;
+}
+
+.editor-toolbar a.fa-header-1:after {
+	content: "1";
+}
+
+.editor-toolbar a.fa-header-2:after {
+	content: "2";
+}
+
+.editor-toolbar a.fa-header-3:after {
+	content: "3";
 }
 
 .editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt) {

@@ -106,6 +106,9 @@ italic | toggleItalic | fa fa-italic | Italic (Ctrl+I)
 heading | toggleHeadingSmaller | fa fa-header | Heading (Ctrl+H)
 heading-smaller | toggleHeadingSmaller | fa fa-header | Smaller Heading (Ctrl+H)
 heading-bigger | toggleHeadingBigger | fa fa-lg fa-header | Bigger Heading (Shift+Ctrl+H)
+heading-1 | toggleHeading1 | fa fa-header fa-header-x fa-header-1 | Big Heading
+heading-2 | toggleHeading2 | fa fa-header fa-header-x fa-header-2 | Medium Heading
+heading-3 | toggleHeading3 | fa fa-header fa-header-x fa-header-3 | Small Heading
 code | toggleCodeBlock | fa fa-code | Code (Ctrl+Alt+C)
 quote | toggleBlockquote | fa fa-quote-left | Quote (Ctrl+')
 unordered-list | toggleUnorderedList | fa fa-list-ul | Generic List (Ctrl+L)
