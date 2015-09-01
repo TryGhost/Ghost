@@ -21,17 +21,18 @@
                 {{/if}}
 
                 <span class="input-icon icon-link">
-                    {{gh-input class="gh-input post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" selectOnClick="true" stopEnterKeyDownPropagation="true"}}
+                    {{gh-input class="post-setting-slug" id="url" value=slugValue name="post-setting-slug" focus-out="updateSlug" selectOnClick="true" stopEnterKeyDownPropagation="true"}}
                 </span>
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
 
-            <div class="form-group">
+            {{#gh-form-group errors=model.errors property="post-setting-date"}}
                 <label for="post-setting-date">Publish Date</label>
                 <span class="input-icon icon-calendar">
-                    {{gh-input class="gh-input post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" stopEnterKeyDownPropagation="true"}}
+                    {{gh-input class="post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" stopEnterKeyDownPropagation="true"}}
                 </span>
-            </div>
+                {{gh-error-message errors=model.errors property="post-setting-date"}}
+            {{/gh-form-group}}
 
             <div class="form-group">
                 <label for="tag-input">Tags</label>
@@ -104,17 +105,19 @@
 
         <div class="settings-menu-content">
             <form>
-            <div class="form-group">
+            {{#gh-form-group errors=model.errors property="meta_title"}}
                 <label for="meta-title">Meta Title</label>
-                {{gh-input class="gh-input post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
+                {{gh-input class="post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
-            </div>
+                {{gh-error-message errors=model.errors property="meta_title"}}
+            {{/gh-form-group}}
 
-            <div class="form-group">
+            {{#gh-form-group errors=model.errors property="meta_description"}}
                 <label for="meta-description">Meta Description</label>
                 {{gh-textarea class="gh-input post-setting-meta-description" id="meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
-            </div>
+                {{gh-error-message errors=model.errors property="meta_description"}}
+            {{/gh-form-group}}
 
             <div class="form-group">
                 <label>Search Engine Result Preview</label>
