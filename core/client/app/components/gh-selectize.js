@@ -3,6 +3,26 @@ import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-select
 
 export default EmberSelectizeComponent.extend({
 
+    _dontOpenWhenBlank: Ember.on('didInsertElement', function () {
+        var openOnFocus = this.get('openOnFocus');
+
+        if (!openOnFocus) {
+            Ember.run.next(this, function () {
+                var selectize = this._selectize;
+                selectize.on('dropdown_open', function () {
+                    if (Ember.isBlank(selectize.$control_input.val())) {
+                        selectize.close();
+                    }
+                });
+                selectize.on('type', function (filter) {
+                    if (Ember.isBlank(filter)) {
+                        selectize.close();
+                    }
+                });
+            });
+        }
+    }),
+
     /**
     * Event callback that is triggered when user creates a tag
     * - modified to pass the caret position to the action
