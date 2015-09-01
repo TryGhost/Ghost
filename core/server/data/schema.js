@@ -117,7 +117,8 @@ var db = {
         posts_tags: {
             id: {type: 'increments', nullable: false, primary: true},
             post_id: {type: 'integer', nullable: false, unsigned: true, references: 'posts.id'},
-            tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'tags.id'}
+            tag_id: {type: 'integer', nullable: false, unsigned: true, references: 'tags.id'},
+            sort_order: {type: 'integer',  nullable: false, unsigned: true, defaultTo: 0}
         },
         apps: {
             id: {type: 'increments', nullable: false, primary: true},

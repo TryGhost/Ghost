@@ -245,7 +245,7 @@ to004 = function to004() {
     });
     ops.push(upgradeOp);
 
-    // add ghost-frontend client if missing
+    // clean up broken tags
     upgradeOp = models.Tag.findAll(options).then(function (tags) {
         var tagOps = [];
         if (tags) {
@@ -267,7 +267,27 @@ to004 = function to004() {
         }
         return Promise.resolve();
     });
+    ops.push(upgradeOp);
 
+    // Add post_tag order
+    upgradeOp = models.Post.findAll(_.extend({}, options, {withRelated: ['tags']})).then(function (posts) {
+        var tagOps = [];
+        if (posts) {
+            posts.each(function (post) {
+                var order = 0;
+                post.related('tags').each(function (tag) {
+                    tagOps.push(post.tags().updatePivot(
+                        {sort_order: order}, _.extend({}, options, {query: {where: {tag_id: tag.id}}})
+                    ));
+                    order += 1;
+                });
+            });
+        }
+        if (tagOps.length > 0) {
+            logInfo('Updating order on ' + tagOps.length + ' tags');
+            return Promise.all(tagOps);
+        }
+    });
     ops.push(upgradeOp);
 
     return Promise.all(ops);
