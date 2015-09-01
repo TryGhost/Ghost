@@ -112,7 +112,6 @@
 .editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt) {
 	pointer-events: none;
 	background: #fff;
-	border: none;
 }
 
 .editor-statusbar {
