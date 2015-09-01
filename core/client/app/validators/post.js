@@ -10,6 +10,11 @@ var PostValidator = BaseValidator.create({
             model.get('errors').add('title', 'You must specify a title for the post.');
             this.invalidate();
         }
+
+        if (!validator.isLength(title, 0, 150)) {
+            model.get('errors').add('title', 'Title cannot be longer than 150 characters.');
+            this.invalidate();
+        }
     },
 
     metaTitle: function (model) {
