@@ -23,6 +23,10 @@
 	z-index: 9;
 }
 
+.CodeMirror-sided {
+	width: 50% !important;
+}
+
 .editor-toolbar {
 	position: relative;
 	opacity: .6;
@@ -124,7 +128,7 @@
 	content: "3";
 }
 
-.editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt) {
+.editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt):not(.fa-columns) {
 	pointer-events: none;
 	background: #fff;
 }
@@ -164,20 +168,39 @@
 	box-sizing: border-box;
 }
 
+.editor-preview-side {
+	padding: 10px;
+	position: fixed;
+	bottom: 0;
+	width: 50%;
+	top: 50px;
+	right: 0;
+	background: #fafafa;
+	z-index: 9999;
+	overflow: auto;
+	display: none;
+	box-sizing: border-box;
+	border: 1px solid #ddd;
+}
+
+.editor-preview-active-side {
+  display: block
+}
+
 .editor-preview-active {
 	display: block
 }
 
-.editor-preview>p {
+.editor-preview>p, .editor-preview-side>p {
 	margin-top: 0
 }
 
-.editor-preview pre {
+.editor-preview pre, .editor-preview-side pre {
 	background: #eee;
 	margin-bottom: 10px;
 }
 
-.editor-preview table td, table th {
+.editor-preview table td, .editor-preview table th, .editor-preview-side table td, .editor-preview-side table th {
 	border: 1px solid #ddd;
 	padding: 5px;
 }

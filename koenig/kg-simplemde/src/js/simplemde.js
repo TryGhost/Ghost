@@ -121,6 +121,12 @@ function toggleFullScreen(editor) {
 	} else {
 		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
 	}
+	
+	
+	// Hide side by side if needed
+	var sidebyside = cm.getWrapperElement().nextSibling;
+	if (/editor-preview-active-side/.test(sidebyside.className))
+		toggleSideBySide(editor);
 }
 
 
@@ -270,6 +276,59 @@ function redo(editor) {
 	cm.focus();
 }
 
+
+/**
+ * Toggle side by side preview
+ */
+function toggleSideBySide(editor) {
+	var cm = editor.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var code = wrapper.firstChild;
+	var preview = wrapper.nextSibling;
+	var toolbarButton = editor.toolbarElements["side-by-side"];
+
+	if (/editor-preview-active-side/.test(preview.className)) {
+		preview.className = preview.className.replace(
+			/\s*editor-preview-active-side\s*/g, ''
+		);
+		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
+		wrapper.className = wrapper.className.replace(/\s*CodeMirror-sided\s*/g, ' ');
+	} else {
+		/* When the preview button is clicked for the first time,
+		* give some time for the transition from editor.css to fire and the view to slide from right to left,
+		* instead of just appearing.
+		*/
+		setTimeout(function() {
+			if (!cm.getOption("fullScreen")) toggleFullScreen(editor);
+			preview.className += ' editor-preview-active-side'
+		}, 1);
+		toolbarButton.className += ' active';
+		wrapper.className += ' CodeMirror-sided';
+	}
+	
+	// Hide normal preview if active
+	var previewNormal = wrapper.lastChild;
+	if(/editor-preview-active/.test(previewNormal.className)) {
+		previewNormal.className = previewNormal.className.replace(
+			/\s*editor-preview-active\s*/g, ''
+		);
+		var toolbar = editor.toolbarElements.preview;
+		var toolbar_div = wrapper.previousSibling;
+		toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
+		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
+	}
+
+	// Start preview with the current text
+	var parse = editor.constructor.markdown;
+	preview.innerHTML = parse(cm.getValue());
+
+	// Updates preview
+	cm.on('update', function() {
+		preview.innerHTML = parse(cm.getValue());
+	});
+}
+
+
 /**
  * Preview action.
  */
@@ -304,6 +363,11 @@ function togglePreview(editor) {
 	}
 	var text = cm.getValue();
 	preview.innerHTML = parse(text);
+	
+	// Turn off side by side if needed
+	var sidebyside = cm.getWrapperElement().nextSibling;
+	if (/editor-preview-active-side/.test(sidebyside.className))
+		toggleSideBySide(editor);
 }
 
 function _replaceSelection(cm, active, start, end) {
@@ -554,7 +618,7 @@ var toolbarBuiltInButtons = {
 	"heading": {
 		name: "heading",
 		action: toggleHeadingSmaller,
-		className: "fa fa-heade`r",
+		className: "fa fa-header",
 		title: "Heading (Ctrl+H)",
 	},
 	"heading-smaller": {
@@ -635,6 +699,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
 	},
+	"side-by-side": {
+		name: "side-by-side",
+		action: toggleSideBySide,
+		className: "fa fa-columns",
+		title: "Toggle Side by Side (F9)",
+	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
@@ -649,7 +719,7 @@ var toolbarBuiltInButtons = {
 	}
 };
 
-var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|",  "preview", "fullscreen", "guide"];
+var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|",  "preview", "side-by-side", "fullscreen", "guide"];
 
 /**
  * Interface of SimpleMDE.
@@ -733,7 +803,10 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps["Tab"] = "tabAndIndentContinueMarkdownList";
 	keyMaps["Shift-Tab"] = "shiftTabAndIndentContinueMarkdownList";
 	keyMaps["F11"] = function(cm) {
-		toggleFullScreen(cm);
+		toggleFullScreen(self);
+	};
+	keyMaps["F9"] = function(cm) {
+		toggleSideBySide(self);
 	};
 	keyMaps["Esc"] = function(cm) {
 		if(cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
@@ -769,6 +842,8 @@ SimpleMDE.prototype.render = function(el) {
 	if(options.autosave != undefined && options.autosave.enabled === true) {
 		this.autosave();
 	}
+	
+	this.createSidebyside();
 
 	this._rendered = this.element;
 };
@@ -822,6 +897,39 @@ SimpleMDE.prototype.autosave = function() {
 		simplemde.autosave();
 	}, this.options.autosave.delay || 10000);
 };
+
+SimpleMDE.prototype.createSidebyside = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var preview = wrapper.nextSibling;
+
+	if (!/editor-preview-side/.test(preview.className)) {
+		preview = document.createElement('div');
+		preview.className = 'editor-preview-side';
+		wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);
+	}
+
+	// Syncs scroll  editor -> preview
+	var cScroll = false;
+	var pScroll = false;
+	cm.on('scroll', function(v) {
+	if (cScroll){cScroll=false; return;}; pScroll=true;
+		height = v.getScrollInfo().height - v.getScrollInfo().clientHeight;
+		ratio = parseFloat(v.getScrollInfo().top) / height;
+		move = (preview.scrollHeight - preview.clientHeight) * ratio;
+		preview.scrollTop = move;
+	});
+
+	// Syncs scroll  preview -> editor
+	preview.onscroll = function(v) {
+	if (pScroll){pScroll=false; return;}; cScroll=true;
+		height = preview.scrollHeight - preview.clientHeight;
+		ratio = parseFloat(preview.scrollTop) / height;
+		move = (cm.getScrollInfo().height - cm.getScrollInfo().clientHeight) * ratio;
+		cm.scrollTo(0, move);
+	};
+	return true;
+}
 
 SimpleMDE.prototype.createToolbar = function(items) {
 	items = items || this.options.toolbar;
@@ -884,7 +992,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 				var el = toolbar_data[key];
 				if(stat[key]) {
 					el.className += ' active';
-				} else if(key != "fullscreen") {
+				} else if(key != "fullscreen" && key != "side-by-side") {
 					el.className = el.className.replace(/\s*active\s*/g, '');
 				}
 			})(key);
@@ -974,6 +1082,7 @@ SimpleMDE.drawHorizontalRule = drawHorizontalRule;
 SimpleMDE.undo = undo;
 SimpleMDE.redo = redo;
 SimpleMDE.togglePreview = togglePreview;
+SimpleMDE.toggleSideBySide = toggleSideBySide;
 SimpleMDE.toggleFullScreen = toggleFullScreen;
 
 /**
@@ -1032,6 +1141,9 @@ SimpleMDE.prototype.redo = function() {
 };
 SimpleMDE.prototype.togglePreview = function() {
 	togglePreview(this);
+};
+SimpleMDE.prototype.toggleSideBySide = function() {
+	toggleSideBySide(this);
 };
 SimpleMDE.prototype.toggleFullScreen = function() {
 	toggleFullScreen(this);
