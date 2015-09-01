@@ -124,23 +124,6 @@ export default Ember.Component.extend({
 
         onBlur: function () {
             this._resetKeymasterScope();
-        },
-
-        // hacky method of disabling the dropdown until a user has typed something
-        // TODO: move into a selectize plugin
-        onInit: function () {
-            var selectize = this.get('_selectize');
-            selectize.on('dropdown_open', function () {
-                if (Ember.isBlank(selectize.$control_input.val())) {
-                    selectize.close();
-                }
-            });
-        },
-
-        onUpdateFilter: function (filter) {
-            if (Ember.isBlank(filter)) {
-                this.get('_selectize').close();
-            }
         }
     }
 
