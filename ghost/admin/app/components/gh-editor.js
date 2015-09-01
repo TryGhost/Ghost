@@ -54,5 +54,15 @@ export default Ember.Component.extend({
         previewPosition = scrollInfo.top * ratio;
 
         return previewPosition;
-    })
+    }),
+
+    activeTab: 'markdown',
+    markdownActive: Ember.computed.equal('activeTab', 'markdown'),
+    previewActive: Ember.computed.equal('activeTab', 'preview'),
+
+    actions: {
+        selectTab: function (tab) {
+            this.set('activeTab', tab);
+        }
+    }
 });
