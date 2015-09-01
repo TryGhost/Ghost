@@ -9,7 +9,9 @@ export default Ember.Component.extend({
     resizeService: Ember.inject.service(),
 
     calculatePreviewIsHidden: function () {
-        this.set('previewIsHidden', !this.$('.content-preview').is(':visible'));
+        if (this.$('.content-preview').length) {
+            this.set('previewIsHidden', !this.$('.content-preview').is(':visible'));
+        }
     },
 
     didInsertElement: function () {

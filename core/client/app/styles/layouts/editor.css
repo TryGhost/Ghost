@@ -73,15 +73,45 @@
     line-height: 1em;
 }
 .editor .floatingheader a {
+    padding: 5px 15px;
     color: var(--midgrey);
+}
+.editor .floatingheader a.active {
+    font-weight: bold;
+}
+.editor .floatingheader a:first-of-type {
+    padding-left: 0;
+}
+.editor .floatingheader a:last-of-type {
+    padding-right: 0;
+}
+.editor .floatingheader span a:not(:first-of-type) {
+    border-left: 1px solid #dfe1e3;
+}
+.editor .floatingheader .mobile-tabs {
+    display: none;
 }
 
 /* Switch to 1 col editor on small screens */
 @media (max-width: 1000px) {
-    .editor .entry-markdown {
-        width: 100%;
-    }
+    .editor .entry-markdown,
     .editor .entry-preview {
+        width: 100%;
+        border-left: none;
+    }
+    /* We can't use display:none here as we want to keep widths/heights
+     * so that scrolling is kept in sync */
+    .editor .entry-markdown:not(.active),
+    .editor .entry-preview:not(.active) {
+        visibility: hidden;
+        position: absolute;
+        z-index: -1;
+        height: 100%;
+    }
+    .editor .floatingheader .mobile-tabs {
+        display: inline;
+    }
+    .editor .floatingheader .desktop-tabs {
         display: none;
     }
 }
