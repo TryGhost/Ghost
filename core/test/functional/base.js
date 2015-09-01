@@ -54,6 +54,7 @@ var DEBUG = false, // TOGGLE THIS TO GET MORE SCREENSHOTS
     },
     screens,
     CasperTest,
+    utils = require('utils'),
     // ## Debugging
     jsErrors = [],
     pageErrors = [],
@@ -255,6 +256,22 @@ casper.echoConcise = function (message, style) {
     if (!casper.cli.options.concise) {
         casper.echo(message, style);
     }
+};
+
+// ### Wait for Selector Text
+// Does casper.waitForSelector but checks for the presence of specified text
+// http://stackoverflow.com/questions/32104784/wait-for-an-element-to-have-a-specific-text-with-casperjs
+casper.waitForSelectorText = function (selector, text, then, onTimeout, timeout) {
+    this.waitForSelector(selector, function _then() {
+        this.waitFor(function _check() {
+            var content = this.fetchText(selector);
+            if (utils.isRegExp(text)) {
+                return text.test(content);
+            }
+            return content.indexOf(text) !== -1;
+        }, then, onTimeout, timeout);
+    }, onTimeout, timeout);
+    return this;
 };
 
 // pass through all console.logs
