@@ -66,6 +66,7 @@ simplemde.value();
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **initialValue**: If set, will customize the initial value of the editor.
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
+- **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
 - **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
@@ -85,6 +86,7 @@ var simplemde = new SimpleMDE({
 	tabSize: 4,
 	initialValue: "Hello world!",
 	spellChecker: false,
+	singleLineBreaks: false,
 	autosave: {
 		enabled: true,
 		unique_id: "MyUniqueID",
