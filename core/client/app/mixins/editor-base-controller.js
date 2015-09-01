@@ -224,10 +224,25 @@ export default Ember.Mixin.create({
         notifications.showNotification(message.htmlSafe(), {delayed: delay});
     },
 
-    showErrorNotification: function (prevStatus, status, errors, delay) {
+    showErrorAlert: function (prevStatus, status, errors, delay) {
         var message = this.messageMap.errors.post[prevStatus][status],
-            error = (errors && errors[0] && errors[0].message) || 'Unknown Error',
-            notifications = this.get('notifications');
+            notifications = this.get('notifications'),
+            error;
+
+        function isString(str) {
+            /*global toString*/
+            return toString.call(str) === '[object String]';
+        }
+
+        if (errors && isString(errors)) {
+            error = errors;
+        } else if (errors && errors[0] && isString(errors[0])) {
+            error = errors[0];
+        } else if (errors && errors[0] && errors[0].message && isString(errors[0].message)) {
+            error = errors[0].message;
+        } else {
+            error = 'Unknown Error';
+        }
 
         message += '<br />' + error;
 
@@ -306,7 +321,8 @@ export default Ember.Mixin.create({
                 });
             }).catch(function (errors) {
                 if (!options.silent) {
-                    self.showErrorNotification(prevStatus, self.get('model.status'), errors);
+                    errors = errors || self.get('model.errors.messages');
+                    self.showErrorAlert(prevStatus, self.get('model.status'), errors);
                 }
 
                 self.set('model.status', prevStatus);

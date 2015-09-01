@@ -330,7 +330,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
             // If errors, notify and exit.
             if (errMessage) {
-                this.showErrors(errMessage);
+                this.get('model.errors').add('post-setting-date', errMessage);
 
                 return;
             }
@@ -356,47 +356,45 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
         },
 
         setMetaTitle: function (metaTitle) {
-            var self = this,
-                currentTitle = this.get('model.meta_title') || '';
+            var property = 'meta_title',
+                model = this.get('model'),
+                currentTitle = model.get(property) || '';
 
             // Only update if the title has changed
             if (currentTitle === metaTitle) {
                 return;
             }
 
-            this.set('model.meta_title', metaTitle);
+            model.set(property, metaTitle);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('model.isNew')) {
+            if (model.get('isNew')) {
                 return;
             }
 
-            this.get('model').save().catch(function (errors) {
-                self.showErrors(errors);
-            });
+            model.save();
         },
 
         setMetaDescription: function (metaDescription) {
-            var self = this,
-                currentDescription = this.get('model.meta_description') || '';
+            var property = 'meta_description',
+                model = this.get('model'),
+                currentDescription = model.get(property) || '';
 
             // Only update if the description has changed
             if (currentDescription === metaDescription) {
                 return;
             }
 
-            this.set('model.meta_description', metaDescription);
+            model.set(property, metaDescription);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
-            if (this.get('model.isNew')) {
+            if (model.get('isNew')) {
                 return;
             }
 
-            this.get('model').save().catch(function (errors) {
-                self.showErrors(errors);
-            });
+            model.save();
         },
 
         setCoverImage: function (image) {
