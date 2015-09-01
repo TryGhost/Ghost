@@ -3,7 +3,8 @@ var gulp = require('gulp'),
 	uglify = require('gulp-uglify'),
 	concat = require('gulp-concat'),
 	header = require('gulp-header'),
-	pkg = require('./package.json');
+	pkg = require('./package.json'),
+	beautify = require('gulp-beautify');
 
 var banner = ['/**',
 	' * <%= pkg.name %> v<%= pkg.version %>',
@@ -44,5 +45,11 @@ gulp.task('styles', function() {
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest('dist'));
 });
+ 
+gulp.task('beautify', function() {
+	gulp.src('./src/js/simplemde.js')
+		.pipe(beautify({indentSize: 4}))
+		.pipe(gulp.dest('./src/js/test'))
+});
 
-gulp.task('default', ['scripts', 'styles']);
+gulp.task('default', ['scripts', 'styles', 'beautify']);

@@ -19,7 +19,8 @@
 		"gulp-minify-css": "*",
 		"gulp-uglify": "*",
 		"gulp-concat": "*",
-		"gulp-header": "*"
+		"gulp-header": "*",
+		"gulp-beautify": "*"
 	},
 	"repository": {
 		"type": "git",
