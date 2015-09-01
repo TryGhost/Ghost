@@ -165,3 +165,66 @@ CasperTest.begin('Can transition to the editor and back', 6, function suite(test
         test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
     });
 });
+
+CasperTest.begin('Can search for posts and users', 8, function suite(test) {
+    var searchControl = '.gh-nav-search-input',
+        searchInput = '.gh-nav-search-input .selectize-input',
+        mouse = require('mouse').create(casper);
+
+    casper.thenOpenAndWaitForPageLoad('root', function testTitleAndUrl() {
+        test.assertTitle('Content - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
+    });
+
+    casper.thenClick('.gh-nav-search-button');
+
+    casper.waitForResource(/posts\/\?fields=id%2Ctitle%2Cpage&limit=all&status=all&staticPages=all/, function then() {
+        test.assert(true, 'Queried filtered posts list on search focus');
+    }, function timeout() {
+        casper.test.fail('Did not query filtered posts list on search focus');
+    });
+
+    casper.waitForResource(/users\/\?fields=name%2Cslug&limit=all/, function then() {
+        test.assert(true, 'Queried filtered users list on search focus');
+    }, function timeout() {
+        casper.test.fail('Did not query filtered users list on search focus');
+    });
+
+    casper.then(function testUserResults() {
+        casper.sendKeys(searchInput, 'Test', {keepFocus: true});
+        casper.waitForSelectorText(searchControl + ' .option.active', 'Test User', function success() {
+            test.assert(true, 'Queried user was displayed when searching');
+        }, function timeout() {
+            casper.test.fail('Queried user was not displayed when searching');
+        });
+    });
+
+    casper.then(function testUserNavigation() {
+        casper.sendKeys(searchInput, casper.page.event.key.Enter, {keepFocus: true});
+        casper.waitForSelector('.settings-user', function () {
+            test.assertUrlMatch(/ghost\/team\/test\//, 'Landed on correct URL');
+        });
+    });
+
+    // casper loses the focus somehow, click off/on the input to regain it
+    casper.thenClick('.gh-input.user-name');
+    casper.thenClick(searchControl + ' .selectize-input');
+
+    casper.wait(500);
+
+    casper.then(function testPostResultsAndClick() {
+        casper.sendKeys(searchInput, 'Welcome', {keepFocus: true});
+        casper.wait(500);
+        casper.then(function () {
+            casper.waitForSelectorText(searchControl + ' .option.active', 'Welcome to Ghost', function success() {
+                test.assert(true, 'Queried post was displayed when searching');
+                mouse.down(searchControl + ' .option.active');
+                casper.waitForSelector('.view-editor', function () {
+                    test.assertUrlMatch(/ghost\/editor\/\d\//, 'Landed on correct URL');
+                });
+            }, function timeout() {
+                casper.test.fail('Queried post was not displayed when searching');
+            });
+        });
+    });
+});
