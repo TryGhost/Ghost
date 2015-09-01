@@ -587,7 +587,11 @@ SimpleMDE.toolbar = toolbar;
  */
 SimpleMDE.markdown = function(text) {
 	if(window.marked) {
-		// use marked as markdown parser
+		// Update options
+		marked.setOptions({
+			breaks: true
+		});
+		
 		return marked(text);
 	}
 };
