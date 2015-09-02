@@ -2,10 +2,11 @@
 // RESTful API for creating notifications
 var Promise            = require('bluebird'),
     _                  = require('lodash'),
-    canThis            = require('../permissions').canThis,
+    permissions        = require('../permissions'),
     errors             = require('../errors'),
     utils              = require('./utils'),
     pipeline           = require('../utils/pipeline'),
+    canThis            = permissions.canThis,
 
     // Holds the persistent notifications
     notificationsStore = [],
@@ -57,6 +58,10 @@ notifications = {
          * @returns {Object} options
          */
         function handlePermissions(options) {
+            if (permissions.parseContext(options.context).internal) {
+                return Promise.resolve(options);
+            }
+
             return canThis(options.context).add.notification().then(function () {
                 return options;
             }, function () {

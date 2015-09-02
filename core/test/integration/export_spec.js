@@ -24,7 +24,7 @@ describe('Exporter', function () {
     it('exports data', function (done) {
         // Stub migrations to return 000 as the current database version
         var versioningStub = sandbox.stub(versioning, 'getDatabaseVersion', function () {
-            return Promise.resolve('003');
+            return Promise.resolve('004');
         });
 
         exporter().then(function (exportData) {
@@ -37,13 +37,13 @@ describe('Exporter', function () {
             should.exist(exportData.meta);
             should.exist(exportData.data);
 
-            exportData.meta.version.should.equal('003');
+            exportData.meta.version.should.equal('004');
 
             dbVersionSetting = _.findWhere(exportData.data.settings, {key: 'databaseVersion'});
 
             should.exist(dbVersionSetting);
 
-            dbVersionSetting.value.should.equal('003');
+            dbVersionSetting.value.should.equal('004');
 
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);

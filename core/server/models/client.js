@@ -4,7 +4,10 @@ var ghostBookshelf = require('./base'),
     Clients;
 
 Client = ghostBookshelf.Model.extend({
-    tableName: 'clients'
+    tableName: 'clients',
+    trustedDomains: function trustedDomains() {
+        return this.hasMany('ClientTrustedDomain', 'client_id');
+    }
 });
 
 Clients = ghostBookshelf.Collection.extend({

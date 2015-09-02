@@ -1,7 +1,7 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "003"
+            "defaultValue": "004"
         },
         "dbHash": {
             "defaultValue": null
@@ -66,12 +66,6 @@
         },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
-        },
-        "isPrivate": {
-            "defaultValue": "false"
-        },
-        "password": {
-            "defaultValue": ""
         }
     },
     "theme": {
@@ -85,6 +79,14 @@
         },
         "installedApps": {
             "defaultValue": "[]"
+        }
+    },
+    "private": {
+        "isPrivate": {
+            "defaultValue": "false"
+        },
+        "password": {
+            "defaultValue": ""
         }
     }
 }

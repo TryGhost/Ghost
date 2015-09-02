@@ -47,6 +47,9 @@ apiRoutes = function apiRoutes(middleware) {
     // ## Roles
     router.get('/roles/', api.http(api.roles.browse));
 
+    // ## Clients
+    router.get('/clients/slug/:slug', api.http(api.clients.read));
+
     // ## Slugs
     router.get('/slugs/:type/:name', api.http(api.slugs.generate));
 
@@ -81,7 +84,6 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/authentication/setup', api.http(api.authentication.isSetup));
     router.post('/authentication/token',
         middleware.spamPrevention.signin,
-        middleware.api.addClientSecret,
         middleware.api.authenticateClient,
         middleware.api.generateAccessToken
     );
