@@ -111,10 +111,12 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
     actions: {
         newTag: function () {
             this.set('activeTag', this.store.createRecord('tag', {post_count: 0}));
+            this.get('activeTag.errors').clear();
             this.send('openSettingsMenu');
         },
 
         editTag: function (tag) {
+            tag.validate();
             this.set('activeTag', tag);
             this.send('openSettingsMenu');
         },
