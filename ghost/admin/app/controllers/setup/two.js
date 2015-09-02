@@ -50,10 +50,10 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     actions: {
         preValidate: function (model) {
-            var self = this;
+            // Only triggers validation if a value has been entered, preventing empty errors on focusOut
             if (this.get(model)) {
                 if (model === 'email') {
-                    self.send('handleEmail');
+                    this.send('handleEmail');
                 }
                 this.validate({property: model});
             }
@@ -61,7 +61,8 @@ export default Ember.Controller.extend(ValidationEngine, {
 
         setup: function () {
             var self = this,
-                data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
+                setupProperties = ['blogTitle', 'name', 'email', 'password', 'image'],
+                data = self.getProperties(setupProperties),
                 notifications = this.get('notifications'),
                 config = this.get('config'),
                 method = this.get('blogCreated') ? 'PUT' : 'POST';
@@ -69,6 +70,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             this.toggleProperty('submitting');
             this.set('flowErrors', '');
 
+            this.get('hasValidated').addObjects(setupProperties);
             this.validate().then(function () {
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'setup'),
