@@ -145,6 +145,12 @@
 	background: #fff;
 }
 
+@media only screen and (max-width: 700px) {
+	.editor-toolbar a.fa-columns {
+		display:none;
+	}
+}
+
 .editor-statusbar {
 	padding: 8px 10px;
 	font-size: 12px;
