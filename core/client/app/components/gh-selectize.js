@@ -41,6 +41,24 @@ export default EmberSelectizeComponent.extend({
         // We cancel the creation here, so it's up to you to include the created element
         // in the content and selection property
         callback(null);
+    },
+
+    _addSelection(obj) {
+        var _valuePath = this.get('_valuePath'),
+            val = Ember.get(obj, _valuePath),
+            caret = this._selectize.caretPos;
+
+        // caret position is always 1 more than the desired index as this method
+        // is called after selectize has inserted the item and the caret has moved
+        // to the right
+        caret = caret - 1;
+
+        this.get('selection').insertAt(caret, obj);
+
+        Ember.run.schedule('actions', this, function () {
+            this.sendAction('add-item', obj);
+            this.sendAction('add-value', val);
+        });
     }
 
 });
