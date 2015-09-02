@@ -290,6 +290,19 @@ to004 = function to004() {
     });
     ops.push(upgradeOp);
 
+    // Add a new draft post
+    upgradeOp = models.Post.findOne({slug: fixtures.posts_0_7[0].slug, status: 'all'}, options).then(function (post) {
+        if (!post) {
+            logInfo('Adding 0.7 upgrade post fixture');
+            // Set the published_at timestamp, but keep the post as a draft so doesn't appear on the frontend
+            // This is a hack to ensure that this post appears at the very top of the drafts list, because
+            // unpublished posts always appear first
+            fixtures.posts_0_7[0].published_at = Date.now();
+            return models.Post.add(fixtures.posts_0_7[0], options);
+        }
+    });
+    ops.push(upgradeOp);
+
     return Promise.all(ops);
 };
 
