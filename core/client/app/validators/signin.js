@@ -2,12 +2,13 @@ import BaseValidator from './base';
 
 var SigninValidator = BaseValidator.create({
     properties: ['identification', 'signin', 'forgotPassword'],
+    invalidMessage: 'Email address is not valid',
 
     identification: function (model) {
         var id = model.get('identification');
 
         if (!validator.empty(id) && !validator.isEmail(id)) {
-            model.get('errors').add('identification', 'Invalid email');
+            model.get('errors').add('identification', this.get('invalidMessage'));
             this.invalidate();
         }
     },
@@ -23,6 +24,11 @@ var SigninValidator = BaseValidator.create({
             this.invalidate();
         }
 
+        if (!validator.empty(id) && !validator.isEmail(id)) {
+            model.get('errors').add('identification', this.get('invalidMessage'));
+            this.invalidate();
+        }
+
         if (validator.empty(password)) {
             model.get('errors').add('password', 'Please enter a password');
             this.invalidate();
@@ -35,7 +41,7 @@ var SigninValidator = BaseValidator.create({
         model.get('errors').clear();
 
         if (validator.empty(id) || !validator.isEmail(id)) {
-            model.get('errors').add('identification', 'Invalid email');
+            model.get('errors').add('identification', this.get('invalidMessage'));
             this.invalidate();
         }
     }
