@@ -116,379 +116,566 @@ describe('Tag Model', function () {
         });
     });
 
-    describe('a Post', function () {
-        it('can add a tag', function (done) {
-            var newPost = testUtils.DataGenerator.forModel.posts[0],
-                newTag = testUtils.DataGenerator.forModel.tags[0],
-                createdPostID;
+    describe('Post tag handling, post with NO tags', function () {
+        var postJSON,
+            tagJSON,
+            editOptions,
+            createTag = testUtils.DataGenerator.forKnex.createTag;
 
-            Promise.all([
-                PostModel.add(newPost, context),
-                TagModel.add(newTag, context)
-            ]).then(function (models) {
-                var createdPost = models[0],
-                    createdTag = models[1];
+        beforeEach(function (done) {
+            tagJSON = [];
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.calledWith('post.added').should.be.true;
-                eventSpy.calledWith('tag.added').should.be.true;
+            var post = testUtils.DataGenerator.forModel.posts[0],
+                extraTag1 = createTag({name: 'existing tag a'}),
+                extraTag2 = createTag({name: 'existing-tag-b'}),
+                extraTag3 = createTag({name: 'existing_tag_c'});
 
-                createdPostID = createdPost.id;
-                return createdPost.tags().attach(createdTag);
-            }).then(function () {
-                return PostModel.findOne({id: createdPostID, status: 'all'}, {withRelated: ['tags']});
-            }).then(function (postWithTag) {
-                postWithTag.related('tags').length.should.equal(1);
+            return Promise.props({
+                post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
+                tag1: TagModel.add(extraTag1, context),
+                tag2: TagModel.add(extraTag2, context),
+                tag3: TagModel.add(extraTag3, context)
+            }).then(function (result) {
+                postJSON = result.post.toJSON({include: ['tags']});
+                tagJSON.push(result.tag1.toJSON());
+                tagJSON.push(result.tag2.toJSON());
+                tagJSON.push(result.tag3.toJSON());
+                editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+
                 done();
             }).catch(done);
         });
 
-        it('can remove a tag', function (done) {
-            // The majority of this test is ripped from above, which is obviously a Bad Thing.
-            // Would be nice to find a way to seed data with relations for cases like this,
-            // because there are more DB hits than needed
-            var newPost = testUtils.DataGenerator.forModel.posts[0],
-                newTag = testUtils.DataGenerator.forModel.tags[0],
-                createdTagID,
-                createdPostID;
+        it('should create the test data correctly', function () {
+            // creates two test tags
+            should.exist(tagJSON);
+            tagJSON.should.be.an.Array.with.lengthOf(3);
+            tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
+            tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
+            tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
 
-            Promise.all([
-                PostModel.add(newPost, context),
-                TagModel.add(newTag, context)
-            ]).then(function (models) {
-                var createdPost = models[0],
-                    createdTag = models[1];
-
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.calledWith('post.added').should.be.true;
-                eventSpy.calledWith('tag.added').should.be.true;
-
-                createdPostID = createdPost.id;
-                createdTagID = createdTag.id;
-                return createdPost.tags().attach(createdTag);
-            }).then(function () {
-                return PostModel.findOne({id: createdPostID, status: 'all'}, {withRelated: ['tags']});
-            }).then(function (postWithTag) {
-                return postWithTag.tags().detach(createdTagID);
-            }).then(function () {
-                eventSpy.calledTwice.should.be.true;
-                return PostModel.findOne({id: createdPostID, status: 'all'}, {withRelated: ['tags']});
-            }).then(function (postWithoutTag) {
-                postWithoutTag.related('tags').length.should.equal(0);
-                done();
-            }).catch(done);
+            // creates a test post with no tags
+            should.exist(postJSON);
+            postJSON.title.should.eql('HTML Ipsum');
+            should.exist(postJSON.tags);
         });
 
-        describe('setting tags from an array on update', function () {
-            // When a Post is updated, iterate through the existing tags, and detach any that have since been removed.
-            // It can be assumed that any remaining tags in the update data are newly added.
-            // Create new tags if needed, and attach them to the Post
+        describe('Adding brand new tags', function () {
+            it('can add a single tag', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-            function seedTags(tagNames) {
-                var createOperations = [
-                        PostModel.add(testUtils.DataGenerator.forModel.posts[0], context)
-                    ],
-                    tagModels = tagNames.map(function (tagName) { return TagModel.add({name: tagName}, context); });
+                // Add a single tag to the end of the array
+                newJSON.tags.push(createTag({name: 'tag1'}));
 
-                createOperations = createOperations.concat(tagModels);
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                return Promise.all(createOperations).then(function (models) {
-                    var postModel = models[0],
-                        attachOperations,
-                        i;
-
-                    attachOperations = [];
-                    for (i = 1; i < models.length; i += 1) {
-                        attachOperations.push(postModel.tags().attach(models[i]));
-                    }
-
-                    return Promise.all(attachOperations).then(function () {
-                        return postModel;
-                    });
-                }).then(function (postModel) {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                });
-            }
-
-            it('does nothing if tags haven\'t changed', function (done) {
-                var seededTagNames = ['tag1', 'tag2', 'tag3'];
-
-                seedTags(seededTagNames).then(function (postModel) {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var existingTagData = seededTagNames.map(function (tagName, i) {
-                        return {id: i + 1, name: tagName};
-                    });
-
-                    postModel = postModel.toJSON();
-                    postModel.tags = existingTagData;
-
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function (postModel) {
-                    var tagNames = postModel.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.sort().should.eql(seededTagNames);
-
-                    return TagModel.findAll();
-                }).then(function (tagsFromDB) {
-                    tagsFromDB.length.should.eql(seededTagNames.length);
+                    updatedPost.tags.should.have.lengthOf(1);
+                    updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
 
                     done();
                 }).catch(done);
             });
 
-            it('detaches tags that have been removed', function (done) {
-                var seededTagNames = ['tag1', 'tag2', 'tag3'];
+            it('can add multiple tags', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                seedTags(seededTagNames).then(function (postModel) {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+                // Add a bunch of tags to the end of the array
+                newJSON.tags.push(createTag({name: 'tag1'}));
+                newJSON.tags.push(createTag({name: 'tag2'}));
+                newJSON.tags.push(createTag({name: 'tag3'}));
+                newJSON.tags.push(createTag({name: 'tag4'}));
+                newJSON.tags.push(createTag({name: 'tag5'}));
 
-                    // remove the second tag, and save
-                    tagData.splice(1, 1);
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
-
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function (postModel) {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.sort().should.eql(['tag1', 'tag3']);
-
-                    done();
-                }).catch(done);
-            });
-
-            it('attaches tags that are new to the post, but already exist in the database', function (done) {
-                var seededTagNames = ['tag1', 'tag2'],
-                    postModel;
-
-                seedTags(seededTagNames).then(function (_postModel) {
-                    postModel = _postModel;
-                    return TagModel.add({name: 'tag3'}, context);
-                }).then(function () {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
-
-                    // add the additional tag, and save
-                    tagData.push({id: 3, name: 'tag3'});
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
-
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function () {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map(function (t) { return t.attributes.name; }),
-                        tagIds = _.pluck(tagModels, 'id');
-                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
-
-                    // make sure it hasn't just added a new tag with the same name
-                    // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(3);
+                    updatedPost.tags.should.have.lengthOf(5);
+                    updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
+                    updatedPost.tags.should.have.enumerable(1).with.property('name', 'tag2');
+                    updatedPost.tags.should.have.enumerable(2).with.property('name', 'tag3');
+                    updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
+                    updatedPost.tags.should.have.enumerable(4).with.property('name', 'tag5');
 
                     done();
                 }).catch(done);
             });
 
-            it('creates and attaches a tag that is new to the Tags table', function (done) {
-                var seededTagNames = ['tag1', 'tag2'];
+            it('can add multiple tags with conflicting slugs', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                seedTags(seededTagNames).then(function (postModel) {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+                // Add conflicting tags to the end of the array
+                newJSON.tags.push({name: 'C'});
+                newJSON.tags.push({name: 'C++'});
+                newJSON.tags.push({name: 'C#'});
 
-                    // add the additional tag, and save
-                    tagData.push({id: null, name: 'tag3'});
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function (postModel) {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
+                    updatedPost.tags.should.have.lengthOf(3);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'C', slug: 'c'});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'C++', slug: 'c-2'});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'C#', slug: 'c-3'});
+
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('Adding pre-existing tags', function () {
+            it('can add a single tag', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
+
+                // Add a single pre-existing tag
+                newJSON.tags.push(tagJSON[0]);
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(1);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'existing tag a', id: tagJSON[0].id});
 
                     done();
                 }).catch(done);
             });
 
-            it('creates and attaches multiple tags that are new to the Tags table', function (done) {
-                var seededTagNames = ['tag1'];
+            it('can add multiple tags', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                seedTags(seededTagNames).then(function (postModel) {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+                // Add many preexisting tags
+                newJSON.tags.push(tagJSON[0]);
+                newJSON.tags.push(tagJSON[1]);
+                newJSON.tags.push(tagJSON[2]);
 
-                    // add the additional tags, and save
-                    tagData.push({id: null, name: 'tag2'});
-                    tagData.push({id: null, name: 'tag3'});
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
-
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function (postModel) {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagNames = reloadedPost.related('tags').models.map(function (t) { return t.attributes.name; });
-                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
+                    updatedPost.tags.should.have.lengthOf(3);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'existing-tag-b', id: tagJSON[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'existing_tag_c', id: tagJSON[2].id});
 
                     done();
                 }).catch(done);
             });
 
-            it('attaches one tag that exists in the Tags database and one tag that is new', function (done) {
-                var seededTagNames = ['tag1'],
-                    postModel;
+            it('can add multiple tags in wrong order', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                seedTags(seededTagNames).then(function (_postModel) {
-                    postModel = _postModel;
-                    return TagModel.add({name: 'tag2'}, context);
-                }).then(function () {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+                // Add tags to the array
+                newJSON.tags.push(tagJSON[2]);
+                newJSON.tags.push(tagJSON[0]);
+                newJSON.tags.push(tagJSON[1]);
 
-                    // Add the tag that exists in the database
-                    tagData.push({id: 2, name: 'tag2'});
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                    // Add the tag that doesn't exist in the database
-                    tagData.push({id: 3, name: 'tag3'});
+                    updatedPost.tags.should.have.lengthOf(3);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'existing_tag_c', id: tagJSON[2].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'existing-tag-b', id: tagJSON[1].id});
 
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
+                    done();
+                }).catch(done);
+            });
+        });
 
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function () {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map(function (t) { return t.attributes.name; }),
-                        tagIds = _.pluck(tagModels, 'id');
+        describe('Adding combinations', function () {
+            it('can add a combination of new and pre-existing tags', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3']);
+                // Add a bunch of new and existing tags to the array
+                newJSON.tags.push({name: 'tag1'});
+                newJSON.tags.push({name: 'existing tag a'});
+                newJSON.tags.push({name: 'tag3'});
+                newJSON.tags.push({name: 'existing-tag-b'});
+                newJSON.tags.push({name: 'tag5'});
+                newJSON.tags.push({name: 'existing_tag_c'});
 
-                    // make sure it hasn't just added a new tag with the same name
-                    // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(3);
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(6);
+                    updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag1');
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(2).with.property('name', 'tag3');
+                    updatedPost.tags.should.have.enumerable(3).with.properties({name: 'existing-tag-b', id: tagJSON[1].id});
+                    updatedPost.tags.should.have.enumerable(4).with.property('name', 'tag5');
+                    updatedPost.tags.should.have.enumerable(5).with.properties({name: 'existing_tag_c', id: tagJSON[2].id});
+
+                    done();
+                }).catch(done);
+            });
+        });
+    });
+
+    describe('Post tag handling, post with tags', function () {
+        var postJSON,
+            tagJSON,
+            editOptions,
+            createTag = testUtils.DataGenerator.forKnex.createTag;
+
+        beforeEach(function (done) {
+            tagJSON = [];
+
+            var post = testUtils.DataGenerator.forModel.posts[0],
+                postTags = [
+                    createTag({name: 'tag1'}),
+                    createTag({name: 'tag2'}),
+                    createTag({name: 'tag3'})
+                ],
+                extraTags = [
+                    createTag({name: 'existing tag a'}),
+                    createTag({name: 'existing-tag-b'}),
+                    createTag({name: 'existing_tag_c'})
+                ];
+
+            post.tags = postTags;
+
+            return Promise.props({
+                post: PostModel.add(post, _.extend({}, context, {withRelated: ['tags']})),
+                tag1: TagModel.add(extraTags[0], context),
+                tag2: TagModel.add(extraTags[1], context),
+                tag3: TagModel.add(extraTags[2], context)
+            }).then(function (result) {
+                postJSON = result.post.toJSON({include: ['tags']});
+                tagJSON.push(result.tag1.toJSON());
+                tagJSON.push(result.tag2.toJSON());
+                tagJSON.push(result.tag3.toJSON());
+                editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+
+                done();
+            });
+        });
+
+        it('should create the test data correctly', function () {
+            // creates a test tag
+            should.exist(tagJSON);
+            tagJSON.should.be.an.Array.with.lengthOf(3);
+            tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
+            tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
+            tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
+
+            // creates a test post with an array of tags in the correct order
+            should.exist(postJSON);
+            postJSON.title.should.eql('HTML Ipsum');
+            should.exist(postJSON.tags);
+            postJSON.tags.should.be.an.Array.and.have.lengthOf(3);
+            postJSON.tags.should.have.enumerable(0).with.property('name', 'tag1');
+            postJSON.tags.should.have.enumerable(1).with.property('name', 'tag2');
+            postJSON.tags.should.have.enumerable(2).with.property('name', 'tag3');
+        });
+
+        describe('Adding brand new tags', function () {
+            it('can add a single tag to the end of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
+
+                // Add a single tag to the end of the array
+                newJSON.tags.push(createTag({name: 'tag4'}));
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(4);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
 
                     done();
                 }).catch(done);
             });
 
-            it('attaches one tag that exists in the Tags database and two tags that are new', function (done) {
-                var seededTagNames = ['tag1'],
-                    postModel;
+            it('can add a single tag to the beginning of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                seedTags(seededTagNames).then(function (_postModel) {
-                    postModel = _postModel;
-                    return TagModel.add({name: 'tag2'}, context);
-                }).then(function () {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = seededTagNames.map(function (tagName, i) { return {id: i + 1, name: tagName}; });
+                // Add a single tag to the beginning of the array
+                newJSON.tags = [createTag({name: 'tag4'})].concat(postJSON.tags);
 
-                    // Add the tag that exists in the database
-                    tagData.push({id: 2, name: 'tag2'});
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                    // Add the tags that doesn't exist in the database
-                    tagData.push({id: 3, name: 'tag3'});
-                    tagData.push({id: 4, name: 'tag4'});
+                    updatedPost.tags.should.have.lengthOf(4);
+                    updatedPost.tags.should.have.enumerable(0).with.property('name', 'tag4');
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(3).with.properties({name: 'tag3', id: postJSON.tags[2].id});
 
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
+                    done();
+                }).catch(done);
+            });
+        });
 
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function () {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagModels = reloadedPost.related('tags').models,
-                        tagNames = tagModels.map(function (t) { return t.get('name'); }),
-                        tagIds = _.pluck(tagModels, 'id');
+        describe('Adding pre-existing tags', function () {
+            it('can add a single tag to the end of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                    tagNames.sort().should.eql(['tag1', 'tag2', 'tag3', 'tag4']);
+                // Add a single pre-existing tag to the end of the array
+                newJSON.tags.push(tagJSON[0]);
 
-                    // make sure it hasn't just added a new tag with the same name
-                    // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(4);
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(4);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(3).with.properties({name: 'existing tag a', id: tagJSON[0].id});
 
                     done();
                 }).catch(done);
             });
 
-            it('attaches two new tags and resolves conflicting slugs', function (done) {
-                var tagData = [];
+            it('can add a single tag to the beginning of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                // Add the tags that don't exist in the database and have potentially
-                // conflicting slug names
-                tagData.push({id: 1, name: 'C'});
-                tagData.push({id: 2, name: 'C++'});
+                // Add an existing tag to the beginning of the array
+                newJSON.tags = [tagJSON[0]].concat(postJSON.tags);
 
-                PostModel.add(testUtils.DataGenerator.forModel.posts[0], context).then(function (postModel) {
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
 
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id})).then(function () {
-                        return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                    }).then(function (reloadedPost) {
-                        var tagModels = reloadedPost.related('tags').models,
-                            tagNames = tagModels.map(function (t) { return t.get('name'); }),
-                            tagIds = _.pluck(tagModels, 'id');
-
-                        tagNames.sort().should.eql(['C', 'C++']);
-
-                        // make sure it hasn't just added a new tag with the same name
-                        // Don't expect a certain order in results - check for number of items!
-                        Math.max.apply(Math, tagIds).should.eql(2);
-
-                        done();
-                    });
-                }).catch(done);
-            });
-
-            it('correctly creates non-conflicting slugs', function (done) {
-                var seededTagNames = ['tag1'],
-                    postModel;
-
-                seedTags(seededTagNames).then(function (_postModel) {
-                    postModel = _postModel;
-                    return TagModel.add({name: 'tagc'}, context);
-                }).then(function () {
-                    // the tag API expects tags to be provided like {id: 1, name: 'draft'}
-                    var tagData = [];
-
-                    tagData.push({id: 2, name: 'tagc'});
-                    tagData.push({id: 3, name: 'tagc++'});
-
-                    postModel = postModel.toJSON();
-                    postModel.tags = tagData;
-
-                    return PostModel.edit(postModel, _.extend({}, context, {id: postModel.id, withRelated: ['tags']}));
-                }).then(function () {
-                    return PostModel.findOne({id: postModel.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (reloadedPost) {
-                    var tagModels = reloadedPost.related('tags').models,
-                        tagSlugs = tagModels.map(function (t) { return t.get('slug'); }),
-                        tagIds = _.pluck(tagModels, 'id');
-
-                    tagSlugs.sort().should.eql(['tagc', 'tagc-2']);
-
-                    // make sure it hasn't just added a new tag with the same name
-                    // Don't expect a certain order in results - check for number of items!
-                    Math.max.apply(Math, tagIds).should.eql(3);
+                    updatedPost.tags.should.have.lengthOf(4);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(3).with.properties({name: 'tag3', id: postJSON.tags[2].id});
 
                     done();
                 }).catch(done);
             });
 
-            it('can add a tag to a post on creation', function (done) {
-                var newPost = _.extend({}, testUtils.DataGenerator.forModel.posts[0], {tags: [{name: 'test_tag_1'}]});
+            it('can add a single tag to the middle of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
 
-                PostModel.add(newPost, context).then(function (createdPost) {
-                    return PostModel.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['tags']});
-                }).then(function (postWithTag) {
-                    postWithTag.related('tags').length.should.equal(1);
+                // Add a single pre-existing tag to the middle of the array
+                newJSON.tags = postJSON.tags.slice(0, 1).concat([tagJSON[0]]).concat(postJSON.tags.slice(1));
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(4);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(3).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('Removing tags', function () {
+            it('can remove a single tag from the end of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
+
+                // Remove a single tag from the end of the array
+                newJSON.tags = postJSON.tags.slice(0, -1);
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(2);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can remove a single tag from the beginning of the tags array', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
+
+                // Remove a single tag from the beginning of the array
+                newJSON.tags = postJSON.tags.slice(1);
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(2);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can remove all tags', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
+
+                // Remove all the tags
+                newJSON.tags = [];
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(0);
+
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('Reordering tags', function () {
+            it('can reorder the first tag to be the last', function (done) {
+                var newJSON = _.cloneDeep(postJSON),
+                    firstTag = [postJSON.tags[0]];
+
+                // Reorder the tags, so that the first tag is moved to the end
+                newJSON.tags = postJSON.tags.slice(1).concat(firstTag);
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(3);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can reorder the last tag to be the first', function (done) {
+                var newJSON = _.cloneDeep(postJSON),
+                    lastTag = [postJSON.tags[2]];
+
+                // Reorder the tags, so that the last tag is moved to the beginning
+                newJSON.tags = lastTag.concat(postJSON.tags.slice(0, -1));
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(3);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('Combination updates', function () {
+            it('can add a combination of new and pre-existing tags', function (done) {
+                var newJSON = _.cloneDeep(postJSON);
+
+                // Push a bunch of new and existing tags to the end of the array
+                newJSON.tags.push({name: 'tag4'});
+                newJSON.tags.push({name: 'existing tag a'});
+                newJSON.tags.push({name: 'tag5'});
+                newJSON.tags.push({name: 'existing-tag-b'});
+                newJSON.tags.push({name: 'bob'});
+                newJSON.tags.push({name: 'existing_tag_c'});
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(9);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(3).with.property('name', 'tag4');
+                    updatedPost.tags.should.have.enumerable(4).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(5).with.property('name', 'tag5');
+                    updatedPost.tags.should.have.enumerable(6).with.properties({name: 'existing-tag-b', id: tagJSON[1].id});
+                    updatedPost.tags.should.have.enumerable(7).with.property('name', 'bob');
+                    updatedPost.tags.should.have.enumerable(8).with.properties({name: 'existing_tag_c', id: tagJSON[2].id});
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can reorder the first tag to be the last and add a tag to the beginning', function (done) {
+                var newJSON = _.cloneDeep(postJSON),
+                    firstTag = [postJSON.tags[0]];
+
+                // Add a new tag to the beginning, and move the original first tag to the end
+                newJSON.tags = [tagJSON[0]].concat(postJSON.tags.slice(1)).concat(firstTag);
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(4);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(3).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can reorder the first tag to be the last, remove the original last tag & add a tag to the beginning', function (done) {
+                var newJSON = _.cloneDeep(postJSON),
+                    firstTag = [newJSON.tags[0]];
+
+                // And an existing tag to the beginning of the array, move the original first tag to the end and remove the original last tag
+                newJSON.tags = [tagJSON[0]].concat(newJSON.tags.slice(1, -1)).concat(firstTag);
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(3);
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+
+                    done();
+                }).catch(done);
+            });
+
+            it('can reorder original tags, remove one, and add new and existing tags', function (done) {
+                var newJSON = _.cloneDeep(postJSON),
+                    firstTag = [newJSON.tags[0]];
+
+                // Reorder original 3 so that first is at the end
+                newJSON.tags = newJSON.tags.slice(1).concat(firstTag);
+
+                // add an existing tag in the middle
+                newJSON.tags = newJSON.tags.slice(0, 1).concat({name: 'existing-tag-b'}).concat(newJSON.tags.slice(1));
+
+                // add a brand new tag in the middle
+                newJSON.tags = newJSON.tags.slice(0, 3).concat({name: 'betty'}).concat(newJSON.tags.slice(3));
+
+                // Add some more tags to the end
+                newJSON.tags.push({name: 'bob'});
+                newJSON.tags.push({name: 'existing tag a'});
+
+                // Edit the post
+                return PostModel.edit(newJSON, editOptions).then(function (updatedPost) {
+                    updatedPost = updatedPost.toJSON({include: ['tags']});
+
+                    updatedPost.tags.should.have.lengthOf(7);
+
+                    updatedPost.tags.should.have.enumerable(0).with.properties({name: 'tag2', id: postJSON.tags[1].id});
+                    updatedPost.tags.should.have.enumerable(1).with.properties({name: 'existing-tag-b', id: tagJSON[1].id});
+                    updatedPost.tags.should.have.enumerable(2).with.properties({name: 'tag3', id: postJSON.tags[2].id});
+                    updatedPost.tags.should.have.enumerable(3).with.property('name', 'betty');
+                    updatedPost.tags.should.have.enumerable(4).with.properties({name: 'tag1', id: postJSON.tags[0].id});
+                    updatedPost.tags.should.have.enumerable(5).with.property('name', 'bob');
+                    updatedPost.tags.should.have.enumerable(6).with.properties({name: 'existing tag a', id: tagJSON[0].id});
+
                     done();
                 }).catch(done);
             });

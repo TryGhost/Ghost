@@ -89,18 +89,18 @@ to003 = function (options) {
 
     // To safely upgrade, we need to clear up the existing permissions and permissions_roles before recreating the new
     // full set of permissions defined as of version 003
-    models.Permissions.forge().fetch().then(function (permissions) {
+    return models.Permissions.forge().fetch().then(function (permissions) {
         logInfo('Removing old permissions');
         permissions.each(function (permission) {
             ops.push(permission.related('roles').detach().then(function () {
                 return permission.destroy();
             }));
         });
-    });
 
-    // Now we can perform the normal populate
-    return Promise.all(ops).then(function () {
-        return populate(options);
+        // Now we can perform the normal populate
+        return Promise.all(ops).then(function () {
+            return populate(options);
+        });
     });
 };
 
