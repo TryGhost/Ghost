@@ -21,9 +21,8 @@ export default Ember.Controller.extend(ValidationEngine, {
                 authStrategy = 'ghost-authenticator:oauth2-password-grant',
                 data = model.getProperties(this.authProperties);
 
-            this.get('session').authenticate(authStrategy, data).then(function () {
-                self.toggleProperty('loggingIn');
-            }).catch(function (err) {
+            // Authentication transitions to posts.index, we can leave spinner running unless there is an error
+            this.get('session').authenticate(authStrategy, data).catch(function (err) {
                 self.toggleProperty('loggingIn');
 
                 if (err.errors) {
