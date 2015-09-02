@@ -236,12 +236,15 @@ tt {
 
 code,
 tt {
-    padding: 0.2em 0.4em;
-    background: color(#dfe1e3 lightness(+2%));
+    padding: 0.2rem 0.3rem 0.1rem;
+    border: color(#f5f7f8 lightness(-10%)) 1px solid;
+    background: #f5f7f8;
     border-radius: 2px;
-    vertical-align: top;
+    color: #c25;
+    vertical-align: middle;
     white-space: pre-wrap;
-    font-size: 0.85em;
+    font-size: 0.8em;
+    line-height: 1em;
 }
 
 pre {
@@ -249,7 +252,8 @@ pre {
     margin: 1.6em 0;
     padding: 10px;
     width: 100%;
-    background: color(#dfe1e3 lightness(+2%));
+    border: color(#f5f7f8 lightness(-10%)) 1px solid;
+    background: #f5f7f8;
     border-radius: 3px;
     white-space: pre;
     font-family: var(--font-family-mono);
@@ -261,6 +265,7 @@ pre tt {
     padding: 0;
     border: none;
     background: transparent;
+    color: inherit;
     white-space: pre-wrap;
     font-size: inherit;
 }
