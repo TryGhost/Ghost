@@ -119,7 +119,7 @@ export default Ember.Component.extend({
 
         onInit: function () {
             var selectize = this.get('_selectize'),
-                html = '<div class="dropdown-empty-message">No results...</div>';
+                html = '<div class="dropdown-empty-message">Nothing found&hellip;</div>';
 
             selectize.$empty_results_container = $(html);
             selectize.$empty_results_container.hide();
