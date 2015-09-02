@@ -9,14 +9,17 @@ var Promise     = require('bluebird'),
     sequence    = require('../../utils/sequence'),
     _           = require('lodash'),
     errors      = require('../../errors'),
+    config      = require('../../config'),
     utils       = require('../../utils'),
     models      = require('../../models'),
     fixtures    = require('./fixtures'),
     permissions = require('./permissions'),
+    notifications = require('../../api/notifications'),
 
     // Private
     logInfo,
     to003,
+    to004,
     convertAdminToOwner,
     createOwner,
     options = {context: {internal: true}},
@@ -34,7 +37,7 @@ logInfo = function logInfo(message) {
  * Changes an admin user to have the owner role
  * @returns {Promise|*}
  */
-convertAdminToOwner = function () {
+convertAdminToOwner = function convertAdminToOwner() {
     var adminUser;
 
     return models.User.findOne({role: 'Administrator'}).then(function (user) {
@@ -53,7 +56,7 @@ convertAdminToOwner = function () {
  * Creates the user fixture and gives it the owner role
  * @returns {Promise|*}
  */
-createOwner = function () {
+createOwner = function createOwner() {
     var user = fixtures.users[0];
 
     return models.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
@@ -65,7 +68,7 @@ createOwner = function () {
     });
 };
 
-populate = function () {
+populate = function populate() {
     var ops = [],
         relations = [],
         Post = models.Post,
@@ -119,21 +122,19 @@ populate = function () {
  * Note: At the moment this is pretty adhoc & untestable, in future it would be better to have a config based system.
  * @returns {Promise|*}
  */
-to003 = function () {
+to003 = function to003() {
     var ops = [],
         upgradeOp,
         Role = models.Role,
         Client = models.Client;
 
-    logInfo('Upgrading fixtures');
+    logInfo('Upgrading fixtures to 003');
 
     // Add the client fixture if missing
-    upgradeOp = Client.findOne({secret: fixtures.clients[0].secret}).then(function (client) {
+    upgradeOp = Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
         if (!client) {
-            logInfo('Adding client fixture');
-            _.each(fixtures.clients, function (client) {
-                return Client.add(client, options);
-            });
+            logInfo('Adding ghost-admin client fixture');
+            return Client.add(fixtures.clients[0], options);
         }
     });
     ops.push(upgradeOp);
@@ -156,13 +157,150 @@ to003 = function () {
     });
 };
 
-update = function (fromVersion, toVersion) {
+/**
+ * Update ghost_foot to include a CDN of jquery if the DB is migrating from
+ * @return {Promise}
+ */
+to004 = function to004() {
+    var value,
+        ops = [],
+        upgradeOp,
+        jquery = [
+            '<!-- You can safely delete this line if your theme does not require jQuery -->\n',
+            '<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>\n\n'
+        ],
+        privacyMessage = [
+            'jQuery has been removed from Ghost core and is now being loaded from the jQuery Foundation\'s CDN.',
+            'This can be changed or removed in your <strong>Code Injection</strong> settings area.'
+        ];
+
+    logInfo('Upgrading fixtures to 004');
+
+    // add jquery setting and privacy info
+    upgradeOp = models.Settings.findOne('ghost_foot').then(function (setting) {
+        if (setting) {
+            logInfo('Adding jQuery link to ghost_foot');
+            value = setting.attributes.value;
+            value = jquery.join('') + value;
+            return models.Settings.edit({key: 'ghost_foot', value: value}, options).then(function () {
+                if (_.isEmpty(config.privacy)) {
+                    return Promise.resolve();
+                }
+                logInfo(privacyMessage.join(' ').replace(/<\/?strong>/g, ''));
+                return notifications.add({notifications: [{
+                    type: 'info',
+                    message: privacyMessage.join(' ')
+                }]}, options);
+            });
+        }
+    });
+    ops.push(upgradeOp);
+
+    // change `type` for protected blog `isPrivate` setting
+    upgradeOp = models.Settings.findOne('isPrivate').then(function (setting) {
+        if (setting) {
+            logInfo('Update isPrivate setting');
+            return models.Settings.edit({key: 'isPrivate', type: 'private'}, options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // change `type` for protected blog `password` setting
+    upgradeOp = models.Settings.findOne('password').then(function (setting) {
+        if (setting) {
+            logInfo('Update password setting');
+            return models.Settings.edit({key: 'password', type: 'private'}, options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // Update ghost-admin client fixture
+    // ghost-admin should exist from 003 version
+    upgradeOp = models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
+        if (client) {
+            logInfo('Update ghost-admin client fixture');
+            return models.Client.edit(fixtures.clients[0], _.extend({}, options, {id: client.id}));
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // add ghost-frontend client if missing
+    upgradeOp = models.Client.findOne({slug: fixtures.clients[1].slug}).then(function (client) {
+        if (!client) {
+            logInfo('Add ghost-frontend client fixture');
+            return models.Client.add(fixtures.clients[1], options);
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // clean up broken tags
+    upgradeOp = models.Tag.findAll(options).then(function (tags) {
+        var tagOps = [];
+        if (tags) {
+            tags.each(function (tag) {
+                var name = tag.get('name'),
+                    updated = name.replace(/^(,+)/, '').trim();
+
+                // If we've ended up with an empty string, default to just 'tag'
+                updated = updated === '' ? 'tag' : updated;
+
+                if (name !== updated) {
+                    tagOps.push(tag.save({name: updated}, options));
+                }
+            });
+            if (tagOps.length > 0) {
+                logInfo('Cleaning ' + tagOps.length + ' malformed tags');
+                return Promise.all(tagOps);
+            }
+        }
+        return Promise.resolve();
+    });
+    ops.push(upgradeOp);
+
+    // Add post_tag order
+    upgradeOp = models.Post.findAll(_.extend({}, options, {withRelated: ['tags']})).then(function (posts) {
+        var tagOps = [];
+        if (posts) {
+            posts.each(function (post) {
+                var order = 0;
+                post.related('tags').each(function (tag) {
+                    tagOps.push(post.tags().updatePivot(
+                        {sort_order: order}, _.extend({}, options, {query: {where: {tag_id: tag.id}}})
+                    ));
+                    order += 1;
+                });
+            });
+        }
+        if (tagOps.length > 0) {
+            logInfo('Updating order on ' + tagOps.length + ' tags');
+            return Promise.all(tagOps);
+        }
+    });
+    ops.push(upgradeOp);
+
+    return Promise.all(ops);
+};
+
+update = function update(fromVersion, toVersion) {
+    var ops = [];
+
     logInfo('Updating fixtures');
     // Are we migrating to, or past 003?
     if ((fromVersion < '003' && toVersion >= '003') ||
         fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
-        return to003();
+        ops.push(to003);
     }
+
+    if (fromVersion < '004' && toVersion === '004' ||
+        fromVersion === '004' && toVersion === '004' && process.env.FORCE_MIGRATION) {
+        ops.push(to004);
+    }
+
+    return sequence(ops);
 };
 
 module.exports = {
