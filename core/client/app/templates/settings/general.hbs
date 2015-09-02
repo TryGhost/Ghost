@@ -10,14 +10,14 @@
         <form id="settings-general" novalidate="novalidate">
             <fieldset>
 
-                {{#gh-form-group errors=model.errors property="title"}}
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="title"}}
                     <label for="blog-title">Blog Title</label>
                     {{gh-input id="blog-title" class="gh-input" name="general[title]" type="text" value=model.title focusOut=(action "validate" "title")}}
                     {{gh-error-message errors=model.errors property="title"}}
                     <p>The name of your blog</p>
                 {{/gh-form-group}}
 
-                {{#gh-form-group class="description-container" errors=model.errors property="description"}}
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="description" class="description-container"}}
                     <label for="blog-description">Blog Description</label>
                     {{gh-textarea id="blog-description" class="gh-input" name="general[description]" value=model.description focusOut=(action "validate" "description")}}
                     {{gh-error-message errors=model.errors property="description"}}
@@ -93,7 +93,7 @@
                 </div>
 
                 {{#if model.isPrivate}}
-                {{#gh-form-group errors=model.errors property="password"}}
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
                     {{gh-input name="general[password]" type="text" value=model.password focusOut=(action "validate" "password")}}
                     {{gh-error-message errors=model.errors property="password"}}
                     <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>

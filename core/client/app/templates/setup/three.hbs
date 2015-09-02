@@ -6,8 +6,8 @@
 <img class="gh-flow-faces" src="{{gh-path 'admin' 'img/users.png'}}" alt="" />
 
 <form class="gh-flow-invite">
-    {{#gh-form-group errors=errors property="users"}}
-        <label>Enter one email address per line, we’ll handle the rest! <i class="icon-mail"></i></label>
+    {{#gh-form-group errors=errors hasValidated=hasValidated property="users"}}
+        <label for="users">Enter one email address per line, we’ll handle the rest! <i class="icon-mail"></i></label>
         {{gh-textarea name="users" value=users required="required" focusOut=(action "validate")}}
     {{/gh-form-group}}
 
