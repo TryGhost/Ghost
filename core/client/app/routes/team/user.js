@@ -46,10 +46,16 @@ var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             model.rollback();
         }
 
+        model.get('errors').clear();
+
         this._super();
     },
 
     actions: {
+        didTransition: function () {
+            this.modelFor('team.user').get('errors').clear();
+        },
+
         save: function () {
             this.get('controller').send('save');
         }

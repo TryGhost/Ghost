@@ -1,7 +1,10 @@
 import Ember from 'ember';
+import ValidationEngine from 'ghost/mixins/validation-engine';
 
-export default Ember.Controller.extend({
+export default Ember.Controller.extend(ValidationEngine, {
     notifications: Ember.inject.service(),
+
+    validationType: 'signup',
 
     role: null,
     authorRole: null,
@@ -42,13 +45,13 @@ export default Ember.Controller.extend({
         confirmAccept: function () {
             var email = this.get('email'),
                 role = this.get('role'),
+                validationErrors = this.get('errors.messages'),
                 self = this,
                 newUser;
 
             // reset the form and close the modal
-            self.set('email', '');
-            self.set('role', self.get('authorRole'));
-            self.send('closeModal');
+            this.set('email', '');
+            this.set('role', self.get('authorRole'));
 
             this.store.find('user').then(function (result) {
                 var invitedUser = result.findBy('email', email);
@@ -82,7 +85,13 @@ export default Ember.Controller.extend({
                         // save is overridden in order to validate, we probably
                         // want to use inline-validations here and only show an
                         // alert if we have an actual error
-                        self.get('notifications').showErrors(errors);
+                        if (errors) {
+                            self.get('notifications').showErrors(errors);
+                        } else if (validationErrors) {
+                            self.get('notifications').showAlert(validationErrors.toString(), {type: 'error'});
+                        }
+                    }).finally(function () {
+                        self.get('errors').clear();
                     });
                 }
             });
