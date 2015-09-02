@@ -7,7 +7,7 @@ export default Ember.Component.extend({
     selection: null,
     content: [],
     isLoading: false,
-    contentExpiry: 60 * 1000,
+    contentExpiry: 10 * 1000,
     contentExpiresAt: false,
 
     posts: Ember.computed.filterBy('content', 'category', 'Posts'),
