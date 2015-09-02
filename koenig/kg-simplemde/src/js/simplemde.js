@@ -720,8 +720,7 @@ function SimpleMDE(options) {
 
 	if(options.element) {
 		this.element = options.element;
-	}
-	else if(options.element === null) {
+	} else if(options.element === null) {
 		// This means that the element option was specified, but no element was found
 		console.log("SimpleMDE: Error. No element was found.");
 		return;
