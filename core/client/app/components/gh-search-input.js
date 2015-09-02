@@ -78,6 +78,12 @@ export default Ember.Component.extend({
         });
     },
 
+    _keepSelectionClear: Ember.observer('selection', function () {
+        if (this.get('selection') !== null) {
+            this.set('selection', null);
+        }
+    }),
+
     _setKeymasterScope: function () {
         key.setScope('search-input');
     },
@@ -105,7 +111,6 @@ export default Ember.Component.extend({
                 transition = self.get('_routing.router').transitionTo('team.user', selected.id);
             }
 
-            self.set('selection', '');
             transition.then(function () {
                 if (self.get('_selectize').$control_input.is(':focus')) {
                     self._setKeymasterScope();
