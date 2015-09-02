@@ -86,11 +86,16 @@ function getState(cm, pos) {
 			ret.italic = true;
 		} else if(data === 'quote') {
 			ret.quote = true;
+		} else if(data === 'strikethrough') {
+			ret.strikethrough = true;
 		}
 	}
 	return ret;
 }
 
+
+// Saved overflow setting
+var saved_overflow = "";
 
 /**
  * Toggle full screen of the editor.
@@ -99,18 +104,27 @@ function toggleFullScreen(editor) {
 	// Set fullscreen
 	var cm = editor.codemirror;
 	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-	
-	
+
+
+	// Prevent scrolling on body during fullscreen active
+	if(cm.getOption("fullScreen")) {
+		saved_overflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+	} else {
+		document.body.style.overflow = saved_overflow;
+	}
+
+
 	// Update toolbar class
 	var wrap = cm.getWrapperElement();
-	
+
 	if(!/fullscreen/.test(wrap.previousSibling.className)) {
 		wrap.previousSibling.className += " fullscreen";
 	} else {
 		wrap.previousSibling.className = wrap.previousSibling.className.replace(/\s*fullscreen\b/, "");
 	}
 
-	
+
 	// Update toolbar button
 	var toolbarButton = editor.toolbarElements.fullscreen;
 
@@ -119,6 +133,12 @@ function toggleFullScreen(editor) {
 	} else {
 		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
 	}
+
+
+	// Hide side by side if needed
+	var sidebyside = cm.getWrapperElement().nextSibling;
+	if(/editor-preview-active-side/.test(sidebyside.className))
+		toggleSideBySide(editor);
 }
 
 
@@ -135,6 +155,14 @@ function toggleBold(editor) {
  */
 function toggleItalic(editor) {
 	_toggleBlock(editor, 'italic', '*');
+}
+
+
+/**
+ * Action for toggling strikethrough.
+ */
+function toggleStrikethrough(editor) {
+	_toggleBlock(editor, 'strikethrough', '~~');
 }
 
 /**
@@ -166,6 +194,30 @@ function toggleHeadingSmaller(editor) {
 function toggleHeadingBigger(editor) {
 	var cm = editor.codemirror;
 	_toggleHeading(cm, 'bigger');
+}
+
+/**
+ * Action for toggling heading size 1
+ */
+function toggleHeading1(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, undefined, 1);
+}
+
+/**
+ * Action for toggling heading size 2
+ */
+function toggleHeading2(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, undefined, 2);
+}
+
+/**
+ * Action for toggling heading size 3
+ */
+function toggleHeading3(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, undefined, 3);
 }
 
 
@@ -236,6 +288,59 @@ function redo(editor) {
 	cm.focus();
 }
 
+
+/**
+ * Toggle side by side preview
+ */
+function toggleSideBySide(editor) {
+	var cm = editor.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var code = wrapper.firstChild;
+	var preview = wrapper.nextSibling;
+	var toolbarButton = editor.toolbarElements["side-by-side"];
+
+	if(/editor-preview-active-side/.test(preview.className)) {
+		preview.className = preview.className.replace(
+			/\s*editor-preview-active-side\s*/g, ''
+		);
+		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
+		wrapper.className = wrapper.className.replace(/\s*CodeMirror-sided\s*/g, ' ');
+	} else {
+		/* When the preview button is clicked for the first time,
+		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
+		 * instead of just appearing.
+		 */
+		setTimeout(function() {
+			if(!cm.getOption("fullScreen")) toggleFullScreen(editor);
+			preview.className += ' editor-preview-active-side'
+		}, 1);
+		toolbarButton.className += ' active';
+		wrapper.className += ' CodeMirror-sided';
+	}
+
+	// Hide normal preview if active
+	var previewNormal = wrapper.lastChild;
+	if(/editor-preview-active/.test(previewNormal.className)) {
+		previewNormal.className = previewNormal.className.replace(
+			/\s*editor-preview-active\s*/g, ''
+		);
+		var toolbar = editor.toolbarElements.preview;
+		var toolbar_div = wrapper.previousSibling;
+		toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
+		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
+	}
+
+	// Start preview with the current text
+	var parse = editor.constructor.markdown;
+	preview.innerHTML = parse(cm.getValue());
+
+	// Updates preview
+	cm.on('update', function() {
+		preview.innerHTML = parse(cm.getValue());
+	});
+}
+
+
 /**
  * Preview action.
  */
@@ -270,6 +375,11 @@ function togglePreview(editor) {
 	}
 	var text = cm.getValue();
 	preview.innerHTML = parse(text);
+
+	// Turn off side by side if needed
+	var sidebyside = cm.getWrapperElement().nextSibling;
+	if(/editor-preview-active-side/.test(sidebyside.className))
+		toggleSideBySide(editor);
 }
 
 function _replaceSelection(cm, active, start, end) {
@@ -299,7 +409,7 @@ function _replaceSelection(cm, active, start, end) {
 }
 
 
-function _toggleHeading(cm, direction) {
+function _toggleHeading(cm, direction, size) {
 	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
 
@@ -309,21 +419,53 @@ function _toggleHeading(cm, direction) {
 		(function(i) {
 			var text = cm.getLine(i);
 			var currHeadingLevel = text.search(/[^#]/);
-			if (currHeadingLevel <= 0) {
-				if (direction == 'bigger') {
-					text = '###### ' + text;
+
+			if(direction !== undefined) {
+				if(currHeadingLevel <= 0) {
+					if(direction == 'bigger') {
+						text = '###### ' + text;
+					} else {
+						text = '# ' + text;
+					}
+				} else if(currHeadingLevel == 6 && direction == 'smaller') {
+					text = text.substr(7);
+				} else if(currHeadingLevel == 1 && direction == 'bigger') {
+					text = text.substr(2);
 				} else {
-					text = '# ' + text;
+					if(direction == 'bigger') {
+						text = text.substr(1);
+					} else {
+						text = '#' + text;
+					}
 				}
-			} else if ((currHeadingLevel == 6 && direction == 'smaller') || (currHeadingLevel == 1 && direction == 'bigger')) {
-				text = text.substr(7);
 			} else {
-				if (direction == 'bigger') {
-					text = text.substr(1);
+				if(size == 1) {
+					if(currHeadingLevel <= 0) {
+						text = '# ' + text;
+					} else if(currHeadingLevel == size) {
+						text = text.substr(currHeadingLevel + 1);
+					} else {
+						text = '# ' + text.substr(currHeadingLevel + 1);
+					}
+				} else if(size == 2) {
+					if(currHeadingLevel <= 0) {
+						text = '## ' + text;
+					} else if(currHeadingLevel == size) {
+						text = text.substr(currHeadingLevel + 1);
+					} else {
+						text = '## ' + text.substr(currHeadingLevel + 1);
+					}
 				} else {
-					text = '#' + text;
+					if(currHeadingLevel <= 0) {
+						text = '### ' + text;
+					} else if(currHeadingLevel == size) {
+						text = text.substr(currHeadingLevel + 1);
+					} else {
+						text = '### ' + text.substr(currHeadingLevel + 1);
+					}
 				}
 			}
+
 			cm.replaceRange(text, {
 				line: i,
 				ch: 0
@@ -399,6 +541,9 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 		} else if(type == "italic") {
 			start = start.replace(/(\*|_)(?![\s\S]*(\*|_))/, "");
 			end = end.replace(/(\*|_)/, "");
+		} else if(type == "strikethrough") {
+			start = start.replace(/(\*\*|~~)(?![\s\S]*(\*\*|~~))/, "");
+			end = end.replace(/(\*\*|~~)/, "");
 		}
 		cm.replaceRange(start + end, {
 			line: startPoint.line,
@@ -408,7 +553,7 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 			ch: 99999999999999
 		});
 
-		if(type == "bold") {
+		if(type == "bold" || type == "strikethrough") {
 			startPoint.ch -= 2;
 			endPoint.ch -= 2;
 		} else if(type == "italic") {
@@ -423,6 +568,8 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 		} else if(type == "italic") {
 			text = text.split("*").join("");
 			text = text.split("_").join("");
+		} else if(type == "strikethrough") {
+			text = text.split("~~").join("");
 		}
 		cm.replaceSelection(start + text + end);
 
@@ -465,6 +612,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-italic",
 		title: "Italic (Ctrl+I)",
 	},
+	"strikethrough": {
+		name: "strikethrough",
+		action: toggleStrikethrough,
+		className: "fa fa-strikethrough",
+		title: "Strikethrough",
+	},
 	"heading": {
 		name: "heading",
 		action: toggleHeadingSmaller,
@@ -474,14 +627,32 @@ var toolbarBuiltInButtons = {
 	"heading-smaller": {
 		name: "heading-smaller",
 		action: toggleHeadingSmaller,
-		className: "fa fa-header",
+		className: "fa fa-header fa-header-x fa-header-smaller",
 		title: "Smaller Heading (Ctrl+H)",
 	},
 	"heading-bigger": {
 		name: "heading-bigger",
 		action: toggleHeadingBigger,
-		className: "fa fa-lg fa-header",
+		className: "fa fa-header fa-header-x fa-header-bigger",
 		title: "Bigger Heading (Shift+Ctrl+H)",
+	},
+	"heading-1": {
+		name: "heading-1",
+		action: toggleHeading1,
+		className: "fa fa-header fa-header-x fa-header-1",
+		title: "Big Heading",
+	},
+	"heading-2": {
+		name: "heading-2",
+		action: toggleHeading2,
+		className: "fa fa-header fa-header-x fa-header-2",
+		title: "Medium Heading",
+	},
+	"heading-3": {
+		name: "heading-3",
+		action: toggleHeading3,
+		className: "fa fa-header fa-header-x fa-header-3",
+		title: "Small Heading",
 	},
 	"code": {
 		name: "code",
@@ -531,6 +702,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-eye",
 		title: "Toggle Preview (Ctrl+P)",
 	},
+	"side-by-side": {
+		name: "side-by-side",
+		action: toggleSideBySide,
+		className: "fa fa-columns",
+		title: "Toggle Side by Side (F9)",
+	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
@@ -545,7 +722,7 @@ var toolbarBuiltInButtons = {
 	}
 };
 
-var toolbar = ["bold", "italic", "heading",	"|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|",  "preview", "fullscreen", "guide"];
+var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen", "guide"];
 
 /**
  * Interface of SimpleMDE.
@@ -555,6 +732,10 @@ function SimpleMDE(options) {
 
 	if(options.element) {
 		this.element = options.element;
+	} else if(options.element === null) {
+		// This means that the element option was specified, but no element was found
+		console.log("SimpleMDE: Error. No element was found.");
+		return;
 	}
 
 	if(options.toolbar !== false)
@@ -587,7 +768,13 @@ SimpleMDE.toolbar = toolbar;
  */
 SimpleMDE.markdown = function(text) {
 	if(window.marked) {
-		// use marked as markdown parser
+		// Update options
+		if(this.options.singleLineBreaks !== false) {
+			marked.setOptions({
+				breaks: true
+			});
+		}
+
 		return marked(text);
 	}
 };
@@ -623,7 +810,10 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps["Tab"] = "tabAndIndentContinueMarkdownList";
 	keyMaps["Shift-Tab"] = "shiftTabAndIndentContinueMarkdownList";
 	keyMaps["F11"] = function(cm) {
-		toggleFullScreen(cm);
+		toggleFullScreen(self);
+	};
+	keyMaps["F9"] = function(cm) {
+		toggleSideBySide(self);
 	};
 	keyMaps["Esc"] = function(cm) {
 		if(cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
@@ -659,6 +849,8 @@ SimpleMDE.prototype.render = function(el) {
 	if(options.autosave != undefined && options.autosave.enabled === true) {
 		this.autosave();
 	}
+
+	this.createSidebyside();
 
 	this._rendered = this.element;
 };
@@ -713,15 +905,56 @@ SimpleMDE.prototype.autosave = function() {
 	}, this.options.autosave.delay || 10000);
 };
 
+SimpleMDE.prototype.createSidebyside = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var preview = wrapper.nextSibling;
+
+	if(!/editor-preview-side/.test(preview.className)) {
+		preview = document.createElement('div');
+		preview.className = 'editor-preview-side';
+		wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);
+	}
+
+	// Syncs scroll  editor -> preview
+	var cScroll = false;
+	var pScroll = false;
+	cm.on('scroll', function(v) {
+		if(cScroll) {
+			cScroll = false;
+			return;
+		};
+		pScroll = true;
+		height = v.getScrollInfo().height - v.getScrollInfo().clientHeight;
+		ratio = parseFloat(v.getScrollInfo().top) / height;
+		move = (preview.scrollHeight - preview.clientHeight) * ratio;
+		preview.scrollTop = move;
+	});
+
+	// Syncs scroll  preview -> editor
+	preview.onscroll = function(v) {
+		if(pScroll) {
+			pScroll = false;
+			return;
+		};
+		cScroll = true;
+		height = preview.scrollHeight - preview.clientHeight;
+		ratio = parseFloat(preview.scrollTop) / height;
+		move = (cm.getScrollInfo().height - cm.getScrollInfo().clientHeight) * ratio;
+		cm.scrollTo(0, move);
+	};
+	return true;
+}
+
 SimpleMDE.prototype.createToolbar = function(items) {
 	items = items || this.options.toolbar;
 
 	if(!items || items.length === 0) {
 		return;
 	}
-	
+
 	for(var i = 0; i < items.length; i++) {
-		if(toolbarBuiltInButtons[items[i]] != undefined){
+		if(toolbarBuiltInButtons[items[i]] != undefined) {
 			items[i] = toolbarBuiltInButtons[items[i]];
 		}
 	}
@@ -774,7 +1007,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 				var el = toolbar_data[key];
 				if(stat[key]) {
 					el.className += ' active';
-				} else if(key != "fullscreen") {
+				} else if(key != "fullscreen" && key != "side-by-side") {
 					el.className = el.className.replace(/\s*active\s*/g, '');
 				}
 			})(key);
@@ -848,9 +1081,13 @@ SimpleMDE.prototype.value = function(val) {
  */
 SimpleMDE.toggleBold = toggleBold;
 SimpleMDE.toggleItalic = toggleItalic;
+SimpleMDE.toggleStrikethrough = toggleStrikethrough;
 SimpleMDE.toggleBlockquote = toggleBlockquote;
 SimpleMDE.toggleHeadingSmaller = toggleHeadingSmaller;
 SimpleMDE.toggleHeadingBigger = toggleHeadingBigger;
+SimpleMDE.toggleHeading1 = toggleHeading1;
+SimpleMDE.toggleHeading2 = toggleHeading2;
+SimpleMDE.toggleHeading3 = toggleHeading3;
 SimpleMDE.toggleCodeBlock = toggleCodeBlock;
 SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
@@ -860,6 +1097,7 @@ SimpleMDE.drawHorizontalRule = drawHorizontalRule;
 SimpleMDE.undo = undo;
 SimpleMDE.redo = redo;
 SimpleMDE.togglePreview = togglePreview;
+SimpleMDE.toggleSideBySide = toggleSideBySide;
 SimpleMDE.toggleFullScreen = toggleFullScreen;
 
 /**
@@ -871,6 +1109,9 @@ SimpleMDE.prototype.toggleBold = function() {
 SimpleMDE.prototype.toggleItalic = function() {
 	toggleItalic(this);
 };
+SimpleMDE.prototype.toggleStrikethrough = function() {
+	toggleStrikethrough(this);
+};
 SimpleMDE.prototype.toggleBlockquote = function() {
 	toggleBlockquote(this);
 };
@@ -879,6 +1120,15 @@ SimpleMDE.prototype.toggleHeadingSmaller = function() {
 };
 SimpleMDE.prototype.toggleHeadingBigger = function() {
 	toggleHeadingBigger(this);
+};
+SimpleMDE.prototype.toggleHeading1 = function() {
+	toggleHeading1(this);
+};
+SimpleMDE.prototype.toggleHeading2 = function() {
+	toggleHeading2(this);
+};
+SimpleMDE.prototype.toggleHeading3 = function() {
+	toggleHeading3(this);
 };
 SimpleMDE.prototype.toggleCodeBlock = function() {
 	toggleCodeBlock(this);
@@ -906,6 +1156,9 @@ SimpleMDE.prototype.redo = function() {
 };
 SimpleMDE.prototype.togglePreview = function() {
 	togglePreview(this);
+};
+SimpleMDE.prototype.toggleSideBySide = function() {
+	toggleSideBySide(this);
 };
 SimpleMDE.prototype.toggleFullScreen = function() {
 	toggleFullScreen(this);

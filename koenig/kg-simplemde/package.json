@@ -1,6 +1,6 @@
 {
 	"name": "simplemde",
-	"version": "1.6.1",
+	"version": "1.7.0",
 	"description": "A simple, beautiful, and embeddable JavaScript markdown editor. Features autosaving and spell checking.",
 	"keywords": ["embeddable", "markdown", "editor", "javascript", "wysiwyg"],
 	"homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
@@ -19,7 +19,8 @@
 		"gulp-minify-css": "*",
 		"gulp-uglify": "*",
 		"gulp-concat": "*",
-		"gulp-header": "*"
+		"gulp-header": "*",
+		"gulp-jsbeautifier": "*"
 	},
 	"repository": {
 		"type": "git",
