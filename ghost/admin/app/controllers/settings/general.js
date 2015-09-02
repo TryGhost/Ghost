@@ -58,6 +58,7 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
     }).readOnly(),
 
     generatePassword: Ember.observer('model.isPrivate', function () {
+        this.get('model.errors').remove('password');
         if (this.get('model.isPrivate') && this.get('model.isDirty')) {
             this.get('model').set('password', randomPassword());
         }
