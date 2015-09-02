@@ -2,11 +2,12 @@
     title="Invite a New User" confirm=confirm class="invite-new-user"}}
 
     <fieldset>
-        <div class="form-group">
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
             <label for="new-user-email">Email Address</label>
-            {{input enter="confirmAccept" class="gh-input email" id="new-user-email" type="email" placeholder="Email Address" name="email" autofocus="autofocus"
-            autocapitalize="off" autocorrect="off" value=email}}
-        </div>
+            {{gh-input enter="confirmAccept" class="email" id="new-user-email" type="email" placeholder="Email Address" name="email" autofocus="autofocus"
+            autocapitalize="off" autocorrect="off" value=email focusOut=(action "validate" "email")}}
+            {{gh-error-message errors=errors property="email"}}
+        {{/gh-form-group}}
 
         <div class="form-group for-select">
             <label for="new-user-role">Role</label>
