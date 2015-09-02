@@ -120,7 +120,11 @@
 }
 
 .gh-nav-search .selectize-input.dropdown-active {
-    border-bottom: none;
+    border-bottom: #fff 1px solid;
+}
+
+.gh-nav-search .selectize-input.dropdown-active:before {
+    display: none;
 }
 
 .gh-nav-search .selectize-dropdown-content {
@@ -296,6 +300,12 @@
     }
     .mobile-menu-expanded .content-cover {
         transform: translate3d(80vw, 0, 0);
+    }
+
+    .gh-nav-search-input .selectize-input,
+    .gh-nav-search-input .selectize-input input,
+    .gh-nav-search-input .selectize-dropdown {
+        font-size: 1.5rem;
     }
 
     .gh-nav-list {
