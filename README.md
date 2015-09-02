@@ -15,7 +15,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 - [Feature Requests](http://ideas.ghost.org/)
 - [Dev Blog](http://dev.ghost.org)
 
-**NOTE: If you’re stuck, can’t get something working or need some help, please head on over and join our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
+**NOTE: If you’re stuck, can’t get something working or need some help, please head on over and ask your question in the help channel of our [Slack community](https://ghost.org/slack/) rather than opening an issue.**
 
 
 # Quick Start Install
