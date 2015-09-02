@@ -10,7 +10,7 @@
             <div class="settings-menu-content">
                 {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=activeTag.image initUploader="setUploaderReference" tagName="section"}}
                 <form>
-                    {{#gh-form-group errors=activeTag.errors property="name"}}
+                    {{#gh-form-group errors=activeTag.errors hasValidated=activeTag.hasValidated property="name"}}
                         <label for="tag-name">Name</label>
                         {{gh-input id="tag-name" name="name" type="text" value=activeTagNameScratch focus-out="saveActiveTagName"}}
                         {{gh-error-message errors=activeTag.errors property="name"}}
@@ -55,14 +55,14 @@
 
                 <div class="settings-menu-content">
                     <form>
-                    {{#gh-form-group errors=activeTag.errors property="meta_title"}}
+                    {{#gh-form-group errors=activeTag.errors hasValidated=activeTag.hasValidated property="meta_title"}}
                         <label for="meta-title">Meta Title</label>
                         {{gh-input id="meta-title" name="meta_title" type="text" value=activeTagMetaTitleScratch focus-out="saveActiveTagMetaTitle"}}
                         {{gh-error-message errors=activeTag.errors property="meta_title"}}
                         <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters activeTagMetaTitleScratch 70}}</p>
                     {{/gh-form-group}}
 
-                    {{#gh-form-group errors=activeTag.errors property="meta_description"}}
+                    {{#gh-form-group errors=activeTag.errors hasValidated=activeTag.hasValidated property="meta_description"}}
                         <label for="meta-description">Meta Description</label>
                         {{gh-textarea id="meta-description" name="meta_description" value=activeTagMetaDescriptionScratch focus-out="saveActiveTagMetaDescription"}}
                         {{gh-error-message errors=activeTag.errors property="meta_description"}}

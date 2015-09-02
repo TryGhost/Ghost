@@ -5,6 +5,7 @@ import {request as ajax} from 'ic-ajax';
 export default Ember.Controller.extend(ValidationEngine, {
     submitting: false,
     loggingIn: false,
+    authProperties: ['identification', 'password'],
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -18,7 +19,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             var self = this,
                 model = this.get('model'),
                 authStrategy = 'ghost-authenticator:oauth2-password-grant',
-                data = model.getProperties('identification', 'password');
+                data = model.getProperties(this.authProperties);
 
             this.get('session').authenticate(authStrategy, data).then(function () {
                 self.toggleProperty('loggingIn');
@@ -28,7 +29,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                 if (err.errors) {
                     self.set('flowErrors', err.errors[0].message.string);
 
-                    if (err.errors[0].message.string.match(/no user with that email/)) {
+                    // this catches both 'no user' and 'user inactive' errors
+                    // long term, we probably need to introduce error codes from the server
+                    if (err.errors[0].message.string.match(/user with that email/)) {
                         self.get('model.errors').add('identification', '');
                     }
 
@@ -49,6 +52,8 @@ export default Ember.Controller.extend(ValidationEngine, {
             // browsers and password managers that don't send proper events on autofill
             $('#login').find('input').trigger('change');
 
+            // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'signin'
+            this.get('hasValidated').addObjects(this.authProperties);
             this.validate({property: 'signin'}).then(function () {
                 self.toggleProperty('loggingIn');
                 self.send('authenticate');
@@ -67,6 +72,8 @@ export default Ember.Controller.extend(ValidationEngine, {
                 self = this;
 
             this.set('flowErrors', '');
+            // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
+            this.get('hasValidated').addObject('identification');
             this.validate({property: 'forgotPassword'}).then(function () {
                 self.toggleProperty('submitting');
 

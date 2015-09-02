@@ -13,10 +13,17 @@ export default Ember.Component.extend({
 
     errors: null,
     property: '',
+    hasValidated: Ember.A(),
 
-    errorClass: Ember.computed('errors.[]', 'property', function () {
+    errorClass: Ember.computed('errors.[]', 'property', 'hasValidated.[]', function () {
         var property = this.get('property'),
-            errors = this.get('errors');
+            errors = this.get('errors'),
+            hasValidated = this.get('hasValidated');
+
+        // If we haven't yet validated this field, there is no validation class needed
+        if (!hasValidated || !hasValidated.contains(property)) {
+            return '';
+        }
 
         if (errors) {
             return errors.get(property) ? 'error' : 'success';

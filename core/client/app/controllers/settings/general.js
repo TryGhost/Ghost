@@ -79,8 +79,8 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
     },
 
     actions: {
-        validate: function () {
-            this.get('model').validate(arguments);
+        validate: function (property) {
+            this.get('model').validate({property: property});
         },
 
         checkPostsPerPage: function () {
