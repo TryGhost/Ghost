@@ -209,7 +209,8 @@
     border-radius: 1px;
 }
 .selectize-dropdown [data-selectable],
-.selectize-dropdown .optgroup-header {
+.selectize-dropdown .optgroup-header,
+.selectize-dropdown .dropdown-empty-message {
     padding: 5px 8px;
 }
 .selectize-dropdown .optgroup:first-child .optgroup-header {
