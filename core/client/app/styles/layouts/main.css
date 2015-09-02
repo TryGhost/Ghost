@@ -104,6 +104,10 @@
     margin: 0 15px 10px;
 }
 
+.gh-nav-search .selectize-control {
+    display: flex;
+}
+
 .gh-nav-search-input .selectize-input {
     padding: 4px 8px;
     padding-right: 30px;
@@ -115,15 +119,21 @@
     font-size: 1.3rem;
 }
 
+.gh-nav-search .selectize-input.dropdown-active {
+    border-bottom: none;
+}
+
+.gh-nav-search .selectize-dropdown-content {
+    max-height: calc(100vh - 150px);
+}
+
 .gh-nav-search-button {
     position: absolute;
-    top: -5px;
+    top: 0;
     right: 0;
     bottom: 0;
     z-index: 1;
-    display: flex;
-    align-items: center;
-    padding: 0 10px 0 5px;
+    padding: 0 8px 0 5px;
 }
 
 .gh-nav-search-button i {
@@ -131,6 +141,7 @@
     height: 16px;
     color: var(--midgrey);
     font-size: 13px;
+    line-height: 13px;
     transition: color 0.2s ease;
     transform: rotate(90deg);
 }
