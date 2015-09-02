@@ -34,6 +34,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             var credentials = this.getProperties('newPassword', 'ne2Password', 'token'),
                 self = this;
             this.set('flowErrors', '');
+            this.get('hasValidated').addObjects((['newPassword', 'ne2Password']));
             this.validate().then(function () {
                 self.toggleProperty('submitting');
                 ajax({

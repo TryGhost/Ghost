@@ -53,6 +53,7 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
         }
 
         activeTag.set(propKey, newValue);
+        activeTag.get('hasValidated').addObject(propKey);
 
         activeTag.save().catch(function (error) {
             if (error) {
