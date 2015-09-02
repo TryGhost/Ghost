@@ -55,6 +55,15 @@
         {
             "name":             "Ghost Admin",
             "slug":             "ghost-admin",
+            "status":           "enabled",
+            "type":             "ua",
+            "secret":           "not_available"
+        },
+        {
+            "name":             "Ghost Frontend",
+            "slug":             "ghost-frontend",
+            "status":           "enabled",
+            "type":             "ua",
             "secret":           "not_available"
         }
     ]

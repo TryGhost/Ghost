@@ -390,7 +390,7 @@ User = ghostBookshelf.Model.extend({
 
         return generatePasswordHash(userData.password).then(function then(results) {
             // Assign the hashed password
-            userData.password = results[1];
+            userData.password = results;
             // LookupGravatar
             return self.gravatarLookup(userData);
         }).then(function then(userData) {
