@@ -117,13 +117,36 @@ export default Ember.Component.extend({
             this.get('_selectize').focus();
         },
 
+        onInit: function () {
+            var selectize = this.get('_selectize'),
+                html = '<div class="dropdown-empty-message">No results...</div>';
+
+            selectize.$empty_results_container = $(html);
+            selectize.$empty_results_container.hide();
+            selectize.$dropdown.append(selectize.$empty_results_container);
+        },
+
         onFocus: function () {
             this._setKeymasterScope();
             this.refreshContent();
         },
 
         onBlur: function () {
+            var selectize = this.get('_selectize');
+
             this._resetKeymasterScope();
+            selectize.$empty_results_container.hide();
+        },
+
+        onType: function () {
+            var selectize = this.get('_selectize');
+
+            if (!selectize.hasOptions) {
+                selectize.open();
+                selectize.$empty_results_container.show();
+            } else {
+                selectize.$empty_results_container.hide();
+            }
         }
     }
 
