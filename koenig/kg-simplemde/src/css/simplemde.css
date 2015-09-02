@@ -132,6 +132,14 @@
 	content: "3";
 }
 
+.editor-toolbar a.fa-header-bigger:after {
+	content: "▲";
+}
+
+.editor-toolbar a.fa-header-smaller:after {
+	content: "▼";
+}
+
 .editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt):not(.fa-columns) {
 	pointer-events: none;
 	background: #fff;

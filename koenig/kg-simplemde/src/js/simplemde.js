@@ -615,13 +615,13 @@ var toolbarBuiltInButtons = {
 	"heading-smaller": {
 		name: "heading-smaller",
 		action: toggleHeadingSmaller,
-		className: "fa fa-header",
+		className: "fa fa-header fa-header-x fa-header-smaller",
 		title: "Smaller Heading (Ctrl+H)",
 	},
 	"heading-bigger": {
 		name: "heading-bigger",
 		action: toggleHeadingBigger,
-		className: "fa fa-lg fa-header",
+		className: "fa fa-header fa-header-x fa-header-bigger",
 		title: "Bigger Heading (Shift+Ctrl+H)",
 	},
 	"heading-1": {
