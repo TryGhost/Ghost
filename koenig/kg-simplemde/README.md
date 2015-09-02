@@ -81,6 +81,7 @@ simplemde.value();
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
+- **preview_render**: A custom function to render the preview mode contents.
 
 ```JavaScript
 var simplemde = new SimpleMDE({

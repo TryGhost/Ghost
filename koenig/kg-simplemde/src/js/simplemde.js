@@ -331,12 +331,11 @@ function toggleSideBySide(editor) {
 	}
 
 	// Start preview with the current text
-	var parse = editor.constructor.markdown;
-	preview.innerHTML = parse(cm.getValue());
+	editor.options.preview_render(editor, preview);
 
 	// Updates preview
 	cm.on('update', function() {
-		preview.innerHTML = parse(cm.getValue());
+		editor.options.preview_render(editor, preview);
 	});
 }
 
@@ -349,7 +348,6 @@ function togglePreview(editor) {
 	var wrapper = cm.getWrapperElement();
 	var toolbar_div = wrapper.previousSibling;
 	var toolbar = editor.toolbarElements.preview;
-	var parse = editor.constructor.markdown;
 	var preview = wrapper.lastChild;
 	if(!/editor-preview/.test(preview.className)) {
 		preview = document.createElement('div');
@@ -373,8 +371,7 @@ function togglePreview(editor) {
 		toolbar.className += ' active';
 		toolbar_div.className += ' disabled-for-preview';
 	}
-	var text = cm.getValue();
-	preview.innerHTML = parse(text);
+	editor.options.preview_render(editor, preview);
 
 	// Turn off side by side if needed
 	var sidebyside = cm.getWrapperElement().nextSibling;
@@ -745,6 +742,14 @@ function SimpleMDE(options) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
+	if(!options.preview_render) {
+		options.preview_render = function(editor, preview) {
+			var text = editor.codemirror.getValue();
+			preview.innerHTML = editor.markdown(text);
+		}
+	}
+
+
 	this.options = options;
 
 	// If user has passed an element, it should auto rendered
@@ -766,7 +771,7 @@ SimpleMDE.toolbar = toolbar;
 /**
  * Default markdown render.
  */
-SimpleMDE.markdown = function(text) {
+SimpleMDE.prototype.markdown = function(text) {
 	if(window.marked) {
 		// Update options
 		if(this.options.singleLineBreaks !== false) {
