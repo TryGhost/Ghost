@@ -13,7 +13,7 @@
 }
 
 .CodeMirror-fullscreen {
-	background:#fff;
+	background: #fff;
 	position: fixed !important;
 	top: 50px;
 	left: 0;
@@ -43,7 +43,8 @@
 	border-top-right-radius: 4px;
 }
 
-.editor-toolbar:after, .editor-toolbar:before {
+.editor-toolbar:after,
+.editor-toolbar:before {
 	display: block;
 	content: ' ';
 	height: 1px;
@@ -57,7 +58,9 @@
 	margin-top: 8px
 }
 
-.editor-toolbar:hover, .editor-wrapper input.title:focus, .editor-wrapper input.title:hover {
+.editor-toolbar:hover,
+.editor-wrapper input.title:focus,
+.editor-wrapper input.title:hover {
 	opacity: .8
 }
 
@@ -89,7 +92,8 @@
 	cursor: pointer;
 }
 
-.editor-toolbar a.active, .editor-toolbar a:hover {
+.editor-toolbar a.active,
+.editor-toolbar a:hover {
 	background: #fcfcfc;
 	border-color: #95a5a6;
 }
@@ -112,8 +116,8 @@
 	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 	font-size: 65%;
 	vertical-align: text-bottom;
-	position:relative;
-	top:2px;
+	position: relative;
+	top: 2px;
 }
 
 .editor-toolbar a.fa-header-1:after {
@@ -157,8 +161,8 @@
 .editor-preview {
 	padding: 10px;
 	position: absolute;
-	width:100%;
-	height:100%;
+	width: 100%;
+	height: 100%;
 	top: 0;
 	left: 0;
 	background: #fafafa;
@@ -184,23 +188,28 @@
 }
 
 .editor-preview-active-side {
-  display: block
+	display: block
 }
 
 .editor-preview-active {
 	display: block
 }
 
-.editor-preview>p, .editor-preview-side>p {
+.editor-preview>p,
+.editor-preview-side>p {
 	margin-top: 0
 }
 
-.editor-preview pre, .editor-preview-side pre {
+.editor-preview pre,
+.editor-preview-side pre {
 	background: #eee;
 	margin-bottom: 10px;
 }
 
-.editor-preview table td, .editor-preview table th, .editor-preview-side table td, .editor-preview-side table th {
+.editor-preview table td,
+.editor-preview table th,
+.editor-preview-side table td,
+.editor-preview-side table th {
 	border: 1px solid #ddd;
 	padding: 5px;
 }

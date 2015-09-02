@@ -4,7 +4,7 @@ var gulp = require('gulp'),
 	concat = require('gulp-concat'),
 	header = require('gulp-header'),
 	pkg = require('./package.json'),
-	beautify = require('gulp-beautify');
+	prettify = require('gulp-jsbeautifier');
 
 var banner = ['/**',
 	' * <%= pkg.name %> v<%= pkg.version %>',
@@ -46,10 +46,16 @@ gulp.task('styles', function() {
 		.pipe(gulp.dest('dist'));
 });
  
-gulp.task('beautify', function() {
+gulp.task('prettify-js', function() {
 	gulp.src('./src/js/simplemde.js')
-		.pipe(beautify({indentSize: 4}))
-		.pipe(gulp.dest('./src/js/test'))
+		.pipe(prettify({js: {braceStyle: "collapse", indentChar: "\t", indentSize: 1, maxPreserveNewlines: 3, spaceBeforeConditional: false}}))
+		.pipe(gulp.dest('./src/js'));
+});
+ 
+gulp.task('prettify-css', function() {
+	gulp.src('./src/css/simplemde.css')
+		.pipe(prettify({css: {indentChar: "\t", indentSize: 1}}))
+		.pipe(gulp.dest('./src/css'));
 });
 
-gulp.task('default', ['scripts', 'styles', 'beautify']);
+gulp.task('default', ['scripts', 'styles', 'prettify-js', 'prettify-css']);

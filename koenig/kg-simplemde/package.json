@@ -20,7 +20,7 @@
 		"gulp-uglify": "*",
 		"gulp-concat": "*",
 		"gulp-header": "*",
-		"gulp-beautify": "*"
+		"gulp-jsbeautifier": "*"
 	},
 	"repository": {
 		"type": "git",
