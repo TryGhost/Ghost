@@ -103,6 +103,7 @@ var simplemde = new SimpleMDE({
 		unique_id: "MyUniqueID",
 		delay: 1000,
 	},
+	preview_render: my_custom_preview_function,
 });
 ```
 
