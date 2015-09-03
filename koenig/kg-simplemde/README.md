@@ -9,7 +9,7 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, plus Markdown can be rendered natively on more platforms than HTML. However, Markdown is not a syntax that an average user will be familiar with, nor is it visually clear while editing. In otherwords, for an unfamiliar user, the syntax they write will make little sense until they click the preview button. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning Markdown syntax.
 
 ## Quick start
-SimpleMDE is available on npm.
+SimpleMDE is available on [npm](https://www.npmjs.com/package/simplemde).
 ```
 npm install simplemde --save
 ```
