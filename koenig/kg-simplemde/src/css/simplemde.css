@@ -178,6 +178,8 @@
 .editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt):not(.fa-columns) {
 	pointer-events: none;
 	background: #fff;
+	border-color: transparent;
+	text-shadow: inherit;
 }
 
 @media only screen and (max-width: 700px) {
