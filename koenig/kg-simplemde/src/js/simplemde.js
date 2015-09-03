@@ -331,11 +331,11 @@ function toggleSideBySide(editor) {
 	}
 
 	// Start preview with the current text
-	editor.options.preview_render(editor, preview);
+	editor.options.previewRender(editor, preview);
 
 	// Updates preview
 	cm.on('update', function() {
-		editor.options.preview_render(editor, preview);
+		editor.options.previewRender(editor, preview);
 	});
 }
 
@@ -371,7 +371,7 @@ function togglePreview(editor) {
 		toolbar.className += ' active';
 		toolbar_div.className += ' disabled-for-preview';
 	}
-	editor.options.preview_render(editor, preview);
+	editor.options.previewRender(editor, preview);
 
 	// Turn off side by side if needed
 	var sidebyside = cm.getWrapperElement().nextSibling;
@@ -742,10 +742,10 @@ function SimpleMDE(options) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
-	if(!options.preview_render) {
-		options.preview_render = function(editor, preview) {
-			var text = editor.codemirror.getValue();
-			preview.innerHTML = editor.markdown(text);
+	if(!options.previewRender) {
+		options.previewRender = function(simplemde, preview) {
+			var plainText = simplemde.value();
+			preview.innerHTML = simplemde.markdown(plainText);
 		}
 	}
 
