@@ -83,7 +83,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     }),
 
     roles: Ember.computed(function () {
-        return this.store.find('role', {permissions: 'assign'});
+        return this.store.query('role', {permissions: 'assign'});
     }),
 
     actions: {

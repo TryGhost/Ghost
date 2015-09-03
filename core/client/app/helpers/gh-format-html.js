@@ -2,12 +2,12 @@ import Ember from 'ember';
 /* global html_sanitize*/
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
-    if (!arr || !arr.length) {
+export default Ember.Helper.helper(function (params) {
+    if (!params || !params.length) {
         return;
     }
 
-    var escapedhtml = arr[0] || '';
+    var escapedhtml = params[0] || '';
 
     // replace script and iFrame
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,

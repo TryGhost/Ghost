@@ -13,7 +13,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         // return this.store.find('user', { slug: params.slug });
 
         // Instead, get all the users and then find by slug
-        return this.store.find('user').then(function (result) {
+        return this.store.findAll('user', {reload: true}).then(function (result) {
             var user = result.findBy('slug', params.slug);
 
             if (!user) {
@@ -42,8 +42,8 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         var model = this.modelFor('team.user');
 
         // we want to revert any unsaved changes on exit
-        if (model && model.get('isDirty')) {
-            model.rollback();
+        if (model && model.get('hasDirtyAttributes')) {
+            model.rollbackAttributes();
         }
 
         model.get('errors').clear();
