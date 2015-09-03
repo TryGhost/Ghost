@@ -10,7 +10,7 @@ export default Ember.Controller.extend({
                 status: 'all'
             };
 
-        promise = this.store.find('post', query).then(function (results) {
+        promise = this.store.query('post', query).then(function (results) {
             return results.meta.pagination.total;
         });
 

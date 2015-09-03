@@ -16,7 +16,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             return this.transitionTo('error404', params.post_id);
         }
 
-        post = this.store.getById('post', postId);
+        post = this.store.peekRecord('post', postId);
         if (post) {
             return post;
         }
@@ -27,9 +27,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             staticPages: 'all'
         };
 
-        return self.store.find('post', query).then(function (records) {
-            var post = records.get('firstObject');
-
+        return self.store.queryRecord('post', query).then(function (post) {
             if (post) {
                 return post;
             }

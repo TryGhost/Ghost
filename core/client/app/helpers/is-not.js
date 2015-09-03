@@ -1,7 +1,9 @@
 import Ember from 'ember';
 
-export function isNot(params/*, hash*/) {
+export function isNot(params) {
     return !params;
 }
 
-export default Ember.HTMLBars.makeBoundHelper(isNot);
+export default Ember.Helper.helper(function (params) {
+    return isNot(params);
+});

@@ -12,7 +12,7 @@ var trailingHistory = Ember.HistoryLocation.extend({
 export default {
     name: 'registerTrailingLocationHistory',
 
-    initialize: function (container, application) {
+    initialize: function (registry, application) {
         application.register('location:trailing-history', trailingHistory);
     }
 };

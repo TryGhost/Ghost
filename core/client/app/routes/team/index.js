@@ -3,33 +3,24 @@ import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 import styleBody from 'ghost/mixins/style-body';
 
-var paginationSettings;
-
-paginationSettings = {
-    page: 1,
-    limit: 20,
-    status: 'active'
-};
-
 export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, PaginationRouteMixin, {
     titleToken: 'Team',
 
     classNames: ['view-team'],
 
-    setupController: function (controller, model) {
-        this._super(controller, model);
-        this.setupPagination(paginationSettings);
-    },
-
-    beforeModel: function (transition) {
-        this._super(transition);
+    paginationModel: 'user',
+    paginationSettings: {
+        status: 'active',
+        limit: 20
     },
 
     model: function () {
         var self = this;
 
-        return self.store.find('user', {limit: 'all', status: 'invited'}).then(function () {
-            return self.store.filter('user', paginationSettings, function () {
+        this.loadFirstPage();
+
+        return self.store.query('user', {limit: 'all', status: 'invited'}).then(function () {
+            return self.store.filter('user', function () {
                 return true;
             });
         });

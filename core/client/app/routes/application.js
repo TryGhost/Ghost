@@ -143,7 +143,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             if (this.session.isAuthenticated) {
                 this.get('session.user').then(function (user) {
                     if (!user.get('isAuthor') && !user.get('isEditor')) {
-                        self.store.findAll('notification').then(function (serverNotifications) {
+                        self.store.findAll('notification', {reload: true}).then(function (serverNotifications) {
                             serverNotifications.forEach(function (notification) {
                                 self.get('notifications').handleNotification(notification, isDelayed);
                             });

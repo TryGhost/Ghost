@@ -119,7 +119,7 @@ export default Ember.Controller.extend({
     }),
 
     authorRole: Ember.computed(function () {
-        return this.store.find('role').then(function (roles) {
+        return this.store.findAll('role', {reload: true}).then(function (roles) {
             return roles.findBy('name', 'Author');
         });
     }),
