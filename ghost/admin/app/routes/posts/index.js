@@ -20,7 +20,7 @@ export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
     goToPost: function () {
         var self = this,
             // the store has been populated by PostsRoute
-            posts = this.store.all('post'),
+            posts = this.store.peekAll('post'),
             post;
 
         return this.get('session.user').then(function (user) {

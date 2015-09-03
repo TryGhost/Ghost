@@ -29,7 +29,7 @@ export default AuthenticatedRoute.extend(base, {
             staticPages: 'all'
         };
 
-        return self.store.find('post', query).then(function (records) {
+        return self.store.query('post', query).then(function (records) {
             var post = records.get('firstObject');
 
             if (post) {
