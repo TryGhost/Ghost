@@ -6,6 +6,9 @@ import {
 
 describeModule(
     'controller:settings/general',
+    {
+        needs: ['service:notifications']
+    },
 
     function () {
         it('isDatedPermalinks should be correct', function () {
