@@ -7,7 +7,7 @@ import {
 describeModule(
     'controller:post-settings-menu',
     {
-        needs: ['controller:application']
+        needs: ['controller:application', 'service:notifications']
     },
 
     function () {
