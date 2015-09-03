@@ -331,11 +331,11 @@ function toggleSideBySide(editor) {
 	}
 
 	// Start preview with the current text
-	editor.options.previewRender(editor, preview);
+	preview.innerHTML = editor.options.previewRender(editor.value());
 
 	// Updates preview
 	cm.on('update', function() {
-		editor.options.previewRender(editor, preview);
+		preview.innerHTML = editor.options.previewRender(editor.value());
 	});
 }
 
@@ -371,7 +371,7 @@ function togglePreview(editor) {
 		toolbar.className += ' active';
 		toolbar_div.className += ' disabled-for-preview';
 	}
-	editor.options.previewRender(editor, preview);
+	preview.innerHTML = editor.options.previewRender(editor.value());
 
 	// Turn off side by side if needed
 	var sidebyside = cm.getWrapperElement().nextSibling;
@@ -726,7 +726,11 @@ var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ord
  */
 function SimpleMDE(options) {
 	options = options || {};
+	
+	// Used later to refer to it's parent
+	options.parent = this;
 
+	// Find the textarea to use
 	if(options.element) {
 		this.element = options.element;
 	} else if(options.element === null) {
@@ -735,6 +739,7 @@ function SimpleMDE(options) {
 		return;
 	}
 
+	// Handle toolbar and status bar
 	if(options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 
@@ -742,17 +747,18 @@ function SimpleMDE(options) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
+	// Add default preview rendering function
 	if(!options.previewRender) {
-		options.previewRender = function(simplemde, preview) {
-			var plainText = simplemde.value();
-			preview.innerHTML = simplemde.markdown(plainText);
+		options.previewRender = function(plainText) {
+			// Note: 'this' refers to the options object
+			return this.parent.markdown(plainText);
 		}
 	}
 
-
+	// Update this options
 	this.options = options;
 
-	// If user has passed an element, it should auto rendered
+	// Auto render
 	this.render();
 
 	// The codemirror component is only available after rendering

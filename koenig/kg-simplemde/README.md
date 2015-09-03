@@ -32,7 +32,6 @@ And then load SimpleMDE on the first textarea on a page
 ```HTML
 <script>
 var simplemde = new SimpleMDE();
-simplemde.render();
 </script>
 ```
 
@@ -43,7 +42,6 @@ Pure JavaScript method
 ```HTML
 <script>
 var simplemde = new SimpleMDE({ element: document.getElementById("MyID") });
-simplemde.render();
 </script>
 ```
 
@@ -52,7 +50,6 @@ jQuery method
 ```HTML
 <script>
 var simplemde = new SimpleMDE({ element: $("#MyID")[0] });
-simplemde.render();
 </script>
 ```
 
@@ -103,9 +100,8 @@ var simplemde = new SimpleMDE({
 		unique_id: "MyUniqueID",
 		delay: 1000,
 	},
-	previewRender: function(simplemde, preview) {
-		var plainText = simplemde.value();
-		preview.innerHTML = customParser(plainText); // Use a custom function for parsing Markdown
+	previewRender: function(plainText) {
+		return customMarkdownParser(plainText); // Returns HTML from a custom parser
 	}
 });
 ```
