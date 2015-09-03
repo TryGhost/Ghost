@@ -1,15 +1,15 @@
 import Ember from 'ember';
 import counter from 'ghost/utils/word-count';
 
-export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
-    if (!arr || !arr.length) {
+export default Ember.Helper.helper(function (params) {
+    if (!params || !params.length) {
         return;
     }
 
     var markdown,
         count;
 
-    markdown = arr[0] || '';
+    markdown = params[0] || '';
 
     if (/^\s*$/.test(markdown)) {
         return '0 words';

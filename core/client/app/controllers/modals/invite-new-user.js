@@ -10,7 +10,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     authorRole: null,
 
     roles: Ember.computed(function () {
-        return this.store.find('role', {permissions: 'assign'});
+        return this.store.query('role', {permissions: 'assign'});
     }),
 
     // Used to set the initial value for the dropdown
@@ -53,7 +53,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             this.set('email', '');
             this.set('role', self.get('authorRole'));
 
-            this.store.find('user').then(function (result) {
+            this.store.findAll('user', {reload: true}).then(function (result) {
                 var invitedUser = result.findBy('email', email);
 
                 if (invitedUser) {

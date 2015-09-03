@@ -17,7 +17,7 @@ export default DS.Model.extend(ValidationEngine, {
     language: DS.attr('string', {defaultValue: 'en_US'}),
     meta_title: DS.attr('string'),
     meta_description: DS.attr('string'),
-    author: DS.belongsTo('user',  {async: true}),
+    author: DS.belongsTo('user', {async: true}),
     author_id: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr(),
@@ -25,7 +25,10 @@ export default DS.Model.extend(ValidationEngine, {
     published_by: DS.belongsTo('user', {async: true}),
     created_at: DS.attr('moment-date'),
     created_by: DS.attr(),
-    tags: DS.hasMany('tag', {embedded: 'always'}),
+    tags: DS.hasMany('tag', {
+        embedded: 'always',
+        async: false
+    }),
     url: DS.attr('string'),
 
     config: Ember.inject.service(),
