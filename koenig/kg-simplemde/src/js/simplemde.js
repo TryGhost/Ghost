@@ -726,7 +726,7 @@ var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ord
  */
 function SimpleMDE(options) {
 	options = options || {};
-	
+
 	// Used later to refer to it's parent
 	options.parent = this;
 
