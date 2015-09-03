@@ -178,132 +178,148 @@ to004 = function to004() {
     logInfo('Upgrading fixtures to 004');
 
     // add jquery setting and privacy info
-    upgradeOp = models.Settings.findOne('ghost_foot').then(function (setting) {
-        if (setting) {
-            value = setting.attributes.value;
-            // Only add jQuery if it's not already in there
-            if (value.indexOf(jquery.join('')) === -1) {
-                logInfo('Adding jQuery link to ghost_foot');
-                value = jquery.join('') + value;
-                return models.Settings.edit({key: 'ghost_foot', value: value}, options).then(function () {
-                    if (_.isEmpty(config.privacy)) {
-                        return Promise.resolve();
-                    }
-                    logInfo(privacyMessage.join(' ').replace(/<\/?strong>/g, ''));
-                    return notifications.add({notifications: [{
-                        type: 'info',
-                        message: privacyMessage.join(' ')
-                    }]}, options);
-                });
+    upgradeOp = function () {
+        return models.Settings.findOne('ghost_foot').then(function (setting) {
+            if (setting) {
+                value = setting.attributes.value;
+                // Only add jQuery if it's not already in there
+                if (value.indexOf(jquery.join('')) === -1) {
+                    logInfo('Adding jQuery link to ghost_foot');
+                    value = jquery.join('') + value;
+                    return models.Settings.edit({key: 'ghost_foot', value: value}, options).then(function () {
+                        if (_.isEmpty(config.privacy)) {
+                            return Promise.resolve();
+                        }
+                        logInfo(privacyMessage.join(' ').replace(/<\/?strong>/g, ''));
+                        return notifications.add({notifications: [{
+                            type: 'info',
+                            message: privacyMessage.join(' ')
+                        }]}, options);
+                    });
+                }
             }
-        }
-    });
+        });
+    };
     ops.push(upgradeOp);
 
     // change `type` for protected blog `isPrivate` setting
-    upgradeOp = models.Settings.findOne('isPrivate').then(function (setting) {
-        if (setting) {
-            logInfo('Update isPrivate setting');
-            return models.Settings.edit({key: 'isPrivate', type: 'private'}, options);
-        }
-        return Promise.resolve();
-    });
+    upgradeOp = function () {
+        return models.Settings.findOne('isPrivate').then(function (setting) {
+            if (setting) {
+                logInfo('Update isPrivate setting');
+                return models.Settings.edit({key: 'isPrivate', type: 'private'}, options);
+            }
+            return Promise.resolve();
+        });
+    };
     ops.push(upgradeOp);
 
     // change `type` for protected blog `password` setting
-    upgradeOp = models.Settings.findOne('password').then(function (setting) {
-        if (setting) {
-            logInfo('Update password setting');
-            return models.Settings.edit({key: 'password', type: 'private'}, options);
-        }
-        return Promise.resolve();
-    });
+    upgradeOp = function () {
+        return models.Settings.findOne('password').then(function (setting) {
+            if (setting) {
+                logInfo('Update password setting');
+                return models.Settings.edit({key: 'password', type: 'private'}, options);
+            }
+            return Promise.resolve();
+        });
+    };
     ops.push(upgradeOp);
 
     // Update ghost-admin client fixture
     // ghost-admin should exist from 003 version
-    upgradeOp = models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
-        if (client) {
-            logInfo('Update ghost-admin client fixture');
-            var adminClient = fixtures.clients[0];
-            adminClient.secret = crypto.randomBytes(6).toString('hex');
-            return models.Client.edit(adminClient, _.extend({}, options, {id: client.id}));
-        }
-        return Promise.resolve();
-    });
+    upgradeOp = function () {
+        return models.Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
+            if (client) {
+                logInfo('Update ghost-admin client fixture');
+                var adminClient = fixtures.clients[0];
+                adminClient.secret = crypto.randomBytes(6).toString('hex');
+                return models.Client.edit(adminClient, _.extend({}, options, {id: client.id}));
+            }
+            return Promise.resolve();
+        });
+    };
     ops.push(upgradeOp);
 
     // add ghost-frontend client if missing
-    upgradeOp = models.Client.findOne({slug: fixtures.clients[1].slug}).then(function (client) {
-        if (!client) {
-            logInfo('Add ghost-frontend client fixture');
-            var frontendClient = fixtures.clients[1];
-            frontendClient.secret = crypto.randomBytes(6).toString('hex');
-            return models.Client.add(frontendClient, options);
-        }
-        return Promise.resolve();
-    });
+    upgradeOp = function () {
+        return models.Client.findOne({slug: fixtures.clients[1].slug}).then(function (client) {
+            if (!client) {
+                logInfo('Add ghost-frontend client fixture');
+                var frontendClient = fixtures.clients[1];
+                frontendClient.secret = crypto.randomBytes(6).toString('hex');
+                return models.Client.add(frontendClient, options);
+            }
+            return Promise.resolve();
+        });
+    };
     ops.push(upgradeOp);
 
     // clean up broken tags
-    upgradeOp = models.Tag.findAll(options).then(function (tags) {
-        var tagOps = [];
-        if (tags) {
-            tags.each(function (tag) {
-                var name = tag.get('name'),
-                    updated = name.replace(/^(,+)/, '').trim();
+    upgradeOp = function () {
+        return models.Tag.findAll(options).then(function (tags) {
+            var tagOps = [];
+            if (tags) {
+                tags.each(function (tag) {
+                    var name = tag.get('name'),
+                        updated = name.replace(/^(,+)/, '').trim();
 
-                // If we've ended up with an empty string, default to just 'tag'
-                updated = updated === '' ? 'tag' : updated;
+                    // If we've ended up with an empty string, default to just 'tag'
+                    updated = updated === '' ? 'tag' : updated;
 
-                if (name !== updated) {
-                    tagOps.push(tag.save({name: updated}, options));
+                    if (name !== updated) {
+                        tagOps.push(tag.save({name: updated}, options));
+                    }
+                });
+                if (tagOps.length > 0) {
+                    logInfo('Cleaning ' + tagOps.length + ' malformed tags');
+                    return Promise.all(tagOps);
                 }
-            });
-            if (tagOps.length > 0) {
-                logInfo('Cleaning ' + tagOps.length + ' malformed tags');
-                return Promise.all(tagOps);
             }
-        }
-        return Promise.resolve();
-    });
+            return Promise.resolve();
+        });
+    };
     ops.push(upgradeOp);
 
     // Add post_tag order
-    upgradeOp = models.Post.findAll(_.extend({}, options, {withRelated: ['tags']})).then(function (posts) {
-        var tagOps = [];
-        if (posts) {
-            posts.each(function (post) {
-                var order = 0;
-                post.related('tags').each(function (tag) {
-                    tagOps.push(post.tags().updatePivot(
-                        {sort_order: order}, _.extend({}, options, {query: {where: {tag_id: tag.id}}})
-                    ));
-                    order += 1;
+    upgradeOp = function () {
+        return models.Post.findAll(_.extend({}, options, {withRelated: ['tags']})).then(function (posts) {
+            var tagOps = [];
+            if (posts) {
+                posts.each(function (post) {
+                    var order = 0;
+                    post.related('tags').each(function (tag) {
+                        tagOps.push(post.tags().updatePivot(
+                            {sort_order: order}, _.extend({}, options, {query: {where: {tag_id: tag.id}}})
+                        ));
+                        order += 1;
+                    });
                 });
-            });
-        }
-        if (tagOps.length > 0) {
-            logInfo('Updating order on ' + tagOps.length + ' tags');
-            return Promise.all(tagOps);
-        }
-    });
+            }
+            if (tagOps.length > 0) {
+                logInfo('Updating order on ' + tagOps.length + ' tags');
+                return Promise.all(tagOps);
+            }
+        });
+    };
     ops.push(upgradeOp);
 
     // Add a new draft post
-    upgradeOp = models.Post.findOne({slug: fixtures.posts_0_7[0].slug, status: 'all'}, options).then(function (post) {
-        if (!post) {
-            logInfo('Adding 0.7 upgrade post fixture');
-            // Set the published_at timestamp, but keep the post as a draft so doesn't appear on the frontend
-            // This is a hack to ensure that this post appears at the very top of the drafts list, because
-            // unpublished posts always appear first
-            fixtures.posts_0_7[0].published_at = Date.now();
-            return models.Post.add(fixtures.posts_0_7[0], options);
-        }
-    });
+    upgradeOp = function () {
+        return models.Post.findOne({slug: fixtures.posts_0_7[0].slug, status: 'all'}, options).then(function (post) {
+            if (!post) {
+                logInfo('Adding 0.7 upgrade post fixture');
+                // Set the published_at timestamp, but keep the post as a draft so doesn't appear on the frontend
+                // This is a hack to ensure that this post appears at the very top of the drafts list, because
+                // unpublished posts always appear first
+                fixtures.posts_0_7[0].published_at = Date.now();
+                return models.Post.add(fixtures.posts_0_7[0], options);
+            }
+        });
+    };
     ops.push(upgradeOp);
 
-    return Promise.all(ops);
+    return sequence(ops);
 };
 
 update = function update(fromVersion, toVersion) {
