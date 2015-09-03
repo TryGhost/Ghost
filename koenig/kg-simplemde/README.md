@@ -81,7 +81,7 @@ simplemde.value();
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
-- **previewRender**: A custom function to render the preview mode contents.
+- **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
 
 ```JavaScript
 var simplemde = new SimpleMDE({
@@ -105,7 +105,7 @@ var simplemde = new SimpleMDE({
 	},
 	previewRender: function(simplemde, preview) {
 		var plainText = simplemde.value();
-		preview.innerHTML = customMarkdown(plainText); // Use a custom function for parsing Markdown
+		preview.innerHTML = customParser(plainText); // Use a custom function for parsing Markdown
 	}
 });
 ```
