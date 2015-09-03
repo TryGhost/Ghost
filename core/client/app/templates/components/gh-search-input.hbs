@@ -1,0 +1,16 @@
+{{gh-selectize
+    placeholder="Search"
+    selection=selection
+    content=content
+    loading=isLoading
+    optionValuePath="content.id"
+    optionLabelPath="content.title"
+    optionGroupPath="content.category"
+    openOnFocus=false
+    maxItems="1"
+    on-init="onInit"
+    on-focus="onFocus"
+    on-blur="onBlur"
+    update-filter="onType"
+    select-item="openSelected"}}
+<button class="gh-nav-search-button" {{action "focusInput"}}><i class="icon-search"></i><span class="sr-only">Search</span></button>

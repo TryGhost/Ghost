@@ -1,0 +1,202 @@
+/* Users /ghost/settings/users/
+/* ---------------------------------------------------------- */
+
+.users-list-wrapper {
+    overflow: auto;
+    height: 100%;
+}
+
+
+/* User list
+/* ---------------------------------------------------------- */
+
+.invited-users {
+    margin-bottom: 34px;
+}
+
+.user-list-title {
+    margin-bottom: 14px;
+    color: #a1a1a1;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.user-list-item {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 0 15px;
+    height: 68px;
+    border-top: 1px solid #dfe1e3;
+}
+
+/* Only apply these styles to anchor tags (pending invited are divs) */
+a.user-list-item {
+    text-decoration: none;
+}
+
+@media (min-width: 601px) {
+    a.user-list-item:hover {
+        background: color(#dfe1e3 lightness(+10%));
+    }
+    a.user-list-item:last-of-type:hover {
+        box-shadow: inset 0 -1px 0 #dfe1e3;
+    }
+}
+
+.user-list-item-icon {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    width: 35px;
+    height: 35px;
+    background: #dfe1e3;
+    border-radius: 100%;
+    color: transparent;
+    font-size: 0;
+}
+
+.user-list-item-icon:before {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    margin-top: -7px;
+    color: var(--midgrey);
+    text-align: center;
+    font-size: 14px;
+}
+
+.user-list-item-figure {
+    position: relative;
+    display: block;
+    width: 35px;
+    height: 35px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 35px;
+}
+
+.user-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.user-list-item-body {
+    flex: 1 1 auto;
+    align-items: stretch;
+    padding-left: 15px;
+    line-height: 1;
+}
+
+.user-list-item-body .name {
+    display: inline-block;
+    color: var(--darkgrey);
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.user-list-item-body .description {
+    display: inline-block;
+    margin-top: 3px;
+    color: #a1a1a1;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.user-list-item-body .description-error {
+    display: inline-block;
+    margin-top: 3px;
+    color: var(--red);
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.user-list-item-aside .user-list-action:not(:first-of-type) {
+    margin-left: 20px;
+}
+
+.user-list-item-aside .role-label {
+    float: left;
+    margin-top: -1px;
+}
+
+.user-list-item-aside .role-label + .role-label {
+    margin-left: 5px;
+}
+
+.user-list-action {
+    text-decoration: underline;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+
+/* Role Labels
+/* ---------------------------------------------------------- */
+
+.role-label {
+    display: inline-block;
+    padding: 6px 8px;
+    background: #eee;
+    color: rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 400;
+}
+
+.role-label.owner {
+    background: var(--darkgrey);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.role-label.administrator {
+    background: var(--red);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.role-label.editor {
+    background: var(--blue);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+
+/* User invitation modal
+/* ---------------------------------------------------------- */
+
+.invite-new-user .form-group {
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.invite-new-user .form-group label {
+    position: static;
+    display: block;
+    text-align: left;
+}
+
+.invite-new-user .form-group:nth-of-type(1) {
+    float: left;
+    width: 60%;
+}
+
+.invite-new-user .form-group:nth-of-type(2) {
+    float: left;
+    margin-left: 5%;
+    width: 35%;
+}
+
+.invite-new-user .form-group input {
+    width: 100%;
+}
+
+.invite-new-user .btn-green {
+    margin: 0;
+    width: 100%;
+}

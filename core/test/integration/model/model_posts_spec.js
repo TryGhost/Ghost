@@ -41,6 +41,7 @@ describe('Post Model', function () {
         function checkFirstPostData(firstPost) {
             should.not.exist(firstPost.author_id);
             firstPost.author.should.be.an.Object;
+            firstPost.url.should.equal('/html-ipsum/');
             firstPost.fields.should.be.an.Array;
             firstPost.tags.should.be.an.Array;
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
@@ -56,6 +57,14 @@ describe('Post Model', function () {
         }
 
         describe('findAll', function () {
+            beforeEach(function () {
+                sandbox.stub(SettingsModel, 'findOne', function () {
+                    return Promise.resolve({toJSON: function () {
+                        return {value: '/:slug/'};
+                    }});
+                });
+            });
+
             it('can findAll', function (done) {
                 PostModel.findAll().then(function (results) {
                     should.exist(results);
@@ -66,7 +75,7 @@ describe('Post Model', function () {
             });
 
             it('can findAll, returning all related data', function (done) {
-                PostModel.findAll({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findAll({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
                         results.length.should.be.above(0);
@@ -85,6 +94,14 @@ describe('Post Model', function () {
         });
 
         describe('findPage', function () {
+            beforeEach(function () {
+                sandbox.stub(SettingsModel, 'findOne', function () {
+                    return Promise.resolve({toJSON: function () {
+                        return {value: '/:slug/'};
+                    }});
+                });
+            });
+
             it('can findPage (default)', function (done) {
                 PostModel.findPage().then(function (results) {
                     should.exist(results);
@@ -99,7 +116,7 @@ describe('Post Model', function () {
             });
 
             it('can findPage, returning all related data', function (done) {
-                PostModel.findPage({include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+                PostModel.findPage({include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (results) {
                         should.exist(results);
 
@@ -267,8 +284,14 @@ describe('Post Model', function () {
 
             it('can findOne, returning all related data', function (done) {
                 var firstPost;
-                // TODO: should take author :-/
-                PostModel.findOne({}, {include: ['author_id', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
+
+                sandbox.stub(SettingsModel, 'findOne', function () {
+                    return Promise.resolve({toJSON: function () {
+                        return {value: '/:slug/'};
+                    }});
+                });
+
+                PostModel.findOne({}, {include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (result) {
                         should.exist(result);
                         firstPost = result.toJSON();

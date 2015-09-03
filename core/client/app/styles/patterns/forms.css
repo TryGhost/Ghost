@@ -1,0 +1,333 @@
+/* Forms
+/* ---------------------------------------------------------- */
+
+form * {
+    user-select: text;
+}
+
+form label {
+    display: block;
+    color: var(--darkgrey);
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+form .word-count {
+    float: right;
+    font-weight: bold;
+}
+
+fieldset {
+    margin: 0 0 3em 0;
+    padding: 0;
+    border: none;
+}
+
+legend {
+    display: block;
+    margin: 2em 0;
+    width: 100%;
+    border-bottom: #dfe1e3 1px solid;
+    color: #b1b1b1;
+    font-size: 1.2em;
+    line-height: 2.0em;
+}
+
+input {
+    user-select: text;
+}
+
+.form-group.error .response {
+    color: var(--red);
+}
+
+
+/* Form Groups
+/* ---------------------------------------------------------- */
+
+.form-group {
+    position: relative;
+    margin-bottom: 1.6em;
+    max-width: 500px;
+    width: 100%;
+}
+
+.form-group p {
+    margin: 4px 0 0 0;
+    color: #b1b1b1;
+    font-size: 1.3rem;
+}
+
+.form-group label {
+    margin-bottom: 4px;
+}
+
+@media (max-width: 550px) {
+    .form-group {
+        max-width: 100%;
+    }
+}
+
+
+/* Input Icons
+/* ---------------------------------------------------------- */
+
+.input-icon[class*="icon-"] {
+    position: relative;
+    display: block;
+}
+
+.input-icon[class*="icon-"] input[type="email"],
+.input-icon[class*="icon-"] input[type="number"],
+.input-icon[class*="icon-"] input[type="password"],
+.input-icon[class*="icon-"] input[type="search"],
+.input-icon[class*="icon-"] input[type="tel"],
+.input-icon[class*="icon-"] input[type="text"],
+.input-icon[class*="icon-"] input[type="url"],
+.input-icon[class*="icon-"] input[type="date"] {
+    padding-left: 3.2rem;
+}
+
+.input-icon[class*="icon-"] .gh-select select {
+    padding-left: 3.2rem;
+}
+
+.input-icon[class*="icon-"]:before {
+    position: absolute;
+    top: 50%;
+    left: 1.1rem;
+    z-index: 100;
+    font-size: 1.3rem;
+    transform: translateY(-52%);
+}
+
+
+/* Inputs
+/* ---------------------------------------------------------- */
+
+.gh-input,
+.gh-select,
+select {
+    display: block;
+    padding: 8px 10px;
+    width: 100%;
+    border: 1px solid #dfe1e3;
+    border-radius: var(--border-radius);
+    color: #666;
+    font-size: 1.4rem;
+    font-weight: normal;
+    user-select: text;
+    transition: border-color 0.15s linear;
+
+    -webkit-appearance: none;
+}
+
+.gh-input.error,
+.form-group.error .gh-input,
+.gh-select.error,
+select.error {
+    border-color: var(--red);
+}
+
+.gh-input:focus,
+.gh-input.focus,
+.gh-select:focus,
+select:focus {
+    outline: 0;
+    border-color: #b1b1b1;
+}
+
+textarea {
+    min-width: 250px;
+    min-height: 10rem;
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    line-height: 1.5;
+    user-select: text;
+    resize: vertical;
+}
+
+
+/* Radio / Checkboxes
+/* ---------------------------------------------------------- */
+
+.for-radio label,
+.for-checkbox label {
+    display: block;
+    padding-bottom: 4px;
+}
+
+.for-radio label p,
+.for-checkbox label p {
+    color: #000;
+    font-weight: normal;
+}
+
+.for-radio label:hover input:not(:checked) + .input-toggle-component,
+.for-checkbox label:hover input:not(:checked) + .input-toggle-component {
+    border-color: #dfe1e3;
+}
+
+.for-radio input,
+.for-checkbox input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: -9999px;
+}
+
+.for-radio .input-toggle-component,
+.for-checkbox .input-toggle-component {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    float: left;
+    margin-right: 7px;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #dfe1e3;
+    background: #f7f7f7;
+}
+
+.for-radio p,
+.for-checkbox p {
+    color: #b3b2a8;
+    white-space: nowrap;
+    font-weight: normal;
+}
+
+.for-checkbox .input-toggle-component {
+    border-radius: var(--border-radius);
+}
+
+.for-checkbox .input-toggle-component {
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.for-checkbox .input-toggle-component:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    width: 10px;
+    height: 6px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-right: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    transform: rotate(-45deg);
+}
+
+.for-checkbox input:checked + .input-toggle-component {
+    border-color: color(var(--green) lightness(-10%));
+    background: var(--green);
+}
+
+.for-checkbox input:checked + .input-toggle-component:before {
+    opacity: 1;
+}
+
+.for-radio .input-toggle-component {
+    border-radius: 100px;
+}
+
+.for-radio .input-toggle-component {
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.for-radio .input-toggle-component:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 100%;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.for-radio input:checked + .input-toggle-component {
+    border-color: color(var(--green) lightness(-10%));
+    background: var(--green);
+}
+
+.for-radio input:checked + .input-toggle-component:before {
+    opacity: 1;
+}
+
+
+/* Select
+/* ---------------------------------------------------------- */
+
+.gh-select {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    padding: 0;
+    max-width: 100%;
+    width: 100%;
+    border-width: 0;
+}
+
+.gh-select:after {
+    content: "\e00f";
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    margin-top: -0.5em;
+    text-transform: none !important;
+    font-family: "ghosticons" !important;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    pointer-events: none;
+
+    speak: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.gh-select select {
+    padding: 8px 10px;
+    outline: none;
+    background: #fff;
+    text-indent: 0.01px;
+    text-overflow: "";
+    line-height: normal;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: window;
+}
+
+.gh-select select::-ms-expand {
+    display: none;
+}
+
+.gh-select select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #000;
+}
+
+
+/* FFF: Fucking Firefox Fixes
+/* ---------------------------------------------------------- */
+
+@-moz-document url-prefix() {
+    .gh-select {
+        border-width: 1px;
+    }
+    .gh-select select {
+        padding: 7px 10px 7px 8px;
+    }
+    .gh-select:focus {
+        border-color: #b1b1b1;
+    }
+}

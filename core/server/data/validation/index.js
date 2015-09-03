@@ -15,25 +15,25 @@ var schema    = require('../schema').tables,
 
 // Provide a few custom validators
 //
-validator.extend('empty', function (str) {
+validator.extend('empty', function empty(str) {
     return _.isEmpty(str);
 });
 
-validator.extend('notContains', function (str, badString) {
+validator.extend('notContains', function notContains(str, badString) {
     return !_.contains(str, badString);
 });
 
-validator.extend('isEmptyOrURL', function (str) {
+validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
     return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
 });
 
 // Validation against schema attributes
 // values are checked against the validation objects from schema.js
-validateSchema = function (tableName, model) {
+validateSchema = function validateSchema(tableName, model) {
     var columns = _.keys(schema[tableName]),
         validationErrors = [];
 
-    _.each(columns, function (columnKey) {
+    _.each(columns, function each(columnKey) {
         var message = '';
 
         // check nullable
@@ -48,7 +48,7 @@ validateSchema = function (tableName, model) {
         // TODO: check if mandatory values should be enforced
         if (model[columnKey] !== null && model[columnKey] !== undefined) {
             // check length
-            if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
+            if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
                 if (!validator.isLength(model[columnKey], 0, schema[tableName][columnKey].maxlength)) {
                     message = 'Value in [' + tableName + '.' + columnKey + '] exceeds maximum length of '
                         + schema[tableName][columnKey].maxlength + ' characters.';
@@ -81,7 +81,7 @@ validateSchema = function (tableName, model) {
 // Validation for settings
 // settings are checked against the validation objects
 // form default-settings.json
-validateSettings = function (defaultSettings, model) {
+validateSettings = function validateSettings(defaultSettings, model) {
     var values = model.toJSON(),
         validationErrors = [],
         matchingDefault = defaultSettings[values.key];
@@ -97,7 +97,7 @@ validateSettings = function (defaultSettings, model) {
     return Promise.resolve();
 };
 
-validateActiveTheme = function (themeName) {
+validateActiveTheme = function validateActiveTheme(themeName) {
     // If Ghost is running and its availableThemes collection exists
     // give it priority.
     if (config.paths.availableThemes && Object.keys(config.paths.availableThemes).length > 0) {
@@ -111,7 +111,7 @@ validateActiveTheme = function (themeName) {
         availableThemes = requireTree(config.paths.themePath);
     }
 
-    return availableThemes.then(function (themes) {
+    return availableThemes.then(function then(themes) {
         if (!themes.hasOwnProperty(themeName)) {
             return Promise.reject(new errors.ValidationError(themeName + ' cannot be activated because it is not currently installed.', 'activeTheme'));
         }
@@ -135,10 +135,10 @@ validateActiveTheme = function (themeName) {
 //                                      // not null.
 //
 // available validators: https://github.com/chriso/validator.js#validators
-validate = function (value, key, validations) {
+validate = function validate(value, key, validations) {
     var validationErrors = [];
 
-    _.each(validations, function (validationOptions, validationName) {
+    _.each(validations, function each(validationOptions, validationName) {
         var goodResult = true;
 
         if (_.isBoolean(validationOptions)) {
@@ -162,6 +162,7 @@ validate = function (value, key, validations) {
 };
 
 module.exports = {
+    validate: validate,
     validator: validator,
     validateSchema: validateSchema,
     validateSettings: validateSettings,

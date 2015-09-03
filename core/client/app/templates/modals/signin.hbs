@@ -3,9 +3,9 @@
 
         <form id="login" class="login-form" method="post" novalidate="novalidate" {{action "validateAndAuthenticate" on="submit"}}>
             <div class="password-wrap">
-                {{input class="password" type="password" placeholder="Password" name="password" value=password}}
+                {{input class="gh-input password" type="password" placeholder="Password" name="password" value=password}}
             </div>
-            <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Log in</button>
+            {{#gh-spin-button class="btn btn-blue" type="submit" action="validateAndAuthenticate" submitting=submitting}}Log in{{/gh-spin-button}}
        </form>
 
 {{/gh-modal-dialog}}

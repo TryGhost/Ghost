@@ -1,0 +1,71 @@
+/* Nav Lists
+/* ---------------------------------------------------------- */
+
+.nav-list {
+    padding: 0;
+    max-width: 500px;
+    border: 1px solid #e0dfd7;
+    background: #fff;
+    border-radius: var(--border-radius);
+}
+
+.nav-list.nav-list-block {
+    max-width: none;
+}
+
+.nav-list-item {
+    position: relative;
+    display: block;
+    padding: 8px 40px 8px 12px;
+    color: var(--darkgrey);
+}
+
+.nav-list-item:hover {
+    background: color(#dfe1e3 lightness(+10%));
+    cursor: pointer;
+}
+
+.nav-list-item:first-of-type {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+.nav-list-item:last-of-type {
+    border-bottom-right-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.nav-list-item:not(:last-of-type) {
+    border-bottom: 1px solid #e0dfd7;
+}
+
+.nav-list-item button {
+    text-align: left;
+}
+
+.nav-list-item a {
+    color: var(--darkgrey);
+}
+
+.nav-list-item b {
+    display: block;
+    font-size: 1.6rem;
+    line-height: 1.375;
+    font-weight: normal;
+}
+
+.nav-list-item span {
+    display: block;
+    color: var(--midgrey);
+    font-size: 1.1rem;
+    line-height: 1.375;
+}
+
+.nav-list-item i {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    margin-top: -0.9rem;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+}

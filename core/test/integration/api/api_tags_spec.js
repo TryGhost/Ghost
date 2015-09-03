@@ -52,6 +52,20 @@ describe('Tags API', function () {
                 done();
             }).catch(done);
         });
+
+        it('rejects invalid names with ValidationError', function (done) {
+            var invalidTag = _.clone(newTag);
+
+            invalidTag.name = ', starts with a comma';
+
+            TagAPI.add({tags: [invalidTag]}, testUtils.context.admin)
+                .then(function () {
+                    done(new Error('Adding a tag with an invalid name is not rejected.'));
+                }).catch(function (errors) {
+                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                    done();
+                }).catch(done);
+        });
     });
 
     describe('Edit', function () {
@@ -86,6 +100,18 @@ describe('Tags API', function () {
                 done();
             }).catch(done);
         });
+
+        it('rejects invalid names with ValidationError', function (done) {
+            var invalidTagName = ', starts with a comma';
+
+            TagAPI.edit({tags: [{name: invalidTagName}]}, _.extend({}, context.editor, {id: firstTag}))
+                .then(function () {
+                    done(new Error('Adding a tag with an invalid name is not rejected.'));
+                }).catch(function (errors) {
+                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                    done();
+                }).catch(done);
+        });
     });
 
     describe('Destroy', function () {
@@ -102,13 +128,45 @@ describe('Tags API', function () {
     });
 
     describe('Browse', function () {
+        beforeEach(function (done) {
+            testUtils.fixtures.insertMoreTags().then(function () {
+                done();
+            });
+        });
+
         it('can browse (internal)', function (done) {
             TagAPI.browse(testUtils.context.internal).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
-                results.tags.length.should.be.above(0);
+                results.tags.should.have.lengthOf(15);
                 testUtils.API.checkResponse(results.tags[0], 'tag');
                 results.tags[0].created_at.should.be.an.instanceof(Date);
+
+                results.meta.pagination.should.have.property('page', 1);
+                results.meta.pagination.should.have.property('limit', 15);
+                results.meta.pagination.should.have.property('pages', 4);
+                results.meta.pagination.should.have.property('total', 55);
+                results.meta.pagination.should.have.property('next', 2);
+                results.meta.pagination.should.have.property('prev', null);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can browse page 2 (internal)', function (done) {
+            TagAPI.browse(_.extend({}, testUtils.context.internal, {page: 2})).then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.should.have.lengthOf(15);
+                testUtils.API.checkResponse(results.tags[0], 'tag');
+                results.tags[0].created_at.should.be.an.instanceof(Date);
+
+                results.meta.pagination.should.have.property('page', 2);
+                results.meta.pagination.should.have.property('limit', 15);
+                results.meta.pagination.should.have.property('pages', 4);
+                results.meta.pagination.should.have.property('total', 55);
+                results.meta.pagination.should.have.property('next', 3);
+                results.meta.pagination.should.have.property('prev', 1);
 
                 done();
             }).catch(done);
@@ -162,14 +220,41 @@ describe('Tags API', function () {
             }).catch(done);
         });
 
-        it('with include post_count', function (done) {
+        it('can browse with include post_count', function (done) {
             TagAPI.browse({context: {user: 1}, include: 'post_count'}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
-                results.tags.length.should.be.above(0);
-
+                results.tags.should.have.lengthOf(15);
                 testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
                 should.exist(results.tags[0].post_count);
+
+                results.tags[0].post_count.should.eql(2);
+                results.tags[1].post_count.should.eql(2);
+                results.meta.pagination.should.have.property('page', 1);
+                results.meta.pagination.should.have.property('limit', 15);
+                results.meta.pagination.should.have.property('pages', 4);
+                results.meta.pagination.should.have.property('total', 55);
+                results.meta.pagination.should.have.property('next', 2);
+                results.meta.pagination.should.have.property('prev', null);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can browse page 4 with include post_count', function (done) {
+            TagAPI.browse({context: {user: 1}, include: 'post_count', page: 4}).then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.should.have.lengthOf(10);
+                testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
+                should.exist(results.tags[0].post_count);
+
+                results.meta.pagination.should.have.property('page', 4);
+                results.meta.pagination.should.have.property('limit', 15);
+                results.meta.pagination.should.have.property('pages', 4);
+                results.meta.pagination.should.have.property('total', 55);
+                results.meta.pagination.should.have.property('next', null);
+                results.meta.pagination.should.have.property('prev', 3);
 
                 done();
             }).catch(done);
@@ -177,6 +262,10 @@ describe('Tags API', function () {
     });
 
     describe('Read', function () {
+        function extractFirstTag(tags) {
+            return _.filter(tags, {id: 1})[0];
+        }
+
         it('returns post_count with include post_count', function (done) {
             TagAPI.read({context: {user: 1}, include: 'post_count', slug: 'kitchen-sink'}).then(function (results) {
                 should.exist(results);
@@ -186,6 +275,23 @@ describe('Tags API', function () {
                 testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
                 should.exist(results.tags[0].post_count);
                 results.tags[0].post_count.should.equal(2);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with slug', function (done) {
+            TagAPI.browse({context: {user: 1}}).then(function (results) {
+                should.exist(results);
+                should.exist(results.tags);
+                results.tags.length.should.be.above(0);
+
+                var firstTag = extractFirstTag(results.tags);
+
+                return TagAPI.read({context: {user: 1}, slug: firstTag.slug});
+            }).then(function (found) {
+                should.exist(found);
+                testUtils.API.checkResponse(found.tags[0], 'tag');
 
                 done();
             }).catch(done);

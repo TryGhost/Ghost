@@ -1,11 +1,18 @@
-<section class="reset-box js-reset-box fade-in">
-    <form id="reset" class="reset-form" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
-        <div class="password-wrap">
-            {{input value=newPassword class="password" type="password" placeholder="Password" name="newpassword" autofocus="autofocus" }}
-        </div>
-        <div class="password-wrap">
-            {{input value=ne2Password class="password" type="password" placeholder="Confirm Password" name="ne2password" }}
-        </div>
-        <button class="btn btn-blue" type="submit" disabled={{submitting}}>Reset Password</button>
-    </form>
-</section>
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content fade-in">
+            <form id="reset" class="gh-signin" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
+                {{#gh-form-group errors=errors hasValidated=hasValidated property="newPassword"}}
+                    {{gh-input type="password" name="newpassword" placeholder="Password" class="password" autocorrect="off" autofocus="autofocus"  value=newPassword}}
+                {{/gh-form-group}}
+                {{#gh-form-group errors=errors hasValidated=hasValidated property="ne2Password"}}
+                    {{gh-input type="password" name="ne2password" placeholder="Confirm Password" class="password" autocorrect="off" autofocus="autofocus" value=ne2Password}}
+                {{/gh-form-group}}
+
+                {{#gh-spin-button class="btn btn-blue btn-block" type="submit" submitting=submitting autoWidth="false"}}Reset Password{{/gh-spin-button}}
+            </form>
+
+            <p class="main-error">{{{flowErrors}}}</p>
+        </section>
+    </div>
+</div>

@@ -1,5 +1,11 @@
 import Ember from 'ember';
-var TransferOwnerController = Ember.Controller.extend({
+import {request as ajax} from 'ic-ajax';
+
+export default Ember.Controller.extend({
+    dropdown: Ember.inject.service(),
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
+
     actions: {
         confirmAccept: function () {
             var user = this.get('model'),
@@ -8,7 +14,7 @@ var TransferOwnerController = Ember.Controller.extend({
 
             self.get('dropdown').closeDropdowns();
 
-            ic.ajax.request(url, {
+            ajax(url, {
                 type: 'PUT',
                 data: {
                     owner: [{
@@ -27,9 +33,9 @@ var TransferOwnerController = Ember.Controller.extend({
                     });
                 }
 
-                self.notifications.showSuccess('Ownership successfully transferred to ' + user.get('name'));
+                self.get('notifications').showAlert('Ownership successfully transferred to ' + user.get('name'), {type: 'success'});
             }).catch(function (error) {
-                self.notifications.showAPIError(error);
+                self.get('notifications').showAPIError(error);
             });
         },
 
@@ -49,5 +55,3 @@ var TransferOwnerController = Ember.Controller.extend({
         }
     }
 });
-
-export default TransferOwnerController;

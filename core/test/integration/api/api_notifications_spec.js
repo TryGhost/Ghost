@@ -74,7 +74,7 @@ describe('Notifications API', function () {
             notification.id.should.be.a.Number;
             notification.id.should.not.equal(99);
             should.exist(notification.status);
-            notification.status.should.equal('persistent');
+            notification.status.should.equal('alert');
 
             done();
         }).catch(done);
@@ -122,7 +122,7 @@ describe('Notifications API', function () {
             var notification = result.notifications[0];
 
             NotificationsAPI.destroy(
-                _.extend(testUtils.context.internal, {id: notification.id})
+                _.extend({}, testUtils.context.internal, {id: notification.id})
             ).then(function (result) {
                 should.exist(result);
                 should.exist(result.notifications);
@@ -143,7 +143,7 @@ describe('Notifications API', function () {
             var notification = result.notifications[0];
 
             NotificationsAPI.destroy(
-                _.extend(testUtils.context.owner, {id: notification.id})
+                _.extend({}, testUtils.context.owner, {id: notification.id})
             ).then(function (result) {
                 should.exist(result);
                 should.exist(result.notifications);

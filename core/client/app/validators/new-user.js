@@ -1,28 +1,34 @@
-import Ember from 'ember';
-var NewUserValidator = Ember.Object.extend({
-    check: function (model) {
-        var data = model.getProperties('name', 'email', 'password'),
-            validationErrors = [];
+import BaseValidator from './base';
 
-        if (!validator.isLength(data.name, 1)) {
-            validationErrors.push({
-                message: 'Please enter a name.'
-            });
+var NewUserValidator = BaseValidator.extend({
+    properties: ['name', 'email', 'password'],
+
+    name: function (model) {
+        var name = model.get('name');
+
+        if (!validator.isLength(name, 1)) {
+            model.get('errors').add('name', 'Please enter a name.');
+            this.invalidate();
         }
+    },
+    email: function (model) {
+        var email = model.get('email');
 
-        if (!validator.isEmail(data.email)) {
-            validationErrors.push({
-                message: 'Invalid Email.'
-            });
+        if (validator.empty(email)) {
+            model.get('errors').add('email', 'Please enter an email.');
+            this.invalidate();
+        } else if (!validator.isEmail(email)) {
+            model.get('errors').add('email', 'Invalid Email.');
+            this.invalidate();
         }
+    },
+    password: function (model) {
+        var password = model.get('password');
 
-        if (!validator.isLength(data.password, 8)) {
-            validationErrors.push({
-                message: 'Password must be at least 8 characters long.'
-            });
+        if (!validator.isLength(password, 8)) {
+            model.get('errors').add('password', 'Password must be at least 8 characters long');
+            this.invalidate();
         }
-
-        return validationErrors;
     }
 });
 

@@ -1,0 +1,235 @@
+/* Modals
+/* ---------------------------------------------------------- */
+
+
+/* Full screen container
+/* ---------------------------------------------------------- */
+
+.modal-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    display: none;
+    overflow-x: auto;
+    overflow-y: scroll;
+    padding-right: 10px;
+    padding-left: 10px;
+    transition: all 0.15s linear 0s;
+    transform: translateZ(0);
+}
+
+.modal-background {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    display: none;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+
+/* The modal
+/* ---------------------------------------------------------- */
+
+.modal,
+.modal-action {
+    right: auto;
+    left: 50%;
+    z-index: 1050;
+    margin-right: auto;
+    margin-left: auto;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    max-width: 550px;
+    width: 100%;
+    pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+    .modal,
+    .modal-action {
+        padding: 10px;
+    }
+}
+
+.modal button,
+.modal-action button {
+    min-width: 100px;
+}
+
+.modal .image-uploader,
+.modal .pre-image-uploader,
+.modal-action .image-uploader,
+.modal-action .pre-image-uploader {
+    margin: 0;
+}
+
+.modal-action {
+    padding: 60px 0 30px;
+}
+
+@media (max-width: 900px) {
+    .modal-action {
+        padding: 30px 0;
+    }
+}
+
+
+/* Modal content
+/* ---------------------------------------------------------- */
+
+.modal-content {
+    position: relative;
+    padding: 18px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: var(--border-radius);
+    box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 6px;
+}
+
+.modal-content * {
+    user-select: text;
+}
+
+.modal-content .close {
+    position: absolute;
+    top: 19px;
+    right: 19px;
+    z-index: 9999;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    border: none;
+    color: #808284;
+}
+
+.modal-content .close:hover {
+    color: var(--darkgrey);
+}
+
+.modal-header {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.modal-header h1 {
+    display: inline-block;
+    margin: 0 25px 0 0;
+    font-size: 1.85em;
+    font-weight: 100;
+}
+
+.modal-body {
+    position: relative;
+    overflow-y: auto;
+}
+
+.modal-body .red {
+    color: var(--red);
+}
+
+.modal-body > *:first-child {
+    margin-top: 0;
+}
+
+.modal-body > *:last-child {
+    margin-bottom: 0;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-footer button {
+    margin-left: 8px;
+    text-align: center;
+}
+
+.modal-footer button:first-of-type {
+    margin-left: 0;
+}
+
+
+/* Modifiers
+/* ---------------------------------------------------------- */
+
+.modal-style-wide {
+    width: 550px;
+}
+
+@media (max-width: 900px) {
+    .modal-style-wide {
+        width: 100%;
+    }
+}
+
+.modal-style-centered {
+    text-align: center;
+}
+
+/* Login styles */
+.modal-body .login-form {
+    display: block;
+}
+
+.modal-body .login-form .password-wrap input {
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .modal-body .login-form {
+        margin: 0 auto;
+        max-width: 264px;
+    }
+    .modal-body .login-form .password-wrap {
+        margin: 0 auto 1em;
+        width: 100%;
+    }
+    .modal-body .login-form .btn {
+        margin: 0;
+        margin-bottom: 1em;
+        width: 100%;
+    }
+}
+
+@media (min-width: 901px) {
+    .modal-body .login-form {
+        display: flex;
+    }
+    .modal-body .login-form .password-wrap {
+        flex: 1;
+    }
+}
+
+
+/* Open States
+/* ---------------------------------------------------------- */
+
+.modal-container.open,
+.modal-container.open > .modal,
+.modal-container.open > .modal-action {
+    display: block;
+}
+
+.modal-background.open {
+    display: block;
+}
+
+
+/* Animations
+/* ---------------------------------------------------------- */
+
+.modal-container.fade-out {
+    animation-duration: 0.08s;
+}
+
+.modal-background.fade-out {
+    animation-duration: 0.15s;
+}

@@ -3,6 +3,7 @@
 
 var _                   = require('lodash'),
     Promise             = require('bluebird'),
+    errors              = require('../errors'),
     Models              = require('../models'),
     effectivePerms      = require('./effective'),
     init,
@@ -20,28 +21,88 @@ function hasActionsMap() {
     });
 }
 
-// TODO: Move this to its own file so others can use it?
 function parseContext(context) {
     // Parse what's passed to canThis.beginCheck for standard user and app scopes
     var parsed = {
             internal: false,
             user: null,
-            app: null
+            app: null,
+            public: true
         };
 
     if (context && (context === 'internal' || context.internal)) {
         parsed.internal = true;
+        parsed.public = false;
     }
 
     if (context && context.user) {
         parsed.user = context.user;
+        parsed.public = false;
     }
 
     if (context && context.app) {
         parsed.app = context.app;
+        parsed.public = false;
     }
 
     return parsed;
+}
+
+function applyStatusRules(docName, method, opts) {
+    var errorMsg = 'You do not have permission to retrieve ' + docName + ' with that status';
+
+    // Enforce status 'active' for users
+    if (docName === 'users') {
+        if (!opts.status) {
+            return 'active';
+        } else if (opts.status !== 'active') {
+            throw errorMsg;
+        }
+    }
+
+    // Enforce status 'published' for posts
+    if (docName === 'posts') {
+        if (!opts.status) {
+            return 'published';
+        } else if (
+            method === 'read'
+            && (opts.status === 'draft' || opts.status === 'all')
+            && _.isString(opts.uuid) && _.isUndefined(opts.id) && _.isUndefined(opts.slug)
+        ) {
+            // public read requests can retrieve a draft, but only by UUID
+            return opts.status;
+        } else if (opts.status !== 'published') {
+            // any other parameter would make this a permissions error
+            throw errorMsg;
+        }
+    }
+
+    return opts.status;
+}
+
+/**
+ * API Public Permission Rules
+ * This method enforces the rules for public requests
+ * @param {String} docName
+ * @param {String} method (read || browse)
+ * @param {Object} options
+ * @returns {Object} options
+ */
+function applyPublicRules(docName, method, options) {
+    try {
+        // If this is a public context
+        if (parseContext(options.context).public === true) {
+            if (method === 'browse') {
+                options.status = applyStatusRules(docName, method, options);
+            } else if (method === 'read') {
+                options.data.status = applyStatusRules(docName, method, options.data);
+            }
+        }
+
+        return Promise.resolve(options);
+    } catch (err) {
+        return Promise.reject(err);
+    }
 }
 
 // Base class for canThis call results
@@ -134,7 +195,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject();
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
             });
         };
 
@@ -244,5 +305,7 @@ module.exports = exported = {
     init: init,
     refresh: refresh,
     canThis: canThis,
+    parseContext: parseContext,
+    applyPublicRules: applyPublicRules,
     actionsMap: {}
 };

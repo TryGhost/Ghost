@@ -1,13 +1,12 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-import {getRequestErrorMessage} from 'ghost/utils/ajax';
+import getRequestErrorMessage from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
 import PostValidator from 'ghost/validators/post';
 import SetupValidator from 'ghost/validators/setup';
 import SignupValidator from 'ghost/validators/signup';
 import SigninValidator from 'ghost/validators/signin';
-import ForgotValidator from 'ghost/validators/forgotten';
 import SettingValidator from 'ghost/validators/setting';
 import ResetValidator from 'ghost/validators/reset';
 import UserValidator from 'ghost/validators/user';
@@ -16,53 +15,12 @@ import TagSettingsValidator from 'ghost/validators/tag-settings';
 // our extensions to the validator library
 ValidatorExtensions.init();
 
-// format errors to be used in `notifications.showErrors`.
-// result is [{message: 'concatenated error messages'}]
-function formatErrors(errors, opts) {
-    var message = 'There was an error';
-
-    opts = opts || {};
-
-    if (opts.wasSave && opts.validationType) {
-        message += ' saving this ' + opts.validationType;
-    }
-
-    if (Ember.isArray(errors)) {
-        // get the validator's error messages from the array.
-        // normalize array members to map to strings.
-        message = errors.map(function (error) {
-            var errorMessage;
-            if (typeof error === 'string') {
-                errorMessage = error;
-            } else {
-                errorMessage = error.message;
-            }
-
-            return Ember.Handlebars.Utils.escapeExpression(errorMessage);
-        }).join('<br />').htmlSafe();
-    } else if (errors instanceof Error) {
-        message += errors.message || '.';
-    } else if (typeof errors === 'object') {
-        // Get messages from server response
-        message += ': ' + getRequestErrorMessage(errors, true);
-    } else if (typeof errors === 'string') {
-        message += ': ' + errors;
-    } else {
-        message += '.';
-    }
-
-    // set format for notifications.showErrors
-    message = [{message: message}];
-
-    return message;
-}
-
 /**
 * The class that gets this mixin will receive these properties and functions.
 * It will be able to validate any properties on itself (or the model it passes to validate())
 * with the use of a declared validator.
 */
-var ValidationEngine = Ember.Mixin.create({
+export default Ember.Mixin.create({
     // these validators can be passed a model to validate when the class that
     // mixes in the ValidationEngine declares a validationType equal to a key on this object.
     // the model is either passed in via `this.validate({ model: object })`
@@ -74,24 +32,31 @@ var ValidationEngine = Ember.Mixin.create({
         setup: SetupValidator,
         signup: SignupValidator,
         signin: SigninValidator,
-        forgotten: ForgotValidator,
         setting: SettingValidator,
         reset: ResetValidator,
         user: UserValidator,
         tag: TagSettingsValidator
     },
 
+    // This adds the Errors object to the validation engine, and shouldn't affect
+    // ember-data models because they essentially use the same thing
+    errors: DS.Errors.create(),
+
+    // Store whether a property has been validated yet, so that we know whether or not
+    // to show error / success validation for a field
+    hasValidated: Ember.A(),
+
     /**
     * Passes the model to the validator specified by validationType.
     * Returns a promise that will resolve if validation succeeds, and reject if not.
     * Some options can be specified:
     *
-    * `format: false` - doesn't use formatErrors to concatenate errors for notifications.showErrors.
-    *                   will return whatever the specified validator returns.
-    *                   since notifications are a common usecase, `format` is true by default.
-    *
     * `model: Object` - you can specify the model to be validated, rather than pass the default value of `this`,
     *                   the class that mixes in this mixin.
+    *
+    * `property: String` - you can specify a specific property to validate. If
+    * 					   no property is specified, the entire model will be
+    * 					   validated
     */
     validate: function (opts) {
         // jscs:disable safeContextKeyword
@@ -99,7 +64,8 @@ var ValidationEngine = Ember.Mixin.create({
 
         var model = this,
             type,
-            validator;
+            validator,
+            hasValidated;
 
         if (opts.model) {
             model = opts.model;
@@ -111,27 +77,28 @@ var ValidationEngine = Ember.Mixin.create({
 
         type = this.get('validationType') || model.get('validationType');
         validator = this.get('validators.' + type) || model.get('validators.' + type);
+        hasValidated = this.get('hasValidated');
 
         opts.validationType = type;
 
         return new Ember.RSVP.Promise(function (resolve, reject) {
-            var validationErrors;
+            var passed;
 
             if (!type || !validator) {
-                validationErrors = ['The validator specified, "' + type + '", did not exist!'];
+                return reject(['The validator specified, "' + type + '", did not exist!']);
+            }
+
+            if (opts.property) {
+                // If property isn't in `hasValidated`, add it to mark that this field can show a validation result
+                hasValidated.addObject(opts.property);
+                model.get('errors').remove(opts.property);
             } else {
-                validationErrors = validator.check(model);
+                model.get('errors').clear();
             }
 
-            if (Ember.isEmpty(validationErrors)) {
-                return resolve();
-            }
+            passed = validator.check(model, opts.property);
 
-            if (opts.format !== false) {
-                validationErrors = formatErrors(validationErrors, opts);
-            }
-
-            return reject(validationErrors);
+            return (passed) ? resolve() : reject();
         });
     },
 
@@ -161,20 +128,18 @@ var ValidationEngine = Ember.Mixin.create({
         return this.validate(options).then(function () {
             return _super.call(self, options);
         }).catch(function (result) {
-            // server save failed - validate() would have given back an array
-            if (!Ember.isArray(result)) {
-                if (options.format !== false) {
-                    // concatenate all errors into an array with a single object: [{message: 'concatted message'}]
-                    result = formatErrors(result, options);
-                } else {
-                    // return the array of errors from the server
-                    result = getRequestErrorMessage(result);
-                }
+            // server save failed or validator type doesn't exist
+            if (result && !Ember.isArray(result)) {
+                // return the array of errors from the server
+                result = getRequestErrorMessage(result);
             }
 
             return Ember.RSVP.reject(result);
         });
+    },
+    actions: {
+        validate: function (property) {
+            this.validate({property: property});
+        }
     }
 });
-
-export default ValidationEngine;

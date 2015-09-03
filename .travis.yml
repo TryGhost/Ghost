@@ -1,13 +1,14 @@
 language: node_js
+# When changing node version also update it on line 35.
 node_js:
   - "0.10"
   - "0.12"
-  - "iojs-v1.2.0"
 sudo: false
 cache:
   directories:
     - node_modules
-    - bower_components
+    - core/client/node_modules
+    - core/client/bower_components
 addons:
   postgresql: "9.3"
 env:
@@ -28,3 +29,17 @@ before_install:
 before_script:
   - phantomjs --version
   - casperjs --version
+after_success:
+  - |
+      if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        if [[ "$DB" = "sqlite3" && "$TRAVIS_NODE_VERSION" = "0.10" ]]; then
+          echo "Generate coverage..."
+          grunt coverage
+          npm install -g codeclimate-test-reporter
+          codeclimate-test-reporter < core/test/coverage/unit/lcov.info
+        else
+          echo "False DB and NODE_VERSION. No coverage generated."
+        fi
+      else
+        echo "This is a PR. No coverage generated."
+      fi

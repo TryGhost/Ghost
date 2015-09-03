@@ -1,46 +1,33 @@
 var _              = require('lodash'),
-    Promise        = require('bluebird'),
-    errors         = require('../errors'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
-
+    baseUtils      = require('./base/utils'),
     Tag,
     Tags;
-
-function addPostCount(options, obj) {
-    if (options.include && options.include.indexOf('post_count') > -1) {
-        obj.query('select', 'tags.*');
-        obj.query('count', 'posts_tags.id as post_count');
-        obj.query('leftJoin', 'posts_tags', 'tag_id', 'tags.id');
-        obj.query('groupBy', 'tag_id', 'tags.id');
-
-        options.include = _.pull([].concat(options.include), 'post_count');
-    }
-}
 
 Tag = ghostBookshelf.Model.extend({
 
     tableName: 'tags',
 
-    emitChange: function (event) {
+    emitChange: function emitChange(event) {
         events.emit('tag' + '.' + event, this);
     },
 
-    initialize: function () {
+    initialize: function initialize() {
         ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
 
-        this.on('created', function (model) {
+        this.on('created', function onCreated(model) {
             model.emitChange('added');
         });
-        this.on('updated', function (model) {
+        this.on('updated', function onUpdated(model) {
             model.emitChange('edited');
         });
-        this.on('destroyed', function (model) {
+        this.on('destroyed', function onDestroyed(model) {
             model.emitChange('deleted');
         });
     },
 
-    saving: function (newPage, attr, options) {
+    saving: function saving(newPage, attr, options) {
         /*jshint unused:false*/
 
         var self = this;
@@ -51,17 +38,19 @@ Tag = ghostBookshelf.Model.extend({
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Tag, this.get('slug') || this.get('name'),
                 {transacting: options.transacting})
-                .then(function (slug) {
+                .then(function then(slug) {
                     self.set({slug: slug});
                 });
         }
     },
 
-    posts: function () {
+    posts: function posts() {
         return this.belongsToMany('Post');
     },
 
-    toJSON: function (options) {
+    toJSON: function toJSON(options) {
+        options = options || {};
+
         var attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
 
         attrs.parent = attrs.parent || attrs.parent_id;
@@ -70,13 +59,31 @@ Tag = ghostBookshelf.Model.extend({
         return attrs;
     }
 }, {
-    permittedOptions: function (methodName) {
+    setupFilters: function setupFilters() {
+        return {};
+    },
+
+    findPageDefaultOptions: function findPageDefaultOptions() {
+        return {
+            where: {}
+        };
+    },
+
+    orderDefaultOptions: function orderDefaultOptions() {
+        return {};
+    },
+
+    processOptions: function processOptions(itemCollection, options) {
+        return options;
+    },
+
+    permittedOptions: function permittedOptions(methodName) {
         var options = ghostBookshelf.Model.permittedOptions(),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findPage: ['page', 'limit']
+                findPage: ['page', 'limit', 'columns']
             };
 
         if (validOptions[methodName]) {
@@ -90,7 +97,7 @@ Tag = ghostBookshelf.Model.extend({
      * ### Find One
      * @overrides ghostBookshelf.Model.findOne
      */
-    findOne: function (data, options) {
+    findOne: function findOne(data, options) {
         options = options || {};
 
         options = this.filterOptions(options, 'findOne');
@@ -98,7 +105,7 @@ Tag = ghostBookshelf.Model.extend({
 
         var tag = this.forge(data);
 
-        addPostCount(options, tag);
+        baseUtils.addPostCount(options, tag);
 
         // Add related objects
         options.withRelated = _.union(options.withRelated, options.include);
@@ -106,88 +113,12 @@ Tag = ghostBookshelf.Model.extend({
         return tag.fetch(options);
     },
 
-    findPage: function (options) {
-        options = options || {};
-
-        var tagCollection = Tags.forge(),
-            collectionPromise,
-            qb;
-
-        if (options.limit && options.limit !== 'all') {
-            options.limit = parseInt(options.limit, 10) || 15;
-        }
-
-        if (options.page) {
-            options.page = parseInt(options.page, 10) || 1;
-        }
-
-        options = this.filterOptions(options, 'findPage');
-        // Set default settings for options
-        options = _.extend({
-            page: 1, // pagination page
-            limit: 15,
-            where: {}
-        }, options);
-
-        // only include a limit-query if a numeric limit is provided
-        if (_.isNumber(options.limit)) {
-            tagCollection
-                .query('limit', options.limit)
-                .query('offset', options.limit * (options.page - 1));
-        }
-
-        addPostCount(options, tagCollection);
-
-        collectionPromise = tagCollection.fetch(_.omit(options, 'page', 'limit'));
-
-        // Find total number of tags
-
-        qb = ghostBookshelf.knex('tags');
-
-        if (options.where) {
-            qb.where(options.where);
-        }
-
-        return Promise.join(collectionPromise, qb.count('tags.id as aggregate')).then(function (results) {
-            var totalTags = results[1][0].aggregate,
-                calcPages = Math.ceil(totalTags / options.limit) || 0,
-                tagCollection = results[0],
-                pagination = {},
-                meta = {},
-                data = {};
-
-            pagination.page = options.page;
-            pagination.limit = options.limit;
-            pagination.pages = calcPages === 0 ? 1 : calcPages;
-            pagination.total = totalTags;
-            pagination.next = null;
-            pagination.prev = null;
-
-            data.tags = tagCollection.toJSON(options);
-            data.meta = meta;
-            meta.pagination = pagination;
-
-            if (pagination.pages > 1) {
-                if (pagination.page === 1) {
-                    pagination.next = pagination.page + 1;
-                } else if (pagination.page === pagination.pages) {
-                    pagination.prev = pagination.page - 1;
-                } else {
-                    pagination.next = pagination.page + 1;
-                    pagination.prev = pagination.page - 1;
-                }
-            }
-
-            return data;
-        })
-        .catch(errors.logAndThrowError);
-    },
-    destroy: function (options) {
+    destroy: function destroy(options) {
         var id = options.id;
         options = this.filterOptions(options, 'destroy');
 
         return this.forge({id: id}).fetch({withRelated: ['posts']}).then(function destroyTagsAndPost(tag) {
-            return tag.related('posts').detach().then(function () {
+            return tag.related('posts').detach().then(function destroyTags() {
                 return tag.destroy(options);
             });
         });

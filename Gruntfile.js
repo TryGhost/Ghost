@@ -67,20 +67,25 @@ var _              = require('lodash'),
                     files: [
                         'content/themes/casper/assets/css/*.css',
                         'content/themes/casper/assets/js/*.js',
-                        'core/client/dist/*.js',
-                        'core/client/dist/*.css',
-                        'core/built/scripts/*.js'
+                        'core/built/assets/*.js',
+                        'core/client/dist/index.html'
                     ],
                     options: {
                         livereload: true
                     }
                 },
                 express: {
-                    files:  ['core/server.js', 'core/server/**/*.js'],
+                    files:  ['core/ghost-server.js', 'core/server/**/*.js'],
                     tasks:  ['express:dev'],
                     options: {
-                        // **Note:** Without this option specified express won't be reloaded
-                        nospawn: true
+                        spawn: false
+                    }
+                },
+                csscomb: {
+                    files: ['core/client/app/styles/**/*.css'],
+                    tasks: ['shell:csscombfix'],
+                    options: {
+                        livereload: true
                     }
                 }
             },
@@ -262,13 +267,23 @@ var _              = require('lodash'),
                 coverage: {
                     // TODO fix the timing/async & cleanup issues with the route and integration tests so that
                     // they can also have coverage generated for them & the order doesn't matter
-                    src: ['core/test/integration', 'core/test/unit'],
+                    src: ['core/test/unit'],
                     options: {
                         mask: '**/*_spec.js',
-                        coverageFolder: 'core/test/coverage',
+                        coverageFolder: 'core/test/coverage/unit',
                         mochaOptions: ['--timeout=15000'],
                         excludes: ['core/client/**']
                     }
+                },
+                coverage_integration: {
+                    src: ['core/test/integration/api'],
+                    options: {
+                        coverageFolder: 'core/test/coverage/integration',
+                        mask: '**/*_spec.js',
+                        mochaOptions: ['--timeout=15000'],
+                        excludes: ['core/client/**', 'core/server/built', 'core/server/apps', 'core/server/config', 'core/server/data']
+                    }
+
                 }
             },
 
@@ -310,7 +325,7 @@ var _              = require('lodash'),
                     },
                     options: {
                         execOptions: {
-                            cwd: path.resolve(cwd + '/core/client/'),
+                            cwd: path.resolve(process.cwd() + '/core/client/'),
                             stdout: false
                         }
                     }
@@ -328,12 +343,20 @@ var _              = require('lodash'),
 
                 test: {
                     command: function (test) {
-                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec core/test/' + test;
+                        return 'node ' + mochaPath  + ' --timeout=15000 --ui=bdd --reporter=spec --colors core/test/' + test;
                     }
                 },
 
                 shrinkwrap: {
                     command: 'npm shrinkwrap'
+                },
+
+                csscombfix: {
+                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -v core/client/app/styles')
+                },
+
+                csscomblint: {
+                    command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -lv core/client/app/styles')
                 }
             },
 
@@ -345,8 +368,8 @@ var _              = require('lodash'),
                     src: ['.'],
                     options: {
                         onlyUpdated: true,
-                        exclude: 'node_modules,.git,.tmp,bower_components,content,*built,*test,*doc*,*vendor,' +
-                            'config.js,.travis.yml,*.min.css,screen.css',
+                        exclude: 'node_modules,bower_components,content,core/client,*test,*doc*,' +
+                        '*vendor,config.js,*buil*,.dist*,.idea,.git*,.travis.yml,.bower*,.editorconfig,.js*,*.md',
                         extras: ['fileSearch']
                     }
                 }
@@ -380,24 +403,10 @@ var _              = require('lodash'),
             // ### grunt-contrib-copy
             // Copy files into their correct locations as part of building assets, or creating release zips
             copy: {
-                jquery: {
-                    cwd: 'core/client/bower_components/jquery/dist/',
-                    src: 'jquery.js',
-                    dest: 'core/built/public/',
-                    expand: true,
-                    nonull: true
-                },
                 release: {
-                    files: [{
-                        cwd: 'core/client/bower_components/jquery/dist/',
-                        src: 'jquery.js',
-                        dest: 'core/built/public/',
-                        expand: true
-                    }, {
-                        expand: true,
-                        src: buildGlob,
-                        dest: '<%= paths.releaseBuild %>/'
-                    }]
+                    expand: true,
+                    src: buildGlob,
+                    dest: '<%= paths.releaseBuild %>/'
                 }
             },
 
@@ -411,27 +420,6 @@ var _              = require('lodash'),
                     expand: true,
                     cwd: '<%= paths.releaseBuild %>/',
                     src: ['**']
-                }
-            },
-
-            // ### grunt-contrib-uglify
-            // Minify concatenated javascript files ready for production
-            uglify: {
-                prod: {
-                    options: {
-                        sourceMap: false
-                    },
-                    files: {
-                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
-                    }
-                },
-                release: {
-                    options: {
-                        sourceMap: false
-                    },
-                    files: {
-                        'core/built/public/jquery.min.js': 'core/built/public/jquery.js'
-                    }
                 }
             },
 
@@ -491,7 +479,7 @@ var _              = require('lodash'),
             }, function (error, result, code) {
                 /*jshint unused:false*/
                 if (error) {
-                    grunt.fail.fatal(result.stdout);
+                    grunt.fail.fatal(result.stderr);
                 }
                 grunt.log.writeln(result.stdout);
                 done();
@@ -523,6 +511,23 @@ var _              = require('lodash'),
         // ### Documentation
         // Run `grunt docs` to generate annotated source code using the documentation described in the code comments.
         grunt.registerTask('docs', 'Generate Docs', ['docker']);
+
+        // Runun `grunt watch-docs` to setup livereload & watch whilst you're editing the docs
+        grunt.registerTask('watch-docs', function () {
+            grunt.config.merge({
+                watch: {
+                    docs: {
+                        files: ['core/server/**/*', 'index.js', 'Gruntfile.js', 'config.example.js'],
+                        tasks: ['docker'],
+                        options: {
+                            livereload: true
+                        }
+                    }
+                }
+            });
+
+            grunt.task.run('watch:docs');
+        });
 
         // ## Testing
 
@@ -604,13 +609,13 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'shell:ember:test', 'test-functional']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-ember', 'test-functional']);
 
         // ### Lint
         //
         // `grunt lint` will run the linter and the code style checker so you can make sure your code is pretty
         grunt.registerTask('lint', 'Run the code style checks and linter',
-            ['jshint', 'jscs']
+            ['jshint', 'jscs', 'shell:csscomblint']
         );
 
         // ### test-setup *(utility)(
@@ -702,7 +707,7 @@ var _              = require('lodash'),
         );
 
         // ### Ember unit tests *(sub task)*
-        // `grunt testem` will run just the ember unit tests
+        // `grunt test-ember` will run just the ember unit tests
         grunt.registerTask('test-ember', 'Run the ember unit tests',
             ['test-setup', 'shell:ember:test']
         );
@@ -726,7 +731,7 @@ var _              = require('lodash'),
         // The purpose of the functional tests is to ensure that Ghost is working as is expected from a user perspective
         // including buttons and other important interactions in the admin UI.
         grunt.registerTask('test-functional', 'Run functional interface tests (CasperJS)',
-            ['test-setup', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop', 'test-functional-setup']
+            ['test-setup', 'shell:ember:dev', 'cleanDatabase', 'express:test', 'spawnCasperJS', 'express:test:stop', 'test-functional-setup']
         );
 
         // ### Functional tests for the setup process
@@ -752,6 +757,10 @@ var _              = require('lodash'),
             ['test-setup', 'mocha_istanbul:coverage']
         );
 
+        grunt.registerTask('coverage-integration', 'Generate unit and integration tests coverage report',
+            ['test-setup', 'mocha_istanbul:coverage_integration']
+        );
+
         // #### Master Warning *(Utility Task)*
         // Warns git users not ot use the `master` branch in production.
         // `master` is an unstable branch and shouldn't be used in production as you run the risk of ending up with a
@@ -769,8 +778,6 @@ var _              = require('lodash'),
         // Builds the github contributors partial template used on the Settings/About page,
         // and downloads the avatar for each of the users.
         // Run by any task that compiles the ember assets or manually via `grunt buildAboutPage`.
-        // Change which version you're working against by setting the "releaseTag" below.
-        //
         // Only builds if the contributors template does not exist.
         // To force a build regardless, supply the --force option.
         //     `grunt buildAboutPage --force`
@@ -778,7 +785,7 @@ var _              = require('lodash'),
             var done = this.async(),
                 templatePath = 'core/client/app/templates/-contributors.hbs',
                 imagePath = 'core/client/public/assets/img/contributors/',
-                ninetyDaysAgo = Date.now() - (1000 * 60 * 60 * 24 * 90),
+                timeSpan = moment().subtract(90, 'days').format('YYYY-MM-DD'),
                 oauthKey = process.env.GITHUB_OAUTH_KEY;
 
             if (fs.existsSync(templatePath) && !grunt.option('force')) {
@@ -795,15 +802,15 @@ var _              = require('lodash'),
                     user: 'tryghost',
                     repo: 'ghost',
                     oauthKey: oauthKey,
-                    releaseDate: ninetyDaysAgo,
-                    count: 20,
+                    sinceDate: timeSpan,
+                    count: 18,
                     retry: true
                 })
             ).then(function (results) {
                 var contributors = results[1],
-                    contributorTemplate = '<li>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
-                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>">\n' +
-                    '    </a>\n</li>',
+                    contributorTemplate = '<article>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
+                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>" />\n' +
+                    '    </a>\n</article>',
 
                     downloadImagePromise = function (url, name) {
                         return new Promise(function (resolve, reject) {
@@ -878,7 +885,7 @@ var _              = require('lodash'),
         // ### Basic Asset Building
         // Builds and moves necessary client assets. Prod additionally builds the ember app.
         grunt.registerTask('assets', 'Basic asset building & moving',
-            ['clean:tmp', 'buildAboutPage', 'copy:jquery']);
+            ['clean:tmp', 'buildAboutPage']);
 
         // ### Default asset build
         // `grunt` - default grunt task
@@ -892,7 +899,7 @@ var _              = require('lodash'),
         //
         // It is otherwise the same as running `grunt`, but is only used when running Ghost in the `production` env.
         grunt.registerTask('prod', 'Build JS & templates for production',
-            ['shell:ember:prod', 'uglify:prod']);
+            ['shell:ember:prod']);
 
         // ### Live reload
         // `grunt dev` - build assets on the fly whilst developing
@@ -919,8 +926,7 @@ var _              = require('lodash'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['init', 'shell:ember:prod', 'uglify:release', 'clean:release',  'shell:shrinkwrap', 'copy:release', 'compress:release']);
+            ['init', 'shell:ember:prod', 'clean:release',  'shell:shrinkwrap', 'copy:release', 'compress:release']);
     };
 
-// Export the configuration
 module.exports = configureGrunt;

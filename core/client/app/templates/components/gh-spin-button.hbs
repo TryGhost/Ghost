@@ -1,0 +1,9 @@
+{{#if showSpinner}}
+    <span class="spinner"></span>
+{{else}}
+    {{#if buttonText}}
+        {{buttonText}}
+    {{else}}
+        {{{yield}}}
+    {{/if}}
+{{/if}}

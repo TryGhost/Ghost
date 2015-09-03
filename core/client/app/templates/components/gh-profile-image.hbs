@@ -1,0 +1,20 @@
+<figure class="account-image js-file-upload">
+    {{#unless hasUploadedImage}}
+        <div class="placeholder-img" style={{defaultImage}}></div>
+
+        {{#if hasEmail}}
+            <div id="account-image" class="gravatar-img" style={{imageBackground}}>
+                <span class="sr-only">User image</span>
+            </div>
+        {{/if}}
+    {{/unless}}
+
+    <div class="js-img-preview"></div>
+
+    <span class="edit-account-image js-img-dropzone">
+        <i class="icon-photos">
+            <span class="sr-only">Upload an image</span>
+        </i>
+    </span>
+    {{#if fileStorage}}<input type="file" class="file-uploader js-file-input" name="uploadimage">{{/if}}
+</figure>

@@ -1,9 +1,9 @@
 // # Content Test
 // Test the content screen, uses the editor to create dummy content
 
-/*globals CasperTest, casper, testPost, newUser */
+/*globals CasperTest, casper, testPost */
 
-CasperTest.begin('Content screen is correct', 17, function suite(test) {
+CasperTest.begin('Content screen is correct', 15, function suite(test) {
     // First, create a sample post for testing (this should probably be a routine)
     CasperTest.Routines.createTestPost.run(false);
 
@@ -14,11 +14,11 @@ CasperTest.begin('Content screen is correct', 17, function suite(test) {
     });
 
     casper.then(function testViews() {
-        test.assertExists('.content-view-container', 'Content main view is present');
+        test.assertExists('.gh-main .gh-view', 'Content main view is present');
         test.assertExists('.content-list-content', 'Content list view is present');
-        test.assertExists('.content-list .floatingheader a.btn.btn-green', 'add new post button exists');
+        test.assertExists('.gh-nav-main-editor', 'add new post button exists');
         test.assertEquals(
-            this.getElementAttribute('.content-list .floatingheader a.btn.btn-green', 'href'),
+            this.getElementAttribute('.gh-nav-main-editor', 'href'),
             '/ghost/editor/', 'add new post href is correct'
         );
         test.assertExists('.content-list-content li .entry-title', 'Content list view has at least one item');
@@ -29,12 +29,6 @@ CasperTest.begin('Content screen is correct', 17, function suite(test) {
             '.content-list-content li:first-of-type .entry-meta .status .draft', 'Draft', 'correct status is present'
         );
         test.assertExists('.content-preview', 'Content preview is present');
-        test.assertSelectorHasText(
-            '.content-preview header .status', 'Written', 'preview header contains "Written" when post is a draft'
-        );
-        test.assertSelectorHasText(
-            '.content-preview header .author', newUser.name, 'preview header contains author name'
-        );
     });
 
     casper.then(function testEditPostButton() {
@@ -52,7 +46,7 @@ CasperTest.begin('Content screen is correct', 17, function suite(test) {
     });
 });
 
-CasperTest.begin('Content list shows correct post status', 5, function testStaticPageStatus(test) {
+CasperTest.begin('Content list shows correct post status', 3, function testStaticPageStatus(test) {
     CasperTest.Routines.createTestPost.run(true);
 
     // Begin test
@@ -68,16 +62,6 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
     casper.then(function checkStatus() {
         test.assertSelectorHasText('.content-list-content .active .published', 'Published',
             'status is present and labeled as published');
-    });
-
-    // Test for 'Published' in header
-    casper.then(function testHeader() {
-        test.assertSelectorHasText(
-            '.content-preview header .status', 'Published', 'preview header contains "Published" when post is published'
-        );
-        test.assertSelectorHasText(
-            '.content-preview header .author', newUser.name, 'preview header contains author name'
-        );
     });
 
     casper.thenClick('.post-edit');
@@ -108,41 +92,3 @@ CasperTest.begin('Content list shows correct post status', 5, function testStati
 //        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
 //    });
 // });
-
-CasperTest.begin('Posts can be marked as featured', 6, function suite(test) {
-    // Create a sample post
-    CasperTest.Routines.createTestPost.run(false);
-
-    // Begin test
-    casper.thenOpenAndWaitForPageLoad('content', function testTitleAndUrl() {
-        test.assertTitle('Content - Test Blog', 'Title is "Content - Test Blog"');
-        test.assertUrlMatch(/ghost\/\d+\/$/, 'Landed on the correct URL');
-    });
-
-    // Mark as featured
-    casper.waitForSelector('.content-preview .unfeatured', function () {
-        this.click('.content-preview .unfeatured');
-    }, function onTimeOut() {
-        test.assert(false, 'The first post can\'t be marked as featured');
-    });
-
-    casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function (resource) {
-        test.assert(resource.status < 400);
-    });
-
-    casper.waitForSelector('.content-list-content li.featured:first-of-type', function () {
-        test.assertExists('.content-preview .featured', 'preview pane gets featured class');
-        test.assertExists('.content-list-content li.featured:first-of-type', 'content list got a featured star');
-    }, function onTimeout() {
-        test.assert(false, 'No featured star appeared in the left pane');
-    });
-
-    // Mark as not featured
-    casper.thenClick('.content-preview .featured');
-
-    casper.waitWhileSelector('.content-preview .featured', function onSuccess() {
-        test.assertDoesntExist('.content-list-content li.featured:first-of-type');
-    }, function onTimeout() {
-        casper.test.fail('Couldn\'t unfeature post.');
-    }, 2000);
-});

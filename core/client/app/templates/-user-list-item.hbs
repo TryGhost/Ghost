@@ -1,0 +1,18 @@
+<span class="user-list-item-figure" style={{component.userImageBackground}}>
+    <span class="hidden">Photo of {{user.name}}</span>
+</span>
+
+<div class="user-list-item-body">
+    <span class="name">
+        {{user.name}}
+    </span>
+    <br>
+    <span class="description">Last seen: {{component.lastLogin}}</span>
+</div>
+<aside class="user-list-item-aside">
+    {{#unless session.user.isAuthor}}
+        {{#each user.roles as |role|}}
+            <span class="role-label {{role.lowerCaseName}}">{{role.name}}</span>
+        {{/each}}
+    {{/unless}}
+</aside>

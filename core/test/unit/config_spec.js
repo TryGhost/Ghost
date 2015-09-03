@@ -176,137 +176,273 @@ describe('Config', function () {
         });
     });
 
-    describe('urlFor', function () {
-        before(function () {
-            resetConfig();
+    describe('Url', function () {
+        describe('urlJoin', function () {
+            before(function () {
+                resetConfig();
+            });
+
+            afterEach(function () {
+                resetConfig();
+            });
+
+            it('should deduplicate slashes', function () {
+                config.set({url: 'http://my-ghost-blog.com/'});
+                config.urlJoin('/', '/my/', '/blog/').should.equal('/my/blog/');
+                config.urlJoin('/', '//my/', '/blog/').should.equal('/my/blog/');
+                config.urlJoin('/', '/', '/').should.equal('/');
+            });
+
+            it('should not deduplicate slashes in protocol', function () {
+                config.set({url: 'http://my-ghost-blog.com/'});
+                config.urlJoin('http://myurl.com', '/rss').should.equal('http://myurl.com/rss');
+                config.urlJoin('https://myurl.com/', '/rss').should.equal('https://myurl.com/rss');
+            });
+
+            it('should permit schemeless protocol', function () {
+                config.set({url: 'http://my-ghost-blog.com/'});
+                config.urlJoin('/', '/').should.equal('/');
+                config.urlJoin('//myurl.com', '/rss').should.equal('//myurl.com/rss');
+                config.urlJoin('//myurl.com/', '/rss').should.equal('//myurl.com/rss');
+                config.urlJoin('//myurl.com//', 'rss').should.equal('//myurl.com/rss');
+                config.urlJoin('', '//myurl.com', 'rss').should.equal('//myurl.com/rss');
+            });
+
+            it('should deduplicate subdir', function () {
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlJoin('blog', 'blog/about').should.equal('blog/about');
+                config.urlJoin('blog/', 'blog/about').should.equal('blog/about');
+            });
         });
 
-        afterEach(function () {
-            resetConfig();
+        describe('urlFor', function () {
+            before(function () {
+                resetConfig();
+            });
+
+            afterEach(function () {
+                resetConfig();
+            });
+
+            it('should return the home url with no options', function () {
+                config.urlFor().should.equal('/');
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor().should.equal('/blog/');
+                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                config.urlFor().should.equal('/blog/');
+            });
+
+            it('should return home url when asked for', function () {
+                var testContext = 'home';
+
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext).should.equal('/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
+
+                config.set({url: 'http://my-ghost-blog.com/'});
+                config.urlFor(testContext).should.equal('/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext).should.equal('/blog/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                config.urlFor(testContext).should.equal('/blog/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
+            });
+
+            it('should return rss url when asked for', function () {
+                var testContext = 'rss';
+
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext).should.equal('/rss/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/rss/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext).should.equal('/blog/rss/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
+            });
+
+            it('should return url for a random path when asked for', function () {
+                var testContext = {relativeUrl: '/about/'};
+
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext).should.equal('/about/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/about/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext).should.equal('/blog/about/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+            });
+
+            it('should deduplicate subdirectories in paths', function () {
+                var testContext = {relativeUrl: '/blog/about/'};
+
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext).should.equal('/blog/about/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext).should.equal('/blog/about/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog/'});
+                config.urlFor(testContext).should.equal('/blog/about/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+            });
+
+            it('should return url for a post from post object', function () {
+                var testContext = 'post',
+                    testData = {post: testUtils.DataGenerator.Content.posts[2]};
+
+                // url is now provided on the postmodel, permalinkSetting tests are in the model_post_spec.js test
+                testData.post.url = '/short-and-sweet/';
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext, testData).should.equal('/short-and-sweet/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+            });
+
+            it('should return url for a tag when asked for', function () {
+                var testContext = 'tag',
+                    testData = {tag: testUtils.DataGenerator.Content.tags[0]};
+
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext, testData).should.equal('/tag/kitchen-sink/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/tag/kitchen-sink/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
+            });
+
+            it('should return url for an author when asked for', function () {
+                var testContext = 'author',
+                    testData = {author: testUtils.DataGenerator.Content.users[0]};
+
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor(testContext, testData).should.equal('/author/joe-bloggs/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/author/joe-bloggs/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                config.urlFor(testContext, testData).should.equal('/blog/author/joe-bloggs/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/author/joe-bloggs/');
+            });
+
+            it('should return url for an image when asked for', function () {
+                var testContext = 'image',
+                    testData;
+
+                config.set({url: 'http://my-ghost-blog.com'});
+
+                testData = {image: '/content/images/my-image.jpg'};
+                config.urlFor(testContext, testData).should.equal('/content/images/my-image.jpg');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/content/images/my-image.jpg');
+
+                testData = {image: 'http://placekitten.com/500/200'};
+                config.urlFor(testContext, testData).should.equal('http://placekitten.com/500/200');
+                config.urlFor(testContext, testData, true).should.equal('http://placekitten.com/500/200');
+
+                testData = {image: '/blog/content/images/my-image2.jpg'};
+                config.urlFor(testContext, testData).should.equal('/blog/content/images/my-image2.jpg');
+                // We don't make image urls absolute if they don't look like images relative to the image path
+                config.urlFor(testContext, testData, true).should.equal('/blog/content/images/my-image2.jpg');
+
+                config.set({url: 'http://my-ghost-blog.com/blog/'});
+
+                testData = {image: '/content/images/my-image3.jpg'};
+                config.urlFor(testContext, testData).should.equal('/content/images/my-image3.jpg');
+                // We don't make image urls absolute if they don't look like images relative to the image path
+                config.urlFor(testContext, testData, true).should.equal('/content/images/my-image3.jpg');
+
+                testData = {image: '/blog/content/images/my-image4.jpg'};
+                config.urlFor(testContext, testData).should.equal('/blog/content/images/my-image4.jpg');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/content/images/my-image4.jpg');
+            });
+
+            it('should return a url for a nav item when asked for it', function () {
+                var testContext = 'nav',
+                    testData;
+
+                config.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
+
+                testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
+                config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
+
+                testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
+                config.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
+
+                testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
+                config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
+
+                config.set({url: 'http://my-ghost-blog.com/blog'});
+                testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
+                config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                config.set({url: 'http://my-ghost-blog.com/'});
+                testData = {nav: {url: 'mailto:marshmallow@my-ghost-blog.com'}};
+                config.urlFor(testContext, testData).should.equal('mailto:marshmallow@my-ghost-blog.com');
+            });
+
+            it('should return other known paths when requested', function () {
+                config.set({url: 'http://my-ghost-blog.com'});
+                config.urlFor('sitemap_xsl').should.equal('/sitemap.xsl');
+                config.urlFor('sitemap_xsl', true).should.equal('http://my-ghost-blog.com/sitemap.xsl');
+
+                config.urlFor('api').should.equal('/ghost/api/v0.1');
+                config.urlFor('api', true).should.equal('http://my-ghost-blog.com/ghost/api/v0.1');
+            });
         });
 
-        it('should return the home url with no options', function () {
-            config.urlFor().should.equal('/');
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor().should.equal('/blog/');
-        });
-
-        it('should return home url when asked for', function () {
-            var testContext = 'home';
-
-            config.set({url: 'http://my-ghost-blog.com'});
-            config.urlFor(testContext).should.equal('/');
-            config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/');
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor(testContext).should.equal('/blog/');
-            config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/');
-        });
-
-        it('should return rss url when asked for', function () {
-            var testContext = 'rss';
-
-            config.set({url: 'http://my-ghost-blog.com'});
-            config.urlFor(testContext).should.equal('/rss/');
-            config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/rss/');
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor(testContext).should.equal('/blog/rss/');
-            config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/rss/');
-        });
-
-        it('should return url for a random path when asked for', function () {
-            var testContext = {relativeUrl: '/about/'};
-
-            config.set({url: 'http://my-ghost-blog.com'});
-            config.urlFor(testContext).should.equal('/about/');
-            config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/about/');
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor(testContext).should.equal('/blog/about/');
-            config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
-        });
-
-        it('should return url for a post from post object', function () {
-            var testContext = 'post',
-                testData = {post: testUtils.DataGenerator.Content.posts[2]};
-
-            // url is now provided on the postmodel, permalinkSetting tests are in the model_post_spec.js test
-            testData.post.url = '/short-and-sweet/';
-            config.set({url: 'http://my-ghost-blog.com'});
-            config.urlFor(testContext, testData).should.equal('/short-and-sweet/');
-            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
-            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
-        });
-
-        it('should return url for a tag when asked for', function () {
-            var testContext = 'tag',
-                testData = {tag: testUtils.DataGenerator.Content.tags[0]};
-
-            config.set({url: 'http://my-ghost-blog.com'});
-            config.urlFor(testContext, testData).should.equal('/tag/kitchen-sink/');
-            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/tag/kitchen-sink/');
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            config.urlFor(testContext, testData).should.equal('/blog/tag/kitchen-sink/');
-            config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/tag/kitchen-sink/');
-        });
-
-        it('should return a url for a nav item when asked for it', function () {
-            var testContext = 'nav',
-                testData;
-
-            config.set({url: 'http://my-ghost-blog.com', urlSSL: 'https://my-ghost-blog.com'});
-
-            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}};
-            config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/short-and-sweet/');
-
-            testData = {nav: {url: 'http://my-ghost-blog.com/short-and-sweet/'}, secure: true};
-            config.urlFor(testContext, testData).should.equal('https://my-ghost-blog.com/short-and-sweet/');
-
-            testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
-            config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
-
-            config.set({url: 'http://my-ghost-blog.com/blog'});
-            testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
-            config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
-        });
-    });
-
-    describe('urlPathForPost', function () {
-        it('should output correct url for post', function () {
-            var permalinkSetting = '/:slug/',
+        describe('urlPathForPost', function () {
+            it('should output correct url for post', function () {
+                var permalinkSetting = '/:slug/',
                 /*jshint unused:false*/
-                testData = testUtils.DataGenerator.Content.posts[2],
-                postLink = '/short-and-sweet/';
+                    testData = testUtils.DataGenerator.Content.posts[2],
+                    postLink = '/short-and-sweet/';
 
-            // next test
-            config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
-        });
+                // next test
+                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+            });
 
-        it('should output correct url for post with date permalink', function () {
-            var permalinkSetting = '/:year/:month/:day/:slug/',
+            it('should output correct url for post with date permalink', function () {
+                var permalinkSetting = '/:year/:month/:day/:slug/',
                 /*jshint unused:false*/
-                testData = testUtils.DataGenerator.Content.posts[2],
-                today = testData.published_at,
-                dd = ('0' + today.getDate()).slice(-2),
-                mm = ('0' + (today.getMonth() + 1)).slice(-2),
-                yyyy = today.getFullYear(),
-                postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
-            // next test
-            config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
-        });
+                    testData = testUtils.DataGenerator.Content.posts[2],
+                    today = testData.published_at,
+                    dd = ('0' + today.getDate()).slice(-2),
+                    mm = ('0' + (today.getMonth() + 1)).slice(-2),
+                    yyyy = today.getFullYear(),
+                    postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
+                // next test
+                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+            });
 
-        it('should output correct url for page with date permalink', function () {
-            var permalinkSetting = '/:year/:month/:day/:slug/',
+            it('should output correct url for page with date permalink', function () {
+                var permalinkSetting = '/:year/:month/:day/:slug/',
                 /*jshint unused:false*/
-                testData = testUtils.DataGenerator.Content.posts[5],
-                postLink = '/static-page-test/';
-            // next test
-            config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+                    testData = testUtils.DataGenerator.Content.posts[5],
+                    postLink = '/static-page-test/';
+                // next test
+                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+            });
+
+            it('should output correct url for post with complex permalink', function () {
+                var permalinkSetting = '/:year/:id/:author/',
+                /*jshint unused:false*/
+                    testData = _.extend(
+                        {}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-bloggs'}}
+                    ),
+                    today = testData.published_at,
+                    yyyy = today.getFullYear(),
+                    postLink = '/' + yyyy + '/3/joe-bloggs/';
+                // next test
+                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+            });
         });
     });
 
@@ -696,7 +832,7 @@ describe('Config', function () {
 
         it('displays warning when updateCheck exists and is falsy', function () {
             config.set({
-                updateCheck: undefined
+                updateCheck: false
             });
             // Run the test code
             config.checkDeprecated();
@@ -729,13 +865,14 @@ describe('Config', function () {
         it('displays warning when mail.fromaddress exists and is falsy', function () {
             config.set({
                 mail: {
-                    fromaddress: undefined
+                    fromaddress: false
                 }
             });
             // Run the test code
             config.checkDeprecated();
 
             logStub.calledOnce.should.be.true;
+
             logStub.calledWithMatch('mail.fromaddress').should.be.true;
 
             // Future tests: This is important here!

@@ -1,0 +1,61 @@
+/* Tables
+/* ---------------------------------------------------------- */
+
+/* Base */
+table,
+.table {
+    margin: 1.6em 0;
+    max-width: 100%;
+    width: 100%;
+    background-color: transparent;
+}
+
+table th,
+table td,
+.table th,
+.table td {
+    padding: 8px;
+    vertical-align: middle;
+    text-align: left;
+    line-height: 20px;
+}
+
+
+/* Default Table
+/* ---------------------------------------------------------- */
+
+.table th,
+.table td {
+    border-top: 1px solid #dfe1e3;
+}
+
+.table th {
+    color: var(--midgrey);
+}
+
+.table caption + thead tr:first-child th,
+.table caption + thead tr:first-child td,
+.table colgroup + thead tr:first-child th,
+.table colgroup + thead tr:first-child td,
+.table thead:first-child tr:first-child th,
+.table thead:first-child tr:first-child td {
+    border-top: 0;
+}
+
+.table tbody + tbody {
+    border-top: 2px solid #dfe1e3;
+}
+
+.table table table {
+    background-color: #fff;
+}
+
+.table tbody > tr:nth-child(odd) > td,
+.table tbody > tr:nth-child(odd) > th {
+    background-color: color(#dfe1e3 lightness(+10%));
+}
+
+.table.plain tbody > tr:nth-child(odd) > td,
+.table.plain tbody > tr:nth-child(odd) > th {
+    background: transparent;
+}

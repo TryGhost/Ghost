@@ -592,7 +592,7 @@ describe('User Model', function run() {
                 return UserModel.generateResetToken(firstUser.attributes.email, expires, dbHash);
             }).then(function (token) {
                 token = utils.encodeBase64URLsafe(token);
-                return UserModel.resetPassword(token, 'newpassword', 'newpassword', dbHash);
+                return UserModel.resetPassword({token: token, newPassword: 'newpassword', ne2Password: 'newpassword', dbHash: dbHash});
             }).then(function (resetUser) {
                 var resetPassword = resetUser.get('password');
 

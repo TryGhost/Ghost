@@ -9,6 +9,45 @@ var _                = require('lodash'),
     config           = require('../config'),
     authentication;
 
+function setupTasks(object) {
+    var setupUser,
+        internal = {context: {internal: true}};
+
+    return utils.checkObject(object, 'setup').then(function (checkedSetupData) {
+        setupUser = {
+            name: checkedSetupData.setup[0].name,
+            email: checkedSetupData.setup[0].email,
+            password: checkedSetupData.setup[0].password,
+            blogTitle: checkedSetupData.setup[0].blogTitle,
+            status: 'active'
+        };
+
+        return dataProvider.User.findOne({role: 'Owner', status: 'all'});
+    }).then(function (ownerUser) {
+        if (ownerUser) {
+            return dataProvider.User.setup(setupUser, _.extend({id: ownerUser.id}, internal));
+        } else {
+            return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
+                setupUser.roles = [ownerRole.id];
+                return dataProvider.User.add(setupUser, internal);
+            });
+        }
+    }).then(function (user) {
+        var userSettings = [];
+
+        // Handles the additional values set by the setup screen.
+        if (!_.isEmpty(setupUser.blogTitle)) {
+            userSettings.push({key: 'title', value: setupUser.blogTitle});
+            userSettings.push({key: 'description', value: 'Thoughts, stories and ideas.'});
+        }
+
+        setupUser = user.toJSON(internal);
+        return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
+    }).then(function () {
+        return Promise.resolve(setupUser);
+    });
+}
+
 /**
  * ## Authentication API Methods
  *
@@ -97,7 +136,12 @@ authentication = {
 
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
-                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+                return dataProvider.User.resetPassword({
+                    token: resetToken,
+                    newPassword: newPassword,
+                    ne2Password: ne2Password,
+                    dbHash: dbHash
+                });
             }).then(function () {
                 return Promise.resolve({passwordreset: [{message: 'Password changed successfully.'}]});
             }).catch(function (error) {
@@ -135,7 +179,12 @@ authentication = {
 
             return settings.read({context: {internal: true}, key: 'dbHash'}).then(function (response) {
                 var dbHash = response.settings[0].value;
-                return dataProvider.User.resetPassword(resetToken, newPassword, ne2Password, dbHash);
+                return dataProvider.User.resetPassword({
+                    token: resetToken,
+                    newPassword: newPassword,
+                    ne2Password: ne2Password,
+                    dbHash: dbHash
+                });
             }).then(function (user) {
                 // Setting the slug to '' has the model regenerate the slug from the user's name
                 return dataProvider.User.edit({name: name, email: email, slug: ''}, {id: user.id});
@@ -153,7 +202,7 @@ authentication = {
      * @param {string} options.email The email to check for an invitation on
      * @returns {Promise(Invitation}} An invitation status
      */
-    isInvitation: function (options) {
+    isInvitation: function isInvitation(options) {
         return authentication.isSetup().then(function (result) {
             var setup = result.setup[0].status;
 
@@ -175,7 +224,7 @@ authentication = {
         });
     },
 
-    isSetup: function () {
+    isSetup: function isSetup() {
         return dataProvider.User.query(function (qb) {
             qb.whereIn('status', ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked']);
         }).fetch().then(function (users) {
@@ -187,9 +236,8 @@ authentication = {
         });
     },
 
-    setup: function (object) {
-        var setupUser,
-            internal = {context: {internal: true}};
+    setup: function setup(object) {
+        var setupUser;
 
         return authentication.isSetup().then(function (result) {
             var setup = result.setup[0].status;
@@ -198,39 +246,10 @@ authentication = {
                 return Promise.reject(new errors.NoPermissionError('Setup has already been completed.'));
             }
 
-            return utils.checkObject(object, 'setup');
-        }).then(function (checkedSetupData) {
-            setupUser = {
-                name: checkedSetupData.setup[0].name,
-                email: checkedSetupData.setup[0].email,
-                password: checkedSetupData.setup[0].password,
-                blogTitle: checkedSetupData.setup[0].blogTitle,
-                status: 'active'
-            };
+            return setupTasks(object);
+        }).then(function (result) {
+            setupUser = result;
 
-            return dataProvider.User.findOne({role: 'Owner', status: 'all'});
-        }).then(function (ownerUser) {
-            if (ownerUser) {
-                return dataProvider.User.setup(setupUser, _.extend(internal, {id: ownerUser.id}));
-            } else {
-                return dataProvider.Role.findOne({name: 'Owner'}).then(function (ownerRole) {
-                    setupUser.roles = [ownerRole.id];
-                    return dataProvider.User.add(setupUser, internal);
-                });
-            }
-        }).then(function (user) {
-            var userSettings = [];
-
-            userSettings.push({key: 'email', value: setupUser.email});
-
-            // Handles the additional values set by the setup screen.
-            if (!_.isEmpty(setupUser.blogTitle)) {
-                userSettings.push({key: 'title', value: setupUser.blogTitle});
-                userSettings.push({key: 'description', value: 'Thoughts, stories and ideas.'});
-            }
-            setupUser = user.toJSON(internal);
-            return settings.edit({settings: userSettings}, {context: {user: setupUser.id}});
-        }).then(function () {
             var data = {
                 ownerEmail: setupUser.email
             };
@@ -250,7 +269,7 @@ authentication = {
                     }]
                 };
 
-            return mail.send(payload, {context: {internal: true}}).catch(function (error) {
+            mail.send(payload, {context: {internal: true}}).catch(function (error) {
                 errors.logError(
                     error.message,
                     'Unable to send welcome email, your blog will continue to function.',
@@ -259,6 +278,24 @@ authentication = {
             });
         }).then(function () {
             return Promise.resolve({users: [setupUser]});
+        });
+    },
+
+    updateSetup: function updateSetup(object, options) {
+        if (!options.context || !options.context.user) {
+            return Promise.reject(new errors.NoPermissionError('You are not logged in.'));
+        }
+
+        return dataProvider.User.findOne({role: 'Owner', status: 'all'}).then(function (result) {
+            var user = result.toJSON();
+
+            if (user.id !== options.context.user) {
+                return Promise.reject(new errors.NoPermissionError('You are not the blog owner.'));
+            }
+
+            return setupTasks(object);
+        }).then(function (result) {
+            return Promise.resolve({users: [result]});
         });
     },
 

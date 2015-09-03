@@ -3,7 +3,7 @@
 
 /*globals CasperTest, casper, __utils__ */
 
-CasperTest.begin('Post settings menu', 10, function suite(test) {
+CasperTest.begin('Post settings menu', 8, function suite(test) {
     casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
         test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
         test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
@@ -23,16 +23,6 @@ CasperTest.begin('Post settings menu', 10, function suite(test) {
         casper.sendKeys('#entry-title', 'aTitle');
         casper.thenClick('.js-publish-button');
     });
-
-    casper.waitForSelector('.notification-success', function waitForSuccess() {
-        test.assert(true, 'got success notification');
-        test.assertSelectorHasText('.notification-success', 'Saved.');
-        casper.click('.notification-success .close');
-    }, function onTimeout() {
-        test.assert(false, 'No success notification');
-    });
-
-    casper.waitWhileSelector('.notification-success');
 
     casper.thenClick('.post-settings');
 
@@ -67,7 +57,7 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(resource.status < 400);
+        test.assert(resource.status < 400, 'resource.status < 400');
     });
 
     casper.then(function checkValueMatches() {
@@ -75,7 +65,7 @@ CasperTest.begin('Post url can be changed', 4, function suite(test) {
         var slugVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-slug');
         });
-        test.assertEqual(slugVal, 'new-url');
+        test.assertEquals(slugVal, 'new-url', 'slug has correct value');
     });
 });
 
@@ -105,7 +95,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
     });
 
     casper.waitForResource(/\/posts\/\d+\/\?include=tags/, function testGoodResponse(resource) {
-        test.assert(resource.status < 400);
+        test.assert(resource.status < 400, 'resource.status < 400');
     });
 
     casper.then(function checkValueMatches() {
@@ -113,7 +103,7 @@ CasperTest.begin('Post published date can be changed', 4, function suite(test) {
         var dateVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-date');
         });
-        test.assertEqual(dateVal, '22 May 14 @ 23:39');
+        test.assertEquals(dateVal, '22 May 14 @ 23:39', 'date is correct');
     });
 });
 
@@ -148,7 +138,7 @@ CasperTest.begin('Post can be changed to static page', 2, function suite(test) {
     }, 2000);
 });
 
-CasperTest.begin('Post url input is reset from all whitespace back to original value', 3, function suite(test) {
+CasperTest.begin('Post url input is reset from all whitespace back to original value', 4, function suite(test) {
     // Create a sample post
     CasperTest.Routines.createTestPost.run(false);
 
@@ -176,15 +166,94 @@ CasperTest.begin('Post url input is reset from all whitespace back to original v
         this.fillSelectors('.settings-menu form', {
             '#url': '    '
         }, false);
-
-        this.click('button.post-settings');
     });
+
+    // Click in a different field
+    casper.thenClick('#post-setting-date');
 
     casper.then(function checkValueMatches() {
         // using assertField(name) checks the htmls initial "value" attribute, so have to hack around it.
         var slugVal = this.evaluate(function () {
             return __utils__.getFieldValue('post-setting-slug');
         });
-        test.assertEqual(slugVal, originalSlug);
+        test.assertNotEquals(slugVal, '    ', 'slug is not just spaces');
+        test.assertEquals(slugVal, originalSlug, 'slug gets reset to original value');
     });
+});
+
+CasperTest.begin('Tag Editor', 9, function suite(test) {
+    var testTag = 'Test1',
+        createdTag = '#tag-input + .selectize-control .item',
+        tagInput = '#tag-input + .selectize-control input[type="text"]';
+
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    casper.then(function () {
+        test.assertExists('#tag-input + .selectize-control', 'should have tag list area');
+    });
+
+    casper.thenClick(tagInput);
+    casper.then(function () {
+        casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    });
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Enter, {keepFocus: true});
+    });
+
+    casper.waitForSelector(createdTag, function onSuccess() {
+        test.assertSelectorHasText(createdTag, testTag, 'typing enter after tag name should create tag');
+    });
+
+    casper.thenClick(createdTag + ' a.remove');
+    casper.waitWhileSelector(createdTag, function onSuccess() {
+        test.assert(true, 'clicking the tag remove button should delete the tag');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    });
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Tab, {keepFocus: true});
+    });
+    casper.waitForSelector(createdTag, function onSuccess() {
+        test.assertSelectorHasText(createdTag, testTag, 'typing tab after tag name should create tag');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Backspace, {keepFocus: true});
+    });
+    casper.waitWhileSelector(createdTag, function onSuccess() {
+        test.assert(true, 'hitting backspace should delete the last tag');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    });
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Enter, {keepFocus: true});
+    });
+    casper.thenClick(createdTag);
+    casper.waitForSelector(createdTag + '.active', function onSuccess() {
+        test.assert(true, 'clicking a tag should highlight it');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(createdTag + '.active', casper.page.event.key.Backspace);
+    });
+    casper.waitWhileSelector(createdTag + '.active', function onSuccess() {
+        test.assert(true, 'hitting backspace on a higlighted tag should delete it');
+    });
+
+    // TODO: add this back in if create-on-blur functionality is required
+    // casper.then(function () {
+    //     casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    // });
+    // // Click in a different field
+    // casper.thenClick('#post-setting-date');
+    // casper.waitForSelector(createdTag, function onSuccess() {
+    //     test.assertSelectorHasText(createdTag, testTag, 'de-focusing from tag input should create tag with leftover text');
+    // });
 });

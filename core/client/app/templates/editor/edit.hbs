@@ -1,39 +1,55 @@
-<header class="page-header">
-    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
-    <h2 class="page-title">Editor</h2>
-</header>
-
-<div class="page-content">
-    <header>
-        <section class="box entry-title">
-            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch
-            tabindex="1" focus=shouldFocusTitle}}
+{{#gh-editor editorScrollInfo=editorScrollInfo as |ghEditor|}}
+    <header class="view-header">
+        {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
+            {{gh-trim-focus-input type="text" id="entry-title"placeholder="Your Post Title" value=model.titleScratch
+        tabindex="1" focus=shouldFocusTitle}}
+        {{/gh-view-title}}
+        <section class="view-actions">
+            <button type="button" class="post-settings" {{action "openSettingsMenu"}}>
+                <i class="icon-settings"></i>
+            </button>
+            {{gh-editor-save-button
+                isPublished=model.isPublished
+                willPublish=willPublish
+                postOrPage=postOrPage
+                isNew=model.isNew
+                save="save"
+                setSaveType="setSaveType"
+                delete="openDeleteModal"
+                submitting=submitting
+            }}
         </section>
     </header>
 
-    <section class="entry-markdown js-entry-markdown {{unless isPreview 'active'}}">
-        <header {{action "togglePreview" false}} class="floatingheader">
-            <small>Markdown</small>
-            <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
-        </header>
-        <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch
-            scrollInfo=view.editorScrollInfo focus=shouldFocusEditor focusCursorAtEnd=model.isDirty
-            setEditor="setEditor" openModal="openModal" onFocusIn="autoSaveNew"}}
+    <section class="view-container view-editor">
+        <section class="entry-markdown js-entry-markdown {{if ghEditor.markdownActive 'active'}}">
+            <header class="floatingheader">
+                <span class="desktop-tabs">Markdown</span>
+                <span class="mobile-tabs">
+                    <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
+                    <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
+                </span>
+                <a class="markdown-help" href="" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
+            </header>
+            <section id="entry-markdown-content" class="entry-markdown-content">
+                {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch setEditor="setEditor" updateScrollInfo="updateEditorScrollInfo" openModal="openModal" onFocusIn="autoSaveNew" height=height focus=shouldFocusEditor}}
+            </section>
+        </section>
+
+        <section class="entry-preview js-entry-preview {{if ghEditor.previewActive 'active'}}">
+            <header class="floatingheader">
+                <span class="desktop-tabs">Preview</span>
+                <span class="mobile-tabs">
+                    <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
+                    <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
+                </span>
+                <span class="entry-word-count">{{gh-count-words model.scratch}}</span>
+            </header>
+            <section class="entry-preview-content js-entry-preview-content">
+                {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
+                markdown=model.scratch scrollPosition=ghEditor.scrollPosition updateHeight="updateHeight"
+                uploadStarted="disableEditor" uploadFinished="enableEditor" uploadSuccess="handleImgUpload"}}
+            </section>
         </section>
     </section>
-
-    <section class="entry-preview js-entry-preview {{if isPreview 'active'}}">
-        <header {{action "togglePreview" true}} class="floatingheader">
-            <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words model.scratch}}</span></small>
-        </header>
-        <section class="entry-preview-content js-entry-preview-content">
-            {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
-            markdown=model.scratch scrollPosition=view.scrollPosition height=view.height
-            uploadStarted="disableEditor" uploadFinished="enableEditor" uploadSuccess="handleImgUpload"}}
-        </section>
-    </section>
-
-    {{partial "publish-bar"}}
-
-</div>
+{{/gh-editor}}

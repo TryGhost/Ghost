@@ -1,11 +1,16 @@
 import Ember from 'ember';
-var SlugGenerator = Ember.Object.extend({
-    ghostPaths: null,
+import {request as ajax} from 'ic-ajax';
+
+export default Ember.Object.extend({
     slugType: null,
     value: null,
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
+
     toString: function () {
         return this.get('value');
     },
+
     generateSlug: function (textToSlugify) {
         var self = this,
             url;
@@ -16,14 +21,14 @@ var SlugGenerator = Ember.Object.extend({
 
         url = this.get('ghostPaths.url').api('slugs', this.get('slugType'), encodeURIComponent(textToSlugify));
 
-        return ic.ajax.request(url, {
+        return ajax(url, {
             type: 'GET'
         }).then(function (response) {
             var slug = response.slugs[0].slug;
+
             self.set('value', slug);
+
             return slug;
         });
     }
 });
-
-export default SlugGenerator;

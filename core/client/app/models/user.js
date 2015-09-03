@@ -1,10 +1,9 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
-import SelectiveSaveMixin from 'ghost/mixins/selective-save';
 
-var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEngine, {
+export default DS.Model.extend(ValidationEngine, {
     validationType: 'user',
 
     uuid: DS.attr('string'),
@@ -28,16 +27,19 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     updated_by: DS.attr('number'),
     roles: DS.hasMany('role', {embedded: 'always'}),
 
-    role: Ember.computed('roles', function (name, value) {
-        if (arguments.length > 1) {
+    ghostPaths: Ember.inject.service('ghost-paths'),
+
+    role: Ember.computed('roles', {
+        get: function () {
+            return this.get('roles.firstObject');
+        },
+        set: function (key, value) {
             // Only one role per user, so remove any old data.
             this.get('roles').clear();
             this.get('roles').pushObject(value);
 
             return value;
         }
-
-        return this.get('roles.firstObject');
     }),
 
     // TODO: Once client-side permissions are in place,
@@ -50,7 +52,7 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
     saveNewPassword: function () {
         var url = this.get('ghostPaths.url').api('users', 'password');
 
-        return ic.ajax.request(url, {
+        return ajax(url, {
             type: 'PUT',
             data: {
                 password: [{
@@ -70,7 +72,7 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
                 roles: fullUserData.roles
             };
 
-        return ic.ajax.request(this.get('ghostPaths.url').api('users'), {
+        return ajax(this.get('ghostPaths.url').api('users'), {
             type: 'POST',
             data: JSON.stringify({users: [userData]}),
             contentType: 'application/json'
@@ -93,15 +95,13 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
 
     isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]'),
 
-    active: function () {
+    active: Ember.computed('status', function () {
         return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
-    }.property('status'),
+    }),
 
-    invited: function () {
+    invited: Ember.computed('status', function () {
         return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
-    }.property('status'),
+    }),
 
     pending: Ember.computed.equal('status', 'invited-pending').property('status')
 });
-
-export default User;

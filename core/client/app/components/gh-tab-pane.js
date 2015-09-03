@@ -16,14 +16,15 @@ var TabPane = Ember.Component.extend({
 
     active: Ember.computed.alias('tab.active'),
 
-    // Register with the tabs manager
-    registerWithTabs: function () {
+    willRender: function () {
+        // Register with the tabs manager
         this.get('tabsManager').registerTabPane(this);
-    }.on('didInsertElement'),
+    },
 
-    unregisterWithTabs: function () {
+    willDestroyElement: function () {
+        // Deregister with the tabs manager
         this.get('tabsManager').unregisterTabPane(this);
-    }.on('willDestroyElement')
+    }
 });
 
 export default TabPane;

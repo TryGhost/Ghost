@@ -3,6 +3,7 @@ var Promise       = require('bluebird'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
+    uuid          = require('node-uuid'),
     migration     = require('../../server/data/migration/'),
     Models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
@@ -127,6 +128,25 @@ fixtures = {
         return sequence(_.times(posts.length, function (index) {
             return function () {
                 return knex('posts').insert(posts[index]);
+            };
+        }));
+    },
+
+    insertMoreTags: function insertMoreTags(max) {
+        max = max || 50;
+        var tags = [],
+            tagName,
+            i,
+            knex = config.database.knex;
+
+        for (i = 0; i < max; i += 1) {
+            tagName = uuid.v4().split('-')[0];
+            tags.push(DataGenerator.forKnex.createBasic({name: tagName, slug: tagName}));
+        }
+
+        return sequence(_.times(tags.length, function (index) {
+            return function () {
+                return knex('tags').insert(tags[index]);
             };
         }));
     },
@@ -342,6 +362,14 @@ fixtures = {
         return knex('permissions').insert(permsToInsert).then(function () {
             return knex('permissions_roles').insert(permissionsRoles);
         });
+    },
+    insertClients: function insertClients() {
+        var knex = config.database.knex;
+        return knex('clients').insert(DataGenerator.forKnex.clients);
+    },
+    insertAccessToken: function insertAccessToken(override) {
+        var knex = config.database.knex;
+        return knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
     }
 };
 
@@ -376,6 +404,7 @@ toDoList = {
 
     posts: function insertPosts() { return fixtures.insertPosts(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
+    tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
     settings: function populateSettings() {
         return Models.Settings.populateDefaults().then(function () { return SettingsAPI.updateSettingsCache(); });
@@ -389,7 +418,8 @@ toDoList = {
     'perms:init': function initPermissions() { return permissions.init(); },
     perms: function permissionsFor(obj) {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
-    }
+    },
+    clients: function insertClients() { return fixtures.insertClients(); }
 };
 
 /**
@@ -478,7 +508,9 @@ doAuth = function doAuth() {
     delete options[0];
     // No DB setup, but override the owner
     options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
-        result[val] = true;
+        if (val) {
+            result[val] = true;
+        }
     }));
 
     fixtureOps = getFixtureOps(options);
@@ -493,7 +525,7 @@ login = function login(request) {
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
-            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin'})
+            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin', client_secret: 'not_available'})
             .end(function (err, res) {
                 if (err) {
                     return reject(err);

@@ -10,14 +10,14 @@ var testUtils   = require('../utils/index'),
     validator   = require('validator'),
 
     // Stuff we are testing
-    config          = rewire('../../server/config'),
+    config          = require('../../server/config'),
     defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
     migration       = rewire('../../server/data/migration'),
     exporter        = require('../../server/data/export'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
 
-    knex,
+    knex = config.database.knex,
     sandbox = sinon.sandbox.create();
 
 // Tests in here do an import for each test
@@ -34,11 +34,10 @@ describe('Import', function () {
     describe('Resolves', function () {
         beforeEach(testUtils.setup());
         beforeEach(function () {
-            var newConfig = _.extend(config, defaultConfig);
+            var newConfig = _.extend({}, config, defaultConfig);
 
             migration.__get__('config', newConfig);
             config.set(newConfig);
-            knex = config.database.knex;
         });
 
         it('resolves DataImporter', function (done) {
@@ -58,9 +57,6 @@ describe('Import', function () {
     });
 
     describe('Sanitizes', function () {
-        before(function () {
-            knex = config.database.knex;
-        });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
         it('import results have data and problems', function (done) {
@@ -122,9 +118,6 @@ describe('Import', function () {
     });
 
     describe('DataImporter', function () {
-        before(function () {
-            knex = config.database.knex;
-        });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
         should.exist(DataImporter);
@@ -161,7 +154,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -199,8 +192,7 @@ describe('Import', function () {
                 var users = importedData[0],
                     posts = importedData[1],
                     settings = importedData[2],
-                    tags = importedData[3],
-                    exportEmail;
+                    tags = importedData[3];
 
                 // we always have 1 user, the default user we added
                 users.length.should.equal(1, 'There should only be one user');
@@ -218,14 +210,10 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
-
-                // email address should have been overridden
-                exportEmail = _.findWhere(exportData.data.settings, {key: 'email'}).value;
-                _.findWhere(settings, {key: 'email'}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -283,7 +271,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -328,7 +316,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -337,9 +325,6 @@ describe('Import', function () {
     });
 
     describe('002', function () {
-        before(function () {
-            knex = config.database.knex;
-        });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
         it('safely imports data from 002', function (done) {
@@ -371,8 +356,7 @@ describe('Import', function () {
                 var users = importedData[0],
                     posts = importedData[1],
                     settings = importedData[2],
-                    tags = importedData[3],
-                    exportEmail;
+                    tags = importedData[3];
 
                 // we always have 1 user, the owner user we added
                 users.length.should.equal(1, 'There should only be one user');
@@ -390,14 +374,10 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
-
-                // email address should have been overridden
-                exportEmail = _.findWhere(exportData.data.settings, {key: 'email'}).value;
-                _.findWhere(settings, {key: 'email'}).value.should.equal(exportEmail, 'Wrong email in settings');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -454,7 +434,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -498,7 +478,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                     done();
                 });
@@ -507,9 +487,6 @@ describe('Import', function () {
     });
 
     describe('003', function () {
-        before(function () {
-            knex = config.database.knex;
-        });
         beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
         it('safely imports data from 003 (single user)', function (done) {
@@ -551,7 +528,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -681,14 +658,10 @@ describe('Import', function () {
 describe('Import (new test structure)', function () {
     before(testUtils.teardown);
 
-    after(testUtils.teardown);
-
     describe('imports multi user data onto blank ghost install', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
-
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
             }).then(function (exported) {
@@ -745,7 +718,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -914,8 +887,6 @@ describe('Import (new test structure)', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
-
             testUtils.initFixtures('roles', 'owner', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-noOwner');
             }).then(function (exported) {
@@ -972,7 +943,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -1141,8 +1112,6 @@ describe('Import (new test structure)', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
-
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu');
@@ -1211,7 +1180,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('003', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -1375,8 +1344,6 @@ describe('Import (new test structure)', function () {
         var exportData;
 
         before(function doImport(done) {
-            knex = config.database.knex;
-
             // initialise the blog with some data
             testUtils.initFixtures('users:roles', 'posts', 'settings').then(function () {
                 return testUtils.fixtures.loadExportFixture('export-003-mu-multipleOwner');

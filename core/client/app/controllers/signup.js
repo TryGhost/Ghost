@@ -1,23 +1,58 @@
 import Ember from 'ember';
-import ajax from 'ghost/utils/ajax';
+import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var SignupController = Ember.Controller.extend(ValidationEngine, {
-    submitting: false,
-
+export default Ember.Controller.extend(ValidationEngine, {
     // ValidationEngine settings
     validationType: 'signup',
+
+    submitting: false,
+    flowErrors: '',
+    image: null,
+    validEmail: '',
+
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    config: Ember.inject.service(),
+    notifications: Ember.inject.service(),
+
+    sendImage: function () {
+        var self = this,
+            image = this.get('image');
+
+        this.get('session.user').then(function (user) {
+            return new Ember.RSVP.Promise(function (resolve, reject) {
+                image.formData = {};
+                image.submit()
+                    .success(function (response) {
+                        user.image = response;
+                        ajax({
+                            url: self.get('ghostPaths.url').api('users', user.id.toString()),
+                            type: 'PUT',
+                            data: {
+                                users: [user]
+                            }
+                        }).then(resolve).catch(reject);
+                    })
+                    .error(reject);
+            });
+        });
+    },
 
     actions: {
         signup: function () {
             var self = this,
                 model = this.get('model'),
-                data = model.getProperties('name', 'email', 'password', 'token');
+                setupProperties = ['name', 'email', 'password', 'token'],
+                data = model.getProperties(setupProperties),
+                image = this.get('image'),
 
-            self.notifications.closePassive();
+                notifications = this.get('notifications');
 
-            this.toggleProperty('submitting');
-            this.validate({format: false}).then(function () {
+            this.set('flowErrors', '');
+
+            this.get('hasValidated').addObjects(setupProperties);
+            this.validate().then(function () {
+                self.toggleProperty('submitting');
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'invitation'),
                     type: 'POST',
@@ -31,20 +66,37 @@ var SignupController = Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
-                    self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
+                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
                         identification: self.get('model.email'),
                         password: self.get('model.password')
+                    }).then(function () {
+                        if (image) {
+                            self.sendImage();
+                        }
+                    }).catch(function (resp) {
+                        notifications.showAPIError(resp);
                     });
-                }, function (resp) {
+                }).catch(function (resp) {
                     self.toggleProperty('submitting');
-                    self.notifications.showAPIError(resp);
+                    if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
+                        self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
+                    } else {
+                        notifications.showAPIError(resp);
+                    }
                 });
-            }, function (errors) {
-                self.toggleProperty('submitting');
-                self.notifications.showErrors(errors);
+            }).catch(function () {
+                self.set('flowErrors', 'Please fill out the form to complete your sign-up');
+            });
+        },
+        setImage: function (image) {
+            this.set('image', image);
+        },
+        handleEmail: function () {
+            var self = this;
+
+            this.validate({property: 'email'}).then(function () {
+                self.set('validEmail', self.get('email'));
             });
         }
     }
 });
-
-export default SignupController;

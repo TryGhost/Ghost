@@ -6,9 +6,14 @@ import isFinite from 'ghost/utils/isFinite';
 var EditorEditRoute = AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
 
+    beforeModel: function (transition) {
+        this.set('_transitionedFromNew', transition.data.fromNew);
+
+        this._super(...arguments);
+    },
+
     model: function (params) {
         var self = this,
-            post,
             postId,
             query;
 
@@ -16,11 +21,6 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
 
         if (!isNumber(postId) || !isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
             return this.transitionTo('error404', 'editor/' + params.post_id);
-        }
-
-        post = this.store.getById('post', postId);
-        if (post) {
-            return post;
         }
 
         query = {
@@ -48,6 +48,12 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
                 return self.replaceWith('posts.index');
             }
         });
+    },
+
+    setupController: function (controller/*, model */) {
+        this._super(...arguments);
+
+        controller.set('shouldFocusEditor', this.get('_transitionedFromNew'));
     },
 
     actions: {

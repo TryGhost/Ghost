@@ -1,10 +1,9 @@
 import Ember from 'ember';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
-var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndicator, {
+var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
 
     actions: {
@@ -40,6 +39,17 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
                 fromNewToEdit,
                 deletedWithoutChanges;
 
+            // if a save is in-flight we don't know whether or not it's safe to leave
+            // so we abort the transition and retry after the save has completed.
+            if (state.isSaving) {
+                transition.abort();
+                return Ember.run.later(this, function () {
+                    Ember.RSVP.resolve(controller.get('lastPromise')).then(function () {
+                        transition.retry();
+                    });
+                }, 100);
+            }
+
             fromNewToEdit = this.get('routeName') === 'editor.new' &&
                 transition.targetName === 'editor.edit' &&
                 transition.intent.contexts &&
@@ -48,8 +58,6 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, loadingIndic
 
             deletedWithoutChanges = state.isDeleted &&
                 (state.isSaving || !state.isDirty);
-
-            this.send('closeSettingsMenu');
 
             if (!fromNewToEdit && !deletedWithoutChanges && controllerIsDirty) {
                 transition.abort();

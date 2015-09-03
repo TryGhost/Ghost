@@ -1,3 +1,4 @@
+// # Errors
 /*jslint regexp: true */
 var _                          = require('lodash'),
     chalk                      = require('chalk'),
@@ -8,12 +9,14 @@ var _                          = require('lodash'),
     BadRequestError            = require('./bad-request-error'),
     InternalServerError        = require('./internal-server-error'),
     NoPermissionError          = require('./no-permission-error'),
+    MethodNotAllowedError      = require('./method-not-allowed-error'),
     RequestEntityTooLargeError = require('./request-too-large-error'),
     UnauthorizedError          = require('./unauthorized-error'),
     ValidationError            = require('./validation-error'),
     UnsupportedMediaTypeError  = require('./unsupported-media-type-error'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
+    TooManyRequestsError       = require('./too-many-requests-error'),
     config,
     errors,
 
@@ -173,6 +176,37 @@ errors = {
         };
     },
 
+    /**
+     * ### Format HTTP Errors
+     * Converts the error response from the API into a format which can be returned over HTTP
+     *
+     * @private
+     * @param {Array} error
+     * @return {{errors: Array, statusCode: number}}
+     */
+    formatHttpErrors: function formatHttpErrors(error) {
+        var statusCode = 500,
+            errors = [];
+
+        if (!_.isArray(error)) {
+            error = [].concat(error);
+        }
+
+        _.each(error, function each(errorItem) {
+            var errorContent = {};
+
+            // TODO: add logic to set the correct status code
+            statusCode = errorItem.code || 500;
+
+            errorContent.message = _.isString(errorItem) ? errorItem :
+                (_.isObject(errorItem) ? errorItem.message : 'Unknown API Error');
+            errorContent.errorType = errorItem.errorType || 'InternalServerError';
+            errors.push(errorContent);
+        });
+
+        return {errors: errors, statusCode: statusCode};
+    },
+
     handleAPIError: function (error, permsMessage) {
         if (!error) {
             return this.rejectError(
@@ -279,7 +313,7 @@ errors = {
     },
 
     error404: function (req, res, next) {
-        var message = res.isAdmin && req.user ? 'No Ghost Found' : 'Page Not Found';
+        var message = 'Page not found';
 
         // do not cache 404 error
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
@@ -340,6 +374,7 @@ _.each([
     'logErrorAndExit',
     'logErrorWithRedirect',
     'handleAPIError',
+    'formatHttpErrors',
     'renderErrorPage',
     'error404',
     'error500'
@@ -358,3 +393,5 @@ module.exports.RequestEntityTooLargeError = RequestEntityTooLargeError;
 module.exports.UnsupportedMediaTypeError  = UnsupportedMediaTypeError;
 module.exports.EmailError                 = EmailError;
 module.exports.DataImportError            = DataImportError;
+module.exports.MethodNotAllowedError      = MethodNotAllowedError;
+module.exports.TooManyRequestsError       = TooManyRequestsError;

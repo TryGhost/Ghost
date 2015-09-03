@@ -1,8 +1,5 @@
+// # Config
 // General entry point for all configuration data
-//
-// This file itself is a wrapper for the root level config.js file.
-// All other files that need to reference config.js should use this file.
-
 var path          = require('path'),
     Promise       = require('bluebird'),
     chalk         = require('chalk'),
@@ -31,6 +28,7 @@ function ConfigManager(config) {
     this._config = {};
 
     // Allow other modules to be externally accessible.
+    this.urlJoin = configUrl.urlJoin;
     this.urlFor = configUrl.urlFor;
     this.urlPathForPost = configUrl.urlPathForPost;
 
@@ -340,14 +338,6 @@ ConfigManager.prototype.validate = function () {
     }
     catch (e) {
         return Promise.reject(e);
-    }
-
-    // Check if we don't even have a config
-    if (!config) {
-        errors.logError(new Error('Cannot find the configuration for the current NODE_ENV'), 'NODE_ENV=' + envVal,
-            'Ensure your config.js has a section for the current NODE_ENV value and is formatted properly.');
-
-        return Promise.reject(new Error('Unable to load config for NODE_ENV=' + envVal));
     }
 
     // Check that our url is valid

@@ -1,0 +1,122 @@
+/* Tag Management /ghost/settings/tags/
+/* ---------------------------------------------------------- */
+
+
+/* Search
+/* ---------------------------------------------------------- */
+
+.tags-search {
+    position: relative;
+    display: inline-block;
+    margin-left: 7px;
+}
+
+.tags-search .btn {
+    position: relative;
+    padding-right: 10px;
+    padding-left: 10px;
+    transition: padding 0.3s ease-in-out;
+}
+
+.tags-search .btn.active {
+    box-shadow: none;
+}
+
+.tags-search .btn .icon-search:before {
+    font-size: 1.3rem;
+}
+
+.tags-search .tags-search-input {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    margin: 0;
+    padding: 7px 10px;
+    width: 0;
+    border: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+@media (max-width: 400px) {
+    .tags-search.opened .btn {
+        padding-left: 120px;
+    }
+    .tags-search.opened .tags-search-input {
+        width: 110px;
+    }
+}
+
+@media (min-width: 401px) {
+    .tags-search.opened .btn {
+        padding-left: 140px;
+    }
+    .tags-search.opened .tags-search-input {
+        width: 130px;
+    }
+}
+
+.tags-search.opened .tags-search-input {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+
+/* Tag
+/* ---------------------------------------------------------- */
+
+.settings-tag {
+    position: relative;
+    display: block;
+    padding: 0 45px 0 0;
+    border-bottom: 1px solid #dfe1e3;
+}
+
+.settings-tag .tag-edit-button {
+    padding: 20px;
+    width: calc(100% + 45px);
+    text-align: left;
+}
+
+.settings-tag .tag-edit-button:hover,
+.settings-tag .tag-edit-button:focus,
+.settings-tag .tag-edit-button:active {
+    background: color(#dfe1e3 lightness(+10%));
+}
+
+.settings-tag:last-of-type:hover .tag-edit-button {
+    box-shadow: inset 0 -1px 0 #dfe1e3;
+}
+
+.settings-tag .label {
+    position: relative;
+    top: -2px;
+    margin-left: 2px;
+}
+
+.settings-tag .label-alt {
+    text-transform: uppercase;
+}
+
+.settings-tag .tag-title {
+    color: var(--darkgrey);
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.settings-tag .tag-description {
+    margin: 0;
+    color: color(#dfe1e3 lightness(-10%));
+    font-size: 13px;
+}
+
+.settings-tag .tags-count {
+    position: absolute;
+    top: 20px;
+    right: 12px;
+    color: color(#dfe1e3 lightness(-10%));
+    font-size: 16px;
+}

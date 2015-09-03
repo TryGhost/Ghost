@@ -1,10 +1,9 @@
-<div class="content-cover" {{action "closeSettingsMenu"}}></div>
 {{#gh-tabs-manager selected="showSubview" id="entry-controls" class="settings-menu-container"}}
 <div id="entry-controls">
     <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane">
         <div class="settings-menu-header">
             <h4>Post Settings</h4>
-            <button class="close icon-x settings-menu-header-action" {{action "closeSettingsMenu"}}><span class="hidden">Close</span></button>
+            <button class="close icon-x settings-menu-header-action" {{action "closeMenus"}}><span class="hidden">Close</span></button>
         </div>
         <div class="settings-menu-content">
             {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add post image" image=model.image uploaderReference=uploaderReference tagName="section"}}
@@ -27,11 +26,26 @@
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
 
-            <div class="form-group">
+            {{#gh-form-group errors=model.errors property="post-setting-date"}}
                 <label for="post-setting-date">Publish Date</label>
                 <span class="input-icon icon-calendar">
                     {{gh-input class="post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" stopEnterKeyDownPropagation="true"}}
                 </span>
+                {{gh-error-message errors=model.errors property="post-setting-date"}}
+            {{/gh-form-group}}
+
+            <div class="form-group">
+                <label for="tag-input">Tags</label>
+                {{gh-selectize
+                    id="tag-input"
+                    multiple=true
+                    selection=model.tags
+                    content=availableTags
+                    optionValuePath="content.uuid"
+                    optionLabelPath="content.name"
+                    openOnFocus=false
+                    create-item="addTag"
+                    remove-item="removeTag"}}
             </div>
 
             {{#unless session.user.isAuthor}}
@@ -39,13 +53,15 @@
                 <label for="author-list">Author</label>
                 <span class="input-icon icon-user">
                     <span class="gh-select" tabindex="0">
-                    {{view "select"
+                    {{gh-select-native
                         name="post-setting-author"
                         id="author-list"
                         content=authors
-                        optionValuePath="content.id"
-                        optionLabelPath="content.name"
-                        selection=selectedAuthor}}
+                        optionValuePath="id"
+                        optionLabelPath="name"
+                        selection=selectedAuthor
+                        action="changeAuthor"
+                    }}
                     </span>
                 </span>
             </div>
@@ -57,18 +73,19 @@
                         <b>Meta Data</b>
                         <span>Extra content for SEO and social media.</span>
                     </button>
+                    <i class="icon-arrow-right"></i>
                 {{/gh-tab}}
             </ul>
 
             <div class="form-group for-checkbox">
                 <label class="checkbox" for="static-page" {{action "togglePage" bubbles="false"}}>
-                    {{input type="checkbox" name="static-page" id="static-page" class="post-setting-static-page" checked=model.page}}
+                    {{input type="checkbox" name="static-page" id="static-page" class="gh-input post-setting-static-page" checked=model.page}}
                     <span class="input-toggle-component"></span>
                     <p>Turn this post into a static page</p>
                 </label>
 
                 <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
-                    {{input type="checkbox" name="featured" id="featured" class="post-setting-featured" checked=model.featured}}
+                    {{input type="checkbox" name="featured" id="featured" class="gh-input post-setting-featured" checked=model.featured}}
                     <span class="input-toggle-component"></span>
                     <p>Feature this post</p>
                 </label>
@@ -82,23 +99,26 @@
     {{#gh-tab-pane}}
         {{#if isViewingSubview}}
         <div class="settings-menu-header subview">
-            <button {{action "closeSubview"}} class="back icon-chevron-left settings-menu-header-action"><span class="hidden">Back</span></button>
+            <button {{action "closeSubview"}} class="back icon-arrow-left settings-menu-header-action"><span class="hidden">Back</span></button>
             <h4>Meta Data</h4>
+            <div style="width:23px;">{{!flexbox space-between}}</div>
         </div>
 
         <div class="settings-menu-content">
             <form>
-            <div class="form-group">
+            {{#gh-form-group errors=model.errors property="meta_title"}}
                 <label for="meta-title">Meta Title</label>
                 {{gh-input class="post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters metaTitleScratch 70}}</p>
-            </div>
+                {{gh-error-message errors=model.errors property="meta_title"}}
+            {{/gh-form-group}}
 
-            <div class="form-group">
+            {{#gh-form-group errors=model.errors property="meta_description"}}
                 <label for="meta-description">Meta Description</label>
-                {{gh-textarea class="post-setting-meta-description" id="meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
+                {{gh-textarea class="gh-input post-setting-meta-description" id="meta-description" value=metaDescriptionScratch name="post-setting-meta-description" focus-out="setMetaDescription" stopEnterKeyDownPropagation="true"}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters metaDescriptionScratch 156}}</p>
-            </div>
+                {{gh-error-message errors=model.errors property="meta_description"}}
+            {{/gh-form-group}}
 
             <div class="form-group">
                 <label>Search Engine Result Preview</label>

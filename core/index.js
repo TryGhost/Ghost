@@ -1,9 +1,8 @@
-// # Ghost bootloader
-// Orchestrates the loading of Ghost
-// When run from command line.
-
+// ## Server Loader
+// Passes options through the boot process to get a server instance back
 var server = require('./server');
 
+// Set the default environment to be `development`
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 function makeGhost(options) {

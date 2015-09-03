@@ -15,6 +15,47 @@ function setConfig(config) {
     ghostConfig = config;
 }
 
+function getBaseUrl(secure) {
+    return (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+}
+
+function urlJoin() {
+    var args = Array.prototype.slice.call(arguments),
+        prefixDoubleSlash = false,
+        subdir = ghostConfig.paths.subdir.replace(/\//g, ''),
+        subdirRegex,
+        url;
+
+    // Remove empty item at the beginning
+    if (args[0] === '') {
+        args.shift();
+    }
+
+    // Handle schemeless protocols
+    if (args[0].indexOf('//') === 0) {
+        prefixDoubleSlash = true;
+    }
+
+    // join the elements using a slash
+    url = args.join('/');
+
+    // Fix multiple slashes
+    url = url.replace(/(^|[^:])\/\/+/g, '$1/');
+
+    // Put the double slash back at the beginning if this was a schemeless protocol
+    if (prefixDoubleSlash) {
+        url = url.replace(/^\//, '//');
+    }
+
+    // Deduplicate subdirectory
+    if (subdir) {
+        subdirRegex = new RegExp(subdir + '\/' + subdir);
+        url = url.replace(subdirRegex, subdir);
+    }
+
+    return url;
+}
+
 // ## createUrl
 // Simple url creation from a given path
 // Ensures that our urls contain the subdirectory if there is one
@@ -32,25 +73,16 @@ function setConfig(config) {
 function createUrl(urlPath, absolute, secure) {
     urlPath = urlPath || '/';
     absolute = absolute || false;
-    var output = '', baseUrl;
+    var base;
 
     // create base of url, always ends without a slash
     if (absolute) {
-        baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
-        output += baseUrl.replace(/\/$/, '');
+        base = getBaseUrl(secure);
     } else {
-        output += ghostConfig.paths.subdir;
+        base = ghostConfig.paths.subdir;
     }
 
-    // Remove double subdirectory
-    if (urlPath.indexOf(ghostConfig.paths.subdir) === 0) {
-        urlPath = urlPath.replace(ghostConfig.paths.subdir, '');
-    }
-
-    // append the path, always starts and ends with a slash
-    output += urlPath;
-
-    return output;
+    return urlJoin(base, urlPath);
 }
 
 // ## urlPathForPost
@@ -114,7 +146,8 @@ function urlFor(context, data, absolute) {
     knownPaths = {
         home: '/',
         rss: '/rss/',
-        api: '/ghost/api/v0.1'
+        api: '/ghost/api/v0.1',
+        sitemap_xsl: '/sitemap.xsl'
     };
 
     // Make data properly optional
@@ -134,10 +167,10 @@ function urlFor(context, data, absolute) {
             urlPath = data.post.url;
             secure = data.secure;
         } else if (context === 'tag' && data.tag) {
-            urlPath = '/' + ghostConfig.routeKeywords.tag + '/' + data.tag.slug + '/';
+            urlPath = urlJoin('/', ghostConfig.routeKeywords.tag, data.tag.slug, '/');
             secure = data.tag.secure;
         } else if (context === 'author' && data.author) {
-            urlPath = '/' + ghostConfig.routeKeywords.author  + '/' + data.author.slug + '/';
+            urlPath = urlJoin('/', ghostConfig.routeKeywords.author, data.author.slug, '/');
             secure = data.author.secure;
         } else if (context === 'image' && data.image) {
             urlPath = data.image;
@@ -148,20 +181,18 @@ function urlFor(context, data, absolute) {
             if (absolute) {
                 // Remove the sub-directory from the URL because ghostConfig will add it back.
                 urlPath = urlPath.replace(new RegExp('^' + ghostConfig.paths.subdir), '');
-                baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
-                baseUrl = baseUrl.replace(/\/$/, '');
+                baseUrl = getBaseUrl(secure).replace(/\/$/, '');
                 urlPath = baseUrl + urlPath;
             }
 
             return urlPath;
-        } else if (context === 'sitemap-xsl') {
-            absolute = true;
-            urlPath = '/sitemap.xsl';
         } else if (context === 'nav' && data.nav) {
             urlPath = data.nav.url;
-            baseUrl = (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+            baseUrl = getBaseUrl(secure);
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
-            if (urlPath.indexOf(hostname) > -1 && urlPath.indexOf('.' + hostname) === -1) {
+            if (urlPath.indexOf(hostname) > -1
+                && urlPath.indexOf('.' + hostname) === -1
+                && urlPath.indexOf('mailto:') !== 0) {
                 // make link relative to account for possible
                 // mismatch in http/https etc, force absolute
                 // do not do so if link is a subdomain of blog url
@@ -187,5 +218,6 @@ function urlFor(context, data, absolute) {
 }
 
 module.exports.setConfig = setConfig;
+module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;

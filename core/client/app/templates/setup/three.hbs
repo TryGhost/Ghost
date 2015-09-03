@@ -1,0 +1,19 @@
+<header>
+    <h1>Invite your team</h1>
+    <p>Ghost works best when shared with others. Collaborate, get feedback on your posts &amp; work together on ideas.</p>
+</header>
+
+<img class="gh-flow-faces" src="{{gh-path 'admin' 'img/users.png'}}" alt="" />
+
+<form class="gh-flow-invite">
+    {{#gh-form-group errors=errors hasValidated=hasValidated property="users"}}
+        <label for="users">Enter one email address per line, we’ll handle the rest! <i class="icon-mail"></i></label>
+        {{gh-textarea name="users" value=users required="required" focusOut=(action "validate")}}
+    {{/gh-form-group}}
+
+    {{#gh-spin-button type="submit" action="invite" classNameBindings=":btn :btn-default :btn-lg :btn-block buttonClass" submitting=submitting autoWidth="false"}}{{buttonText}}{{/gh-spin-button}}
+</form>
+
+<button class="gh-flow-skip" {{action "skipInvite"}}>
+    I'll do this later, take me to my blog!
+</button>
