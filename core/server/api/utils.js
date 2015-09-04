@@ -126,7 +126,7 @@ utils = {
                     errors = errors.concat(validation.validate(value, key, globalValidations[key]));
                 } else {
                     // all other keys should be an alphanumeric string + -, like slug, tag, author, status, etc
-                    errors = errors.concat(validation.validate(value, key, {matches: /^[a-z0-9\-]+$/}));
+                    errors = errors.concat(validation.validate(value, key, {matches: /^[a-z0-9\-_]+$/}));
                 }
             }
         });
