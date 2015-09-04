@@ -53,10 +53,14 @@ var simplemde = new SimpleMDE({ element: $("#MyID")[0] });
 </script>
 ```
 
-## Get the content
+## Get/set the content
 
 ```JavaScript
 simplemde.value();
+```
+
+```JavaScript
+simplemde.value('This text will appear in the editor');
 ```
 
 ## Configuration
@@ -124,7 +128,7 @@ heading-3 | toggleHeading3 | fa fa-header fa-header-x fa-header-3 | Small Headin
 code | toggleCodeBlock | fa fa-code | Code (Ctrl+Alt+C)
 quote | toggleBlockquote | fa fa-quote-left | Quote (Ctrl+')
 unordered-list | toggleUnorderedList | fa fa-list-ul | Generic List (Ctrl+L)
-numbered-list | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
+ordered-list | toggleOrderedList | fa fa-list-ol | Numbered List (Ctrl+Alt+L)
 link | drawLink | fa fa-link | Create Link (Ctrl+K)
 image | drawImage | fa fa-picture-o | Insert Image (Ctrl+Alt+I)
 horizontal-rule | drawHorizontalRule | fa fa-minus | Insert Horizontal Line
