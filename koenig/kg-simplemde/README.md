@@ -60,7 +60,7 @@ simplemde.value();
 ```
 
 ```JavaScript
-simplemde.value('This text will appear in the editor');
+simplemde.value("This text will appear in the editor");
 ```
 
 ## Configuration
