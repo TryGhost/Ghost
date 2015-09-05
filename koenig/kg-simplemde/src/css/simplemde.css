@@ -72,6 +72,7 @@
 	white-space: nowrap;
 	padding-top: 10px;
 	padding-bottom: 10px;
+	box-sizing: border-box;
 	background: #fff;
 	border: 0;
 	position: fixed;
