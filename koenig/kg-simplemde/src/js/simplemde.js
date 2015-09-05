@@ -331,11 +331,11 @@ function toggleSideBySide(editor) {
 	}
 
 	// Start preview with the current text
-	preview.innerHTML = editor.options.previewRender(editor.value());
+	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 
 	// Updates preview
 	cm.on('update', function() {
-		preview.innerHTML = editor.options.previewRender(editor.value());
+		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 	});
 }
 
@@ -371,7 +371,7 @@ function togglePreview(editor) {
 		toolbar.className += ' active';
 		toolbar_div.className += ' disabled-for-preview';
 	}
-	preview.innerHTML = editor.options.previewRender(editor.value());
+	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 
 	// Turn off side by side if needed
 	var sidebyside = cm.getWrapperElement().nextSibling;

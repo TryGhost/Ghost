@@ -106,6 +106,13 @@ var simplemde = new SimpleMDE({
 	},
 	previewRender: function(plainText) {
 		return customMarkdownParser(plainText); // Returns HTML from a custom parser
+	},
+	previewRender: function(plainText, preview) { // Async method
+		setTimeout(function(){
+			preview.innerHTML = customMarkdownParser(plainText);
+		}, 250);
+		
+		return "Loading...";
 	}
 });
 ```
