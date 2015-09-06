@@ -28,7 +28,10 @@ describeComponent(
                 testEmail = 'test@example.com',
                 style, size;
 
-            component.set('email', testEmail);
+            Ember.run(function () {
+                component.set('email', testEmail);
+            });
+
             this.render();
 
             size = component.get('size');

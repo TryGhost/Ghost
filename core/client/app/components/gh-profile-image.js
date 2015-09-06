@@ -16,6 +16,7 @@ import Ember from 'ember';
  */
 export default Ember.Component.extend({
     email: '',
+    validEmail: '',
     size: 90,
     hasUploadedImage: false,
     fileStorage: true,
@@ -28,12 +29,21 @@ export default Ember.Component.extend({
         return `background-image: url(${url})`.htmlSafe();
     }),
 
-    imageBackground: Ember.computed('email', 'size', function () {
-        var email = this.get('email'),
+    trySetValidEmail: function () {
+        var email = this.get('email');
+        this.set('validEmail', validator.isEmail(email) ? email : '');
+    },
+
+    didReceiveAttrs: function () {
+        Ember.run.debounce(this, 'trySetValidEmail', 500);
+    },
+
+    imageBackground: Ember.computed('validEmail', 'size', function () {
+        var email = this.get('validEmail'),
             size = this.get('size'),
             url;
         if (email) {
-            url = 'http://www.gravatar.com/avatar/' + md5(email) + '?s=' + size + '&d=blank';
+            url = `http://www.gravatar.com/avatar/${md5(email)}?s=${size}&d=blank`;
             return `background-image: url(${url})`.htmlSafe();
         }
     }),
