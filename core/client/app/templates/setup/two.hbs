@@ -7,7 +7,7 @@
     <input style="display:none;" type="text" name="fakeusernameremembered"/>
     <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-    {{gh-profile-image fileStorage=config.fileStorage email=validEmail setImage="setImage"}}
+    {{gh-profile-image fileStorage=config.fileStorage email=email setImage="setImage"}}
     {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
         <label for="email-address">Email address</label>
         <span class="input-icon icon-mail">

@@ -9,7 +9,6 @@ export default Ember.Controller.extend(ValidationEngine, {
     submitting: false,
     flowErrors: '',
     image: null,
-    validEmail: '',
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     config: Ember.inject.service(),
@@ -90,13 +89,6 @@ export default Ember.Controller.extend(ValidationEngine, {
         },
         setImage: function (image) {
             this.set('image', image);
-        },
-        handleEmail: function () {
-            var self = this;
-
-            this.validate({property: 'email'}).then(function () {
-                self.set('validEmail', self.get('email'));
-            });
         }
     }
 });

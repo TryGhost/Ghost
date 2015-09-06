@@ -7,7 +7,6 @@ export default Ember.Controller.extend(ValidationEngine, {
     blogTitle: null,
     name: null,
     email: '',
-    validEmail: '',
     password: null,
     image: null,
     blogCreated: false,
@@ -52,9 +51,6 @@ export default Ember.Controller.extend(ValidationEngine, {
         preValidate: function (model) {
             // Only triggers validation if a value has been entered, preventing empty errors on focusOut
             if (this.get(model)) {
-                if (model === 'email') {
-                    this.send('handleEmail');
-                }
                 this.validate({property: model});
             }
         },
@@ -121,13 +117,6 @@ export default Ember.Controller.extend(ValidationEngine, {
         },
         setImage: function (image) {
             this.set('image', image);
-        },
-        handleEmail: function () {
-            var self = this;
-
-            this.validate({property: 'email'}).then(function () {
-                self.set('validEmail', self.get('email'));
-            });
         }
     }
 });
