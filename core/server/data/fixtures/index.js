@@ -289,16 +289,21 @@ to004 = function to004() {
                 posts.each(function (post) {
                     var order = 0;
                     post.related('tags').each(function (tag) {
-                        tagOps.push(post.tags().updatePivot(
-                            {sort_order: order}, _.extend({}, options, {query: {where: {tag_id: tag.id}}})
-                        ));
+                        tagOps.push((function (order) {
+                            var sortOrder = order;
+                            return function () {
+                                return post.tags().updatePivot(
+                                    {sort_order: sortOrder}, _.extend({}, options, {query: {where: {tag_id: tag.id}}})
+                                );
+                            };
+                        }(order)));
                         order += 1;
                     });
                 });
             }
             if (tagOps.length > 0) {
                 logInfo('Updating order on ' + tagOps.length + ' tags');
-                return Promise.all(tagOps);
+                return sequence(tagOps);
             }
         });
     };
