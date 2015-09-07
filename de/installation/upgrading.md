@@ -10,6 +10,8 @@ chapter: installation
 section: upgrading
 prev_section: deploy
 next_section: troubleshooting
+canonical: http://support.ghost.org/how-to-upgrade/
+redirectToCanonical: true
 ---
 
 # Ghost aktualisieren <a id="upgrade"></a>
