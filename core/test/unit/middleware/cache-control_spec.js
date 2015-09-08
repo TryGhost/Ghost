@@ -77,18 +77,18 @@ describe('Middleware: cacheControl', function () {
                 });
             });
         });
+    });
 
-        it('will override public with private for private blogs', function (done) {
-            res.isPrivateBlog = true;
-            middleware.cacheControl('public')(null, res, function (a) {
-                should.not.exist(a);
-                res.set.calledOnce.should.be.true;
-                res.set.calledWith({
-                    'Cache-Control':
-                        'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-                });
-                done();
+    it('will override public with private for private blogs', function (done) {
+        res.isPrivateBlog = true;
+        middleware.cacheControl('public')(null, res, function (a) {
+            should.not.exist(a);
+            res.set.calledOnce.should.be.true;
+            res.set.calledWith({
+                'Cache-Control':
+                    'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
             });
+            done();
         });
     });
 });
