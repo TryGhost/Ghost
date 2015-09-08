@@ -1,5 +1,6 @@
 var config = require('../config'),
-    url    = require('url');
+    url    = require('url'),
+    checkSSL;
 
 function isSSLrequired(isAdmin, configUrl, forceAdminSSL) {
     var forceSSL = url.parse(configUrl).protocol === 'https:' ? true : false;
@@ -46,7 +47,7 @@ function sslForbiddenOrRedirect(opt) {
 
 // Check to see if we should use SSL
 // and redirect if needed
-function checkSSL(req, res, next) {
+checkSSL = function checkSSL(req, res, next) {
     if (isSSLrequired(res.isAdmin, config.url, config.forceAdminSSL)) {
         if (!req.secure) {
             var response = sslForbiddenOrRedirect({
@@ -64,9 +65,6 @@ function checkSSL(req, res, next) {
         }
     }
     next();
-}
+};
 
 module.exports = checkSSL;
-// SSL helper functions are exported primarily for unit testing.
-module.exports.isSSLrequired = isSSLrequired;
-module.exports.sslForbiddenOrRedirect = sslForbiddenOrRedirect;
