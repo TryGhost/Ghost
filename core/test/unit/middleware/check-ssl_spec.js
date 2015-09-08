@@ -1,92 +1,166 @@
 /*globals describe, it, beforeEach, afterEach */
 /*jshint expr:true*/
 var sinon    = require('sinon'),
+    should   = require('should'),
+    config   = require('../../../server/config'),
     checkSSL = require('../../../server/middleware/check-ssl');
 
+should.equal(true, true);
+
 describe('checkSSL', function () {
-    var sandbox, res, req, next;
+    var res, req, next, sandbox;
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
-        req = sinon.spy();
-        res = sinon.spy();
-        next = sinon.spy();
+        req = {};
+        res = {};
+        next = sandbox.spy();
     });
 
     afterEach(function () {
         sandbox.restore();
     });
 
-    it('skips if already on SSL', function () {
-        res.isAdmin = true;
-        req.isSecure = true;
+    it('should not require SSL (frontend)', function (done) {
+        req.url = '/';
+        config.set({
+            url: 'http://default.com:2368/'
+        });
         checkSSL(req, res, next);
         next.called.should.be.true;
-    });
-});
-
-describe('isSSLRequired', function () {
-    var isSSLrequired = checkSSL.isSSLrequired;
-
-    it('SSL is required if config.url starts with https', function () {
-        isSSLrequired(undefined, 'https://example.com', undefined).should.be.true;
+        next.calledWith().should.be.true;
+        done();
     });
 
-    it('SSL is required if isAdmin and config.forceAdminSSL is set', function () {
-        isSSLrequired(true, 'http://example.com', true).should.be.true;
-    });
-
-    it('SSL is not required if config.url starts with "http:/" and forceAdminSSL is not set', function () {
-        isSSLrequired(false, 'http://example.com', false).should.be.false;
-    });
-});
-
-describe('sslForbiddenOrRedirect', function () {
-    var sslForbiddenOrRedirect = checkSSL.sslForbiddenOrRedirect;
-    it('Return forbidden if config forces admin SSL for AdminSSL redirect is false.', function () {
-        var response = sslForbiddenOrRedirect({
-            forceAdminSSL: {redirect: false},
-            configUrl: 'http://example.com'
+    it('should require SSL (frontend)', function (done) {
+        req.url = '/';
+        req.secure = true;
+        config.set({
+            url: 'https://default.com:2368/'
         });
-        response.isForbidden.should.be.true;
+        checkSSL(req, res, next);
+        next.called.should.be.true;
+        next.calledWith().should.be.true;
+        done();
     });
 
-    it('If not forbidden, should produce SSL to redirect to when config.url ends with no slash', function () {
-        var response = sslForbiddenOrRedirect({
-            forceAdminSSL: {redirect: true},
-            configUrl: 'http://example.com/config/path',
-            reqUrl: '/req/path'
+    it('should not require SSL (admin)', function (done) {
+        req.url = '/ghost';
+        res.isAdmin = true;
+        config.set({
+            url: 'http://default.com:2368/'
         });
-        response.isForbidden.should.be.false;
-        response.redirectUrl({}).should.equal('https://example.com/config/path/req/path');
+        checkSSL(req, res, next);
+        next.called.should.be.true;
+        next.calledWith().should.be.true;
+        done();
     });
 
-    it('If config ends is slash, potential double-slash in resulting URL is removed', function () {
-        var response = sslForbiddenOrRedirect({
-            forceAdminSSL: {redirect: true},
-            configUrl: 'http://example.com/config/path/',
-            reqUrl: '/req/path'
+    it('should not redirect with SSL (admin)', function (done) {
+        req.url = '/ghost';
+        res.isAdmin = true;
+        res.secure = true;
+        config.set({
+            url: 'http://default.com:2368/'
         });
-        response.redirectUrl({}).should.equal('https://example.com/config/path/req/path');
+        checkSSL(req, res, next);
+        next.called.should.be.true;
+        next.calledWith().should.be.true;
+        done();
     });
 
-    it('If config.urlSSL is provided it is preferred over config.url', function () {
-        var response = sslForbiddenOrRedirect({
-            forceAdminSSL: {redirect: true},
-            configUrl: 'http://example.com/config/path/',
-            configUrlSSL: 'https://example.com/ssl/config/path/',
-            reqUrl: '/req/path'
+    it('should not redirect with force admin SSL (admin)', function (done) {
+        req.url = '/ghost';
+        res.isAdmin = true;
+        req.secure = true;
+        config.set({
+            url: 'http://default.com:2368/',
+            forceAdminSSL: true
         });
-        response.redirectUrl({}).should.equal('https://example.com/ssl/config/path/req/path');
+        checkSSL(req, res, next);
+        next.called.should.be.true;
+        next.calledWith().should.be.true;
+        done();
     });
 
-    it('query string in request is preserved in redirect URL', function () {
-        var response = sslForbiddenOrRedirect({
-            forceAdminSSL: {redirect: true},
-            configUrl: 'http://example.com/config/path/',
-            configUrlSSL: 'https://example.com/ssl/config/path/',
-            reqUrl: '/req/path'
+    it('should redirect with force admin SSL (admin)', function (done) {
+        req.url = '/ghost/';
+        res.isAdmin = true;
+        res.redirect = {};
+        req.secure = false;
+        config.set({
+            url: 'http://default.com:2368/',
+            urlSSL: '',
+            forceAdminSSL: true
         });
-        response.redirectUrl({a: 'b'}).should.equal('https://example.com/ssl/config/path/req/path?a=b');
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty;
+            url.should.eql('https://default.com:2368/ghost/');
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false;
+        done();
+    });
+
+    it('should redirect with with config.url being SSL (frontend)', function (done) {
+        req.url = '';
+        req.secure = false;
+        res.redirect = {};
+        config.set({
+            url: 'https://default.com:2368',
+            urlSSL: '',
+            forceAdminSSL: true
+        });
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty;
+            url.should.eql('https://default.com:2368/');
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false;
+        done();
+    });
+
+    it('should redirect to urlSSL (admin)', function (done) {
+        req.url = '/ghost/';
+        res.isAdmin = true;
+        res.redirect = {};
+        req.secure = false;
+        config.set({
+            url: 'http://default.com:2368/',
+            urlSSL: 'https://ssl-domain.com:2368/'
+        });
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty;
+            url.should.eql('https://ssl-domain.com:2368/ghost/');
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false;
+        done();
+    });
+
+    it('should not redirect if redirect:false (admin)', function (done) {
+        req.url = '/ghost/';
+        res.isAdmin = true;
+        res.sendStatus = {};
+        req.secure = false;
+        config.set({
+            url: 'http://default.com:2368/',
+            forceAdminSSL: {
+                redirect: false
+            }
+        });
+        sandbox.stub(res, 'sendStatus', function (statusCode) {
+            statusCode.should.eql(403);
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false;
+        done();
     });
 });
