@@ -161,10 +161,8 @@
 
 @-moz-document url-prefix() {
     .editor .markdown-editor {
-        top: 40px;
-        padding-top: 0;
+        padding-top: 20px;
         padding-bottom: 0;
-        height: calc(100% - 40px);
     }
 }
 
@@ -175,6 +173,7 @@
 .editor .entry-preview-content {
     flex-grow: 1;
     overflow: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     padding: 19px 20px 37px 20px;
     word-break: break-word;
@@ -236,6 +235,14 @@
     height: 16px;
 }
 
+/* Fix for FF & IE letting image size determine parent size */
+.entry-preview-content .pre-image-uploader,
+.content-preview-content .pre-image-uploader {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
 .entry-preview-content img,
 .content-preview-content img {
     margin: 0 auto;
@@ -253,46 +260,6 @@
     font-family: var(--font-family);
     font-size: 1.6rem;
     font-weight: bold;
-}
-
-/* Tags input CSS (TODO: needs some revision)
-/* ------------------------------------------------------ */
-.tags-input-list {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-
-.tags-input-list li {
-    flex: 1 0 auto;
-}
-
-.label-tag {
-    margin-right: 0.3em;
-    padding: 0.2em 0.6em 0.3em;
-    background-color: var(--darkgrey);
-    border-radius: 0.25em;
-    color: var(--lightgrey);
-    text-align: center;
-    font-weight: 300;
-}
-
-.label-tag.highlight {
-    background: var(--midgrey);
-    color: #fff;
-}
-
-.tag-input {
-    margin-top: 5px;
-    border: none;
-    font-weight: 300;
-    cursor: default;
-}
-
-.tag-input:focus {
-    outline: 0;
 }
 
 .publish-bar-actions {
