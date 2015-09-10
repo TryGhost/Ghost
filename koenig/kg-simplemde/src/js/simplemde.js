@@ -399,7 +399,9 @@ function _replaceSelection(cm, active, start, end) {
 		cm.replaceSelection(start + text + end);
 
 		startPoint.ch += start.length;
-		endPoint.ch += start.length;
+		if(startPoint !== endPoint) {
+			endPoint.ch += start.length;
+		}
 	}
 	cm.setSelection(startPoint, endPoint);
 	cm.focus();
@@ -552,10 +554,14 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 
 		if(type == "bold" || type == "strikethrough") {
 			startPoint.ch -= 2;
-			endPoint.ch -= 2;
+			if(startPoint !== endPoint) {
+				endPoint.ch -= 2;
+			}
 		} else if(type == "italic") {
 			startPoint.ch -= 1;
-			endPoint.ch -= 1;
+			if(startPoint !== endPoint) {
+				endPoint.ch -= 1;
+			}
 		}
 	} else {
 		text = cm.getSelection();
