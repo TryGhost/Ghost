@@ -20,6 +20,7 @@ var bodyParser      = require('body-parser'),
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
     decideIsAdmin    = require('./decide-is-admin'),
+    disableAdmin     = require('./disable-admin'),
     privateBlogging  = require('./private-blogging'),
     redirectToSetup  = require('./redirect-to-setup'),
     serveSharedFile  = require('./serve-shared-file'),
@@ -88,6 +89,8 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
 
     // First determine whether we're serving admin or theme content
     blogApp.use(decideIsAdmin);
+    // Enable Admin by default
+    blogApp.use(disableAdmin);
     blogApp.use(themeHandler(blogApp).updateActiveTheme);
     blogApp.use(themeHandler(blogApp).configHbsForContext);
 
