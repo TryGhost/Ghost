@@ -349,7 +349,7 @@ function togglePreview(editor) {
 	var toolbar_div = wrapper.previousSibling;
 	var toolbar = editor.toolbarElements.preview;
 	var preview = wrapper.lastChild;
-	if(!/editor-preview/.test(preview.className)) {
+	if(!preview || !/editor-preview/.test(preview.className)) {
 		preview = document.createElement('div');
 		preview.className = 'editor-preview';
 		wrapper.appendChild(preview);
@@ -861,7 +861,7 @@ SimpleMDE.prototype.render = function(el) {
 		this.autosave();
 	}
 
-	this.createSidebyside();
+	this.createSideBySide();
 
 	this._rendered = this.element;
 };
@@ -916,12 +916,12 @@ SimpleMDE.prototype.autosave = function() {
 	}, this.options.autosave.delay || 10000);
 };
 
-SimpleMDE.prototype.createSidebyside = function() {
+SimpleMDE.prototype.createSideBySide = function() {
 	var cm = this.codemirror;
 	var wrapper = cm.getWrapperElement();
 	var preview = wrapper.nextSibling;
 
-	if(!/editor-preview-side/.test(preview.className)) {
+	if(!preview || !/editor-preview-side/.test(preview.className)) {
 		preview = document.createElement('div');
 		preview.className = 'editor-preview-side';
 		wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);
