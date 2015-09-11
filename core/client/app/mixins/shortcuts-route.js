@@ -69,7 +69,8 @@ var ShortcutsRoute = Ember.Mixin.create({
         var shortcuts = this.get('shortcuts');
 
         Ember.keys(shortcuts).forEach(function (shortcut) {
-            key.unbind(shortcut);
+            var scope = shortcuts[shortcut].scope || 'default';
+            key.unbind(shortcut, scope);
         });
     },
 
