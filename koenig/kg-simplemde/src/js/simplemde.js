@@ -761,6 +761,9 @@ function SimpleMDE(options) {
 		}
 	}
 
+	// Set default options for parsing config
+	options.parsingConfig = options.parsingConfig || {};
+
 	// Update this options
 	this.options = options;
 
@@ -824,8 +827,8 @@ SimpleMDE.prototype.render = function(el) {
 	}
 
 	keyMaps["Enter"] = "newlineAndIndentContinueMarkdownList";
-	keyMaps["Tab"] = "tabAndIndentContinueMarkdownList";
-	keyMaps["Shift-Tab"] = "shiftTabAndIndentContinueMarkdownList";
+	keyMaps["Tab"] = "tabAndIndentMarkdownList";
+	keyMaps["Shift-Tab"] = "shiftTabAndUnindentMarkdownList";
 	keyMaps["F11"] = function(cm) {
 		toggleFullScreen(self);
 	};
@@ -836,18 +839,21 @@ SimpleMDE.prototype.render = function(el) {
 		if(cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
 	};
 
-	var mode = "spell-checker";
-	var backdrop = "gfm";
-
-	if(options.spellChecker === false) {
-		mode = "gfm";
-		backdrop = undefined;
+	var mode, backdrop;
+	if(options.spellChecker !== false) {
+		mode = "spell-checker";
+		backdrop = options.parsingConfig;
+		backdrop.name = "gfm";
+		backdrop.gitHubSpice = false;
+	} else {
+		mode = options.parsingConfig;
+		mode.name = "gfm";
+		mode.gitHubSpice = false;
 	}
 
 	this.codemirror = CodeMirror.fromTextArea(el, {
 		mode: mode,
 		backdrop: backdrop,
-		theme: 'paper',
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
