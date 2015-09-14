@@ -88,6 +88,8 @@ function getState(cm, pos) {
 			ret.quote = true;
 		} else if(data === 'strikethrough') {
 			ret.strikethrough = true;
+		} else if(data === 'comment') {
+			ret.code = true;
 		}
 	}
 	return ret;
