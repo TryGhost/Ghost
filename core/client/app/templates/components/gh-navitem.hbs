@@ -5,12 +5,14 @@
 {{/unless}}
 
 <div class="gh-blognav-line">
-    <span class="gh-blognav-label">
-        {{gh-trim-focus-input class="gh-input" focus=navItem.last placeholder="Label" value=navItem.label}}
-    </span>
-    <span class="gh-blognav-url">
-        {{gh-navitem-url-input class="gh-input" baseUrl=baseUrl url=navItem.url last=navItem.last change="updateUrl"}}
-    </span>
+    {{#gh-validation-status-container tagName="span" class="gh-blognav-label" errors=navItem.errors property="label" hasValidated=navItem.hasValidated}}
+        {{gh-trim-focus-input focus=navItem.last placeholder="Label" value=navItem.label}}
+        {{gh-error-message errors=navItem.errors property="label"}}
+    {{/gh-validation-status-container}}
+    {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
+        {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url last=navItem.last change="updateUrl"}}
+        {{gh-error-message errors=navItem.errors property="url"}}
+    {{/gh-validation-status-container}}
 </div>
 
 {{#if navItem.last}}
