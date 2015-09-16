@@ -11,6 +11,7 @@ import SettingValidator from 'ghost/validators/setting';
 import ResetValidator from 'ghost/validators/reset';
 import UserValidator from 'ghost/validators/user';
 import TagSettingsValidator from 'ghost/validators/tag-settings';
+import NavItemValidator from 'ghost/validators/nav-item';
 
 // our extensions to the validator library
 ValidatorExtensions.init();
@@ -35,7 +36,8 @@ export default Ember.Mixin.create({
         setting: SettingValidator,
         reset: ResetValidator,
         user: UserValidator,
-        tag: TagSettingsValidator
+        tag: TagSettingsValidator,
+        navItem: NavItemValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect

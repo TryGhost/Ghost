@@ -9,6 +9,8 @@ export default Ember.Component.extend({
             navElements = '.gh-blognav-item:not(.gh-blognav-item:last-child)',
             self = this;
 
+        this._super(...arguments);
+
         navContainer.sortable({
             handle: '.gh-blognav-grab',
             items: navElements,
@@ -28,6 +30,6 @@ export default Ember.Component.extend({
     },
 
     willDestroyElement: function () {
-        this.$('.js-gh-blognav').sortable('destroy');
+        this.$('.ui-sortable').sortable('destroy');
     }
 });

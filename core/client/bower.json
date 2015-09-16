@@ -19,6 +19,7 @@
     "jquery-hammerjs": "1.0.1",
     "jquery-ui": "1.11.4",
     "jqueryui-touch-punch": "furf/jquery-ui-touch-punch",
+    "jquery.simulate.drag-sortable": "0.1.0",
     "keymaster": "1.6.3",
     "loader.js": "3.2.1",
     "moment": "2.10.3",
