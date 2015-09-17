@@ -15,7 +15,7 @@ var banner = ["/**",
 	" */",
 	""].join("\n");
 
-gulp.task("downloads-codemirror", function() {
+gulp.task("downloads-codemirror", function(callback) {
 	var download_urls = [
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/lib/codemirror.js",
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/addon/edit/continuelist.js",
@@ -26,27 +26,42 @@ gulp.task("downloads-codemirror", function() {
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/mode/markdown/markdown.js",
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/mode/xml/xml.js"];
 	
-	return download(download_urls)
+	download(download_urls)
 		.pipe(gulp.dest("src/js/codemirror/"));
+	
+	// Wait to make sure they've been downloaded
+	setTimeout(function() {
+		callback();
+	}, 5000);
 });
 
-gulp.task("downloads-js", function() {
+gulp.task("downloads-js", function(callback) {
 	var download_urls = [
 		"https://raw.githubusercontent.com/chjj/marked/master/lib/marked.js",
 		"https://raw.githubusercontent.com/NextStepWebs/codemirror-spell-checker/master/src/js/spell-checker.js",
 		"https://raw.githubusercontent.com/NextStepWebs/codemirror-spell-checker/master/src/js/typo.js"];
 	
-	return download(download_urls)
+	download(download_urls)
 		.pipe(gulp.dest("src/js/"));
+	
+	// Wait to make sure they've been downloaded
+	setTimeout(function() {
+		callback();
+	}, 5000);
 });
 
-gulp.task("downloads-css", function() {
+gulp.task("downloads-css", function(callback) {
 	var download_urls = [
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/lib/codemirror.css",
 		"https://raw.githubusercontent.com/NextStepWebs/codemirror-spell-checker/master/src/css/spell-checker.css"];
 	
-	return download(download_urls)
+	download(download_urls)
 		.pipe(gulp.dest("src/css/"));
+	
+	// Wait to make sure they've been downloaded
+	setTimeout(function() {
+		callback();
+	}, 5000);
 });
 
 gulp.task("scripts", ["downloads-codemirror", "downloads-js", "downloads-css"], function() {
