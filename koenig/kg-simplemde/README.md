@@ -65,49 +65,47 @@ simplemde.value("This text will appear in the editor");
 
 ## Configuration
 
-- **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
-- **status**: If set to `false`, hide the status bar. Defaults to `true`.
-  - Optionally, you can set an array of status bar elements to include, and in what order.
-- **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
-- **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
-- **toolbarGuideIcon**: If set to `false`, disable guide icon in the toolbar. Defaults to `true`.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
-- **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
-- **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
-- **tabSize**: If set, customize the tab size. Defaults to `2`.
-- **initialValue**: If set, will customize the initial value of the editor.
-- **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
-- **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
 - **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
-  - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
-- **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
+  - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
+- **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
+- **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
+- **initialValue**: If set, will customize the initial value of the editor.
+- **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**:  If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
   - **fencedCodeBlocks**:  If set to `false`, will not process GFM fenced code blocks syntax. Defaults to `true`.
   - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
+- **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
+- **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
+- **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
+- **status**: If set to `false`, hide the status bar. Defaults to `true`.
+  - Optionally, you can set an array of status bar elements to include, and in what order.
+- **tabSize**: If set, customize the tab size. Defaults to `2`.
+- **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
+- **toolbarGuideIcon**: If set to `false`, disable guide icon in the toolbar. Defaults to `true`.
+- **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
 
 ```JavaScript
 var simplemde = new SimpleMDE({
-	element: document.getElementById("MyID"),
-	status: false,
-	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
-	toolbar: false,
-	toolbarTips: false,
-	toolbarGuideIcon: false,
 	autofocus: true,
-	lineWrapping: false,
-	indentWithTabs: false,
-	tabSize: 4,
-	initialValue: "Hello world!",
-	spellChecker: false,
-	singleLineBreaks: false,
 	autosave: {
 		enabled: true,
 		unique_id: "MyUniqueID",
 		delay: 1000,
+	},
+	element: document.getElementById("MyID"),
+	indentWithTabs: false,
+	initialValue: "Hello world!",
+	lineWrapping: false,
+	parsingConfig: {
+		allowAtxHeaderWithoutSpace: true,
+		fencedCodeBlocks: false,
+		strikethrough: false,
+		underscoresBreakWords: true,
 	},
 	previewRender: function(plainText) {
 		return customMarkdownParser(plainText); // Returns HTML from a custom parser
@@ -119,6 +117,14 @@ var simplemde = new SimpleMDE({
 		
 		return "Loading...";
 	}
+	singleLineBreaks: false,
+	spellChecker: false,
+	status: false,
+	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
+	tabSize: 4,
+	toolbar: false,
+	toolbarGuideIcon: false,
+	toolbarTips: false,
 });
 ```
 
