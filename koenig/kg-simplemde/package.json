@@ -1,29 +1,36 @@
 {
-	"name": "simplemde",
-	"version": "1.7.0",
-	"description": "A simple, beautiful, and embeddable JavaScript markdown editor. Features autosaving and spell checking.",
-	"keywords": ["embeddable", "markdown", "editor", "javascript", "wysiwyg"],
-	"homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
-	"main": "gulpfile.js",
-	"license": "MIT",
-	"company": "Next Step Webs, Inc.",
-	"author": {
-		"name": "Wes Cossick",
-		"url": "http://www.WesCossick.com"
-	},
-	"bugs": {
-		"url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
-	},
-	"devDependencies": {
-		"gulp": "*",
-		"gulp-minify-css": "*",
-		"gulp-uglify": "*",
-		"gulp-concat": "*",
-		"gulp-header": "*",
-		"gulp-jsbeautifier": "*"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
-	}
+  "name": "simplemde",
+  "version": "1.7.1",
+  "description": "A simple, beautiful, and embeddable JavaScript markdown editor. Features autosaving and spell checking.",
+  "keywords": [
+	"embeddable",
+	"markdown",
+	"editor",
+	"javascript",
+	"wysiwyg"
+  ],
+  "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
+  "main": "gulpfile.js",
+  "license": "MIT",
+  "company": "Next Step Webs, Inc.",
+  "author": {
+	"name": "Wes Cossick",
+	"url": "http://www.WesCossick.com"
+  },
+  "bugs": {
+	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
+  },
+  "devDependencies": {
+	"gulp": "*",
+	"gulp-minify-css": "*",
+	"gulp-uglify": "*",
+	"gulp-concat": "*",
+	"gulp-header": "*",
+	"gulp-jsbeautifier": "*",
+	"gulp-download": "*"
+  },
+  "repository": {
+	"type": "git",
+	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
+  }
 }

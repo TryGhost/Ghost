@@ -88,6 +88,8 @@ function getState(cm, pos) {
 			ret.quote = true;
 		} else if(data === 'strikethrough') {
 			ret.strikethrough = true;
+		} else if(data === 'comment') {
+			ret.code = true;
 		}
 	}
 	return ret;
@@ -331,12 +333,11 @@ function toggleSideBySide(editor) {
 	}
 
 	// Start preview with the current text
-	var parse = editor.constructor.markdown;
-	preview.innerHTML = parse(cm.getValue());
+	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 
 	// Updates preview
 	cm.on('update', function() {
-		preview.innerHTML = parse(cm.getValue());
+		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 	});
 }
 
@@ -349,9 +350,8 @@ function togglePreview(editor) {
 	var wrapper = cm.getWrapperElement();
 	var toolbar_div = wrapper.previousSibling;
 	var toolbar = editor.toolbarElements.preview;
-	var parse = editor.constructor.markdown;
 	var preview = wrapper.lastChild;
-	if(!/editor-preview/.test(preview.className)) {
+	if(!preview || !/editor-preview/.test(preview.className)) {
 		preview = document.createElement('div');
 		preview.className = 'editor-preview';
 		wrapper.appendChild(preview);
@@ -373,8 +373,7 @@ function togglePreview(editor) {
 		toolbar.className += ' active';
 		toolbar_div.className += ' disabled-for-preview';
 	}
-	var text = cm.getValue();
-	preview.innerHTML = parse(text);
+	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 
 	// Turn off side by side if needed
 	var sidebyside = cm.getWrapperElement().nextSibling;
@@ -402,7 +401,9 @@ function _replaceSelection(cm, active, start, end) {
 		cm.replaceSelection(start + text + end);
 
 		startPoint.ch += start.length;
-		endPoint.ch += start.length;
+		if(startPoint !== endPoint) {
+			endPoint.ch += start.length;
+		}
 	}
 	cm.setSelection(startPoint, endPoint);
 	cm.focus();
@@ -555,10 +556,14 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 
 		if(type == "bold" || type == "strikethrough") {
 			startPoint.ch -= 2;
-			endPoint.ch -= 2;
+			if(startPoint !== endPoint) {
+				endPoint.ch -= 2;
+			}
 		} else if(type == "italic") {
 			startPoint.ch -= 1;
-			endPoint.ch -= 1;
+			if(startPoint !== endPoint) {
+				endPoint.ch -= 1;
+			}
 		}
 	} else {
 		text = cm.getSelection();
@@ -730,6 +735,10 @@ var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ord
 function SimpleMDE(options) {
 	options = options || {};
 
+	// Used later to refer to it's parent
+	options.parent = this;
+
+	// Find the textarea to use
 	if(options.element) {
 		this.element = options.element;
 	} else if(options.element === null) {
@@ -738,6 +747,7 @@ function SimpleMDE(options) {
 		return;
 	}
 
+	// Handle toolbar and status bar
 	if(options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 
@@ -745,9 +755,21 @@ function SimpleMDE(options) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
 
+	// Add default preview rendering function
+	if(!options.previewRender) {
+		options.previewRender = function(plainText) {
+			// Note: 'this' refers to the options object
+			return this.parent.markdown(plainText);
+		}
+	}
+
+	// Set default options for parsing config
+	options.parsingConfig = options.parsingConfig || {};
+
+	// Update this options
 	this.options = options;
 
-	// If user has passed an element, it should auto rendered
+	// Auto render
 	this.render();
 
 	// The codemirror component is only available after rendering
@@ -766,10 +788,10 @@ SimpleMDE.toolbar = toolbar;
 /**
  * Default markdown render.
  */
-SimpleMDE.markdown = function(text) {
+SimpleMDE.prototype.markdown = function(text) {
 	if(window.marked) {
 		// Update options
-		if(this.options.singleLineBreaks !== false) {
+		if(this.options && this.options.singleLineBreaks !== false) {
 			marked.setOptions({
 				breaks: true
 			});
@@ -807,8 +829,8 @@ SimpleMDE.prototype.render = function(el) {
 	}
 
 	keyMaps["Enter"] = "newlineAndIndentContinueMarkdownList";
-	keyMaps["Tab"] = "tabAndIndentContinueMarkdownList";
-	keyMaps["Shift-Tab"] = "shiftTabAndIndentContinueMarkdownList";
+	keyMaps["Tab"] = "tabAndIndentMarkdownList";
+	keyMaps["Shift-Tab"] = "shiftTabAndUnindentMarkdownList";
 	keyMaps["F11"] = function(cm) {
 		toggleFullScreen(self);
 	};
@@ -816,21 +838,25 @@ SimpleMDE.prototype.render = function(el) {
 		toggleSideBySide(self);
 	};
 	keyMaps["Esc"] = function(cm) {
-		if(cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+		if(cm.getOption("fullScreen")) toggleFullScreen(self);
 	};
 
-	var mode = "spell-checker";
-	var backdrop = "gfm";
-
-	if(options.spellChecker === false) {
-		mode = "gfm";
-		backdrop = undefined;
+	var mode, backdrop;
+	if(options.spellChecker !== false) {
+		mode = "spell-checker";
+		backdrop = options.parsingConfig;
+		backdrop.name = "gfm";
+		backdrop.gitHubSpice = false;
+	} else {
+		mode = options.parsingConfig;
+		mode.name = "gfm";
+		mode.gitHubSpice = false;
 	}
 
 	this.codemirror = CodeMirror.fromTextArea(el, {
 		mode: mode,
 		backdrop: backdrop,
-		theme: 'paper',
+		theme: "paper",
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
@@ -850,7 +876,7 @@ SimpleMDE.prototype.render = function(el) {
 		this.autosave();
 	}
 
-	this.createSidebyside();
+	this.createSideBySide();
 
 	this._rendered = this.element;
 };
@@ -905,12 +931,12 @@ SimpleMDE.prototype.autosave = function() {
 	}, this.options.autosave.delay || 10000);
 };
 
-SimpleMDE.prototype.createSidebyside = function() {
+SimpleMDE.prototype.createSideBySide = function() {
 	var cm = this.codemirror;
 	var wrapper = cm.getWrapperElement();
 	var preview = wrapper.nextSibling;
 
-	if(!/editor-preview-side/.test(preview.className)) {
+	if(!preview || !/editor-preview-side/.test(preview.className)) {
 		preview = document.createElement('div');
 		preview.className = 'editor-preview-side';
 		wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);

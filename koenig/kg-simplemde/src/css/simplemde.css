@@ -66,11 +66,13 @@
 
 .editor-toolbar.fullscreen {
 	width: 100%;
-	height: 40px;
+	height: 50px;
 	overflow-x: auto;
 	overflow-y: hidden;
 	white-space: nowrap;
 	padding-top: 10px;
+	padding-bottom: 10px;
+	box-sizing: border-box;
 	background: #fff;
 	border: 0;
 	position: fixed;
@@ -178,6 +180,8 @@
 .editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt):not(.fa-columns) {
 	pointer-events: none;
 	background: #fff;
+	border-color: transparent;
+	text-shadow: inherit;
 }
 
 @media only screen and (max-width: 700px) {

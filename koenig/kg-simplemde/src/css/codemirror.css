@@ -323,7 +323,7 @@ div.CodeMirror-dragcursors {
 @media print {
   /* Hide the cursor when printing */
   .CodeMirror div.CodeMirror-cursors {
-	visibility: hidden;
+    visibility: hidden;
   }
 }
 
