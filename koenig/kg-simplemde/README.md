@@ -83,6 +83,11 @@ simplemde.value("This text will appear in the editor");
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
+- **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
+  - **allowAtxHeaderWithoutSpace**:  If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
+  - **fencedCodeBlocks**:  If set to `false`, will not process GFM fenced code blocks syntax. Defaults to `true`.
+  - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
+  - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
 
 ```JavaScript
 var simplemde = new SimpleMDE({
