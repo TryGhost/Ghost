@@ -838,7 +838,7 @@ SimpleMDE.prototype.render = function(el) {
 		toggleSideBySide(self);
 	};
 	keyMaps["Esc"] = function(cm) {
-		if(cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+		if(cm.getOption("fullScreen")) toggleFullScreen(self);
 	};
 
 	var mode, backdrop;
