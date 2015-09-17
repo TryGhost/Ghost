@@ -791,7 +791,7 @@ SimpleMDE.toolbar = toolbar;
 SimpleMDE.prototype.markdown = function(text) {
 	if(window.marked) {
 		// Update options
-		if(this.options.singleLineBreaks !== false) {
+		if(this.options && this.options.singleLineBreaks !== false) {
 			marked.setOptions({
 				breaks: true
 			});
