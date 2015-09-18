@@ -76,7 +76,6 @@ simplemde.value("This text will appear in the editor");
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**:  If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
-  - **fencedCodeBlocks**:  If set to `false`, will not process GFM fenced code blocks syntax. Defaults to `true`.
   - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
@@ -103,7 +102,6 @@ var simplemde = new SimpleMDE({
 	lineWrapping: false,
 	parsingConfig: {
 		allowAtxHeaderWithoutSpace: true,
-		fencedCodeBlocks: false,
 		strikethrough: false,
 		underscoresBreakWords: true,
 	},
