@@ -24,6 +24,11 @@
     background: #fff;
 }
 
+/* IE11 fix for editor pane sizing */
+.gh-main > .gh-view {
+    width: 100%;
+}
+
 
 /* Global Nav
 /* ---------------------------------------------------------- */
