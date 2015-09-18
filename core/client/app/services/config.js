@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
 function isNumeric(num) {
-    return !isNaN(num);
+    return Ember.$.isNumeric(num);
 }
 
 function _mapType(val) {
