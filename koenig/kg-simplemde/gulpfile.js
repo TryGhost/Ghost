@@ -22,7 +22,7 @@ gulp.task("downloads-codemirror", function(callback) {
 		//"https://raw.githubusercontent.com/codemirror/CodeMirror/master/addon/edit/tablist.js", //waiting for PRs
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/addon/display/fullscreen.js",
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/addon/mode/overlay.js",
-		//"https://raw.githubusercontent.com/codemirror/CodeMirror/master/mode/gfm/gfm.js", //waiting for PRs
+		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/mode/gfm/gfm.js",
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/mode/markdown/markdown.js",
 		"https://raw.githubusercontent.com/codemirror/CodeMirror/master/mode/xml/xml.js"];
 	
