@@ -21,12 +21,6 @@ SimpleMDE is also available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). 
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 ```
 
-SimpleMDE depends on Font Awesome (load via MaxCDN for best performance).
-
-```HTML
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
-```
-
 And then load SimpleMDE on the first textarea on a page
 
 ```HTML
@@ -65,6 +59,7 @@ simplemde.value("This text will appear in the editor");
 
 ## Configuration
 
+- **autoDownloadFontAwesome**: If set to `true`, force downloads Font Awesome (used for icons). If set to false, prevents downloading. Defaults to `undefined`, which will intelligently check whether Font Awesome has already been included, then download accordingly.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
 - **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.

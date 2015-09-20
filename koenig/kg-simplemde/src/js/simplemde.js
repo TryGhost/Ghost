@@ -733,10 +733,44 @@ var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ord
  * Interface of SimpleMDE.
  */
 function SimpleMDE(options) {
+	// Handle options parameter
 	options = options || {};
+
 
 	// Used later to refer to it's parent
 	options.parent = this;
+	
+	
+	// Check if Font Awesome needs to be auto downloaded
+	var autoDownloadFA = true;
+
+	if(options.autoDownloadFontAwesome === false){
+		autoDownloadFA = false;
+	}
+	
+	if(options.autoDownloadFontAwesome !== true){
+		var styleSheets = document.styleSheets;
+		for(var i = 0; i < styleSheets.length; i++) {
+			if(!styleSheets[i].href)
+				continue;
+			
+			if(styleSheets[i].href.indexOf("//maxcdn.bootstrapcdn.com/font-awesome/") > -1){
+				autoDownloadFA = false;
+			}
+		}
+	}
+	
+	if(autoDownloadFA){
+		console.log("autodownloading");
+		
+		var link = document.createElement("link");
+		link.rel = "stylesheet";
+		link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
+		document.getElementsByTagName("head")[0].appendChild(link);
+	}else{
+		console.log("not autodownloading");
+	}
+
 
 	// Find the textarea to use
 	if(options.element) {
@@ -747,6 +781,7 @@ function SimpleMDE(options) {
 		return;
 	}
 
+
 	// Handle toolbar and status bar
 	if(options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
@@ -754,6 +789,7 @@ function SimpleMDE(options) {
 	if(!options.hasOwnProperty('status')) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
+
 
 	// Add default preview rendering function
 	if(!options.previewRender) {
@@ -763,14 +799,18 @@ function SimpleMDE(options) {
 		}
 	}
 
+
 	// Set default options for parsing config
 	options.parsingConfig = options.parsingConfig || {};
+
 
 	// Update this options
 	this.options = options;
 
+
 	// Auto render
 	this.render();
+
 
 	// The codemirror component is only available after rendering
 	// so, the setter for the initialValue can only run after
