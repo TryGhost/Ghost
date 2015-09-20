@@ -761,14 +761,10 @@ function SimpleMDE(options) {
 	}
 	
 	if(autoDownloadFA){
-		console.log("autodownloading");
-		
 		var link = document.createElement("link");
 		link.rel = "stylesheet";
 		link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
 		document.getElementsByTagName("head")[0].appendChild(link);
-	}else{
-		console.log("not autodownloading");
 	}
 
 
