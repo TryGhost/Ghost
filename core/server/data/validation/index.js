@@ -27,6 +27,10 @@ validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
     return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
 });
 
+validator.extend('isSlug', function isSlug(str) {
+    return validator.matches(str, /^[a-z0-9\-_]+$/);
+});
+
 // Validation against schema attributes
 // values are checked against the validation objects from schema.js
 validateSchema = function validateSchema(tableName, model) {
