@@ -206,6 +206,12 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
 
     return casper.thenOpen(url + screens[screen].url).then(function () {
+        // HACK: phantomjs + flexbox = nope. Fix offending styles here.
+        casper.evaluate(function () {
+            var style = document.createElement('style');
+            style.innerHTML = '.gh-main > section { width: auto; }';
+            document.body.appendChild(style);
+        });
         return casper.waitForScreenLoad(screen, then, timeout);
     });
 };
