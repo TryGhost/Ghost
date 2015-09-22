@@ -219,6 +219,28 @@ describe('Post API', function () {
                 done();
             }).catch(done);
         });
+
+        it('cannot fetch all posts for a tag with invalid slug', function (done) {
+            PostAPI.browse({tag: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid tag'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Validation (isSlug) failed for tag');
+                err.code.should.eql(422);
+                done();
+            });
+        });
+
+        it('cannot fetch all posts for an author with invalid slug', function (done) {
+            PostAPI.browse({author: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid author'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Validation (isSlug) failed for author');
+                err.code.should.eql(422);
+                done();
+            });
+        });
     });
 
     describe('Read', function () {
@@ -371,6 +393,18 @@ describe('Post API', function () {
                 results.posts[0].previous.author.name.should.eql('Joe Bloggs');
                 done();
             }).catch(done);
+        });
+
+        // TODO: this should be a 422?
+        it('cannot fetch a post with an invalid slug', function (done) {
+            PostAPI.read({slug: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid slug'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Post not found.');
+
+                done();
+            });
         });
     });
 });

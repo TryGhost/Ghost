@@ -194,6 +194,18 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        // TODO: this should be a 422?
+        it('cannot fetch a user with an invalid slug', function (done) {
+            UserAPI.read({slug: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid slug'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('User not found.');
+
+                done();
+            });
+        });
     });
 
     describe('Edit', function () {
