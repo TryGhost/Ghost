@@ -63,6 +63,14 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should 404 for unknown post with invalid characters', function (done) {
+                request.get('/$pec+acular~/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
             it('should 404 for unknown frontend route', function (done) {
                 request.get('/spectacular/marvellous/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
@@ -97,6 +105,14 @@ describe('Frontend Routing', function () {
 
             it('should 404 for encoded char not 301 from uncapitalise', function (done) {
                 request.get('/|/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for unknown author with invalid characters', function (done) {
+                request.get('/author/ghost!user^/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
                     .expect(/Page not found/)
