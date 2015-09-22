@@ -31,6 +31,20 @@ describe('{{plural}} helper', function () {
         rendered.string.should.equal(expected);
     });
 
+    it('will show no-value string with placement', function () {
+        var expected = '0 Posts',
+            rendered = helpers.plural.call({}, 0, {
+                hash: {
+                    empty: '% Posts',
+                    singular: '% Post',
+                    plural: '% Posts'
+                }
+            });
+
+        should.exist(rendered);
+        rendered.string.should.equal(expected);
+    });
+
     it('will show singular string', function () {
         var expected = '1 Post',
             rendered = helpers.plural.call({}, 1, {
