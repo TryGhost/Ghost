@@ -151,4 +151,10 @@ describe('{{url}} helper', function () {
         should.exist(rendered);
         rendered.should.equal('http://casper.website/baz');
     });
+
+    it('should pass through protocol-relative URLs');
+
+    it('should pass through URLs with alternative schemes');
+
+    it('should pass through anchor-only URLs');
 });
