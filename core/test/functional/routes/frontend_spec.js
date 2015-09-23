@@ -575,6 +575,32 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
         });
+
+        describe('Author edit', function () {
+            it('should redirect without slash', function (done) {
+                request.get('/author/ghost-owner/edit')
+                    .expect('Location', '/author/ghost-owner/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should redirect to editor', function (done) {
+                request.get('/author/ghost-owner/edit/')
+                    .expect('Location', '/ghost/team/ghost-owner/')
+                    .expect('Cache-Control', testUtils.cacheRules['public'])
+                    .expect(302)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for something that isn\'t edit', function (done) {
+                request.get('/author/ghost-owner/notedit/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
     });
 
     describe('Tag pages', function () {
