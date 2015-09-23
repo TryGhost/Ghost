@@ -14,6 +14,7 @@ var _           = require('lodash'),
     Promise     = require('bluebird'),
     template    = require('../helpers/template'),
     routeMatch  = require('path-match')(),
+    safeString  = require('../utils/index').safeString,
 
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
@@ -160,8 +161,8 @@ function renderChannel(channelOpts) {
             filter, filterKey;
 
         // Add the slug if it exists in the route
-        if (channelOpts.route.indexOf(':slug') !== -1) {
-            options[channelOpts.name] = req.params.slug;
+        if (channelOpts.route.indexOf(':slug') !== -1 && req.params.slug) {
+            options[channelOpts.name] = safeString(req.params.slug);
             hasSlug = true;
         }
 
