@@ -20,7 +20,7 @@ plural = function (context, options) {
     }
 
     if (context === 0) {
-        return new hbs.handlebars.SafeString(options.hash.empty);
+        return new hbs.handlebars.SafeString(options.hash.empty.replace('%', context));
     } else if (context === 1) {
         return new hbs.handlebars.SafeString(options.hash.singular.replace('%', context));
     } else if (context >= 2) {
