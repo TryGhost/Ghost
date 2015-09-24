@@ -383,6 +383,19 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        it('Does not allow password to be set', function (done) {
+            UserAPI.edit(
+                {users: [{name: 'newname', password: 'newpassword'}]}, _.extend({}, context.author, {id: userIdFor.author})
+            ).then(function () {
+                return ModelUser.User.findOne({id: userIdFor.author}).then(function (response) {
+                    console.log(response);
+                    response.get('name').should.eql('newname');
+                    response.get('password').should.not.eql('newpassword');
+                    done();
+                });
+            }).catch(done);
+        });
     });
 
     describe('Add', function () {
