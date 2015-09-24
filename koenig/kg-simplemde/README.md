@@ -66,6 +66,7 @@ simplemde.value("This text will appear in the editor");
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
+- **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
@@ -80,7 +81,6 @@ simplemde.value("This text will appear in the editor");
   - Optionally, you can set an array of status bar elements to include, and in what order.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
-- **toolbarGuideIcon**: If set to `false`, disable guide icon in the toolbar. Defaults to `true`.
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
 
 ```JavaScript
@@ -92,6 +92,7 @@ var simplemde = new SimpleMDE({
 		delay: 1000,
 	},
 	element: document.getElementById("MyID"),
+	hideIcons: ["guide", "heading"],
 	indentWithTabs: false,
 	initialValue: "Hello world!",
 	lineWrapping: false,
@@ -116,7 +117,6 @@ var simplemde = new SimpleMDE({
 	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
 	tabSize: 4,
 	toolbar: false,
-	toolbarGuideIcon: false,
 	toolbarTips: false,
 });
 ```
