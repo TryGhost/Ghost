@@ -66,6 +66,9 @@ frontendRoutes = function frontendRoutes(middleware) {
 
     // Authors
     authorRouter.route('/').get(frontend.author);
+    authorRouter.route('/edit?').get(function redirect(req, res) {
+        res.redirect(subdir + '/ghost/team/' + req.params.slug + '/');
+    });
     authorRouter.route('/' + routeKeywords.page + '/:page/').get(frontend.author);
     authorRouter.use(rssRouter);
 
