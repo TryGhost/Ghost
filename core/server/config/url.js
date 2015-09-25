@@ -210,8 +210,8 @@ function urlFor(context, data, absolute) {
     }
 
     // This url already has a protocol so is likely an external url to be returned
-    // or it is an anchor-only path
-    if (urlPath && (urlPath.indexOf('://') !== -1 || urlPath.match(/^(\/\/|#|[a-zA-Z0-9-]*:)/))) {
+    // or it is an alternative scheme, protocol-less, or an anchor-only path
+    if (urlPath && (urlPath.indexOf('://') !== -1 || urlPath.match(/^(\/\/|#|[a-zA-Z0-9\-]+:)/))) {
         return urlPath;
     }
 
