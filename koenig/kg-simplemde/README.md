@@ -21,12 +21,6 @@ SimpleMDE is also available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). 
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 ```
 
-SimpleMDE depends on Font Awesome (load via MaxCDN for best performance).
-
-```HTML
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
-```
-
 And then load SimpleMDE on the first textarea on a page
 
 ```HTML
@@ -65,28 +59,30 @@ simplemde.value("This text will appear in the editor");
 
 ## Configuration
 
+- **autoDownloadFontAwesome**: If set to `true`, force downloads Font Awesome (used for icons). If set to false, prevents downloading. Defaults to `undefined`, which will intelligently check whether Font Awesome has already been included, then download accordingly.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
 - **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
   - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
+- **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**:  If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
-  - **fencedCodeBlocks**:  If set to `false`, will not process GFM fenced code blocks syntax. Defaults to `true`.
   - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
-- **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
+- **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
+  - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
+  - **codeSyntaxHighlighting**: If set to `true`, will highlight using [highlight.js](https://github.com/isagalaev/highlight.js). Defaults to `false`. To use this feature you must include highlight.js on your page. For example, include the script and the CSS files like:<br>`<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>`<br>`<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">`
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include, and in what order.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
-- **toolbarGuideIcon**: If set to `false`, disable guide icon in the toolbar. Defaults to `true`.
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
 
 ```JavaScript
@@ -98,12 +94,12 @@ var simplemde = new SimpleMDE({
 		delay: 1000,
 	},
 	element: document.getElementById("MyID"),
+	hideIcons: ["guide", "heading"],
 	indentWithTabs: false,
 	initialValue: "Hello world!",
 	lineWrapping: false,
 	parsingConfig: {
 		allowAtxHeaderWithoutSpace: true,
-		fencedCodeBlocks: false,
 		strikethrough: false,
 		underscoresBreakWords: true,
 	},
@@ -117,13 +113,15 @@ var simplemde = new SimpleMDE({
 		
 		return "Loading...";
 	}
-	singleLineBreaks: false,
+	renderingConfig: {
+		singleLineBreaks: false,
+		codeSyntaxHighlighting: true,
+	},
 	spellChecker: false,
 	status: false,
 	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
 	tabSize: 4,
 	toolbar: false,
-	toolbarGuideIcon: false,
 	toolbarTips: false,
 });
 ```
@@ -150,9 +148,9 @@ ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
 link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
 image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
 horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
-preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye
-side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns
-fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt
+preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye no-disable
+side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns no-disable no-mobile
+fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt no-disable no-mobile
 guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | Markdown Guide<br>fa fa-question-circle
 
 Customize the toolbar using the `toolbar` option like:

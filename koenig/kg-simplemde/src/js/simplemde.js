@@ -313,7 +313,8 @@ function toggleSideBySide(editor) {
 		 * instead of just appearing.
 		 */
 		setTimeout(function() {
-			if(!cm.getOption("fullScreen")) toggleFullScreen(editor);
+			if(!cm.getOption("fullScreen"))
+				toggleFullScreen(editor);
 			preview.className += ' editor-preview-active-side'
 		}, 1);
 		toolbarButton.className += ' active';
@@ -704,19 +705,19 @@ var toolbarBuiltInButtons = {
 	"preview": {
 		name: "preview",
 		action: togglePreview,
-		className: "fa fa-eye",
+		className: "fa fa-eye no-disable",
 		title: "Toggle Preview (Ctrl+P)",
 	},
 	"side-by-side": {
 		name: "side-by-side",
 		action: toggleSideBySide,
-		className: "fa fa-columns",
+		className: "fa fa-columns no-disable no-mobile",
 		title: "Toggle Side by Side (F9)",
 	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
-		className: "fa fa-arrows-alt",
+		className: "fa fa-arrows-alt no-disable no-mobile",
 		title: "Toggle Fullscreen (F11)",
 	},
 	"guide": {
@@ -733,10 +734,40 @@ var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ord
  * Interface of SimpleMDE.
  */
 function SimpleMDE(options) {
+	// Handle options parameter
 	options = options || {};
+
 
 	// Used later to refer to it's parent
 	options.parent = this;
+
+
+	// Check if Font Awesome needs to be auto downloaded
+	var autoDownloadFA = true;
+
+	if(options.autoDownloadFontAwesome === false) {
+		autoDownloadFA = false;
+	}
+
+	if(options.autoDownloadFontAwesome !== true) {
+		var styleSheets = document.styleSheets;
+		for(var i = 0; i < styleSheets.length; i++) {
+			if(!styleSheets[i].href)
+				continue;
+
+			if(styleSheets[i].href.indexOf("//maxcdn.bootstrapcdn.com/font-awesome/") > -1) {
+				autoDownloadFA = false;
+			}
+		}
+	}
+
+	if(autoDownloadFA) {
+		var link = document.createElement("link");
+		link.rel = "stylesheet";
+		link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
+		document.getElementsByTagName("head")[0].appendChild(link);
+	}
+
 
 	// Find the textarea to use
 	if(options.element) {
@@ -747,6 +778,7 @@ function SimpleMDE(options) {
 		return;
 	}
 
+
 	// Handle toolbar and status bar
 	if(options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
@@ -754,6 +786,7 @@ function SimpleMDE(options) {
 	if(!options.hasOwnProperty('status')) {
 		options.status = ['autosave', 'lines', 'words', 'cursor'];
 	}
+
 
 	// Add default preview rendering function
 	if(!options.previewRender) {
@@ -763,14 +796,18 @@ function SimpleMDE(options) {
 		}
 	}
 
+
 	// Set default options for parsing config
 	options.parsingConfig = options.parsingConfig || {};
+
 
 	// Update this options
 	this.options = options;
 
+
 	// Auto render
 	this.render();
+
 
 	// The codemirror component is only available after rendering
 	// so, the setter for the initialValue can only run after
@@ -790,13 +827,27 @@ SimpleMDE.toolbar = toolbar;
  */
 SimpleMDE.prototype.markdown = function(text) {
 	if(window.marked) {
+		// Initialize
+		var markedOptions = {};
+		
+		
 		// Update options
-		if(this.options && this.options.singleLineBreaks !== false) {
-			marked.setOptions({
-				breaks: true
-			});
+		if(this.options && this.options.renderingConfig && this.options.renderingConfig.singleLineBreaks !== false) {
+			markedOptions.breaks = true;
 		}
-
+		
+		if(this.options && this.options.renderingConfig && this.options.renderingConfig.codeSyntaxHighlighting === true && window.hljs) {
+			markedOptions.highlight = function(code) {
+				return hljs.highlightAuto(code).value;
+			}
+		}
+		
+		
+		// Set options
+		marked.setOptions(markedOptions);
+		
+		
+		// Return
 		return marked(text);
 	}
 };
@@ -863,7 +914,8 @@ SimpleMDE.prototype.render = function(el) {
 		lineNumbers: false,
 		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
-		lineWrapping: (options.lineWrapping === false) ? false : true
+		lineWrapping: (options.lineWrapping === false) ? false : true,
+		allowDroppedFileTypes: ["text/plain"]
 	});
 
 	if(options.toolbar !== false) {
@@ -996,6 +1048,9 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 	for(var i = 0; i < items.length; i++) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
+			continue;
+
+		if(self.options.hideIcons && self.options.hideIcons.indexOf(items[i].name) != -1)
 			continue;
 
 		(function(item) {
