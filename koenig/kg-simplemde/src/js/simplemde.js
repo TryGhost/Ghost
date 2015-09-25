@@ -1035,7 +1035,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
 			continue;
 
-		if(self.options.hideIcons.indexOf(items[i].name) != -1)
+		if(self.options.hideIcons && self.options.hideIcons.indexOf(items[i].name) != -1)
 			continue;
 
 		(function(item) {
