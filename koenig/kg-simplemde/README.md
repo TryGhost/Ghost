@@ -143,9 +143,9 @@ ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
 link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
 image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
 horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
-preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye
-side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns
-fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt
+preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye no-disable
+side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns no-disable no-mobile
+fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt no-disable no-mobile
 guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | Markdown Guide<br>fa fa-question-circle
 
 Customize the toolbar using the `toolbar` option like:

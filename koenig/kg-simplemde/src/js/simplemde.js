@@ -705,19 +705,19 @@ var toolbarBuiltInButtons = {
 	"preview": {
 		name: "preview",
 		action: togglePreview,
-		className: "fa fa-eye",
+		className: "fa fa-eye no-disable",
 		title: "Toggle Preview (Ctrl+P)",
 	},
 	"side-by-side": {
 		name: "side-by-side",
 		action: toggleSideBySide,
-		className: "fa fa-columns",
+		className: "fa fa-columns no-disable no-mobile",
 		title: "Toggle Side by Side (F9)",
 	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
-		className: "fa fa-arrows-alt",
+		className: "fa fa-arrows-alt no-disable no-mobile",
 		title: "Toggle Fullscreen (F11)",
 	},
 	"guide": {
