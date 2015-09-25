@@ -739,28 +739,28 @@ function SimpleMDE(options) {
 
 	// Used later to refer to it's parent
 	options.parent = this;
-	
-	
+
+
 	// Check if Font Awesome needs to be auto downloaded
 	var autoDownloadFA = true;
 
-	if(options.autoDownloadFontAwesome === false){
+	if(options.autoDownloadFontAwesome === false) {
 		autoDownloadFA = false;
 	}
-	
-	if(options.autoDownloadFontAwesome !== true){
+
+	if(options.autoDownloadFontAwesome !== true) {
 		var styleSheets = document.styleSheets;
 		for(var i = 0; i < styleSheets.length; i++) {
 			if(!styleSheets[i].href)
 				continue;
-			
-			if(styleSheets[i].href.indexOf("//maxcdn.bootstrapcdn.com/font-awesome/") > -1){
+
+			if(styleSheets[i].href.indexOf("//maxcdn.bootstrapcdn.com/font-awesome/") > -1) {
 				autoDownloadFA = false;
 			}
 		}
 	}
-	
-	if(autoDownloadFA){
+
+	if(autoDownloadFA) {
 		var link = document.createElement("link");
 		link.rel = "stylesheet";
 		link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
@@ -899,7 +899,8 @@ SimpleMDE.prototype.render = function(el) {
 		lineNumbers: false,
 		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
-		lineWrapping: (options.lineWrapping === false) ? false : true
+		lineWrapping: (options.lineWrapping === false) ? false : true,
+		allowDroppedFileTypes: ["text/plain"]
 	});
 
 	if(options.toolbar !== false) {
@@ -1033,7 +1034,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	for(var i = 0; i < items.length; i++) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
 			continue;
-		
+
 		if(self.options.hideIcons.indexOf(items[i].name) != -1)
 			continue;
 
