@@ -57,10 +57,10 @@ function forkGhost(newConfig, envName) {
             newConfig.server.port = port;
             newConfig.url = url.format(_.extend({}, url.parse(newConfig.url), {port: port, host: null}));
 
-            var newConfigFile = path.join(config.paths.appRoot, 'config.test' + port + '.js');
+            var newConfigFile = path.join(config.paths.appRoot, 'config.test.' + envName + '.js');
 
             return new Promise(function (resolve, reject) {
-                fs.writeFile(newConfigFile, 'module.exports = {' + envName + ': ' + JSON.stringify(newConfig) + '}', function (err) {
+                fs.writeFile(newConfigFile, 'module.exports = {"' + process.env.NODE_ENV + '": ' + JSON.stringify(newConfig) + '}', function (err) {
                     if (err) {
                         return reject(err);
                     }
@@ -81,7 +81,6 @@ function forkGhost(newConfig, envName) {
                         };
 
                     env.GHOST_CONFIG = newConfigFile;
-                    env.NODE_ENV = envName;
                     child = cp.fork(path.join(config.paths.appRoot, 'index.js'), {env: env});
                     // return the port to make it easier to do requests
                     child.port = port;
