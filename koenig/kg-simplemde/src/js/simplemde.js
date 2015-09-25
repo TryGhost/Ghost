@@ -313,7 +313,8 @@ function toggleSideBySide(editor) {
 		 * instead of just appearing.
 		 */
 		setTimeout(function() {
-			if(!cm.getOption("fullScreen")) toggleFullScreen(editor);
+			if(!cm.getOption("fullScreen"))
+				toggleFullScreen(editor);
 			preview.className += ' editor-preview-active-side'
 		}, 1);
 		toolbarButton.className += ' active';
