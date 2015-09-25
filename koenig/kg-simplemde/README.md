@@ -75,7 +75,9 @@ simplemde.value("This text will appear in the editor");
   - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
-- **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
+- **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
+  - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
+  - **codeSyntaxHighlighting**: If set to `true`, will highlight using [highlight.js](https://github.com/isagalaev/highlight.js). Defaults to `false`. To use this feature you must include highlight.js on your page. For example, include the script and the CSS files like: `<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>` and `<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">`
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include, and in what order.
@@ -111,7 +113,10 @@ var simplemde = new SimpleMDE({
 		
 		return "Loading...";
 	}
-	singleLineBreaks: false,
+	renderingConfig: {
+		singleLineBreaks: false,
+		codeSyntaxHighlighting: true,
+	},
 	spellChecker: false,
 	status: false,
 	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage

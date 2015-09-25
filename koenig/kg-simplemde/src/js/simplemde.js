@@ -827,13 +827,27 @@ SimpleMDE.toolbar = toolbar;
  */
 SimpleMDE.prototype.markdown = function(text) {
 	if(window.marked) {
+		// Initialize
+		var markedOptions = {};
+		
+		
 		// Update options
-		if(this.options && this.options.singleLineBreaks !== false) {
-			marked.setOptions({
-				breaks: true
-			});
+		if(this.options && this.options.renderingConfig && this.options.renderingConfig.singleLineBreaks !== false) {
+			markedOptions.breaks = true;
 		}
-
+		
+		if(this.options && this.options.renderingConfig && this.options.renderingConfig.codeSyntaxHighlighting === true && window.hljs) {
+			markedOptions.highlight = function(code) {
+				return hljs.highlightAuto(code).value;
+			}
+		}
+		
+		
+		// Set options
+		marked.setOptions(markedOptions);
+		
+		
+		// Return
 		return marked(text);
 	}
 };
