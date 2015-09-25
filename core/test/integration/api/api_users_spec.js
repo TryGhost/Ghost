@@ -389,7 +389,6 @@ describe('Users API', function () {
                 {users: [{name: 'newname', password: 'newpassword'}]}, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function () {
                 return ModelUser.User.findOne({id: userIdFor.author}).then(function (response) {
-                    console.log(response);
                     response.get('name').should.eql('newname');
                     response.get('password').should.not.eql('newpassword');
                     done();
