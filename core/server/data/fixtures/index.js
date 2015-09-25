@@ -92,6 +92,10 @@ populate = function populate() {
     });
 
     _.each(fixtures.clients, function (client) {
+        // no random secrets during testing
+        if (process.env.NODE_ENV.indexOf('testing') !== 0) {
+            client.secret = crypto.randomBytes(6).toString('hex');
+        }
         ops.push(Client.add(client, options));
     });
 
