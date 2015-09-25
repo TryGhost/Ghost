@@ -104,8 +104,53 @@ describe('checkSSL', function () {
         done();
     });
 
+    it('should redirect to subdirectory with force admin SSL (admin)', function (done) {
+        req.url = '/blog/ghost/';
+        res.isAdmin = true;
+        res.redirect = {};
+        req.secure = false;
+        config.set({
+            url: 'http://default.com:2368/blog/',
+            urlSSL: '',
+            forceAdminSSL: true
+        });
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty;
+            url.should.eql('https://default.com:2368/blog/ghost/');
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false;
+        done();
+    });
+
+    it('should redirect and keep query with force admin SSL (admin)', function (done) {
+        req.url = '/ghost/';
+        req.query = {
+            test: 'true'
+        };
+        res.isAdmin = true;
+        res.redirect = {};
+        req.secure = false;
+        config.set({
+            url: 'http://default.com:2368/',
+            urlSSL: '',
+            forceAdminSSL: true
+        });
+        sandbox.stub(res, 'redirect', function (statusCode, url) {
+            statusCode.should.eql(301);
+            url.should.not.be.empty;
+            url.should.eql('https://default.com:2368/ghost/?test=true');
+            return;
+        });
+        checkSSL(req, res, next);
+        next.called.should.be.false;
+        done();
+    });
+
     it('should redirect with with config.url being SSL (frontend)', function (done) {
-        req.url = '';
+        req.url = '/';
         req.secure = false;
         res.redirect = {};
         config.set({
