@@ -14,29 +14,19 @@ function isSSLrequired(isAdmin, configUrl, forceAdminSSL) {
 // Required args: forceAdminSSL, url and urlSSL should be passed from config. reqURL from req.url
 function sslForbiddenOrRedirect(opt) {
     var forceAdminSSL = opt.forceAdminSSL,
-        reqUrl        = opt.reqUrl, // expected to be relative-to-root
+        reqUrl        = url.parse(opt.reqUrl), // expected to be relative-to-root
         baseUrl       = url.parse(opt.configUrlSSL || opt.configUrl),
         response = {
         // Check if forceAdminSSL: { redirect: false } is set, which means
         // we should just deny non-SSL access rather than redirect
         isForbidden: (forceAdminSSL && forceAdminSSL.redirect !== undefined && !forceAdminSSL.redirect),
 
-        // Append the request path to the base configuration path, trimming out a double "//"
-        redirectPathname: function redirectPathname() {
-            var pathname  = baseUrl.path;
-            if (reqUrl[0] === '/' && pathname[pathname.length - 1] === '/') {
-                pathname += reqUrl.slice(1);
-            } else {
-                pathname += reqUrl;
-            }
-            return pathname;
-        },
         redirectUrl: function redirectUrl(query) {
             return url.format({
                 protocol: 'https:',
                 hostname: baseUrl.hostname,
                 port: baseUrl.port,
-                pathname: this.redirectPathname(),
+                pathname: reqUrl.pathname,
                 query: query
             });
         }
