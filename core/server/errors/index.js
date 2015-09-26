@@ -336,7 +336,7 @@ errors = {
             if (!err || !(err instanceof Error)) {
                 next();
             }
-            errors.renderErrorPage(err.status || 500, err, req, res, next);
+            errors.renderErrorPage(err.status || err.code || 500, err, req, res, next);
         } else {
             var statusCode = 500,
                 returnErrors = [];

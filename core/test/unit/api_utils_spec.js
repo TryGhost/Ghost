@@ -163,7 +163,7 @@ describe('API Utils', function () {
             ).then(function () {
                 done(new Error('Should have thrown a validation error'));
             }).catch(function (err) {
-                err.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+                err.should.have.property('errorType', 'ValidationError');
                 done();
             });
         });

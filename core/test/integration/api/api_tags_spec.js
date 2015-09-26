@@ -296,5 +296,17 @@ describe('Tags API', function () {
                 done();
             }).catch(done);
         });
+
+        // TODO: this should be a 422?
+        it('cannot fetch a tag with an invalid slug', function (done) {
+            TagAPI.read({slug: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid slug'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Tag not found.');
+
+                done();
+            });
+        });
     });
 });

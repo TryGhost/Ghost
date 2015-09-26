@@ -77,7 +77,7 @@ describe('Slug API', function () {
         .then(function () {
             done(new Error('Generate a slug for an unknown type is not rejected.'));
         }).catch(function (errors) {
-            errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+            errors.should.have.property('errorType', 'ValidationError');
             done();
         }).catch(done);
     });
