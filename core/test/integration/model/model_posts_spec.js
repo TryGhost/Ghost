@@ -346,7 +346,7 @@ describe('Post Model', function () {
         });
 
         describe('edit', function () {
-            it('change title', function (done) {
+            it('can change title', function (done) {
                 var postId = 1;
 
                 PostModel.findOne({id: postId}).then(function (results) {
@@ -368,7 +368,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('publish draft post', function (done) {
+            it('can publish draft post', function (done) {
                 var postId = 4;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
@@ -390,7 +390,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('can edit: unpublish published post', function (done) {
+            it('can unpublish published post', function (done) {
                 var postId = 1;
 
                 PostModel.findOne({id: postId}).then(function (results) {
@@ -412,7 +412,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('convert draft post to page and back', function (done) {
+            it('can convert draft post to page and back', function (done) {
                 var postId = 4;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
@@ -443,7 +443,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('convert published post to page and back', function (done) {
+            it('can convert published post to page and back', function (done) {
                 var postId = 1;
 
                 PostModel.findOne({id: postId}).then(function (results) {
@@ -480,7 +480,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it('change type and status at the same time', function (done) {
+            it('can change type and status at the same time', function (done) {
                 var postId = 4;
 
                 PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
@@ -509,6 +509,68 @@ describe('Post Model', function () {
                     eventSpy.getCall(3).calledWith('page.unpublished').should.be.true;
                     eventSpy.getCall(4).calledWith('page.deleted').should.be.true;
                     eventSpy.getCall(5).calledWith('post.added').should.be.true;
+                    done();
+                }).catch(done);
+            });
+
+            it.only('can save a draft without setting published_by or published_at', function (done) {
+                var newPost = testUtils.DataGenerator.forModel.posts[2],
+                    postId;
+
+                PostModel.add(newPost, context).then(function (results) {
+                    var post;
+                    should.exist(results);
+                    post = results.toJSON();
+                    postId = post.id;
+
+                    post.status.should.equal('draft');
+                    should.not.exist(post.published_by);
+                    should.not.exist(post.published_at);
+
+                    // Test changing an unrelated property
+                    return PostModel.edit({title: 'Hello World'}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('draft');
+                    should.not.exist(edited.attributes.published_by);
+                    should.not.exist(edited.attributes.published_at);
+
+                    // Test changing status and published_by on its own
+                    return PostModel.edit({published_by: 4}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('draft');
+                    should.not.exist(edited.attributes.published_by);
+                    should.not.exist(edited.attributes.published_at);
+
+                    done();
+                }).catch(done);
+            });
+
+            it('cannot override the published_by setting', function (done) {
+                var postId = 4;
+
+                PostModel.findOne({id: postId, status: 'draft'}).then(function (results) {
+                    var post;
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.id.should.equal(postId);
+                    post.status.should.equal('draft');
+
+                    // Test changing status and published_by at the same time
+                    return PostModel.edit({status: 'published', published_by: 4}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('published');
+                    edited.attributes.published_by.should.equal(context.context.user);
+
+                    // Test changing status and published_by on its own
+                    return PostModel.edit({published_by: 4}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('published');
+                    edited.attributes.published_by.should.equal(context.context.user);
+
                     done();
                 }).catch(done);
             });
