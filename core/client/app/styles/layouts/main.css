@@ -398,7 +398,7 @@
         transform: translate3d(-220px,0,0);
     }
 
-    /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
+    /* THE FUTURE: Super nifty background blur for Webkit - http://cl.ly/b1rG */
     @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
         .gh-autonav .gh-nav {
             background: rgba(246,246,246, 0.7);
