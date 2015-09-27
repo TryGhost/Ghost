@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
-function joinUrlParts(url, path) {
+var joinUrlParts,
+    isRelative;
+
+joinUrlParts = function (url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {
         path = '/' + path;
     } else if (path[0] === '/' && url.slice(-1) === '/') {
@@ -8,9 +11,16 @@ function joinUrlParts(url, path) {
     }
 
     return url + path;
-}
+};
+
+isRelative = function (url) {
+    // "protocol://", "//example.com", "scheme:", "#anchor", & invalid paths
+    // should all be treated as absolute
+    return !url.match(/\s/) && !validator.isURL(url) && !url.match(/^(\/\/|#|[a-zA-Z0-9\-]+:)/);
+};
 
 export default Ember.TextField.extend({
+    classNames: 'gh-input',
     classNameBindings: ['fakePlaceholder'],
 
     didReceiveAttrs: function () {
@@ -18,8 +28,7 @@ export default Ember.TextField.extend({
             baseUrl = this.get('baseUrl');
 
         // if we have a relative url, create the absolute url to be displayed in the input
-        // if (this.get('isRelative')) {
-        if (!validator.isURL(url) && url.indexOf('mailto:') !== 0) {
+        if (isRelative(url)) {
             url = joinUrlParts(baseUrl, url);
         }
 
@@ -32,10 +41,6 @@ export default Ember.TextField.extend({
 
     fakePlaceholder: Ember.computed('isBaseUrl', 'hasFocus', function () {
         return this.get('isBaseUrl') && this.get('last') && !this.get('hasFocus');
-    }),
-
-    isRelative: Ember.computed('value', function () {
-        return !validator.isURL(this.get('value')) && this.get('value').indexOf('mailto:') !== 0;
     }),
 
     focusIn: function (event) {
@@ -57,6 +62,11 @@ export default Ember.TextField.extend({
             this.set('value', '');
 
             event.preventDefault();
+        }
+
+        // CMD-S
+        if (event.keyCode === 83 && event.metaKey) {
+            this.notifyUrlChanged();
         }
     },
 
@@ -80,11 +90,35 @@ export default Ember.TextField.extend({
         this.set('value', this.get('value').trim());
 
         var url = this.get('value'),
-            baseUrl = this.get('baseUrl');
+            urlParts = document.createElement('a'),
+            baseUrl = this.get('baseUrl'),
+            baseUrlParts = document.createElement('a');
+
+        // leverage the browser's native URI parsing
+        urlParts.href = url;
+        baseUrlParts.href = baseUrl;
+
+        // if we have an email address, add the mailto:
+        if (validator.isEmail(url)) {
+            url = `mailto:${url}`;
+            this.set('value', url);
+        }
 
         // if we have a relative url, create the absolute url to be displayed in the input
-        if (this.get('isRelative')) {
-            this.set('value', joinUrlParts(baseUrl, url));
+        if (isRelative(url)) {
+            url = joinUrlParts(baseUrl, url);
+            this.set('value', url);
+        }
+
+        // remove the base url before sending to action
+        if (urlParts.host === baseUrlParts.host && !url.match(/^#/)) {
+            url = url.replace(/^[a-zA-Z0-9\-]+:/, '');
+            url = url.replace(/^\/\//, '');
+            url = url.replace(baseUrlParts.host, '');
+            url = url.replace(baseUrlParts.pathname, '');
+            if (!url.match(/^\//)) {
+                url = '/' + url;
+            }
         }
 
         this.sendAction('change', url);

@@ -68,6 +68,10 @@ module.exports = function (defaults) {
     app.import('bower_components/password-generator/lib/password-generator.js');
     app.import('bower_components/blueimp-md5/js/md5.js');
 
+    if (app.env === 'test') {
+        app.import('bower_components/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js');
+    }
+
     // 'dem Styles
     app.import('bower_components/codemirror/lib/codemirror.css');
     app.import('bower_components/codemirror/theme/xq-light.css');
