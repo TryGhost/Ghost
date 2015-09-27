@@ -105,7 +105,7 @@
         </div>
 
         <div class="settings-menu-content">
-            <form>
+            <form {{action "discardEnter" on="submit"}}>
             {{#gh-form-group errors=model.errors property="meta_title"}}
                 <label for="meta-title">Meta Title</label>
                 {{gh-input class="post-setting-meta-title" id="meta-title" value=metaTitleScratch name="post-setting-meta-title" focus-out="setMetaTitle" stopEnterKeyDownPropagation="true"}}

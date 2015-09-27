@@ -201,6 +201,10 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
     },
 
     actions: {
+        discardEnter: function () {
+            return false;
+        },
+
         togglePage: function () {
             var self = this;
 
