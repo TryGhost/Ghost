@@ -194,6 +194,18 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        // TODO: this should be a 422?
+        it('cannot fetch a user with an invalid slug', function (done) {
+            UserAPI.read({slug: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid slug'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('User not found.');
+
+                done();
+            });
+        });
     });
 
     describe('Edit', function () {
@@ -381,6 +393,18 @@ describe('Users API', function () {
             ).then(function (response) {
                 checkEditResponse(response);
                 done();
+            }).catch(done);
+        });
+
+        it('Does not allow password to be set', function (done) {
+            UserAPI.edit(
+                {users: [{name: 'newname', password: 'newpassword'}]}, _.extend({}, context.author, {id: userIdFor.author})
+            ).then(function () {
+                return ModelUser.User.findOne({id: userIdFor.author}).then(function (response) {
+                    response.get('name').should.eql('newname');
+                    response.get('password').should.not.eql('newpassword');
+                    done();
+                });
             }).catch(done);
         });
     });

@@ -140,21 +140,29 @@ Post = ghostBookshelf.Model.extend({
         // this.set('title', this.sanitize('title').trim());
         this.set('title', this.get('title').trim());
 
-        if ((this.hasChanged('status') || !this.get('published_at')) && this.get('status') === 'published') {
-            if (!this.get('published_at')) {
-                this.set('published_at', new Date());
-            }
+        // ### Business logic for published_at and published_by
+        // If the current status is 'published' and published_at is not set, set it to now
+        if (this.get('status') === 'published' && !this.get('published_at')) {
+            this.set('published_at', new Date());
+        }
 
+        // If the current status is 'published' and the status has just changed ensure published_by is set correctly
+        if (this.get('status') === 'published' && this.hasChanged('status')) {
             // unless published_by is set and we're importing, set published_by to contextUser
             if (!(this.get('published_by') && options.importing)) {
                 this.set('published_by', this.contextUser(options));
+            }
+        } else {
+            // In any other case (except import), `published_by` should not be changed
+            if (this.hasChanged('published_by') && !options.importing) {
+                this.set('published_by', this.previous('published_by'));
             }
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
-                    {status: 'all', transacting: options.transacting})
+                    {status: 'all', transacting: options.transacting, importing: options.importing})
                 .then(function then(slug) {
                     self.set({slug: slug});
                 });

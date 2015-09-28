@@ -63,6 +63,14 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should 404 for unknown post with invalid characters', function (done) {
+                request.get('/$pec+acular~/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
             it('should 404 for unknown frontend route', function (done) {
                 request.get('/spectacular/marvellous/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
@@ -79,8 +87,32 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
 
+            it('should 404 for unknown tag with invalid characters', function (done) {
+                request.get('/tag/~$pectacular~/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
             it('should 404 for unknown author', function (done) {
                 request.get('/author/spectacular/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for encoded char not 301 from uncapitalise', function (done) {
+                request.get('/|/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for unknown author with invalid characters', function (done) {
+                request.get('/author/ghost!user^/')
                     .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
                     .expect(/Page not found/)
@@ -138,6 +170,7 @@ describe('Frontend Routing', function () {
             it('should redirect uppercase', function (done) {
                 request.get('/Welcome-To-Ghost/')
                     .expect('Location', '/welcome-to-ghost/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEnd(done));
             });
@@ -313,6 +346,7 @@ describe('Frontend Routing', function () {
             request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
                 .expect(301)
                 .expect('Location', '/short-and-sweet/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
                 .end(doEnd(done));
         });
 
@@ -575,6 +609,32 @@ describe('Frontend Routing', function () {
                     .end(doEnd(done));
             });
         });
+
+        describe('Author edit', function () {
+            it('should redirect without slash', function (done) {
+                request.get('/author/ghost-owner/edit')
+                    .expect('Location', '/author/ghost-owner/edit/')
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
+                    .end(doEnd(done));
+            });
+
+            it('should redirect to editor', function (done) {
+                request.get('/author/ghost-owner/edit/')
+                    .expect('Location', '/ghost/team/ghost-owner/')
+                    .expect('Cache-Control', testUtils.cacheRules['public'])
+                    .expect(302)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for something that isn\'t edit', function (done) {
+                request.get('/author/ghost-owner/notedit/')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+        });
     });
 
     describe('Tag pages', function () {
@@ -729,6 +789,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/welcome-to-ghost')
                 .expect(301)
                 .expect('Location', '/blog/welcome-to-ghost/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -742,6 +803,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/tag/getting-started')
                 .expect(301)
                 .expect('Location', '/blog/tag/getting-started/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -803,6 +865,7 @@ describe('Frontend Routing', function () {
             request.get('/blog/welcome-to-ghost')
                 .expect(301)
                 .expect('Location', '/blog/welcome-to-ghost/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
@@ -816,12 +879,21 @@ describe('Frontend Routing', function () {
             request.get('/blog/tag/getting-started')
                 .expect(301)
                 .expect('Location', '/blog/tag/getting-started/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
                 .end(doEnd(done));
         });
 
         it('/blog/tag/getting-started/ should 200', function (done) {
             request.get('/blog/tag/getting-started/')
                 .expect(200)
+                .end(doEnd(done));
+        });
+
+        it('should uncapitalise correctly with 301 to subdir', function (done) {
+            request.get('/blog/AAA/')
+                .expect('Location', '/blog/aaa/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEnd(done));
         });
     });

@@ -16,6 +16,15 @@
     padding: 0 20px;
 }
 
+.gh-blognav-item--error {
+    margin-bottom: calc(1em + 10px);
+}
+
+.gh-blognav-item .response {
+    position: absolute;
+    margin-bottom: 0;
+}
+
 .gh-blognav-grab {
     padding: 0 16px 0 0;
     width: 16px;

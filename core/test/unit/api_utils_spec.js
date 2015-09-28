@@ -163,7 +163,7 @@ describe('API Utils', function () {
             ).then(function () {
                 done(new Error('Should have thrown a validation error'));
             }).catch(function (err) {
-                err.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+                err.should.have.property('errorType', 'ValidationError');
                 done();
             });
         });
@@ -217,9 +217,9 @@ describe('API Utils', function () {
             check('limit', valid, invalid);
         });
 
-        it('can validate `slug` or `status` or `author` etc as a-z, 0-9 and -', function () {
-            valid = ['hello-world', 'hello', '1-2-3', 1, '-1', -1];
-            invalid = ['hello_world', '!things', '?other-things', 'thing"', '`ticks`'];
+        it('can validate `slug` or `status` or `author` etc as a-z, 0-9, - and _', function () {
+            valid = ['hello-world', 'hello', '1-2-3', 1, '-1', -1, 'hello_world'];
+            invalid = ['hello~world', '!things', '?other-things', 'thing"', '`ticks`'];
 
             check('slug', valid, invalid);
             check('status', valid, invalid);

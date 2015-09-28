@@ -24,6 +24,11 @@
     background: #fff;
 }
 
+/*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
+.gh-main > section {
+    width: 1px;
+}
+
 
 /* Global Nav
 /* ---------------------------------------------------------- */

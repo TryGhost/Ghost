@@ -1,5 +1,6 @@
 var _               = require('lodash'),
     Promise         = require('bluebird'),
+    crypto          = require('crypto'),
     sequence        = require('../../utils/sequence'),
     path            = require('path'),
     fs              = require('fs'),
@@ -19,6 +20,7 @@ var _               = require('lodash'),
     logInfo,
     populateDefaultSettings,
     backupDatabase,
+    fixClientSecret,
 
     // public
     init,
@@ -52,6 +54,19 @@ backupDatabase = function backupDatabase() {
     });
 };
 
+// TODO: move to migration.to005() for next DB version
+fixClientSecret = function () {
+    return models.Clients.forge().query('where', 'secret', '=', 'not_available').fetch().then(function updateClients(results) {
+        return Promise.map(results.models, function mapper(client) {
+            if (process.env.NODE_ENV.indexOf('testing') !== 0) {
+                logInfo('Updating client secret');
+                client.secret = crypto.randomBytes(6).toString('hex');
+            }
+            return models.Client.edit(client, {context: {internal: true}, id: client.id});
+        });
+    });
+};
+
 // Check for whether data is needed to be bootstrapped or not
 init = function (tablesOnly) {
     tablesOnly = tablesOnly || false;
@@ -78,7 +93,8 @@ init = function (tablesOnly) {
         if (databaseVersion === defaultVersion) {
             // 1. The database exists and is up-to-date
             logInfo('Up to date at version ' + databaseVersion);
-            return;
+            // TODO: temporary fix for missing client.secret
+            return fixClientSecret();
         }
 
         if (databaseVersion > defaultVersion) {
