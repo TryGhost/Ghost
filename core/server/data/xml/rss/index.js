@@ -177,10 +177,10 @@ generateFeed = function generateFeed(data) {
             var imageContentType = "image/jpeg";
             
             // Support for png, gif, webp and svg images
-            imageContentType = ( imageUrl.toLowerCase().indexOf(".png") != -1 ) ? "image/png" : imageContentType;
-            imageContentType = ( imageUrl.toLowerCase().indexOf(".gif") != -1 ) ? "image/gif" : imageContentType;
-            imageContentType = ( imageUrl.toLowerCase().indexOf(".webp") != -1 ) ? "image/webp" : imageContentType;
-            imageContentType = ( imageUrl.toLowerCase().indexOf(".svg") != -1 ) ? "image/svg+xml" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".png") !== -1 ) ? "image/png" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".gif") !== -1 ) ? "image/gif" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".webp") !== -1 ) ? "image/webp" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".svg") !== -1 ) ? "image/svg+xml" : imageContentType;
 
             // Add an additional enclosure tag, because not all readers support media:content
             item.custom_elements.push({
