@@ -586,7 +586,7 @@ var _              = require('lodash'),
 
         grunt.registerTask('test', function (test) {
             if (!test) {
-                grunt.log.write('no test provided');
+                grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
             grunt.task.run('test-setup', 'shell:test:' + test);
