@@ -47,7 +47,7 @@ function updateCheckError(error) {
     errors.logError(
         error,
         'Checking for updates failed, your blog will continue to function.',
-        'If you get this error repeatedly, please seek help from https://ghost.org/forum.'
+        'If you get this error repeatedly, please seek help on http://support.ghost.org.'
     );
 }
 
