@@ -172,8 +172,28 @@ generateFeed = function generateFeed(data) {
                     }
                 }
             });
+            
+            /// Detect image content type, jpeg by default
+            var imageContentType = "image/jpeg";
+            
+            // Support for png, gif, webp and svg images
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".png") != -1 ) ? "image/png" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".gif") != -1 ) ? "image/gif" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".webp") != -1 ) ? "image/webp" : imageContentType;
+            imageContentType = ( imageUrl.toLowerCase().indexOf(".svg") != -1 ) ? "image/svg+xml" : imageContentType;
 
-            // Also add the image to the content, because not all readers support media:content
+            // Add an additional enclosure tag, because not all readers support media:content
+            item.custom_elements.push({
+                'enclosure': {
+                    _attr: {
+                        length: 0,
+                        url: imageUrl,
+                        type: imageContentType
+                    }
+                }
+            });
+
+            // Also add the image to the content, because not all readers support media:content and the enclosure tag
             htmlContent('p').first().before('<img src="' + imageUrl + '" />');
             htmlContent('img').attr('alt', post.title);
         }
