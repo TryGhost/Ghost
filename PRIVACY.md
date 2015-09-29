@@ -3,7 +3,7 @@
 This is a plain English summary of all of the components within Ghost which may affect your privacy in some way. Please keep in mind that if you use third party Themes or Apps with Ghost, there may be additional things not listed here.
 
 Each of the items listed in this document can be disabled via Ghost's `config.js` file. Check out the [configuration guide](http://support.ghost.org/config/) for details.
-
+##测试
 ## Official Services
 
 Some official services for Ghost are enabled by default. These services connect to Ghost.org and are managed by the Ghost Foundation: the Non-Profit organisation which runs the Ghost project.
