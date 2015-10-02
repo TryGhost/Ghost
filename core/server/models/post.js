@@ -399,7 +399,6 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
                 findPage: ['page', 'limit', 'columns', 'status', 'staticPages', 'featured'],
                 add: ['importing']
@@ -430,20 +429,6 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // ## Model Data Functions
-
-    /**
-     * ### Find All
-     *
-     * @param {Object} options
-     * @returns {*}
-     */
-    findAll:  function findAll(options) {
-        options = options || {};
-
-        // fetch relations passed to options.include
-        options.withRelated = _.union(options.withRelated, options.include);
-        return ghostBookshelf.Model.findAll.call(this, options);
-    },
 
     /**
      * ### Find One
