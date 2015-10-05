@@ -6,7 +6,7 @@ module.exports = function (environment) {
         modulePrefix: 'ghost',
         environment: environment,
         baseURL: '/',
-        locationType: 'auto',
+        locationType: 'trailing-history',
         EmberENV: {
             FEATURES: {
                 // Here you can enable experimental features on an ember canary build
@@ -60,6 +60,10 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = false;
 
         ENV.APP.rootElement = '#ember-testing';
+
+        ENV['simple-auth'] = {
+            store: 'simple-auth-session-store:ephemeral'
+        };
     }
 
     return ENV;
