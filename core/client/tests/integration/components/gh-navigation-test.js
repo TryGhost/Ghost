@@ -54,17 +54,21 @@ describeComponent(
             // move second item up one
             expectedOldIndex = 1;
             expectedNewIndex = 0;
-            Ember.$(this.$('.gh-blognav-item')[1]).simulateDragSortable({
-                move: -1,
-                handle: '.gh-blognav-grab'
+            run(() => {
+                Ember.$(this.$('.gh-blognav-item')[1]).simulateDragSortable({
+                    move: -1,
+                    handle: '.gh-blognav-grab'
+                });
             });
 
             // move second item down one
             expectedOldIndex = 1;
             expectedNewIndex = 2;
-            Ember.$(this.$('.gh-blognav-item')[1]).simulateDragSortable({
-                move: 1,
-                handle: '.gh-blognav-grab'
+            run(() => {
+                Ember.$(this.$('.gh-blognav-item')[1]).simulateDragSortable({
+                    move: 1,
+                    handle: '.gh-blognav-grab'
+                });
             });
         });
     }
