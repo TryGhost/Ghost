@@ -1,9 +1,10 @@
 import Ember from 'ember';
 import ghostPaths from 'ghost/utils/ghost-paths';
 import documentTitle from 'ghost/utils/document-title';
+import config from './config/environment';
 
 var Router = Ember.Router.extend({
-    location: 'trailing-history', // use HTML5 History API instead of hash-tag based URLs
+    location: config.locationType, // use HTML5 History API instead of hash-tag based URLs
     rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 
     notifications: Ember.inject.service(),

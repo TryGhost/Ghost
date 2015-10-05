@@ -26,6 +26,13 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
             $('.page-actions .btn-blue').focus();
 
             this.get('controller').send('save');
+        },
+
+        willTransition: function () {
+            // reset the model so that our CPs re-calc and unsaved changes aren't
+            // persisted across transitions
+            this.set('controller.model', null);
+            return this._super(...arguments);
         }
     }
 });
