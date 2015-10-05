@@ -3821,9 +3821,15 @@
     if (files && files.length && window.FileReader && window.File) {
       var n = files.length, text = Array(n), read = 0;
       var loadFile = function(file, i) {
+        if (cm.options.allowDropFileTypes &&
+            indexOf(cm.options.allowDropFileTypes, file.type) == -1)
+          return;
+
         var reader = new FileReader;
         reader.onload = operation(cm, function() {
-          text[i] = reader.result;
+          var content = reader.result;
+          if (/[\x00-\x08\x0e-\x1f]{2}/.test(content)) content = "";
+          text[i] = content;
           if (++read == n) {
             pos = clipPos(cm.doc, pos);
             var change = {from: pos, to: pos,
@@ -4221,6 +4227,7 @@
   // right-click take effect on it.
   function onContextMenu(cm, e) {
     if (eventInWidget(cm.display, e) || contextMenuInGutter(cm, e)) return;
+    if (signalDOMEvent(cm, e, "contextmenu")) return;
     cm.display.input.onContextMenu(e);
   }
 
@@ -5404,6 +5411,7 @@
   });
   option("disableInput", false, function(cm, val) {if (!val) cm.display.input.reset();}, true);
   option("dragDrop", true, dragDropChanged);
+  option("allowDropFileTypes", null);
 
   option("cursorBlinkRate", 530);
   option("cursorScrollMargin", 0);
@@ -5708,8 +5716,8 @@
           var range = cm.listSelections()[i];
           cm.replaceRange(cm.doc.lineSeparator(), range.anchor, range.head, "+input");
           cm.indentLine(range.from().line + 1, null, true);
-          ensureCursorVisible(cm);
         }
+        ensureCursorVisible(cm);
       });
     },
     toggleOverwrite: function(cm) {cm.toggleOverwrite();}

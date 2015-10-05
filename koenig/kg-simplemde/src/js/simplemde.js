@@ -915,7 +915,7 @@ SimpleMDE.prototype.render = function(el) {
 		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
 		lineWrapping: (options.lineWrapping === false) ? false : true,
-		allowDroppedFileTypes: ["text/plain"]
+		allowDropFileTypes: ["text/plain"]
 	});
 
 	if(options.toolbar !== false) {
