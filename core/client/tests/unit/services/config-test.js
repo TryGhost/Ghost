@@ -9,7 +9,7 @@ import Ember from 'ember';
 
 describeModule(
     'service:config',
-    'ConfigService',
+    'Unit: Service: config',
     {
         // Specify the other units that are required for this test.
         // needs: ['service:foo']

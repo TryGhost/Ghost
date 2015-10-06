@@ -1,6 +1,6 @@
 import ghostPaths from 'ghost/utils/ghost-paths';
 
-describe('ghost-paths', function () {
+describe('Unit: Util: ghost-paths', function () {
     describe('join', function () {
         var join = ghostPaths().url.join;
 

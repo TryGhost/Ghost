@@ -4,7 +4,7 @@ import {
     it
 } from 'ember-mocha';
 
-describeModel('role', function () {
+describeModel('role', 'Unit: Model: role', function () {
     it('provides a lowercase version of the name', function () {
         var model = this.subject({
             name: 'Author'

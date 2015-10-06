@@ -8,8 +8,10 @@ import {
 
 describeComponent(
     'gh-navitem-url-input',
-    'GhNavitemUrlInputComponent',
-    {},
+    'Unit: Component: gh-navitem-url-input',
+    {
+        unit: true
+    },
     function () {
         it('identifies a URL as the base URL', function () {
             var component = this.subject({

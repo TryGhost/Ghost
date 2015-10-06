@@ -19,7 +19,7 @@ var navSettingJSON = `[
 
 describeModule(
     'controller:settings/navigation',
-    'Unit : Controller : settings/navigation',
+    'Unit: Controller: settings/navigation',
     {
         // Specify the other units that are required for this test.
         needs: ['service:config', 'service:notifications']

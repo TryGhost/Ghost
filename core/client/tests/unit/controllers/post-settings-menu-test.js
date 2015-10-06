@@ -6,6 +6,7 @@ import {
 
 describeModule(
     'controller:post-settings-menu',
+    'Unit: Controller: post-settings-menu',
     {
         needs: ['controller:application', 'service:notifications']
     },

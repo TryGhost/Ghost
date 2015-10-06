@@ -9,7 +9,7 @@ import {
 
 describeModule(
     'service:notifications',
-    'NotificationsService',
+    'Unit: Service: notifications',
     {
         // Specify the other units that are required for this test.
         // needs: ['model:notification']

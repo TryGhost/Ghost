@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-spin-button',
-    'GhSpinButtonComponent',
+    'Unit: Component: gh-spin-button',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },

@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-posts-list-item',
-    'GhPostsListItemComponent',
+    'Unit: Component: gh-posts-list-item',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },
