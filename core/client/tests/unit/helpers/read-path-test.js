@@ -7,7 +7,7 @@ import {
 import {readPath} from 'ghost/helpers/read-path';
 import Ember from 'ember';
 
-describe('ReadPathHelper', function () {
+describe('Unit: Helper: read-path', function () {
     // Replace this with your real tests.
     it('works', function () {
         var result = readPath([Ember.Object.create({hi: 'there'}), 'hi']);
