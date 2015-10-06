@@ -9,8 +9,8 @@ from 'ember-mocha';
 
 describeComponent(
     'gh-notifications',
-    'GhNotificationsComponent', {
-        // specify the other units that are required for this test
+    'Unit: Component: gh-notifications', {
+        unit: true,
         needs: ['component:gh-notification']
     },
     function () {

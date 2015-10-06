@@ -3,7 +3,7 @@ import {
     it
 } from 'ember-mocha';
 
-describeModel('setting', function () {
+describeModel('setting', 'Unit: Model: setting', function () {
     it('has a validation type of "setting"', function () {
         var model = this.subject();
 

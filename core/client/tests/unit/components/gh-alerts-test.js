@@ -10,7 +10,9 @@ import sinon from 'sinon';
 
 describeComponent(
     'gh-alerts',
-    'GhAlertsComponent', {
+    'Unit: Component: gh-alerts',
+    {
+        unit: true,
         // specify the other units that are required for this test
         needs: ['component:gh-alert']
     },

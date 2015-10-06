@@ -32,7 +32,7 @@ testValidUrl = function (url) {
     expect(navItem.get('hasValidated')).to.include('url');
 };
 
-describe('Unit : Validator : nav-item', function () {
+describe('Unit: Validator: nav-item', function () {
     it('requires label presence', function () {
         let navItem = NavItem.create();
 
