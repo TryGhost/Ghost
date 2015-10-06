@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import counter from 'ghost/utils/word-count';
 
-var countWords = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
     if (!arr || !arr.length) {
         return;
     }
@@ -19,5 +19,3 @@ var countWords = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) 
 
     return count + (count === 1 ? ' word' : ' words');
 });
-
-export default countWords;

@@ -9,7 +9,7 @@ import Ember from 'ember';
  * @param {*} upstream
  * @param {function} transform a function to transform the **upstream** value.
  */
-var BoundOneWay = function (upstream, transform) {
+export default function (upstream, transform) {
     if (typeof transform !== 'function') {
         // default to the identity function
         transform = function (value) { return value; };
@@ -23,6 +23,4 @@ var BoundOneWay = function (upstream, transform) {
             return value;
         }
     });
-};
-
-export default BoundOneWay;
+}

@@ -3,7 +3,7 @@ import Ember from 'ember';
 Example usage:
 {{gh-url-preview prefix="tag" slug=theSlugValue tagName="p" classNames="description"}}
 */
-var urlPreview = Ember.Component.extend({
+export default Ember.Component.extend({
     classNames: 'ghost-url-preview',
     prefix: null,
     slug: null,
@@ -25,5 +25,3 @@ var urlPreview = Ember.Component.extend({
         return theUrl;
     })
 });
-
-export default urlPreview;

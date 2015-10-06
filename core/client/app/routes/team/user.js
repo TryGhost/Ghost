@@ -2,7 +2,7 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Team - User',
 
     classNames: ['team-view-user'],
@@ -61,5 +61,3 @@ var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         }
     }
 });
-
-export default TeamUserRoute;

@@ -1,13 +1,11 @@
 import Ember from 'ember';
-var defaultPaginationSettings,
-    PaginationRoute;
 
-defaultPaginationSettings = {
+var defaultPaginationSettings = {
     page: 1,
     limit: 15
 };
 
-PaginationRoute = Ember.Mixin.create({
+export default Ember.Mixin.create({
     /**
      * Sets up pagination details
      * @param {object} settings specifies additional pagination details
@@ -26,5 +24,3 @@ PaginationRoute = Ember.Mixin.create({
         this.controller.set('paginationSettings', settings);
     }
 });
-
-export default PaginationRoute;

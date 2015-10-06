@@ -2,8 +2,7 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
-var TagsRoute,
-    paginationSettings;
+var paginationSettings;
 
 paginationSettings = {
     page: 1,
@@ -11,7 +10,7 @@ paginationSettings = {
     limit: 15
 };
 
-TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
+export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
     titleToken: 'Settings - Tags',
 
     beforeModel: function (transition) {
@@ -45,5 +44,3 @@ TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin,
         this.controller.send('resetPagination');
     }
 });
-
-export default TagsRoute;
