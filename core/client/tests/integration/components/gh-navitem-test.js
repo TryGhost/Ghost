@@ -9,7 +9,7 @@ const { run } = Ember;
 
 describeComponent(
     'gh-navitem',
-    'Integration : Component : gh-navitem',
+    'Integration: Component: gh-navitem',
     {
         integration: true
     },

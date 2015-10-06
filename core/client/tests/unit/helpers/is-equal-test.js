@@ -8,7 +8,7 @@ import {
     isEqual
 } from 'ghost/helpers/is-equal';
 
-describe('IsEqualHelper', function () {
+describe('Unit: Helper: is-equal', function () {
     // Replace this with your real tests.
     it('works', function () {
         var result = isEqual([42, 42]);

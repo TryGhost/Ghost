@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-search-input',
-    'GhSearchInputComponent',
+    'Unit: Component: gh-search-input',
     {
+        unit: true,
         needs: ['component:gh-selectize']
     },
     function () {
