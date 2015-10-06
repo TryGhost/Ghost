@@ -9,7 +9,7 @@ var path          = require('path'),
     _             = require('lodash'),
     knex          = require('knex'),
     validator     = require('validator'),
-    requireTree   = require('../require-tree').readAll,
+    readDirectory = require('../utils/read-directory'),
     errors        = require('../errors'),
     configUrl     = require('./url'),
     packageInfo   = require('../../../package.json'),
@@ -75,7 +75,7 @@ ConfigManager.prototype.init = function (rawConfig) {
     // just the object appropriate for this NODE_ENV
     self.set(rawConfig);
 
-    return Promise.all([requireTree(self._config.paths.themePath), requireTree(self._config.paths.appPath)]).then(function (paths) {
+    return Promise.all([readDirectory(self._config.paths.themePath), readDirectory(self._config.paths.appPath)]).then(function (paths) {
         self._config.paths.availableThemes = paths[0];
         self._config.paths.availableApps = paths[1];
         return self._config;
