@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-editor',
-    'GhEditorComponent',
+    'Unit: Component: gh-editor',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },

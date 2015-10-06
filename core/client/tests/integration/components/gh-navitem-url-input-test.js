@@ -14,7 +14,7 @@ const { run } = Ember,
 
 describeComponent(
     'gh-navitem-url-input',
-    'Integration : Component : gh-navitem-url-input', {
+    'Integration: Component: gh-navitem-url-input', {
         integration: true
     },
     function () {
