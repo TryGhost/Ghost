@@ -1,5 +1,6 @@
 import BaseValidator from './base';
-var ResetValidator = BaseValidator.create({
+
+export default BaseValidator.create({
     properties: ['newPassword'],
     newPassword: function (model) {
         var p1 = model.get('newPassword'),
@@ -17,5 +18,3 @@ var ResetValidator = BaseValidator.create({
         }
     }
 });
-
-export default ResetValidator;

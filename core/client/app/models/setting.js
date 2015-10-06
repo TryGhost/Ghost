@@ -1,7 +1,7 @@
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var Setting = DS.Model.extend(ValidationEngine, {
+export default DS.Model.extend(ValidationEngine, {
     validationType: 'setting',
 
     title: DS.attr('string'),
@@ -21,5 +21,3 @@ var Setting = DS.Model.extend(ValidationEngine, {
     isPrivate: DS.attr('boolean'),
     password: DS.attr('string')
 });
-
-export default Setting;

@@ -48,7 +48,7 @@ Both tab and tab-pane elements have an "active"
 class applied when they are active.
 
 */
-var TabsManager = Ember.Component.extend({
+export default Ember.Component.extend({
     activeTab: null,
     tabs: [],
     tabPanes: [],
@@ -80,5 +80,3 @@ var TabsManager = Ember.Component.extend({
         this.get('tabPanes').removeObject(tabPane);
     }
 });
-
-export default TabsManager;

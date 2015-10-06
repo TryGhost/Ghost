@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var ModalDialog = Ember.Component.extend({
+
+export default Ember.Component.extend({
     didInsertElement: function () {
         this.$('.js-modal-container, .js-modal-background').addClass('fade-in open');
         this.$('.js-modal').addClass('open');
@@ -56,5 +57,3 @@ var ModalDialog = Ember.Component.extend({
         return this.get('confirm.reject.buttonClass') ? this.get('confirm.reject.buttonClass') : 'btn btn-red';
     })
 });
-
-export default ModalDialog;

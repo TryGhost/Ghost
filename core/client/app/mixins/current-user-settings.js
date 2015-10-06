@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var CurrentUserSettings = Ember.Mixin.create({
+
+export default Ember.Mixin.create({
     transitionAuthor: function () {
         var self = this;
 
@@ -24,5 +25,3 @@ var CurrentUserSettings = Ember.Mixin.create({
         };
     }
 });
-
-export default CurrentUserSettings;

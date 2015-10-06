@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 
-var TagSettingsValidator = BaseValidator.create({
+export default BaseValidator.create({
     properties: ['name', 'metaTitle', 'metaDescription'],
     name: function (model) {
         var name = model.get('name');
@@ -33,5 +33,3 @@ var TagSettingsValidator = BaseValidator.create({
         }
     }
 });
-
-export default TagSettingsValidator;

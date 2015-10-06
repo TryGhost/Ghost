@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-var Role = DS.Model.extend({
+
+export default DS.Model.extend({
     uuid: DS.attr('string'),
     name: DS.attr('string'),
     description: DS.attr('string'),
@@ -13,5 +14,3 @@ var Role = DS.Model.extend({
         return this.get('name').toLocaleLowerCase();
     })
 });
-
-export default Role;

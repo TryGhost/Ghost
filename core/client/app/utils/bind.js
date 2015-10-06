@@ -1,6 +1,6 @@
 var slice = Array.prototype.slice;
 
-function bind(/* func, args, thisArg */) {
+export default function (/* func, args, thisArg */) {
     var args = slice.call(arguments),
         func = args.shift(),
         thisArg = args.pop();
@@ -11,5 +11,3 @@ function bind(/* func, args, thisArg */) {
 
     return bound;
 }
-
-export default bind;

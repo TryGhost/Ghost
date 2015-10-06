@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import ApplicationSerializer from 'ghost/serializers/application';
 
-var TagSerializer = ApplicationSerializer.extend({
+export default ApplicationSerializer.extend({
     serializeIntoHash: function (hash, type, record, options) {
         options = options || {};
         options.includeId = true;
@@ -17,5 +17,3 @@ var TagSerializer = ApplicationSerializer.extend({
         hash[root] = [data];
     }
 });
-
-export default TagSerializer;
