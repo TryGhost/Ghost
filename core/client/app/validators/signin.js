@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 
-var SigninValidator = BaseValidator.create({
+export default BaseValidator.create({
     properties: ['identification', 'signin', 'forgotPassword'],
     invalidMessage: 'Email address is not valid',
 
@@ -46,5 +46,3 @@ var SigninValidator = BaseValidator.create({
         }
     }
 });
-
-export default SigninValidator;

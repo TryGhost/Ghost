@@ -2,7 +2,7 @@ import Ember from 'ember';
 /* global html_sanitize*/
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-var formatHTML = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
     if (!arr || !arr.length) {
         return;
     }
@@ -22,5 +22,3 @@ var formatHTML = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) 
 
     return Ember.String.htmlSafe(escapedhtml);
 });
-
-export default formatHTML;

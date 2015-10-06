@@ -3,7 +3,7 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
-var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
+export default Ember.Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
 
     actions: {
@@ -135,5 +135,3 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
         this.attachModelHooks(controller, model);
     }
 });
-
-export default EditorBaseRoute;
