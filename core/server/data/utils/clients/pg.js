@@ -17,7 +17,7 @@ doRawFlattenAndPluck = function doRaw(query, name) {
 
 getTables = function getTables() {
     return doRawFlattenAndPluck(
-        'SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\' and table_name not like \'pg_%\'', 'table_name'
+        'SELECT table_name FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA()', 'table_name'
     );
 };
 
