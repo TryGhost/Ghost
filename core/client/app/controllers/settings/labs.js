@@ -32,8 +32,7 @@ export default Ember.Controller.extend({
         onUpload: function (file) {
             var self = this,
                 formData = new FormData(),
-                notifications = this.get('notifications'),
-                currentUserId = this.get('session.user.id');
+                notifications = this.get('notifications');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
@@ -48,12 +47,11 @@ export default Ember.Controller.extend({
                 contentType: false,
                 processData: false
             }).then(function () {
-                // Clear the store, so that all the new data gets fetched correctly.
-                self.store.unloadAll();
-                // Reload currentUser and set session
-                self.set('session.user', self.store.find('user', currentUserId));
                 // TODO: keep as notification, add link to view content
-                notifications.showNotification('Import successful.');
+                // notifications.showNotification('Import successful.');
+                // We have to reload the page to fix various intermittent bugs e.g. no author options in PSM
+                // TODO: Move this into a modal with the confirm action refreshing the page
+                window.location.href = window.location.origin + window.location.pathname;
             }).catch(function (response) {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
                     self.set('importErrors', response.jqXHR.responseJSON.errors);
