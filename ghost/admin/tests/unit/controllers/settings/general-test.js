@@ -6,6 +6,7 @@ import {
 
 describeModule(
     'controller:settings/general',
+    'Unit: Controller: settings/general',
     {
         needs: ['service:notifications']
     },

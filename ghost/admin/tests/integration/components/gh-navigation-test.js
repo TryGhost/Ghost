@@ -9,7 +9,7 @@ const { run } = Ember;
 
 describeComponent(
     'gh-navigation',
-    'Integration : Component : gh-navigation',
+    'Integration: Component: gh-navigation',
     {
         integration: true
     },

@@ -4,7 +4,9 @@ import {
     it
 } from 'ember-mocha';
 
-describeModel('post',
+describeModel(
+    'post',
+    'Unit: Model: post',
     {
         needs:['model:user', 'model:tag', 'model:role']
     },

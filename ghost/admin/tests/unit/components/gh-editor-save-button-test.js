@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-editor-save-button',
-    'GhEditorSaveButtonComponent',
+    'Unit: Component: gh-editor-save-button',
     {
+        unit: true,
         needs: [
             'component:gh-dropdown-button',
             'component:gh-dropdown',

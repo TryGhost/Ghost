@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-user-active',
-    'GhUserActiveComponent',
+    'Unit: Component: gh-user-active',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },
