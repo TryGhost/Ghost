@@ -259,6 +259,7 @@ export default function (options) {
             ui;
 
         ui = new UploadUi($dropzone, settings);
+        $(this).attr('data-uploaderui', true);
         this.uploaderUi = ui;
         ui.init();
     });
