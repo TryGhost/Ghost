@@ -37,7 +37,7 @@ export default Ember.Mixin.create({
             message += '.';
         }
 
-        this.get('notifications').showAlert(message, {type: 'error'});
+        this.get('notifications').showAlert(message, {type: 'error', key: 'pagination.load.failed'});
     },
 
     loadFirstPage: function () {

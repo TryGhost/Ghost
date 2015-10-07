@@ -7,10 +7,9 @@ export default Ember.Component.extend({
 
     notifications: Ember.inject.service(),
 
-    typeClass: Ember.computed(function () {
+    typeClass: Ember.computed('message.type', function () {
         var classes = '',
-            message = this.get('message'),
-            type = Ember.get(message, 'type'),
+            type = this.get('message.type'),
             typeMapping;
 
         typeMapping = {

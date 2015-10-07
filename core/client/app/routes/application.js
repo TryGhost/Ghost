@@ -52,6 +52,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         signedIn: function () {
+            this.get('notifications').clearAll();
             this.send('loadServerNotifications', true);
         },
 
@@ -67,7 +68,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 });
             } else {
                 // Connection errors don't return proper status message, only req.body
-                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error'});
+                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
             }
         },
 
@@ -92,7 +93,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         sessionInvalidationFailed: function (error) {
-            this.get('notifications').showAlert(error.message, {type: 'error'});
+            this.get('notifications').showAlert(error.message, {type: 'error', key: 'session.invalidate.failed'});
         },
 
         openModal: function (modalName, model, type) {
