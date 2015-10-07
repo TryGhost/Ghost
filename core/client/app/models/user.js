@@ -25,7 +25,10 @@ export default DS.Model.extend(ValidationEngine, {
     created_by: DS.attr('number'),
     updated_at: DS.attr('moment-date'),
     updated_by: DS.attr('number'),
-    roles: DS.hasMany('role', {embedded: 'always'}),
+    roles: DS.hasMany('role', {
+        embedded: 'always',
+        async: false
+    }),
 
     ghostPaths: Ember.inject.service('ghost-paths'),
 

@@ -41,7 +41,7 @@ export default Ember.Component.extend({
 
     _loadPosts: function () {
         var store = this.get('_store'),
-            postsUrl = store.adapterFor('post').urlForFindQuery({}, 'post') + '/',
+            postsUrl = store.adapterFor('post').urlForQuery({}, 'post') + '/',
             postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', staticPages: 'all'},
             content = this.get('content'),
             self = this;
@@ -61,7 +61,7 @@ export default Ember.Component.extend({
 
     _loadUsers: function () {
         var store = this.get('_store'),
-            usersUrl = store.adapterFor('user').urlForFindQuery({}, 'user') + '/',
+            usersUrl = store.adapterFor('user').urlForQuery({}, 'user') + '/',
             usersQuery = {fields: 'name,slug', limit: 'all'},
             content = this.get('content'),
             self = this;

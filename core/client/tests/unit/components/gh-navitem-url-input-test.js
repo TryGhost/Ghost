@@ -15,6 +15,7 @@ describeComponent(
     function () {
         it('identifies a URL as the base URL', function () {
             var component = this.subject({
+                url: '',
                 baseUrl: 'http://example.com/'
             });
 

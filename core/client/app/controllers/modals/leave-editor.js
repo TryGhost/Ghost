@@ -32,11 +32,11 @@ export default Ember.Controller.extend({
                 model.deleteRecord();
             } else {
                 // roll back changes on model props
-                model.rollback();
+                model.rollbackAttributes();
             }
 
-            // setting isDirty to false here allows willTransition on the editor route to succeed
-            editorController.set('isDirty', false);
+            // setting hasDirtyAttributes to false here allows willTransition on the editor route to succeed
+            editorController.set('hasDirtyAttributes', false);
 
             // since the transition is now certain to complete, we can unset window.onbeforeunload here
             window.onbeforeunload = null;

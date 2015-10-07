@@ -26,8 +26,8 @@ export default Ember.Controller.extend({
                 // because store.pushPayload is not working with embedded relations
                 if (response && Ember.isArray(response.users)) {
                     response.users.forEach(function (userJSON) {
-                        var user = self.store.getById('user', userJSON.id),
-                            role = self.store.getById('role', userJSON.roles[0].id);
+                        var user = self.store.peekRecord('user', userJSON.id),
+                            role = self.store.peekRecord('role', userJSON.roles[0].id);
 
                         user.set('role', role);
                     });

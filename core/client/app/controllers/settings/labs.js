@@ -24,7 +24,7 @@ export default Ember.Controller.extend({
 
         this.get('model').save().catch(function (errors) {
             self.showErrors(errors);
-            self.get('model').rollback();
+            self.get('model').rollbackAttributes();
         });
     },
 
@@ -51,7 +51,7 @@ export default Ember.Controller.extend({
                 // Clear the store, so that all the new data gets fetched correctly.
                 self.store.unloadAll();
                 // Reload currentUser and set session
-                self.set('session.user', self.store.find('user', currentUserId));
+                self.set('session.user', self.store.findRecord('user', currentUserId));
                 // TODO: keep as notification, add link to view content
                 notifications.showNotification('Import successful.');
             }).catch(function (response) {

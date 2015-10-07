@@ -1,12 +1,6 @@
 import Ember from 'ember';
-import PaginationControllerMixin from 'ghost/mixins/pagination-controller';
 
-export default Ember.Controller.extend(PaginationControllerMixin, {
-    init: function () {
-        // let the PaginationControllerMixin know what type of model we will be paginating
-        // this is necessary because we do not have access to the model inside the Controller::init method
-        this._super({modelType: 'user'});
-    },
+export default Ember.Controller.extend({
 
     users: Ember.computed.alias('model'),
 

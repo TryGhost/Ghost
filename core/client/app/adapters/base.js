@@ -5,7 +5,7 @@ export default DS.RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
-    findQuery: function (store, type, query) {
+    query: function (store, type, query) {
         var id;
 
         if (query.id) {
