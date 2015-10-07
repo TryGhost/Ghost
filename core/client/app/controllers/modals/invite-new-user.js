@@ -58,9 +58,9 @@ export default Ember.Controller.extend(ValidationEngine, {
 
                 if (invitedUser) {
                     if (invitedUser.get('status') === 'invited' || invitedUser.get('status') === 'invited-pending') {
-                        self.get('notifications').showAlert('A user with that email address was already invited.', {type: 'warn'});
+                        self.get('notifications').showAlert('A user with that email address was already invited.', {type: 'warn', key: 'invite.send.already-invited'});
                     } else {
-                        self.get('notifications').showAlert('A user with that email address already exists.', {type: 'warn'});
+                        self.get('notifications').showAlert('A user with that email address already exists.', {type: 'warn', key: 'invite.send.user-exists'});
                     }
                 } else {
                     newUser = self.store.createRecord('user', {
@@ -75,8 +75,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                         // If sending the invitation email fails, the API will still return a status of 201
                         // but the user's status in the response object will be 'invited-pending'.
                         if (newUser.get('status') === 'invited-pending') {
-                            self.get('notifications').showAlert('Invitation email was not sent.  Please try resending.', {type: 'error'});
+                            self.get('notifications').showAlert('Invitation email was not sent.  Please try resending.', {type: 'error', key: 'invite.send.failed'});
                         } else {
+                            self.get('notifications').closeAlerts('invite.send');
                             self.get('notifications').showNotification(notificationText);
                         }
                     }).catch(function (errors) {
@@ -86,9 +87,9 @@ export default Ember.Controller.extend(ValidationEngine, {
                         // want to use inline-validations here and only show an
                         // alert if we have an actual error
                         if (errors) {
-                            self.get('notifications').showErrors(errors);
+                            self.get('notifications').showErrors(errors, {key: 'invite.send'});
                         } else if (validationErrors) {
-                            self.get('notifications').showAlert(validationErrors.toString(), {type: 'error'});
+                            self.get('notifications').showAlert(validationErrors.toString(), {type: 'error', key: 'invite.send.validation-error'});
                         }
                     }).finally(function () {
                         self.get('errors').clear();
