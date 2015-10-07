@@ -2,34 +2,29 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import PaginationRouteMixin from 'ghost/mixins/pagination-route';
 
-var paginationSettings;
-
-paginationSettings = {
-    page: 1,
-    include: 'post_count',
-    limit: 15
-};
-
 export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
     titleToken: 'Settings - Tags',
 
-    beforeModel: function (transition) {
-        this._super(transition);
+    paginationModel: 'tag',
+    paginationSettings: {
+        include: 'post_count',
+        limit: 15
+    },
+
+    beforeModel: function () {
+        this._super(...arguments);
+
         return this.get('session.user')
             .then(this.transitionAuthor());
     },
 
     model: function () {
         this.store.unloadAll('tag');
+        this.loadFirstPage();
 
-        return this.store.filter('tag', paginationSettings, function (tag) {
+        return this.store.filter('tag', function (tag) {
             return !tag.get('isNew');
         });
-    },
-
-    setupController: function (controller, model) {
-        this._super(controller, model);
-        this.setupPagination(paginationSettings);
     },
 
     renderTemplate: function (controller, model) {
@@ -41,6 +36,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMix
     },
 
     deactivate: function () {
-        this.controller.send('resetPagination');
+        this.send('resetPagination');
     }
 });

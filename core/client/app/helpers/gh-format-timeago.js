@@ -1,11 +1,11 @@
 import Ember from 'ember';
 
-export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
-    if (!arr || !arr.length) {
+export default Ember.Helper.helper(function (params) {
+    if (!params || !params.length) {
         return;
     }
 
-    var timeago = arr[0];
+    var timeago = params[0];
 
     return moment(timeago).fromNow();
     // stefanpenner says cool for small number of timeagos.

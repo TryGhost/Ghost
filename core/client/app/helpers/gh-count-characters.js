@@ -1,15 +1,15 @@
 import Ember from 'ember';
 
-export default Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+export default Ember.Helper.helper(function (params) {
     var el = document.createElement('span'),
         length,
         content;
 
-    if (!arr || !arr.length) {
+    if (!params || !params.length) {
         return;
     }
 
-    content = arr[0] || '';
+    content = params[0] || '';
     length = content.length;
 
     el.className = 'word-count';

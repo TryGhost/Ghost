@@ -10,7 +10,7 @@ export default Ember.Component.extend({
         return this.get('tabsManager.activeTab') === this;
     }),
 
-    index: Ember.computed('tabsManager.tabs.@each', function () {
+    index: Ember.computed('tabsManager.tabs.[]', function () {
         return this.get('tabsManager.tabs').indexOf(this);
     }),
 
