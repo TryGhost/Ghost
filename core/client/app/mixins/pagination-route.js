@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import getRequestErrorMessage from 'ghost/utils/ajax';
 
 var defaultPaginationSettings = {
     page: 1,
@@ -6,21 +7,87 @@ var defaultPaginationSettings = {
 };
 
 export default Ember.Mixin.create({
+    notifications: Ember.inject.service(),
+
+    paginationModel: null,
+    paginationSettings: null,
+    paginationMeta: null,
+
+    init: function () {
+        var paginationSettings = this.get('paginationSettings'),
+            settings = Ember.$.extend({}, defaultPaginationSettings, paginationSettings);
+
+        this._super(...arguments);
+        this.set('paginationSettings', settings);
+        this.set('paginationMeta', {});
+    },
+
     /**
-     * Sets up pagination details
-     * @param {object} settings specifies additional pagination details
+     * Takes an ajax response, concatenates any error messages, then generates an error notification.
+     * @param {jqXHR} response The jQuery ajax reponse object.
+     * @return
      */
-    setupPagination: function (settings) {
-        settings = settings || {};
-        for (var key in defaultPaginationSettings) {
-            if (defaultPaginationSettings.hasOwnProperty(key)) {
-                if (!settings.hasOwnProperty(key)) {
-                    settings[key] = defaultPaginationSettings[key];
-                }
-            }
+    reportLoadError: function (response) {
+        var message = 'A problem was encountered while loading more records';
+
+        if (response) {
+            // Get message from response
+            message += ': ' + getRequestErrorMessage(response, true);
+        } else {
+            message += '.';
         }
 
-        this.set('paginationSettings', settings);
-        this.controller.set('paginationSettings', settings);
+        this.get('notifications').showAlert(message, {type: 'error'});
+    },
+
+    loadFirstPage: function () {
+        var paginationSettings = this.get('paginationSettings'),
+            modelName = this.get('paginationModel'),
+            self = this;
+
+        paginationSettings.page = 1;
+
+        return this.get('store').query(modelName, paginationSettings).then(function (results) {
+            self.set('paginationMeta', results.meta);
+            return results;
+        }, function (response) {
+            self.reportLoadError(response);
+        });
+    },
+
+    actions: {
+        loadFirstPage: function () {
+            return this.loadFirstPage();
+        },
+
+        /**
+         * Loads the next paginated page of posts into the ember-data store. Will cause the posts list UI to update.
+         * @return
+         */
+        loadNextPage: function () {
+            var self = this,
+                store = this.get('store'),
+                modelName = this.get('paginationModel'),
+                metadata = this.get('paginationMeta'),
+                nextPage = metadata.pagination && metadata.pagination.next,
+                paginationSettings = this.get('paginationSettings');
+
+            if (nextPage) {
+                this.set('isLoading', true);
+                this.set('paginationSettings.page', nextPage);
+
+                store.query(modelName, paginationSettings).then(function (results) {
+                    self.set('isLoading', false);
+                    self.set('paginationMeta', results.meta);
+                    return results;
+                }, function (response) {
+                    self.reportLoadError(response);
+                });
+            }
+        },
+
+        resetPagination: function () {
+            this.set('paginationSettings.page', 1);
+        }
     }
 });

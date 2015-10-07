@@ -20,19 +20,23 @@ export default ApplicationSerializer.extend({
         hash[root] = payload;
     },
 
-    extractArray: function (store, type, _payload) {
+    normalizeArrayResponse: function (store, primaryModelClass, _payload, id, requestType) {
+        var payload = {settings: [this._extractObjectFromArrayPayload(_payload)]};
+        return this._super(store, primaryModelClass, payload, id, requestType);
+    },
+
+    normalizeSingleResponse: function (store, primaryModelClass, _payload, id, requestType) {
+        var payload = {setting: this._extractObjectFromArrayPayload(_payload)};
+        return this._super(store, primaryModelClass, payload, id, requestType);
+    },
+
+    _extractObjectFromArrayPayload: function (_payload) {
         var payload = {id: '0'};
 
         _payload.settings.forEach(function (setting) {
             payload[setting.key] = setting.value;
         });
 
-        payload = this.normalize(type, payload);
-
-        return [payload];
-    },
-
-    extractSingle: function (store, type, payload) {
-        return this.extractArray(store, type, payload).pop();
+        return payload;
     }
 });
