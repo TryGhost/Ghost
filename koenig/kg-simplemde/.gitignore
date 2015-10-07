@@ -1,2 +1,6 @@
 localtesting/*
 node_modules/
+*.iml
+*.ipr
+*.iws
+dist/

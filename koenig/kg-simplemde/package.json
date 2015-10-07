@@ -1,6 +1,6 @@
 {
   "name": "simplemde",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "description": "A simple, beautiful, and embeddable JavaScript markdown editor. Features autosaving and spell checking.",
   "keywords": [
     "embeddable",
@@ -10,7 +10,7 @@
     "wysiwyg"
   ],
   "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
-  "main": "gulpfile.js",
+  "main": "./src/js/simplemde.js",
   "license": "MIT",
   "company": "Next Step Webs, Inc.",
   "author": {
@@ -20,14 +20,24 @@
   "bugs": {
     "url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
   },
+  "dependencies": {
+    "codemirror": "^5.7.0",
+    "codemirror-spell-checker": "NextStepWebs/codemirror-spell-checker",
+    "marked": "chjj/marked"
+  },
   "devDependencies": {
+    "browserify": "^11.2.0",
+    "debug": "^2.2.0",
+    "eslint": "^1.6.0",
     "gulp": "*",
-    "gulp-minify-css": "*",
-    "gulp-uglify": "*",
     "gulp-concat": "*",
+    "gulp-debug": "^2.1.1",
+    "gulp-eslint": "^1.0.0",
     "gulp-header": "*",
     "gulp-jsbeautifier": "*",
-    "gulp-download": "*"
+    "gulp-minify-css": "*",
+    "gulp-uglify": "*",
+    "vinyl-source-stream": "^1.1.0"
   },
   "repository": {
     "type": "git",

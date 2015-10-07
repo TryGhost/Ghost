@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "indent": [
+      2,
+      "tab"
+    ],
+    "strict": 0,
+    "no-console": 0,
+    "quotes": [
+      2,
+      "double"
+    ],
+    "semi": [
+      2,
+      "always"
+    ]
+  },
+  "env": {
+    "browser": true,
+    "node":true
+  },
+  "extends": "eslint:recommended"
+}
