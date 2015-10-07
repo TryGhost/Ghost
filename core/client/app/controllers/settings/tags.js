@@ -50,7 +50,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
         activeTag.save().catch(function (error) {
             if (error) {
-                self.notifications.showAPIError(error);
+                self.notifications.showAPIError(error, {key: 'tag.save'});
             }
         });
     },

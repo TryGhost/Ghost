@@ -9,7 +9,7 @@ export default Ember.Route.extend(styleBody, {
 
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.get('notifications').showAlert('You can\'t reset your password while you\'re signed in.', {type: 'warn', delayed: true});
+            this.get('notifications').showAlert('You can\'t reset your password while you\'re signed in.', {type: 'warn', delayed: true, key: 'password.reset.signed-in'});
             this.transitionTo(Configuration.routeAfterAuthentication);
         }
     },
