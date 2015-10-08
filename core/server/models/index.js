@@ -1,6 +1,7 @@
 var _       = require('lodash'),
     Promise = require('bluebird'),
-    requireTree   = require('../require-tree'),
+    glob    = Promise.promisify(require('glob')),
+    path    = require('path'),
     models;
 
 models = {
@@ -19,7 +20,7 @@ models = {
         self.Base = require('./base');
 
         // Require all files in this directory
-        return requireTree.readAll(__dirname, {followSymlinks: false}).then(function then(modelFiles) {
+        return glob(path.join(__dirname, '*.js')).then(function then(modelFiles) {
             // For each found file, excluding those we don't want,
             // we will require it and cache it here.
             _.each(modelFiles, function each(path, fileName) {

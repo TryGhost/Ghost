@@ -519,7 +519,7 @@ describe('Config', function () {
                 validateStub = sandbox.stub(config, 'validate').returns(Promise.resolve());
 
             config.load().then(function () {
-                existsStub.calledOnce.should.be.true;
+                existsStub.called.should.be.true;
                 writeFileStub.calledOnce.should.be.true;
                 validateStub.calledOnce.should.be.true;
                 done();

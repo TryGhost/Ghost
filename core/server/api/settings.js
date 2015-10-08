@@ -119,10 +119,7 @@ filterPaths = function (paths, active) {
 
     _.each(pathKeys, function (key) {
         // do not include hidden files or _messages
-        if (key.indexOf('.') !== 0 &&
-                key !== '_messages' &&
-                key !== 'README.md'
-                ) {
+        if (key.indexOf('.') !== 0 && key !== '_messages') {
             item = {
                 name: key
             };
