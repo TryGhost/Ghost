@@ -302,9 +302,14 @@ describe('Config', function () {
                 config.urlFor(testContext, testData).should.equal('/short-and-sweet/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/short-and-sweet/');
 
+                // subdir tests
                 config.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                testData.post.url = '/blog-one/';
+                config.urlFor(testContext, testData).should.equal('/blog/blog-one/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/blog-one/');
             });
 
             it('should return url for a tag when asked for', function () {
