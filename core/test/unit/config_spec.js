@@ -379,6 +379,15 @@ describe('Config', function () {
                 testData = {nav: {url: 'http://sub.my-ghost-blog.com/'}};
                 config.urlFor(testContext, testData).should.equal('http://sub.my-ghost-blog.com/');
 
+                testData = {nav: {url: '//sub.my-ghost-blog.com/'}};
+                config.urlFor(testContext, testData).should.equal('//sub.my-ghost-blog.com/');
+
+                testData = {nav: {url: 'mailto:sub@my-ghost-blog.com/'}};
+                config.urlFor(testContext, testData).should.equal('mailto:sub@my-ghost-blog.com/');
+
+                testData = {nav: {url: '#this-anchor'}};
+                config.urlFor(testContext, testData).should.equal('#this-anchor');
+
                 config.set({url: 'http://my-ghost-blog.com/blog'});
                 testData = {nav: {url: 'http://my-ghost-blog.com/blog/short-and-sweet/'}};
                 config.urlFor(testContext, testData).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
