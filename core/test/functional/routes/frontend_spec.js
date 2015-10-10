@@ -526,6 +526,14 @@ describe('Frontend Routing', function () {
 
         after(testUtils.teardown);
 
+        it('should 404 for /author/ route', function (done) {
+            request.get('/author/')
+                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+        });
+
         it('should redirect without slash', function (done) {
             request.get('/author/ghost-owner/page/2')
                 .expect('Location', '/author/ghost-owner/page/2/')
@@ -652,6 +660,14 @@ describe('Frontend Routing', function () {
         });
 
         after(testUtils.teardown);
+
+        it('should 404 for /tag/ route', function (done) {
+            request.get('/tag/')
+                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+        });
 
         it('should redirect without slash', function (done) {
             request.get('/tag/injection/page/2')

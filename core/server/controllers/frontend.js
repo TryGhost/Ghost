@@ -72,8 +72,8 @@ function handleError(next) {
 function setResponseContext(req, res, data) {
     var contexts = [],
         pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-        tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/'),
-        authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/'),
+        tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/.+'),
+        authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/.+'),
         privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/'),
         indexPattern = new RegExp('^\\/' + config.routeKeywords.page + '\\/'),
         homePattern = new RegExp('^\\/$');
