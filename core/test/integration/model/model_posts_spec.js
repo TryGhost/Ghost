@@ -513,7 +513,7 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
-            it.only('can save a draft without setting published_by or published_at', function (done) {
+            it('can save a draft without setting published_by or published_at', function (done) {
                 var newPost = testUtils.DataGenerator.forModel.posts[2],
                     postId;
 
