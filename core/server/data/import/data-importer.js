@@ -23,13 +23,13 @@ DataImporter.prototype.loadRoles = function () {
 
 DataImporter.prototype.loadUsers = function () {
     var users = {all: {}},
-        options = _.extend({}, {include: ['roles'], limit: 'all'}, internal);
+        options = _.extend({}, {include: ['roles']}, internal);
 
-    return models.User.findPage(options).then(function (data) {
-        data.users.forEach(function (user) {
-            users.all[user.email] = {realId: user.id};
-            if (user.roles[0] && user.roles[0].name === 'Owner') {
-                users.owner = user;
+    return models.User.findAll(options).then(function (_users) {
+        _users.forEach(function (user) {
+            users.all[user.get('email')] = {realId: user.get('id')};
+            if (user.related('roles').toJSON(options)[0] && user.related('roles').toJSON(options)[0].name === 'Owner') {
+                users.owner = user.toJSON(options);
             }
         });
 
