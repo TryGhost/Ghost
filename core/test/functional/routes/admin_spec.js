@@ -9,7 +9,9 @@ var request    = require('supertest'),
     should     = require('should'),
 
     testUtils  = require('../../utils'),
-    ghost      = require('../../../../core');
+    ghost      = require('../../../../core'),
+
+    ghostInstance;
 
 describe('Admin Routing', function () {
     function doEnd(done) {
@@ -40,6 +42,7 @@ describe('Admin Routing', function () {
 
     before(function (done) {
         ghost().then(function (ghostServer) {
+            ghostInstance = ghostServer;
             // Setup the request object with the ghost express app
             request = request(ghostServer.rootApp);
 
@@ -185,6 +188,20 @@ describe('Admin Routing', function () {
     });
 
     describe('Ghost Admin Setup', function () {
+        it('should disable the Admin if the user config specifies it explicitly', function (done) {
+            var oldValue = ghostInstance.config.get().disableAdmin || false;
+            ghostInstance.config.set({disableAdmin: true});
+
+            request.get('/ghost/')
+                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect(404)
+                .expect(/Page not found/)
+                .end(function (err, res) {
+                    ghostInstance.config.set({disableAdmin: oldValue});
+                    doEnd(done)(err, res);
+                });
+        });
+
         it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
             request.get('/ghost/')
                 .expect('Location', /ghost\/setup/)
