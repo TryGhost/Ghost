@@ -4,27 +4,31 @@ var _            = require('lodash'),
     sinon        = require('sinon'),
     should       = require('should'),
     express      = require('express'),
+    Promise      = require('bluebird'),
 
-    // Stuff we test
+// Stuff we test
+    fs           = require('fs'),
+    hbs          = require('express-hbs'),
     themeHandler = require('../../../server/middleware/theme-handler'),
     errors       = require('../../../server/errors'),
 
+    api      = require('../../../server/api'),
     config   = require('../../../server/config'),
     origConfig = _.cloneDeep(config),
-    defaultConfig  = require('../../../../config.example')[process.env.NODE_ENV];
+    defaultConfig  = require('../../../../config.example')[process.env.NODE_ENV],
+    sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
 
 describe('Theme Handler', function () {
-    var req, res, next, blogApp, handler, sandbox;
+    var req, res, next, blogApp;
 
     beforeEach(function () {
         req = sinon.spy();
         res = sinon.spy();
         next = sinon.spy();
         blogApp = express();
-        handler = themeHandler(blogApp);
-        sandbox = sinon.sandbox.create();
+        req.app = blogApp;
     });
 
     afterEach(function () {
@@ -38,7 +42,7 @@ describe('Theme Handler', function () {
         it('sets all locals', function () {
             req.path = '/awesome-post';
 
-            handler.ghostLocals(req, res, next);
+            themeHandler.ghostLocals(req, res, next);
 
             res.locals.should.be.an.Object;
             res.locals.version.should.exist;
@@ -49,31 +53,65 @@ describe('Theme Handler', function () {
     });
 
     describe('activateTheme', function () {
-        it('should activate new theme', function () {
-            var errorStub = sandbox.stub(errors, 'updateActiveTheme');
-            handler.activateTheme('casper');
+        it('should activate new theme with partials', function () {
+            var errorStub = sandbox.stub(errors, 'updateActiveTheme'),
+                fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
+                    cb(null, {isDirectory: function () { return true; }});
+                }),
+                hbsStub = sandbox.spy(hbs, 'express3');
+
+            themeHandler.activateTheme(blogApp, 'casper');
 
             errorStub.calledWith('casper').should.be.true;
+            fsStub.calledOnce.should.be.true;
+            hbsStub.calledOnce.should.be.true;
+            hbsStub.firstCall.args[0].should.be.an.Object.and.have.property('partialsDir');
+            hbsStub.firstCall.args[0].partialsDir.should.have.lengthOf(2);
+            blogApp.get('activeTheme').should.equal('casper');
+        });
+
+        it('should activate new theme without partials', function () {
+            var errorStub = sandbox.stub(errors, 'updateActiveTheme'),
+                fsStub = sandbox.stub(fs, 'stat', function (path, cb) {
+                    cb(null, null);
+                }),
+                hbsStub = sandbox.spy(hbs, 'express3');
+
+            themeHandler.activateTheme(blogApp, 'casper');
+
+            errorStub.calledWith('casper').should.be.true;
+            fsStub.calledOnce.should.be.true;
+            hbsStub.calledOnce.should.be.true;
+            hbsStub.firstCall.args[0].should.be.an.Object.and.have.property('partialsDir');
+            hbsStub.firstCall.args[0].partialsDir.should.have.lengthOf(1);
             blogApp.get('activeTheme').should.equal('casper');
         });
     });
 
     describe('configHbsForContext', function () {
-        it('calls next', function () {
-            req.secure = true;
+        it('handles non secure context', function () {
             res.locals = {};
-            handler.configHbsForContext(req, res, next);
+            themeHandler.configHbsForContext(req, res, next);
 
+            should.not.exist(res.locals.secure);
             next.called.should.be.true;
         });
 
-        it('sets secure local variable', function () {
+        it('handles secure context', function () {
+            var themeOptSpy = sandbox.stub(hbs, 'updateTemplateOptions');
             req.secure = true;
             res.locals = {};
+            config.set({urlSSL: 'https://secure.blog'});
 
-            handler.configHbsForContext(req, res, next);
+            themeHandler.configHbsForContext(req, res, next);
 
-            res.locals.secure.should.equal(req.secure);
+            themeOptSpy.calledOnce.should.be.true;
+            themeOptSpy.firstCall.args[0].should.be.an.Object.and.have.property('data');
+            themeOptSpy.firstCall.args[0].data.should.be.an.Object.and.have.property('blog');
+            themeOptSpy.firstCall.args[0].data.blog.should.be.an.Object.and.have.property('url');
+            themeOptSpy.firstCall.args[0].data.blog.url.should.eql('https://secure.blog');
+            res.locals.secure.should.equal(true);
+            next.called.should.be.true;
         });
 
         it('sets view path', function () {
@@ -81,45 +119,101 @@ describe('Theme Handler', function () {
             res.locals = {};
             blogApp.set('activeTheme', 'casper');
 
-            handler.configHbsForContext(req, res, next);
+            themeHandler.configHbsForContext(req, res, next);
+
+            blogApp.get('views').should.not.be.undefined;
+        });
+
+        it('sets view path', function () {
+            req.secure = true;
+            res.locals = {};
+            blogApp.set('activeTheme', 'casper');
+
+            themeHandler.configHbsForContext(req, res, next);
 
             blogApp.get('views').should.not.be.undefined;
         });
     });
 
-    // describe('updateActiveTheme', function () {
-    //     it('updates the active theme if changed', function () {
-    //         var activateThemeSpy = sinon.spy(handler, 'activateTheme');
-    //         sandbox.stub(api.settings, 'read').withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-    //             settings: [{
-    //                 key: 'activeKey',
-    //                 value: 'casper'
-    //             }]
-    //         }));
-    //         blogApp.set('activeTheme', 'not-casper');
-    //         config.set({paths: {availableThemes: {casper: {}}}});
-    //
-    //         handler.updateActiveTheme(req, res, next);
-    //
-    //         activateThemeSpy.called.should.be.false;
-    //         next.called.should.be.false;
-    //     });
-    //
-    //     it('throws error if theme is missing', function () {
-    //         var errorSpy = sinon.spy(errors, 'throwError');
-    //         sandbox.stub(api.settings, 'read').withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-    //             settings: [{
-    //                 key: 'activeKey',
-    //                 value: 'rasper'
-    //             }]
-    //         }));
-    //         blogApp.set('activeTheme', 'not-casper');
-    //         config.set({paths: {availableThemes: {casper: {}}}});
-    //
-    //         handler.updateActiveTheme(req, res, next);
-    //
-    //         errorSpy.called.should.be.true;
-    //         next.called.should.be.false;
-    //     });
-    // });
+    describe('updateActiveTheme', function () {
+        it('updates the active theme if changed', function (done) {
+            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeKey',
+                    value: 'casper'
+                }]
+            }));
+            blogApp.set('activeTheme', 'not-casper');
+            config.set({paths: {availableThemes: {casper: {}}}});
+
+            themeHandler.updateActiveTheme(req, res, function () {
+                activateThemeSpy.called.should.be.true;
+                done();
+            });
+        });
+
+        it('does not update the active theme if not changed', function (done) {
+            var activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeKey',
+                    value: 'casper'
+                }]
+            }));
+            blogApp.set('activeTheme', 'casper');
+            config.set({paths: {availableThemes: {casper: {}}}});
+
+            themeHandler.updateActiveTheme(req, res, function () {
+                activateThemeSpy.called.should.be.false;
+                done();
+            });
+        });
+
+        it('throws error if theme is missing', function (done) {
+            var errorSpy = sandbox.spy(errors, 'throwError'),
+                activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+
+            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeKey',
+                    value: 'rasper'
+                }]
+            }));
+            blogApp.set('activeTheme', 'not-casper');
+            config.set({paths: {availableThemes: {casper: {}}}});
+
+            themeHandler.updateActiveTheme(req, res, function (err) {
+                should.exist(err);
+                errorSpy.called.should.be.true;
+                activateThemeSpy.called.should.be.false;
+                err.message.should.eql('The currently active theme "rasper" is missing.');
+                done();
+            });
+        });
+
+        it('throws only warns if theme is missing for admin req', function (done) {
+            var errorSpy = sandbox.spy(errors, 'throwError'),
+                warnSpy = sandbox.spy(errors, 'logWarn'),
+                activateThemeSpy = sandbox.spy(themeHandler, 'activateTheme');
+
+            sandbox.stub(api.settings, 'read').withArgs(sandbox.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeKey',
+                    value: 'rasper'
+                }]
+            }));
+            res.isAdmin = true;
+            blogApp.set('activeTheme', 'not-casper');
+            config.set({paths: {availableThemes: {casper: {}}}});
+
+            themeHandler.updateActiveTheme(req, res, function () {
+                errorSpy.called.should.be.false;
+                activateThemeSpy.called.should.be.false;
+                warnSpy.called.should.be.true;
+                warnSpy.calledWith('The currently active theme "rasper" is missing.').should.be.true;
+                done();
+            });
+        });
+    });
 });
