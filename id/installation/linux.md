@@ -1,74 +1,74 @@
 ---
-lang: example_translation
+lang: id
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
-permalink: /example_translation/installation/linux/
-chapter: installation
+meta_title: Cara Menginstall Ghost di Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menjalankan platform blogging Ghost di lingkungan lokal dan remote.
+heading: Menginstall Ghost &amp; Memulai
+subheading: Langkah awal untuk mengatur blog baru Anda untuk pertamakalinya.
+permalink: /id/installation/linux/
+chapter: instalasi
 section: linux
 prev_section: windows
 next_section: deploy
 ---
 
 
-# Installing on Linux <a id="install-linux"></a>
+# Menginstall pada Linux <a id="install-linux"></a>
 
-<p class="note"><strong>Note</strong> Ghost requires Node.js <strong>0.10.x</strong> (latest stable). We recommend Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
+<p class="note"><strong>Catatan</strong> Ghost membutuhkan Node.js <strong>0.10.x</strong> (versi stabil terakhir). Kami merekomendasikan Node.js <strong>0.10.30</strong> & npm <strong>1.4.21</strong>.</p>
 
 ### Install Node
 
-*   Either download the `.tar.gz` archive from [http://nodejs.org](http://nodejs.org), or you may prefer to follow the instructions on how to [install from a package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) instead.
-*   Double check that you have Node and npm installed by typing `node -v` and `npm -v` into a terminal window
+*   Antara unduh arsip `.tar.gz` dari [http://nodejs.org](http://nodejs.org), atau Anda mungkin lebih memilih mengikuti instruksi cara [menginstall dari package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager).
+*   Cek lagi apakah Anda telah menginstall Node dan npm dengan mengetik `node -v` dan `npm -v` di jendela terminal
 
-### Install and Run Ghost
-
-
-**If you are using Linux on your desktop follow these steps:**
-
-*   Log in to [http://ghost.org](http://ghost.org), and then click the blue 'Download Ghost Source Code' button
-*   On the downloads page, press the button to download the latest zip file & then extract the file to the location you want to run Ghost from
+### Install dan Jalankan Ghost
 
 
-**If you are using Linux as a guest OS or through SSH and only have the terminal, then:**
+**Jika Anda menggunakan Linux pada komputer anda ikuti langkah berikut:**
 
-*   Use the following command to download the latest release of Ghost:
+*   Masuk ke [http://ghost.org](http://ghost.org), dan klik tombol 'Download Ghost Source Code' berwarna biru
+*   Pada halaman downloads, tekan tombol untuk mengunduh berkas zip terakhir & ekstrak berkas ke lokasi dimana Anda ingin menjalankan Ghost
+
+
+**Jika Anda menggunakan Linux sebagai sistem operasi tamu atau melalui SSH dan hanya memiliki terminal, maka:**
+
+*   Gunakan perintah berikut untuk mengunduh rilisan terbaru dari Ghost:
 
     ```
     $ curl -L https://ghost.org/zip/ghost-latest.zip -o ghost.zip
     ```
 
-*   Unzip the archive and change into the directory using the following:
+*   Ekstrak berkas dan ganti direktori dengan:
 
     ```
     $ unzip -uo ghost.zip -d ghost
     ```
 
 
-**After you successfully extracted Ghost open a terminal, if you haven't already, then:**
+**Setelah anda berhasil mengekstrak Ghost buka terminal, jika Anda belum, lalu:**
 
-*   Change into the directory you extracted Ghost to with the following command:
+*   Ganti ke direktori dimana Anda telah mengekstrak Ghost dengan perintah berikut:
 
     ```
     $ cd /path/to/ghost
     ```
 
-*   To install Ghost type:
+*   Untuk menginstall Ghost ketik:
 
     ```
     npm install --production
     ```
     <span class="note">note the two dashes</span>
 
-*   When npm is finished installing, type the following to start Ghost in development mode: 
+*   Saat npm telah selesai menginstall, ketik berikut untuk menjalankan Ghost pada mode developmen: 
 
     ```
     $ npm start
     ```
 
-*   Ghost will now be running on **127.0.0.1:2368**<br />
-    <span class="note">You can adjust the IP-address and port in **config.js**</span>
+*   Ghost akan dijalankan di **127.0.0.1:2368**<br />
+    <span class="note">Anda dapat mengatur alamat IP dan port di **config.js**</span>
 
-*   In a browser, navigate to [http://127.0.0.1:2368](http://127.0.0.1:2368) to see your newly setup Ghost blog
-*   Change the url to [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) and create your admin user to login to the Ghost admin
+*   Pada browser, kunjungi [http://127.0.0.1:2368](http://127.0.0.1:2368) untuk melihat blog Ghost yang baru saja Anda buat
+*   Ganti url ke [http://127.0.0.1:2368/ghost](http://127.0.0.1:2368/ghost) dan buat akun admin untuk masuk ke area admin Ghost

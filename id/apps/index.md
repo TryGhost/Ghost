@@ -1,14 +1,14 @@
 ---
 lang: id
 layout: apps
-meta_title: How to Make Ghost Apps - Ghost Docs
-meta_description: An in depth guide to building apps for the Ghost blogging platform. 
+meta_title: Cara Membuat Ghost Apps - Ghost Docs
+meta_description: Panduan mendalam pembuatan apps untuk platform blogging Ghost. 
 heading: Ghost Apps
 chapter: apps
 ---
 
 {% raw %}
 
-## Coming soon
+## Segera
 
 {% endraw %}

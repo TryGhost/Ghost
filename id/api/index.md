@@ -1,14 +1,14 @@
 ---
 lang: id
 layout: api
-meta_title: The Ghost JSON API - Ghost Docs
-meta_description: A guide to the Ghost JSON API
+meta_title: Ghost JSON API - Ghost Docs
+meta_description: Sebuah panduan Ghost JSON API
 heading: Ghost JSON API
 chapter: api
 ---
 
 {% raw %}
 
-## Coming soon
+## Segera
 
 {% endraw %}

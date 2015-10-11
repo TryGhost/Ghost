@@ -1,71 +1,71 @@
 ---
 lang: id
 layout: installation
-meta_title: How to Install Ghost on Your Server - Ghost Docs
-meta_description: Everything you need to get the Ghost blogging platform up and running on your local or remote environement.
-heading: Installing Ghost &amp; Getting Started
-subheading: The first steps to setting up your new blog for the first time.
+meta_title: Cara Menginstall Ghost di Server Anda - Ghost Docs
+meta_description: Semua yang Anda butuhkan untuk menjalankan platform blogging Ghost di lingkungan lokal dan remote.
+heading: Menginstall Ghost &amp; Memulai
+subheading: Langkah awal untuk mengatur blog baru Anda untuk pertamakalinya.
 permalink: /id/installation/deploy/
-chapter: installation
+chapter: instalasi
 section: deploy
 prev_section: linux
-next_section: upgrading
+next_section: mengupgrade
 ---
-## Getting Ghost Live <a id="deploy"></a>
+## Menjalankan Ghost secara Live <a id="deploy"></a>
 
-So you're ready to get Ghost live? Excellent!
+Jadi Anda siap untuk menjalankan Ghost secara live? Excellent!
 
-The first decision you need to make, is whether you want to install and setup Ghost yourself, or whether you prefer to use an installer.
+Keputusan pertama yang harus Anda buat, adalah apakah Anda ingin menginstall dan mengkonfigurasi Ghost secara manual, atau dengan bantuan installer.
 
-### Installers
+### Installer
 
-There are a couple of options for simple installers at the moment:
+Ada beberapa opsi installer mudah untuk saat ini:
 
-*   Deploy to the cloud with [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
-*   Launch Ghost with [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
-*   Get up and running with a [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
+*   Luncurkan ke cloud dengan [Bitnami](http://wiki.bitnami.com/Applications/BitNami_Ghost).
+*   Luncurkan Ghost dengan [Rackspace deployments](http://developer.rackspace.com/blog/launch-ghost-with-rackspace-deployments.html).
+*   Jalankan Ghost secara cepat dengan sebuah [DigitalOcean Droplet](https://www.digitalocean.com/community/articles/how-to-use-the-digitalocean-ghost-application).
 
-### Manual Setup
+### Konfigurasi Manual
 
-You're going to need a hosting package that already has, or will allow you to install [Node.js](http://nodejs.org).
-    This means something like a cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) or other package that has SSH (terminal) access & will allow you to install Node.js. There are plenty around and they can be very cheap.
+Anda membutuhkan paket hosting yang telah memiliki, atau mengijinkan Anda untuk menginstall [Node.js](http://nodejs.org).
+    Ini berarti sesuatu yang mirip dengan cloud ([Amazon EC2](http://aws.amazon.com/ec2/), [DigitalOcean](http://www.digitalocean.com), [Rackspace Cloud](http://www.rackspace.com/cloud/)), VPS ([Webfaction](https://www.webfaction.com/), [Dreamhost](http://www.dreamhost.com/servers/vps/)) atau paket yang memiliki akses SSH (terminal) & mengijikan Anda untuk menginstall Node.js. Ada banyak opsi dan beberapa bisa berharga sangat murah.
 
-What won't work at the moment, is cPanel-style shared hosting as this is usually aimed specifically at hosting PHP. Although some offer Ruby, and so may offer Node.js in the future as they are somewhat similar.
+Yang tidak bisa bekerja saat ini, adalah shared hosting gaya cPanel karena biasanya ia ditargetkan secara spesifik untuk hosting PHP. Meskipun beberapa menawarkan Ruby, dan mungkin menawarkan Node.js di kemudian hari karena kemiripannya.
 
-<p>Unfortunately, many of the Node-specific cloud hosting solutions such as **Nodejitsu** & **Heroku** are **NOT** compatible with Ghost. They will work at first, but they will delete your files and therefore all image uploads and your database will disappear. Heroku supports MySQL so you could use this, but you will still lose any uploaded images.
+<p>Sayangnya, banyak cloud hosting yang spesifik untuk Node seperti **Nodejitsu** & **Heroku** **TIDAK** kompatibel dengan Ghost. Awalnya mereka akan bekerja, tetapi mereka akan menghapus berkas Anda yang berarti semua gambar unggahan dan database Anda akan hilang. Heroku mempunyai support terhadap MySQL jadi Anda bisa menggunakannya, tetapi Anda tetap akan kehilangan semua gambar yang diunggah.
 
-The following links contain instructions on how to get up and running with:
+Link berikut ini memuat instruksi cara menjalankan Ghost dengan:
 
-*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - from [Corbett Barr](http://ghosted.co)
-*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - from [howtoinstallghost.com](http://howtoinstallghost.com)
-*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - from [Gilbert Pellegrom](http://ghost.pellegrom.me/)
-*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - from [Gregg Housh](http://0v.org/)
-*   ...check the [installation forum](https://en.ghost.org/forum/installation) for more guides ...
+*   [Dreamhost](http://www.howtoinstallghost.com/how-to-install-ghost-on-dreamhost/) - dari [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [DigitalOcean](http://ghosted.co/install-ghost-digitalocean/) - dari [Corbett Barr](http://ghosted.co)
+*   [Webfaction](http://www.howtoinstallghost.com/how-to-install-ghost-on-webfaction-hosting/) - dari [howtoinstallghost.com](http://howtoinstallghost.com)
+*   [Rackspace](http://ghost.pellegrom.me/installing-ghost-on-ubuntu/) (Ubuntu 13.04 + linux service) - dari [Gilbert Pellegrom](http://ghost.pellegrom.me/)
+*   [Ubuntu + nginx + forever](http://0v.org/installing-ghost-on-ubuntu-nginx-and-mysql/) - dari [Gregg Housh](http://0v.org/)
+*   ...cek [installation forum](https://en.ghost.org/forum/installation) untuk panduan lainnya ...
 
-## Making Ghost run forever
+## Membuat Ghost berjalan selamanya
 
-The previously described method to start Ghost is `npm start`. This is a good way to do local develpment and tests, but if you start Ghost using the command line it will stop whenever you are closing the terminal window or log out from SSH. To prevent Ghost from stopping you have to run Ghost as a service. There are two ways to accomplish this.
+Metode yang dijelaskan sebelumnya untuk menjalankan Ghost adalah `npm start`. Ini adalah cara yang baik untuk melakukan developmen dan tes lokal, tetapi jika Anda menjalankan Ghost dengan command line ia akan berhenti ketika jendela terminal ditutup atau anda keluar dari SSH. Untuk mencegah Ghost berhenti Anda harus menjalankan Ghost sebagai sebuah service. Ada dua cara untuk melakukan hal ini.
 
 ### Forever ([https://npmjs.org/package/forever](https://npmjs.org/package/forever)) <a id="forever"></a>
 
-You can use `forever` to run Ghost as a background task. `forever` will also take care of your Ghost installation and it will restart the node process if it crashes.
+Ada dapat menggunakan `forever` untuk menjalankan Ghost sebagai background task. `forever` juga akan menjaga instalasi Ghost anda dan akan me-restart proses node jika terjadi crash.
 
-*   To install `forever` type `npm install forever -g`
-*   To start Ghost using `forever` from the Ghost installation directory type `NODE_ENV=production forever start index.js`
-*   To stop Ghost type `forever stop index.js`
-*   To check if Ghost is currently running type `forever list`
+*   Untuk menginstall `forever` ketik `npm install forever -g`
+*   Untuk menjalankan Ghost menggunakan `forever` dari direktori instalasi Ghost ketik `NODE_ENV=production forever start index.js`
+*   Untuk menghentikan Ghost ketik `forever stop index.js`
+*   Untuk mengecek apakah Ghost sedang berjalan ketik `forever list`
 
 ### Supervisor ([http://supervisord.org/](http://supervisord.org/)) <a id="supervisor"></a>
 
-Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maintain a package for Supervisor: A process control system which allows you to run Ghost at startup without using init scripts. Unlike an init script, Supervisor is portable between Linux distributions and versions.
+Distribusi Linux Populer&mdash;seperti Fedora, Debian, dan Ubuntu&mdash;me-maintain paket untuk Supervisor: Sebuah sistem kontrol proses yang membuat anda dapat menjalankan Ghost saat komputer baru dinyalakan tanpa skrip init. Tidak seperti skrip init, Supervisor portabel di berbagai distribusi dan versi Linux.
 
-*   [Install Supervisor](http://supervisord.org/installing.html) as required for your Linux distribution. Typically, this will be:
+*   [Install Supervisor](http://supervisord.org/installing.html) seperti yang dibutuhkan distribusi Linux Anda. Biasanya, ini adalah:
     *   Debian/Ubuntu: `apt-get install supervisor`
     *   Fedora: `yum install supervisor`
-    *   Most other distributions: `easy_install supervisor`
-*   Ensure that Supervisor is running, by running `service supervisor start`
-*   Create the startup script for your Ghost installation. Typically this will go in `/etc/supervisor/conf.d/ghost.conf` For example:
+    *   Kebanyakan distribusi lainnya: `easy_install supervisor`
+*   Pastikan Supervisor telah berjalan, dengan menjalankan `service supervisor start`
+*   Buat skrip startup untuk instalasi Ghost Anda. Biasanya ini akan terletak di `/etc/supervisor/conf.d/ghost.conf` Contohnya:
 
     ```
     [program:ghost]
@@ -79,44 +79,44 @@ Popular Linux distributions&mdash;such as Fedora, Debian, and Ubuntu&mdash;maint
     environment = NODE_ENV="production"
     ```
 
-*   Start Ghost using Supervisor: `supervisorctl start ghost`
-*   To stop Ghost: `supervisorctl stop ghost`
+*   Jalankan Ghost dengan Supervisor: `supervisorctl start ghost`
+*   Untuk menghentikan Ghost: `supervisorctl stop ghost`
 
-You can see the [documentation for Supervisor](http://supervisord.org) for more information.
+Anda dapat melihat [documentation for Supervisor](http://supervisord.org) untuk informasi lebih lanjut.
 
-### Init Script <a id="init-script"></a>
+### Skrip Init <a id="init-script"></a>
 
-Linux systems use init scripts to run on system boot. These scripts exist in /etc/init.d. To make Ghost run forever and even survive a reboot you could set up an init script to accomplish that task. The following example will work on Ubuntu and was tested on **Ubuntu 12.04**.
+Sistem Linux menggunakan skrip init untuk dijalankan saat sistem boot. Skrip ini terletak di /etc/init.d. Untuk membuat Ghost jalan selamanya dan bahkan tetap hidup saat reboot Anda dapat membuat skrip init yang menjalankan hal ini. Contoh berikut ini akan bekerja pada Ubuntu dan telah diuji pada **Ubuntu 12.04**.
 
-*   Create the file /etc/init.d/ghost with the following command:
+*   Buat berkas /etc/init.d/ghost dengan perintah berikut:
 
     ```
     $ sudo curl https://raw.githubusercontent.com/TryGhost/Ghost-Config/master/init.d/ghost \
       -o /etc/init.d/ghost
     ```
 
-*   Open the file with `nano /etc/init.d/ghost` and check the following:
-*   Change the `GHOST_ROOT` variable to the path where you installed Ghost
-*   Check if the `DAEMON` variable is the same as the output of `which node`
-*   The Init script runs with it's own Ghost user and group on your system, let's create them with the following:
+*   Buka berkas dengan `nano /etc/init.d/ghost` dan cek hal berikut:
+*   Ubah variabel `GHOST_ROOT` ke tempat anda menginstall Ghost
+*   Cek apakah variabel `DAEMON` memiliki output yang sama dengan `which node`
+*   Skrip init berjalan dengan akun dan grup Ghost tersendiri di sistem Anda, mari kita buat dengan cara berikut:
 
     ```
     $ sudo useradd -r ghost -U
     ```
 
-*   Let's also make sure the Ghost user can access the installation:
+*   Pastikan juga akun Ghost dapat mengakses instalasi:
 
     ```
     $ sudo chown -R ghost:ghost /path/to/ghost
     ```
 
-*   Change the execution permission for the init script by typing
+*   Ubah izin eksekusi untuk skrip init dengan mengetik
 
     ```
     $ sudo chmod 755 /etc/init.d/ghost
     ```
 
-*   Now you can control Ghost with the following commands:
+*   Sekarang Anda dapat mengontrol Ghost dengan perintah berikut:
 
     ```
     $ sudo service ghost start
@@ -125,40 +125,40 @@ Linux systems use init scripts to run on system boot. These scripts exist in /et
     $ sudo service ghost status
     ```
 
-*   To start Ghost on system start the newly created init script has to be registered for start up.
-    Type the following two commands in command line:
+*   Untuk menjalankan Ghost saat sistem baru dinyalakan skrip init yang baru dibuat harus diregistrasi untuk start up.
+    Ketik perintah berikut pada command line:
 
     ```
     $ sudo update-rc.d ghost defaults
     $ sudo update-rc.d ghost enable
     ```
 
-*   Let's make sure your user can change files, config.js for example in the Ghost directory, by assigning you to the ghost group:
+*   Pastikan akun anda dapat mengubah berkas, contohnya config.js di direktori Ghost, dengan menambahkannya ke grup ghost.:
     ```
     $ sudo adduser USERNAME ghost
     ```
 
-*   If you now restart your server Ghost should already be running for you.
+*   Jika Anda merestart server Anda Ghost harusnya sudah berjalan untuk Anda.
 
 
-## Setting up Ghost with a domain name <a id="nginx-domain"></a>
+## Mengkonfigurasi Ghost dengan domain name <a id="nginx-domain"></a>
 
-If you have setup up Ghost to run forever you can also setup a web server as a proxy to serve your blog with your domain.
-In this example we assume you are using **Ubuntu 12.04** and use **nginx** as a web server.
-It also assumes that Ghost is running in the background with one of the above mentioned ways.
+Jika anda telah mengkonfigurasi Ghost untuk jalan selamanya Anda juga dapat mengkonfigurasi sebuah web server sebagai proxy untuk melayani blog Anda dengan domain Anda.
+Pada contoh ini kami mengasumsikan Anda menggunakan **Ubuntu 12.04** dan **nginx** sebagai web server.
+Kami juga mengasumsikan Ghost telah berjalan di belakang layar dengan salah satu cara yang telah disebutkan.
 
 *   Install nginx
 
     ```
     $ sudo apt-get install nginx
     ```
-    <span class="note">This will install nginx and setup all necessary directories and basic configurations.</span>
+    <span class="note">Ini akan menginstall nginx dan mengkonfigurasi semua direktori yang dibutuhkan dan konfigurasi dasar.</span>
 
-*   Configure your site
+*   Mengkonfigurasi situs Anda
 
-    *   Create a new file in `/etc/nginx/sites-available/ghost.conf`
-    *   Open the file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-        and paste the following
+    *   Buat berkas baru di `/etc/nginx/sites-available/ghost.conf`
+    *   Buka berkas tersebut dengan pengolah text (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+        dan ketik berikut:
 
         ```
         server {
@@ -174,8 +174,8 @@ It also assumes that Ghost is running in the background with one of the above me
 
         ```
 
-    *   Change `server_name` to your domain
-    *   Symlink your configuration in `sites-enabled`:
+    *   Ubah `server_name` ke domain Anda
+    *   Symlink konfigurasi Anda di `sites-enabled`:
 
     ```
     $ sudo ln -s /etc/nginx/sites-available/ghost.conf /etc/nginx/sites-enabled/ghost.conf
@@ -187,22 +187,21 @@ It also assumes that Ghost is running in the background with one of the above me
     $ sudo service nginx restart
     ```
 
-## Setting up Ghost with SSL <a id="ssl"></a>
+## Mengkonfigurasi Ghost dengan SSL <a id="ssl"></a>
 
-After setting up a custom domain it is a good idea to secure the admin interface or maybe your whole blog using HTTPS. It is advisable to protect the admin interface with HTTPS because username and password are going to be transmitted in plaintext if you do not enable encryption.
+Setelah mengkonfigurasi domain mengamankan antarmuka admin atau bahkan seluruh blog Anda dengan HTTPS adalah ide yang baik. Disarankan untuk mengamankan antarmuka admin dengan HTTPS karena username dan pasword akan dikirimkan dalam bentuk plain text jika enkripsi tidak dinyalakan.
+Contoh berikut akan menunjukkan cara untuk menkonfigurasi SSL. Kami berasumsi, bahwa Anda telah mengikuti panduan ini dan menggunakan nginx sebagai proxy server Anda. Sebuah konfigurasi dengan proxy server yang berbeda harusnya terlihat mirip.
 
-The following example will show you how to set up SSL. We assume, that you have followed this guide so far and use nginx as your proxy server. A setup with another proxy server should look similar.
-
-First you need to obtain a SSL certificate from a provider you trust. Your provider will guide you through the process of generating your private key and a certificate signing request (CSR). After you have received the certificate file you have to copy the CRT file from your certificate provider and the KEY file which is generated during issuing the CSR to the server.
+Pertama Anda harus mendapatkan sertifikat SSL dari provider yang dipercaya. Provider Anda akan memandu Anda melalui proses pembuatan private key dan certificate signing request (CSR). Setelah anda menerima berkas sertifikatnya Anda harus membuat salinan berkas CRT dari provider sertifikat anda dan berkas KEY yang dihasilkan saat menerbitkan CSR ke server.
 
 - `mkdir /etc/nginx/ssl`
 - `cp server.crt /etc/nginx/ssl/server.crt`
 - `cp server.key /etc/nginx/ssl/server.key`
 
-After these two files are in place you need to update your nginx configuration.
+Setelah kedua berkas ini ada di tempatnya Anda harus mengupdate konfigurasi nginx Anda.
 
-*   Open the nginx configuration file with a text editor (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
-*   Add the settings indicated with a plus to your configuration file:
+*   Buka berkas konfigurasi nginx dengan pengolah teks (e.g. `sudo nano /etc/nginx/sites-available/ghost.conf`)
+*   Tembahkan konfigurasi bertanda plus ke berkas konfigurasi Anda:
 
     ```
      server {
@@ -228,8 +227,8 @@ After these two files are in place you need to update your nginx configuration.
     $ sudo service nginx restart
     ```
 
-After these steps you should be able to reach the admin area of your blog using a secure HTTPS connection. If you want to force all your traffic to use SSL it is possible to change the protocol of the url setting in your config.js file to https (e.g.: `url: 'https://my-ghost-blog.com'`). This will force the use of SSL for frontend and admin. All requests sent over HTTP will be redirected to HTTPS. If you include images in your post that are retrieved from domains that are using HTTP an 'insecure content' warning will appear. Scripts and fonts from HTTP domains will stop working.
+Setelah langkah-langkah tersebut Anda harus bisa mengakses area admin dari blog anda dengan koneksi aman HTTPS. Jika Anda ingin membuat semua traffic menggunakan SSL Anda dapat mengubah konfigurasi protokol url pada berkas config.js Anda ke https (e.g.: `url: 'https://my-ghost-blog.com'`). Hal ini akan memaksakan penggunaan SSL untuk frontend dan admin. Semua permintaan yang dikirim melalui HTTP akan diarahkan ke HTTPS. Jika anda menyisipkan gambar pada post Anda yang diambil dari domain yang menggunakan HTTP sebuah peringatan 'insecure content' akan muncul. Skrip dan font dari domain HTTP akan berhenti bekerja.
 
-In most cases you'll want to force SSL for the administration interface and serve the frontend using HTTP and HTTPS. To force SSL for the admin area the option `forceAdminSSL: true` was introduced.
+Pada kebanyakan kasus Anda akan ingin menggunakan SSL untuk antarmuka admin dan melayani frontend dengan HTTP dan HTTPS. Untuk memakai SSL pada area admin opsi `forceAdminSSL: true` telah diperkenalkan.
 
-If you need further information on how to set up SSL for your proxy server the official SSL documention of [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) and [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) are a perfect place to start.
+Jika Anda membutuhkan informasi lebih lanjut untuk cara mengkonfigurasi SSL untuk proxy server Anda dokumentasi resmi SSL [nginx](http://nginx.org/en/docs/http/configuring_https_servers.html) dan [apache](http://httpd.apache.org/docs/current/ssl/ssl_howto.html) adalah tempat yang sempurna untuk memulai.
