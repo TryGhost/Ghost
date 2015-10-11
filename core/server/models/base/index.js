@@ -187,7 +187,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * Returns an array of keys permitted in every method's `options` hash.
      * Can be overridden and added to by a model's `permittedOptions` method.
-     * @return {Array} Keys allowed in the `options` hash of every model's method.
+     * @return {Object} Keys allowed in the `options` hash of every model's method.
      */
     permittedOptions: function permittedOptions() {
         // terms to whitelist for all methods.
@@ -229,6 +229,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findAll: function findAll(options) {
         options = this.filterOptions(options, 'findAll');
+        options.withRelated = _.union(options.withRelated, options.include);
         return this.forge().fetchAll(options).then(function then(result) {
             if (options.include) {
                 _.each(result.models, function each(item) {
