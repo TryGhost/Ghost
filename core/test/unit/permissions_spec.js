@@ -142,16 +142,16 @@ describe('Permissions', function () {
         });
 
         it('should return unchanged object for post with public context', function (done) {
-            var public = {context: {}};
+            var publicContext = {context: {}};
 
-            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(public)).then(function (result) {
-                result.should.not.eql(public);
+            permissions.applyPublicRules('posts', 'browse', _.cloneDeep(publicContext)).then(function (result) {
+                result.should.not.eql(publicContext);
                 result.should.eql({
                     context: {},
                     status: 'published'
                 });
 
-                return permissions.applyPublicRules('posts', 'browse', _.extend({}, _.cloneDeep(public), {status: 'published'}));
+                return permissions.applyPublicRules('posts', 'browse', _.extend({}, _.cloneDeep(publicContext), {status: 'published'}));
             }).then(function (result) {
                 result.should.eql({
                     context: {},
@@ -243,16 +243,16 @@ describe('Permissions', function () {
         });
 
         it('should return unchanged object for user with public context', function (done) {
-            var public = {context: {}};
+            var publicContext = {context: {}};
 
-            permissions.applyPublicRules('users', 'browse', _.cloneDeep(public)).then(function (result) {
-                result.should.not.eql(public);
+            permissions.applyPublicRules('users', 'browse', _.cloneDeep(publicContext)).then(function (result) {
+                result.should.not.eql(publicContext);
                 result.should.eql({
                     context: {},
                     status: 'active'
                 });
 
-                return permissions.applyPublicRules('users', 'browse', _.extend({}, _.cloneDeep(public), {status: 'active'}));
+                return permissions.applyPublicRules('users', 'browse', _.extend({}, _.cloneDeep(publicContext), {status: 'active'}));
             }).then(function (result) {
                 result.should.eql({
                     context: {},

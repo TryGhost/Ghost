@@ -54,7 +54,7 @@ describe('Authentication API', function () {
         request.post(testUtils.API.getApiQuery('authentication/token'))
             .send({grant_type: 'password', username: 'invalid@email.com', password: user.password, client_id: 'ghost-admin', client_secret: 'not_available'})
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404)
             .end(function (err, res) {
                 if (err) {
@@ -71,7 +71,7 @@ describe('Authentication API', function () {
         request.post(testUtils.API.getApiQuery('authentication/token'))
             .send({grant_type: 'password', username: user.email, password: 'invalid', client_id: 'ghost-admin', client_secret: 'not_available'})
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(401)
             .end(function (err, res) {
                 if (err) {
@@ -118,7 +118,7 @@ describe('Authentication API', function () {
         request.post(testUtils.API.getApiQuery('authentication/token'))
             .send({grant_type: 'refresh_token', refresh_token: 'invalid', client_id: 'ghost-admin', client_secret: 'not_available'})
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(403)
             .end(function (err, res) {
                 if (err) {

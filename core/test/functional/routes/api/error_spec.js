@@ -30,7 +30,7 @@ describe('Unauthorized', function () {
     describe('Unauthorized API', function () {
         it('can\'t retrieve posts', function (done) {
             request.get(testUtils.API.getApiQuery('posts/'))
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(401)
                 .end(function firstRequest(err, res) {
                     if (err) {

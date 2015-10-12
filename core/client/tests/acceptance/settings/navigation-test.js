@@ -13,7 +13,7 @@ import initializeTestHelpers from 'simple-auth-testing/test-helpers';
 
 initializeTestHelpers();
 
-const { run } = Ember,
+const {run} = Ember,
     // TODO: Pull this into a fixture or similar when required elsewhere
     requiredSettings = [{
         created_at: '2015-09-11T09:44:30.805Z',
