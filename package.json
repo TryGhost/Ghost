@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Just a blogging platform.",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -22,7 +22,7 @@
     "test": "grunt validate --verbose"
   },
   "engines": {
-    "node": "~0.10.0 || ~0.12.0",
+    "node": "~0.10.0 || ~0.12.0 || ~4.1.2",
     "iojs": "~1.2.0"
   },
   "dependencies": {
@@ -60,7 +60,7 @@
     "rss": "1.1.1",
     "semver": "4.3.6",
     "showdown-ghost": "0.3.6",
-    "sqlite3": "3.0.8",
+    "sqlite3": "^3.1.0",
     "unidecode": "0.1.3",
     "validator": "3.40.0",
     "xml": "1.0.0"
