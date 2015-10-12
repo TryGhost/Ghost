@@ -886,6 +886,79 @@ describe('Post Model', function () {
                     done();
                 }).catch(done);
             });
+
+            it('published page', function (done) {
+                // We're going to try deleting page id 6 which also has tag id 1
+                var firstItemData = {id: 6};
+
+                // Test that we have the post we expect, with exactly one tag
+                PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
+                    var page;
+                    should.exist(results);
+                    page = results.toJSON();
+                    page.id.should.equal(firstItemData.id);
+                    page.status.should.equal('published');
+                    page.page.should.be.true;
+
+                    // Destroy the page
+                    return PostModel.destroy(firstItemData);
+                }).then(function (response) {
+                    var deleted = response.toJSON();
+
+                    should.equal(deleted.author, undefined);
+
+                    eventSpy.calledTwice.should.be.true;
+                    eventSpy.firstCall.calledWith('page.unpublished').should.be.true;
+                    eventSpy.secondCall.calledWith('page.deleted').should.be.true;
+
+                    // Double check we can't find the post again
+                    return PostModel.findOne(firstItemData);
+                }).then(function (newResults) {
+                    should.equal(newResults, null);
+
+                    // Double check we can't find any related tags
+                    return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
+                }).then(function (postsTags) {
+                    postsTags.should.be.empty;
+
+                    done();
+                }).catch(done);
+            });
+
+            it('draft page', function (done) {
+                // We're going to try deleting post id 4 which also has tag id 4
+                var firstItemData = {id: 7, status: 'draft'};
+
+                // Test that we have the post we expect, with exactly one tag
+                PostModel.findOne(firstItemData, {include: ['tags']}).then(function (results) {
+                    var page;
+                    should.exist(results);
+                    page = results.toJSON();
+                    page.id.should.equal(firstItemData.id);
+
+                    // Destroy the page
+                    return PostModel.destroy(firstItemData);
+                }).then(function (response) {
+                    var deleted = response.toJSON();
+
+                    should.equal(deleted.author, undefined);
+
+                    eventSpy.calledOnce.should.be.true;
+                    eventSpy.firstCall.calledWith('page.deleted').should.be.true;
+
+                    // Double check we can't find the post again
+                    return PostModel.findOne(firstItemData);
+                }).then(function (newResults) {
+                    should.equal(newResults, null);
+
+                    // Double check we can't find any related tags
+                    return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
+                }).then(function (postsTags) {
+                    postsTags.should.be.empty;
+
+                    done();
+                }).catch(done);
+            });
         });
     });
 
