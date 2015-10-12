@@ -104,7 +104,7 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
-        this.on('destroyed', function onDestroyed(model) {
+        this.on('destroying', function onDestroying(model) {
             if (model.previous('status') === 'published') {
                 model.emitChange('unpublished');
             }
