@@ -26,7 +26,7 @@
     "iojs": "~1.2.0"
   },
   "dependencies": {
-    "bcryptjs": "2.1.0",
+    "bcryptjs": "2.3.0",
     "bluebird": "2.9.27",
     "body-parser": "1.12.4",
     "bookshelf": "0.7.9",
