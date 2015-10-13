@@ -6,6 +6,9 @@ var Promise            = require('bluebird'),
     config             = require('../config'),
     errors             = require('../errors'),
     settings           = require('./settings'),
+    utils              = require('./utils'),
+    pipeline           = require('../utils/pipeline'),
+    docName            = 'themes',
     themes;
 
 /**
@@ -21,41 +24,57 @@ themes = {
      * @returns {Promise(Themes)}
      */
     browse: function browse(options) {
-        options = options || {};
+        var tasks;
 
-        return canThis(options.context).browse.theme().then(function () {
+        function handlePermissions(options) {
+            return canThis(options.context).browse.theme().then(function () {
+                return Promise.resolve();
+            }, function () {
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
+            });
+        }
+
+        function fetchData() {
             return Promise.all([
                 settings.read({key: 'activeTheme', context: {internal: true}}),
                 config.paths.availableThemes
-            ]).then(function (result) {
-                var activeTheme = result[0].settings[0].value,
-                    availableThemes = result[1],
-                    themes = [],
-                    themeKeys = Object.keys(availableThemes);
+            ]);
+        }
 
-                _.each(themeKeys, function (key) {
-                    if (key.indexOf('.') !== 0
-                            && key !== '_messages'
-                            && key !== 'README.md'
-                            ) {
-                        var item = {
-                            uuid: key
-                        };
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName),
+            handlePermissions,
+            fetchData
+        ];
 
-                        if (availableThemes[key].hasOwnProperty('package.json')) {
-                            item = _.merge(item, availableThemes[key]['package.json']);
-                        }
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options).then(function formatResponse(result) {
+            var activeTheme = result[0].settings[0].value,
+                availableThemes = result[1],
+                themes = [],
+                themeKeys = Object.keys(availableThemes);
 
-                        item.active = item.uuid === activeTheme;
+            _.each(themeKeys, function (key) {
+                if (key.indexOf('.') !== 0
+                        && key !== '_messages'
+                        && key !== 'README.md'
+                        ) {
+                    var item = {
+                        uuid: key
+                    };
 
-                        themes.push(item);
+                    if (availableThemes[key].hasOwnProperty('package.json')) {
+                        item = _.merge(item, availableThemes[key]['package.json']);
                     }
-                });
 
-                return {themes: themes};
+                    item.active = item.uuid === activeTheme;
+
+                    themes.push(item);
+                }
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
+
+            return {themes: themes};
         });
     },
 
@@ -67,18 +86,21 @@ themes = {
      * @returns {Promise(Theme)}
      */
     edit: function edit(object, options) {
-        var themeName;
+        var tasks,
+            attrs = ['uuid'];
 
-        // Check whether the request is properly formatted.
-        if (!_.isArray(object.themes)) {
-            return Promise.reject({type: 'BadRequest', message: 'Invalid request.'});
+        function handlePermissions(options) {
+            return canThis(options.context).edit.theme().then(function () {
+                return options;
+            }, function () {
+                return Promise.reject(new errors.NoPermissionError('You do not have permission to edit themes.'));
+            });
         }
 
-        themeName = object.themes[0].uuid;
-
-        return canThis(options.context).edit.theme().then(function () {
+        function editTheme(options) {
             return themes.browse(options).then(function (availableThemes) {
-                var theme;
+                var theme,
+                    themeName = object.themes[0].uuid;
 
                 // Check if the theme exists
                 theme = _.find(availableThemes.themes, function (currentTheme) {
@@ -97,9 +119,17 @@ themes = {
                     return {themes: [theme]};
                 });
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit themes.'));
-        });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {attrs: attrs}),
+            handlePermissions,
+            editTheme
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     }
 };
 
