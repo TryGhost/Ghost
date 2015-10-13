@@ -74,7 +74,7 @@ export default Ember.Component.extend({
                 self.sendAction('canceled');
             });
 
-            this.sendAction('initUploader', this.get('uploaderReference'));
+            this.sendAction('initUploader', ref);
         }
     }
 });
