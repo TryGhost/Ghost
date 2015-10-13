@@ -8,9 +8,7 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../../helpers/start-app';
-import Pretender from 'pretender';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
-import requiredSettings from '../../fixtures/settings';
 
 const {run} = Ember,
     // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
@@ -41,194 +39,14 @@ const {run} = Ember,
     };
 
 describe('Acceptance: Settings - Tags', function () {
-    let application,
-        store,
-        server,
-        roleName;
+    let application;
 
     beforeEach(function () {
         application = startApp();
-        store = application.__container__.lookup('service:store');
-        server = new Pretender(function () {
-            // TODO: This needs to either be fleshed out to include all user data, or be killed with fire
-            // as it needs to be loaded with all authenticated page loads
-            this.get('/ghost/api/v0.1/users/me', function () {
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify({users: [{
-                    id: '1',
-                    roles: [{
-                        id: 1,
-                        name: roleName,
-                        slug: 'barry'
-                    }]
-                }]})];
-            });
-
-            this.get('/ghost/api/v0.1/settings/', function (_request) {
-                let response = {meta: {filters: 'blog,theme'}};
-                response.settings = requiredSettings;
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-
-            // TODO: This will be needed for all authenticated page loads
-            // - is there some way to make this a default?
-            this.get('/ghost/api/v0.1/notifications/', function (_request) {
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify({notifications: []})];
-            });
-
-            this.get('/ghost/api/v0.1/tags/', function (_request) {
-                let response = {};
-
-                response.meta = {
-                    pagination: {
-                        page: 1,
-                        limit: 15,
-                        pages: 1,
-                        total: 2,
-                        next: null,
-                        prev: null
-                    }
-                };
-
-                response.tags = [
-                    {
-                        id: 1,
-                        parent: null,
-                        uuid: 'e2016ef1-4b51-46ff-9388-c6f066fc2e6c',
-                        image: '/content/images/2015/10/tag-1.jpg',
-                        name: 'Tag One',
-                        slug: 'tag-one',
-                        description: 'Description one.',
-                        meta_title: 'Meta Title One',
-                        meta_description: 'Meta description one.',
-                        created_at: '2015-09-11T09:44:29.871Z',
-                        created_by: 1,
-                        updated_at: '2015-10-19T16:25:07.756Z',
-                        updated_by: 1,
-                        hidden: false,
-                        post_count: 1
-                    },
-                    {
-                        id: 2,
-                        parent: null,
-                        uuid: '0cade0f9-7a3f-4fd1-a80a-3a1ab7028340',
-                        image: '/content/images/2015/10/tag-2.jpg',
-                        name: 'Tag Two',
-                        slug: 'tag-two',
-                        description: 'Description two.',
-                        meta_title: 'Meta Title Two',
-                        meta_description: 'Meta description two.',
-                        created_at: '2015-09-11T09:44:29.871Z',
-                        created_by: 1,
-                        updated_at: '2015-10-19T16:25:07.756Z',
-                        updated_by: 1,
-                        hidden: false,
-                        post_count: 2
-                    }
-                ];
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-
-            this.get('/ghost/api/v0.1/tags/slug/tag-two/', function (_request) {
-                let response = {};
-
-                response.tag = {
-                    id: 2,
-                    parent: null,
-                    uuid: '0cade0f9-7a3f-4fd1-a80a-3a1ab7028340',
-                    image: '/content/images/2015/10/tag-2.jpg',
-                    name: 'Tag Two',
-                    slug: 'tag-two',
-                    description: 'Description two.',
-                    meta_title: 'Meta Title Two',
-                    meta_description: 'Meta description two.',
-                    created_at: '2015-09-11T09:44:29.871Z',
-                    created_by: 1,
-                    updated_at: '2015-10-19T16:25:07.756Z',
-                    updated_by: 1,
-                    hidden: false,
-                    post_count: 2
-                };
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-
-            this.put('/ghost/api/v0.1/tags/2/', function (_request) {
-                let response = {};
-
-                response.tag = {
-                    id: 2,
-                    parent: null,
-                    uuid: '0cade0f9-7a3f-4fd1-a80a-3a1ab7028340',
-                    image: '/content/images/2015/10/tag-2.jpg',
-                    name: 'Saved Tag',
-                    slug: 'tag-two',
-                    description: 'Description two.',
-                    meta_title: 'Meta Title Two',
-                    meta_description: 'Meta description two.',
-                    created_at: '2015-09-11T09:44:29.871Z',
-                    created_by: 1,
-                    updated_at: '2015-10-19T16:25:07.756Z',
-                    updated_by: 1,
-                    hidden: false,
-                    post_count: 2
-                };
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-
-            this.post('/ghost/api/v0.1/tags/', function (_request) {
-                let response = {};
-
-                response.tag = {
-                    id: 3,
-                    parent: null,
-                    uuid: 'de9f4636-0398-4e23-a963-e073d12bc511',
-                    image: '/content/images/2015/10/tag-3.jpg',
-                    name: 'Tag Three',
-                    slug: 'tag-three',
-                    description: 'Description three.',
-                    meta_title: 'Meta Title Three',
-                    meta_description: 'Meta description three.',
-                    created_at: '2015-09-11T09:44:29.871Z',
-                    created_by: 1,
-                    updated_at: '2015-10-19T16:25:07.756Z',
-                    updated_by: 1,
-                    hidden: false,
-                    post_count: 2
-                };
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-
-            this.delete('/ghost/api/v0.1/tags/3/', function (_request) {
-                let response = {tags: []};
-
-                response.tags.push({
-                    id: 3,
-                    parent: null,
-                    uuid: 'de9f4636-0398-4e23-a963-e073d12bc511',
-                    image: '/content/images/2015/10/tag-3.jpg',
-                    name: 'Tag Three',
-                    slug: 'tag-three',
-                    description: 'Description three.',
-                    meta_title: 'Meta Title Three',
-                    meta_description: 'Meta description three.',
-                    created_at: '2015-09-11T09:44:29.871Z',
-                    created_by: 1,
-                    updated_at: '2015-10-19T16:25:07.756Z',
-                    updated_by: 1,
-                    hidden: false,
-                    post_count: 2
-                });
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-        });
     });
 
     afterEach(function () {
-        Ember.run(application, 'destroy');
+        run(application, 'destroy');
     });
 
     it('redirects to signin when not authenticated', function () {
@@ -241,27 +59,38 @@ describe('Acceptance: Settings - Tags', function () {
     });
 
     it('redirects to team page when authenticated as author', function () {
-        roleName = 'Author';
+        const role = server.create('role', {name: 'Author'}),
+              user = server.create('user', {roles: [role], slug: 'test-user'});
+
         authenticateSession(application);
         visit('/settings/navigation');
 
         andThen(() => {
-            expect(currentURL()).to.match(/^\/team\//);
+            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
         });
     });
 
     describe('when logged in', function () {
         beforeEach(function () {
-            roleName = 'Administrator';
+            const role = server.create('role', {name: 'Administrator'}),
+                  user = server.create('user', {roles: [role]});
+
+            // load the settings fixtures
+            // TODO: this should always be run for acceptance tests
+            server.loadFixtures();
+
             authenticateSession(application);
         });
 
         it('it renders, can be navigated, can edit, create & delete tags', function () {
+            const tag1 = server.create('tag'),
+                  tag2 = server.create('tag');
+
             visit('/settings/tags');
 
             andThen(() => {
                 // it redirects to first tag
-                expect(currentURL(), 'currentURL').to.equal('/settings/tags/tag-one');
+                expect(currentURL(), 'currentURL').to.equal(`/settings/tags/${tag1.slug}`);
 
                 // it has correct page title
                 expect(document.title, 'page title').to.equal('Settings - Tags - Test Blog');
@@ -274,17 +103,17 @@ describe('Acceptance: Settings - Tags', function () {
                 expect(find('.settings-tags .settings-tag').length, 'tag list count')
                     .to.equal(2);
                 expect(find('.settings-tags .settings-tag:first .tag-title').text(), 'tag list item title')
-                    .to.equal('Tag One');
+                    .to.equal(tag1.name);
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/tag-one"]').hasClass('active'), 'highlights selected tag')
+                expect(find(`a[href="/settings/tags/${tag1.slug}"]`).hasClass('active'), 'highlights selected tag')
                     .to.be.true;
 
                 // it shows selected tag form
                 expect(find('.tag-settings-pane h4').text(), 'settings pane title')
                     .to.equal('Tag Settings');
                 expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
-                    .to.equal('Tag One');
+                    .to.equal(tag1.name);
             });
 
             // click the second tag in the list
@@ -292,15 +121,15 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it navigates to selected tag
-                expect(currentURL(), 'url after clicking tag').to.equal('/settings/tags/tag-two');
+                expect(currentURL(), 'url after clicking tag').to.equal(`/settings/tags/${tag2.slug}`);
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/tag-two"]').hasClass('active'), 'highlights selected tag')
+                expect(find(`a[href="/settings/tags/${tag2.slug}"]`).hasClass('active'), 'highlights selected tag')
                     .to.be.true;
 
                 // it shows selected tag form
                 expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
-                    .to.equal('Tag Two');
+                    .to.equal(tag2.name);
             });
 
             andThen(() => {
@@ -311,10 +140,10 @@ describe('Acceptance: Settings - Tags', function () {
                 });
 
                 // it navigates to previous tag
-                expect(currentURL(), 'url after keyboard up arrow').to.equal('/settings/tags/tag-one');
+                expect(currentURL(), 'url after keyboard up arrow').to.equal(`/settings/tags/${tag1.slug}`);
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/tag-one"]').hasClass('active'), 'selects previous tag')
+                expect(find(`a[href="/settings/tags/${tag1.slug}"]`).hasClass('active'), 'selects previous tag')
                     .to.be.true;
             });
 
@@ -326,10 +155,10 @@ describe('Acceptance: Settings - Tags', function () {
                 });
 
                 // it navigates to previous tag
-                expect(currentURL(), 'url after keyboard down arrow').to.equal('/settings/tags/tag-two');
+                expect(currentURL(), 'url after keyboard down arrow').to.equal(`/settings/tags/${tag2.slug}`);
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/tag-two"]').hasClass('active'), 'selects next tag')
+                expect(find(`a[href="/settings/tags/${tag2.slug}"]`).hasClass('active'), 'selects next tag')
                     .to.be.true;
             });
 
@@ -340,9 +169,9 @@ describe('Acceptance: Settings - Tags', function () {
             andThen(() => {
                 // check we update with the data returned from the server
                 expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'tag list updates on save')
-                    .to.equal('Saved Tag');
+                    .to.equal('New Name');
                 expect(find('.tag-settings-pane input[name="name"]').val(), 'settings form updates on save')
-                    .to.equal('Saved Tag');
+                    .to.equal('New Name');
             });
 
             // start new tag
@@ -369,14 +198,14 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it redirects to the new tag's URL
-                expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/tag-three');
+                expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/new-tag');
 
                 // it adds the tag to the list and selects
                 expect(find('.settings-tags .settings-tag').length, 'tag list count after creation')
                     .to.equal(3);
                 expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'new tag list item title')
-                    .to.equal('Tag Three');
-                expect(find('a[href="/settings/tags/tag-three"]').hasClass('active'), 'highlights new tag')
+                    .to.equal('New Tag');
+                expect(find('a[href="/settings/tags/new-tag"]').hasClass('active'), 'highlights new tag')
                     .to.be.true;
             });
 
@@ -386,7 +215,7 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it redirects to the first tag
-                expect(currentURL(), 'URL after tag deletion').to.equal('/settings/tags/tag-one');
+                expect(currentURL(), 'URL after tag deletion').to.equal(`/settings/tags/${tag1.slug}`);
 
                 // it removes the tag from the list
                 expect(find('.settings-tags .settings-tag').length, 'tag list count after deletion')
@@ -395,25 +224,53 @@ describe('Acceptance: Settings - Tags', function () {
         });
 
         it('loads tag via slug when accessed directly', function () {
-            visit('/settings/tags/tag-two');
+            server.createList('tag', 2);
+
+            visit('/settings/tags/tag-1');
 
             andThen(() => {
-                expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-two');
+                expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-1');
 
                 // it loads all other tags
                 expect(find('.settings-tags .settings-tag').length, 'tag list count after direct load')
                     .to.equal(2);
 
                 // selects tag in list
-                expect(find('a[href="/settings/tags/tag-two"]').hasClass('active'), 'highlights requested tag')
+                expect(find('a[href="/settings/tags/tag-1"]').hasClass('active'), 'highlights requested tag')
                     .to.be.true;
 
                 // shows requested tag in settings pane
                 expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
-                    .to.equal('Tag Two');
+                    .to.equal('Tag 1');
             });
         });
 
-        it('has infinite scroll pagination of tags list');
+        it('has infinite scroll pagination of tags list', function () {
+            server.createList('tag', 32);
+
+            visit('settings/tags/tag-0');
+
+            andThen(() => {
+                // it loads first page
+                expect(find('.settings-tags .settings-tag').length, 'tag list count on first load')
+                    .to.equal(15);
+
+                find('.tag-list').scrollTop(find('.tag-list-content').height());
+            });
+
+            wait().then(() => {
+                // it loads the second page
+                expect(find('.settings-tags .settings-tag').length, 'tag list count on second load')
+                    .to.equal(30);
+
+                find('.tag-list').scrollTop(find('.tag-list-content').height());
+            });
+
+            wait().then(() => {
+                // it loads the final page
+                expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
+                    .to.equal(32);
+            });
+        });
     });
 });
