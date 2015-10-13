@@ -8,79 +8,19 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../../helpers/start-app';
-import Pretender from 'pretender';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
-import requiredSettings from '../../fixtures/settings';
 
 const {run} = Ember;
 
 describe('Acceptance: Settings - Navigation', function () {
-    let application,
-        store,
-        server;
+    let application;
 
     beforeEach(function () {
         application = startApp();
-        store = application.__container__.lookup('service:store');
-        server = new Pretender(function () {
-            // TODO: This needs to either be fleshed out to include all user data, or be killed with fire
-            // as it needs to be loaded with all authenticated page loads
-            this.get('/ghost/api/v0.1/users/me', function () {
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify({users: []})];
-            });
-
-            this.get('/ghost/api/v0.1/settings/', function (_request) {
-                let response = {meta: {filters: 'blog,theme'}};
-                response.settings = [{
-                    created_at: '2015-09-11T09:44:30.810Z',
-                    created_by: 1,
-                    id: 16,
-                    key: 'navigation',
-                    type: 'blog',
-                    updated_at: '2015-09-23T13:32:49.868Z',
-                    updated_by: 1,
-                    uuid: '4cc51d1c-fcbd-47e6-a71b-fdd1abb223fc',
-                    value: JSON.stringify([
-                        {label: 'Home', url: '/'},
-                        {label: 'About', url: '/about'}
-                    ])
-                }];
-                response.settings.pushObjects(requiredSettings);
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-
-            // TODO: This will be needed for all authenticated page loads
-            // - is there some way to make this a default?
-            this.get('/ghost/api/v0.1/notifications/', function (_request) {
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify({notifications: []})];
-            });
-
-            this.put('/ghost/api/v0.1/settings/', function (_request) {
-                let response = {meta: {}};
-                response.settings = [{
-                    created_at: '2015-09-11T09:44:30.810Z',
-                    created_by: 1,
-                    id: 16,
-                    key: 'navigation',
-                    type: 'blog',
-                    updated_at: '2015-09-23T13:32:49.868Z',
-                    updated_by: 1,
-                    uuid: '4cc51d1c-fcbd-47e6-a71b-fdd1abb223fc',
-                    value: JSON.stringify([
-                        {label: 'Test', url: '/test'},
-                        {label: 'About', url: '/about'}
-                    ])
-                }];
-                response.settings.pushObjects(requiredSettings);
-
-                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
-            });
-        });
     });
 
     afterEach(function () {
-        Ember.run(application, 'destroy');
+        run(application, 'destroy');
     });
 
     it('redirects to signin when not authenticated', function () {
@@ -88,30 +28,30 @@ describe('Acceptance: Settings - Navigation', function () {
         visit('/settings/navigation');
 
         andThen(function () {
-            expect(currentPath()).to.not.equal('settings.navigation');
+            expect(currentURL(), 'currentURL').to.equal('/signin');
         });
     });
 
     it('redirects to team page when authenticated as author', function () {
-        run(() => {
-            let role = store.push('role', {id: 1, name: 'Author'});
-            store.push('user', {id: 'me', roles: [role]});
-        });
+        const role = server.create('role', {name: 'Author'}),
+              user = server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/navigation');
 
         andThen(function () {
-            expect(currentPath()).to.equal('team.user');
+            expect(currentURL(), 'currentURL').to.equal('/team/test-user');
         });
     });
 
     describe('when logged in', function () {
         beforeEach(function () {
-            run(() => {
-                let role = store.push('role', {id: 1, name: 'Administrator'});
-                store.push('user', {id: 'me', roles: [role]});
-            });
+            const role = server.create('role', {name: 'Administrator'}),
+                  user = server.create('user', {roles: [role]});
+
+            // load the settings fixtures
+            // TODO: this should always be run for acceptance tests
+            server.loadFixtures();
 
             authenticateSession(application);
         });
@@ -122,7 +62,7 @@ describe('Acceptance: Settings - Navigation', function () {
             andThen(function () {
                 expect(currentPath()).to.equal('settings.navigation');
                 // test has expected number of rows
-                expect($('.gh-blognav-item').length).to.equal(3);
+                expect($('.gh-blognav-item').length, 'navigation items count').to.equal(3);
             });
         });
 
