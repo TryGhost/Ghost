@@ -206,6 +206,7 @@ UploadUi = function ($dropzone, settings) {
             var self = this;
 
             // This is the start point if an image already exists
+            this.removeExtras();
             $dropzone.removeClass('image-uploader image-uploader-url').addClass('pre-image-uploader');
             $dropzone.find('div.description').hide();
             $dropzone.find('img.js-upload-target').show();
