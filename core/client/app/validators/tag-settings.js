@@ -1,7 +1,7 @@
 import BaseValidator from './base';
 
 export default BaseValidator.create({
-    properties: ['name', 'metaTitle', 'metaDescription'],
+    properties: ['name', 'description', 'metaTitle', 'metaDescription'],
     name: function (model) {
         var name = model.get('name');
 
@@ -16,6 +16,16 @@ export default BaseValidator.create({
             this.invalidate();
         }
     },
+
+    description: function (model) {
+        var description = model.get('description');
+
+        if (!validator.isLength(description, 0, 200)) {
+            model.get('errors').add('description', 'Description cannot be longer than 200 characters');
+            this.invalidate();
+        }
+    },
+
     metaTitle: function (model) {
         var metaTitle = model.get('meta_title');
 
