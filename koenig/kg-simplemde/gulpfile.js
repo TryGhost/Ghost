@@ -10,6 +10,7 @@ var gulp = require("gulp"),
 	prettify = require("gulp-jsbeautifier");
 var browserify = require("browserify");
 var source = require("vinyl-source-stream");
+var rename = require("gulp-rename");
 
 
 var banner = ["/**",
@@ -36,7 +37,7 @@ function taskBrowserify(opts) {
 gulp.task("browserify:dev", [], function() {
 	return taskBrowserify({debug:true, standalone:"SimpleMDE"})
 	.pipe(source("simplemde.debug.js"))
-		.pipe(gulp.dest("./dist/"));
+		.pipe(gulp.dest("./debug/"));
 });
 
 gulp.task("browserify:prod", [], function() {
@@ -61,8 +62,10 @@ gulp.task("styles", function() {
 		"./node_modules/codemirror-spell-checker/src/css/spell-checker.css"
 	];
 	return gulp.src(css_files)
-		.pipe(concat("simplemde.min.css"))
+		.pipe(concat("simplemde.css"))
+		.pipe(gulp.dest("./debug/"))
 		.pipe(minifycss())
+		.pipe(rename("simplemde.min.css"))
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./dist/"));
 });

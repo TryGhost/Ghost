@@ -8,8 +8,8 @@ require("codemirror/mode/markdown/markdown.js");
 require("codemirror/addon/mode/overlay.js");
 require("codemirror/mode/xml/xml.js");
 require("marked");
-//require("codemirror-spell-checker/src/js/spell-checker.js"); //todo module must support CommonJS
-require("codemirror-spell-checker/src/js/typo.js");
+require("spell-checker");
+require("./codemirror/tablist");
 
 var isMac = /Mac/.test(navigator.platform);
 
