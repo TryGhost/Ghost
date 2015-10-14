@@ -2,7 +2,7 @@
  * Dependencies
  */
 
-var readDirectory = require('./read-directory'),
+var readThemes = require('./read-themes'),
     Promise = require('bluebird'),
     _ = require('lodash');
 
@@ -18,7 +18,7 @@ function validateThemes(dir) {
         errors: []
     };
 
-    return readDirectory(dir)
+    return readThemes(dir)
         .tap(function (themes) {
             _.each(themes, function (theme, name) {
                 var hasPackageJson, warning;
