@@ -22,7 +22,7 @@ function readDirectory(dir, options) {
     }
 
     ignore = options.ignore || [];
-    ignore.push('node_modules', 'bower_components');
+    ignore.push('node_modules', 'bower_components', '.DS_Store');
 
     return readDir(dir)
         .filter(function (filename) {
