@@ -58,7 +58,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 self.send('authenticate');
             }).catch(function (error) {
                 if (error) {
-                    self.get('notifications').showAPIError(error);
+                    self.get('notifications').showAPIError(error, {key: 'signin.authenticate'});
                 } else {
                     self.set('flowErrors', 'Please fill out the form to sign in.');
                 }
@@ -86,7 +86,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function () {
                     self.toggleProperty('submitting');
-                    notifications.showAlert('Please check your email for instructions.', {type: 'info'});
+                    notifications.showAlert('Please check your email for instructions.', {type: 'info', key: 'forgot-password.send.success'});
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
@@ -98,7 +98,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                             self.get('model.errors').add('identification', '');
                         }
                     } else {
-                        notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
+                        notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
                     }
                 });
             }).catch(function () {

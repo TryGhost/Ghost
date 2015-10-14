@@ -175,13 +175,13 @@ export default Ember.Controller.extend({
                             invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
                             message = 'Failed to send ' + erroredEmails.length + invitationsString;
                             message += erroredEmails.join(', ');
-                            notifications.showAlert(message, {type: 'error', delayed: successCount > 0});
+                            notifications.showAlert(message, {type: 'error', delayed: successCount > 0, key: 'signup.send-invitations.failed'});
                         }
 
                         if (successCount > 0) {
                             // pluralize
                             invitationsString = successCount > 1 ? 'invitations' : 'invitation';
-                            notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true});
+                            notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true, key: 'signup.send-invitations.success'});
                         }
                         self.send('loadServerNotifications');
                         self.toggleProperty('submitting');

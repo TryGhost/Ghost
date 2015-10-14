@@ -15,7 +15,7 @@ export default Ember.Controller.extend({
             this.send('closeMenus');
 
             tag.destroyRecord().catch(function (error) {
-                self.get('notifications').showAPIError(error);
+                self.get('notifications').showAPIError(error, {key: 'tag.delete'});
             });
         },
 

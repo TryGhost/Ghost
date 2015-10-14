@@ -74,7 +74,7 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
             return model;
         }).catch(function (error) {
             if (error) {
-                notifications.showAPIError(error);
+                notifications.showAPIError(error, {key: 'settings.save'});
             }
         });
     },

@@ -99,7 +99,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                                 self.transitionToRoute('setup.three');
                             }).catch(function (resp) {
                                 self.toggleProperty('submitting');
-                                notifications.showAPIError(resp);
+                                notifications.showAPIError(resp, {key: 'setup.blog-details'});
                             });
                         } else {
                             self.toggleProperty('submitting');
@@ -111,7 +111,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
                         self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
                     } else {
-                        notifications.showAPIError(resp);
+                        notifications.showAPIError(resp, {key: 'setup.blog-details'});
                     }
                 });
             }).catch(function () {

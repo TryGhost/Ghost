@@ -29,10 +29,11 @@ export default Ember.Controller.extend({
                 user = this.get('model');
 
             user.destroyRecord().then(function () {
+                self.get('notifications').closeAlerts('user.delete');
                 self.store.unloadAll('post');
                 self.transitionToRoute('team');
             }, function () {
-                self.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error'});
+                self.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
             });
         },
 

@@ -38,8 +38,7 @@ utils = {
         /**
          * ### Do Validate
          * Validate the object and options passed to an endpoint
-         * @argument object
-         * @argument options
+         * @argument {...*} [arguments] object or object and options hash
          */
         return function doValidate() {
             var object, options, permittedOptions;

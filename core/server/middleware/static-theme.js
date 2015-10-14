@@ -11,7 +11,7 @@ function isBlackListedFileType(file) {
 }
 
 function forwardToExpressStatic(req, res, next) {
-    express['static'](
+    express.static(
         path.join(config.paths.themePath, req.app.get('activeTheme')),
         {maxAge: utils.ONE_YEAR_MS}
     )(req, res, next);

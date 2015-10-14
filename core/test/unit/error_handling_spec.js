@@ -26,7 +26,7 @@ describe('Error handling', function () {
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should['throw']('test1');
+            runThrowError.should.throw('test1');
         });
 
         it('throws error strings', function () {
@@ -35,7 +35,7 @@ describe('Error handling', function () {
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should['throw']('test2');
+            runThrowError.should.throw('test2');
         });
 
         it('throws error even if nothing passed', function () {
@@ -43,7 +43,7 @@ describe('Error handling', function () {
                 errors.throwError();
             };
 
-            runThrowError.should['throw']('An error occurred');
+            runThrowError.should.throw('An error occurred');
         });
     });
 

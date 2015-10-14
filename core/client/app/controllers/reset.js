@@ -45,13 +45,13 @@ export default Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
-                    self.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true});
+                    self.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
                     self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: credentials.newPassword
                     });
                 }).catch(function (response) {
-                    self.get('notifications').showAPIError(response);
+                    self.get('notifications').showAPIError(response, {key: 'password.reset'});
                     self.toggleProperty('submitting');
                 });
             }).catch(function () {
