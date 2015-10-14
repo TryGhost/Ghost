@@ -54,12 +54,13 @@ export default Ember.Controller.extend({
                 self.set('session.user', self.store.findRecord('user', currentUserId));
                 // TODO: keep as notification, add link to view content
                 notifications.showNotification('Import successful.');
+                notifications.closeAlerts('import.upload');
             }).catch(function (response) {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
                     self.set('importErrors', response.jqXHR.responseJSON.errors);
                 }
 
-                notifications.showAlert('Import Failed', {type: 'error'});
+                notifications.showAlert('Import Failed', {type: 'error', key: 'import.upload.failed'});
             }).finally(function () {
                 self.set('uploadButtonText', 'Import');
             });
@@ -86,13 +87,13 @@ export default Ember.Controller.extend({
             ajax(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
             }).then(function () {
-                notifications.showAlert('Check your email for the test message.', {type: 'info'});
+                notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
                 self.toggleProperty('submitting');
             }).catch(function (error) {
                 if (typeof error.jqXHR !== 'undefined') {
-                    notifications.showAPIError(error);
+                    notifications.showAPIError(error, {key: 'test-email.send'});
                 } else {
-                    notifications.showErrors(error);
+                    notifications.showErrors(error, {key: 'test-email.send'});
                 }
                 self.toggleProperty('submitting');
             });
