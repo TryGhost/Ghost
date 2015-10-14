@@ -291,7 +291,7 @@ casper.on('error', function (msg, trace) {
     if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
-        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+        casper.echoConcise('function: ' + trace[0].function, 'WARNING');
     }
     jsErrors.push(msg);
 });
@@ -302,7 +302,7 @@ casper.on('page.error', function (msg, trace) {
     if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
-        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+        casper.echoConcise('function: ' + trace[0].function, 'WARNING');
     }
     pageErrors.push(msg);
 });

@@ -14,9 +14,10 @@ export default Ember.Controller.extend({
 
             model.destroyRecord().then(function () {
                 self.get('dropdown').closeDropdowns();
+                self.get('notifications').closeAlerts('post.delete');
                 self.transitionToRoute('posts.index');
             }, function () {
-                self.get('notifications').showAlert('Your post could not be deleted. Please try again.', {type: 'error'});
+                self.get('notifications').showAlert('Your post could not be deleted. Please try again.', {type: 'error', key: 'post.delete.failed'});
             });
         },
 

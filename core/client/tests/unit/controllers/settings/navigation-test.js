@@ -4,7 +4,7 @@ import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
 import { NavItem } from 'ghost/controllers/settings/navigation';
 
-const { run } = Ember;
+const {run} = Ember;
 
 var navSettingJSON = `[
     {"label":"Home","url":"/"},
