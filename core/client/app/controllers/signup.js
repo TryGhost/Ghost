@@ -74,14 +74,14 @@ export default Ember.Controller.extend(ValidationEngine, {
                             self.sendImage();
                         }
                     }).catch(function (resp) {
-                        notifications.showAPIError(resp);
+                        notifications.showAPIError(resp, {key: 'signup.complete'});
                     });
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
                         self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
                     } else {
-                        notifications.showAPIError(resp);
+                        notifications.showAPIError(resp, {key: 'signup.complete'});
                     }
                 });
             }).catch(function () {

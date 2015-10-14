@@ -246,7 +246,7 @@ export default Ember.Mixin.create({
 
         message += '<br />' + error;
 
-        notifications.showAlert(message.htmlSafe(), {type: 'error', delayed: delay});
+        notifications.showAlert(message.htmlSafe(), {type: 'error', delayed: delay, key: 'post.save'});
     },
 
     actions: {

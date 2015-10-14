@@ -8,7 +8,7 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
         var notifications = this.get('notifications');
 
         return this.get('model').save().catch(function (error) {
-            notifications.showAPIError(error);
+            notifications.showAPIError(error, {key: 'code-injection.save'});
         });
     }
 });
