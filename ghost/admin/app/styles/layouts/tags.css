@@ -110,6 +110,7 @@
 .settings-tag .tag-description {
     margin: 0;
     color: color(#dfe1e3 lightness(-10%));
+    word-wrap: break-word;
     font-size: 13px;
 }
 
