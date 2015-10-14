@@ -141,8 +141,8 @@ describe('Acceptance: Settings - Navigation', function () {
 
     it('redirects to team page when authenticated as author', function () {
         run(() => {
-            let role = store.createRecord('role', {name: 'Author'});
-            store.createRecord('user', {id: 'me', roles: [role]});
+            let role = store.push('role', {id: 1, name: 'Author'});
+            store.push('user', {id: 'me', roles: [role]});
         });
 
         authenticateSession();
@@ -156,8 +156,8 @@ describe('Acceptance: Settings - Navigation', function () {
     describe('when logged in', function () {
         beforeEach(function () {
             run(() => {
-                let role = store.createRecord('role', {name: 'Administrator'});
-                store.createRecord('user', {id: 'me', roles: [role]});
+                let role = store.push('role', {id: 1, name: 'Administrator'});
+                store.push('user', {id: 'me', roles: [role]});
             });
 
             authenticateSession();
@@ -185,16 +185,20 @@ describe('Acceptance: Settings - Navigation', function () {
                 // TODO: Test for successful save here once we have a visual
                 // indication. For now we know the save happened because
                 // Pretender doesn't complain about an unknown URL
-                expect($('.error').length).to.equal(0);
-                expect($('.gh-alert').length).to.equal(0);
+
+                // don't test against .error directly as it will pick up failed
+                // tests "pre.error" elements
+                expect($('span.error').length, 'error fields count').to.equal(0);
+                expect($('.gh-alert').length, 'alerts count').to.equal(0);
             });
         });
 
         it('clears unsaved settings when navigating away', function () {
             visit('/settings/navigation');
+            fillIn('.gh-blognav-label:first input', 'Test');
+            triggerEvent('.gh-blognav-label:first input', 'blur');
 
             andThen(function () {
-                $('.gh-blognav-label input').val('Test');
                 expect($('.gh-blognav-label:first input').val()).to.equal('Test');
             });
 
