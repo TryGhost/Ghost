@@ -46,7 +46,7 @@
     "intl": "1.0.0",
     "intl-messageformat": "1.1.0",
     "knex": "0.7.3",
-    "lodash": "3.10.0",
+    "lodash": "3.10.1",
     "moment": "2.10.3",
     "morgan": "1.5.3",
     "node-uuid": "1.4.3",
