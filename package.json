@@ -56,7 +56,7 @@
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.3",
-    "request": "2.57.0",
+    "request": "2.65.0",
     "rss": "1.1.1",
     "semver": "4.3.6",
     "showdown-ghost": "0.3.6",
