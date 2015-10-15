@@ -40,14 +40,14 @@ gulp.task("browserify:dev", [], function() {
 		.pipe(gulp.dest("./debug/"));
 });
 
-gulp.task("browserify:prod", [], function() {
+gulp.task("browserify:min", [], function() {
 	return taskBrowserify({standalone:"SimpleMDE"})
 		.pipe(source("simplemde.js"))
-		.pipe(gulp.dest("./dist/"));
+		.pipe(gulp.dest("./debug/"));
 });
 
-gulp.task("scripts", ["browserify:dev", "browserify:prod", "lint"], function() {
-	var js_files = ["./dist/simplemde.js"];
+gulp.task("scripts", ["browserify:dev", "browserify:min", "lint"], function() {
+	var js_files = ["./debug/simplemde.js"];
 	return gulp.src(js_files)
 		.pipe(concat("simplemde.min.js"))
 		.pipe(uglify())
@@ -57,8 +57,8 @@ gulp.task("scripts", ["browserify:dev", "browserify:prod", "lint"], function() {
 
 gulp.task("styles", function() {
 	var css_files = [
-		"./src/css/*.css",
 		"./node_modules/codemirror/lib/codemirror.css",
+		"./src/css/*.css",
 		"./node_modules/codemirror-spell-checker/src/css/spell-checker.css"
 	];
 	return gulp.src(css_files)
