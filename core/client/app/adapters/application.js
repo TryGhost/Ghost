@@ -6,4 +6,4 @@ export default EmbeddedRelationAdapter.extend({
         return false;
     }
 
- });
+});

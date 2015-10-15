@@ -10,60 +10,9 @@ import Ember from 'ember';
 import startApp from '../../helpers/start-app';
 import Pretender from 'pretender';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
+import requiredSettings from '../../fixtures/settings';
 
-const {run} = Ember,
-    // TODO: Pull this into a fixture or similar when required elsewhere
-    requiredSettings = [{
-        created_at: '2015-09-11T09:44:30.805Z',
-        created_by: 1,
-        id: 5,
-        key: 'title',
-        type: 'blog',
-        updated_at: '2015-10-04T16:26:05.195Z',
-        updated_by: 1,
-        uuid: '39e16daf-43fa-4bf0-87d4-44948ba8bf4c',
-        value: 'The Daily Awesome'
-    }, {
-        created_at: '2015-09-11T09:44:30.806Z',
-        created_by: 1,
-        id: 6,
-        key: 'description',
-        type: 'blog',
-        updated_at: '2015-10-04T16:26:05.198Z',
-        updated_by: 1,
-        uuid: 'e6c8b636-6925-4c4a-a5d9-1dc0870fb8ea',
-        value: 'Thoughts, stories and ideas.'
-    }, {
-        created_at: '2015-09-11T09:44:30.809Z',
-        created_by: 1,
-        id: 10,
-        key: 'postsPerPage',
-        type: 'blog',
-        updated_at: '2015-10-04T16:26:05.211Z',
-        updated_by: 1,
-        uuid: '775e6ca1-bcc3-4347-a53d-15d5d76c04a4',
-        value: '5'
-    }, {
-        created_at: '2015-09-11T09:44:30.809Z',
-        created_by: 1,
-        id: 13,
-        key: 'ghost_head',
-        type: 'blog',
-        updated_at: '2015-09-23T13:32:49.858Z',
-        updated_by: 1,
-        uuid: 'df7f3151-bc08-4a77-be9d-dd315b630d51',
-        value: ''
-    }, {
-        created_at: '2015-09-11T09:44:30.809Z',
-        created_by: 1,
-        id: 14,
-        key: 'ghost_foot',
-        type: 'blog',
-        updated_at: '2015-09-23T13:32:49.858Z',
-        updated_by: 1,
-        uuid: '0649d45e-828b-4dd0-8381-3dff6d1d5ddb',
-        value: ''
-    }];
+const {run} = Ember;
 
 describe('Acceptance: Settings - Navigation', function () {
     let application,
@@ -72,7 +21,7 @@ describe('Acceptance: Settings - Navigation', function () {
 
     beforeEach(function () {
         application = startApp();
-        store = application.__container__.lookup('store:main');
+        store = application.__container__.lookup('service:store');
         server = new Pretender(function () {
             // TODO: This needs to either be fleshed out to include all user data, or be killed with fire
             // as it needs to be loaded with all authenticated page loads
