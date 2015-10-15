@@ -4,7 +4,7 @@ import {
     it
 } from 'ember-mocha';
 
-const { run } = Ember;
+const {run} = Ember;
 
 describeModel(
     'user',
