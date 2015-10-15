@@ -267,7 +267,9 @@
 
 
 /* This has to be a pseudo element to sit over the top of everything else in the content list */
-.content-list.keyboard-focused:before {
+.content-list.keyboard-focused:before,
+.tag-list-content.keyboard-focused:before,
+.tag-settings.keyboard-focused:before {
     content: "";
     position: absolute;
     top: 0;
