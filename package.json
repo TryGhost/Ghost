@@ -52,7 +52,7 @@
     "node-uuid": "1.4.3",
     "nodemailer": "0.7.1",
     "oauth2orize": "1.0.1",
-    "passport": "0.2.2",
+    "passport": "0.3.0",
     "passport-http-bearer": "1.0.1",
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.2",
