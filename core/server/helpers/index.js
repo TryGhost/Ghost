@@ -21,6 +21,7 @@ coreHelpers.date  = require('./date');
 coreHelpers.encode  = require('./encode');
 coreHelpers.excerpt  = require('./excerpt');
 coreHelpers.foreach = require('./foreach');
+coreHelpers.get = require('./get');
 coreHelpers.ghost_foot = require('./ghost_foot');
 coreHelpers.ghost_head = require('./ghost_head');
 coreHelpers.image = require('./image');
@@ -117,6 +118,7 @@ registerHelpers = function (adminHbs) {
     registerAsyncThemeHelper('post_class', coreHelpers.post_class);
     registerAsyncThemeHelper('next_post', coreHelpers.next_post);
     registerAsyncThemeHelper('prev_post', coreHelpers.prev_post);
+    registerAsyncThemeHelper('get', coreHelpers.get);
 
     // Register admin helpers
     registerAdminHelper('asset', coreHelpers.asset);
