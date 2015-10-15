@@ -17,6 +17,7 @@ var _                          = require('lodash'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
     TooManyRequestsError       = require('./too-many-requests-error'),
+    ActiveThemeNotFoundError   = require('./active-theme-not-found-error'),
     config,
     errors,
 
@@ -395,3 +396,4 @@ module.exports.EmailError                 = EmailError;
 module.exports.DataImportError            = DataImportError;
 module.exports.MethodNotAllowedError      = MethodNotAllowedError;
 module.exports.TooManyRequestsError       = TooManyRequestsError;
+module.exports.ActiveThemeNotFoundError   = ActiveThemeNotFoundError;

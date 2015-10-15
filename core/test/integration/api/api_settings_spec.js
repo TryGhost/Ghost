@@ -183,7 +183,7 @@ describe('Settings API', function () {
         }).catch(done);
     });
 
-    it('does not allow an active theme which is not installed', function (done) {
+    it.skip('does not allow an active theme which is not installed', function (done) {
         return callApiWithContext(defaultContext, 'edit', 'activeTheme', {
             settings: [{key: 'activeTheme', value: 'rasper'}]
         }).then(function () {

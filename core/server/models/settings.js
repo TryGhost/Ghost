@@ -84,7 +84,9 @@ Settings = ghostBookshelf.Model.extend({
                 return;
             }
 
-            return validation.validateActiveTheme(themeName);
+            return validation.validateActiveTheme(themeName).catch(errors.ActiveThemeNotFoundError, function (error) {
+                return self.save({value: error.fallbackTheme}, {patch: true});
+            });
         });
     },
 
