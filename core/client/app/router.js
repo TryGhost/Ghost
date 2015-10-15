@@ -43,7 +43,10 @@ Router.map(function () {
     });
 
     this.route('settings.general', {path: '/settings/general'});
-    this.route('settings.tags', {path: '/settings/tags'});
+    this.route('settings.tags', {path: '/settings/tags'}, function () {
+        this.route('tag', {path: ':tag_id'});
+        this.route('new');
+    });
     this.route('settings.labs', {path: '/settings/labs'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.navigation', {path: '/settings/navigation'});
