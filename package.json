@@ -47,7 +47,7 @@
     "intl-messageformat": "1.1.0",
     "knex": "0.7.3",
     "lodash": "3.10.1",
-    "moment": "2.10.3",
+    "moment": "2.10.6",
     "morgan": "1.5.3",
     "node-uuid": "1.4.3",
     "nodemailer": "0.7.1",
