@@ -10,46 +10,12 @@ export default Ember.Component.extend({
         return this.get('image') || '';
     }),
 
-    /**
-     * Sets up the uploader on render
-     */
-    setup: function () {
-        var $this = this.$(),
-            self = this;
-
-        // this.set('uploaderReference', uploader.call($this, {
-        //     editor: true,
-        //     fileStorage: this.get('config.fileStorage')
-        // }));
-
-        $this.on('uploadsuccess', function (event, result) {
-            if (result && result !== '' && result !== 'http://') {
-                self.sendAction('uploaded', result);
-            }
-        });
-
-        $this.on('imagecleared', function () {
-            self.sendAction('canceled');
-        });
-    },
-
     // removes event listeners from the uploader
     removeListeners: function () {
         var $this = this.$();
 
         $this.off();
         $this.find('.js-cancel').off();
-    },
-
-    // didInsertElement: function () {
-    //     Ember.run.scheduleOnce('afterRender', this, this.setup());
-    // },
-    didInsertElement: function () {
-        this.send('initUploader');
-    },
-
-    willDestroyElement: function () {
-        this.removeListeners();
     },
 
     // NOTE: because the uploader is sometimes in the same place in the DOM
@@ -77,13 +43,20 @@ export default Ember.Component.extend({
         }
     },
 
+    didInsertElement: function () {
+        this.send('initUploader');
+    },
+
+    willDestroyElement: function () {
+        this.removeListeners();
+    },
+
     actions: {
         initUploader: function () {
             var ref,
-                el,
+                el = this.$(),
                 self = this;
 
-            el = this.$();
             ref = uploader.call(el, {
                 editor: true,
                 fileStorage: this.get('config.fileStorage')
@@ -91,13 +64,13 @@ export default Ember.Component.extend({
 
             el.on('uploadsuccess', function (event, result) {
                 if (result && result !== '' && result !== 'http://') {
-                    self.sendAction('uploaded', result);
+                    Ember.run(self, function () {
+                        this.sendAction('uploaded', result);
+                    });
                 }
             });
 
-            el.on('imagecleared', function () {
-                self.sendAction('canceled');
-            });
+            el.on('imagecleared', Ember.run.bind(self, 'sendAction', 'canceled'));
 
             this.sendAction('initUploader', ref);
         }
