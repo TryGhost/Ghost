@@ -6,13 +6,14 @@
     "Wes Cossik <support@nextstepwebs.com>"
   ],
   "description": "A simple, beautiful, and embeddable JavaScript markdown editor.",
-  "main": ["js/simplemd.js", "css/simplemd.css"],
+  "main": ["dist/simplemde.min.js", "dist/simplemde.min.css"],
   "moduleType": [
     "globals"
   ],
   "keywords": [
     "wysiwyg",
     "markdown",
+    "editor",
     "js"
   ],
   "license": "MIT",
