@@ -9,16 +9,24 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, plus Markdown can be rendered natively on more platforms than HTML. However, Markdown is not a syntax that an average user will be familiar with, nor is it visually clear while editing. In otherwords, for an unfamiliar user, the syntax they write will make little sense until they click the preview button. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning Markdown syntax.
 
 ## Quick start
+
+### NPM
 SimpleMDE is available on [npm](https://www.npmjs.com/package/simplemde).
 ```
 npm install simplemde --save
 ```
-
+### jsDelivery
 SimpleMDE is also available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
 
 ```HTML
 <link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+```
+
+### Bower
+SimpleMDE is also available via [Bower](http://bower.io/).
+```console
+bower install simplemde-markdown-editor
 ```
 
 And then load SimpleMDE on the first textarea on a page
@@ -110,7 +118,7 @@ var simplemde = new SimpleMDE({
 		setTimeout(function(){
 			preview.innerHTML = customMarkdownParser(plainText);
 		}, 250);
-		
+
 		return "Loading...";
 	}
 	renderingConfig: {

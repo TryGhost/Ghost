@@ -1,0 +1,26 @@
+{
+  "name": "simplemde-markdown-editor",
+  "version": "1.7.4",
+  "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
+  "authors": [
+    "Wes Cossik <support@nextstepwebs.com>"
+  ],
+  "description": "A simple, beautiful, and embeddable JavaScript markdown editor.",
+  "main": ["js/simplemd.js", "css/simplemd.css"],
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "wysiwyg",
+    "markdown",
+    "js"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
