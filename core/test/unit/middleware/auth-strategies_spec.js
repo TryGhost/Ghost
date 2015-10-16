@@ -51,19 +51,11 @@ describe('Auth Strategies', function () {
         var clientStub;
 
         beforeEach(function () {
-            clientStub = sandbox.stub(Models.Client, 'forge');
-            clientStub.returns({
-                fetch: function () {
-                    return Promise.resolve();
-                }
-            });
-            clientStub.withArgs({slug: fakeClient.slug}).returns({
-                fetch: function () {
-                    return Promise.resolve({
-                        toJSON: function () { return fakeClient; }
-                    });
-                }
-            });
+            clientStub = sandbox.stub(Models.Client, 'findOne');
+            clientStub.returns(new Promise.resolve());
+            clientStub.withArgs({slug: fakeClient.slug}).returns(new Promise.resolve({
+                toJSON: function () { return fakeClient; }
+            }));
         });
 
         it('should find client', function (done) {
@@ -110,43 +102,20 @@ describe('Auth Strategies', function () {
         var tokenStub, userStub;
 
         beforeEach(function () {
-            tokenStub = sandbox.stub(Models.Accesstoken, 'forge');
-            tokenStub.returns({
-                fetch: function () {
-                    return Promise.resolve();
-                }
-            });
-            tokenStub.withArgs({token: fakeValidToken.token}).returns({
-                fetch: function () {
-                    return Promise.resolve({
-                        toJSON: function () { return fakeValidToken; }
-                    });
-                }
-            });
-            tokenStub.withArgs({token: fakeInvalidToken.token}).returns({
-                fetch: function () {
-                    return Promise.resolve({
-                        toJSON: function () { return fakeInvalidToken; }
-                    });
-                }
-            });
+            tokenStub = sandbox.stub(Models.Accesstoken, 'findOne');
+            tokenStub.returns(new Promise.resolve());
+            tokenStub.withArgs({token: fakeValidToken.token}).returns(new Promise.resolve({
+                toJSON: function () { return fakeValidToken; }
+            }));
+            tokenStub.withArgs({token: fakeInvalidToken.token}).returns(new Promise.resolve({
+                toJSON: function () { return fakeInvalidToken; }
+            }));
 
-
-            userStub = sandbox.stub(Models.User, 'forge');
-            userStub.returns({
-                fetch: function () {
-                    return Promise.resolve();
-                }
-            });
-            userStub.withArgs({id: 3}).returns({
-                fetch: function () {
-                    return Promise.resolve({
-                        toJSON: function () {
-                            return {id: 3};
-                        }
-                    });
-                }
-            });
+            userStub = sandbox.stub(Models.User, 'findOne');
+            userStub.returns(new Promise.resolve());
+            userStub.withArgs({id: 3}).returns(new Promise.resolve({
+                toJSON: function () { return {id: 3}; }
+            }));
         });
 
         it('should find user with valid token', function (done) {
