@@ -42,11 +42,15 @@
     letter-spacing: 0;
     font-size: 1.1rem;
     line-height: 1.2rem;
-    /* Needs white BG to hide ugly lastpass icon */
 }
 
 .forgotten-link:hover {
     border-left: #dae1e3 1px solid;
     color: color(var(--blue) lightness(-20%));
     text-decoration: none;
+}
+
+.forgotten-link:active {
+    box-shadow: none;
+    text-decoration: underline;
 }
