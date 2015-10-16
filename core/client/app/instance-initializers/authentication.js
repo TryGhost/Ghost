@@ -1,18 +1,18 @@
 import Ember from 'ember';
 
-var AuthenticationInitializer = {
+export function initialize(instance) {
+    var store = instance.container.lookup('service:store'),
+        Session = instance.container.lookup('simple-auth-session:main');
+
+    Session.reopen({
+        user: Ember.computed(function () {
+            return store.findRecord('user', 'me');
+        })
+    });
+}
+
+export default {
     name: 'authentication',
-
-    initialize: function (instance) {
-        var store = instance.container.lookup('store:main'),
-            Session = instance.container.lookup('simple-auth-session:main');
-
-        Session.reopen({
-            user: Ember.computed(function () {
-                return store.find('user', 'me');
-            })
-        });
-    }
+    after: 'ember-data',
+    initialize: initialize
 };
-
-export default AuthenticationInitializer;

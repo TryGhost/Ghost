@@ -3,7 +3,7 @@ import base from 'ghost/mixins/editor-base-route';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-var EditorEditRoute = AuthenticatedRoute.extend(base, {
+export default AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
 
     beforeModel: function (transition) {
@@ -29,7 +29,7 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
             staticPages: 'all'
         };
 
-        return self.store.find('post', query).then(function (records) {
+        return self.store.query('post', query).then(function (records) {
             var post = records.get('firstObject');
 
             if (post) {
@@ -62,5 +62,3 @@ var EditorEditRoute = AuthenticatedRoute.extend(base, {
         }
     }
 });
-
-export default EditorEditRoute;

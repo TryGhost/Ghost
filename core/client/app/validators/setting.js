@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 
-var SettingValidator = BaseValidator.create({
+export default BaseValidator.create({
     properties: ['title', 'description', 'password', 'postsPerPage'],
     title: function (model) {
         var title = model.get('title');
@@ -42,5 +42,3 @@ var SettingValidator = BaseValidator.create({
         }
     }
 });
-
-export default SettingValidator;

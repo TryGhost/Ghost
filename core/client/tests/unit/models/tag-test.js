@@ -3,7 +3,7 @@ import {
     it
 } from 'ember-mocha';
 
-describeModel('tag', function () {
+describeModel('tag', 'Unit: Model: tag', function () {
     it('has a validation type of "tag"', function () {
         var model = this.subject();
 

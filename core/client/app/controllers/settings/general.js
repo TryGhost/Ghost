@@ -59,7 +59,7 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
 
     generatePassword: Ember.observer('model.isPrivate', function () {
         this.get('model.errors').remove('password');
-        if (this.get('model.isPrivate') && this.get('model.isDirty')) {
+        if (this.get('model.isPrivate') && this.get('model.hasDirtyAttributes')) {
             this.get('model').set('password', randomPassword());
         }
     }),
@@ -74,7 +74,7 @@ export default Ember.Controller.extend(SettingsSaveMixin, {
             return model;
         }).catch(function (error) {
             if (error) {
-                notifications.showAPIError(error);
+                notifications.showAPIError(error, {key: 'settings.save'});
             }
         });
     },

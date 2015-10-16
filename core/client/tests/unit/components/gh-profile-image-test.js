@@ -6,9 +6,14 @@ import {
     it
 } from 'ember-mocha';
 
-describeComponent('gh-profile-image', 'GhProfileImageComponent', {
+describeComponent(
+    'gh-profile-image',
+    'Unit: Component: gh-profile-image',
+    {
+        unit: true,
         needs: ['service:ghost-paths']
-    }, function () {
+    },
+    function () {
         it('renders', function () {
             // creates the component instance
             var component = this.subject();

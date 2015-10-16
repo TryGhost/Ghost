@@ -3,7 +3,7 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
+export default AuthenticatedRoute.extend(ShortcutsRoute, {
     model: function (params) {
         var self = this,
             post,
@@ -16,7 +16,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
             return this.transitionTo('error404', params.post_id);
         }
 
-        post = this.store.getById('post', postId);
+        post = this.store.peekRecord('post', postId);
         if (post) {
             return post;
         }
@@ -27,9 +27,7 @@ var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
             staticPages: 'all'
         };
 
-        return self.store.find('post', query).then(function (records) {
-            var post = records.get('firstObject');
-
+        return self.store.queryRecord('post', query).then(function (post) {
             if (post) {
                 return post;
             }
@@ -75,5 +73,3 @@ var PostsPostRoute = AuthenticatedRoute.extend(ShortcutsRoute, {
         }
     }
 });
-
-export default PostsPostRoute;

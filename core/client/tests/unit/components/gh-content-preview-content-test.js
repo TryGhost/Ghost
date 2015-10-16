@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-content-preview-content',
-    'GhContentPreviewContentComponent',
+    'Unit: Component: gh-content-preview-content',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },

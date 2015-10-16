@@ -1,7 +1,7 @@
 import BaseValidator from './base';
 
-var TagSettingsValidator = BaseValidator.create({
-    properties: ['name', 'metaTitle', 'metaDescription'],
+export default BaseValidator.create({
+    properties: ['name', 'description', 'metaTitle', 'metaDescription'],
     name: function (model) {
         var name = model.get('name');
 
@@ -16,6 +16,16 @@ var TagSettingsValidator = BaseValidator.create({
             this.invalidate();
         }
     },
+
+    description: function (model) {
+        var description = model.get('description');
+
+        if (!validator.isLength(description, 0, 200)) {
+            model.get('errors').add('description', 'Description cannot be longer than 200 characters');
+            this.invalidate();
+        }
+    },
+
     metaTitle: function (model) {
         var metaTitle = model.get('meta_title');
 
@@ -33,5 +43,3 @@ var TagSettingsValidator = BaseValidator.create({
         }
     }
 });
-
-export default TagSettingsValidator;

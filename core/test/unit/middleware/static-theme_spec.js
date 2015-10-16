@@ -2,9 +2,7 @@
 /*jshint expr:true*/
 var sinon        = require('sinon'),
     should       = require('should'),
-    Promise      = require('bluebird'),
 
-    api          = require('../../../server/api'),
     express      = require('express'),
     staticTheme  = require('../../../server/middleware/static-theme');
 
@@ -46,23 +44,22 @@ describe('staticTheme', function () {
 
     it('should call express.static if valid file type', function (done) {
         var req = {
-                url: 'myvalidfile.css'
+                url: 'myvalidfile.css',
+                app: {
+                    get: function () { return 'casper'; }
+                }
             },
-            settingsStub,
+            activeThemeStub,
             sandbox = sinon.sandbox.create(),
             expressStatic = sinon.spy(express, 'static');
 
-        settingsStub = sandbox.stub(api.settings, 'read').withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-            settings: [{
-                key: 'activeKey',
-                value: 'casper'
-            }]
-        }));
+        activeThemeStub = sandbox.spy(req.app, 'get');
 
         staticTheme(null)(req, null, function (reqArg, res, next2) {
             /*jshint unused:false */
             sandbox.restore();
             next.called.should.be.false;
+            activeThemeStub.called.should.be.true;
             expressStatic.called.should.be.true;
             expressStatic.args[0][1].maxAge.should.exist;
             done();

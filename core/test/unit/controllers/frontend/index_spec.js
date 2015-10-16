@@ -8,12 +8,12 @@ var moment   = require('moment'),
     _        = require('lodash'),
 
 // Stuff we are testing
-    api      = require('../../server/api'),
+    api      = require('../../../../server/api'),
 
-    frontend = rewire('../../server/controllers/frontend'),
-    config   = require('../../server/config'),
+    frontend = rewire('../../../../server/controllers/frontend'),
+    config   = require('../../../../server/config'),
     origConfig = _.cloneDeep(config),
-    defaultConfig  = require('../../../config.example')[process.env.NODE_ENV];
+    defaultConfig  = require('../../../../../config.example')[process.env.NODE_ENV];
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -31,7 +31,7 @@ describe('Frontend Controller', function () {
         sandbox = sinon.sandbox.create();
 
         // Reset frontend controller for next test
-        frontend = rewire('../../server/controllers/frontend');
+        frontend = rewire('../../../../server/controllers/frontend');
     });
 
     afterEach(function () {
@@ -43,7 +43,8 @@ describe('Frontend Controller', function () {
     // from failing via timeout when they
     // should just immediately fail
     function failTest(done, msg) {
-        return function () {
+        return function (stuf) {
+            console.log(msg, stuf);
             done(new Error(msg));
         };
     }
@@ -574,9 +575,10 @@ describe('Frontend Controller', function () {
 
         beforeEach(function () {
             sandbox.stub(api.posts, 'read', function (args) {
-                return Promise.resolve(_.find(mockPosts, function (mock) {
+                var post = _.find(mockPosts, function (mock) {
                     return mock.posts[0].slug === args.slug;
-                }));
+                });
+                return Promise.resolve(post || {posts: []});
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
@@ -940,6 +942,24 @@ describe('Frontend Controller', function () {
                         };
 
                     frontend.single(req, res, function () {
+                        res.render.called.should.be.false;
+                        res.redirect.called.should.be.false;
+                        done();
+                    });
+                });
+
+                it('should call next if post is not found', function (done) {
+                    var req = {
+                            path: '/unknown/'
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: sinon.spy()
+                        };
+
+                    frontend.single(req, res, function (err) {
+                        should.not.exist(err);
                         res.render.called.should.be.false;
                         res.redirect.called.should.be.false;
                         done();
@@ -1331,6 +1351,38 @@ describe('Frontend Controller', function () {
                     });
                 });
             });
+
+            describe('permalink set to custom format no slash', function () {
+                beforeEach(function () {
+                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
+                        settings: [{
+                            value: '/:year/:slug'
+                        }]
+                    }));
+
+                    var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
+                    mockPosts[1].posts[0].url = '/' + date + '/' + mockPosts[1].posts[0].slug + '/';
+                });
+
+                // Handle Edit append
+                it('will redirect post to admin edit page via /:year/:id/edit/', function (done) {
+                    var date = moment(mockPosts[1].posts[0].published_at).format('YYYY'),
+                        req = {
+                            path: '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/'
+                        },
+                        res = {
+                            locals: {},
+                            render: sinon.spy(),
+                            redirect: function (arg) {
+                                res.render.called.should.be.false;
+                                arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
+                                done();
+                            }
+                        };
+
+                    frontend.single(req, res, failTest(done));
+                });
+            });
         });
     });
 
@@ -1342,7 +1394,8 @@ describe('Frontend Controller', function () {
                 route: {path: '/private/?r=/'},
                 query: {r: ''},
                 params: {}
-            },
+            };
+
             config = {
                 paths: {
                     adminViews: '/core/server/views',
@@ -1404,6 +1457,179 @@ describe('Frontend Controller', function () {
             frontend.__set__('config', config);
 
             frontend.private(req, res, failTest(done));
+        });
+    });
+
+    describe('preview', function () {
+        var mockPosts = [{
+            posts: [{
+                status: 'draft',
+                uuid: 'abc-1234-01',
+                id: 1,
+                title: 'Test static page',
+                slug: 'test-static-page',
+                markdown: 'Test static page content',
+                page: 1,
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    slug: 'test',
+                    email: 'test@ghost.org'
+                },
+                url: '/test-static-page/'
+            }]
+        }, {
+            posts: [{
+                status: 'draft',
+                uuid: 'abc-1234-02',
+                id: 2,
+                title: 'Test normal post',
+                slug: 'test-normal-post',
+                markdown: 'The test normal post content',
+                page: 0,
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    slug: 'test',
+                    email: 'test@ghost.org'
+                }
+            }]
+        }, {
+            posts: [{
+                status: 'published',
+                uuid: 'abc-1234-03',
+                id: 3,
+                title: 'Getting started',
+                slug: 'about',
+                markdown: 'This is a blog post',
+                page: 0,
+                published_at: new Date('2014/1/30').getTime(),
+                author: {
+                    id: 1,
+                    name: 'Test User',
+                    slug: 'test',
+                    email: 'test@ghost.org'
+                },
+                url: '/getting-started/'
+            }]
+        }];
+
+        beforeEach(function () {
+            sandbox.stub(api.posts, 'read', function (args) {
+                var post = _.find(mockPosts, function (mock) {
+                    return mock.posts[0].uuid === args.uuid;
+                });
+                return Promise.resolve(post || {posts: []});
+            });
+
+            apiSettingsStub = sandbox.stub(api.settings, 'read');
+
+            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
+                settings: [{
+                    key: 'activeTheme',
+                    value: 'casper'
+                }]
+            }));
+
+            frontend.__set__('config', {
+                paths: {
+                    subdir: '',
+                    availableThemes: {
+                        casper: {
+                            assets: null,
+                            'default.hbs': '/content/themes/casper/default.hbs',
+                            'index.hbs': '/content/themes/casper/index.hbs',
+                            'page.hbs': '/content/themes/casper/page.hbs',
+                            'page-about.hbs': '/content/themes/casper/page-about.hbs',
+                            'post.hbs': '/content/themes/casper/post.hbs'
+                        }
+                    }
+                },
+                routeKeywords: {
+                    page: 'page',
+                    tag: 'tag',
+                    author: 'author'
+                },
+                urlFor: function (type, posts) {
+                    return posts.post.url;
+                }
+            });
+        });
+
+        it('should render draft post', function (done) {
+            var req = {
+                    params: {
+                        uuid: 'abc-1234-02'
+                    }
+                },
+                res = {
+                    render: function (view, context) {
+                        view.should.equal('post');
+                        should.exist(context.post);
+                        context.post.should.equal(mockPosts[1].posts[0]);
+                        done();
+                    }
+                };
+
+            frontend.preview(req, res, failTest(done));
+        });
+
+        it('should render draft page', function (done) {
+            var req = {
+                    params: {
+                        uuid: 'abc-1234-01'
+                    }
+                },
+                res = {
+                    render: function (view, context) {
+                        view.should.equal('page');
+                        should.exist(context.post);
+                        context.post.should.equal(mockPosts[0].posts[0]);
+                        done();
+                    }
+                };
+
+            frontend.preview(req, res, failTest(done));
+        });
+
+        it('should call next if post is not found', function (done) {
+            var req = {
+                    params: {
+                        uuid: 'abc-1234-04'
+                    }
+                },
+                res = {
+                    locals: {},
+                    render: sinon.spy(),
+                    redirect: sinon.spy()
+                };
+
+            frontend.preview(req, res, function (err) {
+                should.not.exist(err);
+                res.render.called.should.be.false;
+                res.redirect.called.should.be.false;
+                done();
+            });
+        });
+
+        it('should call redirect if post is published', function (done) {
+            var req = {
+                    params: {
+                        uuid: 'abc-1234-03'
+                    }
+                },
+                res = {
+                    locals: {},
+                    render: sinon.spy(),
+                    redirect: function (status, url) {
+                        res.render.called.should.be.false;
+                        status.should.eql(301);
+                        url.should.eql('/getting-started/');
+                        done();
+                    }
+                };
+
+            frontend.preview(req, res, failTest(done));
         });
     });
 });
