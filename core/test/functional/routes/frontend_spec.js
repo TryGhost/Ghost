@@ -469,7 +469,7 @@ describe('Frontend Routing', function () {
                     should.not.exist(res.headers['set-cookie']);
                     should.exist(res.headers.date);
                     // The remainder of the XML is tested in the unit/xml_spec.js
-                    res.text.should.match(/^<\?xml version="1.0" encoding="UTF-8"\?>\n<rss/);
+                    res.text.should.match(/^<\?xml version="1.0" encoding="UTF-8"\?><rss/);
 
                     done();
                 });
