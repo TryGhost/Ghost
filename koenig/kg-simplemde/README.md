@@ -10,12 +10,14 @@ WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves t
 
 ## Quick start
 
-### NPM
+### Installation
+
+#### NPM
 SimpleMDE is available on [npm](https://www.npmjs.com/package/simplemde).
 ```
 npm install simplemde --save
 ```
-### jsDelivery
+#### jsDelivery
 SimpleMDE is also available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
 
 ```HTML
@@ -23,11 +25,12 @@ SimpleMDE is also available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). 
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 ```
 
-### Bower
+#### Bower
 SimpleMDE is also available via [Bower](http://bower.io/).
 ```console
 bower install simplemde-markdown-editor
 ```
+### Usage
 
 And then load SimpleMDE on the first textarea on a page
 
