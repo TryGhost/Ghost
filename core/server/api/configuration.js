@@ -81,7 +81,6 @@ configuration = {
             }]};
         }
 
-
         tasks = [
             utils.validate('configuration', {attrs: attrs}),
             fetchData,
@@ -90,7 +89,6 @@ configuration = {
         ];
 
         return pipeline(tasks, options);
-
     }
 };
 
