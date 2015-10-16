@@ -102,7 +102,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     }
                 });
             }).catch(function () {
-                self.set('flowErrors', 'Please enter an email address then click "Forgot?".');
+                self.set('flowErrors', 'We need your email address to reset your password!');
             });
         }
     }
