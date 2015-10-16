@@ -43,11 +43,17 @@ function readDirectory(dir, options) {
         })
         .map(function (item) {
             if (item.name === 'package.json') {
-                return parsePackageJson(item.path).then(function (pkg) {
-                    item.content = pkg;
+                return parsePackageJson(item.path)
+                    .then(function (pkg) {
+                        item.content = pkg;
 
-                    return item;
-                });
+                        return item;
+                    })
+                    .catch(function () {
+                        item.content = {};
+
+                        return item;
+                    });
             }
 
             if (item.stat.isDirectory()) {
