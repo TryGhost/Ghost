@@ -14,6 +14,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     ghostPaths: Ember.inject.service('ghost-paths'),
     config: Ember.inject.service(),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     sendImage: function () {
         var self = this,
@@ -66,10 +67,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
-                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
-                        identification: self.get('model.email'),
-                        password: self.get('model.password')
-                    }).then(function () {
+                    self.get('session').authenticate('authenticator:oauth2', self.get('model.email'), self.get('model.password')).then(function () {
                         if (image) {
                             self.sendImage();
                         }

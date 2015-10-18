@@ -1,4 +1,4 @@
-import AuthenticatedRouteMixin from 'simple-auth/mixins/authenticated-route-mixin';
+import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
 import mobileQuery from 'ghost/utils/mobile';
 
