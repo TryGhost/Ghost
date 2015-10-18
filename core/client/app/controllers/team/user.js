@@ -11,6 +11,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     currentUser: Ember.computed.alias('session.user'),
 

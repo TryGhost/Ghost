@@ -9,9 +9,7 @@ import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../../helpers/start-app';
 import Pretender from 'pretender';
-import initializeTestHelpers from 'simple-auth-testing/test-helpers';
-
-initializeTestHelpers();
+import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
 
 const {run} = Ember,
     // TODO: Pull this into a fixture or similar when required elsewhere
@@ -68,7 +66,7 @@ const {run} = Ember,
     }];
 
 describe('Acceptance: Settings - Navigation', function () {
-    var application,
+    let application,
         store,
         server;
 
@@ -76,8 +74,14 @@ describe('Acceptance: Settings - Navigation', function () {
         application = startApp();
         store = application.__container__.lookup('store:main');
         server = new Pretender(function () {
+            // TODO: This needs to either be fleshed out to include all user data, or be killed with fire
+            // as it needs to be loaded with all authenticated page loads
+            this.get('/ghost/api/v0.1/users/me', function () {
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify({users: []})];
+            });
+
             this.get('/ghost/api/v0.1/settings/', function (_request) {
-                var response = {meta: {filters: 'blog,theme'}};
+                let response = {meta: {filters: 'blog,theme'}};
                 response.settings = [{
                     created_at: '2015-09-11T09:44:30.810Z',
                     created_by: 1,
@@ -104,7 +108,7 @@ describe('Acceptance: Settings - Navigation', function () {
             });
 
             this.put('/ghost/api/v0.1/settings/', function (_request) {
-                var response = {meta: {}};
+                let response = {meta: {}};
                 response.settings = [{
                     created_at: '2015-09-11T09:44:30.810Z',
                     created_by: 1,
@@ -131,7 +135,7 @@ describe('Acceptance: Settings - Navigation', function () {
     });
 
     it('redirects to signin when not authenticated', function () {
-        invalidateSession();
+        invalidateSession(application);
         visit('/settings/navigation');
 
         andThen(function () {
@@ -145,7 +149,7 @@ describe('Acceptance: Settings - Navigation', function () {
             store.push('user', {id: 'me', roles: [role]});
         });
 
-        authenticateSession();
+        authenticateSession(application);
         visit('/settings/navigation');
 
         andThen(function () {
@@ -160,7 +164,7 @@ describe('Acceptance: Settings - Navigation', function () {
                 store.push('user', {id: 'me', roles: [role]});
             });
 
-            authenticateSession();
+            authenticateSession(application);
         });
 
         it('can visit /settings/navigation', function () {

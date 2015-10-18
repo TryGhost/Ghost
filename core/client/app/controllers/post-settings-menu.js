@@ -15,6 +15,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
     config: Ember.inject.service(),
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     initializeSelectedAuthor: Ember.observer('model', function () {
         var self = this;

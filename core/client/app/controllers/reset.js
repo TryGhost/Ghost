@@ -13,6 +13,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     email: Ember.computed('token', function () {
         // The token base64 encodes the email (and some other stuff),
@@ -46,10 +47,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
                     self.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
-                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
-                        identification: self.get('email'),
-                        password: credentials.newPassword
-                    });
+                    self.get('session').authenticate('authenticator:oauth2', self.get('email'), credentials.newPassword);
                 }).catch(function (response) {
                     self.get('notifications').showAPIError(response, {key: 'password.reset'});
                     self.toggleProperty('submitting');

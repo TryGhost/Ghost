@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
+import Configuration from 'ember-simple-auth/configuration';
 import DS from 'ember-data';
 
 export default Ember.Route.extend(styleBody, {
@@ -8,9 +8,11 @@ export default Ember.Route.extend(styleBody, {
 
     classNames: ['ghost-login'],
 
+    session: Ember.inject.service(),
+
     beforeModel: function () {
-        if (this.get('session').isAuthenticated) {
-            this.transitionTo(Configuration.routeAfterAuthentication);
+        if (this.get('session.isAuthenticated')) {
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
     },
 
