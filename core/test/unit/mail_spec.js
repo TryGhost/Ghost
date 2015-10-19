@@ -62,7 +62,7 @@ describe('Mail', function () {
             descriptors.forEach(function (d) {
                 d.isRejected().should.be.true;
                 d.reason().should.be.an.instanceOf(Error);
-                d.reason().message.should.eql('Email Error: Incomplete message data.');
+                d.reason().message.should.eql('Error: Incomplete message data.');
             });
             done();
         }).catch(done);

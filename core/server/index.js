@@ -102,8 +102,8 @@ function initNotifications() {
         api.notifications.add({notifications: [{
             type: 'info',
             message: [
-                'Ghost is attempting to use a direct method to send e-mail.',
-                'It is recommended that you explicitly configure an e-mail service.',
+                'Ghost is attempting to use a direct method to send email.',
+                'It is recommended that you explicitly configure an email service.',
                 'See <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions'
             ].join(' ')
         }]}, {context: {internal: true}});
@@ -112,7 +112,7 @@ function initNotifications() {
         api.notifications.add({notifications: [{
             type: 'warn',
             message: [
-                'Ghost is currently unable to send e-mail.',
+                'Ghost is currently unable to send email.',
                 'See <a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a> for instructions'
             ].join(' ')
         }]}, {context: {internal: true}});
