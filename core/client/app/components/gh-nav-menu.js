@@ -6,6 +6,7 @@ export default Ember.Component.extend({
     classNameBindings: ['open'],
 
     config: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     open: false,
 

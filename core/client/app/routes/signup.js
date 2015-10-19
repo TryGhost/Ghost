@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import {request as ajax} from 'ic-ajax';
-import Configuration from 'simple-auth/configuration';
+import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
 export default Ember.Route.extend(styleBody, {
@@ -9,11 +9,12 @@ export default Ember.Route.extend(styleBody, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     beforeModel: function () {
-        if (this.get('session').isAuthenticated) {
+        if (this.get('session.isAuthenticated')) {
             this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
-            this.transitionTo(Configuration.routeAfterAuthentication);
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
     },
 
