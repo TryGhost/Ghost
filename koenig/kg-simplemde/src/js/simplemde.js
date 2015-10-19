@@ -1,17 +1,31 @@
+/*global require,module*/
+"use strict";
+var CodeMirror = require("codemirror");
+require("codemirror/addon/edit/continuelist.js");
+require("./codemirror/tablist");
+require("codemirror/addon/display/fullscreen.js");
+require("codemirror/mode/markdown/markdown.js");
+require("codemirror/addon/mode/overlay.js");
+require("codemirror/mode/gfm/gfm.js");
+require("codemirror/mode/xml/xml.js");
+require("spell-checker");
+var marked = require("marked");
+
+
 var isMac = /Mac/.test(navigator.platform);
 
 var shortcuts = {
-	'Cmd-B': toggleBold,
-	'Cmd-I': toggleItalic,
-	'Cmd-K': drawLink,
-	'Cmd-H': toggleHeadingSmaller,
-	'Shift-Cmd-H': toggleHeadingBigger,
-	'Cmd-Alt-I': drawImage,
+	"Cmd-B": toggleBold,
+	"Cmd-I": toggleItalic,
+	"Cmd-K": drawLink,
+	"Cmd-H": toggleHeadingSmaller,
+	"Shift-Cmd-H": toggleHeadingBigger,
+	"Cmd-Alt-I": drawImage,
 	"Cmd-'": toggleBlockquote,
-	'Cmd-Alt-L': toggleOrderedList,
-	'Cmd-L': toggleUnorderedList,
-	'Cmd-Alt-C': toggleCodeBlock,
-	'Cmd-P': togglePreview,
+	"Cmd-Alt-L": toggleOrderedList,
+	"Cmd-L": toggleUnorderedList,
+	"Cmd-Alt-C": toggleCodeBlock,
+	"Cmd-P": togglePreview
 };
 
 window.isMobile = function() {
@@ -26,9 +40,9 @@ window.isMobile = function() {
  */
 function fixShortcut(name) {
 	if(isMac) {
-		name = name.replace('Ctrl', 'Cmd');
+		name = name.replace("Ctrl", "Cmd");
 	} else {
-		name = name.replace('Cmd', 'Ctrl');
+		name = name.replace("Cmd", "Ctrl");
 	}
 	return name;
 }
@@ -39,15 +53,15 @@ function fixShortcut(name) {
  */
 function createIcon(options, enableTooltips) {
 	options = options || {};
-	var el = document.createElement('a');
+	var el = document.createElement("a");
 	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
 
 	if(options.title && enableTooltips) {
 		el.title = options.title;
 
 		if(isMac) {
-			el.title = el.title.replace('Ctrl', '⌘');
-			el.title = el.title.replace('Alt', '⌥');
+			el.title = el.title.replace("Ctrl", "⌘");
+			el.title = el.title.replace("Alt", "⌥");
 		}
 	}
 
@@ -56,9 +70,9 @@ function createIcon(options, enableTooltips) {
 }
 
 function createSep() {
-	el = document.createElement('i');
-	el.className = 'separator';
-	el.innerHTML = '|';
+	var el = document.createElement("i");
+	el.className = "separator";
+	el.innerHTML = "|";
 	return el;
 }
 
@@ -67,34 +81,34 @@ function createSep() {
  * The state of CodeMirror at the given position.
  */
 function getState(cm, pos) {
-	pos = pos || cm.getCursor('start');
+	pos = pos || cm.getCursor("start");
 	var stat = cm.getTokenAt(pos);
 	if(!stat.type) return {};
 
-	var types = stat.type.split(' ');
+	var types = stat.type.split(" ");
 
 	var ret = {},
 		data, text;
 	for(var i = 0; i < types.length; i++) {
 		data = types[i];
-		if(data === 'strong') {
+		if(data === "strong") {
 			ret.bold = true;
-		} else if(data === 'variable-2') {
+		} else if(data === "variable-2") {
 			text = cm.getLine(pos.line);
 			if(/^\s*\d+\.\s/.test(text)) {
-				ret['ordered-list'] = true;
+				ret["ordered-list"] = true;
 			} else {
-				ret['unordered-list'] = true;
+				ret["unordered-list"] = true;
 			}
-		} else if(data === 'atom') {
+		} else if(data === "atom") {
 			ret.quote = true;
-		} else if(data === 'em') {
+		} else if(data === "em") {
 			ret.italic = true;
-		} else if(data === 'quote') {
+		} else if(data === "quote") {
 			ret.quote = true;
-		} else if(data === 'strikethrough') {
+		} else if(data === "strikethrough") {
 			ret.strikethrough = true;
-		} else if(data === 'comment') {
+		} else if(data === "comment") {
 			ret.code = true;
 		}
 	}
@@ -139,7 +153,7 @@ function toggleFullScreen(editor) {
 	if(!/active/.test(toolbarButton.className)) {
 		toolbarButton.className += " active";
 	} else {
-		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
+		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, "");
 	}
 
 
@@ -154,7 +168,7 @@ function toggleFullScreen(editor) {
  * Action for toggling bold.
  */
 function toggleBold(editor) {
-	_toggleBlock(editor, 'bold', '**');
+	_toggleBlock(editor, "bold", "**");
 }
 
 
@@ -162,7 +176,7 @@ function toggleBold(editor) {
  * Action for toggling italic.
  */
 function toggleItalic(editor) {
-	_toggleBlock(editor, 'italic', '*');
+	_toggleBlock(editor, "italic", "*");
 }
 
 
@@ -170,14 +184,14 @@ function toggleItalic(editor) {
  * Action for toggling strikethrough.
  */
 function toggleStrikethrough(editor) {
-	_toggleBlock(editor, 'strikethrough', '~~');
+	_toggleBlock(editor, "strikethrough", "~~");
 }
 
 /**
  * Action for toggling code block.
  */
 function toggleCodeBlock(editor) {
-	_toggleBlock(editor, 'code', '```\r\n', '\r\n```');
+	_toggleBlock(editor, "code", "```\r\n", "\r\n```");
 }
 
 /**
@@ -185,7 +199,7 @@ function toggleCodeBlock(editor) {
  */
 function toggleBlockquote(editor) {
 	var cm = editor.codemirror;
-	_toggleLine(cm, 'quote');
+	_toggleLine(cm, "quote");
 }
 
 /**
@@ -193,7 +207,7 @@ function toggleBlockquote(editor) {
  */
 function toggleHeadingSmaller(editor) {
 	var cm = editor.codemirror;
-	_toggleHeading(cm, 'smaller');
+	_toggleHeading(cm, "smaller");
 }
 
 /**
@@ -201,7 +215,7 @@ function toggleHeadingSmaller(editor) {
  */
 function toggleHeadingBigger(editor) {
 	var cm = editor.codemirror;
-	_toggleHeading(cm, 'bigger');
+	_toggleHeading(cm, "bigger");
 }
 
 /**
@@ -234,7 +248,7 @@ function toggleHeading3(editor) {
  */
 function toggleUnorderedList(editor) {
 	var cm = editor.codemirror;
-	_toggleLine(cm, 'unordered-list');
+	_toggleLine(cm, "unordered-list");
 }
 
 
@@ -243,7 +257,7 @@ function toggleUnorderedList(editor) {
  */
 function toggleOrderedList(editor) {
 	var cm = editor.codemirror;
-	_toggleLine(cm, 'ordered-list');
+	_toggleLine(cm, "ordered-list");
 }
 
 
@@ -253,7 +267,7 @@ function toggleOrderedList(editor) {
 function drawLink(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.link, '[', '](http://)');
+	_replaceSelection(cm, stat.link, "[", "](http://)");
 }
 
 
@@ -263,7 +277,7 @@ function drawLink(editor) {
 function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.image, '![](http://', ')');
+	_replaceSelection(cm, stat.image, "![](http://", ")");
 }
 
 
@@ -273,7 +287,7 @@ function drawImage(editor) {
 function drawHorizontalRule(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.image, '', '\n\n-----\n\n');
+	_replaceSelection(cm, stat.image, "", "\n\n-----\n\n");
 }
 
 
@@ -303,16 +317,15 @@ function redo(editor) {
 function toggleSideBySide(editor) {
 	var cm = editor.codemirror;
 	var wrapper = cm.getWrapperElement();
-	var code = wrapper.firstChild;
 	var preview = wrapper.nextSibling;
 	var toolbarButton = editor.toolbarElements["side-by-side"];
 
 	if(/editor-preview-active-side/.test(preview.className)) {
 		preview.className = preview.className.replace(
-			/\s*editor-preview-active-side\s*/g, ''
+			/\s*editor-preview-active-side\s*/g, ""
 		);
-		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, '');
-		wrapper.className = wrapper.className.replace(/\s*CodeMirror-sided\s*/g, ' ');
+		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, "");
+		wrapper.className = wrapper.className.replace(/\s*CodeMirror-sided\s*/g, " ");
 	} else {
 		/* When the preview button is clicked for the first time,
 		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
@@ -321,29 +334,29 @@ function toggleSideBySide(editor) {
 		setTimeout(function() {
 			if(!cm.getOption("fullScreen"))
 				toggleFullScreen(editor);
-			preview.className += ' editor-preview-active-side'
+			preview.className += " editor-preview-active-side";
 		}, 1);
-		toolbarButton.className += ' active';
-		wrapper.className += ' CodeMirror-sided';
+		toolbarButton.className += " active";
+		wrapper.className += " CodeMirror-sided";
 	}
 
 	// Hide normal preview if active
 	var previewNormal = wrapper.lastChild;
 	if(/editor-preview-active/.test(previewNormal.className)) {
 		previewNormal.className = previewNormal.className.replace(
-			/\s*editor-preview-active\s*/g, ''
+			/\s*editor-preview-active\s*/g, ""
 		);
 		var toolbar = editor.toolbarElements.preview;
 		var toolbar_div = wrapper.previousSibling;
-		toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
-		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
+		toolbar.className = toolbar.className.replace(/\s*active\s*/g, "");
+		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, "");
 	}
 
 	// Start preview with the current text
 	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 
 	// Updates preview
-	cm.on('update', function() {
+	cm.on("update", function() {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 	});
 }
@@ -359,26 +372,26 @@ function togglePreview(editor) {
 	var toolbar = editor.toolbarElements.preview;
 	var preview = wrapper.lastChild;
 	if(!preview || !/editor-preview/.test(preview.className)) {
-		preview = document.createElement('div');
-		preview.className = 'editor-preview';
+		preview = document.createElement("div");
+		preview.className = "editor-preview";
 		wrapper.appendChild(preview);
 	}
 	if(/editor-preview-active/.test(preview.className)) {
 		preview.className = preview.className.replace(
-			/\s*editor-preview-active\s*/g, ''
+			/\s*editor-preview-active\s*/g, ""
 		);
-		toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
-		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
+		toolbar.className = toolbar.className.replace(/\s*active\s*/g, "");
+		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, "");
 	} else {
 		/* When the preview button is clicked for the first time,
 		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
 		 * instead of just appearing.
 		 */
 		setTimeout(function() {
-			preview.className += ' editor-preview-active'
+			preview.className += " editor-preview-active";
 		}, 1);
-		toolbar.className += ' active';
-		toolbar_div.className += ' disabled-for-preview';
+		toolbar.className += " active";
+		toolbar_div.className += " disabled-for-preview";
 	}
 	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 
@@ -393,8 +406,8 @@ function _replaceSelection(cm, active, start, end) {
 		return;
 
 	var text;
-	var startPoint = cm.getCursor('start');
-	var endPoint = cm.getCursor('end');
+	var startPoint = cm.getCursor("start");
+	var endPoint = cm.getCursor("end");
 	if(active) {
 		text = cm.getLine(startPoint.line);
 		start = text.slice(0, startPoint.ch);
@@ -421,8 +434,8 @@ function _toggleHeading(cm, direction, size) {
 	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
 
-	var startPoint = cm.getCursor('start');
-	var endPoint = cm.getCursor('end');
+	var startPoint = cm.getCursor("start");
+	var endPoint = cm.getCursor("end");
 	for(var i = startPoint.line; i <= endPoint.line; i++) {
 		(function(i) {
 			var text = cm.getLine(i);
@@ -430,46 +443,46 @@ function _toggleHeading(cm, direction, size) {
 
 			if(direction !== undefined) {
 				if(currHeadingLevel <= 0) {
-					if(direction == 'bigger') {
-						text = '###### ' + text;
+					if(direction == "bigger") {
+						text = "###### " + text;
 					} else {
-						text = '# ' + text;
+						text = "# " + text;
 					}
-				} else if(currHeadingLevel == 6 && direction == 'smaller') {
+				} else if(currHeadingLevel == 6 && direction == "smaller") {
 					text = text.substr(7);
-				} else if(currHeadingLevel == 1 && direction == 'bigger') {
+				} else if(currHeadingLevel == 1 && direction == "bigger") {
 					text = text.substr(2);
 				} else {
-					if(direction == 'bigger') {
+					if(direction == "bigger") {
 						text = text.substr(1);
 					} else {
-						text = '#' + text;
+						text = "#" + text;
 					}
 				}
 			} else {
 				if(size == 1) {
 					if(currHeadingLevel <= 0) {
-						text = '# ' + text;
+						text = "# " + text;
 					} else if(currHeadingLevel == size) {
 						text = text.substr(currHeadingLevel + 1);
 					} else {
-						text = '# ' + text.substr(currHeadingLevel + 1);
+						text = "# " + text.substr(currHeadingLevel + 1);
 					}
 				} else if(size == 2) {
 					if(currHeadingLevel <= 0) {
-						text = '## ' + text;
+						text = "## " + text;
 					} else if(currHeadingLevel == size) {
 						text = text.substr(currHeadingLevel + 1);
 					} else {
-						text = '## ' + text.substr(currHeadingLevel + 1);
+						text = "## " + text.substr(currHeadingLevel + 1);
 					}
 				} else {
 					if(currHeadingLevel <= 0) {
-						text = '### ' + text;
+						text = "### " + text;
 					} else if(currHeadingLevel == size) {
 						text = text.substr(currHeadingLevel + 1);
 					} else {
-						text = '### ' + text.substr(currHeadingLevel + 1);
+						text = "### " + text.substr(currHeadingLevel + 1);
 					}
 				}
 			}
@@ -492,23 +505,23 @@ function _toggleLine(cm, name) {
 		return;
 
 	var stat = getState(cm);
-	var startPoint = cm.getCursor('start');
-	var endPoint = cm.getCursor('end');
+	var startPoint = cm.getCursor("start");
+	var endPoint = cm.getCursor("end");
 	var repl = {
-		'quote': /^(\s*)\>\s+/,
-		'unordered-list': /^(\s*)(\*|\-|\+)\s+/,
-		'ordered-list': /^(\s*)\d+\.\s+/
+		"quote": /^(\s*)\>\s+/,
+		"unordered-list": /^(\s*)(\*|\-|\+)\s+/,
+		"ordered-list": /^(\s*)\d+\.\s+/
 	};
 	var map = {
-		'quote': '> ',
-		'unordered-list': '* ',
-		'ordered-list': '1. '
+		"quote": "> ",
+		"unordered-list": "* ",
+		"ordered-list": "1. "
 	};
 	for(var i = startPoint.line; i <= endPoint.line; i++) {
 		(function(i) {
 			var text = cm.getLine(i);
 			if(stat[name]) {
-				text = text.replace(repl[name], '$1');
+				text = text.replace(repl[name], "$1");
 			} else {
 				text = map[name] + text;
 			}
@@ -528,7 +541,7 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 	if(/editor-preview-active/.test(editor.codemirror.getWrapperElement().lastChild.className))
 		return;
 
-	end_chars = (typeof end_chars === 'undefined') ? start_chars : end_chars;
+	end_chars = (typeof end_chars === "undefined") ? start_chars : end_chars;
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 
@@ -536,8 +549,8 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 	var start = start_chars;
 	var end = end_chars;
 
-	var startPoint = cm.getCursor('start');
-	var endPoint = cm.getCursor('end');
+	var startPoint = cm.getCursor("start");
+	var endPoint = cm.getCursor("end");
 
 	if(stat[type]) {
 		text = cm.getLine(startPoint.line);
@@ -616,125 +629,124 @@ var toolbarBuiltInButtons = {
 		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
-		title: "Bold (Ctrl+B)",
+		title: "Bold (Ctrl+B)"
 	},
 	"italic": {
 		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
-		title: "Italic (Ctrl+I)",
+		title: "Italic (Ctrl+I)"
 	},
 	"strikethrough": {
 		name: "strikethrough",
 		action: toggleStrikethrough,
 		className: "fa fa-strikethrough",
-		title: "Strikethrough",
+		title: "Strikethrough"
 	},
 	"heading": {
 		name: "heading",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header",
-		title: "Heading (Ctrl+H)",
+		title: "Heading (Ctrl+H)"
 	},
 	"heading-smaller": {
 		name: "heading-smaller",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header fa-header-x fa-header-smaller",
-		title: "Smaller Heading (Ctrl+H)",
+		title: "Smaller Heading (Ctrl+H)"
 	},
 	"heading-bigger": {
 		name: "heading-bigger",
 		action: toggleHeadingBigger,
 		className: "fa fa-header fa-header-x fa-header-bigger",
-		title: "Bigger Heading (Shift+Ctrl+H)",
+		title: "Bigger Heading (Shift+Ctrl+H)"
 	},
 	"heading-1": {
 		name: "heading-1",
 		action: toggleHeading1,
 		className: "fa fa-header fa-header-x fa-header-1",
-		title: "Big Heading",
+		title: "Big Heading"
 	},
 	"heading-2": {
 		name: "heading-2",
 		action: toggleHeading2,
 		className: "fa fa-header fa-header-x fa-header-2",
-		title: "Medium Heading",
+		title: "Medium Heading"
 	},
 	"heading-3": {
 		name: "heading-3",
 		action: toggleHeading3,
 		className: "fa fa-header fa-header-x fa-header-3",
-		title: "Small Heading",
+		title: "Small Heading"
 	},
 	"code": {
 		name: "code",
 		action: toggleCodeBlock,
 		className: "fa fa-code",
-		title: "Code (Ctrl+Alt+C)",
+		title: "Code (Ctrl+Alt+C)"
 	},
 	"quote": {
 		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
-		title: "Quote (Ctrl+')",
+		title: "Quote (Ctrl+')"
 	},
 	"unordered-list": {
 		name: "unordered-list",
 		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
-		title: "Generic List (Ctrl+L)",
+		title: "Generic List (Ctrl+L)"
 	},
 	"ordered-list": {
 		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
-		title: "Numbered List (Ctrl+Alt+L)",
+		title: "Numbered List (Ctrl+Alt+L)"
 	},
 	"link": {
 		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
-		title: "Create Link (Ctrl+K)",
+		title: "Create Link (Ctrl+K)"
 	},
 	"image": {
 		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
-		title: "Insert Image (Ctrl+Alt+I)",
+		title: "Insert Image (Ctrl+Alt+I)"
 	},
 	"horizontal-rule": {
 		name: "horizontal-rule",
 		action: drawHorizontalRule,
 		className: "fa fa-minus",
-		title: "Insert Horizontal Line",
+		title: "Insert Horizontal Line"
 	},
 	"preview": {
 		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye no-disable",
-		title: "Toggle Preview (Ctrl+P)",
+		title: "Toggle Preview (Ctrl+P)"
 	},
 	"side-by-side": {
 		name: "side-by-side",
 		action: toggleSideBySide,
 		className: "fa fa-columns no-disable no-mobile",
-		title: "Toggle Side by Side (F9)",
+		title: "Toggle Side by Side (F9)"
 	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
 		className: "fa fa-arrows-alt no-disable no-mobile",
-		title: "Toggle Fullscreen (F11)",
+		title: "Toggle Fullscreen (F11)"
 	},
 	"guide": {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
-		title: "Markdown Guide",
+		title: "Markdown Guide"
 	}
 };
 
-var toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen", "guide"];
 
 /**
  * Interface of SimpleMDE.
@@ -744,7 +756,7 @@ function SimpleMDE(options) {
 	options = options || {};
 
 
-	// Used later to refer to it's parent
+	// Used later to refer to it"s parent
 	options.parent = this;
 
 
@@ -789,17 +801,17 @@ function SimpleMDE(options) {
 	if(options.toolbar !== false)
 		options.toolbar = options.toolbar || SimpleMDE.toolbar;
 
-	if(!options.hasOwnProperty('status')) {
-		options.status = ['autosave', 'lines', 'words', 'cursor'];
+	if(!options.hasOwnProperty("status")) {
+		options.status = ["autosave", "lines", "words", "cursor"];
 	}
 
 
 	// Add default preview rendering function
 	if(!options.previewRender) {
 		options.previewRender = function(plainText) {
-			// Note: 'this' refers to the options object
+			// Note: "this" refers to the options object
 			return this.parent.markdown(plainText);
-		}
+		};
 	}
 
 
@@ -826,13 +838,13 @@ function SimpleMDE(options) {
 /**
  * Default toolbar elements.
  */
-SimpleMDE.toolbar = toolbar;
+SimpleMDE.toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen", "guide"];
 
 /**
  * Default markdown render.
  */
 SimpleMDE.prototype.markdown = function(text) {
-	if(window.marked) {
+	if(marked) {
 		// Initialize
 		var markedOptions = {};
 
@@ -844,8 +856,8 @@ SimpleMDE.prototype.markdown = function(text) {
 
 		if(this.options && this.options.renderingConfig && this.options.renderingConfig.codeSyntaxHighlighting === true && window.hljs) {
 			markedOptions.highlight = function(code) {
-				return hljs.highlightAuto(code).value;
-			}
+				return window.hljs.highlightAuto(code).value;
+			};
 		}
 
 
@@ -863,7 +875,7 @@ SimpleMDE.prototype.markdown = function(text) {
  */
 SimpleMDE.prototype.render = function(el) {
 	if(!el) {
-		el = this.element || document.getElementsByTagName('textarea')[0];
+		el = this.element || document.getElementsByTagName("textarea")[0];
 	}
 
 	if(this._rendered && this._rendered === el) {
@@ -879,7 +891,7 @@ SimpleMDE.prototype.render = function(el) {
 
 	for(var key in shortcuts) {
 		(function(key) {
-			keyMaps[fixShortcut(key)] = function(cm) {
+			keyMaps[fixShortcut(key)] = function() {
 				shortcuts[key](self);
 			};
 		})(key);
@@ -888,10 +900,10 @@ SimpleMDE.prototype.render = function(el) {
 	keyMaps["Enter"] = "newlineAndIndentContinueMarkdownList";
 	keyMaps["Tab"] = "tabAndIndentMarkdownList";
 	keyMaps["Shift-Tab"] = "shiftTabAndUnindentMarkdownList";
-	keyMaps["F11"] = function(cm) {
+	keyMaps["F11"] = function() {
 		toggleFullScreen(self);
 	};
-	keyMaps["F9"] = function(cm) {
+	keyMaps["F9"] = function() {
 		toggleSideBySide(self);
 	};
 	keyMaps["Esc"] = function(cm) {
@@ -995,40 +1007,40 @@ SimpleMDE.prototype.createSideBySide = function() {
 	var preview = wrapper.nextSibling;
 
 	if(!preview || !/editor-preview-side/.test(preview.className)) {
-		preview = document.createElement('div');
-		preview.className = 'editor-preview-side';
+		preview = document.createElement("div");
+		preview.className = "editor-preview-side";
 		wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);
 	}
 
 	// Syncs scroll  editor -> preview
 	var cScroll = false;
 	var pScroll = false;
-	cm.on('scroll', function(v) {
+	cm.on("scroll", function(v) {
 		if(cScroll) {
 			cScroll = false;
 			return;
-		};
+		}
 		pScroll = true;
-		height = v.getScrollInfo().height - v.getScrollInfo().clientHeight;
-		ratio = parseFloat(v.getScrollInfo().top) / height;
-		move = (preview.scrollHeight - preview.clientHeight) * ratio;
+		var height = v.getScrollInfo().height - v.getScrollInfo().clientHeight;
+		var ratio = parseFloat(v.getScrollInfo().top) / height;
+		var move = (preview.scrollHeight - preview.clientHeight) * ratio;
 		preview.scrollTop = move;
 	});
 
 	// Syncs scroll  preview -> editor
-	preview.onscroll = function(v) {
+	preview.onscroll = function() {
 		if(pScroll) {
 			pScroll = false;
 			return;
-		};
+		}
 		cScroll = true;
-		height = preview.scrollHeight - preview.clientHeight;
-		ratio = parseFloat(preview.scrollTop) / height;
-		move = (cm.getScrollInfo().height - cm.getScrollInfo().clientHeight) * ratio;
+		var height = preview.scrollHeight - preview.clientHeight;
+		var ratio = parseFloat(preview.scrollTop) / height;
+		var move = (cm.getScrollInfo().height - cm.getScrollInfo().clientHeight) * ratio;
 		cm.scrollTo(0, move);
 	};
 	return true;
-}
+};
 
 SimpleMDE.prototype.createToolbar = function(items) {
 	items = items || this.options.toolbar;
@@ -1036,23 +1048,22 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	if(!items || items.length === 0) {
 		return;
 	}
-
-	for(var i = 0; i < items.length; i++) {
+	var i;
+	for(i = 0; i < items.length; i++) {
 		if(toolbarBuiltInButtons[items[i]] != undefined) {
 			items[i] = toolbarBuiltInButtons[items[i]];
 		}
 	}
 
-	var bar = document.createElement('div');
-	bar.className = 'editor-toolbar';
+	var bar = document.createElement("div");
+	bar.className = "editor-toolbar";
 
 	var self = this;
 
-	var el;
 	var toolbar_data = {};
 	self.toolbar = items;
 
-	for(var i = 0; i < items.length; i++) {
+	for(i = 0; i < items.length; i++) {
 		if(items[i].name == "guide" && self.options.toolbarGuideIcon === false)
 			continue;
 
@@ -1066,7 +1077,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 		(function(item) {
 			var el;
-			if(item === '|') {
+			if(item === "|") {
 				el = createSep();
 			} else {
 				el = createIcon(item, self.options.toolbarTips);
@@ -1074,13 +1085,13 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 			// bind events, special for info
 			if(item.action) {
-				if(typeof item.action === 'function') {
-					el.onclick = function(e) {
+				if(typeof item.action === "function") {
+					el.onclick = function() {
 						item.action(self);
 					};
-				} else if(typeof item.action === 'string') {
+				} else if(typeof item.action === "string") {
 					el.href = item.action;
-					el.target = '_blank';
+					el.target = "_blank";
 				}
 			}
 			toolbar_data[item.name || item] = el;
@@ -1091,16 +1102,16 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	self.toolbarElements = toolbar_data;
 
 	var cm = this.codemirror;
-	cm.on('cursorActivity', function() {
+	cm.on("cursorActivity", function() {
 		var stat = getState(cm);
 
 		for(var key in toolbar_data) {
 			(function(key) {
 				var el = toolbar_data[key];
 				if(stat[key]) {
-					el.className += ' active';
+					el.className += " active";
 				} else if(key != "fullscreen" && key != "side-by-side") {
-					el.className = el.className.replace(/\s*active\s*/g, '');
+					el.className = el.className.replace(/\s*active\s*/g, "");
 				}
 			})(key);
 		}
@@ -1113,35 +1124,35 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 SimpleMDE.prototype.createStatusbar = function(status) {
 	status = status || this.options.status;
-	options = this.options;
+	var options = this.options;
 
 	if(!status || status.length === 0) return;
 
-	var bar = document.createElement('div');
-	bar.className = 'editor-statusbar';
+	var bar = document.createElement("div");
+	bar.className = "editor-statusbar";
 
 	var pos, cm = this.codemirror;
 	for(var i = 0; i < status.length; i++) {
 		(function(name) {
-			var el = document.createElement('span');
+			var el = document.createElement("span");
 			el.className = name;
-			if(name === 'words') {
-				el.innerHTML = '0';
-				cm.on('update', function() {
+			if(name === "words") {
+				el.innerHTML = "0";
+				cm.on("update", function() {
 					el.innerHTML = wordCount(cm.getValue());
 				});
-			} else if(name === 'lines') {
-				el.innerHTML = '0';
-				cm.on('update', function() {
+			} else if(name === "lines") {
+				el.innerHTML = "0";
+				cm.on("update", function() {
 					el.innerHTML = cm.lineCount();
 				});
-			} else if(name === 'cursor') {
-				el.innerHTML = '0:0';
-				cm.on('cursorActivity', function() {
+			} else if(name === "cursor") {
+				el.innerHTML = "0:0";
+				cm.on("cursorActivity", function() {
 					pos = cm.getCursor();
-					el.innerHTML = pos.line + ':' + pos.ch;
+					el.innerHTML = pos.line + ":" + pos.ch;
 				});
-			} else if(name === 'autosave') {
+			} else if(name === "autosave") {
 				if(options.autosave != undefined && options.autosave.enabled === true) {
 					el.setAttribute("id", "autosaved");
 				}
@@ -1255,3 +1266,4 @@ SimpleMDE.prototype.toggleSideBySide = function() {
 SimpleMDE.prototype.toggleFullScreen = function() {
 	toggleFullScreen(this);
 };
+module.exports = SimpleMDE;

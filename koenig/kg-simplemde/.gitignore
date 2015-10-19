@@ -1,2 +1,8 @@
 localtesting/*
 node_modules/
+
+#For IDE
+*.iml
+*.ipr
+*.iws
+.idea/
