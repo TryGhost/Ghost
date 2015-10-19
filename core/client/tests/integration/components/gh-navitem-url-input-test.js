@@ -116,7 +116,7 @@ describeComponent(
             expect($input.val()).to.equal(`${currentUrl}about`);
         });
 
-        it('adds "mailto:" to e-mail addresses on blur', function () {
+        it('adds "mailto:" to email addresses on blur', function () {
             this.on('updateUrl', () => { return null; });
             this.render(hbs`
                 {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
