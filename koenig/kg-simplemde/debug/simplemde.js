@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SimpleMDE = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-; Typo = global.Typo = require("C:\\phantomx\\projects\\simplemde-markdown-editor\\node_modules\\codemirror-spell-checker\\src\\js\\typo.js");
+; Typo = global.Typo = require("/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js");
 CodeMirror = global.CodeMirror = require("codemirror");
 ; var __browserify_shim_require__=require;(function browserifyShim(module, define, require) {
 // Initialize data globally to reduce memory consumption
@@ -99,7 +99,7 @@ if(!String.prototype.includes) {
 }).call(global, module, undefined, undefined);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"C:\\phantomx\\projects\\simplemde-markdown-editor\\node_modules\\codemirror-spell-checker\\src\\js\\typo.js":2,"codemirror":6}],2:[function(require,module,exports){
+},{"/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js":2,"codemirror":6}],2:[function(require,module,exports){
 (function (global){
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 'use strict';
@@ -8617,7 +8617,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
     removeLineWidget: function(widget) { widget.clear(); },
 
     markText: function(from, to, options) {
-      return markText(this, clipPos(this, from), clipPos(this, to), options, "range");
+      return markText(this, clipPos(this, from), clipPos(this, to), options, options && options.type || "range");
     },
     setBookmark: function(pos, options) {
       var realOpts = {replacedWith: options && (options.nodeType == null ? options.widget : options),
@@ -10100,24 +10100,36 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   if (modeCfg.strikethrough === undefined)
     modeCfg.strikethrough = false;
 
+  // Allow token types to be overridden by user-provided token types.
+  if (modeCfg.tokenTypeOverrides === undefined)
+    modeCfg.tokenTypeOverrides = {};
+
   var codeDepth = 0;
 
-  var header   = 'header'
-  ,   code     = 'comment'
-  ,   quote    = 'quote'
-  ,   list1    = 'variable-2'
-  ,   list2    = 'variable-3'
-  ,   list3    = 'keyword'
-  ,   hr       = 'hr'
-  ,   image    = 'tag'
-  ,   formatting = 'formatting'
-  ,   linkinline = 'link'
-  ,   linkemail = 'link'
-  ,   linktext = 'link'
-  ,   linkhref = 'string'
-  ,   em       = 'em'
-  ,   strong   = 'strong'
-  ,   strikethrough = 'strikethrough';
+  var tokenTypes = {
+    header: "header",
+    code: "comment",
+    quote: "quote",
+    list1: "variable-2",
+    list2: "variable-3",
+    list3: "keyword",
+    hr: "hr",
+    image: "tag",
+    formatting: "formatting",
+    linkInline: "link",
+    linkEmail: "link",
+    linkText: "link",
+    linkHref: "string",
+    em: "em",
+    strong: "strong",
+    strikethrough: "strikethrough"
+  };
+
+  for (var tokenType in tokenTypes) {
+    if (tokenTypes.hasOwnProperty(tokenType) && modeCfg.tokenTypeOverrides[tokenType]) {
+      tokenTypes[tokenType] = modeCfg.tokenTypeOverrides[tokenType];
+    }
+  }
 
   var hrRE = /^([*\-_])(?:\s*\1){2,}\s*$/
   ,   ulRE = /^[*\-+]\s+/
@@ -10201,7 +10213,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       if (prevLineIsIndentedCode || lineIsEmpty(state.prevLine)) {
         state.indentation -= 4;
         state.indentedCode = true;
-        return code;
+        return tokenTypes.code;
       } else {
         return null;
       }
@@ -10227,7 +10239,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       return switchInline(stream, state, footnoteLink);
     } else if (stream.match(hrRE, true)) {
       state.hr = true;
-      return hr;
+      return tokenTypes.hr;
     } else if ((lineIsEmpty(state.prevLine) || prevLineIsList) && (stream.match(ulRE, false) || stream.match(olRE, false))) {
       var listType = null;
       if (stream.match(ulRE, true)) {
@@ -10280,7 +10292,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       return state.localMode.token(stream, state.localState);
     } else {
       stream.skipToEnd();
-      return code;
+      return tokenTypes.code;
     }
   }
 
@@ -10301,22 +10313,22 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     var styles = [];
 
     if (state.formatting) {
-      styles.push(formatting);
+      styles.push(tokenTypes.formatting);
 
       if (typeof state.formatting === "string") state.formatting = [state.formatting];
 
       for (var i = 0; i < state.formatting.length; i++) {
-        styles.push(formatting + "-" + state.formatting[i]);
+        styles.push(tokenTypes.formatting + "-" + state.formatting[i]);
 
         if (state.formatting[i] === "header") {
-          styles.push(formatting + "-" + state.formatting[i] + "-" + state.header);
+          styles.push(tokenTypes.formatting + "-" + state.formatting[i] + "-" + state.header);
         }
 
         // Add `formatting-quote` and `formatting-quote-#` for blockquotes
         // Add `error` instead if the maximum blockquote nesting depth is passed
         if (state.formatting[i] === "quote") {
           if (!modeCfg.maxBlockquoteDepth || modeCfg.maxBlockquoteDepth >= state.quote) {
-            styles.push(formatting + "-" + state.formatting[i] + "-" + state.quote);
+            styles.push(tokenTypes.formatting + "-" + state.formatting[i] + "-" + state.quote);
           } else {
             styles.push("error");
           }
@@ -10334,38 +10346,36 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     }
 
     if (state.linkHref) {
-      styles.push(linkhref, "url");
+      styles.push(tokenTypes.linkHref, "url");
     } else { // Only apply inline styles to non-url text
-      if (state.strong) { styles.push(strong); }
-      if (state.em) { styles.push(em); }
-      if (state.strikethrough) { styles.push(strikethrough); }
-
-      if (state.linkText) { styles.push(linktext); }
-
-      if (state.code) { styles.push(code); }
+      if (state.strong) { styles.push(tokenTypes.strong); }
+      if (state.em) { styles.push(tokenTypes.em); }
+      if (state.strikethrough) { styles.push(tokenTypes.strikethrough); }
+      if (state.linkText) { styles.push(tokenTypes.linkText); }
+      if (state.code) { styles.push(tokenTypes.code); }
     }
 
-    if (state.header) { styles.push(header); styles.push(header + "-" + state.header); }
+    if (state.header) { styles.push(tokenTypes.header, tokenTypes.header + "-" + state.header); }
 
     if (state.quote) {
-      styles.push(quote);
+      styles.push(tokenTypes.quote);
 
       // Add `quote-#` where the maximum for `#` is modeCfg.maxBlockquoteDepth
       if (!modeCfg.maxBlockquoteDepth || modeCfg.maxBlockquoteDepth >= state.quote) {
-        styles.push(quote + "-" + state.quote);
+        styles.push(tokenTypes.quote + "-" + state.quote);
       } else {
-        styles.push(quote + "-" + modeCfg.maxBlockquoteDepth);
+        styles.push(tokenTypes.quote + "-" + modeCfg.maxBlockquoteDepth);
       }
     }
 
     if (state.list !== false) {
       var listMod = (state.listDepth - 1) % 3;
       if (!listMod) {
-        styles.push(list1);
+        styles.push(tokenTypes.list1);
       } else if (listMod === 1) {
-        styles.push(list2);
+        styles.push(tokenTypes.list2);
       } else {
-        styles.push(list3);
+        styles.push(tokenTypes.list3);
       }
     }
 
@@ -10421,7 +10431,8 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       stream.next();
       if (modeCfg.highlightFormatting) {
         var type = getType(state);
-        return type ? type + " formatting-escape" : "formatting-escape";
+        var formattingEscape = tokenTypes.formatting + "-escape";
+        return type ? type + " " + formattingEscape : formattingEscape;
       }
     }
 
@@ -10435,7 +10446,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       matchCh = (matchCh+'').replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
       var regex = '^\\s*(?:[^' + matchCh + '\\\\]+|\\\\\\\\|\\\\.)' + matchCh;
       if (stream.match(new RegExp(regex), true)) {
-        return linkhref;
+        return tokenTypes.linkHref;
       }
     }
 
@@ -10466,7 +10477,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     if (ch === '!' && stream.match(/\[[^\]]*\] ?(?:\(|\[)/, false)) {
       stream.match(/\[[^\]]*\]/);
       state.inline = state.f = linkHref;
-      return image;
+      return tokenTypes.image;
     }
 
     if (ch === '[' && stream.match(/.*\](\(.*\)| ?\[.*\])/, false)) {
@@ -10492,7 +10503,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       } else {
         type = "";
       }
-      return type + linkinline;
+      return type + tokenTypes.linkInline;
     }
 
     if (ch === '<' && stream.match(/^[^> \\]+@(?:[^\\>]|\\.)+>/, false)) {
@@ -10504,7 +10515,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       } else {
         type = "";
       }
-      return type + linkemail;
+      return type + tokenTypes.linkEmail;
     }
 
     if (ch === '<' && stream.match(/^(!--|\w)/, false)) {
@@ -10613,12 +10624,12 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       } else {
         type = "";
       }
-      return type + linkinline;
+      return type + tokenTypes.linkInline;
     }
 
     stream.match(/^[^>]+/, true);
 
-    return linkinline;
+    return tokenTypes.linkInline;
   }
 
   function linkHref(stream, state) {
@@ -10679,7 +10690,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 
     stream.match(/^[^\]]+/, true);
 
-    return linktext;
+    return tokenTypes.linkText;
   }
 
   function footnoteUrl(stream, state) {
@@ -10696,7 +10707,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       stream.match(/^(?:\s+(?:"(?:[^"\\]|\\\\|\\.)+"|'(?:[^'\\]|\\\\|\\.)+'|\((?:[^)\\]|\\\\|\\.)+\)))?/, true);
     }
     state.f = state.inline = inlineNormal;
-    return linkhref + " url";
+    return tokenTypes.linkHref + " url";
   }
 
   var savedInlineRE = [];
@@ -10952,7 +10963,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Scala", mime: "text/x-scala", mode: "clike", ext: ["scala"]},
     {name: "Scheme", mime: "text/x-scheme", mode: "scheme", ext: ["scm", "ss"]},
     {name: "SCSS", mime: "text/x-scss", mode: "css", ext: ["scss"]},
-    {name: "Shell", mime: "text/x-sh", mode: "shell", ext: ["sh", "ksh", "bash"], alias: ["bash", "sh", "zsh"]},
+    {name: "Shell", mime: "text/x-sh", mode: "shell", ext: ["sh", "ksh", "bash"], alias: ["bash", "sh", "zsh"], file: /^PKGBUILD$/},
     {name: "Sieve", mime: "application/sieve", mode: "sieve", ext: ["siv", "sieve"]},
     {name: "Slim", mimes: ["text/x-slim", "application/x-slim"], mode: "slim", ext: ["slim"]},
     {name: "Smalltalk", mime: "text/x-stsrc", mode: "smalltalk", ext: ["st"]},
@@ -12791,6 +12802,12 @@ var shortcuts = {
 	"Cmd-P": togglePreview
 };
 
+var isMobile = function() {
+	var check = false;
+	(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)))check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+	return check;
+};
+
 
 /**
  * Fix shortcut. Mac use Command, others use Ctrl.
@@ -13084,10 +13101,9 @@ function toggleSideBySide(editor) {
 		toolbarButton.className = toolbarButton.className.replace(/\s*active\s*/g, "");
 		wrapper.className = wrapper.className.replace(/\s*CodeMirror-sided\s*/g, " ");
 	} else {
-		/* When the preview button is clicked for the first time,
-		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
-		 * instead of just appearing.
-		 */
+		// When the preview button is clicked for the first time,
+		// give some time for the transition from editor.css to fire and the view to slide from right to left,
+		// instead of just appearing.
 		setTimeout(function() {
 			if(!cm.getOption("fullScreen"))
 				toggleFullScreen(editor);
@@ -13140,10 +13156,9 @@ function togglePreview(editor) {
 		toolbar.className = toolbar.className.replace(/\s*active\s*/g, "");
 		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, "");
 	} else {
-		/* When the preview button is clicked for the first time,
-		 * give some time for the transition from editor.css to fire and the view to slide from right to left,
-		 * instead of just appearing.
-		 */
+		// When the preview button is clicked for the first time,
+		// give some time for the transition from editor.css to fire and the view to slide from right to left,
+		// instead of just appearing.
 		setTimeout(function() {
 			preview.className += " editor-preview-active";
 		}, 1);
@@ -13825,6 +13840,11 @@ SimpleMDE.prototype.createToolbar = function(items) {
 			continue;
 
 		if(self.options.hideIcons && self.options.hideIcons.indexOf(items[i].name) != -1)
+			continue;
+		
+		// Fullscreen does not work well on mobile devices (even tablets)
+		// In the future, hopefully this can be resolved
+		if((items[i].name == "fullscreen" || items[i].name == "side-by-side") && isMobile())
 			continue;
 
 		(function(item) {
