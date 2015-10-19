@@ -2,6 +2,8 @@ import Ember from 'ember';
 
 export default Ember.Controller.extend({
 
+    session: Ember.inject.service(),
+
     users: Ember.computed.alias('model'),
 
     activeUsers: Ember.computed.filter('users', function (user) {
