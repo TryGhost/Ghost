@@ -19,19 +19,10 @@ module.exports = function (environment) {
               // when it is created
         },
 
-        'simple-auth': {
+        'ember-simple-auth': {
             authenticationRoute: 'signin',
             routeAfterAuthentication: 'posts',
-            authorizer: 'simple-auth-authorizer:oauth2-bearer',
-
-            localStorageKey: '<overriden by initializers/simple-auth-env>'
-        },
-
-        'simple-auth-oauth2': {
-            refreshAccessTokens: true,
-
-            serverTokenEndpoint: '<overriden by initializers/simple-auth-env>',
-            serverTokenRevocationEndpoint: '<overriden by initializers/simple-auth-env>'
+            routeIfAlreadyAuthenticated: 'posts'
         },
 
         resizeServiceDefaults: {
@@ -60,10 +51,6 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = false;
 
         ENV.APP.rootElement = '#ember-testing';
-
-        ENV['simple-auth'] = {
-            store: 'simple-auth-session-store:ephemeral'
-        };
     }
 
     return ENV;

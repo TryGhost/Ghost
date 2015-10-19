@@ -7,6 +7,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     application: Ember.inject.controller(),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     identification: Ember.computed('session.user.email', function () {
         return this.get('session.user.email');
@@ -15,13 +16,12 @@ export default Ember.Controller.extend(ValidationEngine, {
     actions: {
         authenticate: function () {
             var appController = this.get('application'),
-                authStrategy = 'ghost-authenticator:oauth2-password-grant',
-                data = this.getProperties('identification', 'password'),
+                authStrategy = 'authenticator:oauth2',
                 self = this;
 
             appController.set('skipAuthSuccessHandler', true);
 
-            this.get('session').authenticate(authStrategy, data).then(function () {
+            this.get('session').authenticate(authStrategy, this.get('identification'), this.get('password')).then(function () {
                 self.send('closeModal');
                 self.set('password', '');
             }).catch(function () {
