@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
-import Configuration from 'simple-auth/configuration';
+import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
 export default Ember.Route.extend(styleBody, {
@@ -9,15 +9,15 @@ export default Ember.Route.extend(styleBody, {
     classNames: ['ghost-setup'],
 
     ghostPaths: Ember.inject.service('ghost-paths'),
+    session: Ember.inject.service(),
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
     beforeModel: function () {
         var self = this;
 
-        // If user is logged in, setup has already been completed.
-        if (this.get('session').isAuthenticated) {
-            this.transitionTo(Configuration.routeAfterAuthentication);
+        if (this.get('session.isAuthenticated')) {
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
             return;
         }
 
