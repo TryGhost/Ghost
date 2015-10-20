@@ -1,5 +1,6 @@
-localtesting/*
+localtesting/
 node_modules/
+bower_components/
 
 #For IDE
 *.iml
