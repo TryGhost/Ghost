@@ -120,7 +120,7 @@ var simplemde = new SimpleMDE({
 		}, 250);
 		
 		return "Loading...";
-	}
+	},
 	renderingConfig: {
 		singleLineBreaks: false,
 		codeSyntaxHighlighting: true,
