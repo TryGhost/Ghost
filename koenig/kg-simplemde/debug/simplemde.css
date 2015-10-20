@@ -341,6 +341,7 @@ span.CodeMirror-selectedtext { background: none; }
 	border-bottom-right-radius: 4px;
 	padding: 10px;
 	font: inherit;
+	z-index: 1;
 }
 
 .CodeMirror-scroll {
@@ -554,7 +555,7 @@ span.CodeMirror-selectedtext { background: none; }
 	top: 0;
 	left: 0;
 	background: #fafafa;
-	z-index: 9999;
+	z-index: 2;
 	overflow: auto;
 	display: none;
 	box-sizing: border-box;
