@@ -54,7 +54,7 @@ describe('DB API', function () {
         }).catch(done);
     });
 
-    it('delete all content is denied (editor & author)', function (done) {
+    it('delete all content is denied (editor, author & without authentication)', function (done) {
         return dbAPI.deleteAllContent(testUtils.context.editor).then(function () {
             done(new Error('Delete all content is not denied for editor.'));
         }, function (error) {
@@ -73,7 +73,7 @@ describe('DB API', function () {
         }).catch(done);
     });
 
-    it('export content is denied (editor & author)', function (done) {
+    it('export content is denied (editor, author & without authentication)', function (done) {
         return dbAPI.exportContent(testUtils.context.editor).then(function () {
             done(new Error('Export content is not denied for editor.'));
         }, function (error) {
@@ -92,7 +92,7 @@ describe('DB API', function () {
         }).catch(done);
     });
 
-    it('import content is denied (editor & author)', function (done) {
+    it('import content is denied (editor, author & without authentication)', function (done) {
         return dbAPI.importContent(testUtils.context.editor).then(function () {
             done(new Error('Import content is not denied for editor.'));
         }, function (error) {
