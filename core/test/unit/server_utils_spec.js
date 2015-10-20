@@ -348,5 +348,43 @@ describe('Server Utilities', function () {
                     done();
                 });
         });
+
+        it('should return warnings for themes with ambiguous partial filename', function (done) {
+            var themesPath, pkgJson;
+
+            themesPath = tempfile();
+            pkgJson = JSON.stringify({
+                name: 'casper',
+                version: '1.0.0'
+            });
+
+            fs.mkdirSync(themesPath);
+
+            fs.mkdirSync(join(themesPath, 'casper'));
+
+            fs.writeFileSync(join(themesPath, 'casper', 'package.json'), pkgJson);
+
+            fs.mkdirSync(join(themesPath, 'casper', 'partials'));
+
+            fs.writeFileSync(join(themesPath, 'casper', 'partials', 'loop.hbs'), '');
+            fs.writeFileSync(join(themesPath, 'casper', 'partials', 'loop.hbs~'), '');
+            fs.writeFileSync(join(themesPath, 'casper', 'partials', 'loop.hab.hbs~'), '');
+
+            validateThemes(themesPath)
+                .then(function () {
+                    done(new Error('validateThemes succeeded, but should\'ve failed'));
+                })
+                .catch(function (result) {
+                    result.errors.length.should.equal(0);
+
+                    result.warnings.should.eql([{
+                        message: 'Found a partial (loop) that is not unique',
+                        context: 'Theme name: casper',
+                        help: 'Check for files sharing the same name but different extensions.'
+                    }]);
+
+                    done();
+                });
+        });
     });
 });
