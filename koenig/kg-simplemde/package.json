@@ -1,36 +1,68 @@
 {
   "name": "simplemde",
-  "version": "1.7.4",
-  "description": "A simple, beautiful, and embeddable JavaScript markdown editor. Features autosaving and spell checking.",
+  "version": "1.8.0",
+  "description": "A simple, beautiful, and embeddable JavaScript Markdown editor. Features autosaving and spell checking.",
   "keywords": [
-    "embeddable",
-    "markdown",
-    "editor",
-    "javascript",
-    "wysiwyg"
+	"embeddable",
+	"markdown",
+	"editor",
+	"javascript",
+	"wysiwyg"
   ],
   "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
-  "main": "gulpfile.js",
+  "main": "./src/js/simplemde.js",
   "license": "MIT",
   "company": "Next Step Webs, Inc.",
   "author": {
-    "name": "Wes Cossick",
-    "url": "http://www.WesCossick.com"
+	"name": "Wes Cossick",
+	"url": "http://www.WesCossick.com"
   },
   "bugs": {
-    "url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
+	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor/issues"
+  },
+  "dependencies": {
+	"codemirror": "codemirror/CodeMirror",
+	"codemirror-spell-checker": "nextstepwebs/codemirror-spell-checker",
+	"marked": "chjj/marked"
   },
   "devDependencies": {
-    "gulp": "*",
-    "gulp-minify-css": "*",
-    "gulp-uglify": "*",
-    "gulp-concat": "*",
-    "gulp-header": "*",
-    "gulp-jsbeautifier": "*",
-    "gulp-download": "*"
+	"browserify": "^11.2.0",
+	"browserify-shim": "^3.8.10",
+	"debug": "^2.2.0",
+	"eslint": "^1.6.0",
+	"gulp": "*",
+	"gulp-concat": "*",
+	"gulp-debug": "^2.1.1",
+	"gulp-eslint": "^1.0.0",
+	"gulp-header": "*",
+	"gulp-jsbeautifier": "*",
+	"gulp-minify-css": "^1.2.1",
+	"gulp-rename": "^1.2.2",
+	"gulp-uglify": "*",
+	"vinyl-source-stream": "^1.1.0"
+  },
+  "browserify": {
+	"transform": [
+	  "browserify-shim"
+	]
+  },
+  "browser":{
+	"spell-checker":"./node_modules/codemirror-spell-checker/src/js/spell-checker.js",
+	"typo":"./node_modules/codemirror-spell-checker/src/js/typo.js"
+  },
+  "browserify-shim": {
+	"spell-checker": {
+	  "depends": [
+		"typo:Typo",
+		"codemirror:CodeMirror"
+	  ]
+	},
+	"typo": {
+	  "exports": "Typo"
+	}
   },
   "repository": {
-    "type": "git",
-    "url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
+	"type": "git",
+	"url": "https://github.com/NextStepWebs/simplemde-markdown-editor"
   }
 }
