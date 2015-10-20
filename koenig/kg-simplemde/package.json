@@ -1,7 +1,7 @@
 {
   "name": "simplemde",
   "version": "1.7.6",
-  "description": "A simple, beautiful, and embeddable JavaScript markdown editor. Features autosaving and spell checking.",
+  "description": "A simple, beautiful, and embeddable JavaScript Markdown editor. Features autosaving and spell checking.",
   "keywords": [
     "embeddable",
     "markdown",
