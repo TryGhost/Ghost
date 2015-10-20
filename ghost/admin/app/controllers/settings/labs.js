@@ -70,7 +70,7 @@ export default Ember.Controller.extend({
         exportData: function () {
             var iframe = $('#iframeDownload'),
                 downloadURL = this.get('ghostPaths.url').api('db') +
-                    '?access_token=' + this.get('session.secure.access_token');
+                    '?access_token=' + this.get('session.data.authenticated.access_token');
 
             if (iframe.length === 0) {
                 iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
