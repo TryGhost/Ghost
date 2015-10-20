@@ -8,20 +8,28 @@ A drop-in JavaScript textarea replacement for writing beautiful and understandab
 ## Why not a WYSIWYG editor or pure Markdown?
 WYSIWYG editors that produce HTML are often complex and buggy. Markdown solves this problem in many ways, plus Markdown can be rendered natively on more platforms than HTML. However, Markdown is not a syntax that an average user will be familiar with, nor is it visually clear while editing. In otherwords, for an unfamiliar user, the syntax they write will make little sense until they click the preview button. SimpleMDE has been designed to bridge this gap for non-technical users who are less familiar with or just learning Markdown syntax.
 
-## Quick start
-SimpleMDE is available on [npm](https://www.npmjs.com/package/simplemde).
+## Install
+
+Via [npm](https://www.npmjs.com/package/simplemde).
 ```
 npm install simplemde --save
 ```
 
-SimpleMDE is also available on [jsDelivr](http://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
+Via [bower](https://www.bower.io).
+```
+bower install simplemde --save
+```
+
+Via [jsDelivr](http://www.jsdelivr.com/#!simplemde). *Please note, jsDelivr may take a few days to update to the latest release.*
 
 ```HTML
 <link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 ```
 
-And then load SimpleMDE on the first textarea on a page
+## Quick start
+
+After installing, load SimpleMDE on the first textarea on a page
 
 ```HTML
 <script>
@@ -29,7 +37,7 @@ var simplemde = new SimpleMDE();
 </script>
 ```
 
-#### Use a specific textarea
+#### How to use a specific textarea
 
 Pure JavaScript method
 
