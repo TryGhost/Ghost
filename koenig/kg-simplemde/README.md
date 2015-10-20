@@ -214,7 +214,7 @@ simplemde.codemirror.on("change", function(){
 ## State methods
 The following methods will let you check on the state of the editor.
 
-```
+```js
 var simplemde = new SimpleMDE();
 simplemde.isPreviewActive();
 simplemde.isSideBySideActive();
