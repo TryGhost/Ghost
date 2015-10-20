@@ -37,7 +37,7 @@ var simplemde = new SimpleMDE();
 </script>
 ```
 
-#### How to use a specific textarea
+#### Using a specific textarea
 
 Pure JavaScript method
 
