@@ -9909,7 +9909,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
   // THE END
 
-  CodeMirror.version = "5.7.1";
+  CodeMirror.version = "5.8.1";
 
   return CodeMirror;
 });
@@ -10937,6 +10937,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "MS SQL", mime: "text/x-mssql", mode: "sql"},
     {name: "MySQL", mime: "text/x-mysql", mode: "sql"},
     {name: "Nginx", mime: "text/x-nginx-conf", mode: "nginx", file: /nginx.*\.conf$/i},
+    {name: "NSIS", mime: "text/x-nsis", mode: "nsis", ext: ["nsh", "nsi"]},
     {name: "NTriples", mime: "text/n-triples", mode: "ntriples", ext: ["nt"]},
     {name: "Objective C", mime: "text/x-objectivec", mode: "clike", ext: ["m", "mm"]},
     {name: "OCaml", mime: "text/x-ocaml", mode: "mllike", ext: ["ml", "mli", "mll", "mly"]},
@@ -14038,6 +14039,29 @@ SimpleMDE.prototype.toggleSideBySide = function() {
 SimpleMDE.prototype.toggleFullScreen = function() {
 	toggleFullScreen(this);
 };
+
+SimpleMDE.prototype.isPreviewActive = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var preview = wrapper.lastChild;
+	
+	return /editor-preview-active/.test(preview.className);
+};
+
+SimpleMDE.prototype.isSideBySideActive = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var preview = wrapper.nextSibling;
+	
+	return /editor-preview-active-side/.test(preview.className);
+};
+
+SimpleMDE.prototype.isFullscreenActive = function() {
+	var cm = this.codemirror;
+	
+	return cm.getOption("fullScreen");
+};
+
 module.exports = SimpleMDE;
 
 },{"./codemirror/tablist":12,"codemirror":6,"codemirror/addon/display/fullscreen.js":3,"codemirror/addon/edit/continuelist.js":4,"codemirror/addon/mode/overlay.js":5,"codemirror/mode/gfm/gfm.js":7,"codemirror/mode/markdown/markdown.js":8,"codemirror/mode/xml/xml.js":10,"marked":11,"spell-checker":1}]},{},[13])(13)

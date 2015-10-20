@@ -211,6 +211,16 @@ simplemde.codemirror.on("change", function(){
 });
 ```
 
+## State methods
+The following methods will let you check on the state of the editor.
+
+```
+var simplemde = new SimpleMDE();
+simplemde.isPreviewActive();
+simplemde.isSideBySideActive();
+simplemde.isFullscreenActive();
+```
+
 ## How it works
 SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor) and includes a great many number of changes. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
 

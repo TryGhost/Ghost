@@ -1264,4 +1264,27 @@ SimpleMDE.prototype.toggleSideBySide = function() {
 SimpleMDE.prototype.toggleFullScreen = function() {
 	toggleFullScreen(this);
 };
+
+SimpleMDE.prototype.isPreviewActive = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var preview = wrapper.lastChild;
+	
+	return /editor-preview-active/.test(preview.className);
+};
+
+SimpleMDE.prototype.isSideBySideActive = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+	var preview = wrapper.nextSibling;
+	
+	return /editor-preview-active-side/.test(preview.className);
+};
+
+SimpleMDE.prototype.isFullscreenActive = function() {
+	var cm = this.codemirror;
+	
+	return cm.getOption("fullScreen");
+};
+
 module.exports = SimpleMDE;
