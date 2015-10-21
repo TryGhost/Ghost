@@ -6,7 +6,7 @@ module.exports = function (environment) {
         modulePrefix: 'ghost',
         environment: environment,
         baseURL: '/',
-        locationType: 'auto',
+        locationType: 'trailing-history',
         EmberENV: {
             FEATURES: {
                 // Here you can enable experimental features on an ember canary build
@@ -19,19 +19,10 @@ module.exports = function (environment) {
               // when it is created
         },
 
-        'simple-auth': {
+        'ember-simple-auth': {
             authenticationRoute: 'signin',
             routeAfterAuthentication: 'posts',
-            authorizer: 'simple-auth-authorizer:oauth2-bearer',
-
-            localStorageKey: '<overriden by initializers/simple-auth-env>'
-        },
-
-        'simple-auth-oauth2': {
-            refreshAccessTokens: true,
-
-            serverTokenEndpoint: '<overriden by initializers/simple-auth-env>',
-            serverTokenRevocationEndpoint: '<overriden by initializers/simple-auth-env>'
+            routeIfAlreadyAuthenticated: 'posts'
         },
 
         resizeServiceDefaults: {

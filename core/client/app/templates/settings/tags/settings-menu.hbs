@@ -22,10 +22,12 @@
                         {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
                     </div>
 
-                    <div class="form-group">
+                    {{#gh-form-group errors=activeTag.errors hasValidated=activeTag.hasValidated property="description"}}
                         <label for="tag-description">Description</label>
                         {{gh-textarea id="tag-description" name="description" value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
-                    </div>
+                        {{gh-error-message errors=activeTag.errors property="description"}}
+                        {{gh-count-down-characters activeTagDescriptionScratch 200}}
+                    {{/gh-form-group}}
 
                     <ul class="nav-list nav-list-block">
                         {{#gh-tab tagName="li" classNames="nav-list-item"}}

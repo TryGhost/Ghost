@@ -18,6 +18,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     notifications: Ember.inject.service(),
     application: Ember.inject.controller(),
     config: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     // ValidationEngine settings
     validationType: 'setup',
@@ -87,10 +88,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     config.set('blogTitle', data.blogTitle);
                     // Don't call the success handler, otherwise we will be redirected to admin
                     self.get('application').set('skipAuthSuccessHandler', true);
-                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
-                        identification: self.get('email'),
-                        password: self.get('password')
-                    }).then(function () {
+                    self.get('session').authenticate('authenticator:oauth2', self.get('email'), self.get('password')).then(function () {
                         self.set('blogCreated', true);
                         if (data.image) {
                             self.sendImage(result.users[0])
@@ -99,7 +97,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                                 self.transitionToRoute('setup.three');
                             }).catch(function (resp) {
                                 self.toggleProperty('submitting');
-                                notifications.showAPIError(resp);
+                                notifications.showAPIError(resp, {key: 'setup.blog-details'});
                             });
                         } else {
                             self.toggleProperty('submitting');
@@ -111,7 +109,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
                         self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
                     } else {
-                        notifications.showAPIError(resp);
+                        notifications.showAPIError(resp, {key: 'setup.blog-details'});
                     }
                 });
             }).catch(function () {

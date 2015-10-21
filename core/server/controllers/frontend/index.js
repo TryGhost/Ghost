@@ -5,16 +5,17 @@
 /*global require, module */
 
 var _           = require('lodash'),
-    api         = require('../api'),
-    rss         = require('../data/xml/rss'),
+    api         = require('../../api'),
+    rss         = require('../../data/xml/rss'),
     path        = require('path'),
-    config      = require('../config'),
-    errors      = require('../errors'),
-    filters     = require('../filters'),
+    config      = require('../../config'),
+    errors      = require('../../errors'),
+    filters     = require('../../filters'),
     Promise     = require('bluebird'),
-    template    = require('../helpers/template'),
+    template    = require('../../helpers/template'),
     routeMatch  = require('path-match')(),
-    safeString  = require('../utils/index').safeString,
+    safeString  = require('../../utils/index').safeString,
+    setResponseContext = require('./context'),
 
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
@@ -67,42 +68,6 @@ function handleError(next) {
 
         return next(err);
     };
-}
-
-function setResponseContext(req, res, data) {
-    var contexts = [],
-        pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-        tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/'),
-        authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/'),
-        privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/'),
-        indexPattern = new RegExp('^\\/' + config.routeKeywords.page + '\\/'),
-        homePattern = new RegExp('^\\/$');
-
-    // paged context
-    if (!isNaN(pageParam) && pageParam > 1) {
-        contexts.push('paged');
-    }
-
-    if (indexPattern.test(res.locals.relativeUrl)) {
-        contexts.push('index');
-    } else if (homePattern.test(res.locals.relativeUrl)) {
-        contexts.push('home');
-        contexts.push('index');
-    } else if (/^\/rss\//.test(res.locals.relativeUrl)) {
-        contexts.push('rss');
-    } else if (privatePattern.test(res.locals.relativeUrl)) {
-        contexts.push('private');
-    } else if (tagPattern.test(res.locals.relativeUrl)) {
-        contexts.push('tag');
-    } else if (authorPattern.test(res.locals.relativeUrl)) {
-        contexts.push('author');
-    } else if (data && data.post && data.post.page) {
-        contexts.push('page');
-    } else {
-        contexts.push('post');
-    }
-
-    res.locals.context = contexts;
 }
 
 // Add Request context parameter to the data object

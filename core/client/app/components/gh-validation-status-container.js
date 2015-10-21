@@ -11,7 +11,14 @@ import ValidationStateMixin from 'ghost/mixins/validation-state';
 export default Ember.Component.extend(ValidationStateMixin, {
     classNameBindings: ['errorClass'],
 
-    errorClass: Ember.computed('hasError', function () {
-        return this.get('hasError') ? 'error' : 'success';
+    errorClass: Ember.computed('property', 'hasError', 'hasValidated.[]', function () {
+        let hasValidated = this.get('hasValidated'),
+            property = this.get('property');
+
+        if (hasValidated && hasValidated.contains(property)) {
+            return this.get('hasError') ? 'error' : 'success';
+        } else {
+            return '';
+        }
     })
 });

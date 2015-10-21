@@ -10,7 +10,7 @@ export default AuthenticatedRoute.extend(styleBody, {
     notifications: Ember.inject.service(),
 
     afterModel: function (model, transition) {
-        this.get('notifications').closeAll();
+        this.get('notifications').clearAll();
         if (Ember.canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
             transition.abort();

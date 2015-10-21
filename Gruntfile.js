@@ -586,7 +586,7 @@ var _              = require('lodash'),
 
         grunt.registerTask('test', function (test) {
             if (!test) {
-                grunt.log.write('no test provided');
+                grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
             grunt.task.run('test-setup', 'shell:test:' + test);
@@ -613,7 +613,7 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-ember', 'test-functional']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-ember']);
 
         // ### Lint
         //

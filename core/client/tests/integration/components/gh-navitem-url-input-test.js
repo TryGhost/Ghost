@@ -7,14 +7,14 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const { run } = Ember,
+const {run} = Ember,
       // we want baseUrl to match the running domain so relative URLs are
       // handled as expected (browser auto-sets the domain when using a.href)
       currentUrl = `${window.location.protocol}//${window.location.host}/`;
 
 describeComponent(
     'gh-navitem-url-input',
-    'Integration : Component : gh-navitem-url-input', {
+    'Integration: Component: gh-navitem-url-input', {
         integration: true
     },
     function () {
@@ -116,7 +116,7 @@ describeComponent(
             expect($input.val()).to.equal(`${currentUrl}about`);
         });
 
-        it('adds "mailto:" to e-mail addresses on blur', function () {
+        it('adds "mailto:" to email addresses on blur', function () {
             this.on('updateUrl', () => { return null; });
             this.render(hbs`
                 {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}

@@ -8,4 +8,6 @@ export function ghUserCanAdmin(params) {
     return !!(params[0].get('isOwner') || params[0].get('isAdmin'));
 }
 
-export default Ember.HTMLBars.makeBoundHelper(ghUserCanAdmin);
+export default Ember.Helper.helper(function (params) {
+    return ghUserCanAdmin(params);
+});

@@ -1,9 +1,10 @@
 import Ember from 'ember';
-var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
+
+export default Ember.Controller.extend(Ember.PromiseProxyMixin, {
     init: function () {
         var promise;
 
-        promise = this.store.find('setting', {type: 'blog,theme'}).then(function (settings) {
+        promise = this.store.query('setting', {type: 'blog,theme'}).then(function (settings) {
             return settings.get('firstObject');
         });
 
@@ -26,5 +27,3 @@ var FeatureController = Ember.Controller.extend(Ember.PromiseProxyMixin, {
         return value;
     })
 });
-
-export default FeatureController;

@@ -13,7 +13,7 @@ export default Ember.Component.extend({
     // anchor behaviors or ignored
     href: Ember.String.htmlSafe('javascript:;'),
 
-    scrollTo: function () {
+    scrollTo: Ember.on('click', function () {
         var anchor = this.get('anchor'),
             $el = Ember.$(anchor);
 
@@ -30,5 +30,5 @@ export default Ember.Component.extend({
                 $(this).removeAttr('tabindex');
             }).focus();
         }
-    }.on('click')
+    })
 });

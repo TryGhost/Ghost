@@ -1,7 +1,6 @@
 import ghostPaths from 'ghost/utils/ghost-paths';
 
 var UploadUi,
-    upload,
     Ghost = ghostPaths();
 
 UploadUi = function ($dropzone, settings) {
@@ -207,6 +206,7 @@ UploadUi = function ($dropzone, settings) {
             var self = this;
 
             // This is the start point if an image already exists
+            this.removeExtras();
             $dropzone.removeClass('image-uploader image-uploader-url').addClass('pre-image-uploader');
             $dropzone.find('div.description').hide();
             $dropzone.find('img.js-upload-target').show();
@@ -248,7 +248,7 @@ UploadUi = function ($dropzone, settings) {
     });
 };
 
-upload = function (options) {
+export default function (options) {
     var settings = $.extend({
         progressbar: true,
         editor: false,
@@ -260,9 +260,8 @@ upload = function (options) {
             ui;
 
         ui = new UploadUi($dropzone, settings);
+        $(this).attr('data-uploaderui', true);
         this.uploaderUi = ui;
         ui.init();
     });
-};
-
-export default upload;
+}

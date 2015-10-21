@@ -9,7 +9,8 @@ var path          = require('path'),
     _             = require('lodash'),
     knex          = require('knex'),
     validator     = require('validator'),
-    requireTree   = require('../require-tree').readAll,
+    readDirectory = require('../utils/read-directory'),
+    readThemes    = require('../utils/read-themes'),
     errors        = require('../errors'),
     configUrl     = require('./url'),
     packageInfo   = require('../../../package.json'),
@@ -75,7 +76,7 @@ ConfigManager.prototype.init = function (rawConfig) {
     // just the object appropriate for this NODE_ENV
     self.set(rawConfig);
 
-    return Promise.all([requireTree(self._config.paths.themePath), requireTree(self._config.paths.appPath)]).then(function (paths) {
+    return Promise.all([readThemes(self._config.paths.themePath), readDirectory(self._config.paths.appPath)]).then(function (paths) {
         self._config.paths.availableThemes = paths[0];
         self._config.paths.availableApps = paths[1];
         return self._config;
@@ -212,7 +213,7 @@ ConfigManager.prototype.set = function (config) {
             // Used by generateSlug to generate slugs for posts, tags, users, ..
             // reserved slugs are reserved but can be extended/removed by apps
             // protected slugs cannot be changed or removed
-            reserved: ['admin', 'app', 'apps', 'archive', 'archives', 'categories', 'category', 'dashboard', 'feed', 'ghost-admin', 'login', 'logout', 'page', 'pages', 'post', 'posts', 'public', 'register', 'setup', 'signin', 'signout', 'signup', 'tag', 'tags', 'user', 'users', 'wp-admin', 'wp-login'],
+            reserved: ['admin', 'app', 'apps', 'archive', 'archives', 'categories', 'category', 'dashboard', 'feed', 'ghost-admin', 'login', 'logout', 'page', 'pages', 'post', 'posts', 'public', 'register', 'setup', 'signin', 'signout', 'signup', 'user', 'users', 'wp-admin', 'wp-login'],
             protected: ['ghost', 'rss']
         },
         uploads: {

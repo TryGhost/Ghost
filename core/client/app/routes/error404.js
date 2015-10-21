@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var Error404Route = Ember.Route.extend({
+
+export default Ember.Route.extend({
     controllerName: 'error',
     templateName: 'error',
     titleToken: 'Error',
@@ -10,5 +11,3 @@ var Error404Route = Ember.Route.extend({
         };
     }
 });
-
-export default Error404Route;

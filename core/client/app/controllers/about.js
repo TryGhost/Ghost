@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var AboutController = Ember.Controller.extend({
+
+export default Ember.Controller.extend({
     updateNotificationCount: 0,
 
     actions: {
@@ -8,5 +9,3 @@ var AboutController = Ember.Controller.extend({
         }
     }
 });
-
-export default AboutController;
