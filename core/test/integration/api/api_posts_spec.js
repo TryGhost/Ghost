@@ -241,6 +241,43 @@ describe('Post API', function () {
                 done();
             });
         });
+
+        it('with context.user can fetch a single field', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].title.should.exist;
+                should.not.exist(results.posts[0].slug);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch multiple fields', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'slug,published_at'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].published_at.should.exist;
+                results.posts[0].slug.should.exist;
+                should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch a field and not return invalid field', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'foo,title'}).then(function (results) {
+                var objectKeys;
+                should.exist(results.posts);
+
+                results.posts[0].title.should.exist;
+                should.not.exist(results.posts[0].foo);
+                objectKeys = _.keys(results.posts[0]);
+                objectKeys.length.should.eql(1);
+
+                done();
+            }).catch(done);
+        });
     });
 
     describe('Read', function () {
