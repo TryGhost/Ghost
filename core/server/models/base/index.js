@@ -277,6 +277,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Run specific conversion of model query options to where options
         options = this.processOptions(itemCollection, options);
 
+        // Ensure only valid fields/columns are added to query
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+        }
+
         // Prefetch filter objects
         return Promise.all(baseUtils.filtering.preFetch(filterObjects)).then(function doQuery() {
             // If there are `where` conditionals specified, add those to the query.
