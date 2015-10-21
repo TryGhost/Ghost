@@ -245,4 +245,17 @@ describe('Contexts', function () {
             res.locals.context[0].should.eql('page');
         });
     });
+
+    describe('Private', function () {
+        it('should correctly identify `/private/` as the private route', function () {
+            // Setup test by setting relativeUrl
+            res.locals.relativeUrl = '/private/?r=';
+
+            setResponseContext(req, res, data);
+
+            should.exist(res.locals.context);
+            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context[0].should.eql('private');
+        });
+    });
 });
