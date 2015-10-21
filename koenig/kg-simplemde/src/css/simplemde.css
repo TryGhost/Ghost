@@ -267,6 +267,18 @@
 	border: 1px solid #ddd;
 	padding: 5px;
 }
+ 
+.CodeMirror .CodeMirror-code .cm-tag {
+	color: #63a35c;
+}
+
+.CodeMirror .CodeMirror-code .cm-attribute {
+	color: #795da3;
+}
+
+.CodeMirror .CodeMirror-code .cm-string {
+	color: #183691;
+}
 
 .CodeMirror .CodeMirror-selected {
 	background: #d9d9d9;
