@@ -6,6 +6,7 @@ var _                          = require('lodash'),
     Promise                    = require('bluebird'),
     hbs                        = require('express-hbs'),
     NotFoundError              = require('./not-found-error'),
+    ConflictError              = require('./conflict-error'),
     BadRequestError            = require('./bad-request-error'),
     InternalServerError        = require('./internal-server-error'),
     NoPermissionError          = require('./no-permission-error'),
@@ -384,6 +385,7 @@ _.each([
 
 module.exports                            = errors;
 module.exports.NotFoundError              = NotFoundError;
+module.exports.ConflictError              = ConflictError;
 module.exports.BadRequestError            = BadRequestError;
 module.exports.InternalServerError        = InternalServerError;
 module.exports.NoPermissionError          = NoPermissionError;

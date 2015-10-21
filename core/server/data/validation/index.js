@@ -1,11 +1,13 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
+    diff      = require('deep-diff'),
     validator = require('validator'),
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
     config    = require('../../config'),
     readThemes = require('../../utils/read-themes'),
 
+    safeToSave,
     validateSchema,
     validateSettings,
     validateActiveTheme,
@@ -165,10 +167,37 @@ validate = function validate(value, key, validations) {
     return validationErrors;
 };
 
+// Check if client-side `updated_at` timestamp is more recent than what's stored in DB.
+// If not, throw a conflict error.
+safeToSave = function safeToSave(clientObj, storedObj) {
+    var omitList = ['id', 'uuid', 'last_login', 'created_at', 'updated_at', 'password',
+            'html', 'author_id', 'published_by', 'tour', 'tags'],
+        storedDate = Date.parse(storedObj.previousAttributes().updated_at),
+        clientDate = Date.parse(clientObj.updated_at),
+        changes;
+
+    // If `updated_at` timestamps are different, check for actual changes between versions,
+    // because user could have saved with no changes
+    if (clientDate < storedDate) {
+        // Omit attributes that are redundant, not editable, or otherwise don't affect much at this point
+        storedObj = _.omit(storedObj.previousAttributes(), omitList);
+        clientObj = _.omit(clientObj, omitList);
+        // Reformat client date to match db and avoid false positive in `differences`
+        if (clientObj.published_at) {
+            clientObj.published_at = new Date(clientObj.published_at);
+        }
+
+        changes = diff(storedObj, clientObj);
+    }
+
+    return changes ? Promise.reject(new errors.ConflictError('Uh-oh. We already have a newer version of this post saved. To prevent losing your text, please copy your changes somewhere else and then refresh this page.')) : Promise.resolve();
+};
+
 module.exports = {
     validate: validate,
     validator: validator,
     validateSchema: validateSchema,
     validateSettings: validateSettings,
-    validateActiveTheme: validateActiveTheme
+    validateActiveTheme: validateActiveTheme,
+    safeToSave: safeToSave
 };

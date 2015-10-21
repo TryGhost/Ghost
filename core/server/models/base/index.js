@@ -330,14 +330,23 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
     edit: function edit(data, options) {
-        var id = options.id;
+        var self = this,
+            id = options.id;
+
         data = this.filterData(data);
         options = this.filterOptions(options, 'edit');
 
-        return this.forge({id: id}).fetch(options).then(function then(object) {
-            if (object) {
-                return object.save(data, options);
-            }
+        return ghostBookshelf.transaction(function transaction(t) {
+            options.transacting = t;
+
+            return self.forge({id: id}).fetch(options).then(function then(object) {
+                if (object) {
+                    return validation.safeToSave(data, object)
+                            .then(function then() {
+                                return object.save(data, options);
+                            });
+                }
+            });
         });
     },
 
