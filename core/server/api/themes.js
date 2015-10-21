@@ -2,11 +2,73 @@
 // RESTful API for Themes
 var Promise            = require('bluebird'),
     _                  = require('lodash'),
-    canThis            = require('../permissions').canThis,
     config             = require('../config'),
     errors             = require('../errors'),
     settings           = require('./settings'),
+    pipeline           = require('../utils/pipeline'),
+    utils              = require('./utils'),
+
+    docName = 'themes',
     themes;
+
+/**
+ * ### Fetch Active Theme
+ * @returns {Theme} theme
+ */
+
+function fetchActiveTheme() {
+    return settings.read({
+        key: 'activeTheme',
+        context: {
+            internal: true
+        }
+    }).then(function (response) {
+        return response.settings[0].value;
+    });
+}
+
+/**
+ * ### Fetch Available Themes
+ * @returns {Themes} themes
+ */
+
+function fetchAvailableThemes() {
+    var themes = {};
+
+    _.each(config.paths.availableThemes, function (theme, name) {
+        var isTheme = name.indexOf('.') !== 0 && name !== '_messages' && name.toLowerCase() !== 'readme.md';
+
+        if (!isTheme) {
+            return;
+        }
+
+        themes[name] = theme;
+    });
+
+    return themes;
+}
+
+/**
+ * ### Activate Theme
+ * @param {Theme} theme
+ * @returns {Object} response
+ */
+
+function activateTheme(theme) {
+    return settings.edit({
+        settings: [{
+            key: 'activeTheme',
+            value: theme.name
+        }],
+        context: {
+            internal: true
+        }
+    }).then(function () {
+        theme.active = true;
+
+        return {themes: [theme]};
+    });
+}
 
 /**
  * ## Themes API Methods
@@ -21,42 +83,57 @@ themes = {
      * @returns {Promise(Themes)}
      */
     browse: function browse(options) {
-        options = options || {};
+        var tasks;
 
-        return canThis(options.context).browse.theme().then(function () {
-            return Promise.all([
-                settings.read({key: 'activeTheme', context: {internal: true}}),
-                config.paths.availableThemes
-            ]).then(function (result) {
-                var activeTheme = result[0].settings[0].value,
-                    availableThemes = result[1],
-                    themes = [],
-                    themeKeys = Object.keys(availableThemes);
+        /**
+         * ### Model Query
+         * @returns {Object} result
+         */
 
-                _.each(themeKeys, function (key) {
-                    if (key.indexOf('.') !== 0
-                            && key !== '_messages'
-                            && key !== 'README.md'
-                            ) {
-                        var item = {
-                            uuid: key
-                        };
+        function modelQuery() {
+            var result = {
+                availableThemes: fetchAvailableThemes(),
+                activeTheme: fetchActiveTheme()
+            };
 
-                        if (availableThemes[key].hasOwnProperty('package.json')) {
-                            item = _.merge(item, availableThemes[key]['package.json']);
-                        }
+            return Promise.props(result);
+        }
 
-                        item.active = item.uuid === activeTheme;
+        /**
+         * ### Build response
+         * @param {Object} result - result from modelQuery()
+         * @returns {Object} response
+         */
 
-                        themes.push(item);
-                    }
-                });
+        function buildResponse(result) {
+            var themes = [];
 
-                return {themes: themes};
+            _.each(result.availableThemes, function (theme, name) {
+                var item = {
+                    active: result.activeTheme === name,
+                    uuid: name
+                };
+
+                // if theme has package.json file,
+                // merge its properties
+                if (theme['package.json']) {
+                    item = _.merge(item, theme['package.json']);
+                }
+
+                themes.push(item);
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to browse themes.'));
-        });
+
+            return {themes: themes};
+        }
+
+        tasks = [
+            utils.validate(docName),
+            utils.handlePublicPermissions(docName, 'browse'),
+            modelQuery,
+            buildResponse
+        ];
+
+        return pipeline(tasks, options || {});
     },
 
     /**
@@ -67,39 +144,47 @@ themes = {
      * @returns {Promise(Theme)}
      */
     edit: function edit(object, options) {
-        var themeName;
+        var tasks, themeName;
 
         // Check whether the request is properly formatted.
         if (!_.isArray(object.themes)) {
-            return Promise.reject({type: 'BadRequest', message: 'Invalid request.'});
+            return Promise.reject(new errors.BadRequestError('Invalid request.'));
         }
 
         themeName = object.themes[0].uuid;
 
-        return canThis(options.context).edit.theme().then(function () {
-            return themes.browse(options).then(function (availableThemes) {
-                var theme;
+        /**
+         * ### Model Query
+         * @param {Object} options
+         * @returns {Theme} theme
+         */
 
-                // Check if the theme exists
-                theme = _.find(availableThemes.themes, function (currentTheme) {
-                    return currentTheme.uuid === themeName;
+        function modelQuery(options) {
+            return themes.browse(options).then(function (response) {
+                var theme = _.find(response.themes, function (theme) {
+                    return theme.uuid === themeName;
                 });
 
                 if (!theme) {
                     return Promise.reject(new errors.BadRequestError('Theme does not exist.'));
                 }
 
-                // Activate the theme
-                return settings.edit(
-                    {settings: [{key: 'activeTheme', value: themeName}]}, {context: {internal: true}}
-                ).then(function () {
-                    theme.active = true;
-                    return {themes: [theme]};
-                });
+                if (!theme.name) {
+                    theme.name = themeName;
+                }
+
+                return theme;
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to edit themes.'));
-        });
+        }
+
+        tasks = [
+            utils.validate(docName),
+            utils.handlePermissions(docName, 'edit'),
+            modelQuery,
+            activateTheme
+        ];
+
+        return pipeline(tasks, options || {});
     }
 };
 
