@@ -116,7 +116,16 @@ validateActiveTheme = function validateActiveTheme(themeName) {
     }
 
     return availableThemes.then(function then(themes) {
-        if (!themes.hasOwnProperty(themeName)) {
+        var activeThemeNotFound = !themes.hasOwnProperty(themeName),
+            fallbackTheme = _.findKey(themes, function (theme) {
+                return _.has(theme, 'package.json');
+            });
+
+        if (activeThemeNotFound && fallbackTheme) {
+            return Promise.reject(new errors.ActiveThemeNotFoundError(themeName + ' cannot be activated because it is not currently installed.', 'activeTheme', fallbackTheme));
+        }
+
+        if (activeThemeNotFound) {
             return Promise.reject(new errors.ValidationError(themeName + ' cannot be activated because it is not currently installed.', 'activeTheme'));
         }
     });
