@@ -182,7 +182,7 @@ utils = {
             return permsPromise.then(function permissionGranted() {
                 return options;
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error);
+                return errors.formatAndRejectAPIError(error);
             });
         };
     },
@@ -213,7 +213,7 @@ utils = {
                 // forward error to next catch()
                 return Promise.reject(error);
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error);
+                return errors.formatAndRejectAPIError(error);
             });
         };
     },
