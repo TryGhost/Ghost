@@ -15,86 +15,15 @@ var _           = require('lodash'),
     template    = require('../../helpers/template'),
     routeMatch  = require('path-match')(),
     safeString  = require('../../utils/index').safeString,
+    handleError = require('./error'),
+    fetchData   = require('./fetch-data'),
+    formatResponse = require('./format-response'),
     setResponseContext = require('./context'),
+    setRequestIsSecure   = require('./secure'),
+    getActiveThemePaths = require('./theme-paths'),
 
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
-
-function getPostPage(options) {
-    return api.settings.read('postsPerPage').then(function then(response) {
-        var postPP = response.settings[0],
-            postsPerPage = parseInt(postPP.value, 10);
-
-        // No negative posts per page, must be number
-        if (!isNaN(postsPerPage) && postsPerPage > 0) {
-            options.limit = postsPerPage;
-        }
-        options.include = 'author,tags,fields';
-        return api.posts.browse(options);
-    });
-}
-
-/**
- * formats variables for handlebars in multi-post contexts.
- * If extraValues are available, they are merged in the final value
- * @return {Object} containing page variables
- */
-function formatPageResponse(posts, page, extraValues) {
-    extraValues = extraValues || {};
-
-    var resp = {
-        posts: posts,
-        pagination: page.meta.pagination
-    };
-    return _.extend(resp, extraValues);
-}
-
-/**
- * similar to formatPageResponse, but for single post pages
- * @return {Object} containing page variables
- */
-function formatResponse(post) {
-    return {
-        post: post
-    };
-}
-
-function handleError(next) {
-    return function handleError(err) {
-        // If we've thrown an error message of type: 'NotFound' then we found no path match.
-        if (err.errorType === 'NotFoundError') {
-            return next();
-        }
-
-        return next(err);
-    };
-}
-
-// Add Request context parameter to the data object
-// to be passed down to the templates
-function setReqCtx(req, data) {
-    (Array.isArray(data) ? data : [data]).forEach(function forEach(d) {
-        d.secure = req.secure;
-    });
-}
-
-/**
- * Returns the paths object of the active theme via way of a promise.
- * @return {Promise} The promise resolves with the value of the paths.
- */
-function getActiveThemePaths() {
-    return api.settings.read({
-        key: 'activeTheme',
-        context: {
-            internal: true
-        }
-    }).then(function then(response) {
-        var activeTheme = response.settings[0],
-            paths = config.paths.availableThemes[activeTheme.value];
-
-        return paths;
-    });
-}
 
 /*
 * Sets the response context around a post and renders it
@@ -106,7 +35,7 @@ function renderPost(req, res) {
     return function renderPost(post) {
         return getActiveThemePaths().then(function then(paths) {
             var view = template.getThemeViewForPost(paths, post),
-                response = formatResponse(post);
+                response = formatResponse.single(post);
 
             setResponseContext(req, res, response);
             res.render(view, response);
@@ -149,17 +78,17 @@ function renderChannel(channelOpts) {
             return res.redirect(createUrl());
         }
 
-        return getPostPage(options).then(function then(page) {
+        return fetchData(options).then(function then(page) {
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(createUrl(page.meta.pagination.pages));
             }
 
-            setReqCtx(req, page.posts);
+            setRequestIsSecure(req, page.posts);
             if (channelOpts.filter && page.meta.filters[channelOpts.filter]) {
                 filterKey = page.meta.filters[channelOpts.filter];
                 filter = (_.isArray(filterKey)) ? filterKey[0] : filterKey;
-                setReqCtx(req, filter);
+                setRequestIsSecure(req, filter);
             }
 
             filters.doFilter('prePostsRender', page.posts, res.locals).then(function then(posts) {
@@ -183,9 +112,9 @@ function renderChannel(channelOpts) {
                             return next();
                         }
 
-                        result = formatPageResponse(posts, page, extra);
+                        result = formatResponse.channel(posts, page, extra);
                     } else {
-                        result = formatPageResponse(posts, page);
+                        result = formatResponse.channel(posts, page);
                     }
 
                     setResponseContext(req, res);
@@ -232,7 +161,7 @@ frontendControllers = {
                 return res.redirect(301, config.urlFor('post', {post: post}));
             }
 
-            setReqCtx(req, post);
+            setRequestIsSecure(req, post);
 
             filters.doFilter('prePostsRender', post, res.locals)
                 .then(renderPost(req, res));
@@ -301,7 +230,7 @@ frontendControllers = {
                     return Promise.reject(new errors.NotFoundError());
                 }
 
-                setReqCtx(req, post);
+                setRequestIsSecure(req, post);
 
                 filters.doFilter('prePostsRender', post, res.locals)
                     .then(renderPost(req, res));
