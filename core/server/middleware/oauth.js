@@ -18,7 +18,7 @@ oauth = {
         // `client`, which is exchanging the user's name and password from the
         // authorization request for verification. If these values are validated, the
         // application issues an access token on behalf of the user who authorized the code.
-        oauthServer.exchange(oauth2orize.exchange.password(function exchange(client, username, password, scope, done) {
+        oauthServer.exchange(oauth2orize.exchange.password({userProperty: 'client'}, function exchange(client, username, password, scope, done) {
             // Validate the client
             models.Client.forge({slug: client.slug})
             .fetch()
