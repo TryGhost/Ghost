@@ -377,7 +377,7 @@ DataGenerator.forKnex = (function () {
     ];
 
     clients = [
-        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available'})
+        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available', type: 'ua', status: 'enabled'})
     ];
 
     roles_users = [
