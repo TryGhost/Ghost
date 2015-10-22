@@ -210,6 +210,26 @@ describe('Post API', function () {
             }).catch(done);
         });
 
+        it('can include author and be case insensitive', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: 'Author'}).then(function (results) {
+                should.exist(results.posts);
+                should.exist(results.posts[0].author.name);
+                results.posts[0].author.name.should.eql('Joe Bloggs');
+
+                done();
+            }).catch(done);
+        });
+
+        it('can include author and ignore space in include', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: ' author'}).then(function (results) {
+                should.exist(results.posts);
+                should.exist(results.posts[0].author.name);
+                results.posts[0].author.name.should.eql('Joe Bloggs');
+
+                done();
+            }).catch(done);
+        });
+
         it('can fetch all posts for an author', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', author: 'joe-bloggs'}).then(function (results) {
                 should.exist(results.posts);
@@ -255,6 +275,30 @@ describe('Post API', function () {
 
         it('with context.user can fetch multiple fields', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'slug,published_at'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].published_at.should.exist;
+                results.posts[0].slug.should.exist;
+                should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch multiple fields and be case insensitive', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'Slug,Published_At'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].published_at.should.exist;
+                results.posts[0].slug.should.exist;
+                should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch multiple fields ignoring spaces', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: ' slug , published_at  '}).then(function (results) {
                 should.exist(results.posts);
 
                 results.posts[0].published_at.should.exist;
