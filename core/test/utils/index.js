@@ -10,6 +10,7 @@ var Promise       = require('bluebird'),
     permissions   = require('../../server/permissions'),
     permsFixtures = require('../../server/data/fixtures/permissions/permissions.json'),
     DataGenerator = require('./fixtures/data-generator'),
+    filterData    = require('./fixtures/filter-param'),
     API           = require('./api'),
     fork          = require('./fork'),
     config        = require('../../server/config'),
@@ -419,7 +420,8 @@ toDoList = {
     perms: function permissionsFor(obj) {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
     },
-    clients: function insertClients() { return fixtures.insertClients(); }
+    clients: function insertClients() { return fixtures.insertClients(); },
+    filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
 };
 
 /**
