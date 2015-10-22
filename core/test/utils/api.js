@@ -9,6 +9,7 @@ var _               = require('lodash'),
     expectedProperties = {
         configuration: ['key', 'value'],
         posts: ['posts', 'meta'],
+        tags: ['tags', 'meta'],
         users: ['users', 'meta'],
         roles: ['roles'],
         pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
@@ -75,11 +76,16 @@ function isISO8601(date) {
     return moment(date).parsingFlags().iso;
 }
 
+function getURL() {
+    return schema + host;
+}
+
 module.exports = {
     getApiURL: getApiURL,
     getApiQuery: getApiQuery,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
+    getURL: getURL,
     checkResponse: checkResponse,
     checkResponseValue: checkResponseValue,
     isISO8601: isISO8601
