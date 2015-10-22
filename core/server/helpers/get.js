@@ -6,11 +6,19 @@ var _               = require('lodash'),
     Promise         = require('bluebird'),
     errors          = require('../errors'),
     api             = require('../api'),
+    jsonpath        = require('jsonpath'),
     resources,
+    pathAliases,
     get;
 
 // Endpoints that the helper is able to access
 resources =  ['posts', 'tags', 'users'];
+
+// Short forms of paths which we should understand
+pathAliases     = {
+    'post.tags': 'post.tags[*].slug',
+    'post.author': 'post.author.slug'
+};
 
 /**
  * ## Is Browse
@@ -30,6 +38,34 @@ function isBrowse(context, options) {
 }
 
 /**
+ * ## Resolve Paths
+ * Find and resolve path strings
+ *
+ * @param {Object} data
+ * @param {String} value
+ * @returns {String}
+ */
+function resolvePaths(data, value) {
+    var regex = /\{\{(.*?)\}\}/g;
+
+    value = value.replace(regex, function (match, path) {
+        var result;
+
+        // Handle aliases
+        path = pathAliases[path] ? pathAliases[path] : path;
+        // Handle Handlebars .[] style arrays
+        path = path.replace(/\.\[/g, '[');
+
+        // Do the query, and convert from array to string
+        result = jsonpath.query(data, path).join(',');
+
+        return result;
+    });
+
+    return value;
+}
+
+/**
  * ## Parse Options
  * Ensure options passed in make sense
  *
@@ -44,6 +80,10 @@ function parseOptions(data, options) {
 
     if (_.isObject(options.author)) {
         options.author = options.author.slug;
+    }
+
+    if (_.isString(options.filter)) {
+        options.filter = resolvePaths(data, options.filter);
     }
 
     return options;
