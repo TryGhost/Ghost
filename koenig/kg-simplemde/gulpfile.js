@@ -36,13 +36,15 @@ function taskBrowserify(opts) {
 
 gulp.task("browserify:dev", [], function() {
 	return taskBrowserify({debug:true, standalone:"SimpleMDE"})
-	.pipe(source("simplemde.debug.js"))
+		.pipe(source("simplemde.debug.js"))
+		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./debug/"));
 });
 
 gulp.task("browserify:min", [], function() {
 	return taskBrowserify({standalone:"SimpleMDE"})
 		.pipe(source("simplemde.js"))
+		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./debug/"));
 });
 
@@ -63,6 +65,7 @@ gulp.task("styles", function() {
 	];
 	return gulp.src(css_files)
 		.pipe(concat("simplemde.css"))
+		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./debug/"))
 		.pipe(minifycss())
 		.pipe(rename("simplemde.min.css"))
