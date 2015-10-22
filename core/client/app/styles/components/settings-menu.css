@@ -12,6 +12,7 @@
     bottom: 0;
     z-index: 500;
     overflow: hidden;
+    max-width: 100%;
     width: 350px;
     border-left: #dfe1e3 1px solid;
     background: #fff;
