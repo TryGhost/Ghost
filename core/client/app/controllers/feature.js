@@ -25,5 +25,9 @@ export default Ember.Controller.extend(Ember.PromiseProxyMixin, {
         }
 
         return value;
+    }),
+
+    publicAPI: Ember.computed('config.publicAPI', 'labs.publicAPI', function () {
+        return this.get('config.publicAPI') || this.get('labs.publicAPI');
     })
 });
