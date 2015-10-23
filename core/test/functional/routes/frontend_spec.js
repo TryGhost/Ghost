@@ -756,6 +756,32 @@ describe('Frontend Routing', function () {
         });
     });
 
+    describe('Tag edit', function () {
+        it('should redirect without slash', function (done) {
+            request.get('/tag/getting-started/edit')
+                .expect('Location', '/tag/getting-started/edit/')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
+                .end(doEnd(done));
+        });
+
+        it('should redirect to tag settings', function (done) {
+            request.get('/tag/getting-started/edit/')
+                .expect('Location', '/ghost/settings/tags/getting-started/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(302)
+                .end(doEnd(done));
+        });
+
+        it('should 404 for non-edit parameter', function (done) {
+            request.get('/tag/getting-started/notedit/')
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+        });
+    });
+
     describe('Subdirectory (no slash)', function () {
         var forkedGhost, request;
         before(function (done) {
