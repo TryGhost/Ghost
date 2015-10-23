@@ -44,7 +44,7 @@ Router.map(function () {
 
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.tags', {path: '/settings/tags'}, function () {
-        this.route('tag', {path: ':tag_id'});
+        this.route('tag', {path: ':tag_slug'});
         this.route('new');
     });
     this.route('settings.labs', {path: '/settings/labs'});
