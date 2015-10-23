@@ -42,5 +42,19 @@
                 </div>
             </fieldset>
         </form>
+        <hr>
+        <form>
+            <fieldset>
+                <div class="form-group for-checkbox">
+                    <label for="labs-publicAPI">Public API</label>
+                    <label class="checkbox" for="labs-publicAPI">
+                        {{input id="labs-publicAPI" name="labs[publicAPI]" type="checkbox" checked=usePublicAPI}}
+                        <span class="input-toggle-component"></span>
+                        <p>Enable public API access.</p>
+                    </label>
+                    <p>Allow access to the publicly available Ghost API using JavaScript.</p>
+                </div>
+            </fieldset>
+        </form>
     </section>
 </section>
