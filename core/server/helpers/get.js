@@ -83,14 +83,24 @@ get = function get(context, options) {
     apiOptions = parseOptions(this, apiOptions);
 
     return apiMethod(apiOptions).then(function success(result) {
-        result = _.merge(self, result);
+        var blockParams;
+
+        // If no result is found, call the inverse or `{{else}}` function
         if (_.isEmpty(result[context])) {
             return options.inverse(self, {data: data});
         }
 
+        // block params allows the theme developer to name the data using something like
+        // `{{#get "posts" as |result pagination|}}`
+        blockParams = [result[context]];
+        if (result.meta && result.meta.pagination) {
+            blockParams.push(result.meta.pagination);
+        }
+
+        // Call the main template function
         return options.fn(result, {
             data: data,
-            blockParams: [result[context]]
+            blockParams: blockParams
         });
     }).catch(function error(err) {
         data.error = err.message;
