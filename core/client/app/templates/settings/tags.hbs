@@ -7,7 +7,7 @@
         </section>
     </header>
 
-    <div class="view-container">
+    {{#gh-tags-management-container mobileWidth=mobileWidth tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
         {{#gh-infinite-scroll
             fetch="loadNextPage"
             isLoading=isLoading
@@ -26,8 +26,8 @@
                 {{/each}}
             </section>
         {{/gh-infinite-scroll}}
-        <section class="settings-menu-container tag-settings {{if tagContentFocused 'keyboard-focused'}}">
+        <section class="settings-menu-container tag-settings {{if tagContentFocused 'keyboard-focused'}} {{if container.displaySettingsPane 'tag-settings-in'}}">
             {{outlet}}
         </section>
-    </div>
+    {{/gh-tags-management-container}}
 </section>

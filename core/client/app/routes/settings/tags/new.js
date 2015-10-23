@@ -10,6 +10,11 @@ export default AuthenticatedRoute.extend({
 
     renderTemplate: function () {
         this.render('settings.tags.tag');
+    },
+
+    // reset the model so that mobile screens react to an empty selectedTag
+    deactivate: function () {
+        this.set('controller.model', null);
     }
 
 });
