@@ -9,6 +9,7 @@ export default Ember.Controller.extend({
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
     session: Ember.inject.service(),
+    feature: Ember.inject.controller(),
 
     labsJSON: Ember.computed('model.labs', function () {
         return JSON.parse(this.get('model.labs') || {});
@@ -28,6 +29,16 @@ export default Ember.Controller.extend({
             self.get('model').rollbackAttributes();
         });
     },
+
+    usePublicAPI: Ember.computed('feature.publicAPI', {
+        get: function () {
+            return this.get('feature.publicAPI');
+        },
+        set: function (key, value) {
+            this.saveLabs('publicAPI', value);
+            return value;
+        }
+    }),
 
     actions: {
         onUpload: function (file) {

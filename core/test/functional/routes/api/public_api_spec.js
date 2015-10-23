@@ -10,6 +10,12 @@ var testUtils     = require('../../../utils'),
     request;
 
 describe('Public API', function () {
+    var publicAPIaccessSetting = {
+        settings: [
+            {key: 'labs', value: {publicAPI: true}}
+        ]
+    };
+
     before(function (done) {
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
@@ -17,8 +23,20 @@ describe('Public API', function () {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
             return testUtils.doAuth(request, 'posts', 'tags');
-        }).then(function () {
-            done();
+        }).then(function (token) {
+            // enable public API
+            return request.put(testUtils.API.getApiQuery('settings/'))
+                .set('Authorization', 'Bearer ' + token)
+                .send(publicAPIaccessSetting)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
         }).catch(done);
     });
 
