@@ -129,6 +129,30 @@ describe('Acceptance: Settings - Tags', function () {
                 return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
             });
 
+            this.get('/ghost/api/v0.1/tags/slug/tag-two/', function (_request) {
+                let response = {};
+
+                response.tag = {
+                    id: 2,
+                    parent: null,
+                    uuid: '0cade0f9-7a3f-4fd1-a80a-3a1ab7028340',
+                    image: '/content/images/2015/10/tag-2.jpg',
+                    name: 'Tag Two',
+                    slug: 'tag-two',
+                    description: 'Description two.',
+                    meta_title: 'Meta Title Two',
+                    meta_description: 'Meta description two.',
+                    created_at: '2015-09-11T09:44:29.871Z',
+                    created_by: 1,
+                    updated_at: '2015-10-19T16:25:07.756Z',
+                    updated_by: 1,
+                    hidden: false,
+                    post_count: 2
+                };
+
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify(response)];
+            });
+
             this.put('/ghost/api/v0.1/tags/2/', function (_request) {
                 let response = {};
 
@@ -237,7 +261,7 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it redirects to first tag
-                expect(currentURL(), 'currentURL').to.equal('/settings/tags/1');
+                expect(currentURL(), 'currentURL').to.equal('/settings/tags/tag-one');
 
                 // it has correct page title
                 expect(document.title, 'page title').to.equal('Settings - Tags - Test Blog');
@@ -253,7 +277,7 @@ describe('Acceptance: Settings - Tags', function () {
                     .to.equal('Tag One');
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/1"]').hasClass('active'), 'highlights selected tag')
+                expect(find('a[href="/settings/tags/tag-one"]').hasClass('active'), 'highlights selected tag')
                     .to.be.true;
 
                 // it shows selected tag form
@@ -268,10 +292,10 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it navigates to selected tag
-                expect(currentURL(), 'url after clicking tag').to.equal('/settings/tags/2');
+                expect(currentURL(), 'url after clicking tag').to.equal('/settings/tags/tag-two');
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/2"]').hasClass('active'), 'highlights selected tag')
+                expect(find('a[href="/settings/tags/tag-two"]').hasClass('active'), 'highlights selected tag')
                     .to.be.true;
 
                 // it shows selected tag form
@@ -287,10 +311,10 @@ describe('Acceptance: Settings - Tags', function () {
                 });
 
                 // it navigates to previous tag
-                expect(currentURL(), 'url after keyboard up arrow').to.equal('/settings/tags/1');
+                expect(currentURL(), 'url after keyboard up arrow').to.equal('/settings/tags/tag-one');
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/1"]').hasClass('active'), 'selects previous tag')
+                expect(find('a[href="/settings/tags/tag-one"]').hasClass('active'), 'selects previous tag')
                     .to.be.true;
             });
 
@@ -302,10 +326,10 @@ describe('Acceptance: Settings - Tags', function () {
                 });
 
                 // it navigates to previous tag
-                expect(currentURL(), 'url after keyboard down arrow').to.equal('/settings/tags/2');
+                expect(currentURL(), 'url after keyboard down arrow').to.equal('/settings/tags/tag-two');
 
                 // it highlights selected tag
-                expect(find('a[href="/settings/tags/2"]').hasClass('active'), 'selects next tag')
+                expect(find('a[href="/settings/tags/tag-two"]').hasClass('active'), 'selects next tag')
                     .to.be.true;
             });
 
@@ -345,14 +369,14 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it redirects to the new tag's URL
-                expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/3');
+                expect(currentURL(), 'URL after tag creation').to.equal('/settings/tags/tag-three');
 
                 // it adds the tag to the list and selects
                 expect(find('.settings-tags .settings-tag').length, 'tag list count after creation')
                     .to.equal(3);
                 expect(find('.settings-tags .settings-tag:last .tag-title').text(), 'new tag list item title')
                     .to.equal('Tag Three');
-                expect(find('a[href="/settings/tags/3"]').hasClass('active'), 'highlights new tag')
+                expect(find('a[href="/settings/tags/tag-three"]').hasClass('active'), 'highlights new tag')
                     .to.be.true;
             });
 
@@ -362,11 +386,31 @@ describe('Acceptance: Settings - Tags', function () {
 
             andThen(() => {
                 // it redirects to the first tag
-                expect(currentURL(), 'URL after tag deletion').to.equal('/settings/tags/1');
+                expect(currentURL(), 'URL after tag deletion').to.equal('/settings/tags/tag-one');
 
                 // it removes the tag from the list
                 expect(find('.settings-tags .settings-tag').length, 'tag list count after deletion')
                     .to.equal(2);
+            });
+        });
+
+        it('loads tag via slug when accessed directly', function () {
+            visit('/settings/tags/tag-two');
+
+            andThen(() => {
+                expect(currentURL(), 'URL after direct load').to.equal('/settings/tags/tag-two');
+
+                // it loads all other tags
+                expect(find('.settings-tags .settings-tag').length, 'tag list count after direct load')
+                    .to.equal(2);
+
+                // selects tag in list
+                expect(find('a[href="/settings/tags/tag-two"]').hasClass('active'), 'highlights requested tag')
+                    .to.be.true;
+
+                // shows requested tag in settings pane
+                expect(find('.tag-settings-pane input[name="name"]').val(), 'loads correct tag into form')
+                    .to.equal('Tag Two');
             });
         });
 
