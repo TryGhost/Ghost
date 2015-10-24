@@ -2,6 +2,7 @@
 /*jshint expr:true*/
 var testUtils = require('../../utils'),
     should    = require('should'),
+    _         = require('lodash'),
 
     // Stuff we are testing
     dbAPI          = require('../../../server/api/db'),
@@ -93,20 +94,45 @@ describe('DB API', function () {
     });
 
     it('import content is denied (editor, author & without authentication)', function (done) {
-        return dbAPI.importContent(testUtils.context.editor).then(function () {
+        var file = {importfile: {
+            name: 'myFile.json',
+            path: '/my/path/myFile.json',
+            type: 'application/json'
+        }};
+
+        return dbAPI.importContent(_.extend(testUtils.context.editor, file)).then(function () {
             done(new Error('Import content is not denied for editor.'));
         }, function (error) {
             error.errorType.should.eql('NoPermissionError');
-            return dbAPI.importContent(testUtils.context.author);
+            return dbAPI.importContent(_.extend(testUtils.context.author, file));
         }).then(function () {
             done(new Error('Import content is not denied for author.'));
         }, function (error) {
             error.errorType.should.eql('NoPermissionError');
-            return dbAPI.importContent();
+            return dbAPI.importContent(file);
         }).then(function () {
             done(new Error('Import content is not denied without authentication.'));
         }).catch(function (error) {
             error.errorType.should.eql('NoPermissionError');
+            done();
+        }).catch(done);
+    });
+
+    it('import content should fail without file & with unsupported file', function (done) {
+        return dbAPI.importContent(testUtils.context.admin).then(function () {
+            done(new Error('Import content is not failed without file.'));
+        }, function (error) {
+            error.errorType.should.eql('ValidationError');
+
+            var context = _.extend(testUtils.context.admin, {
+                importfile: {name: 'myFile.docx', path: '/my/path/myFile.docx', type: 'application/docx'}
+            });
+
+            return dbAPI.importContent(context);
+        }).then(function () {
+            done(new Error('Import content is not failed with unsupported.'));
+        }, function (error) {
+            error.errorType.should.eql('UnsupportedMediaTypeError');
             done();
         }).catch(done);
     });
