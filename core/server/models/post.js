@@ -328,20 +328,6 @@ Post = ghostBookshelf.Model.extend({
         return attrs;
     }
 }, {
-    setupFilters: function setupFilters(options) {
-        var filterObjects = {};
-        // Deliberately switch from singular 'tag' to 'tags' and 'role' to 'roles' here
-        // TODO: make this consistent
-        if (options.tag !== undefined) {
-            filterObjects.tags = ghostBookshelf.model('Tag').forge({slug: options.tag});
-        }
-        if (options.author !== undefined) {
-            filterObjects.author = ghostBookshelf.model('User').forge({slug: options.author});
-        }
-
-        return filterObjects;
-    },
-
     findPageDefaultOptions: function findPageDefaultOptions() {
         return {
             staticPages: false, // include static pages
@@ -400,7 +386,7 @@ Post = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'status', 'staticPages', 'featured'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'status', 'staticPages'],
                 add: ['importing']
             };
 

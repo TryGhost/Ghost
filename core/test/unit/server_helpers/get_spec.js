@@ -34,7 +34,7 @@ describe('{{#get}} helper', function () {
     });
 
     describe('posts', function () {
-        var browseStub, readStub, testPostsArr = [
+        var browsePostsStub, readPostsStub, readTagsStub, readUsersStub, testPostsArr = [
             {id: 1, title: 'Test Post 1', author: {slug: 'cameron'}},
             {id: 2, title: 'Test Post 2', author: {slug: 'cameron'}, featured: true},
             {id: 3, title: 'Test Post 3', tags: [{slug: 'test'}]},
@@ -42,17 +42,19 @@ describe('{{#get}} helper', function () {
         ],
             meta = {pagination: {}};
         beforeEach(function () {
-            browseStub = sandbox.stub(api.posts, 'browse');
-            readStub = sandbox.stub(api.posts, 'read');
+            browsePostsStub = sandbox.stub(api.posts, 'browse');
+            readPostsStub = sandbox.stub(api.posts, 'read');
+            readTagsStub = sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: []}));
+            readUsersStub = sandbox.stub(api.users, 'read').returns(new Promise.resolve({users: []}));
 
-            browseStub.returns(new Promise.resolve({posts: testPostsArr}));
-            browseStub.withArgs({limit: '3'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 3), meta: meta}));
-            browseStub.withArgs({limit: '1'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 1)}));
-            browseStub.withArgs({tag: 'test'}).returns(new Promise.resolve({posts: testPostsArr.slice(2, 3)}));
-            browseStub.withArgs({tag: 'none'}).returns(new Promise.resolve({posts: []}));
-            browseStub.withArgs({author: 'cameron'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 2)}));
-            browseStub.withArgs({featured: 'true'}).returns(new Promise.resolve({posts: testPostsArr.slice(2, 3)}));
-            readStub.withArgs({id: '2'}).returns(new Promise.resolve({posts: testPostsArr.slice(1, 2)}));
+            browsePostsStub.returns(new Promise.resolve({posts: testPostsArr}));
+            browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 3), meta: meta}));
+            browsePostsStub.withArgs({limit: '1'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 1)}));
+            browsePostsStub.withArgs({filter: 'tags:test'}).returns(new Promise.resolve({posts: testPostsArr.slice(2, 3)}));
+            browsePostsStub.withArgs({filter: 'tags:none'}).returns(new Promise.resolve({posts: []}));
+            browsePostsStub.withArgs({filter: 'author:cameron'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 2)}));
+            browsePostsStub.withArgs({filter: 'featured:true'}).returns(new Promise.resolve({posts: testPostsArr.slice(2, 3)}));
+            readPostsStub.withArgs({id: '2'}).returns(new Promise.resolve({posts: testPostsArr.slice(1, 2)}));
         });
 
         it('should handle default browse posts call', function (done) {
@@ -123,22 +125,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {tag: 'test'}, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.calledOnce.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
-                fn.firstCall.args[0].posts.should.have.lengthOf(1);
-                fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(2, 3));
-                inverse.called.should.be.false;
-                done();
-            }).catch(done);
-        });
-
-        it('should handle browse post call with relative tag', function (done) {
-            helpers.get.call(
-                {},
-                'posts',
-                {hash: {tag: [{slug: 'test'}]}, fn: fn, inverse: inverse}
+                {hash: {filter: 'tags:test'}, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true;
                 fn.firstCall.args[0].should.be.an.Object.with.property('posts');
@@ -153,22 +140,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {author: 'cameron'}, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.calledOnce.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
-                fn.firstCall.args[0].posts.should.have.lengthOf(2);
-                fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 2));
-                inverse.called.should.be.false;
-                done();
-            }).catch(done);
-        });
-
-        it('should handle browse post call with relative author', function (done) {
-            helpers.get.call(
-                {},
-                'posts',
-                {hash: {author: {slug: 'cameron'}}, fn: fn, inverse: inverse}
+                {hash: {filter: 'author:cameron'}, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true;
                 fn.firstCall.args[0].should.be.an.Object.with.property('posts');
@@ -183,7 +155,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {featured: 'true'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'featured:true'}, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.calledOnce.should.be.true;
                 fn.firstCall.args[0].should.be.an.Object.with.property('posts');
@@ -214,7 +186,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {tag: 'none'}, fn: fn, inverse: inverse}
+                {hash: {filter: 'tags:none'}, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.called.should.be.false;
                 inverse.calledOnce.should.be.true;
@@ -247,7 +219,7 @@ describe('{{#get}} helper', function () {
             helpers.get.call(
                 {},
                 'posts',
-                {hash: {tag: 'thing!'}, fn: fn, inverse: inverse}
+                {hash: {status: 'thing!'}, fn: fn, inverse: inverse}
             ).then(function () {
                 fn.called.should.be.false;
                 inverse.calledOnce.should.be.true;

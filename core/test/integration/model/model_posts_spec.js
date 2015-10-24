@@ -176,7 +176,7 @@ describe('Post Model', function () {
                     paginationResult.posts.length.should.equal(1);
 
                     // Test featured pages
-                    return PostModel.findPage({limit: 10, featured: true});
+                    return PostModel.findPage({limit: 10, filter: 'featured:true'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(10);
@@ -184,7 +184,7 @@ describe('Post Model', function () {
                     paginationResult.posts.length.should.equal(10);
 
                     // Test both boolean formats for featured pages
-                    return PostModel.findPage({limit: 10, featured: '1'});
+                    return PostModel.findPage({limit: 10, filter: 'featured:1'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(10);
@@ -211,40 +211,32 @@ describe('Post Model', function () {
                     return testUtils.fixtures.insertMorePostsTags();
                 }).then(function () {
                     // Test tag filter
-                    return PostModel.findPage({page: 1, tag: 'bacon'});
+                    return PostModel.findPage({page: 1, filter: 'tags:bacon'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(15);
                     paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.meta.filters.tags[0].name.should.equal('bacon');
-                    paginationResult.meta.filters.tags[0].slug.should.equal('bacon');
                     paginationResult.posts.length.should.equal(2);
 
-                    return PostModel.findPage({page: 1, tag: 'kitchen-sink'});
+                    return PostModel.findPage({page: 1, filter: 'tags:kitchen-sink'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(15);
                     paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.meta.filters.tags[0].name.should.equal('kitchen sink');
-                    paginationResult.meta.filters.tags[0].slug.should.equal('kitchen-sink');
                     paginationResult.posts.length.should.equal(2);
 
-                    return PostModel.findPage({page: 1, tag: 'injection'});
+                    return PostModel.findPage({page: 1, filter: 'tags:injection'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal(15);
                     paginationResult.meta.pagination.pages.should.equal(2);
-                    paginationResult.meta.filters.tags[0].name.should.equal('injection');
-                    paginationResult.meta.filters.tags[0].slug.should.equal('injection');
                     paginationResult.posts.length.should.equal(15);
 
-                    return PostModel.findPage({page: 2, tag: 'injection'});
+                    return PostModel.findPage({page: 2, filter: 'tags:injection'});
                 }).then(function (paginationResult) {
                     paginationResult.meta.pagination.page.should.equal(2);
                     paginationResult.meta.pagination.limit.should.equal(15);
                     paginationResult.meta.pagination.pages.should.equal(2);
-                    paginationResult.meta.filters.tags[0].name.should.equal('injection');
-                    paginationResult.meta.filters.tags[0].slug.should.equal('injection');
                     paginationResult.posts.length.should.equal(10);
 
                     done();

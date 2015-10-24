@@ -5,7 +5,6 @@
 var _ = require('lodash'),
     collectionQuery,
     processGQLResult,
-    filtering,
     addPostCount,
     tagUpdate;
 
@@ -61,52 +60,6 @@ processGQLResult = function processGQLResult(itemCollection, options) {
     if (joinTables && joinTables.indexOf('author') > -1) {
         itemCollection
             .query('join', 'users as author', 'author.id', '=', 'posts.author_id');
-    }
-};
-
-/**
- * All of this can be removed once the filter parameter is in place
- * And the current filtering methods are removed
- */
-filtering = {
-    preFetch: function preFetch(filterObjects) {
-        var promises = [];
-        _.forOwn(filterObjects, function (obj) {
-            promises.push(obj.fetch());
-        });
-
-        return promises;
-    },
-    query: function query(filterObjects, itemCollection) {
-        if (filterObjects.tags) {
-            itemCollection
-                .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
-                .query('where', 'posts_tags.tag_id', '=', filterObjects.tags.id);
-        }
-
-        if (filterObjects.author) {
-            itemCollection
-                .query('where', 'author_id', '=', filterObjects.author.id);
-        }
-
-        if (filterObjects.roles) {
-            itemCollection
-                .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
-                .query('where', 'roles_users.role_id', '=', filterObjects.roles.id);
-        }
-    },
-    formatResponse: function formatResponse(filterObjects, options, data) {
-        if (!_.isEmpty(filterObjects)) {
-            data.meta.filters = {};
-        }
-
-        _.forOwn(filterObjects, function (obj, key) {
-            if (!filterObjects[key].isNew()) {
-                data.meta.filters[key] = [filterObjects[key].toJSON(options)];
-            }
-        });
-
-        return data;
     }
 };
 
@@ -172,7 +125,6 @@ tagUpdate = {
     }
 };
 
-module.exports.oldFiltering = filtering;
 module.exports.processGQLResult = processGQLResult;
 module.exports.collectionQuery = collectionQuery;
 module.exports.addPostCount = addPostCount;

@@ -73,7 +73,7 @@ users = {
      * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        var extraOptions = ['role', 'status'],
+        var extraOptions = ['status'],
             permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
