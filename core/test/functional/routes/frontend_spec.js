@@ -516,6 +516,8 @@ describe('Frontend Routing', function () {
                 // we initialise data, but not a user. No user should be required for navigating the frontend
                 return testUtils.initData();
             }).then(function () {
+                return testUtils.fixtures.overrideOwnerUser('ghost-owner');
+            }).then(function () {
                 return testUtils.fixtures.insertPosts();
             }).then(function () {
                 return testUtils.fixtures.insertMorePosts(9);
