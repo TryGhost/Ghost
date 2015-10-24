@@ -125,7 +125,7 @@ describe('Post API', function () {
         });
 
         it('can retrieve just featured posts', function (done) {
-            request.get(testUtils.API.getApiQuery('posts/?featured=true'))
+            request.get(testUtils.API.getApiQuery('posts/?filter=featured:true'))
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)

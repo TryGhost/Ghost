@@ -259,38 +259,6 @@ describe('Filter Param Spec', function () {
     describe('Old Use Cases', function () {
         // Please note: these tests are mostly here to help prove certain things whilst building out new behaviour
         describe('Old post "filters"', function () {
-            it('OLD STYLE TAG FILTER For checking against.. to be removed', function (done) {
-                PostAPI.browse({tag: 'photo', include: 'tag,author'}).then(function (result) {
-                    var ids;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 4 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(4);
-
-                    ids = _.pluck(result.posts, 'id');
-                    ids.should.eql([11, 9, 3, 2]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(1);
-                    result.meta.pagination.limit.should.eql(15);
-                    result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(4);
-                    should.equal(result.meta.pagination.next, null);
-                    should.equal(result.meta.pagination.prev, null);
-
-                    // NOTE: old query has meta filter
-                    result.meta.should.have.property('filters');
-
-                    done();
-                }).catch(done);
-            });
-
             it('Will fetch posts with a given tag', function (done) {
                 PostAPI.browse({filter: 'tag:photo', include: 'tag,author'}).then(function (result) {
                     var ids;
@@ -318,38 +286,6 @@ describe('Filter Param Spec', function () {
 
                     // NOTE: new query does not have meta filter
                     result.meta.should.not.have.property('filters');
-
-                    done();
-                }).catch(done);
-            });
-
-            it('OLD STYLE AUTHOR FILTER For checking against.. to be removed', function (done) {
-                PostAPI.browse({author: 'leslie', include: 'tag,author', limit: 5, page: 2}).then(function (result) {
-                    var ids;
-                    // 1. Result should have the correct base structure
-                    should.exist(result);
-                    result.should.have.property('posts');
-                    result.should.have.property('meta');
-
-                    // 2. The data part of the response should be correct
-                    // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(5);
-
-                    ids = _.pluck(result.posts, 'id');
-                    ids.should.eql([13, 12, 11, 10, 9]);
-
-                    // 3. The meta object should contain the right details
-                    result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-                    result.meta.pagination.page.should.eql(2);
-                    result.meta.pagination.limit.should.eql(5);
-                    result.meta.pagination.pages.should.eql(3);
-                    result.meta.pagination.total.should.eql(15);
-                    result.meta.pagination.next.should.eql(3);
-                    result.meta.pagination.prev.should.eql(1);
-
-                    // NOTE: old query has meta filter
-                    result.meta.should.have.property('filters');
 
                     done();
                 }).catch(done);

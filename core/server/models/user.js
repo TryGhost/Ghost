@@ -164,17 +164,6 @@ User = ghostBookshelf.Model.extend({
     }
 
 }, {
-    setupFilters: function setupFilters(options) {
-        var filterObjects = {};
-        // Deliberately switch from singular 'tag' to 'tags' and 'role' to 'roles' here
-        // TODO: make this consistent
-        if (options.role !== undefined) {
-            filterObjects.roles = ghostBookshelf.model('Role').forge({name: options.role});
-        }
-
-        return filterObjects;
-    },
-
     findPageDefaultOptions: function findPageDefaultOptions() {
         return {
             status: 'active',
