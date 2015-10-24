@@ -215,11 +215,14 @@ fixtures = {
         });
     },
 
-    overrideOwnerUser: function overrideOwnerUser() {
+    overrideOwnerUser: function overrideOwnerUser(slug) {
         var user,
             knex = config.database.knex;
 
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+        if (slug) {
+            user.slug = slug;
+        }
 
         return knex('users')
             .where('id', '=', '1')

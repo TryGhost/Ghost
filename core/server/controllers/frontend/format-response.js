@@ -5,14 +5,25 @@ var _   = require('lodash');
  * If extraValues are available, they are merged in the final value
  * @return {Object} containing page variables
  */
-function formatPageResponse(posts, page, extraValues) {
-    extraValues = extraValues || {};
-
-    var resp = {
-        posts: posts,
-        pagination: page.meta.pagination
+function formatPageResponse(result) {
+    var response = {
+        posts: result.posts,
+        pagination: result.meta.pagination
     };
-    return _.extend(resp, extraValues);
+
+    _.each(result.data, function (data, name) {
+        if (data.meta) {
+            // Move pagination to be a top level key
+            response[name] = data;
+            response[name].pagination = data.meta.pagination;
+            delete response[name].meta;
+        } else {
+            // This is a single object, don't wrap it in an array
+            response[name] = data[0];
+        }
+    });
+
+    return response;
 }
 
 /**
