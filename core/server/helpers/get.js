@@ -74,14 +74,6 @@ function resolvePaths(data, value) {
  * @returns {*}
  */
 function parseOptions(data, options) {
-    if (_.isArray(options.tag)) {
-        options.tag = _.pluck(options.tag, 'slug').join(',');
-    }
-
-    if (_.isObject(options.author)) {
-        options.author = options.author.slug;
-    }
-
     if (_.isString(options.filter)) {
         options.filter = resolvePaths(data, options.filter);
     }
