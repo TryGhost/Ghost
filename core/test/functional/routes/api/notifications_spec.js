@@ -13,7 +13,9 @@ describe('Notifications API', function () {
     before(function (done) {
         // starting ghost automatically populates the db
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
-        ghost().then(function (ghostServer) {
+        testUtils.clearData()
+        .then(ghost)
+        .then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
         }).then(function () {
             return testUtils.doAuth(request);
@@ -23,11 +25,7 @@ describe('Notifications API', function () {
         }).catch(done);
     });
 
-    after(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    after(testUtils.teardown);
 
     describe('Add', function () {
         var newNotification = {
