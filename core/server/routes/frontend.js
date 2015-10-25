@@ -55,8 +55,8 @@ frontendRoutes = function frontendRoutes(middleware) {
     });
 
     // Index
-    indexRouter.route('/').get(frontend.homepage);
-    indexRouter.route('/' + routeKeywords.page + '/:page/').get(frontend.homepage);
+    indexRouter.route('/').get(frontend.index);
+    indexRouter.route('/' + routeKeywords.page + '/:page/').get(frontend.index);
     indexRouter.use(rssRouter);
 
     // Tags
