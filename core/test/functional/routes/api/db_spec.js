@@ -22,11 +22,7 @@ describe('DB API', function () {
         }).catch(done);
     });
 
-    after(function (done) {
-        testUtils.clearData().then(function () {
-            done();
-        }).catch(done);
-    });
+    after(testUtils.teardown);
 
     it('attaches the Content-Disposition header on export', function (done) {
         request.get(testUtils.API.getApiQuery('db/'))
