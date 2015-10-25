@@ -1,13 +1,14 @@
 var _        = require('lodash'),
-    Promise  = require('bluebird'),
     cheerio  = require('cheerio'),
     crypto   = require('crypto'),
     downsize = require('downsize'),
     RSS      = require('rss'),
     url      = require('url'),
     config   = require('../../../config'),
-    api      = require('../../../api'),
     filters  = require('../../../filters'),
+
+    // Really ugly temporary hack for location of things
+    fetchData = require('../../../controllers/frontend/fetch-data'),
 
     generate,
     generateFeed,
@@ -28,37 +29,30 @@ function handleError(next) {
     };
 }
 
-function getOptions(req, pageParam, slugParam) {
-    var options = {};
-
-    if (pageParam) { options.page = pageParam; }
-    if (isTag(req)) { options.tag = slugParam; }
-    if (isAuthor(req)) { options.author = slugParam; }
-
-    options.include = 'author,tags,fields';
-
-    return options;
-}
-
-function getData(options) {
-    var ops = {
-        title: api.settings.read('title'),
-        description: api.settings.read('description'),
-        permalinks: api.settings.read('permalinks'),
-        results: api.posts.browse(options)
+function getData(channelOpts, slugParam) {
+    channelOpts.data = channelOpts.data || {};
+    channelOpts.data.permalinks = {
+        type: 'read',
+        resource: 'settings',
+        options: 'permalinks'
     };
 
-    return Promise.props(ops).then(function (result) {
-        var titleStart = '';
-        if (options.tag) { titleStart = result.results.meta.filters.tags[0].name + ' - ' || ''; }
-        if (options.author) { titleStart = result.results.meta.filters.author.name + ' - ' || ''; }
+    return fetchData(channelOpts, slugParam).then(function (result) {
+        var response = {},
+            titleStart = '';
 
-        return {
-            title: titleStart + result.title.settings[0].value,
-            description: result.description.settings[0].value,
-            permalinks: result.permalinks.settings[0],
-            results: result.results
+        if (result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
+        if (result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
+
+        response.title = titleStart + config.theme.title;
+        response.description = config.theme.description;
+        response.permalinks = result.data.permalinks[0];
+        response.results = {
+            posts: result.posts,
+            meta: result.meta
         };
+
+        return response;
     });
 }
 
@@ -198,15 +192,19 @@ generate = function generate(req, res, next) {
     // Initialize RSS
     var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
         slugParam = req.params.slug,
-        baseUrl   = getBaseUrl(req, slugParam),
-        options   = getOptions(req, pageParam, slugParam);
+        baseUrl   = getBaseUrl(req, slugParam);
+
+    // Ensure we at least have an empty object for postOptions
+    req.channelConfig.postOptions = req.channelConfig.postOptions || {};
+    // Set page on postOptions for the query made later
+    req.channelConfig.postOptions.page = pageParam;
 
     // No negative pages, or page 1
     if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
         return res.redirect(baseUrl);
     }
 
-    return getData(options).then(function then(data) {
+    return getData(req.channelConfig, slugParam).then(function then(data) {
         var maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
