@@ -92,7 +92,7 @@
 	background: -o-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(125, 185, 232, 0.01) 100%);
 	background: -ms-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(125, 185, 232, 0.01) 100%);
 	background: linear-gradient(to right, rgba(255, 255, 255, 1) 0%, rgba(125, 185, 232, 0.01) 100%);
-	filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#037db9e8', GradientType=1);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#037db9e8', GradientType=1);
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -109,7 +109,7 @@
 	background: -o-linear-gradient(left, rgba(125, 185, 232, 0.01) 0%, rgba(254, 254, 255, 1) 99%, rgba(255, 255, 255, 1) 100%);
 	background: -ms-linear-gradient(left, rgba(125, 185, 232, 0.01) 0%, rgba(254, 254, 255, 1) 99%, rgba(255, 255, 255, 1) 100%);
 	background: linear-gradient(to right, rgba(125, 185, 232, 0.01) 0%, rgba(254, 254, 255, 1) 99%, rgba(255, 255, 255, 1) 100%);
-	filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#037db9e8', endColorstr='#ffffff', GradientType=1);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#037db9e8', endColorstr='#ffffff', GradientType=1);
 	position: fixed;
 	top: 0;
 	right: 0;
