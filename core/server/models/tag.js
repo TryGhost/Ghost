@@ -59,10 +59,6 @@ Tag = ghostBookshelf.Model.extend({
         return attrs;
     }
 }, {
-    setupFilters: function setupFilters() {
-        return {};
-    },
-
     findPageDefaultOptions: function findPageDefaultOptions() {
         return {
             where: {}
