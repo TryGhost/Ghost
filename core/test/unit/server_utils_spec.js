@@ -1,19 +1,34 @@
-/*globals describe, it*/
+/*globals describe, it, after*/
 /*jshint expr:true*/
 var should          = require('should'),
     parsePackageJson = require('../../server/utils/parse-package-json'),
     validateThemes  = require('../../server/utils/validate-themes'),
     readDirectory   = require('../../server/utils/read-directory'),
     readThemes      = require('../../server/utils/read-themes'),
-    tempfile        = require('../utils/tempfile'),
+    Promise         = require('bluebird'),
     utils           = require('../../server/utils'),
     join            = require('path').join,
-    fs              = require('fs');
+    rm              = require('rimraf-then'),
+    fs              = require('fs'),
+
+    TMP_DIR         = require('os').tmpdir(),
+    tmpFiles        = [];
 
 // To stop jshint complaining
 should.equal(true, true);
 
-describe('Server Utilities', function () {
+function tempfile() {
+    var randomString, path;
+
+    randomString = (Math.random() * 1e64).toString(36);
+    path = join(TMP_DIR, randomString);
+
+    tmpFiles.push(path);
+
+    return path;
+}
+
+describe.only('Server Utilities', function () {
     describe('Safe String', function () {
         var safeString = utils.safeString,
             options = {};
@@ -281,6 +296,36 @@ describe('Server Utilities', function () {
                 })
                 .catch(done);
         });
+
+        it('should read directory and ignore invalid package.json files', function (done) {
+            var themePath, pkgJson;
+
+            themePath = tempfile();
+            pkgJson = JSON.stringify({
+                name: 'test'
+            });
+
+            // create example theme
+            fs.mkdirSync(themePath);
+            fs.mkdirSync(join(themePath, 'partials'));
+            fs.writeFileSync(join(themePath, 'package.json'), pkgJson);
+            fs.writeFileSync(join(themePath, 'index.hbs'));
+            fs.writeFileSync(join(themePath, 'partials', 'navigation.hbs'));
+
+            readDirectory(themePath)
+                .then(function (tree) {
+                    tree.should.eql({
+                        partials: {
+                            'navigation.hbs': join(themePath, 'partials', 'navigation.hbs')
+                        },
+                        'index.hbs': join(themePath, 'index.hbs'),
+                        'package.json': {}
+                    });
+
+                    done();
+                })
+                .catch(done);
+        });
     });
 
     describe('read-themes', function () {
@@ -348,5 +393,13 @@ describe('Server Utilities', function () {
                     done();
                 });
         });
+    });
+
+    after(function (done) {
+        Promise.all(tmpFiles.map(rm))
+            .catch(function () {})
+            .then(function () {
+                done();
+            });
     });
 });
