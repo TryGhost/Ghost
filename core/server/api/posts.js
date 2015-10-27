@@ -36,7 +36,7 @@ posts = {
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
     browse: function browse(options) {
-        var extraOptions = ['tag', 'author', 'status', 'staticPages', 'featured'],
+        var extraOptions = ['status', 'staticPages'],
             permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
