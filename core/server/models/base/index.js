@@ -307,7 +307,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             // TODO: this should just be done for all methods @ the API level
             options.withRelated = _.union(options.withRelated, options.include);
 
-            options.order = self.orderDefaultOptions();
+            if (options.order) {
+                options.order = self.parseOrderOption(options.order);
+            } else {
+                options.order = self.orderDefaultOptions();
+            }
 
             return itemCollection.fetchPage(options).then(function formatResponse(response) {
                 var data = {};
@@ -462,6 +466,36 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             // Test for duplicate slugs.
             return checkIfSlugExists(slug);
         });
+    },
+
+    parseOrderOption: function (order) {
+        var permittedAttributes, result, rules;
+
+        permittedAttributes = this.prototype.permittedAttributes();
+        result = {};
+        rules = order.split(',');
+
+        _.each(rules, function (rule) {
+            var match, field, direction;
+
+            match = /^([a-z0-9_\.]+)\s+(asc|desc)$/i.exec(rule.trim());
+
+            // invalid order syntax
+            if (!match) {
+                return;
+            }
+
+            field = match[1].toLowerCase();
+            direction = match[2].toUpperCase();
+
+            if (permittedAttributes.indexOf(field) === -1) {
+                return;
+            }
+
+            result[field] = direction;
+        });
+
+        return result;
     }
 
 });
