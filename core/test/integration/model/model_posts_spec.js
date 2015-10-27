@@ -653,6 +653,17 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('can add default title, if it\'s missing', function (done) {
+                PostModel.add({
+                    markdown: 'Content'
+                }, context).then(function (newPost) {
+                    should.exist(newPost);
+                    newPost.get('title').should.equal('(Untitled)');
+
+                    done();
+                }).catch(done);
+            });
+
             it('can trim title', function (done) {
                 var untrimmedCreateTitle = '  test trimmed create title  ',
                     untrimmedUpdateTitle = '  test trimmed update title  ',
