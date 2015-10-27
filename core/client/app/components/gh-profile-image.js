@@ -1,5 +1,6 @@
 /* global md5 */
 import Ember from 'ember';
+import {request as ajax} from 'ic-ajax';
 
 /**
  * A component to manage a user profile image. By default it just handles picture uploads,
@@ -21,21 +22,44 @@ export default Ember.Component.extend({
     fileStorage: true,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
-    hasEmail: Ember.computed.notEmpty('email'),
 
     defaultImage: Ember.computed('ghostPaths', function () {
         var url = this.get('ghostPaths.url').asset('/shared/img/user-image.png');
         return `background-image: url(${url})`.htmlSafe();
     }),
 
-    imageBackground: Ember.computed('email', 'size', function () {
+    imageBackgroundUrl: Ember.computed('email', 'size', function () {
         var email = this.get('email'),
             size = this.get('size'),
-            url;
-        if (email) {
-            url = 'http://www.gravatar.com/avatar/' + md5(email) + '?s=' + size + '&d=blank';
-            return `background-image: url(${url})`.htmlSafe();
-        }
+            url,
+            promise;
+
+        promise = new Ember.RSVP.Promise(function (resolve, reject) {
+            if (!email) {
+                resolve({value: ''});
+                return;
+            }
+
+            url = 'http://www.gravatar.com/avatar/' + md5(email) + '?s=' + size + '&d=404';
+
+            ajax({
+                type: 'HEAD',
+                url: url
+            }).then(function () {
+                resolve({value: url});
+            }).catch(reject);
+        });
+
+        return Ember.ObjectProxy.extend(Ember.PromiseProxyMixin).create({
+            promise: promise
+        });
+    }),
+
+    hasImageBackground: Ember.computed.bool('imageBackgroundUrl.value'),
+
+    imageBackground: Ember.computed('imageBackgroundUrl.value', function () {
+        var url = this.get('imageBackgroundUrl.value');
+        return `background-image: url(${url})`.htmlSafe();
     }),
 
     didInsertElement: function () {
