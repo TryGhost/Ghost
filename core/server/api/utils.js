@@ -113,7 +113,7 @@ utils = {
                 slug: {isSlug: true},
                 page: {matches: /^\d+$/},
                 limit: {matches: /^\d+|all$/},
-                fields: {matches: /^[a-z0-9_,]+$/},
+                fields: {matches: /^[\w, ]+$/},
                 name: {}
             },
             // these values are sanitised/validated separately
@@ -218,20 +218,23 @@ utils = {
         };
     },
 
-    prepareInclude: function prepareInclude(include, allowedIncludes) {
-        include = include || '';
-        include = _.intersection(include.split(','), allowedIncludes);
+    trimAndLowerCase: function trimAndLowerCase(params) {
+        params = params || '';
+        if (_.isString(params)) {
+            params = params.split(',');
+        }
 
-        return include;
+        return _.map(params, function (item) {
+            return item.trim().toLowerCase();
+        });
+    },
+
+    prepareInclude: function prepareInclude(include, allowedIncludes) {
+        return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
 
     prepareFields: function prepareFields(fields) {
-        fields = fields || '';
-        if (_.isString(fields)) {
-            fields = fields.split(',');
-        }
-
-        return fields;
+        return this.trimAndLowerCase(fields);
     },
 
     /**
