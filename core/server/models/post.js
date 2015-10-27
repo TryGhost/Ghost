@@ -115,6 +115,7 @@ Post = ghostBookshelf.Model.extend({
     saving: function saving(model, attr, options) {
         var self = this,
             tagsToCheck,
+            title,
             i;
 
         options = options || {};
@@ -138,7 +139,8 @@ Post = ghostBookshelf.Model.extend({
 
         // disabling sanitization until we can implement a better version
         // this.set('title', this.sanitize('title').trim());
-        this.set('title', this.get('title').trim());
+        title = this.get('title') || '(Untitled)';
+        this.set('title', title.trim());
 
         // ### Business logic for published_at and published_by
         // If the current status is 'published' and published_at is not set, set it to now
