@@ -44,27 +44,23 @@ function renderPost(req, res) {
 }
 
 function renderChannel(channelOpts) {
-    channelOpts = channelOpts || {};
+    // Ensure we at least have an empty object for postOptions
+    channelOpts.postOptions = channelOpts.postOptions || {};
 
     return function renderChannel(req, res, next) {
+        // Parse the parameters we need from the URL
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
-            options = {
-                page: pageParam
-            },
-            hasSlug,
-            filter, filterKey;
+            slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
-        // Add the slug if it exists in the route
-        if (channelOpts.route.indexOf(':slug') !== -1 && req.params.slug) {
-            options[channelOpts.name] = safeString(req.params.slug);
-            hasSlug = true;
-        }
+        // Set page on postOptions for the query made later
+        channelOpts.postOptions.page = pageParam;
 
+        // @TODO this should really use the url building code in config.url
         function createUrl(page) {
             var url = config.paths.subdir + channelOpts.route;
 
-            if (hasSlug) {
-                url = url.replace(':slug', options[channelOpts.name]);
+            if (slugParam) {
+                url = url.replace(':slug', slugParam);
             }
 
             if (page && page > 1) {
@@ -74,49 +70,41 @@ function renderChannel(channelOpts) {
             return url;
         }
 
+        // If the page parameter isn't something sensible, redirect
         if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
             return res.redirect(createUrl());
         }
 
-        return fetchData(options).then(function then(page) {
+        // Call fetchData to get everything we need from the API
+        return fetchData(channelOpts, slugParam).then(function handleResult(result) {
             // If page is greater than number of pages we have, redirect to last page
-            if (pageParam > page.meta.pagination.pages) {
-                return res.redirect(createUrl(page.meta.pagination.pages));
+            if (pageParam > result.meta.pagination.pages) {
+                return res.redirect(createUrl(result.meta.pagination.pages));
             }
 
-            setRequestIsSecure(req, page.posts);
-            if (channelOpts.filter && page.meta.filters[channelOpts.filter]) {
-                filterKey = page.meta.filters[channelOpts.filter];
-                filter = (_.isArray(filterKey)) ? filterKey[0] : filterKey;
-                setRequestIsSecure(req, filter);
-            }
+            // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
+            // correctly for the various objects, but I believe it doesn't work and a different approach is needed.
+            setRequestIsSecure(req, result.posts);
+            _.each(result.data, function (data) {
+                setRequestIsSecure(req, data);
+            });
 
-            filters.doFilter('prePostsRender', page.posts, res.locals).then(function then(posts) {
+            // @TODO: properly design these filters
+            filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
                 getActiveThemePaths().then(function then(paths) {
-                    var view = 'index',
-                        result,
-                        extra = {};
-
+                    // Calculate which template to use to render the data
+                    var view = 'index';
                     if (channelOpts.firstPageTemplate && paths.hasOwnProperty(channelOpts.firstPageTemplate + '.hbs')) {
                         view = (pageParam > 1) ? 'index' : channelOpts.firstPageTemplate;
                     } else if (channelOpts.slugTemplate) {
-                        view = template.getThemeViewForChannel(paths, channelOpts.name, options[channelOpts.name]);
+                        view = template.getThemeViewForChannel(paths, channelOpts.name, slugParam);
                     } else if (paths.hasOwnProperty(channelOpts.name + '.hbs')) {
                         view = channelOpts.name;
                     }
 
-                    if (channelOpts.filter) {
-                        extra[channelOpts.name] = (filterKey) ? filter : '';
-
-                        if (!extra[channelOpts.name]) {
-                            return next();
-                        }
-
-                        result = formatResponse.channel(posts, page, extra);
-                    } else {
-                        result = formatResponse.channel(posts, page);
-                    }
-
+                    // Do final data formatting and then render
+                    result.posts = posts;
+                    result = formatResponse.channel(result);
                     setResponseContext(req, res);
                     res.render(view, result);
                 });
@@ -134,13 +122,31 @@ frontendControllers = {
     tag: renderChannel({
         name: 'tag',
         route: '/' + config.routeKeywords.tag + '/:slug/',
-        filter: 'tags',
+        postOptions: {
+            filter: 'tags:%s'
+        },
+        data: {
+            tag: {
+                type: 'read',
+                resource: 'tags',
+                options: {slug: '%s'}
+            }
+        },
         slugTemplate: true
     }),
     author: renderChannel({
         name: 'author',
         route: '/' + config.routeKeywords.author + '/:slug/',
-        filter: 'author',
+        postOptions: {
+            filter: 'author:%s'
+        },
+        data: {
+            author: {
+                type: 'read',
+                resource: 'users',
+                options: {slug: '%s'}
+            }
+        },
         slugTemplate: true
     }),
     preview: function preview(req, res, next) {

@@ -12,19 +12,16 @@ var moment   = require('moment'),
     frontend = require('../../../../server/controllers/frontend'),
 
     config   = require('../../../../server/config'),
-    origConfig = _.cloneDeep(config);
+    origConfig = _.cloneDeep(config),
+
+    sandbox = sinon.sandbox.create();
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('Frontend Controller', function () {
-    var sandbox,
-        apiSettingsStub,
+    var apiSettingsStub,
         adminEditPagePath = '/ghost/editor/';
-
-    beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-    });
 
     afterEach(function () {
         config.set(origConfig);
@@ -34,9 +31,9 @@ describe('Frontend Controller', function () {
     // Helper function to prevent unit tests
     // from failing via timeout when they
     // should just immediately fail
-    function failTest(done, msg) {
-        return function () {
-            done(new Error(msg));
+    function failTest(done) {
+        return function (err) {
+            done(err);
         };
     }
 
@@ -251,20 +248,12 @@ describe('Frontend Controller', function () {
             }];
 
         beforeEach(function () {
-            sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({
-                    posts: [{}],
-                    meta: {
-                        pagination: {
-                            page: 1,
-                            pages: 1
-                        },
-                        filters: {
-                            tags: [mockTags[0]]
-                        }
-                    }
-                });
-            });
+            sandbox.stub(api.posts, 'browse').returns(new Promise.resolve({
+                posts: [{}],
+                meta: {pagination: {page: 1, pages: 1}}
+            }));
+
+            sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: [mockTags[0]]}));
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
@@ -309,7 +298,7 @@ describe('Frontend Controller', function () {
             req.route = {path: '/tag/:slug'};
             res.render = function (view, context) {
                 view.should.equal('tag-video');
-                context.tag.should.equal(mockTags[0]);
+                context.tag.should.eql(mockTags[0]);
                 done();
             };
 
@@ -327,7 +316,7 @@ describe('Frontend Controller', function () {
             req.route = {path: '/tag/:slug'};
             res.render = function (view, context) {
                 view.should.equal('tag');
-                context.tag.should.equal(mockTags[0]);
+                context.tag.should.eql(mockTags[0]);
                 done();
             };
 
@@ -344,7 +333,7 @@ describe('Frontend Controller', function () {
             req.route = {path: '/tag/:slug'};
             res.render = function (view, context) {
                 view.should.equal('index');
-                context.tag.should.equal(mockTags[0]);
+                context.tag.should.eql(mockTags[0]);
                 done();
             };
 
@@ -365,9 +354,8 @@ describe('Frontend Controller', function () {
                 path: '/', params: {}, route: {}
             };
 
-            sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: {}, meta: {pagination: {pages: 3}}});
-            });
+            sandbox.stub(api.posts, 'browse').returns(new Promise.resolve({posts: [{}], meta: {pagination: {pages: 3}}}));
+            sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: [{}]}));
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
