@@ -6,7 +6,7 @@ export default Ember.Controller.extend({
     userPostCount: Ember.computed('model.id', function () {
         var promise,
             query = {
-                author: this.get('model.slug'),
+                filter: `author:${this.get('model.slug')}`,
                 status: 'all'
             };
 
