@@ -86,7 +86,17 @@ function processQuery(query, slugParam) {
  * @returns {Promise} response
  */
 function fetchData(channelOptions, slugParam) {
-    return fetchPostsPerPage(channelOptions.postOptions).then(function fetchData(pageOptions) {
+    // Temporary workaround to make RSS work, moving towards dynamic channels will provide opportunities to
+    // improve this, I hope :)
+    function handlePostsPerPage(channelOptions) {
+        if (channelOptions.isRSS) {
+            return Promise.resolve({options: channelOptions.postOptions});
+        } else {
+            return fetchPostsPerPage(channelOptions.postOptions);
+        }
+    }
+
+    return handlePostsPerPage(channelOptions).then(function fetchData(pageOptions) {
         var postQuery,
             props = {};
 

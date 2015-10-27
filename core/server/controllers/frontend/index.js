@@ -18,6 +18,7 @@ var _           = require('lodash'),
     handleError = require('./error'),
     fetchData   = require('./fetch-data'),
     formatResponse = require('./format-response'),
+    channelConfig  = require('./channel-config'),
     setResponseContext = require('./context'),
     setRequestIsSecure   = require('./secure'),
     getActiveThemePaths = require('./theme-paths'),
@@ -44,14 +45,13 @@ function renderPost(req, res) {
 }
 
 function renderChannel(channelOpts) {
-    // Ensure we at least have an empty object for postOptions
-    channelOpts.postOptions = channelOpts.postOptions || {};
-
     return function renderChannel(req, res, next) {
         // Parse the parameters we need from the URL
         var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
+        // Ensure we at least have an empty object for postOptions
+        channelOpts.postOptions = channelOpts.postOptions || {};
         // Set page on postOptions for the query made later
         channelOpts.postOptions.page = pageParam;
 
@@ -114,41 +114,27 @@ function renderChannel(channelOpts) {
 }
 
 frontendControllers = {
-    homepage: renderChannel({
-        name: 'home',
-        route: '/',
-        firstPageTemplate: 'home'
-    }),
-    tag: renderChannel({
-        name: 'tag',
-        route: '/' + config.routeKeywords.tag + '/:slug/',
-        postOptions: {
-            filter: 'tags:%s'
-        },
-        data: {
-            tag: {
-                type: 'read',
-                resource: 'tags',
-                options: {slug: '%s'}
-            }
-        },
-        slugTemplate: true
-    }),
-    author: renderChannel({
-        name: 'author',
-        route: '/' + config.routeKeywords.author + '/:slug/',
-        postOptions: {
-            filter: 'author:%s'
-        },
-        data: {
-            author: {
-                type: 'read',
-                resource: 'users',
-                options: {slug: '%s'}
-            }
-        },
-        slugTemplate: true
-    }),
+    index: renderChannel(_.cloneDeep(channelConfig.index)),
+    tag: renderChannel(_.cloneDeep(channelConfig.tag)),
+    author: renderChannel(_.cloneDeep(channelConfig.author)),
+    rss: function (req, res, next) {
+        // Temporary hack, channels will allow us to resolve this better eventually
+        var tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/.+'),
+            authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/.+');
+
+        if (tagPattern.test(res.locals.relativeUrl)) {
+            req.channelConfig = _.cloneDeep(channelConfig.tag);
+        } else if (authorPattern.test(res.locals.relativeUrl)) {
+            req.channelConfig = _.cloneDeep(channelConfig.author);
+        } else {
+            req.channelConfig = _.cloneDeep(channelConfig.index);
+        }
+
+        req.channelConfig.isRSS = true;
+
+        return rss(req, res, next);
+    },
+
     preview: function preview(req, res, next) {
         var params = {
                 uuid: req.params.uuid,
@@ -173,7 +159,6 @@ frontendControllers = {
                 .then(renderPost(req, res));
         }).catch(handleError(next));
     },
-
     single: function single(req, res, next) {
         var postPath = req.path,
             params,
@@ -262,7 +247,6 @@ frontendControllers = {
             }
         }).catch(handleError(next));
     },
-    rss: rss,
     private: function private(req, res) {
         var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs');
         return getActiveThemePaths().then(function then(paths) {

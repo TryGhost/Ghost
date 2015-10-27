@@ -37,7 +37,7 @@ describe('Frontend Controller', function () {
         };
     }
 
-    describe('homepage redirects', function () {
+    describe('index redirects', function () {
         var res,
             req;
 
@@ -68,7 +68,7 @@ describe('Frontend Controller', function () {
         it('Redirects to home if page number is -1', function () {
             req.params.page = -1;
 
-            frontend.homepage(req, res, null);
+            frontend.index(req, res, null);
 
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/').should.be.true;
@@ -78,7 +78,7 @@ describe('Frontend Controller', function () {
         it('Redirects to home if page number is 0', function () {
             req.params.page = 0;
 
-            frontend.homepage(req, res, null);
+            frontend.index(req, res, null);
 
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/').should.be.true;
@@ -88,7 +88,7 @@ describe('Frontend Controller', function () {
         it('Redirects to home if page number is 1', function () {
             req.params.page = 1;
 
-            frontend.homepage(req, res, null);
+            frontend.index(req, res, null);
 
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/').should.be.true;
@@ -102,7 +102,7 @@ describe('Frontend Controller', function () {
 
             req.params.page = 0;
 
-            frontend.homepage(req, res, null);
+            frontend.index(req, res, null);
 
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/blog/').should.be.true;
@@ -116,7 +116,7 @@ describe('Frontend Controller', function () {
 
             req.params.page = 1;
 
-            frontend.homepage(req, res, null);
+            frontend.index(req, res, null);
 
             res.redirect.called.should.be.true;
             res.redirect.calledWith('/blog/').should.be.true;
@@ -126,7 +126,7 @@ describe('Frontend Controller', function () {
         it('Redirects to last page if page number too big', function (done) {
             req.params.page = 4;
 
-            frontend.homepage(req, res, done).then(function () {
+            frontend.index(req, res, done).then(function () {
                 res.redirect.called.should.be.true;
                 res.redirect.calledWith('/page/3/').should.be.true;
                 res.render.called.should.be.false;
@@ -141,7 +141,7 @@ describe('Frontend Controller', function () {
 
             req.params.page = 4;
 
-            frontend.homepage(req, res, done).then(function () {
+            frontend.index(req, res, done).then(function () {
                 res.redirect.calledOnce.should.be.true;
                 res.redirect.calledWith('/blog/page/3/').should.be.true;
                 res.render.called.should.be.false;
@@ -150,7 +150,7 @@ describe('Frontend Controller', function () {
         });
     });
 
-    describe('homepage', function () {
+    describe('index', function () {
         var req, res;
 
         beforeEach(function () {
@@ -200,7 +200,7 @@ describe('Frontend Controller', function () {
                 done();
             };
 
-            frontend.homepage(req, res, failTest(done));
+            frontend.index(req, res, failTest(done));
         });
 
         it('Renders index.hbs template on 2nd page when home.hbs exists', function (done) {
@@ -218,7 +218,7 @@ describe('Frontend Controller', function () {
                 done();
             };
 
-            frontend.homepage(req, res, failTest(done));
+            frontend.index(req, res, failTest(done));
         });
 
         it('Renders index.hbs template when home.hbs doesn\'t exist', function (done) {
@@ -231,7 +231,7 @@ describe('Frontend Controller', function () {
                 done();
             };
 
-            frontend.homepage(req, res, failTest(done));
+            frontend.index(req, res, failTest(done));
         });
     });
 
@@ -1165,18 +1165,6 @@ describe('Frontend Controller', function () {
             apiUsersStub = sandbox.stub(api.users, 'read').returns(Promise.resolve({}));
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('title').returns(Promise.resolve({
-                settings: [{
-                    key: 'title',
-                    value: 'Test'
-                }]
-            }));
-            apiSettingsStub.withArgs('description').returns(Promise.resolve({
-                settings: [{
-                    key: 'description',
-                    value: 'Some Text'
-                }]
-            }));
             apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                 settings: [{
                     key: 'permalinks',
