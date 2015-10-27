@@ -266,8 +266,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         var self = this,
             itemCollection = this.forge(),
-            tableName      = _.result(this.prototype, 'tableName'),
-            filterObjects = self.setupFilters(options);
+            tableName      = _.result(this.prototype, 'tableName');
 
         // Filter options so that only permitted ones remain
         options = this.filterOptions(options, 'findPage');
@@ -283,39 +282,33 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
         }
 
-        // Prefetch filter objects
-        return Promise.all(baseUtils.oldFiltering.preFetch(filterObjects)).then(function doQuery() {
-            // If there are `where` conditionals specified, add those to the query.
-            if (options.where) {
-                itemCollection.query('where', options.where);
-            }
+        // If there are `where` conditionals specified, add those to the query.
+        if (options.where) {
+            itemCollection.query('where', options.where);
+        }
 
-            // Apply FILTER
-            if (options.filter) {
-                options.filter = gql.parse(options.filter);
-                itemCollection.query(function (qb) {
-                    gql.knexify(qb, options.filter);
-                });
-
-                baseUtils.processGQLResult(itemCollection, options);
-            }
-
-            // Setup filter joins / queries
-            baseUtils.oldFiltering.query(filterObjects, itemCollection);
-
-            // Handle related objects
-            // TODO: this should just be done for all methods @ the API level
-            options.withRelated = _.union(options.withRelated, options.include);
-
-            options.order = self.orderDefaultOptions();
-
-            return itemCollection.fetchPage(options).then(function formatResponse(response) {
-                var data = {};
-                data[tableName] = response.collection.toJSON(options);
-                data.meta = {pagination: response.pagination};
-
-                return baseUtils.oldFiltering.formatResponse(filterObjects, options, data);
+        // Apply FILTER
+        if (options.filter) {
+            options.filter = gql.parse(options.filter);
+            itemCollection.query(function (qb) {
+                gql.knexify(qb, options.filter);
             });
+
+            baseUtils.processGQLResult(itemCollection, options);
+        }
+
+        // Handle related objects
+        // TODO: this should just be done for all methods @ the API level
+        options.withRelated = _.union(options.withRelated, options.include);
+
+        options.order = self.orderDefaultOptions();
+
+        return itemCollection.fetchPage(options).then(function formatResponse(response) {
+            var data = {};
+            data[tableName] = response.collection.toJSON(options);
+            data.meta = {pagination: response.pagination};
+
+            return data;
         }).catch(errors.logAndThrowError);
     },
 

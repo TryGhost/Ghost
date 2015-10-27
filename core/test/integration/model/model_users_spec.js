@@ -236,7 +236,10 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
-        it('can findPage by role', function (done) {
+        /**
+         * Removed in favour of filters, but this relation hasn't been re-added yet
+         */
+        it.skip('can findPage by role', function (done) {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return UserModel.findPage({role: 'Administrator'});
             }).then(function (results) {
