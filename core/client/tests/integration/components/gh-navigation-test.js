@@ -21,9 +21,9 @@ describeComponent(
         });
 
         it('triggers reorder action', function () {
-            let navItems = [],
-                expectedOldIndex = -1,
-                expectedNewIndex = -1;
+            let navItems = [];
+            let expectedOldIndex = -1;
+            let expectedNewIndex = -1;
 
             navItems.pushObject(NavItem.create({label: 'First', url: '/first'}));
             navItems.pushObject(NavItem.create({label: 'Second', url: '/second'}));

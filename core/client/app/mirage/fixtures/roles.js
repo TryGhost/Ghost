@@ -1,3 +1,4 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 export default [
     {
         id: 1,

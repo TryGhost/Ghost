@@ -1,18 +1,20 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, on, run} = Ember;
+
+export default Component.extend({
     tagName: 'li',
     classNameBindings: ['active'],
     active: false,
     linkClasses: null,
 
-    unfocusLink: Ember.on('click', function () {
+    unfocusLink: on('click', function () {
         this.$('a').blur();
     }),
 
     actions: {
-        setActive: function (value) {
-            Ember.run.schedule('afterRender', this, function () {
+        setActive(value) {
+            run.schedule('afterRender', this, function () {
                 this.set('active', value);
             });
         }

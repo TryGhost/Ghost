@@ -5,9 +5,9 @@
 // **class-name:** The class which is applied.
 // **offset:** How far the user has to scroll before the class is applied.
 export default function (options) {
-    var $target = options.target || this,
-        offset = options.offset,
-        className = options.className || 'scrolling';
+    let $target = options.target || this;
+    let {offset} = options;
+    let className = options.className || 'scrolling';
 
     if (this.scrollTop() > offset) {
         $target.addClass(className);

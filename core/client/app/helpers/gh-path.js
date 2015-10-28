@@ -8,10 +8,12 @@ import ghostPaths from 'ghost/utils/ghost-paths';
 // {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
 // {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
 
-export default Ember.Helper.helper(function (params) {
-    var base,
-        paths = ghostPaths(),
-        [path, url] = params;
+const {Helper} = Ember;
+
+export default Helper.helper(function (params) {
+    let paths = ghostPaths();
+    let [path, url] = params;
+    let base;
 
     if (!path) {
         path = 'blog';
@@ -39,7 +41,7 @@ export default Ember.Helper.helper(function (params) {
 
     // handle leading and trailing slashes
 
-    base = base[base.length - 1] !== '/' ? base + '/' : base;
+    base = base[base.length - 1] !== '/' ? `${base}/` : base;
 
     if (url && url.length > 0) {
         if (url[0] === '/') {

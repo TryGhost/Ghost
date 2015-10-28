@@ -1,5 +1,7 @@
 import Ember from 'ember';
 
+const {Service, _ProxyMixin, computed} = Ember;
+
 function isNumeric(num) {
     return Ember.$.isNumeric(num);
 }
@@ -25,15 +27,15 @@ function _mapType(val) {
     }
 }
 
-export default Ember.Service.extend(Ember._ProxyMixin, {
-    content: Ember.computed(function () {
-        var metaConfigTags = Ember.$('meta[name^="env-"]'),
-        config = {};
+export default Service.extend(_ProxyMixin, {
+    content: computed(function () {
+        let metaConfigTags = Ember.$('meta[name^="env-"]');
+        let config = {};
 
-        metaConfigTags.each(function (i, el) {
-            var key = el.name,
-                value = el.content,
-                propertyName = key.substring(4);
+        metaConfigTags.each((i, el) => {
+            let key = el.name;
+            let value = el.content;
+            let propertyName = key.substring(4);
 
             config[propertyName] = _mapType(value);
         });

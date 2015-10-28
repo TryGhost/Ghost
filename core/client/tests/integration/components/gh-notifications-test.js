@@ -7,10 +7,12 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const {run} = Ember,
-    notificationsStub = Ember.Service.extend({
-        notifications: Ember.A()
-    });
+const {Service, run} = Ember;
+const emberA = Ember.A;
+
+let notificationsStub = Service.extend({
+    notifications: emberA()
+});
 
 describeComponent(
     'gh-notifications',
@@ -35,7 +37,7 @@ describeComponent(
 
             expect(this.$('.gh-notifications').children().length).to.equal(2);
 
-            this.set('notifications.notifications', Ember.A());
+            this.set('notifications.notifications', emberA());
             expect(this.$('.gh-notifications').children().length).to.equal(0);
         });
     }

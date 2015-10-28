@@ -2,17 +2,19 @@ import Ember from 'ember';
 // This is used by the dropdown initializer (and subsequently popovers) to manage closing & toggling
 import BodyEventListener from 'ghost/mixins/body-event-listener';
 
-export default Ember.Service.extend(Ember.Evented, BodyEventListener, {
-    bodyClick: function (event) {
+const {Service, Evented} = Ember;
+
+export default Service.extend(Evented, BodyEventListener, {
+    bodyClick(event) {
         /*jshint unused:false */
         this.closeDropdowns();
     },
 
-    closeDropdowns: function () {
+    closeDropdowns() {
         this.trigger('close');
     },
 
-    toggleDropdown: function (dropdownName, dropdownButton) {
+    toggleDropdown(dropdownName, dropdownButton) {
         this.trigger('toggle', {target: dropdownName, button: dropdownButton});
     }
 });

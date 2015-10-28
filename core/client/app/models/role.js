@@ -1,16 +1,20 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 import DS from 'ember-data';
 
-export default DS.Model.extend({
-    uuid: DS.attr('string'),
-    name: DS.attr('string'),
-    description: DS.attr('string'),
-    created_at: DS.attr('moment-date'),
-    updated_at: DS.attr('moment-date'),
-    created_by: DS.attr(),
-    updated_by: DS.attr(),
+const {computed} = Ember;
+const {Model, attr} = DS;
 
-    lowerCaseName: Ember.computed('name', function () {
+export default Model.extend({
+    uuid: attr('string'),
+    name: attr('string'),
+    description: attr('string'),
+    created_at: attr('moment-date'),
+    updated_at: attr('moment-date'),
+    created_by: attr(),
+    updated_by: attr(),
+
+    lowerCaseName: computed('name', function () {
         return this.get('name').toLocaleLowerCase();
     })
 });

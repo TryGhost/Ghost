@@ -1,23 +1,26 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-export default DS.Model.extend(ValidationEngine, {
+const {Model, attr} = DS;
+
+export default Model.extend(ValidationEngine, {
     validationType: 'setting',
 
-    title: DS.attr('string'),
-    description: DS.attr('string'),
-    logo: DS.attr('string'),
-    cover: DS.attr('string'),
-    defaultLang: DS.attr('string'),
-    postsPerPage: DS.attr('number'),
-    forceI18n: DS.attr('boolean'),
-    permalinks: DS.attr('string'),
-    activeTheme: DS.attr('string'),
-    availableThemes: DS.attr(),
-    ghost_head: DS.attr('string'),
-    ghost_foot: DS.attr('string'),
-    labs: DS.attr('string'),
-    navigation: DS.attr('string'),
-    isPrivate: DS.attr('boolean'),
-    password: DS.attr('string')
+    title: attr('string'),
+    description: attr('string'),
+    logo: attr('string'),
+    cover: attr('string'),
+    defaultLang: attr('string'),
+    postsPerPage: attr('number'),
+    forceI18n: attr('boolean'),
+    permalinks: attr('string'),
+    activeTheme: attr('string'),
+    availableThemes: attr(),
+    ghost_head: attr('string'),
+    ghost_foot: attr('string'),
+    labs: attr('string'),
+    navigation: attr('string'),
+    isPrivate: attr('boolean'),
+    password: attr('string')
 });

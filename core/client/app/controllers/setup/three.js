@@ -1,19 +1,24 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 
-export default Ember.Controller.extend({
-    notifications: Ember.inject.service(),
-    two: Ember.inject.controller('setup/two'),
+const {Controller, RSVP, computed, inject} = Ember;
+const {Errors} = DS;
+const {alias} = computed;
+const emberA = Ember.A;
 
-    errors: DS.Errors.create(),
-    hasValidated: Ember.A(),
+export default Controller.extend({
+    notifications: inject.service(),
+    two: inject.controller('setup/two'),
+
+    errors: Errors.create(),
+    hasValidated: emberA(),
     users: '',
-    ownerEmail: Ember.computed.alias('two.email'),
+    ownerEmail: alias('two.email'),
     submitting: false,
 
-    usersArray: Ember.computed('users', function () {
-        var errors = this.get('errors'),
-            users = this.get('users').split('\n').filter(function (email) {
+    usersArray: computed('users', function () {
+        let errors = this.get('errors');
+        let users = this.get('users').split('\n').filter(function (email) {
             return email.trim().length > 0;
         });
 
@@ -27,28 +32,28 @@ export default Ember.Controller.extend({
         return users.uniq();
     }),
 
-    validUsersArray: Ember.computed('usersArray', 'ownerEmail', function () {
-        var ownerEmail = this.get('ownerEmail');
+    validUsersArray: computed('usersArray', 'ownerEmail', function () {
+        let ownerEmail = this.get('ownerEmail');
 
         return this.get('usersArray').filter(function (user) {
             return validator.isEmail(user) && user !== ownerEmail;
         });
     }),
 
-    invalidUsersArray: Ember.computed('usersArray', 'ownerEmail', function () {
-        var ownerEmail = this.get('ownerEmail');
+    invalidUsersArray: computed('usersArray', 'ownerEmail', function () {
+        let ownerEmail = this.get('ownerEmail');
 
-        return this.get('usersArray').reject(function (user) {
+        return this.get('usersArray').reject((user) => {
             return validator.isEmail(user) || user === ownerEmail;
         });
     }),
 
-    validationResult: Ember.computed('invalidUsersArray', function () {
-        var errors = [];
+    validationResult: computed('invalidUsersArray', function () {
+        let errors = [];
 
-        this.get('invalidUsersArray').forEach(function (user) {
+        this.get('invalidUsersArray').forEach((user) => {
             errors.push({
-                user: user,
+                user,
                 error: 'email'
             });
         });
@@ -62,34 +67,36 @@ export default Ember.Controller.extend({
         }
     }),
 
-    validate: function () {
-        var errors = this.get('errors'),
-            validationResult = this.get('validationResult'),
-            property = 'users';
+    validate() {
+        let errors = this.get('errors');
+        let validationResult = this.get('validationResult');
+        let property = 'users';
 
         errors.clear();
 
         // If property isn't in the `hasValidated` array, add it to mark that this field can show a validation result
         this.get('hasValidated').addObject(property);
 
-        if (validationResult === true) { return true; }
+        if (validationResult === true) {
+            return true;
+        }
 
-        validationResult.forEach(function (error) {
+        validationResult.forEach((error) => {
             // Only one error type here so far, but one day the errors might be more detailed
             switch (error.error) {
             case 'email':
-                errors.add(property, error.user + ' is not a valid email.');
+                errors.add(property, `${error.user} is not a valid email.`);
             }
         });
 
         return false;
     },
 
-    buttonText: Ember.computed('errors.users', 'validUsersArray', 'invalidUsersArray', function () {
-        var usersError = this.get('errors.users.firstObject.message'),
-            validNum = this.get('validUsersArray').length,
-            invalidNum = this.get('invalidUsersArray').length,
-            userCount;
+    buttonText: computed('errors.users', 'validUsersArray', 'invalidUsersArray', function () {
+        let usersError = this.get('errors.users.firstObject.message');
+        let validNum = this.get('validUsersArray').length;
+        let invalidNum = this.get('invalidUsersArray').length;
+        let userCount;
 
         if (usersError && usersError.match(/no users/i)) {
             return usersError;
@@ -102,15 +109,15 @@ export default Ember.Controller.extend({
 
         if (validNum > 0) {
             userCount = validNum === 1 ? 'user' : 'users';
-            userCount = validNum + ' ' + userCount;
+            userCount = `${validNum} ${userCount}`;
         } else {
             userCount = 'some users';
         }
 
-        return 'Invite ' + userCount;
+        return `Invite ${userCount}`;
     }),
 
-    buttonClass: Ember.computed('validationResult', 'usersArray.length', function () {
+    buttonClass: computed('validationResult', 'usersArray.length', function () {
         if (this.get('validationResult') === true && this.get('usersArray.length') > 0) {
             return 'btn-green';
         } else {
@@ -118,52 +125,51 @@ export default Ember.Controller.extend({
         }
     }),
 
-    authorRole: Ember.computed(function () {
-        return this.store.findAll('role', {reload: true}).then(function (roles) {
+    authorRole: computed(function () {
+        return this.store.findAll('role', {reload: true}).then((roles) => {
             return roles.findBy('name', 'Author');
         });
     }),
 
     actions: {
-        validate: function () {
+        validate() {
             this.validate();
         },
 
-        invite: function () {
-            var self = this,
-                users = this.get('usersArray'),
-                notifications = this.get('notifications'),
-                invitationsString;
+        invite() {
+            let users = this.get('usersArray');
+            let notifications = this.get('notifications');
+            let invitationsString;
 
             if (this.validate() && users.length > 0) {
                 this.toggleProperty('submitting');
-                this.get('authorRole').then(function (authorRole) {
-                    Ember.RSVP.Promise.all(
-                        users.map(function (user) {
-                            var newUser = self.store.createRecord('user', {
+                this.get('authorRole').then((authorRole) => {
+                    RSVP.Promise.all(
+                        users.map((user) => {
+                            let newUser = this.store.createRecord('user', {
                                 email: user,
                                 status: 'invited',
                                 role: authorRole
                             });
 
-                            return newUser.save().then(function () {
+                            return newUser.save().then(() => {
                                 return {
                                     email: user,
                                     success: newUser.get('status') === 'invited'
                                 };
-                            }).catch(function () {
+                            }).catch(() => {
                                 return {
                                     email: user,
                                     success: false
                                 };
                             });
                         })
-                    ).then(function (invites) {
-                        var successCount = 0,
-                            erroredEmails = [],
-                            message;
+                    ).then((invites) => {
+                        let erroredEmails = [];
+                        let successCount = 0;
+                        let message;
 
-                        invites.forEach(function (invite) {
+                        invites.forEach((invite) => {
                             if (invite.success) {
                                 successCount++;
                             } else {
@@ -173,7 +179,7 @@ export default Ember.Controller.extend({
 
                         if (erroredEmails.length > 0) {
                             invitationsString = erroredEmails.length > 1 ? ' invitations: ' : ' invitation: ';
-                            message = 'Failed to send ' + erroredEmails.length + invitationsString;
+                            message = `Failed to send ${erroredEmails.length} ${invitationsString}`;
                             message += erroredEmails.join(', ');
                             notifications.showAlert(message, {type: 'error', delayed: successCount > 0, key: 'signup.send-invitations.failed'});
                         }
@@ -181,11 +187,11 @@ export default Ember.Controller.extend({
                         if (successCount > 0) {
                             // pluralize
                             invitationsString = successCount > 1 ? 'invitations' : 'invitation';
-                            notifications.showAlert(successCount + ' ' + invitationsString + ' sent!', {type: 'success', delayed: true, key: 'signup.send-invitations.success'});
+                            notifications.showAlert(`${successCount} ${invitationsString} sent!`, {type: 'success', delayed: true, key: 'signup.send-invitations.success'});
                         }
-                        self.send('loadServerNotifications');
-                        self.toggleProperty('submitting');
-                        self.transitionToRoute('posts.index');
+                        this.send('loadServerNotifications');
+                        this.toggleProperty('submitting');
+                        this.transitionToRoute('posts.index');
                     });
                 });
             } else if (users.length === 0) {
@@ -193,7 +199,7 @@ export default Ember.Controller.extend({
             }
         },
 
-        skipInvite: function () {
+        skipInvite() {
             this.send('loadServerNotifications');
             this.transitionToRoute('posts.index');
         }
