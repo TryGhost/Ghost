@@ -3,7 +3,7 @@ import Ember from 'ember';
 const {isBlank} = Ember;
 
 export default Ember.Mixin.create({
-    buildURL: function (_modelName, _id, _snapshot, _requestType, query) {
+    buildURL(_modelName, _id, _snapshot, _requestType, query) {
         let url = this._super(...arguments);
 
         if (query && !isBlank(query.slug)) {

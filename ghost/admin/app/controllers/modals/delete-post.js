@@ -1,30 +1,10 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    dropdown: Ember.inject.service(),
-    notifications: Ember.inject.service(),
+const {Controller, inject} = Ember;
 
-    actions: {
-        confirmAccept: function () {
-            var self = this,
-                model = this.get('model');
-
-            // definitely want to clear the data store and post of any unsaved, client-generated tags
-            model.updateTags();
-
-            model.destroyRecord().then(function () {
-                self.get('dropdown').closeDropdowns();
-                self.get('notifications').closeAlerts('post.delete');
-                self.transitionToRoute('posts.index');
-            }, function () {
-                self.get('notifications').showAlert('Your post could not be deleted. Please try again.', {type: 'error', key: 'post.delete.failed'});
-            });
-        },
-
-        confirmReject: function () {
-            return false;
-        }
-    },
+export default Controller.extend({
+    dropdown: inject.service(),
+    notifications: inject.service(),
 
     confirm: {
         accept: {
@@ -34,6 +14,27 @@ export default Ember.Controller.extend({
         reject: {
             text: 'Cancel',
             buttonClass: 'btn btn-default btn-minor'
+        }
+    },
+
+    actions: {
+        confirmAccept() {
+            let model = this.get('model');
+
+            // definitely want to clear the data store and post of any unsaved, client-generated tags
+            model.updateTags();
+
+            model.destroyRecord().then(() => {
+                this.get('dropdown').closeDropdowns();
+                this.get('notifications').closeAlerts('post.delete');
+                this.transitionToRoute('posts.index');
+            }, () => {
+                this.get('notifications').showAlert('Your post could not be deleted. Please try again.', {type: 'error', key: 'post.delete.failed'});
+            });
+        },
+
+        confirmReject() {
+            return false;
         }
     }
 });

@@ -1,6 +1,7 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 
-let {isBlank} = Ember;
+const {isBlank} = Ember;
 
 function paginatedResponse(modelName, allModels, request) {
     let page = +request.queryParams.page || 1;
@@ -15,8 +16,8 @@ function paginatedResponse(modelName, allModels, request) {
     } else {
         limit = +limit;
 
-        let start = (page - 1) * limit,
-            end = start + limit;
+        let start = (page - 1) * limit;
+        let end = start + limit;
 
         models = allModels.slice(start, end);
         pages = Math.ceil(allModels.length / limit);
@@ -33,9 +34,9 @@ function paginatedResponse(modelName, allModels, request) {
     return {
         meta: {
             pagination: {
-                page: page,
-                limit: limit,
-                pages: pages,
+                page,
+                limit,
+                pages,
                 total: allModels.length,
                 next: next || null,
                 prev: prev || null
@@ -109,17 +110,17 @@ export default function () {
         let filters = request.queryParams.type.split(',');
         let settings = [];
 
-        filters.forEach(filter => {
+        filters.forEach((filter) => {
             settings.pushObjects(db.settings.where({type: filter}));
         });
 
         return {
+            settings,
             meta: {
                 filters: {
                     type: request.queryParams.type
                 }
-            },
-            settings: settings
+            }
         };
     });
 
@@ -194,7 +195,7 @@ export default function () {
         tag = db.tags.insert(attrs);
 
         return {
-            tag: tag
+            tag
         };
     });
 
@@ -210,12 +211,12 @@ export default function () {
         // TODO: remove post_count unless requested?
 
         return {
-            tag: tag
+            tag
         };
     });
 
     this.put('/tags/:id/', function (db, request) {
-        let id = request.params.id;
+        let {id} = request.params;
         let [attrs] = JSON.parse(request.requestBody).tags;
         let record = db.tags.update(id, attrs);
 

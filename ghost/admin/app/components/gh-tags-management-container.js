@@ -1,28 +1,29 @@
 import Ember from 'ember';
 
-const {isBlank} = Ember;
+const {Component, computed, inject, isBlank, observer, run} = Ember;
+const {equal, reads} = computed;
 
-export default Ember.Component.extend({
+export default Component.extend({
     classNames: ['view-container'],
     classNameBindings: ['isMobile'],
 
-    mediaQueries: Ember.inject.service(),
+    mediaQueries: inject.service(),
 
     tags: null,
     selectedTag: null,
 
-    isMobile: Ember.computed.reads('mediaQueries.maxWidth600'),
-    isEmpty: Ember.computed.equal('tags.length', 0),
+    isMobile: reads('mediaQueries.maxWidth600'),
+    isEmpty: equal('tags.length', 0),
 
-    init: function () {
+    init() {
         this._super(...arguments);
-        Ember.run.schedule('actions', this, this.fireMobileChangeActions);
+        run.schedule('actions', this, this.fireMobileChangeActions);
     },
 
-    displaySettingsPane: Ember.computed('isEmpty', 'selectedTag', 'isMobile', function () {
-        const isEmpty = this.get('isEmpty'),
-              selectedTag = this.get('selectedTag'),
-              isMobile = this.get('isMobile');
+    displaySettingsPane: computed('isEmpty', 'selectedTag', 'isMobile', function () {
+        let isEmpty = this.get('isEmpty');
+        let selectedTag = this.get('selectedTag');
+        let isMobile = this.get('isMobile');
 
         // always display settings pane for blank-slate on mobile
         if (isMobile && isEmpty) {
@@ -38,7 +39,7 @@ export default Ember.Component.extend({
         return true;
     }),
 
-    fireMobileChangeActions: Ember.observer('isMobile', function () {
+    fireMobileChangeActions: observer('isMobile', function () {
         if (!this.get('isMobile')) {
             this.sendAction('leftMobile');
         }

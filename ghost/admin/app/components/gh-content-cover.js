@@ -12,17 +12,19 @@ Example:
 
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component} = Ember;
+
+export default Component.extend({
     classNames: ['content-cover'],
 
     onClick: null,
     onMouseEnter: null,
 
-    click: function () {
+    click() {
         this.sendAction('onClick');
     },
 
-    mouseEnter: function () {
+    mouseEnter() {
         this.sendAction('onMouseEnter');
     }
 });

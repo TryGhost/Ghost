@@ -1,18 +1,24 @@
 import Ember from 'ember';
 import DropdownButton from 'ghost/components/gh-dropdown-button';
 
+const {inject} = Ember;
+
+function K() {
+    return this;
+}
+
 export default DropdownButton.extend({
-    dropdown: Ember.inject.service(),
+    dropdown: inject.service(),
 
-    click: Ember.K,
+    click: K,
 
-    mouseEnter: function (event) {
-        this._super(event);
+    mouseEnter() {
+        this._super(...arguments);
         this.get('dropdown').toggleDropdown(this.get('popoverName'), this);
     },
 
-    mouseLeave: function (event) {
-        this._super(event);
+    mouseLeave() {
+        this._super(...arguments);
         this.get('dropdown').toggleDropdown(this.get('popoverName'), this);
     }
 });

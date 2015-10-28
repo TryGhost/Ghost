@@ -1,12 +1,14 @@
-import Ember from 'ember';
 /*global device*/
+import Ember from 'ember';
 
-export default Ember.TextField.extend({
+const {TextField, computed, on} = Ember;
+
+export default TextField.extend({
     focus: true,
     classNames: 'gh-input',
     attributeBindings: ['autofocus'],
 
-    autofocus: Ember.computed(function () {
+    autofocus: computed(function () {
         if (this.get('focus')) {
             return (device.ios()) ? false : 'autofocus';
         }
@@ -14,7 +16,7 @@ export default Ember.TextField.extend({
         return false;
     }),
 
-    focusField: Ember.on('didInsertElement', function () {
+    focusField: on('didInsertElement', function () {
         // This fix is required until Mobile Safari has reliable
         // autofocus, select() or focus() support
         if (this.get('focus') && !device.ios()) {
@@ -22,8 +24,8 @@ export default Ember.TextField.extend({
         }
     }),
 
-    trimValue: Ember.on('focusOut', function () {
-        var text = this.$().val();
+    trimValue: on('focusOut', function () {
+        let text = this.$().val();
         this.$().val(text.trim());
     })
 });

@@ -1,11 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.Helper.helper(function (params) {
+const {Helper} = Ember;
+
+export default Helper.helper(function (params) {
     if (!params || !params.length) {
         return;
     }
 
-    var timeago = params[0];
+    let [timeago] = params;
 
     return moment(timeago).fromNow();
     // stefanpenner says cool for small number of timeagos.

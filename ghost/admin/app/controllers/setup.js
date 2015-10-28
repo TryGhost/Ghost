@@ -1,14 +1,17 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    appController: Ember.inject.controller('application'),
-    ghostPaths: Ember.inject.service('ghost-paths'),
+const {Controller, computed, get, inject} = Ember;
+const {match} = computed;
 
-    showBackLink: Ember.computed.match('appController.currentRouteName', /^setup\.(two|three)$/),
+export default Controller.extend({
+    appController: inject.controller('application'),
+    ghostPaths: inject.service('ghost-paths'),
 
-    backRoute: Ember.computed('appController.currentRouteName', function () {
-        var appController = this.get('appController'),
-            currentRoute = Ember.get(appController, 'currentRouteName');
+    showBackLink: match('appController.currentRouteName', /^setup\.(two|three)$/),
+
+    backRoute: computed('appController.currentRouteName', function () {
+        let appController = this.get('appController');
+        let currentRoute = get(appController, 'currentRouteName');
 
         return currentRoute === 'setup.two' ? 'setup.one' : 'setup.two';
     })

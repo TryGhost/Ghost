@@ -1,13 +1,14 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, run} = Ember;
+
+export default Component.extend({
     tagName: 'section',
     classNames: 'gh-view',
 
-    didInsertElement: function () {
-        var navContainer = this.$('.js-gh-blognav'),
-            navElements = '.gh-blognav-item:not(.gh-blognav-item:last-child)',
-            self = this;
+    didInsertElement() {
+        let navContainer = this.$('.js-gh-blognav');
+        let navElements = '.gh-blognav-item:not(.gh-blognav-item:last-child)';
 
         this._super(...arguments);
 
@@ -15,21 +16,21 @@ export default Ember.Component.extend({
             handle: '.gh-blognav-grab',
             items: navElements,
 
-            start: function (event, ui) {
-                Ember.run(function () {
+            start(event, ui) {
+                run(() => {
                     ui.item.data('start-index', ui.item.index());
                 });
             },
 
-            update: function (event, ui) {
-                Ember.run(function () {
-                    self.sendAction('moveItem', ui.item.data('start-index'), ui.item.index());
+            update(event, ui) {
+                run(() => {
+                    this.sendAction('moveItem', ui.item.data('start-index'), ui.item.index());
                 });
             }
         });
     },
 
-    willDestroyElement: function () {
+    willDestroyElement() {
         this.$('.ui-sortable').sortable('destroy');
     }
 });
