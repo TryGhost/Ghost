@@ -8,7 +8,7 @@
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.3",
     "ember-cli-test-loader": "0.1.3",
     "ember-data": "1.13.13",
-    "ember-mocha": "0.8.4",
+    "ember-mocha": "0.8.6",
     "ember-load-initializers": "ember-cli/ember-load-initializers#0.1.5",
     "ember-resolver": "0.1.18",
     "fastclick": "1.0.6",
