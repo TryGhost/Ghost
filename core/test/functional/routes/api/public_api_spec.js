@@ -15,6 +15,9 @@ describe('Public API', function () {
         // TODO: prevent db init, and manage bringing up the DB with fixtures ourselves
         ghost().then(function (ghostServer) {
             request = supertest.agent(ghostServer.rootApp);
+        }).then(function () {
+            return testUtils.doAuth(request, 'posts', 'tags');
+        }).then(function () {
             done();
         }).catch(done);
     });
@@ -40,7 +43,7 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 jsonResponse.posts.should.exist;
                 testUtils.API.checkResponse(jsonResponse, 'posts');
-                jsonResponse.posts.should.have.length(1);
+                jsonResponse.posts.should.have.length(5);
                 testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
@@ -49,7 +52,7 @@ describe('Public API', function () {
             });
     });
 
-    it('browse tags', function (done) {
+    it('browse tags without limit defaults to 15', function (done) {
         request.get(testUtils.API.getApiQuery('tags/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
@@ -64,7 +67,51 @@ describe('Public API', function () {
                 var jsonResponse = res.body;
                 jsonResponse.tags.should.exist;
                 testUtils.API.checkResponse(jsonResponse, 'tags');
-                jsonResponse.tags.should.have.length(1);
+                jsonResponse.tags.should.have.length(15);
+                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                done();
+            });
+    });
+
+    it('browse tags - limit=all should fetch all tags', function (done) {
+        request.get(testUtils.API.getApiQuery('tags/?limit=all&client_id=ghost-admin&client_secret=not_available'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                console.log('tags:', res.body.tags);
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                jsonResponse.tags.should.exist;
+                testUtils.API.checkResponse(jsonResponse, 'tags');
+                jsonResponse.tags.should.have.length(56);
+                testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
+                testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+                done();
+            });
+    });
+
+    it('browse tags without limit=4 fetches 4 tags', function (done) {
+        request.get(testUtils.API.getApiQuery('tags/?limit=4&client_id=ghost-admin&client_secret=not_available'))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                jsonResponse.tags.should.exist;
+                testUtils.API.checkResponse(jsonResponse, 'tags');
+                jsonResponse.tags.should.have.length(4);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
                 testUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                 done();
