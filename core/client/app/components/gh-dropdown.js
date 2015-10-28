@@ -1,7 +1,9 @@
 import Ember from 'ember';
 import DropdownMixin from 'ghost/mixins/dropdown-mixin';
 
-export default Ember.Component.extend(DropdownMixin, {
+const {Component, computed, inject} = Ember;
+
+export default Component.extend(DropdownMixin, {
     classNames: 'dropdown',
     classNameBindings: ['fadeIn:fade-in-scale:fade-out', 'isOpen:open:closed'],
 
@@ -15,29 +17,28 @@ export default Ember.Component.extend(DropdownMixin, {
     isOpen: false,
 
     // Managed the toggle between the fade-in and fade-out classes
-    fadeIn: Ember.computed('isOpen', 'closing', function () {
+    fadeIn: computed('isOpen', 'closing', function () {
         return this.get('isOpen') && !this.get('closing');
     }),
 
-    dropdown: Ember.inject.service(),
+    dropdown: inject.service(),
 
-    open: function () {
+    open() {
         this.set('isOpen', true);
         this.set('closing', false);
         this.set('button.isOpen', true);
     },
 
-    close: function () {
-        var self = this;
-
+    close() {
         this.set('closing', true);
 
         if (this.get('button')) {
             this.set('button.isOpen', false);
         }
-        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+
+        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
-                Ember.run(self, function () {
+                Ember.run(this, function () {
                     if (this.get('closing')) {
                         this.set('isOpen', false);
                         this.set('closing', false);
@@ -48,12 +49,12 @@ export default Ember.Component.extend(DropdownMixin, {
     },
 
     // Called by the dropdown service when any dropdown button is clicked.
-    toggle: function (options) {
-        var isClosing = this.get('closing'),
-            isOpen = this.get('isOpen'),
-            name = this.get('name'),
-            button = this.get('button'),
-            targetDropdownName = options.target;
+    toggle(options) {
+        let isClosing = this.get('closing');
+        let isOpen = this.get('isOpen');
+        let name = this.get('name');
+        let targetDropdownName = options.target;
+        let button = this.get('button');
 
         if (name === targetDropdownName && (!isOpen || isClosing)) {
             if (!button) {
@@ -66,7 +67,7 @@ export default Ember.Component.extend(DropdownMixin, {
         }
     },
 
-    click: function (event) {
+    click(event) {
         this._super(event);
 
         if (this.get('closeOnClick')) {
@@ -74,19 +75,19 @@ export default Ember.Component.extend(DropdownMixin, {
         }
     },
 
-    didInsertElement: function () {
-        this._super();
+    didInsertElement() {
+        let dropdownService = this.get('dropdown');
 
-        var dropdownService = this.get('dropdown');
+        this._super(...arguments);
 
         dropdownService.on('close', this, this.close);
         dropdownService.on('toggle', this, this.toggle);
     },
 
-    willDestroyElement: function () {
-        this._super();
+    willDestroyElement() {
+        let dropdownService = this.get('dropdown');
 
-        var dropdownService = this.get('dropdown');
+        this._super(...arguments);
 
         dropdownService.off('close', this, this.close);
         dropdownService.off('toggle', this, this.toggle);

@@ -1,5 +1,9 @@
 import Ember from 'ember';
 
+const {Service, computed, get, set} = Ember;
+const {filter} = computed;
+const emberA = Ember.A;
+
 // Notification keys take the form of "noun.verb.message", eg:
 //
 // "invite.resend.api-error"
@@ -9,33 +13,33 @@ import Ember from 'ember';
 // to avoid stacking of multiple error messages whilst leaving enough
 // specificity to re-use keys for i18n lookups
 
-export default Ember.Service.extend({
-    delayedNotifications: Ember.A(),
-    content: Ember.A(),
+export default Service.extend({
+    delayedNotifications: emberA(),
+    content: emberA(),
 
-    alerts: Ember.computed.filter('content', function (notification) {
-        var status = Ember.get(notification, 'status');
+    alerts: filter('content', function (notification) {
+        let status = get(notification, 'status');
         return status === 'alert';
     }),
 
-    notifications: Ember.computed.filter('content', function (notification) {
-        var status = Ember.get(notification, 'status');
+    notifications: filter('content', function (notification) {
+        let status = get(notification, 'status');
         return status === 'notification';
     }),
 
-    handleNotification: function (message, delayed) {
+    handleNotification(message, delayed) {
         // If this is an alert message from the server, treat it as html safe
         if (typeof message.toJSON === 'function' && message.get('status') === 'alert') {
             message.set('message', message.get('message').htmlSafe());
         }
 
-        if (!Ember.get(message, 'status')) {
-            Ember.set(message, 'status', 'notification');
+        if (!get(message, 'status')) {
+            set(message, 'status', 'notification');
         }
 
         // close existing duplicate alerts/notifications to avoid stacking
-        if (Ember.get(message, 'key')) {
-            this._removeItems(Ember.get(message, 'status'), Ember.get(message, 'key'));
+        if (get(message, 'key')) {
+            this._removeItems(get(message, 'status'), get(message, 'key'));
         }
 
         if (!delayed) {
@@ -45,18 +49,18 @@ export default Ember.Service.extend({
         }
     },
 
-    showAlert: function (message, options) {
+    showAlert(message, options) {
         options = options || {};
 
         this.handleNotification({
-            message: message,
+            message,
             status: 'alert',
             type: options.type,
             key: options.key
         }, options.delayed);
     },
 
-    showNotification: function (message, options) {
+    showNotification(message, options) {
         options = options || {};
 
         if (!options.doNotCloseNotifications) {
@@ -67,7 +71,7 @@ export default Ember.Service.extend({
         }
 
         this.handleNotification({
-            message: message,
+            message,
             status: 'notification',
             type: options.type,
             key: options.key
@@ -75,7 +79,7 @@ export default Ember.Service.extend({
     },
 
     // TODO: review whether this can be removed once no longer used by validations
-    showErrors: function (errors, options) {
+    showErrors(errors, options) {
         options = options || {};
         options.type = options.type || 'error';
         // TODO: getting keys from the server would be useful here (necessary for i18n)
@@ -88,12 +92,12 @@ export default Ember.Service.extend({
         // ensure all errors that are passed in get shown
         options.doNotCloseNotifications = true;
 
-        for (var i = 0; i < errors.length; i += 1) {
+        for (let i = 0; i < errors.length; i += 1) {
             this.showNotification(errors[i].message || errors[i], options);
         }
     },
 
-    showAPIError: function (resp, options) {
+    showAPIError(resp, options) {
         options = options || {};
         options.type = options.type || 'error';
         // TODO: getting keys from the server would be useful here (necessary for i18n)
@@ -116,21 +120,19 @@ export default Ember.Service.extend({
         }
     },
 
-    displayDelayed: function () {
-        var self = this;
-
-        self.delayedNotifications.forEach(function (message) {
-            self.get('content').pushObject(message);
+    displayDelayed() {
+        this.delayedNotifications.forEach((message) => {
+            this.get('content').pushObject(message);
         });
-        self.delayedNotifications = [];
+        this.delayedNotifications = [];
     },
 
-    closeNotification: function (notification) {
-        var content = this.get('content');
+    closeNotification(notification) {
+        let content = this.get('content');
 
         if (typeof notification.toJSON === 'function') {
             notification.deleteRecord();
-            notification.save().finally(function () {
+            notification.save().finally(() => {
                 content.removeObject(notification);
             });
         } else {
@@ -138,29 +140,29 @@ export default Ember.Service.extend({
         }
     },
 
-    closeNotifications: function (key) {
+    closeNotifications(key) {
         this._removeItems('notification', key);
     },
 
-    closeAlerts: function (key) {
+    closeAlerts(key) {
         this._removeItems('alert', key);
     },
 
-    clearAll: function () {
+    clearAll() {
         this.get('content').clear();
     },
 
-    _removeItems: function (status, key) {
+    _removeItems(status, key) {
         if (key) {
-            let keyBase = this._getKeyBase(key),
-                // TODO: keys should only have . special char but we should
-                // probably use a better regexp escaping function/polyfill
-                escapedKeyBase = keyBase.replace('.', '\\.'),
-                keyRegex = new RegExp(`^${escapedKeyBase}`);
+            let keyBase = this._getKeyBase(key);
+            // TODO: keys should only have . special char but we should
+            // probably use a better regexp escaping function/polyfill
+            let escapedKeyBase = keyBase.replace('.', '\\.');
+            let keyRegex = new RegExp(`^${escapedKeyBase}`);
 
-            this.set('content', this.get('content').reject(function (item) {
-                let itemKey = Ember.get(item, 'key'),
-                    itemStatus = Ember.get(item, 'status');
+            this.set('content', this.get('content').reject((item) => {
+                let itemKey = get(item, 'key');
+                let itemStatus = get(item, 'status');
 
                 return itemStatus === status && (itemKey && itemKey.match(keyRegex));
             }));
@@ -171,7 +173,7 @@ export default Ember.Service.extend({
 
     // take a key and return the first two elements, eg:
     // "invite.revoke.failed" => "invite.revoke"
-    _getKeyBase: function (key) {
+    _getKeyBase(key) {
         return key.split('.').slice(0, 2).join('.');
     }
 });

@@ -7,10 +7,12 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const {run} = Ember,
-    notificationsStub = Ember.Service.extend({
-        alerts: Ember.A()
-    });
+const {run} = Ember;
+const emberA = Ember.A;
+
+let notificationsStub = Ember.Service.extend({
+    alerts: emberA()
+});
 
 describeComponent(
     'gh-alerts',
@@ -34,7 +36,7 @@ describeComponent(
             expect(this.$('.gh-alerts').length).to.equal(1);
             expect(this.$('.gh-alerts').children().length).to.equal(2);
 
-            this.set('notifications.alerts', Ember.A());
+            this.set('notifications.alerts', emberA());
             expect(this.$('.gh-alerts').children().length).to.equal(0);
         });
 
@@ -50,7 +52,7 @@ describeComponent(
             this.get('notifications.alerts').pushObject({message: 'Third', type: 'success'});
 
             expectedCount = 0;
-            this.set('notifications.alerts', Ember.A());
+            this.set('notifications.alerts', emberA());
         });
     }
 );

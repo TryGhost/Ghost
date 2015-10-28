@@ -7,11 +7,8 @@ import {
 import validator from 'ghost/validators/nav-item';
 import { NavItem } from 'ghost/controllers/settings/navigation';
 
-var testInvalidUrl,
-    testValidUrl;
-
-testInvalidUrl = function (url) {
-    let navItem = NavItem.create({url: url});
+const testInvalidUrl = function (url) {
+    let navItem = NavItem.create({url});
 
     validator.check(navItem, 'url');
 
@@ -23,8 +20,8 @@ testInvalidUrl = function (url) {
     expect(navItem.get('hasValidated')).to.include('url');
 };
 
-testValidUrl = function (url) {
-    let navItem = NavItem.create({url: url});
+const testValidUrl = function (url) {
+    let navItem = NavItem.create({url});
 
     validator.check(navItem, 'url');
 

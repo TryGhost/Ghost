@@ -1,22 +1,24 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    notifications: Ember.inject.service(),
+const {Controller, inject} = Ember;
+
+export default Controller.extend({
+    notifications: inject.service(),
 
     acceptEncoding: 'image/*',
 
     actions: {
-        confirmAccept: function () {
-            var notifications = this.get('notifications');
+        confirmAccept() {
+            let notifications = this.get('notifications');
 
-            this.get('model').save().then(function (model) {
+            this.get('model').save().then((model) => {
                 return model;
-            }).catch(function (err) {
+            }).catch((err) => {
                 notifications.showAPIError(err, {key: 'image.upload'});
             });
         },
 
-        confirmReject: function () {
+        confirmReject() {
             return false;
         }
     }

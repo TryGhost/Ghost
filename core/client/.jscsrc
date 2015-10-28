@@ -1,0 +1,14 @@
+{
+    "preset": "ember-suave",
+    "validateIndentation": 4,
+    "disallowSpacesInFunction": null,
+    "disallowSpacesInNamedFunctionExpression": {
+        "beforeOpeningRoundBrace": true
+    },
+    "disallowSpacesInFunctionDeclaration": {
+        "beforeOpeningRoundBrace": true
+    },
+    "disallowSpacesInsideObjectBrackets": "all",
+    "requireCommentsToIncludeAccess": null,
+    "requireSpacesInsideObjectBrackets": null
+}

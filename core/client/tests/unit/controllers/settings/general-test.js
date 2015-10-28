@@ -4,6 +4,8 @@ import {
     it
 } from 'ember-mocha';
 
+const {run} = Ember;
+
 describeModule(
     'controller:settings/general',
     'Unit: Controller: settings/general',
@@ -13,7 +15,7 @@ describeModule(
 
     function () {
         it('isDatedPermalinks should be correct', function () {
-            var controller = this.subject({
+            const controller = this.subject({
                 model: Ember.Object.create({
                     permalinks: '/:year/:month/:day/:slug/'
                 })
@@ -21,7 +23,7 @@ describeModule(
 
             expect(controller.get('isDatedPermalinks')).to.be.ok;
 
-            Ember.run(function () {
+            run(function () {
                 controller.set('model.permalinks', '/:slug/');
 
                 expect(controller.get('isDatedPermalinks')).to.not.be.ok;
@@ -29,20 +31,20 @@ describeModule(
         });
 
         it('setting isDatedPermalinks should switch between dated and slug', function () {
-            var controller = this.subject({
+            const controller = this.subject({
                 model: Ember.Object.create({
                     permalinks: '/:year/:month/:day/:slug/'
                 })
             });
 
-            Ember.run(function () {
+            run(function () {
                 controller.set('isDatedPermalinks', false);
 
                 expect(controller.get('isDatedPermalinks')).to.not.be.ok;
                 expect(controller.get('model.permalinks')).to.equal('/:slug/');
             });
 
-            Ember.run(function () {
+            run(function () {
                 controller.set('isDatedPermalinks', true);
 
                 expect(controller.get('isDatedPermalinks')).to.be.ok;
@@ -51,8 +53,8 @@ describeModule(
         });
 
         it('themes should be correct', function () {
-            var controller,
-                themes = [];
+            let themes = [];
+            let controller;
 
             themes.push({
                 name: 'casper',

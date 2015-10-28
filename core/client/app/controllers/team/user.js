@@ -4,32 +4,40 @@ import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-export default Ember.Controller.extend(ValidationEngine, {
+const {Controller, RSVP, computed, inject} = Ember;
+const {alias, and, not, or, readOnly} = computed;
+
+export default Controller.extend(ValidationEngine, {
     // ValidationEngine settings
     validationType: 'user',
     submitting: false,
 
-    ghostPaths: Ember.inject.service('ghost-paths'),
-    notifications: Ember.inject.service(),
-    session: Ember.inject.service(),
+    ghostPaths: inject.service('ghost-paths'),
+    notifications: inject.service(),
+    session: inject.service(),
 
-    currentUser: Ember.computed.alias('session.user'),
+    lastPromise: null,
 
-    isNotOwnProfile: Ember.computed('user.id', 'currentUser.id', function () {
+    currentUser: alias('session.user'),
+    user: alias('model'),
+    email: readOnly('user.email'),
+    slugValue: boundOneWay('user.slug'),
+
+    isNotOwnProfile: computed('user.id', 'currentUser.id', function () {
         return this.get('user.id') !== this.get('currentUser.id');
     }),
 
-    isNotOwnersProfile: Ember.computed.not('user.isOwner'),
+    isNotOwnersProfile: not('user.isOwner'),
 
-    isAdminUserOnOwnerProfile: Ember.computed.and('currentUser.isAdmin', 'user.isOwner'),
+    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
 
-    canAssignRoles: Ember.computed.or('currentUser.isAdmin', 'currentUser.isOwner'),
+    canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
 
-    canMakeOwner: Ember.computed.and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
+    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
 
-    rolesDropdownIsVisible: Ember.computed.and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
+    rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
 
-    deleteUserActionIsVisible: Ember.computed('currentUser', 'canAssignRoles', 'user', function () {
+    deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner')) ||
             (this.get('currentUser.isEditor') && (this.get('isNotOwnProfile') ||
             this.get('user.isAuthor')))) {
@@ -37,68 +45,57 @@ export default Ember.Controller.extend(ValidationEngine, {
         }
     }),
 
-    userActionsAreVisible: Ember.computed.or('deleteUserActionIsVisible', 'canMakeOwner'),
-
-    user: Ember.computed.alias('model'),
-
-    email: Ember.computed.readOnly('model.email'),
-
-    slugValue: boundOneWay('model.slug'),
-
-    lastPromise: null,
+    userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
     // duplicated in gh-user-active -- find a better home and consolidate?
-
-    userDefault: Ember.computed('ghostPaths', function () {
+    userDefault: computed('ghostPaths', function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
     }),
 
-    userImageBackground: Ember.computed('user.image', 'userDefault', function () {
-        var url = this.get('user.image') || this.get('userDefault');
+    userImageBackground: computed('user.image', 'userDefault', function () {
+        let url = this.get('user.image') || this.get('userDefault');
 
         return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
-
     // end duplicated
 
-    coverDefault: Ember.computed('ghostPaths', function () {
+    coverDefault: computed('ghostPaths', function () {
         return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
     }),
 
-    coverImageBackground: Ember.computed('user.cover', 'coverDefault', function () {
-        var url = this.get('user.cover') || this.get('coverDefault');
+    coverImageBackground: computed('user.cover', 'coverDefault', function () {
+        let url = this.get('user.cover') || this.get('coverDefault');
 
         return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
-    coverTitle: Ember.computed('user.name', function () {
-        return this.get('user.name') + '\'s Cover Image';
+    coverTitle: computed('user.name', function () {
+        return `${this.get('user.name')}'s Cover Image`;
     }),
 
     // Lazy load the slug generator for slugPlaceholder
-    slugGenerator: Ember.computed(function () {
+    slugGenerator: computed(function () {
         return SlugGenerator.create({
             ghostPaths: this.get('ghostPaths'),
             slugType: 'user'
         });
     }),
 
-    roles: Ember.computed(function () {
+    roles: computed(function () {
         return this.store.query('role', {permissions: 'assign'});
     }),
 
     actions: {
-        changeRole: function (newRole) {
+        changeRole(newRole) {
             this.set('model.role', newRole);
         },
 
-        save: function () {
-            var user = this.get('user'),
-                slugValue = this.get('slugValue'),
-                afterUpdateSlug = this.get('lastPromise'),
-                promise,
-                slugChanged,
-                self = this;
+        save() {
+            let user = this.get('user');
+            let slugValue = this.get('slugValue');
+            let afterUpdateSlug = this.get('lastPromise');
+            let promise,
+                slugChanged;
 
             if (user.get('slug') !== slugValue) {
                 slugChanged = true;
@@ -107,10 +104,10 @@ export default Ember.Controller.extend(ValidationEngine, {
 
             this.toggleProperty('submitting');
 
-            promise = Ember.RSVP.resolve(afterUpdateSlug).then(function () {
+            promise = RSVP.resolve(afterUpdateSlug).then(() => {
                 return user.save({format: false});
-            }).then(function (model) {
-                var currentPath,
+            }).then((model) => {
+                let currentPath,
                     newPath;
 
                 // If the user's slug has changed, change the URL and replace
@@ -125,27 +122,26 @@ export default Ember.Controller.extend(ValidationEngine, {
                     window.history.replaceState({path: newPath}, '', newPath);
                 }
 
-                self.toggleProperty('submitting');
-                self.get('notifications').closeAlerts('user.update');
+                this.toggleProperty('submitting');
+                this.get('notifications').closeAlerts('user.update');
 
                 return model;
-            }).catch(function (errors) {
+            }).catch((errors) => {
                 if (errors) {
-                    self.get('notifications').showErrors(errors, {key: 'user.update'});
+                    this.get('notifications').showErrors(errors, {key: 'user.update'});
                 }
 
-                self.toggleProperty('submitting');
+                this.toggleProperty('submitting');
             });
 
             this.set('lastPromise', promise);
         },
 
-        password: function () {
-            var user = this.get('user'),
-                self = this;
+        password() {
+            let user = this.get('user');
 
             if (user.get('isPasswordValid')) {
-                user.saveNewPassword().then(function (model) {
+                user.saveNewPassword().then((model) => {
                     // Clear properties from view
                     user.setProperties({
                         password: '',
@@ -153,38 +149,36 @@ export default Ember.Controller.extend(ValidationEngine, {
                         ne2Password: ''
                     });
 
-                    self.get('notifications').showAlert('Password updated.', {type: 'success', key: 'user.change-password.success'});
+                    this.get('notifications').showAlert('Password updated.', {type: 'success', key: 'user.change-password.success'});
 
                     return model;
-                }).catch(function (errors) {
-                    self.get('notifications').showAPIError(errors, {key: 'user.change-password'});
+                }).catch((errors) => {
+                    this.get('notifications').showAPIError(errors, {key: 'user.change-password'});
                 });
             } else {
                 // TODO: switch to in-line validation
-                self.get('notifications').showErrors(user.get('passwordValidationErrors'), {key: 'user.change-password'});
+                this.get('notifications').showErrors(user.get('passwordValidationErrors'), {key: 'user.change-password'});
             }
         },
 
-        updateSlug: function (newSlug) {
-            var self = this,
-                afterSave = this.get('lastPromise'),
-                promise;
+        updateSlug(newSlug) {
+            let afterSave = this.get('lastPromise');
+            let promise;
 
-            promise = Ember.RSVP.resolve(afterSave).then(function () {
-                var slug = self.get('model.slug');
+            promise = RSVP.resolve(afterSave).then(() => {
+                let slug = this.get('model.slug');
 
                 newSlug = newSlug || slug;
-
                 newSlug = newSlug.trim();
 
                 // Ignore unchanged slugs or candidate slugs that are empty
                 if (!newSlug || slug === newSlug) {
-                    self.set('slugValue', slug);
+                    this.set('slugValue', slug);
 
                     return;
                 }
 
-                return self.get('slugGenerator').generateSlug(newSlug).then(function (serverSlug) {
+                return this.get('slugGenerator').generateSlug(newSlug).then((serverSlug) => {
                     // If after getting the sanitized and unique slug back from the API
                     // we end up with a slug that matches the existing slug, abort the change
                     if (serverSlug === slug) {
@@ -198,20 +192,20 @@ export default Ember.Controller.extend(ValidationEngine, {
                     // the trailing incrementor (e.g., this-is-a-slug and this-is-a-slug-2)
 
                     // get the last token out of the slug candidate and see if it's a number
-                    var slugTokens = serverSlug.split('-'),
-                        check = Number(slugTokens.pop());
+                    let slugTokens = serverSlug.split('-');
+                    let check = Number(slugTokens.pop());
 
                     // if the candidate slug is the same as the existing slug except
                     // for the incrementor then the existing slug should be used
                     if (isNumber(check) && check > 0) {
                         if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
-                            self.set('slugValue', slug);
+                            this.set('slugValue', slug);
 
                             return;
                         }
                     }
 
-                    self.set('slugValue', serverSlug);
+                    this.set('slugValue', serverSlug);
                 });
             });
 

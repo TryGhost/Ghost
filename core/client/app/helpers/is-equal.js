@@ -1,11 +1,13 @@
 import Ember from 'ember';
 
+const {Helper} = Ember;
+
 export function isEqual(params) {
-    var [lhs, rhs] = params;
+    let [lhs, rhs] = params;
 
     return lhs === rhs;
 }
 
-export default Ember.Helper.helper(function (params) {
+export default Helper.helper(function (params) {
     return isEqual(params);
 });

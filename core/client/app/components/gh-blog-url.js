@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, inject} = Ember;
+
+export default Component.extend({
     tagName: '',
-    config: Ember.inject.service()
+
+    config: inject.service()
 });

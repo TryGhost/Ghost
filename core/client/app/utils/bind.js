@@ -1,9 +1,9 @@
-var slice = Array.prototype.slice;
+const {slice} = Array.prototype;
 
 export default function (/* func, args, thisArg */) {
-    var args = slice.call(arguments),
-        func = args.shift(),
-        thisArg = args.pop();
+    let args = slice.call(arguments);
+    let func = args.shift();
+    let thisArg = args.pop();
 
     function bound() {
         return func.apply(thisArg, args);

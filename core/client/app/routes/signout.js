@@ -2,16 +2,18 @@ import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import styleBody from 'ghost/mixins/style-body';
 
+const {canInvoke, inject} = Ember;
+
 export default AuthenticatedRoute.extend(styleBody, {
     titleToken: 'Sign Out',
 
     classNames: ['ghost-signout'],
 
-    notifications: Ember.inject.service(),
+    notifications: inject.service(),
 
-    afterModel: function (model, transition) {
+    afterModel(model, transition) {
         this.get('notifications').clearAll();
-        if (Ember.canInvoke(transition, 'send')) {
+        if (canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
             transition.abort();
         } else {

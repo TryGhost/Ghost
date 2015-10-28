@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
-const {computed, inject} = Ember,
-      {alias, equal, sort} = computed;
+const {computed, inject} = Ember;
+const {alias, equal, sort} = computed;
 
 export default Ember.Controller.extend({
 
@@ -14,8 +14,8 @@ export default Ember.Controller.extend({
 
     // TODO: replace with ordering by page count once supported by the API
     tags: sort('model', function (a, b) {
-        const idA = +a.get('id'),
-              idB = +b.get('id');
+        let idA = +a.get('id');
+        let idB = +b.get('id');
 
         if (idA > idB) {
             return 1;
@@ -27,7 +27,7 @@ export default Ember.Controller.extend({
     }),
 
     actions: {
-        leftMobile: function () {
+        leftMobile() {
             let firstTag = this.get('tags.firstObject');
             // redirect to first tag if possible so that you're not left with
             // tag settings blank slate when switching from portrait to landscape

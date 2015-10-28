@@ -7,6 +7,7 @@ import {
 import Ember from 'ember';
 
 const {run} = Ember;
+const emberA = Ember.A;
 
 describeComponent(
     'gh-selectize',
@@ -18,11 +19,11 @@ describeComponent(
     },
     function () {
         it('re-orders selection when selectize order is changed', function () {
-            const component = this.subject();
+            let component = this.subject();
 
             run(() => {
-                component.set('content', Ember.A(['item 1', 'item 2', 'item 3']));
-                component.set('selection', Ember.A(['item 2', 'item 3']));
+                component.set('content', emberA(['item 1', 'item 2', 'item 3']));
+                component.set('selection', emberA(['item 2', 'item 3']));
                 component.set('multiple', true);
             });
 

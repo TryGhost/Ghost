@@ -11,7 +11,7 @@ export default Controller.extend({
     }),
 
     actions: {
-        confirmAccept: function () {
+        confirmAccept() {
             let tag = this.get('model');
 
             this.send('closeMenus');
@@ -27,7 +27,7 @@ export default Controller.extend({
             });
         },
 
-        confirmReject: function () {
+        confirmReject() {
             return false;
         }
     },

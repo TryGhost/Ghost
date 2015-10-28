@@ -1,18 +1,21 @@
 import Ember from 'ember';
 
-export default Ember.Mixin.create({
+const {Mixin, computed, isEmpty} = Ember;
+const emberA = Ember.A;
+
+export default Mixin.create({
 
     errors: null,
     property: '',
-    hasValidated: Ember.A(),
+    hasValidated: emberA(),
 
-    hasError: Ember.computed('errors.[]', 'property', 'hasValidated.[]', function () {
-        var property = this.get('property'),
-            errors = this.get('errors'),
-            hasValidated = this.get('hasValidated');
+    hasError: computed('errors.[]', 'property', 'hasValidated.[]', function () {
+        let property = this.get('property');
+        let errors = this.get('errors');
+        let hasValidated = this.get('hasValidated');
 
         // if we aren't looking at a specific property we always want an error class
-        if (!property && !Ember.isEmpty(errors)) {
+        if (!property && !isEmpty(errors)) {
             return true;
         }
 

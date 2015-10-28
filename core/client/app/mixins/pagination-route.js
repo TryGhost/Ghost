@@ -1,21 +1,23 @@
 import Ember from 'ember';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
-var defaultPaginationSettings = {
+const {Mixin, inject} = Ember;
+
+let defaultPaginationSettings = {
     page: 1,
     limit: 15
 };
 
-export default Ember.Mixin.create({
-    notifications: Ember.inject.service(),
+export default Mixin.create({
+    notifications: inject.service(),
 
     paginationModel: null,
     paginationSettings: null,
     paginationMeta: null,
 
-    init: function () {
-        var paginationSettings = this.get('paginationSettings'),
-            settings = Ember.$.extend({}, defaultPaginationSettings, paginationSettings);
+    init() {
+        let paginationSettings = this.get('paginationSettings');
+        let settings = Ember.$.extend({}, defaultPaginationSettings, paginationSettings);
 
         this._super(...arguments);
         this.set('paginationSettings', settings);
@@ -27,12 +29,12 @@ export default Ember.Mixin.create({
      * @param {jqXHR} response The jQuery ajax reponse object.
      * @return
      */
-    reportLoadError: function (response) {
-        var message = 'A problem was encountered while loading more records';
+    reportLoadError(response) {
+        let message = 'A problem was encountered while loading more records';
 
         if (response) {
             // Get message from response
-            message += ': ' + getRequestErrorMessage(response, true);
+            message += `: ${getRequestErrorMessage(response, true)}`;
         } else {
             message += '.';
         }
@@ -40,23 +42,22 @@ export default Ember.Mixin.create({
         this.get('notifications').showAlert(message, {type: 'error', key: 'pagination.load.failed'});
     },
 
-    loadFirstPage: function () {
-        var paginationSettings = this.get('paginationSettings'),
-            modelName = this.get('paginationModel'),
-            self = this;
+    loadFirstPage() {
+        let paginationSettings = this.get('paginationSettings');
+        let modelName = this.get('paginationModel');
 
         paginationSettings.page = 1;
 
-        return this.get('store').query(modelName, paginationSettings).then(function (results) {
-            self.set('paginationMeta', results.meta);
+        return this.get('store').query(modelName, paginationSettings).then((results) => {
+            this.set('paginationMeta', results.meta);
             return results;
-        }, function (response) {
-            self.reportLoadError(response);
+        }, (response) => {
+            this.reportLoadError(response);
         });
     },
 
     actions: {
-        loadFirstPage: function () {
+        loadFirstPage() {
             return this.loadFirstPage();
         },
 
@@ -64,29 +65,28 @@ export default Ember.Mixin.create({
          * Loads the next paginated page of posts into the ember-data store. Will cause the posts list UI to update.
          * @return
          */
-        loadNextPage: function () {
-            var self = this,
-                store = this.get('store'),
-                modelName = this.get('paginationModel'),
-                metadata = this.get('paginationMeta'),
-                nextPage = metadata.pagination && metadata.pagination.next,
-                paginationSettings = this.get('paginationSettings');
+        loadNextPage() {
+            let store = this.get('store');
+            let modelName = this.get('paginationModel');
+            let metadata = this.get('paginationMeta');
+            let nextPage = metadata.pagination && metadata.pagination.next;
+            let paginationSettings = this.get('paginationSettings');
 
             if (nextPage) {
                 this.set('isLoading', true);
                 this.set('paginationSettings.page', nextPage);
 
-                store.query(modelName, paginationSettings).then(function (results) {
-                    self.set('isLoading', false);
-                    self.set('paginationMeta', results.meta);
+                store.query(modelName, paginationSettings).then((results) => {
+                    this.set('isLoading', false);
+                    this.set('paginationMeta', results.meta);
                     return results;
-                }, function (response) {
-                    self.reportLoadError(response);
+                }, (response) => {
+                    this.reportLoadError(response);
                 });
             }
         },
 
-        resetPagination: function () {
+        resetPagination() {
             this.set('paginationSettings.page', 1);
         }
     }

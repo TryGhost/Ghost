@@ -16,23 +16,22 @@ export default Ember.Object.extend({
      * @return {boolean}      True if the model passed all (or one) validation(s),
      *                        false if not
      */
-    check: function (model, prop) {
-        var self = this;
-
+    check(model, prop) {
         this.set('passed', true);
 
         if (prop && this[prop]) {
             this[prop](model);
         } else {
-            this.get('properties').forEach(function (property) {
-                if (self[property]) {
-                    self[property](model);
+            this.get('properties').forEach((property) => {
+                if (this[property]) {
+                    this[property](model);
                 }
             });
         }
         return this.get('passed');
     },
-    invalidate: function () {
+
+    invalidate() {
         this.set('passed', false);
     }
 });

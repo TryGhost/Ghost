@@ -4,17 +4,18 @@ import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, {
-    model: function (params) {
-        var self = this,
-            post,
+    model(params) {
+        let post,
             postId,
             query;
 
+        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
         postId = Number(params.post_id);
 
         if (!isNumber(postId) || !isFinite(postId) || postId % 1 !== 0 || postId <= 0) {
             return this.transitionTo('error404', params.post_id);
         }
+        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
 
         post = this.store.peekRecord('post', postId);
         if (post) {
@@ -27,26 +28,24 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             staticPages: 'all'
         };
 
-        return self.store.queryRecord('post', query).then(function (post) {
+        return this.store.queryRecord('post', query).then((post) => {
             if (post) {
                 return post;
             }
 
-            return self.replaceRoute('posts.index');
+            return this.replaceRoute('posts.index');
         });
     },
 
-    afterModel: function (post) {
-        var self = this;
-
-        return self.get('session.user').then(function (user) {
+    afterModel(post) {
+        return this.get('session.user').then((user) => {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
-                return self.replaceRoute('posts.index');
+                return this.replaceRoute('posts.index');
             }
         });
     },
 
-    setupController: function (controller, model) {
+    setupController(controller, model) {
         this._super(controller, model);
 
         this.controllerFor('posts').set('currentPost', model);
@@ -58,7 +57,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
     },
 
     actions: {
-        openEditor: function (post) {
+        openEditor(post) {
             post = post || this.get('controller.model');
 
             if (!post) {
@@ -68,7 +67,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             this.transitionTo('editor.edit', post.get('id'));
         },
 
-        deletePost: function () {
+        deletePost() {
             this.send('openModal', 'delete-post', this.get('controller.model'));
         }
     }

@@ -2,21 +2,22 @@ import Ember from 'ember';
 import InfiniteScrollMixin from 'ghost/mixins/infinite-scroll';
 import setScrollClassName from 'ghost/utils/set-scroll-classname';
 
-export default Ember.Component.extend(InfiniteScrollMixin, {
-    didRender: function () {
-        this._super();
+const {Component, run} = Ember;
 
-        var el = this.$();
+export default Component.extend(InfiniteScrollMixin, {
+    didRender() {
+        let el = this.$();
 
-        el.on('scroll', Ember.run.bind(el, setScrollClassName, {
+        this._super(...arguments);
+
+        el.on('scroll', run.bind(el, setScrollClassName, {
             target: el.closest('.content-list'),
             offset: 10
         }));
     },
 
-    willDestroyElement: function () {
-        this._super();
-
+    willDestroyElement() {
+        this._super(...arguments);
         this.$().off('scroll');
     }
 });

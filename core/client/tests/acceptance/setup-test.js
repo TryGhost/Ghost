@@ -25,8 +25,8 @@ describe('Acceptance: Setup', function () {
     });
 
     it('redirects if already authenticated', function () {
-        const role = server.create('role', {name: 'Author'}),
-              user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Author'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
 

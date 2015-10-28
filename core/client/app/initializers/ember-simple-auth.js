@@ -6,8 +6,8 @@ import setupSessionService from 'ember-simple-auth/initializers/setup-session-se
 
 export default {
     name: 'ember-simple-auth',
-    initialize: function (registry) {
-        const config   = ENV['ember-simple-auth'] || {};
+    initialize(registry) {
+        let config   = ENV['ember-simple-auth'] || {};
         config.baseURL = ghostPaths().adminRoot;
         Configuration.load(config);
 

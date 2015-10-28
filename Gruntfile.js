@@ -126,8 +126,7 @@ var _              = require('lodash'),
 
                 client: {
                     options: {
-                        esnext: true,
-                        disallowObjectController: true
+                        config: 'core/client/.jscsrc'
                     },
 
                     files: {
@@ -135,9 +134,22 @@ var _              = require('lodash'),
                             'core/client/**/*.js',
                             '!core/client/node_modules/**/*.js',
                             '!core/client/bower_components/**/*.js',
+                            '!core/client/tests/**/*.js',
                             '!core/client/tmp/**/*.js',
                             '!core/client/dist/**/*.js',
                             '!core/client/vendor/**/*.js'
+                        ]
+                    }
+                },
+
+                client_tests: {
+                    options: {
+                        config: 'core/client/tests/.jscsrc'
+                    },
+
+                    files: {
+                        src: [
+                            'core/client/tests/**/*.js'
                         ]
                     }
                 },

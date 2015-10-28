@@ -1,5 +1,8 @@
 import Ember from 'ember';
 
+const {Component, computed, inject, run} = Ember;
+const {notEmpty} = computed;
+
 /**
  * A component to manage a user profile image. By default it just handles picture uploads,
  * but if passed a bound 'email' property it will render the user's gravatar image
@@ -14,7 +17,7 @@ import Ember from 'ember';
  * @property  {String}      defaultImage      String containing the background-image css property of the default user profile image
  * @property  {String}      imageBackground   String containing the background-image css property with the gravatar url
  */
-export default Ember.Component.extend({
+export default Component.extend({
     email: '',
     size: 90,
     debounce: 300,
@@ -23,35 +26,35 @@ export default Ember.Component.extend({
     hasUploadedImage: false,
     fileStorage: true,
 
-    ghostPaths: Ember.inject.service('ghost-paths'),
-    displayGravatar: Ember.computed.notEmpty('validEmail'),
+    ghostPaths: inject.service('ghost-paths'),
+    displayGravatar: notEmpty('validEmail'),
 
-    init: function () {
+    init() {
         this._super(...arguments);
         // Fire this immediately in case we're initialized with a valid email
         this.trySetValidEmail();
     },
 
-    defaultImage: Ember.computed('ghostPaths', function () {
-        const url = this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+    defaultImage: computed('ghostPaths', function () {
+        let url = this.get('ghostPaths.url').asset('/shared/img/user-image.png');
         return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
-    trySetValidEmail: function () {
+    trySetValidEmail() {
         if (!this.get('isDestroyed')) {
-            const email = this.get('email');
+            let email = this.get('email');
             this.set('validEmail', validator.isEmail(email) ? email : '');
         }
     },
 
-    didReceiveAttrs: function (attrs) {
-        const timeout = parseInt(attrs.newAttrs.throttle || this.get('debounce'));
-        Ember.run.debounce(this, 'trySetValidEmail', timeout);
+    didReceiveAttrs(attrs) {
+        let timeout = parseInt(attrs.newAttrs.throttle || this.get('debounce'));
+        run.debounce(this, 'trySetValidEmail', timeout);
     },
 
-    imageBackground: Ember.computed('validEmail', 'size', function () {
-        const email = this.get('validEmail'),
-              size = this.get('size');
+    imageBackground: computed('validEmail', 'size', function () {
+        let email = this.get('validEmail');
+        let size = this.get('size');
 
         let style = '';
         if (email) {
@@ -61,9 +64,9 @@ export default Ember.Component.extend({
         return Ember.String.htmlSafe(style);
     }),
 
-    didInsertElement: function () {
-        var size = this.get('size'),
-            uploadElement = this.$('.js-file-input');
+    didInsertElement() {
+        let size = this.get('size');
+        let uploadElement = this.$('.js-file-input');
 
         // while theoretically the 'add' and 'processalways' functions could be
         // added as properties of the hash passed to fileupload(), for some reason
@@ -77,26 +80,27 @@ export default Ember.Component.extend({
             maxNumberOfFiles: 1,
             autoUpload: false
         })
-        .on('fileuploadadd', Ember.run.bind(this, this.queueFile))
-        .on('fileuploadprocessalways', Ember.run.bind(this, this.triggerPreview));
+        .on('fileuploadadd', run.bind(this, this.queueFile))
+        .on('fileuploadprocessalways', run.bind(this, this.triggerPreview));
     },
 
-    willDestroyElement: function () {
+    willDestroyElement() {
         if (this.$('.js-file-input').data()['blueimp-fileupload']) {
             this.$('.js-file-input').fileupload('destroy');
         }
     },
 
-    queueFile: function (e, data) {
-        const fileName = data.files[0].name;
+    queueFile(e, data) {
+        let fileName = data.files[0].name;
 
         if ((/\.(gif|jpe?g|png|svg?z)$/i).test(fileName)) {
             this.sendAction('setImage', data);
         }
     },
 
-    triggerPreview: function (e, data) {
-        const file = data.files[data.index];
+    triggerPreview(e, data) {
+        let file = data.files[data.index];
+
         if (file.preview) {
             this.set('hasUploadedImage', true);
             // necessary jQuery code because file.preview is a raw DOM object
