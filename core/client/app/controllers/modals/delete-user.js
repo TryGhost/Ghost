@@ -1,46 +1,29 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    notifications: Ember.inject.service(),
+const {Controller, PromiseProxyMixin, computed, inject} = Ember;
+const {alias} = computed;
 
-    userPostCount: Ember.computed('model.id', function () {
-        var promise,
-            query = {
-                filter: `author:${this.get('model.slug')}`,
-                status: 'all'
-            };
+export default Controller.extend({
+    notifications: inject.service(),
 
-        promise = this.store.query('post', query).then(function (results) {
+    userPostCount: computed('model.id', function () {
+        let query = {
+            filter: `author:${this.get('model.slug')}`,
+            status: 'all'
+        };
+
+        let promise = this.store.query('post', query).then((results) => {
             return results.meta.pagination.total;
         });
 
-        return Ember.Object.extend(Ember.PromiseProxyMixin, {
-            count: Ember.computed.alias('content'),
+        return Ember.Object.extend(PromiseProxyMixin, {
+            count: alias('content'),
 
-            inflection: Ember.computed('count', function () {
+            inflection: computed('count', function () {
                 return this.get('count') > 1 ? 'posts' : 'post';
             })
-        }).create({promise: promise});
+        }).create({promise});
     }),
-
-    actions: {
-        confirmAccept: function () {
-            var self = this,
-                user = this.get('model');
-
-            user.destroyRecord().then(function () {
-                self.get('notifications').closeAlerts('user.delete');
-                self.store.unloadAll('post');
-                self.transitionToRoute('team');
-            }, function () {
-                self.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
-            });
-        },
-
-        confirmReject: function () {
-            return false;
-        }
-    },
 
     confirm: {
         accept: {
@@ -50,6 +33,24 @@ export default Ember.Controller.extend({
         reject: {
             text: 'Cancel',
             buttonClass: 'btn btn-default btn-minor'
+        }
+    },
+
+    actions: {
+        confirmAccept() {
+            let user = this.get('model');
+
+            user.destroyRecord().then(() => {
+                this.get('notifications').closeAlerts('user.delete');
+                this.store.unloadAll('post');
+                this.transitionToRoute('team');
+            }, () => {
+                this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+            });
+        },
+
+        confirmReject() {
+            return false;
         }
     }
 });

@@ -1,16 +1,16 @@
 import Ember from 'ember';
 
-export default Ember.Mixin.create({
+const {Mixin} = Ember;
+
+export default Mixin.create({
     submitting: false,
 
     actions: {
-        save: function () {
-            var self = this;
-
+        save() {
             this.set('submitting', true);
 
-            this.save().then(function () {
-                self.set('submitting', false);
+            this.save().then(() => {
+                this.set('submitting', false);
             });
         }
     }

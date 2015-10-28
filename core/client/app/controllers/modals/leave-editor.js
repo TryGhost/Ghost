@@ -1,18 +1,32 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    notifications: Ember.inject.service(),
+const {Controller, computed, inject, isArray} = Ember;
+const {alias} = computed;
 
-    args: Ember.computed.alias('model'),
+export default Controller.extend({
+    notifications: inject.service(),
+
+    args: alias('model'),
+
+    confirm: {
+        accept: {
+            text: 'Leave',
+            buttonClass: 'btn btn-red'
+        },
+        reject: {
+            text: 'Stay',
+            buttonClass: 'btn btn-default btn-minor'
+        }
+    },
 
     actions: {
-        confirmAccept: function () {
-            var args = this.get('args'),
-                editorController,
+        confirmAccept() {
+            let args = this.get('args');
+            let editorController,
                 model,
                 transition;
 
-            if (Ember.isArray(args)) {
+            if (isArray(args)) {
                 editorController = args[0];
                 transition = args[1];
                 model = editorController.get('model');
@@ -44,18 +58,7 @@ export default Ember.Controller.extend({
             transition.retry();
         },
 
-        confirmReject: function () {
-        }
-    },
-
-    confirm: {
-        accept: {
-            text: 'Leave',
-            buttonClass: 'btn btn-red'
-        },
-        reject: {
-            text: 'Stay',
-            buttonClass: 'btn btn-default btn-minor'
+        confirmReject() {
         }
     }
 });

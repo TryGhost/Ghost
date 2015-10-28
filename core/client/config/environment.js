@@ -1,5 +1,5 @@
 /* jshint node: true */
-/* jscs:disable disallowEmptyBlocks */
+/* jscs:disable */
 
 module.exports = function (environment) {
     var ENV = {

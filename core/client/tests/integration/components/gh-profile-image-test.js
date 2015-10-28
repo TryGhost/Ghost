@@ -8,17 +8,18 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const {run} = Ember,
-      pathsStub = Ember.Service.extend({
-          url: {
-              api: function () {
-                  return '';
-              },
-              asset: function (src) {
-                  return src;
-              }
-          }
-      });
+const {run} = Ember;
+
+let pathsStub = Ember.Service.extend({
+    url: {
+        api() {
+            return '';
+        },
+        asset(src) {
+            return src;
+        }
+    }
+});
 
 describeComponent(
     'gh-profile-image',
@@ -43,8 +44,8 @@ describeComponent(
         });
 
         it('immediately renders the gravatar if valid email supplied', function () {
-            let email = 'test@example.com',
-                expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let email = 'test@example.com';
+            let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
 
             this.set('email', email);
 
@@ -57,8 +58,8 @@ describeComponent(
         });
 
         it('throttles gravatar loading as email is changed', function (done) {
-            let email = 'test@example.com',
-                expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let email = 'test@example.com';
+            let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
 
             this.set('email', 'test');
 

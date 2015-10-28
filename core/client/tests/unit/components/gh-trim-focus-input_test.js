@@ -12,7 +12,7 @@ describeComponent(
     },
     function () {
         it('trims value on focusOut', function () {
-            var component = this.subject({
+            let component = this.subject({
                 value: 'some random stuff   '
             });
 
@@ -23,7 +23,7 @@ describeComponent(
         });
 
         it('does not have the autofocus attribute if not set to focus', function () {
-            var component = this.subject({
+            let component = this.subject({
                 value: 'some text',
                 focus: false
             });
@@ -34,7 +34,7 @@ describeComponent(
         });
 
         it('has the autofocus attribute if set to focus', function () {
-            var component = this.subject({
+            let component = this.subject({
                 value: 'some text',
                 focus: true
             });

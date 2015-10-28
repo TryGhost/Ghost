@@ -14,20 +14,18 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, Paginat
         limit: 20
     },
 
-    model: function () {
-        var self = this;
-
+    model() {
         this.loadFirstPage();
 
-        return self.store.query('user', {limit: 'all', status: 'invited'}).then(function () {
-            return self.store.filter('user', function () {
+        return this.store.query('user', {limit: 'all', status: 'invited'}).then(() => {
+            return this.store.filter('user', () => {
                 return true;
             });
         });
     },
 
     actions: {
-        reload: function () {
+        reload() {
             this.refresh();
         }
     }

@@ -2,10 +2,10 @@ import ghostPaths from 'ghost/utils/ghost-paths';
 
 describe('Unit: Util: ghost-paths', function () {
     describe('join', function () {
-        var join = ghostPaths().url.join;
+        const {join} = ghostPaths().url;
 
         it('should join two or more paths, normalizing slashes', function () {
-            var path;
+            let path;
 
             path = join('/one/', '/two/');
             expect(path).to.equal('/one/two/');
@@ -24,7 +24,7 @@ describe('Unit: Util: ghost-paths', function () {
         });
 
         it('should not change the slash at the beginning', function () {
-            var path;
+            let path;
 
             path = join('one/');
             expect(path).to.equal('one/');
@@ -39,7 +39,7 @@ describe('Unit: Util: ghost-paths', function () {
         });
 
         it('should always return a slash at the end', function () {
-            var path;
+            let path;
 
             path = join();
             expect(path).to.equal('/');

@@ -10,7 +10,7 @@ import Ember from 'ember';
 describe('Unit: Helper: read-path', function () {
     // Replace this with your real tests.
     it('works', function () {
-        var result = readPath([Ember.Object.create({hi: 'there'}), 'hi']);
+        let result = readPath([Ember.Object.create({hi: 'there'}), 'hi']);
 
         expect(result).to.equal('there');
     });

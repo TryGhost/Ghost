@@ -10,8 +10,8 @@ import InfiniteScrollMixin from 'ghost/mixins/infinite-scroll';
 describe('Unit: Mixin: infinite-scroll', function () {
     // Replace this with your real tests.
     it('works', function () {
-        var InfiniteScrollObject = Ember.Object.extend(InfiniteScrollMixin),
-            subject = InfiniteScrollObject.create();
+        let InfiniteScrollObject = Ember.Object.extend(InfiniteScrollMixin);
+        let subject = InfiniteScrollObject.create();
 
         expect(subject).to.be.ok;
     });
