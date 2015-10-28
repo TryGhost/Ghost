@@ -43,11 +43,21 @@ function readDirectory(dir, options) {
         })
         .map(function (item) {
             if (item.name === 'package.json') {
-                return parsePackageJson(item.path).then(function (pkg) {
-                    item.content = pkg;
+                return parsePackageJson(item.path)
+                    .then(function (pkg) {
+                        item.content = pkg;
 
-                    return item;
-                });
+                        return item;
+                    })
+                    .catch(function () {
+                        // ignore invalid package.json for now,
+                        // because Ghost does not rely/use them at the moment
+                        // in the future, this .catch() will need to be removed,
+                        // so that error is thrown on invalid json syntax
+                        item.content = null;
+
+                        return item;
+                    });
             }
 
             if (item.stat.isDirectory()) {
