@@ -37,7 +37,7 @@ function parsePackageJson(path) {
                 }
 
                 return json;
-            } catch (_) {
+            } catch (parseError) {
                 err = new Error('Theme package.json file is malformed');
                 err.context = path;
                 err.help = 'This will be required in future. Please see http://docs.ghost.org/themes/';
