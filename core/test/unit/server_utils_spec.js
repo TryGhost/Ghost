@@ -8,6 +8,7 @@ var should          = require('should'),
     tempfile        = require('../utils/tempfile'),
     utils           = require('../../server/utils'),
     join            = require('path').join,
+    rm              = require('rimraf-then'),
     fs              = require('fs');
 
 // To stop jshint complaining
@@ -109,7 +110,10 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .catch(done);
+                .catch(done)
+                .finally(function () {
+                    return rm(tmpPath);
+                });
         });
 
         it('should fail when name is missing', function (done) {
@@ -132,6 +136,9 @@ describe('Server Utilities', function () {
                     err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
 
                     done();
+                })
+                .finally(function () {
+                    return rm(tmpPath);
                 });
         });
 
@@ -155,6 +162,9 @@ describe('Server Utilities', function () {
                     err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
 
                     done();
+                })
+                .finally(function () {
+                    return rm(tmpPath);
                 });
         });
 
@@ -176,6 +186,9 @@ describe('Server Utilities', function () {
                     err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
 
                     done();
+                })
+                .finally(function () {
+                    return rm(tmpPath);
                 });
         });
 
@@ -191,6 +204,9 @@ describe('Server Utilities', function () {
                     err.context.should.equal(tmpPath);
 
                     done();
+                })
+                .finally(function () {
+                    return rm(tmpPath);
                 });
         });
     });
@@ -216,7 +232,10 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .catch(done);
+                .catch(done)
+                .finally(function () {
+                    return rm(themePath);
+                });
         });
 
         it('should read directory and ignore unneeded items', function (done) {
@@ -245,7 +264,10 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .catch(done);
+                .catch(done)
+                .finally(function () {
+                    return rm(themePath);
+                });
         });
 
         it('should read directory and parse package.json files', function (done) {
@@ -279,7 +301,43 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .catch(done);
+                .catch(done)
+                .finally(function () {
+                    return rm(themePath);
+                });
+        });
+
+        it('should read directory and ignore invalid package.json files', function (done) {
+            var themePath, pkgJson;
+
+            themePath = tempfile();
+            pkgJson = JSON.stringify({
+                name: 'test'
+            });
+
+            // create example theme
+            fs.mkdirSync(themePath);
+            fs.mkdirSync(join(themePath, 'partials'));
+            fs.writeFileSync(join(themePath, 'package.json'), pkgJson);
+            fs.writeFileSync(join(themePath, 'index.hbs'));
+            fs.writeFileSync(join(themePath, 'partials', 'navigation.hbs'));
+
+            readDirectory(themePath)
+                .then(function (tree) {
+                    tree.should.eql({
+                        partials: {
+                            'navigation.hbs': join(themePath, 'partials', 'navigation.hbs')
+                        },
+                        'index.hbs': join(themePath, 'index.hbs'),
+                        'package.json': null
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(function () {
+                    return rm(themePath);
+                });
         });
     });
 
@@ -312,7 +370,10 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .catch(done);
+                .catch(done)
+                .finally(function () {
+                    return rm(themesPath);
+                });
         });
     });
 
@@ -346,6 +407,39 @@ describe('Server Utilities', function () {
                     }]);
 
                     done();
+                })
+                .finally(function () {
+                    return rm(themesPath);
+                });
+        });
+
+        it('should return warning for theme with invalid package.json', function (done) {
+            var themesPath, pkgJson;
+
+            themesPath = tempfile();
+            pkgJson = '{"name":casper}';
+
+            fs.mkdirSync(themesPath);
+
+            fs.mkdirSync(join(themesPath, 'casper'));
+            fs.writeFileSync(join(themesPath, 'casper', 'package.json'), pkgJson);
+
+            validateThemes(themesPath)
+                .then(function () {
+                    done(new Error('validateThemes succeeded, but should\'ve failed'));
+                })
+                .catch(function (result) {
+                    result.errors.length.should.equal(0);
+                    result.warnings.should.eql([{
+                        message: 'Found a malformed package.json',
+                        context: 'Theme name: casper',
+                        help: 'Valid package.json will be required in future. Please see http://docs.ghost.org/themes/'
+                    }]);
+
+                    done();
+                })
+                .finally(function () {
+                    return rm(themesPath);
                 });
         });
     });
