@@ -76,6 +76,10 @@ auth = {
                     origin = url.parse(req.headers.origin).hostname;
                 }
 
+                // req.body needs to be null for GET requests to build options correctly
+                delete req.body.client_id;
+                delete req.body.client_secret;
+
                 if (!origin && client && client.type === 'ua') {
                     res.header('Access-Control-Allow-Origin', config.url);
                     req.client = client;
