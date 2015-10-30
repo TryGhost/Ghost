@@ -8,7 +8,7 @@ import ghostPaths from 'ghost/utils/ghost-paths';
 // {{gh-path 'api'}} for Ghost's api root (/myblog/ghost/api/v0.1/)
 // {{gh-path 'admin' '/assets/hi.png'}} for resolved url (/myblog/ghost/assets/hi.png)
 
-function ghostPathsHelper(params/*, hash */) {
+export default Ember.Helper.helper(function (params) {
     var base,
         paths = ghostPaths(),
         [path, url] = params;
@@ -50,6 +50,4 @@ function ghostPathsHelper(params/*, hash */) {
     }
 
     return Ember.String.htmlSafe(base);
-}
-
-export default Ember.HTMLBars.makeBoundHelper(ghostPathsHelper);
+});

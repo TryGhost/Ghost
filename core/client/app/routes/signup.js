@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import {request as ajax} from 'ic-ajax';
-import Configuration from 'simple-auth/configuration';
+import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
 export default Ember.Route.extend(styleBody, {
@@ -9,11 +9,12 @@ export default Ember.Route.extend(styleBody, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     beforeModel: function () {
-        if (this.get('session').isAuthenticated) {
-            this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true});
-            this.transitionTo(Configuration.routeAfterAuthentication);
+        if (this.get('session.isAuthenticated')) {
+            this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
     },
 
@@ -26,7 +27,7 @@ export default Ember.Route.extend(styleBody, {
 
         return new Ember.RSVP.Promise(function (resolve) {
             if (!re.test(params.token)) {
-                self.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true});
+                self.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
 
                 return resolve(self.transitionTo('signin'));
             }
@@ -47,7 +48,7 @@ export default Ember.Route.extend(styleBody, {
                 }
             }).then(function (response) {
                 if (response && response.invitation && response.invitation[0].valid === false) {
-                    self.get('notifications').showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true});
+                    self.get('notifications').showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true, key: 'signup.create.invalid-invitation'});
 
                     return resolve(self.transitionTo('signin'));
                 }

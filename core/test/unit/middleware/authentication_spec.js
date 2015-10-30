@@ -1,13 +1,24 @@
 /*globals describe, it, beforeEach, afterEach */
 /*jshint expr:true*/
-var sinon           = require('sinon'),
-    should          = require('should'),
-    passport        = require('passport'),
-    authenticate    = require('../../../server/middleware/authenticate'),
-    BearerStrategy  = require('passport-http-bearer').Strategy,
-    user            = {id: 1},
-    info            = {scope: '*'},
-    token           = 'test_token';
+var _                       = require('lodash'),
+    sinon                   = require('sinon'),
+    should                  = require('should'),
+    passport                = require('passport'),
+    rewire                  = require('rewire'),
+    config                  = require('../../../server/config'),
+    defaultConfig           = rewire('../../../../config.example')[process.env.NODE_ENV],
+    auth                    = rewire('../../../server/middleware/auth'),
+    BearerStrategy          = require('passport-http-bearer').Strategy,
+    ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
+    user                    = {id: 1},
+    info                    = {scope: '*'},
+    token                   = 'test_token',
+    testClient              = 'test_client',
+    testSecret              = 'not_available',
+    client                  = {
+        id: 2,
+        type: 'ua'
+    };
 
 should.equal(true, true);
 
@@ -31,7 +42,50 @@ function registerUnsuccessfulBearerStrategy() {
     ));
 }
 
-describe('authenticate', function () {
+function registerFaultyBearerStrategy() {
+    // register fake BearerStrategy which always authenticates
+    passport.use(new BearerStrategy(
+        function strategy(accessToken, done) {
+            accessToken.should.eql(token);
+            return done('error');
+        }
+    ));
+}
+
+function registerSuccessfulClientPasswordStrategy() {
+    // register fake BearerStrategy which always authenticates
+    passport.use(new ClientPasswordStrategy(
+        function strategy(clientId, clientSecret, done) {
+            clientId.should.eql(testClient);
+            clientSecret.should.eql('not_available');
+            return done(null, client);
+        }
+    ));
+}
+
+function registerUnsuccessfulClientPasswordStrategy() {
+    // register fake BearerStrategy which always authenticates
+    passport.use(new ClientPasswordStrategy(
+        function strategy(clientId, clientSecret, done) {
+            clientId.should.eql(testClient);
+            clientSecret.should.eql('not_available');
+            return done(null, false);
+        }
+    ));
+}
+
+function registerFaultyClientPasswordStrategy() {
+    // register fake BearerStrategy which always authenticates
+    passport.use(new ClientPasswordStrategy(
+        function strategy(clientId, clientSecret, done) {
+            clientId.should.eql(testClient);
+            clientSecret.should.eql('not_available');
+            return done('error');
+        }
+    ));
+}
+
+describe('Auth', function () {
     var res, req, next, sandbox;
 
     beforeEach(function () {
@@ -45,82 +99,21 @@ describe('authenticate', function () {
         sandbox.restore();
     });
 
-    it('should skip authentication if not hitting /ghost', function (done) {
-        req.path = '/tag/foo/';
-        req.method = 'GET';
+    it('should require authorized user (user exists)', function (done) {
+        req.user = {id: 1};
 
-        registerSuccessfulBearerStrategy();
-        authenticate(req, res, next);
-
+        auth.requiresAuthorizedUser(req, res, next);
         next.called.should.be.true;
         next.calledWith().should.be.true;
         done();
     });
 
-    it('should skip authentication if hitting /ghost/api/v0.1/authenticaton/', function (done) {
-        req.path = '/ghost/api/v0.1/authentication/';
-        req.method = 'GET';
-
-        registerSuccessfulBearerStrategy();
-        authenticate(req, res, next);
-
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
-        done();
-    });
-
-    it('should skip authentication if hitting GET /ghost/api/v0.1/authenticaton/setup/', function (done) {
-        req.path = '/ghost/api/v0.1/authentication/setup/';
-        req.method = 'GET';
-
-        registerSuccessfulBearerStrategy();
-        authenticate(req, res, next);
-
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
-        done();
-    });
-
-    it('should authentication if hitting PUT /ghost/api/v0.1/authenticaton/setup/', function (done) {
-        req.path = '/ghost/api/v0.1/authentication/setup/';
-        req.method = 'PUT';
-        req.headers = {};
-        req.headers.authorization = 'Bearer ' + token;
-
-        registerSuccessfulBearerStrategy();
-        authenticate(req, res, next);
-
-        next.called.should.be.true;
-        next.calledWith(null, user, info).should.be.true;
-        done();
-    });
-
-    it('should authenticate if hitting /ghost/api/ endpoint', function (done) {
-        req.path = '/ghost/api/v0.1/test/';
-        req.method = 'PUT';
-        req.headers = {};
-        req.headers.authorization = 'Bearer ' + token;
-
-        registerSuccessfulBearerStrategy();
-        authenticate(req, res, next);
-
-        next.called.should.be.true;
-        next.calledWith(null, user, info).should.be.true;
-        done();
-    });
-
-    it('shouldn\'t authenticate if hitting /ghost/ auth endpoint with invalid credentials', function (done) {
+    it('should require authorized user (user is missing)', function (done) {
+        req.user = false;
         res.status = {};
-        req.path = '/ghost/api/v0.1/test/';
-        req.method = 'PUT';
-        req.headers = {};
-        req.headers.authorization = 'Bearer ' + token;
 
-        registerUnsuccessfulBearerStrategy();
-
-        // stub res.status for error handling
         sandbox.stub(res, 'status', function (statusCode) {
-            statusCode.should.eql(401);
+            statusCode.should.eql(403);
             return {
                 json: function (err) {
                     err.errors[0].errorType.should.eql('NoPermissionError');
@@ -128,8 +121,349 @@ describe('authenticate', function () {
             };
         });
 
-        authenticate(req, res, next);
+        auth.requiresAuthorizedUser(req, res, next);
         next.called.should.be.false;
         done();
+    });
+
+    describe('User Authentication', function () {
+        beforeEach(function () {
+            var newConfig = _.extend({}, config, defaultConfig);
+
+            auth.__get__('config', newConfig);
+            config.set(newConfig);
+        });
+
+        it('should authenticate user', function (done) {
+            req.headers = {};
+            req.headers.authorization = 'Bearer ' + token;
+
+            registerSuccessfulBearerStrategy();
+            auth.authenticateUser(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith(null, user, info).should.be.true;
+            done();
+        });
+
+        it('shouldn\'t pass with client, no bearer token', function (done) {
+            req.headers = {};
+            req.client = {id: 1};
+            res.status = {};
+
+            auth.authenticateUser(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith().should.be.true;
+            done();
+        });
+
+        it('shouldn\'t authenticate user', function (done) {
+            req.headers = {};
+            req.headers.authorization = 'Bearer ' + token;
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerUnsuccessfulBearerStrategy();
+            auth.authenticateUser(req, res, next);
+
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate without bearer token', function (done) {
+            req.headers = {};
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerUnsuccessfulBearerStrategy();
+            auth.authenticateUser(req, res, next);
+
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate with bearer token and client', function (done) {
+            req.headers = {};
+            req.headers.authorization = 'Bearer ' + token;
+            req.client = {id: 1};
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerUnsuccessfulBearerStrategy();
+            auth.authenticateUser(req, res, next);
+
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate when error', function (done) {
+            req.headers = {};
+            req.headers.authorization = 'Bearer ' + token;
+
+            registerFaultyBearerStrategy();
+            auth.authenticateUser(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith('error').should.be.true;
+            done();
+        });
+    });
+
+    describe('Client Authentication', function () {
+        it('shouldn\'t require authorized client with bearer token', function (done) {
+            req.headers = {};
+            req.headers.authorization = 'Bearer ' + token;
+
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.true;
+            next.calledWith().should.be.true;
+            done();
+        });
+
+        it('shouldn\'t authenticate client with broken bearer token', function (done) {
+            req.body = {};
+            req.headers = {};
+            req.headers.authorization = 'Bearer';
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate client without client_id/client_secret', function (done) {
+            req.body = {};
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate client without client_id', function (done) {
+            req.body = {};
+            req.body.client_secret = testSecret;
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate client without client_secret', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate client', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerUnsuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
+        it('shouldn\'t authenticate client with invalid origin', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            req.headers = {};
+            req.headers.origin = 'http://invalid.origin.com';
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
+        it('should authenticate client', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            req.headers = {};
+            req.headers.origin = config.url;
+
+            res.header = {};
+
+            sandbox.stub(res, 'header', function (key, value) {
+                key.should.equal('Access-Control-Allow-Origin');
+                value.should.equal(config.url);
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith(null, client).should.be.true;
+            done();
+        });
+
+        it('should authenticate client without origin', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+
+            res.header = {};
+
+            sandbox.stub(res, 'header', function (key, value) {
+                key.should.equal('Access-Control-Allow-Origin');
+                value.should.equal(config.url);
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith(null, client).should.be.true;
+            done();
+        });
+
+        it('should authenticate client with id in query', function (done) {
+            req.body = {};
+            req.query = {};
+            req.query.client_id = testClient;
+            req.query.client_secret = testSecret;
+            req.headers = {};
+            req.headers.origin = config.url;
+
+            res.header = {};
+
+            sandbox.stub(res, 'header', function (key, value) {
+                key.should.equal('Access-Control-Allow-Origin');
+                value.should.equal(config.url);
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith(null, client).should.be.true;
+            done();
+        });
+
+        it('should authenticate client with id + secret in query', function (done) {
+            req.body = {};
+            req.query = {};
+            req.query.client_id = testClient;
+            req.query.client_secret = testSecret;
+            req.headers = {};
+            req.headers.origin = config.url;
+
+            res.header = {};
+
+            sandbox.stub(res, 'header', function (key, value) {
+                key.should.equal('Access-Control-Allow-Origin');
+                value.should.equal(config.url);
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith(null, client).should.be.true;
+            done();
+        });
+
+        it('shouldn\'t authenticate when error', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            res.status = {};
+
+            registerFaultyClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith('error').should.be.true;
+            done();
+        });
     });
 });

@@ -5,11 +5,11 @@ import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 import { NavItem } from 'ghost/controllers/settings/navigation';
 
-const { run } = Ember;
+const {run} = Ember;
 
 describeComponent(
     'gh-navitem',
-    'Integration : Component : gh-navitem',
+    'Integration: Component: gh-navitem',
     {
         integration: true
     },

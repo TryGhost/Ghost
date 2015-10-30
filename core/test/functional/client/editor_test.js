@@ -138,7 +138,7 @@ CasperTest.begin('Image Uploads', 23, function suite(test) {
             return document.querySelector('.entry-markdown-content textarea').value;
         }, '![some text]()\n', 'Editor value is correct');
 
-        test.assertHTMLEquals('<section class=\"js-drop-zone image-uploader\"><span class=\"media\"><span class=\"hidden\">Image Upload</span></span><img class=\"js-upload-target\" style=\"display: none; \" src=\"\"><div class=\"description\">Add image of <strong>some text</strong></div><input class=\"js-fileupload main fileupload\" type=\"file\" name=\"uploadimage\"><div class=\"js-fail failed\" style=\"display: none\">Something went wrong :(</div><button class=\"js-fail btn btn-green\" style=\"display: none\">Try Again</button><a class=\"image-url\" title=\"Add image from URL\"><i class=\"icon-link\"><span class=\"hidden\">URL</span></i></a></section>\n', 'HTML is correct');
+        test.assertHTMLEquals('<section class=\"js-drop-zone image-uploader\" data-uploaderui=\"true\"><span class=\"media\"><span class=\"hidden\">Image Upload</span></span><img class=\"js-upload-target\" style=\"display: none; \" src=\"\"><div class=\"description\">Add image of <strong>some text</strong></div><input class=\"js-fileupload main fileupload\" type=\"file\" name=\"uploadimage\"><div class=\"js-fail failed\" style=\"display: none\">Something went wrong :(</div><button class=\"js-fail btn btn-green\" style=\"display: none\">Try Again</button><a class=\"image-url\" title=\"Add image from URL\"><i class=\"icon-link\"><span class=\"hidden\">URL</span></i></a></section>\n', 'HTML is correct');
 
         test.assertSelectorHasText(
             '.entry-preview .rendered-markdown', 'Add image of some text', 'Alt value is correct'

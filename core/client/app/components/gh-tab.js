@@ -1,6 +1,7 @@
 import Ember from 'ember';
+
 // See gh-tabs-manager.js for use
-var Tab = Ember.Component.extend({
+export default Ember.Component.extend({
     tabsManager: Ember.computed(function () {
         return this.nearestWithProperty('isTabsManager');
     }),
@@ -9,7 +10,7 @@ var Tab = Ember.Component.extend({
         return this.get('tabsManager.activeTab') === this;
     }),
 
-    index: Ember.computed('tabsManager.tabs.@each', function () {
+    index: Ember.computed('tabsManager.tabs.[]', function () {
         return this.get('tabsManager.tabs').indexOf(this);
     }),
 
@@ -28,5 +29,3 @@ var Tab = Ember.Component.extend({
         this.get('tabsManager').unregisterTab(this);
     }
 });
-
-export default Tab;

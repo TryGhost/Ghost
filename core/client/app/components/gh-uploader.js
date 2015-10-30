@@ -52,6 +52,31 @@ export default Ember.Component.extend({
         this.removeListeners();
     },
 
+    // NOTE: because the uploader is sometimes in the same place in the DOM
+    // between transitions Glimmer will re-use the existing elements including
+    // those that arealready decorated by jQuery. The following works around
+    // situations where the image is changed without a full teardown/rebuild
+    didReceiveAttrs: function (attrs) {
+        var oldValue = attrs.oldAttrs && Ember.get(attrs.oldAttrs, 'image.value'),
+            newValue = attrs.newAttrs && Ember.get(attrs.newAttrs, 'image.value'),
+            self = this;
+
+        // always reset when we receive a blank image
+        // - handles navigating to populated image from blank image
+        if (Ember.isEmpty(newValue) && !Ember.isEmpty(oldValue)) {
+            self.$()[0].uploaderUi.reset();
+        }
+
+        // re-init if we receive a new image but the uploader is blank
+        // - handles back button navigating from blank image to populated image
+        if (!Ember.isEmpty(newValue) && this.$()) {
+            if (this.$('.js-upload-target').attr('src') === '') {
+                this.$()[0].uploaderUi.reset();
+                this.$()[0].uploaderUi.initWithImage();
+            }
+        }
+    },
+
     actions: {
         initUploader: function () {
             var ref,
@@ -74,7 +99,7 @@ export default Ember.Component.extend({
                 self.sendAction('canceled');
             });
 
-            this.sendAction('initUploader', this.get('uploaderReference'));
+            this.sendAction('initUploader', ref);
         }
     }
 });

@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import PaginationControllerMixin from 'ghost/mixins/pagination-controller';
 
 // a custom sort function is needed in order to sort the posts list the same way the server would:
 //     status: ASC
@@ -64,7 +63,8 @@ function publishedAtCompare(item1, item2) {
     return Ember.compare(published1.valueOf(), published2.valueOf());
 }
 
-export default Ember.Controller.extend(PaginationControllerMixin, {
+export default Ember.Controller.extend({
+
     // See PostsRoute's shortcuts
     postListFocused: Ember.computed.equal('keyboardFocus', 'postList'),
     postContentFocused: Ember.computed.equal('keyboardFocus', 'postContent'),
@@ -74,12 +74,6 @@ export default Ember.Controller.extend(PaginationControllerMixin, {
 
         return postsArray.sort(comparator);
     }),
-
-    init: function () {
-        // let the PaginationControllerMixin know what type of model we will be paginating
-        // this is necessary because we do not have access to the model inside the Controller::init method
-        this._super({modelType: 'post'});
-    },
 
     actions: {
         showPostContent: function (post) {

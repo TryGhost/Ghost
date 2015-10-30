@@ -1,7 +1,7 @@
 /* global CodeMirror */
 import Ember from 'ember';
 
-var CodeMirrorEditor = Ember.Component.extend({
+export default Ember.Component.extend({
 
     // DOM stuff
     classNameBindings: ['isFocused:focused'],
@@ -44,5 +44,3 @@ var CodeMirrorEditor = Ember.Component.extend({
     }
 
 });
-
-export default CodeMirrorEditor;

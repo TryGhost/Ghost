@@ -3,7 +3,7 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
-var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
+export default Ember.Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
 
     actions: {
@@ -33,9 +33,9 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
         willTransition: function (transition) {
             var controller = this.get('controller'),
                 scratch = controller.get('model.scratch'),
-                controllerIsDirty = controller.get('isDirty'),
+                controllerIsDirty = controller.get('hasDirtyAttributes'),
                 model = controller.get('model'),
-                state = model.getProperties('isDeleted', 'isSaving', 'isDirty', 'isNew'),
+                state = model.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew'),
                 fromNewToEdit,
                 deletedWithoutChanges;
 
@@ -57,7 +57,7 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
                 transition.intent.contexts[0].id === model.get('id');
 
             deletedWithoutChanges = state.isDeleted &&
-                (state.isSaving || !state.isDirty);
+                (state.isSaving || !state.hasDirtyAttributes);
 
             if (!fromNewToEdit && !deletedWithoutChanges && controllerIsDirty) {
                 transition.abort();
@@ -99,7 +99,7 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
 
     attachModelHooks: function (controller, model) {
         // this will allow us to track when the model is saved and update the controller
-        // so that we can be sure controller.isDirty is correct, without having to update the
+        // so that we can be sure controller.hasDirtyAttributes is correct, without having to update the
         // controller on each instance of `model.save()`.
         //
         // another reason we can't do this on `model.save().then()` is because the post-settings-menu
@@ -135,5 +135,3 @@ var EditorBaseRoute = Ember.Mixin.create(styleBody, ShortcutsRoute, {
         this.attachModelHooks(controller, model);
     }
 });
-
-export default EditorBaseRoute;

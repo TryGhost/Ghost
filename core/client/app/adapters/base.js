@@ -1,11 +1,11 @@
 import DS from 'ember-data';
 import ghostPaths from 'ghost/utils/ghost-paths';
 
-var BaseAdapter = DS.RESTAdapter.extend({
+export default DS.RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
-    findQuery: function (store, type, query) {
+    query: function (store, type, query) {
         var id;
 
         if (query.id) {
@@ -41,5 +41,3 @@ var BaseAdapter = DS.RESTAdapter.extend({
         });
     }
 });
-
-export default BaseAdapter;

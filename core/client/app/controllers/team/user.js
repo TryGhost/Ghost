@@ -11,6 +11,7 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     currentUser: Ember.computed.alias('session.user'),
 
@@ -83,7 +84,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     }),
 
     roles: Ember.computed(function () {
-        return this.store.find('role', {permissions: 'assign'});
+        return this.store.query('role', {permissions: 'assign'});
     }),
 
     actions: {
@@ -125,11 +126,12 @@ export default Ember.Controller.extend(ValidationEngine, {
                 }
 
                 self.toggleProperty('submitting');
+                self.get('notifications').closeAlerts('user.update');
 
                 return model;
             }).catch(function (errors) {
                 if (errors) {
-                    self.get('notifications').showErrors(errors);
+                    self.get('notifications').showErrors(errors, {key: 'user.update'});
                 }
 
                 self.toggleProperty('submitting');
@@ -151,15 +153,15 @@ export default Ember.Controller.extend(ValidationEngine, {
                         ne2Password: ''
                     });
 
-                    self.get('notifications').showAlert('Password updated.', {type: 'success'});
+                    self.get('notifications').showAlert('Password updated.', {type: 'success', key: 'user.change-password.success'});
 
                     return model;
                 }).catch(function (errors) {
-                    self.get('notifications').showAPIError(errors);
+                    self.get('notifications').showAPIError(errors, {key: 'user.change-password'});
                 });
             } else {
                 // TODO: switch to in-line validation
-                self.get('notifications').showErrors(user.get('passwordValidationErrors'));
+                self.get('notifications').showErrors(user.get('passwordValidationErrors'), {key: 'user.change-password'});
             }
         },
 

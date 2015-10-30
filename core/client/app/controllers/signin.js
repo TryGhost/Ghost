@@ -9,6 +9,8 @@ export default Ember.Controller.extend(ValidationEngine, {
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
+    application: Ember.inject.controller(),
     flowErrors: '',
 
     // ValidationEngine settings
@@ -18,29 +20,30 @@ export default Ember.Controller.extend(ValidationEngine, {
         authenticate: function () {
             var self = this,
                 model = this.get('model'),
-                authStrategy = 'ghost-authenticator:oauth2-password-grant',
-                data = model.getProperties(this.authProperties);
+                authStrategy = 'authenticator:oauth2';
 
             // Authentication transitions to posts.index, we can leave spinner running unless there is an error
-            this.get('session').authenticate(authStrategy, data).catch(function (err) {
+            this.get('session').authenticate(authStrategy, model.get('identification'), model.get('password')).catch(function (error) {
                 self.toggleProperty('loggingIn');
 
-                if (err.errors) {
-                    self.set('flowErrors', err.errors[0].message.string);
+                if (error.errors) {
+                    error.errors.forEach(function (err) {
+                        err.message = err.message.htmlSafe();
+                    });
 
-                    // this catches both 'no user' and 'user inactive' errors
-                    // long term, we probably need to introduce error codes from the server
-                    if (err.errors[0].message.string.match(/user with that email/)) {
+                    self.set('flowErrors', error.errors[0].message.string);
+
+                    if (error.errors[0].message.string.match(/user with that email/)) {
                         self.get('model.errors').add('identification', '');
                     }
 
-                    if (err.errors[0].message.string.match(/password is incorrect/)) {
+                    if (error.errors[0].message.string.match(/password is incorrect/)) {
                         self.get('model.errors').add('password', '');
                     }
+                } else {
+                    // Connection errors don't return proper status message, only req.body
+                    self.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
                 }
-                // if authentication fails a rejected promise will be returned.
-                // it needs to be caught so it doesn't generate an exception in the console,
-                // but it's actually "handled" by the sessionAuthenticationFailed action handler.
             });
         },
 
@@ -58,7 +61,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 self.send('authenticate');
             }).catch(function (error) {
                 if (error) {
-                    self.get('notifications').showAPIError(error);
+                    self.get('notifications').showAPIError(error, {key: 'signin.authenticate'});
                 } else {
                     self.set('flowErrors', 'Please fill out the form to sign in.');
                 }
@@ -86,7 +89,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     }
                 }).then(function () {
                     self.toggleProperty('submitting');
-                    notifications.showAlert('Please check your email for instructions.', {type: 'info'});
+                    notifications.showAlert('Please check your email for instructions.', {type: 'info', key: 'forgot-password.send.success'});
                 }).catch(function (resp) {
                     self.toggleProperty('submitting');
                     if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
@@ -98,11 +101,11 @@ export default Ember.Controller.extend(ValidationEngine, {
                             self.get('model.errors').add('identification', '');
                         }
                     } else {
-                        notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.'});
+                        notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
                     }
                 });
             }).catch(function () {
-                self.set('flowErrors', 'Please enter an email address then click "Forgot?".');
+                self.set('flowErrors', 'We need your email address to reset your password!');
             });
         }
     }

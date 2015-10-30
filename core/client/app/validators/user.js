@@ -1,7 +1,7 @@
 import BaseValidator from './base';
 import Ember from 'ember';
 
-var UserValidator = BaseValidator.create({
+export default BaseValidator.create({
     properties: ['name', 'bio', 'email', 'location', 'website', 'roles'],
     isActive: function (model) {
         return (model.get('status') === 'active');
@@ -70,5 +70,3 @@ var UserValidator = BaseValidator.create({
         }
     }
 });
-
-export default UserValidator;

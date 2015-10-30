@@ -6,11 +6,11 @@ export default Ember.Controller.extend({
     userPostCount: Ember.computed('model.id', function () {
         var promise,
             query = {
-                author: this.get('model.slug'),
+                filter: `author:${this.get('model.slug')}`,
                 status: 'all'
             };
 
-        promise = this.store.find('post', query).then(function (results) {
+        promise = this.store.query('post', query).then(function (results) {
             return results.meta.pagination.total;
         });
 
@@ -29,10 +29,11 @@ export default Ember.Controller.extend({
                 user = this.get('model');
 
             user.destroyRecord().then(function () {
+                self.get('notifications').closeAlerts('user.delete');
                 self.store.unloadAll('post');
                 self.transitionToRoute('team');
             }, function () {
-                self.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error'});
+                self.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
             });
         },
 

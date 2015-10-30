@@ -4,7 +4,7 @@
  */
 var _ = require('lodash'),
     collectionQuery,
-    filtering,
+    processGQLResult,
     addPostCount,
     tagUpdate;
 
@@ -25,45 +25,41 @@ collectionQuery = {
     }
 };
 
-filtering = {
-    preFetch: function preFetch(filterObjects) {
-        var promises = [];
-        _.forOwn(filterObjects, function (obj) {
-            promises.push(obj.fetch());
-        });
+processGQLResult = function processGQLResult(itemCollection, options) {
+    var joinTables = options.filter.joins,
+        tagsHasIn = false;
 
-        return promises;
-    },
-    query: function query(filterObjects, itemCollection) {
-        if (filterObjects.tags) {
-            itemCollection
-                .query('join', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
-                .query('where', 'posts_tags.tag_id', '=', filterObjects.tags.id);
-        }
+    if (joinTables && joinTables.indexOf('tags') > -1) {
+        // We need to use leftOuterJoin to insure we still include posts which don't have tags in the result
+        // The where clause should restrict which items are returned
+        itemCollection
+            .query('leftOuterJoin', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
+            .query('leftOuterJoin', 'tags', 'posts_tags.tag_id', '=', 'tags.id');
 
-        if (filterObjects.author) {
-            itemCollection
-                .query('where', 'author_id', '=', filterObjects.author.id);
-        }
-
-        if (filterObjects.roles) {
-            itemCollection
-                .query('join', 'roles_users', 'roles_users.user_id', '=', 'users.id')
-                .query('where', 'roles_users.role_id', '=', filterObjects.roles.id);
-        }
-    },
-    formatResponse: function formatResponse(filterObjects, options, data) {
-        if (!_.isEmpty(filterObjects)) {
-            data.meta.filters = {};
-        }
-
-        _.forOwn(filterObjects, function (obj, key) {
-            if (!filterObjects[key].isNew()) {
-                data.meta.filters[key] = [filterObjects[key].toJSON(options)];
+        // The order override should ONLY happen if we are doing an "IN" query
+        // TODO move the order handling to the query building that is currently inside pagination
+        // TODO make the order handling in pagination handle orderByRaw
+        // TODO extend this handling to all joins
+        _.each(options.filter.statements, function (statement) {
+            if (statement.op === 'IN' && statement.prop.match(/tags/)) {
+                tagsHasIn = true;
             }
         });
 
-        return data;
+        if (tagsHasIn) {
+            // TODO make this count the number of MATCHING tags, not just the number of tags
+            itemCollection.query('orderByRaw', 'count(tags.id) DESC');
+        }
+
+        // We need to add a group by to counter the double left outer join
+        // TODO improve on th group by handling
+        options.groups = options.groups || [];
+        options.groups.push('posts.id');
+    }
+
+    if (joinTables && joinTables.indexOf('author') > -1) {
+        itemCollection
+            .query('join', 'users as author', 'author.id', '=', 'posts.author_id');
     }
 };
 
@@ -129,7 +125,7 @@ tagUpdate = {
     }
 };
 
-module.exports.filtering = filtering;
+module.exports.processGQLResult = processGQLResult;
 module.exports.collectionQuery = collectionQuery;
 module.exports.addPostCount = addPostCount;
 module.exports.tagUpdate = tagUpdate;

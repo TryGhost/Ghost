@@ -7,9 +7,11 @@ import {
     it
 } from 'ember-mocha';
 
+const {run, get} = Ember;
+
 describeModule(
     'service:notifications',
-    'NotificationsService',
+    'Unit: Service: notifications',
     {
         // Specify the other units that are required for this test.
         // needs: ['model:notification']
@@ -23,16 +25,17 @@ describeModule(
         it('filters alerts/notifications', function () {
             var notifications = this.subject();
 
-            notifications.set('content', [
-                {message: 'Alert', status: 'alert'},
-                {message: 'Notification', status: 'notification'}
-            ]);
+            // wrapped in run-loop to enure alerts/notifications CPs are updated
+            run(() => {
+                notifications.showAlert('Alert');
+                notifications.showNotification('Notification');
+            });
 
-            expect(notifications.get('alerts'))
-                .to.deep.equal([{message: 'Alert', status: 'alert'}]);
+            expect(notifications.get('alerts.length')).to.equal(1);
+            expect(notifications.get('alerts.firstObject.message')).to.equal('Alert');
 
-            expect(notifications.get('notifications'))
-                .to.deep.equal([{message: 'Notification', status: 'notification'}]);
+            expect(notifications.get('notifications.length')).to.equal(1);
+            expect(notifications.get('notifications.firstObject.message')).to.equal('Notification');
         });
 
         it('#handleNotification deals with DS.Notification notifications', function () {
@@ -61,71 +64,106 @@ describeModule(
         it('#showAlert adds POJO alerts', function () {
             var notifications = this.subject();
 
-            notifications.showAlert('Test Alert', {type: 'error'});
+            run(() => {
+                notifications.showAlert('Test Alert', {type: 'error'});
+            });
 
             expect(notifications.get('alerts'))
-                .to.deep.include({message: 'Test Alert', status: 'alert', type: 'error'});
+                .to.deep.include({message: 'Test Alert', status: 'alert', type: 'error', key: undefined});
         });
 
         it('#showAlert adds delayed notifications', function () {
             var notifications = this.subject();
 
-            notifications.showNotification('Test Alert', {type: 'error', delayed: true});
+            run(() => {
+                notifications.showNotification('Test Alert', {type: 'error', delayed: true});
+            });
 
             expect(notifications.get('delayedNotifications'))
-                .to.deep.include({message: 'Test Alert', status: 'notification', type: 'error'});
+                .to.deep.include({message: 'Test Alert', status: 'notification', type: 'error', key: undefined});
+        });
+
+        // in order to cater for complex keys that are suitable for i18n
+        // we split on the second period and treat the resulting base as
+        // the key for duplicate checking
+        it('#showAlert clears duplicates', function () {
+            var notifications = this.subject();
+
+            run(() => {
+                notifications.showAlert('Kept');
+                notifications.showAlert('Duplicate', {key: 'duplicate.key.fail'});
+            });
+
+            expect(notifications.get('alerts.length')).to.equal(2);
+
+            run(() => {
+                notifications.showAlert('Duplicate with new message', {key: 'duplicate.key.success'});
+            });
+
+            expect(notifications.get('alerts.length')).to.equal(2);
+            expect(notifications.get('alerts.lastObject.message')).to.equal('Duplicate with new message');
         });
 
         it('#showNotification adds POJO notifications', function () {
             var notifications = this.subject();
 
-            notifications.showNotification('Test Notification', {type: 'success'});
+            run(() => {
+                notifications.showNotification('Test Notification', {type: 'success'});
+            });
 
             expect(notifications.get('notifications'))
-                .to.deep.include({message: 'Test Notification', status: 'notification', type: 'success'});
+                .to.deep.include({message: 'Test Notification', status: 'notification', type: 'success', key: undefined});
         });
 
         it('#showNotification adds delayed notifications', function () {
             var notifications = this.subject();
 
-            notifications.showNotification('Test Notification', {delayed: true});
+            run(() => {
+                notifications.showNotification('Test Notification', {delayed: true});
+            });
 
             expect(notifications.get('delayedNotifications'))
-                .to.deep.include({message: 'Test Notification', status: 'notification', type: undefined});
+                .to.deep.include({message: 'Test Notification', status: 'notification', type: undefined, key: undefined});
         });
 
         it('#showNotification clears existing notifications', function () {
             var notifications = this.subject();
 
-            notifications.showNotification('First');
-            notifications.showNotification('Second');
+            run(() => {
+                notifications.showNotification('First');
+                notifications.showNotification('Second');
+            });
 
-            expect(notifications.get('content.length')).to.equal(1);
-            expect(notifications.get('content'))
-                .to.deep.equal([{message: 'Second', status: 'notification', type: undefined}]);
+            expect(notifications.get('notifications.length')).to.equal(1);
+            expect(notifications.get('notifications'))
+                .to.deep.equal([{message: 'Second', status: 'notification', type: undefined, key: undefined}]);
         });
 
         it('#showNotification keeps existing notifications if doNotCloseNotifications option passed', function () {
             var notifications = this.subject();
 
-            notifications.showNotification('First');
-            notifications.showNotification('Second', {doNotCloseNotifications: true});
+            run(() => {
+                notifications.showNotification('First');
+                notifications.showNotification('Second', {doNotCloseNotifications: true});
+            });
 
-            expect(notifications.get('content.length')).to.equal(2);
+            expect(notifications.get('notifications.length')).to.equal(2);
         });
 
         // TODO: review whether this can be removed once it's no longer used by validations
         it('#showErrors adds multiple notifications', function () {
             var notifications = this.subject();
 
-            notifications.showErrors([
-                {message: 'First'},
-                {message: 'Second'}
-            ]);
+            run(() => {
+                notifications.showErrors([
+                    {message: 'First'},
+                    {message: 'Second'}
+                ]);
+            });
 
-            expect(notifications.get('content')).to.deep.equal([
-                {message: 'First', status: 'notification', type: 'error'},
-                {message: 'Second', status: 'notification', type: 'error'}
+            expect(notifications.get('notifications')).to.deep.equal([
+                {message: 'First', status: 'notification', type: 'error', key: undefined},
+                {message: 'Second', status: 'notification', type: 'error', key: undefined}
             ]);
         });
 
@@ -133,11 +171,15 @@ describeModule(
             var notifications = this.subject(),
                 resp = {jqXHR: {responseJSON: {error: 'Single error'}}};
 
-            notifications.showAPIError(resp);
+            run(() => {
+                notifications.showAPIError(resp);
+            });
 
-            expect(notifications.get('content')).to.deep.equal([
-                {message: 'Single error', status: 'alert', type: 'error'}
-            ]);
+            let notification = notifications.get('alerts.firstObject');
+            expect(get(notification, 'message')).to.equal('Single error');
+            expect(get(notification, 'status')).to.equal('alert');
+            expect(get(notification, 'type')).to.equal('error');
+            expect(get(notification, 'key')).to.equal('api-error');
         });
 
         // used to display validation errors returned from the server
@@ -145,11 +187,13 @@ describeModule(
             var notifications = this.subject(),
                 resp = {jqXHR: {responseJSON: {errors: ['First error', 'Second error']}}};
 
-            notifications.showAPIError(resp);
+            run(() => {
+                notifications.showAPIError(resp);
+            });
 
-            expect(notifications.get('content')).to.deep.equal([
-                {message: 'First error', status: 'notification', type: 'error'},
-                {message: 'Second error', status: 'notification', type: 'error'}
+            expect(notifications.get('notifications')).to.deep.equal([
+                {message: 'First error', status: 'notification', type: 'error', key: undefined},
+                {message: 'Second error', status: 'notification', type: 'error', key: undefined}
             ]);
         });
 
@@ -157,43 +201,70 @@ describeModule(
             var notifications = this.subject(),
                 resp = {jqXHR: {responseJSON: {message: 'Single message'}}};
 
-            notifications.showAPIError(resp);
+            run(() => {
+                notifications.showAPIError(resp);
+            });
 
-            expect(notifications.get('content')).to.deep.equal([
-                {message: 'Single message', status: 'alert', type: 'error'}
-            ]);
+            let notification = notifications.get('alerts.firstObject');
+            expect(get(notification, 'message')).to.equal('Single message');
+            expect(get(notification, 'status')).to.equal('alert');
+            expect(get(notification, 'type')).to.equal('error');
+            expect(get(notification, 'key')).to.equal('api-error');
         });
 
         it('#showAPIError displays default error text if response has no error/message', function () {
             var notifications = this.subject(),
                 resp = {};
 
-            notifications.showAPIError(resp);
+            run(() => { notifications.showAPIError(resp); });
             expect(notifications.get('content')).to.deep.equal([
-                {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error'}
+                {message: 'There was a problem on the server, please try again.', status: 'alert', type: 'error', key: 'api-error'}
             ]);
 
             notifications.set('content', Ember.A());
 
-            notifications.showAPIError(resp, {defaultErrorText: 'Overridden default'});
+            run(() => {
+                notifications.showAPIError(resp, {defaultErrorText: 'Overridden default'});
+            });
             expect(notifications.get('content')).to.deep.equal([
-                {message: 'Overridden default', status: 'alert', type: 'error'}
+                {message: 'Overridden default', status: 'alert', type: 'error', key: 'api-error'}
             ]);
+        });
+
+        it('#showAPIError sets correct key when passed a base key', function () {
+            var notifications = this.subject();
+
+            run(() => {
+                notifications.showAPIError('Test', {key: 'test.alert'});
+            });
+
+            expect(notifications.get('alerts.firstObject.key')).to.equal('test.alert.api-error');
+        });
+
+        it('#showAPIError sets correct key when not passed a key', function () {
+            var notifications = this.subject();
+
+            run(() => {
+                notifications.showAPIError('Test');
+            });
+
+            expect(notifications.get('alerts.firstObject.key')).to.equal('api-error');
         });
 
         it('#displayDelayed moves delayed notifications into content', function () {
             var notifications = this.subject();
 
-            notifications.showNotification('First', {delayed: true});
-            notifications.showNotification('Second', {delayed: true});
-            notifications.showNotification('Third', {delayed: false});
+            run(() => {
+                notifications.showNotification('First', {delayed: true});
+                notifications.showNotification('Second', {delayed: true});
+                notifications.showNotification('Third', {delayed: false});
+                notifications.displayDelayed();
+            });
 
-            notifications.displayDelayed();
-
-            expect(notifications.get('content')).to.deep.equal([
-                {message: 'Third', status: 'notification', type: undefined},
-                {message: 'First', status: 'notification', type: undefined},
-                {message: 'Second', status: 'notification', type: undefined}
+            expect(notifications.get('notifications')).to.deep.equal([
+                {message: 'Third', status: 'notification', type: undefined, key: undefined},
+                {message: 'First', status: 'notification', type: undefined, key: undefined},
+                {message: 'Second', status: 'notification', type: undefined, key: undefined}
             ]);
         });
 
@@ -201,12 +272,16 @@ describeModule(
             var notification = {message: 'Close test', status: 'notification'},
                 notifications = this.subject();
 
-            notifications.handleNotification(notification);
+            run(() => {
+                notifications.handleNotification(notification);
+            });
 
             expect(notifications.get('notifications'))
                 .to.include(notification);
 
-            notifications.closeNotification(notification);
+            run(() => {
+                notifications.closeNotification(notification);
+            });
 
             expect(notifications.get('notifications'))
                 .to.not.include(notification);
@@ -226,40 +301,59 @@ describeModule(
             };
             sinon.spy(notification, 'save');
 
-            notifications.handleNotification(notification);
+            run(() => { notifications.handleNotification(notification); });
+
             expect(notifications.get('alerts')).to.include(notification);
 
-            notifications.closeNotification(notification);
+            run(() => { notifications.closeNotification(notification); });
 
             expect(notification.deleteRecord.calledOnce).to.be.true;
             expect(notification.save.calledOnce).to.be.true;
 
-            // wrap in runloop so filter updates
-            Ember.run.next(function () {
-                expect(notifications.get('alerts')).to.not.include(notification);
-            });
+            expect(notifications.get('alerts')).to.not.include(notification);
         });
 
         it('#closeNotifications only removes notifications', function () {
             var notifications = this.subject();
 
-            notifications.showAlert('First alert');
-            notifications.showNotification('First notification');
-            notifications.showNotification('Second notification', {doNotCloseNotifications: true});
-
-            expect(notifications.get('alerts.length')).to.equal(1);
-            expect(notifications.get('notifications.length')).to.equal(2);
-
-            notifications.closeNotifications();
-
-            // wrap in runloop so filter updates
-            Ember.run.next(function () {
-                expect(notifications.get('alerts.length')).to.equal(1);
-                expect(notifications.get('notifications.length')).to.equal(1);
+            run(() => {
+                notifications.showAlert('First alert');
+                notifications.showNotification('First notification');
+                notifications.showNotification('Second notification', {doNotCloseNotifications: true});
             });
+
+            expect(notifications.get('alerts.length'), 'alerts count').to.equal(1);
+            expect(notifications.get('notifications.length'), 'notifications count').to.equal(2);
+
+            run(() => { notifications.closeNotifications(); });
+
+            expect(notifications.get('alerts.length'), 'alerts count').to.equal(1);
+            expect(notifications.get('notifications.length'), 'notifications count').to.equal(0);
         });
 
-        it('#closeAll removes everything without deletion', function () {
+        it('#closeNotifications only closes notifications with specified key', function () {
+            var notifications = this.subject();
+
+            run(() => {
+                notifications.showAlert('First alert');
+                // using handleNotification as showNotification will auto-prune
+                // duplicates and keys will be removed if doNotCloseNotifications
+                // is true
+                notifications.handleNotification({message: 'First notification', key: 'test.close', status: 'notification'});
+                notifications.handleNotification({message: 'Second notification', key: 'test.keep', status: 'notification'});
+                notifications.handleNotification({message: 'Third notification', key: 'test.close', status: 'notification'});
+            });
+
+            run(() => {
+                notifications.closeNotifications('test.close');
+            });
+
+            expect(notifications.get('notifications.length'), 'notifications count').to.equal(1);
+            expect(notifications.get('notifications.firstObject.message'), 'notification message').to.equal('Second notification');
+            expect(notifications.get('alerts.length'), 'alerts count').to.equal(1);
+        });
+
+        it('#clearAll removes everything without deletion', function () {
             var notifications = this.subject(),
                 notificationModel = Ember.Object.create({message: 'model'});
 
@@ -276,11 +370,43 @@ describeModule(
             notifications.handleNotification(notificationModel);
             notifications.handleNotification({message: 'pojo'});
 
-            notifications.closeAll();
+            notifications.clearAll();
 
             expect(notifications.get('content')).to.be.empty;
             expect(notificationModel.deleteRecord.called).to.be.false;
             expect(notificationModel.save.called).to.be.false;
+        });
+
+        it('#closeAlerts only removes alerts', function () {
+            var notifications = this.subject();
+
+            notifications.showNotification('First notification');
+            notifications.showAlert('First alert');
+            notifications.showAlert('Second alert');
+
+            run(() => {
+                notifications.closeAlerts();
+            });
+
+            expect(notifications.get('alerts.length')).to.equal(0);
+            expect(notifications.get('notifications.length')).to.equal(1);
+        });
+
+        it('#closeAlerts closes only alerts with specified key', function () {
+            var notifications = this.subject();
+
+            notifications.showNotification('First notification');
+            notifications.showAlert('First alert', {key: 'test.close'});
+            notifications.showAlert('Second alert', {key: 'test.keep'});
+            notifications.showAlert('Third alert', {key: 'test.close'});
+
+            run(() => {
+                notifications.closeAlerts('test.close');
+            });
+
+            expect(notifications.get('alerts.length')).to.equal(1);
+            expect(notifications.get('alerts.firstObject.message')).to.equal('Second alert');
+            expect(notifications.get('notifications.length')).to.equal(1);
         });
     }
 );

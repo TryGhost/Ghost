@@ -16,16 +16,18 @@
                         {{gh-error-message errors=activeTag.errors property="name"}}
                     {{/gh-form-group}}
 
-                    <div class="form-group">
+                    {{#gh-form-group errors=activeTag.errors hasValidated=activeTag.hasValidated property="slug"}}
                         <label for="tag-url">URL</label>
                         {{gh-input id="tag-url" name="url" type="text" value=activeTagSlugScratch focus-out="saveActiveTagSlug"}}
                         {{gh-url-preview prefix="tag" slug=activeTagSlugScratch tagName="p" classNames="description"}}
-                    </div>
+                        {{gh-error-message errors=activeTag.errors property="slug"}}
+                    {{/gh-form-group}}
 
-                    <div class="form-group">
+                    {{#gh-form-group errors=activeTag.errors hasValidated=activeTag.hasValidated property="description"}}
                         <label for="tag-description">Description</label>
                         {{gh-textarea id="tag-description" name="description" value=activeTagDescriptionScratch focus-out="saveActiveTagDescription"}}
-                    </div>
+                        <p>Maximum: <b>200</b> characters. You’ve used {{gh-count-down-characters activeTagDescriptionScratch 200}}</p>
+                    {{/gh-form-group}}
 
                     <ul class="nav-list nav-list-block">
                         {{#gh-tab tagName="li" classNames="nav-list-item"}}
