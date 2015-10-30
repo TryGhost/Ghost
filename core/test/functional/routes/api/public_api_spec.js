@@ -84,7 +84,6 @@ describe('Public API', function () {
                 if (err) {
                     return done(err);
                 }
-                console.log('tags:', res.body.tags);
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
                 jsonResponse.tags.should.exist;
