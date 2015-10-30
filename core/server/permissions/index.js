@@ -118,7 +118,6 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         permission: Models.Permission,
         setting:    Models.Settings
     };
-
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
     return _.reduce(objTypes, function (objTypeHandlers, objType) {
         // Grab the TargetModel through the objectTypeModelMap
@@ -170,9 +169,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                         // TODO: String vs Int comparison possibility here?
                         return modelId === permObjId;
                     };
-                // Check user permissions for matching action, object and id.
 
-                if (_.any(loadedPermissions.user.roles, {name: 'Owner'})) {
+                if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Owner'})) {
                     hasUserPermission = true;
                 } else if (!_.isEmpty(userPermissions)) {
                     hasUserPermission = _.any(userPermissions, checkPermission);

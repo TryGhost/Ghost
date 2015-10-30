@@ -40,7 +40,7 @@ describe('Notifications API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -75,7 +75,7 @@ describe('Notifications API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {

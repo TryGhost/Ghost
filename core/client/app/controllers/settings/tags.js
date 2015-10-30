@@ -1,9 +1,8 @@
 import Ember from 'ember';
-import PaginationMixin from 'ghost/mixins/pagination-controller';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
+export default Ember.Controller.extend(SettingsMenuMixin, {
     tags: Ember.computed.alias('model'),
 
     activeTag: null,
@@ -12,12 +11,6 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
     activeTagDescriptionScratch: boundOneWay('activeTag.description'),
     activeTagMetaTitleScratch: boundOneWay('activeTag.meta_title'),
     activeTagMetaDescriptionScratch: boundOneWay('activeTag.meta_description'),
-
-    init: function (options) {
-        options = options || {};
-        options.modelType = 'tag';
-        this._super(options);
-    },
 
     application: Ember.inject.controller(),
     config: Ember.inject.service(),
@@ -57,7 +50,7 @@ export default Ember.Controller.extend(PaginationMixin, SettingsMenuMixin, {
 
         activeTag.save().catch(function (error) {
             if (error) {
-                self.notifications.showAPIError(error);
+                self.get('notifications').showAPIError(error, {key: 'tag.save'});
             }
         });
     },

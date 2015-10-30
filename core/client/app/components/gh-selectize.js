@@ -27,7 +27,7 @@ export default EmberSelectizeComponent.extend({
     * Event callback that is triggered when user creates a tag
     * - modified to pass the caret position to the action
     */
-    _create(input, callback) {
+    _create: function (input, callback) {
         var caret = this._selectize.caretPos;
 
         // Delete user entered text
@@ -43,7 +43,7 @@ export default EmberSelectizeComponent.extend({
         callback(null);
     },
 
-    _addSelection(obj) {
+    _addSelection: function (obj) {
         var _valuePath = this.get('_valuePath'),
             val = Ember.get(obj, _valuePath),
             caret = this._selectize.caretPos;

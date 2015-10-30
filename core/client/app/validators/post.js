@@ -1,6 +1,6 @@
 import BaseValidator from './base';
 
-var PostValidator = BaseValidator.create({
+export default BaseValidator.create({
     properties: ['title', 'metaTitle', 'metaDescription'],
 
     title: function (model) {
@@ -35,5 +35,3 @@ var PostValidator = BaseValidator.create({
         }
     }
 });
-
-export default PostValidator;

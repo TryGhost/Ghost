@@ -23,7 +23,7 @@ utils = {
     // ### Manual Default Options
     // These must be provided by the endpoint
     // browseDefaultOptions - valid for all browse api endpoints
-    browseDefaultOptions: ['page', 'limit', 'fields'],
+    browseDefaultOptions: ['page', 'limit', 'fields', 'filter'],
     // idDefaultOptions - valid whenever an id is valid
     idDefaultOptions: ['id'],
 
@@ -38,8 +38,7 @@ utils = {
         /**
          * ### Do Validate
          * Validate the object and options passed to an endpoint
-         * @argument object
-         * @argument options
+         * @argument {...*} [arguments] object or object and options hash
          */
         return function doValidate() {
             var object, options, permittedOptions;
@@ -114,11 +113,11 @@ utils = {
                 slug: {isSlug: true},
                 page: {matches: /^\d+$/},
                 limit: {matches: /^\d+|all$/},
-                fields: {matches: /^[a-z0-9_,]+$/},
+                fields: {matches: /^[\w, ]+$/},
                 name: {}
             },
             // these values are sanitised/validated separately
-            noValidation = ['data', 'context', 'include'],
+            noValidation = ['data', 'context', 'include', 'filter'],
             errors = [];
 
         _.each(options, function (value, key) {
@@ -183,7 +182,7 @@ utils = {
             return permsPromise.then(function permissionGranted() {
                 return options;
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error);
+                return errors.formatAndRejectAPIError(error);
             });
         };
     },
@@ -214,25 +213,28 @@ utils = {
                 // forward error to next catch()
                 return Promise.reject(error);
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error);
+                return errors.formatAndRejectAPIError(error);
             });
         };
     },
 
-    prepareInclude: function prepareInclude(include, allowedIncludes) {
-        include = include || '';
-        include = _.intersection(include.split(','), allowedIncludes);
+    trimAndLowerCase: function trimAndLowerCase(params) {
+        params = params || '';
+        if (_.isString(params)) {
+            params = params.split(',');
+        }
 
-        return include;
+        return _.map(params, function (item) {
+            return item.trim().toLowerCase();
+        });
+    },
+
+    prepareInclude: function prepareInclude(include, allowedIncludes) {
+        return _.intersection(this.trimAndLowerCase(include), allowedIncludes);
     },
 
     prepareFields: function prepareFields(fields) {
-        fields = fields || '';
-        if (_.isString(fields)) {
-            fields = fields.split(',');
-        }
-
-        return fields;
+        return this.trimAndLowerCase(fields);
     },
 
     /**

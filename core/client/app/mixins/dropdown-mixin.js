@@ -2,7 +2,7 @@ import Ember from 'ember';
 /*
   Dropdowns and their buttons are evented and do not propagate clicks.
 */
-var DropdownMixin = Ember.Mixin.create(Ember.Evented, {
+export default Ember.Mixin.create(Ember.Evented, {
     classNameBindings: ['isOpen:open:closed'],
     isOpen: false,
 
@@ -12,5 +12,3 @@ var DropdownMixin = Ember.Mixin.create(Ember.Evented, {
         return event.stopPropagation();
     }
 });
-
-export default DropdownMixin;

@@ -6,7 +6,7 @@ import {
     ghUserCanAdmin
 } from 'ghost/helpers/gh-user-can-admin';
 
-describe ('GhUserCanAdminHelper', function () {
+describe ('Unit: Helper: gh-user-can-admin', function () {
     // Mock up roles and test for truthy
     describe ('Owner role', function () {
         var user = {get: function (role) {

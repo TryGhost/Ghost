@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-infinite-scroll',
-    'GhInfiniteScrollComponent',
+    'Unit: Component: gh-infinite-scroll',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },

@@ -1,14 +1,15 @@
 import Ember from 'ember';
-var countCharacters = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
+
+export default Ember.Helper.helper(function (params) {
     var el = document.createElement('span'),
         length,
         content;
 
-    if (!arr || !arr.length) {
+    if (!params || !params.length) {
         return;
     }
 
-    content = arr[0] || '';
+    content = params[0] || '';
     length = content.length;
 
     el.className = 'word-count';
@@ -23,5 +24,3 @@ var countCharacters = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams
 
     return Ember.String.htmlSafe(el.outerHTML);
 });
-
-export default countCharacters;

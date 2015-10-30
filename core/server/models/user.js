@@ -164,17 +164,6 @@ User = ghostBookshelf.Model.extend({
     }
 
 }, {
-    setupFilters: function setupFilters(options) {
-        var filterObjects = {};
-        // Deliberately switch from singular 'tag' to 'tags' and 'role' to 'roles' here
-        // TODO: make this consistent
-        if (options.role !== undefined) {
-            filterObjects.roles = ghostBookshelf.model('Role').forge({name: options.role});
-        }
-
-        return filterObjects;
-    },
-
     findPageDefaultOptions: function findPageDefaultOptions() {
         return {
             status: 'active',
@@ -228,7 +217,6 @@ User = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['withRelated', 'status'],
-                findAll: ['withRelated'],
                 setup: ['id'],
                 edit: ['withRelated', 'id'],
                 findPage: ['page', 'limit', 'columns', 'status']
@@ -239,18 +227,6 @@ User = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
-
-    /**
-     * ### Find All
-     *
-     * @param {Object} options
-     * @returns {*}
-     */
-    findAll:  function findAll(options) {
-        options = options || {};
-        options.withRelated = _.union(options.withRelated, options.include);
-        return ghostBookshelf.Model.findAll.call(this, options);
     },
 
     /**
@@ -469,17 +445,17 @@ User = ghostBookshelf.Model.extend({
 
         if (action === 'edit') {
             // Owner can only be editted by owner
-            if (userModel.hasRole('Owner')) {
+            if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 hasUserPermission = _.any(loadedPermissions.user.roles, {name: 'Owner'});
             }
             // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-            if (_.any(loadedPermissions.user.roles, {name: 'Author'})) {
+            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Author'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = hasUserPermission || context.user === userModel.get('id');
             }
 
-            if (_.any(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 
@@ -490,12 +466,12 @@ User = ghostBookshelf.Model.extend({
 
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
-            if (userModel.hasRole('Owner')) {
+            if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (_.any(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 

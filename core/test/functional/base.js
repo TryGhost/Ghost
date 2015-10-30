@@ -291,7 +291,7 @@ casper.on('error', function (msg, trace) {
     if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
-        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+        casper.echoConcise('function: ' + trace[0].function, 'WARNING');
     }
     jsErrors.push(msg);
 });
@@ -302,7 +302,7 @@ casper.on('page.error', function (msg, trace) {
     if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
-        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+        casper.echoConcise('function: ' + trace[0].function, 'WARNING');
     }
     pageErrors.push(msg);
 });
@@ -459,7 +459,7 @@ CasperTest.Routines = (function () {
                 casper.captureScreenshot('signing_in2.png');
             });
 
-            casper.waitForResource(/posts\/\?status=all&staticPages=all/, function then() {
+            casper.waitForResource(/posts\/\?(?=.*status=all)(?=.*staticPages=all)/, function then() {
                 casper.captureScreenshot('signing_in.png');
             }, function timeout() {
                 casper.test.fail('Unable to signin and load admin panel');

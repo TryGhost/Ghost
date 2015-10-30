@@ -19,6 +19,7 @@ var _          = require('lodash'),
     validation = require('../../data/validation'),
     baseUtils  = require('./utils'),
     pagination = require('./pagination'),
+    gql        = require('ghost-gql'),
 
     ghostBookshelf;
 
@@ -187,7 +188,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * Returns an array of keys permitted in every method's `options` hash.
      * Can be overridden and added to by a model's `permittedOptions` method.
-     * @return {Array} Keys allowed in the `options` hash of every model's method.
+     * @return {Object} Keys allowed in the `options` hash of every model's method.
      */
     permittedOptions: function permittedOptions() {
         // terms to whitelist for all methods.
@@ -229,6 +230,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      */
     findAll: function findAll(options) {
         options = this.filterOptions(options, 'findAll');
+        options.withRelated = _.union(options.withRelated, options.include);
         return this.forge().fetchAll(options).then(function then(result) {
             if (options.include) {
                 _.each(result.models, function each(item) {
@@ -264,8 +266,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         var self = this,
             itemCollection = this.forge(),
-            tableName      = _.result(this.prototype, 'tableName'),
-            filterObjects = self.setupFilters(options);
+            tableName      = _.result(this.prototype, 'tableName');
 
         // Filter options so that only permitted ones remain
         options = this.filterOptions(options, 'findPage');
@@ -276,29 +277,38 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Run specific conversion of model query options to where options
         options = this.processOptions(itemCollection, options);
 
-        // Prefetch filter objects
-        return Promise.all(baseUtils.filtering.preFetch(filterObjects)).then(function doQuery() {
-            // If there are `where` conditionals specified, add those to the query.
-            if (options.where) {
-                itemCollection.query('where', options.where);
-            }
+        // Ensure only valid fields/columns are added to query
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+        }
 
-            // Setup filter joins / queries
-            baseUtils.filtering.query(filterObjects, itemCollection);
+        // If there are `where` conditionals specified, add those to the query.
+        if (options.where) {
+            itemCollection.query('where', options.where);
+        }
 
-            // Handle related objects
-            // TODO: this should just be done for all methods @ the API level
-            options.withRelated = _.union(options.withRelated, options.include);
-
-            options.order = self.orderDefaultOptions();
-
-            return itemCollection.fetchPage(options).then(function formatResponse(response) {
-                var data = {};
-                data[tableName] = response.collection.toJSON(options);
-                data.meta = {pagination: response.pagination};
-
-                return baseUtils.filtering.formatResponse(filterObjects, options, data);
+        // Apply FILTER
+        if (options.filter) {
+            options.filter = gql.parse(options.filter);
+            itemCollection.query(function (qb) {
+                gql.knexify(qb, options.filter);
             });
+
+            baseUtils.processGQLResult(itemCollection, options);
+        }
+
+        // Handle related objects
+        // TODO: this should just be done for all methods @ the API level
+        options.withRelated = _.union(options.withRelated, options.include);
+
+        options.order = self.orderDefaultOptions();
+
+        return itemCollection.fetchPage(options).then(function formatResponse(response) {
+            var data = {};
+            data[tableName] = response.collection.toJSON(options);
+            data.meta = {pagination: response.pagination};
+
+            return data;
         }).catch(errors.logAndThrowError);
     },
 
