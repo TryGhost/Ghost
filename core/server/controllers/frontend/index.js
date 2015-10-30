@@ -34,13 +34,12 @@ var _           = require('lodash'),
 */
 function renderPost(req, res) {
     return function renderPost(post) {
-        return getActiveThemePaths().then(function then(paths) {
-            var view = template.getThemeViewForPost(paths, post),
-                response = formatResponse.single(post);
+        var paths = getActiveThemePaths(req),
+            view = template.getThemeViewForPost(paths, post),
+            response = formatResponse.single(post);
 
-            setResponseContext(req, res, response);
-            res.render(view, response);
-        });
+        setResponseContext(req, res, response);
+        res.render(view, response);
     };
 }
 
@@ -91,23 +90,23 @@ function renderChannel(channelOpts) {
 
             // @TODO: properly design these filters
             filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
-                getActiveThemePaths().then(function then(paths) {
-                    // Calculate which template to use to render the data
-                    var view = 'index';
-                    if (channelOpts.firstPageTemplate && paths.hasOwnProperty(channelOpts.firstPageTemplate + '.hbs')) {
-                        view = (pageParam > 1) ? 'index' : channelOpts.firstPageTemplate;
-                    } else if (channelOpts.slugTemplate) {
-                        view = template.getThemeViewForChannel(paths, channelOpts.name, slugParam);
-                    } else if (paths.hasOwnProperty(channelOpts.name + '.hbs')) {
-                        view = channelOpts.name;
-                    }
+                var paths = getActiveThemePaths(req),
+                    view = 'index';
 
-                    // Do final data formatting and then render
-                    result.posts = posts;
-                    result = formatResponse.channel(result);
-                    setResponseContext(req, res);
-                    res.render(view, result);
-                });
+                // Calculate which template to use to render the data
+                if (channelOpts.firstPageTemplate && paths.hasOwnProperty(channelOpts.firstPageTemplate + '.hbs')) {
+                    view = (pageParam > 1) ? 'index' : channelOpts.firstPageTemplate;
+                } else if (channelOpts.slugTemplate) {
+                    view = template.getThemeViewForChannel(paths, channelOpts.name, slugParam);
+                } else if (paths.hasOwnProperty(channelOpts.name + '.hbs')) {
+                    view = channelOpts.name;
+                }
+
+                // Do final data formatting and then render
+                result.posts = posts;
+                result = formatResponse.channel(result);
+                setResponseContext(req, res);
+                res.render(view, result);
             });
         }).catch(handleError(next));
     };
@@ -248,20 +247,20 @@ frontendControllers = {
         }).catch(handleError(next));
     },
     private: function private(req, res) {
-        var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs');
-        return getActiveThemePaths().then(function then(paths) {
-            var data = {};
-            if (res.error) {
-                data.error = res.error;
-            }
+        var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs'),
+            paths = getActiveThemePaths(req),
+            data = {};
 
-            setResponseContext(req, res);
-            if (paths.hasOwnProperty('private.hbs')) {
-                return res.render('private', data);
-            } else {
-                return res.render(defaultPage, data);
-            }
-        });
+        if (res.error) {
+            data.error = res.error;
+        }
+
+        setResponseContext(req, res);
+        if (paths.hasOwnProperty('private.hbs')) {
+            return res.render('private', data);
+        } else {
+            return res.render(defaultPage, data);
+        }
     }
 };
 
