@@ -5,6 +5,10 @@ export default DS.RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
+    shouldBackgroundReloadRecord: function () {
+        return false;
+    },
+
     query: function (store, type, query) {
         var id;
 
