@@ -330,6 +330,54 @@ describe('Post API', function () {
                 done();
             }).catch(done);
         });
+
+        it('can order posts using asc', function (done) {
+            var posts, expectedTitles;
+
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).pluck('title').sortBy().value();
+
+            PostAPI.browse({context: {user: 1}, status: 'all', order: 'title asc', fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                var titles = _.pluck(results.posts, 'title');
+                titles.should.eql(expectedTitles);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can order posts using desc', function (done) {
+            var posts, expectedTitles;
+
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).pluck('title').sortBy().reverse().value();
+
+            PostAPI.browse({context: {user: 1}, status: 'all', order: 'title DESC', fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                var titles = _.pluck(results.posts, 'title');
+                titles.should.eql(expectedTitles);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can order posts and filter disallowed attributes', function (done) {
+            var posts, expectedTitles;
+
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).pluck('title').sortBy().value();
+
+            PostAPI.browse({context: {user: 1}, status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                var titles = _.pluck(results.posts, 'title');
+                titles.should.eql(expectedTitles);
+
+                done();
+            }).catch(done);
+        });
     });
 
     describe('Read', function () {
