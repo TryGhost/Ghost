@@ -219,7 +219,7 @@ User = ghostBookshelf.Model.extend({
                 findOne: ['withRelated', 'status'],
                 setup: ['id'],
                 edit: ['withRelated', 'id'],
-                findPage: ['page', 'limit', 'columns', 'status']
+                findPage: ['page', 'limit', 'columns', 'order', 'status']
             };
 
         if (validOptions[methodName]) {

@@ -23,7 +23,7 @@ utils = {
     // ### Manual Default Options
     // These must be provided by the endpoint
     // browseDefaultOptions - valid for all browse api endpoints
-    browseDefaultOptions: ['page', 'limit', 'fields', 'filter'],
+    browseDefaultOptions: ['page', 'limit', 'fields', 'filter', 'order'],
     // idDefaultOptions - valid whenever an id is valid
     idDefaultOptions: ['id'],
 
@@ -114,6 +114,7 @@ utils = {
                 page: {matches: /^\d+$/},
                 limit: {matches: /^\d+|all$/},
                 fields: {matches: /^[\w, ]+$/},
+                order: {matches: /^[a-z0-9_,\. ]+$/i},
                 name: {}
             },
             // these values are sanitised/validated separately

@@ -139,6 +139,52 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        it('can browse and order by name using asc', function (done) {
+            var expectedUsers;
+
+            UserAPI.browse(testUtils.context.admin)
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedUsers = _(results.users).pluck('slug').sortBy().value();
+
+                    return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug asc'}));
+                })
+                .then(function (results) {
+                    var users;
+
+                    should.exist(results);
+
+                    users = _.pluck(results.users, 'slug');
+                    users.should.eql(expectedUsers);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('can browse and order by name using desc', function (done) {
+            var expectedUsers;
+
+            UserAPI.browse(testUtils.context.admin)
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedUsers = _(results.users).pluck('slug').sortBy().reverse().value();
+
+                    return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug desc'}));
+                })
+                .then(function (results) {
+                    var users;
+
+                    should.exist(results);
+
+                    users = _.pluck(results.users, 'slug');
+                    users.should.eql(expectedUsers);
+                })
+                .then(done)
+                .catch(done);
+        });
     });
 
     describe('Read', function () {
