@@ -60,7 +60,9 @@ export default Ember.Mixin.create({
             key(shortcut, scope, function (event) {
                 // stop things like ctrl+s from actually opening a save dialogue
                 event.preventDefault();
-                self.send(action, options);
+                Ember.run(self, function () {
+                    this.send(action, options);
+                });
             });
         });
     },

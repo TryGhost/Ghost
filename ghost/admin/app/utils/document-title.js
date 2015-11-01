@@ -50,11 +50,7 @@ export default function () {
         }),
 
         setTitle: function (title) {
-            if (Ember.testing) {
-                this._title = title;
-            } else {
-                window.document.title = title;
-            }
+            window.document.title = title;
         }
     });
 }

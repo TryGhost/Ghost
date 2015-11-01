@@ -37,10 +37,12 @@ export default Ember.Component.extend(DropdownMixin, {
         }
         this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
             if (event.originalEvent.animationName === 'fade-out') {
-                if (self.get('closing')) {
-                    self.set('isOpen', false);
-                    self.set('closing', false);
-                }
+                Ember.run(self, function () {
+                    if (this.get('closing')) {
+                        this.set('isOpen', false);
+                        this.set('closing', false);
+                    }
+                });
             }
         });
     },
