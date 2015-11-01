@@ -9,6 +9,14 @@ var testUtils   = require('../../utils'),
 
     TagAPI      = require('../../../server/api/tags');
 
+// there are some random generated tags in test database
+// which can't be sorted easily using _.sortBy()
+// so we filter them out and leave only pre-built fixtures
+// usage: tags.filter(onlyFixtures)
+function onlyFixtures(slug) {
+    return testUtils.DataGenerator.Content.tags.indexOf(slug) >= 0;
+}
+
 describe('Tags API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
@@ -258,6 +266,52 @@ describe('Tags API', function () {
 
                 done();
             }).catch(done);
+        });
+
+        it('can browse and order by slug using asc', function (done) {
+            var expectedTags;
+
+            TagAPI.browse({context: {user: 1}})
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedTags = _(results.tags).pluck('slug').filter(onlyFixtures).sortBy().value();
+
+                    return TagAPI.browse({context: {user: 1}, order: 'slug asc'});
+                })
+                .then(function (results) {
+                    var tags;
+
+                    should.exist(results);
+
+                    tags = _(results.tags).pluck('slug').filter(onlyFixtures).value();
+                    tags.should.eql(expectedTags);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('can browse and order by slug using desc', function (done) {
+            var expectedTags;
+
+            TagAPI.browse({context: {user: 1}})
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedTags = _(results.tags).pluck('slug').filter(onlyFixtures).sortBy().reverse().value();
+
+                    return TagAPI.browse({context: {user: 1}, order: 'slug desc'});
+                })
+                .then(function (results) {
+                    var tags;
+
+                    should.exist(results);
+
+                    tags = _(results.tags).pluck('slug').filter(onlyFixtures).value();
+                    tags.should.eql(expectedTags);
+                })
+                .then(done)
+                .catch(done);
         });
     });
 
