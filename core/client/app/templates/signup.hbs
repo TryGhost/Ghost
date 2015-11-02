@@ -11,11 +11,11 @@
                 <input style="display:none;" type="text" name="fakeusernameremembered"/>
                 <input style="display:none;" type="password" name="fakepasswordremembered"/>
 
-                {{gh-profile-image fileStorage=config.fileStorage email=validEmail setImage="setImage"}}
+                {{gh-profile-image fileStorage=config.fileStorage email=model.email setImage="setImage"}}
                 {{#gh-form-group errors=model.errors hasValidated=hasValidated property="email"}}
                     <label for="email-address">Email address</label>
                     <span class="input-icon icon-mail">
-                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" enter=(action "signup") disabled="disabled" autocorrect="off" value=model.email focusOut=(action "handleEmail")}}
+                        {{gh-input type="email" name="email" placeholder="Eg. john@example.com" enter=(action "signup") disabled="disabled" autocorrect="off" value=model.email focusOut=(action "validate" "email")}}
                     </span>
                     {{gh-error-message errors=model.errors property="email"}}
                 {{/gh-form-group}}
