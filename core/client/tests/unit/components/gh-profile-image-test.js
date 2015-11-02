@@ -23,17 +23,21 @@ describeComponent(
             this.render();
             expect(component._state).to.equal('inDOM');
         });
-        it('renders the gravatar image background if email is supplied', function () {
+        it('renders the gravatar image background if valid gravatar email is supplied', function () {
             var component = this.subject(),
                 testEmail = 'test@example.com',
-                style, size;
+                size = component.get('size'),
+                imageUrl = 'http://www.gravatar.com/avatar/' + md5(testEmail) + '?s=' + size + '&d=404',
+                style;
 
             component.set('email', testEmail);
+            component.set('imageBackgroundUrl', {
+                value: imageUrl
+            });
+
             this.render();
 
-            size = component.get('size');
-
-            style = 'url(http://www.gravatar.com/avatar/' + md5(testEmail) + '?s=' + size + '&d=blank)';
+            style = 'url(' + imageUrl + ')';
 
             expect(component.$('#account-image').css('background-image')).to.equal(style);
         });
