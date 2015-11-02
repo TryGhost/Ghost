@@ -8,7 +8,8 @@ apiRoutes = function apiRoutes(middleware) {
         // Authentication for public endpoints
         authenticatePublic = [
             middleware.api.authenticateClient,
-            middleware.api.authenticateUser
+            middleware.api.authenticateUser,
+            middleware.api.requiresAuthorizedUserPublicAPI
         ],
         // Require user for private endpoints
         authenticatePrivate = [
