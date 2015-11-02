@@ -3,6 +3,7 @@ var _           = require('lodash'),
     url         = require('url'),
     errors      = require('../errors'),
     config      = require('../config'),
+    api         = require('../api'),
     oauthServer,
 
     auth;
@@ -128,6 +129,30 @@ auth = {
         } else {
             return errors.handleAPIError(new errors.NoPermissionError('Please Sign In'), req, res, next);
         }
+    },
+
+    // ### Require user depending on public API being activated.
+    requiresAuthorizedUserPublicAPI: function requiresAuthorizedUserPublicAPI(req, res, next) {
+        return api.settings.read({key: 'labs', context: {internal: true}}).then(function (response) {
+            var labs,
+                labsValue;
+
+            labs = _.find(response.settings, function (setting) {
+                return setting.key === 'labs';
+            });
+
+            labsValue = JSON.parse(labs.value);
+
+            if (labsValue.publicAPI && labsValue.publicAPI === true) {
+                return next();
+            } else {
+                if (req.user) {
+                    return next();
+                } else {
+                    return errors.handleAPIError(new errors.NoPermissionError('Please Sign In'), req, res, next);
+                }
+            }
+        });
     },
 
     // ### Generate access token Middleware
