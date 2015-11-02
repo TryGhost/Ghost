@@ -8,9 +8,9 @@ var _ = require('lodash'),
     addPostCount,
     tagUpdate;
 
-addPostCount = function addPostCount(options, itemCollection) {
+addPostCount = function addPostCount(options, model) {
     if (options.include && options.include.indexOf('post_count') > -1) {
-        itemCollection.query('columns', 'tags.*', function (qb) {
+        model.query('columns', 'tags.*', function (qb) {
             qb.count('posts_tags.post_id').from('posts_tags').whereRaw('tag_id = tags.id').as('post_count');
         });
 
@@ -20,8 +20,8 @@ addPostCount = function addPostCount(options, itemCollection) {
 };
 
 collectionQuery = {
-    count: function count(collection, options) {
-        addPostCount(options, collection);
+    count: function count(model, options) {
+        addPostCount(options, model);
     }
 };
 
