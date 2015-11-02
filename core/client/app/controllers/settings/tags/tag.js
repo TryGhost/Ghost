@@ -1,11 +1,14 @@
 import Ember from 'ember';
 
-const {computed} = Ember,
+const {computed, inject} = Ember,
       {alias} = computed;
 
 export default Ember.Controller.extend({
 
     tag: alias('model'),
+    isMobile: alias('tagsController.isMobile'),
+
+    tagsController: inject.controller('settings.tags'),
 
     saveTagProperty: function (propKey, newValue) {
         const tag = this.get('tag'),
