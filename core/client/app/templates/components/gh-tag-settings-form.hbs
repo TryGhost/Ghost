@@ -1,6 +1,12 @@
 <div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
-    <div class="settings-menu-header">
-        <h4>{{title}}</h4>
+    <div class="settings-menu-header {{if isMobile 'subview'}}">
+        {{#if isMobile}}
+            {{#link-to 'settings.tags' class="back icon-arrow-left settings-menu-header-action"}}<span class="hidden">Back</span>{{/link-to}}
+            <h4>{{title}}</h4>
+            <div style="width:23px;">{{!flexbox space-between}}</div>
+        {{else}}
+            <h4>{{title}}</h4>
+        {{/if}}
     </div>
     <div class="settings-menu-content">
         {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=tag.image initUploader="setUploaderReference" tagName="section"}}
