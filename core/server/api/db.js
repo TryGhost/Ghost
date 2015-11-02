@@ -66,7 +66,7 @@ db = {
         function validate(options) {
             // Check if a file was provided
             if (!utils.checkFileExists(options, 'importfile')) {
-                return Promise.reject(new errors.NoPermissionError('Please select a file to import.'));
+                return Promise.reject(new errors.ValidationError('Please select a file to import.'));
             }
 
             // Check if the file is valid
