@@ -76,6 +76,17 @@
     background: #fff;
 }
 
+@media (max-width: 600px) {
+    .tag-list {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .settings-tag .tag-edit-button.active {
+        border-left: none;
+    }
+}
+
 /* Tag Settings (Right pane)
 /* ---------------------------------------------------------- */
 
@@ -94,6 +105,29 @@
     transform: none;
 }
 
+.tag-settings .no-posts {
+    padding: 1em;
+}
+
 .tag-settings .no-posts h3 {
     text-align: center;
+}
+
+.tag-settings .settings-menu-pane {
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+@media (max-width: 600px) {
+    .tag-settings {
+        min-width: 0;
+        width: 100%;
+        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+        transform: translate3d(100%, 0px, 0px);
+
+        transform-style: preserve-3d;
+    }
+
+    .tag-settings-in {
+        transform: translate3d(0px, 0px, 0px);
+    }
 }
