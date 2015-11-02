@@ -167,12 +167,6 @@ describe('Frontend Controller', function () {
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeTheme',
-                    value: 'casper'
-                }]
-            }));
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
                     key: 'postsPerPage',
@@ -181,6 +175,7 @@ describe('Frontend Controller', function () {
             }));
 
             req = {
+                app: {get: function () { return 'casper';}},
                 path: '/', params: {}, route: {}
             };
 
@@ -257,13 +252,6 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeTheme',
-                    value: 'casper'
-                }]
-            }));
-
             apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
                 settings: [{
                     key: 'postsPerPage',
@@ -278,6 +266,7 @@ describe('Frontend Controller', function () {
             }));
 
             req = {
+                app: {get: function () { return 'casper';}},
                 path: '/', params: {}, route: {}
             };
 
@@ -507,12 +496,6 @@ describe('Frontend Controller', function () {
             });
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeTheme',
-                    value: 'casper'
-                }]
-            }));
 
             casper = {
                 assets: null,
@@ -524,6 +507,7 @@ describe('Frontend Controller', function () {
             };
 
             req = {
+                app: {get: function () { return 'casper'; }},
                 path: '/', params: {}, route: {}
             };
 
@@ -1008,23 +992,20 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /:year/:slug/', function (done) {
-                    var date = moment(mockPosts[1].posts[0].published_at).format('YYYY'),
-                        req = {
-                            path: '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/',
-                            route: {
-                                path: '*'
-                            },
-                            params: {}
-                        },
-                        res = {
-                            locals: {},
-                            render: function (view, context) {
-                                view.should.equal('post');
-                                should.exist(context.post);
-                                context.post.should.equal(mockPosts[1].posts[0]);
-                                done();
-                            }
-                        };
+                    var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
+
+                    req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
+                    req.route = {path: '*'};
+
+                    res = {
+                        locals: {},
+                        render: function (view, context) {
+                            view.should.equal('post');
+                            should.exist(context.post);
+                            context.post.should.equal(mockPosts[1].posts[0]);
+                            done();
+                        }
+                    };
 
                     frontend.single(req, res, failTest(done));
                 });
@@ -1271,6 +1252,7 @@ describe('Frontend Controller', function () {
             };
 
             req = {
+                app: {get: function () { return 'casper'; }},
                 route: {path: '/private/?r=/'},
                 query: {r: ''},
                 params: {}
@@ -1279,12 +1261,6 @@ describe('Frontend Controller', function () {
             defaultPath = path.join(config.paths.appRoot, '/core/server/views/private.hbs');
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeTheme',
-                    value: 'casper'
-                }]
-            }));
         });
 
         it('Should render default password page when theme has no password template', function (done) {
@@ -1389,14 +1365,8 @@ describe('Frontend Controller', function () {
 
             apiSettingsStub = sandbox.stub(api.settings, 'read');
 
-            apiSettingsStub.withArgs(sinon.match.has('key', 'activeTheme')).returns(Promise.resolve({
-                settings: [{
-                    key: 'activeTheme',
-                    value: 'casper'
-                }]
-            }));
-
             req = {
+                app: {get: function () {return 'casper'; }},
                 path: '/', params: {}, route: {}
             };
 
