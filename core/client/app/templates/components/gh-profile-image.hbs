@@ -1,11 +1,11 @@
 <figure class="account-image js-file-upload">
     {{#unless hasUploadedImage}}
-        <div class="placeholder-img" style={{defaultImage}}></div>
-
         {{#if hasEmail}}
             <div id="account-image" class="gravatar-img" style={{imageBackground}}>
                 <span class="sr-only">User image</span>
             </div>
+        {{else}}
+            <div class="placeholder-img" style={{defaultImage}}></div>
         {{/if}}
     {{/unless}}
 
