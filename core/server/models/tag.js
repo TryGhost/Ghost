@@ -1,7 +1,6 @@
 var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
-    baseUtils      = require('./base/utils'),
     Tag,
     Tags;
 
@@ -100,8 +99,6 @@ Tag = ghostBookshelf.Model.extend({
         data = this.filterData(data, 'findOne');
 
         var tag = this.forge(data);
-
-        baseUtils.addPostCount(options, tag);
 
         // Add related objects
         options.withRelated = _.union(options.withRelated, options.include);
