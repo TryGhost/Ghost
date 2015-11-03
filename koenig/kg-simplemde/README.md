@@ -98,6 +98,7 @@ simplemde.value("This text will appear in the editor");
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
 
 ```JavaScript
+// Most options demonstrate the non-default behavior
 var simplemde = new SimpleMDE({
 	autofocus: true,
 	autosave: {
