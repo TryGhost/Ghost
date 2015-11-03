@@ -15,7 +15,7 @@ var marked = require("marked");
 var isMac = /Mac/.test(navigator.platform);
 
 var shortcuts = {
-	'Cmd-B': toggleBold,
+	"Cmd-B": toggleBold,
 	"Cmd-I": toggleItalic,
 	"Cmd-K": drawLink,
 	"Cmd-H": toggleHeadingSmaller,
