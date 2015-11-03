@@ -136,7 +136,7 @@ var simplemde = new SimpleMDE({
 
 #### Toolbar icons
 
-Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. The `Ctrl` and `Alt` in the title tags will be changed automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
+Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. Any `Ctrl` or `Alt` in the title tags will be converted automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
 Name | Action | Tooltip<br>Class
 :--- | :----- | :--------------
@@ -175,7 +175,7 @@ var simplemde = new SimpleMDE({
 			name: "bold",
 			action: SimpleMDE.toggleBold,
 			className: "fa fa-bold",
-			title: "Bold (Ctrl+B)", // 'Ctrl' is replaced with '⌘' on Mac
+			title: "Bold (Ctrl+B)",
 		},
 		"|", // Separator
 		...
