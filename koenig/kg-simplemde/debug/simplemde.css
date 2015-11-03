@@ -659,6 +659,6 @@ span.CodeMirror-selectedtext { background: none; }
 .CodeMirror .CodeMirror-code .cm-strikethrough {
 	text-decoration: line-through;
 }
-.CodeMirror .cm-spell-error:not(.cm-url):not(.cm-comment) {
+.CodeMirror .cm-spell-error:not(.cm-url):not(.cm-comment):not(.cm-tag):not(.cm-word) {
 	 background: rgba(255, 0, 0, .15);
 }
