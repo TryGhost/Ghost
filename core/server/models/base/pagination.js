@@ -3,7 +3,6 @@
 // Extends Bookshelf.Model with a `fetchPage` method. Handles everything to do with paginated requests.
 var _          = require('lodash'),
     Promise    = require('bluebird'),
-    baseUtils  = require('./utils'),
 
     defaults,
     paginationUtils,
@@ -172,9 +171,6 @@ pagination = function pagination(bookshelf) {
                     self.query('groupBy', group);
                 });
             }
-
-            // Apply count options if they are present
-            baseUtils.collectionQuery.count(self, options);
 
             // Setup the promise to do a fetch on our collection, running the specified query
             // @TODO: ensure option handling is done using an explicit pick elsewhere
