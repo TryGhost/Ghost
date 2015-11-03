@@ -1008,7 +1008,7 @@ SimpleMDE.prototype.autosave = function() {
 	}
 
 	if(this.options.autosave.loaded !== true) {
-		if(localStorage.getItem(this.options.autosave.unique_id) != null)
+		if(typeof localStorage.getItem(this.options.autosave.unique_id) == "string" && localStorage.getItem(this.options.autosave.unique_id) != "")
 			this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
 
 		this.options.autosave.loaded = true;
