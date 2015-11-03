@@ -7,6 +7,7 @@ var _               = require('lodash'),
     errors          = require('../errors'),
     api             = require('../api'),
     jsonpath        = require('jsonpath'),
+    labs            = require('../utils/labs'),
     resources,
     pathAliases,
     get;
@@ -140,4 +141,23 @@ get = function get(context, options) {
     });
 };
 
-module.exports = get;
+module.exports = function getWithLabs(context, options) {
+    var self = this,
+        errorMessages = [
+            'The {{get}} helper is not available.',
+            'Public API access must be enabled if you wish to use the {{get}} helper.',
+            'See http://support.ghost.org/public-api-beta'
+        ];
+
+    return labs.isSet('publicAPI').then(function (publicAPI) {
+        if (publicAPI === true) {
+            // get helper is  active
+            return get.call(self, context, options);
+        } else {
+            errors.logError.apply(this, errorMessages);
+            return Promise.resolve(function noGetHelper() {
+                return '<script>console.error("' + errorMessages.join(' ') + '");</script>';
+            });
+        }
+    });
+};
