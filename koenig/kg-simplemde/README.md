@@ -137,7 +137,7 @@ var simplemde = new SimpleMDE({
 	},
 	spellChecker: false,
 	status: false,
-	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
+	status: ["autosave", "lines", "words", "cursor"], // Optional usage
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
