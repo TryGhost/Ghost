@@ -269,7 +269,7 @@ function drawLink(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 	var options = editor.options;
-	_replaceSelection(cm, stat.link, options.replaceTexts.link);
+	_replaceSelection(cm, stat.link, options.insertTexts.link);
 }
 
 /**
@@ -279,7 +279,7 @@ function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 	var options = editor.options;
-	_replaceSelection(cm, stat.image, options.replaceTexts.image);
+	_replaceSelection(cm, stat.image, options.insertTexts.image);
 }
 
 /**
@@ -289,7 +289,7 @@ function drawHorizontalRule(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 	var options = editor.options;
-	_replaceSelection(cm, stat.image, options.replaceTexts.horizontalRule);
+	_replaceSelection(cm, stat.image, options.insertTexts.horizontalRule);
 }
 
 
@@ -778,7 +778,7 @@ var toolbarBuiltInButtons = {
 	}
 };
 
-var replaceTexts = {
+var insertTexts = {
 	link: ["[", "](http://)"],
 	image: ["![](http://", ")"],
 	horizontalRule: ["", "\n\n-----\n\n"]
@@ -856,8 +856,8 @@ function SimpleMDE(options) {
 	options.parsingConfig = options.parsingConfig || {};
 
 
-	// Merging the replaceTexts, with the given options
-	options.replaceTexts = extend({}, replaceTexts, options.replaceTexts || {});
+	// Merging the insertTexts, with the given options
+	options.insertTexts = extend({}, insertTexts, options.insertTexts || {});
 
 
 	// Update this options
