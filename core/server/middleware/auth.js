@@ -3,7 +3,7 @@ var _           = require('lodash'),
     url         = require('url'),
     errors      = require('../errors'),
     config      = require('../config'),
-    api         = require('../api'),
+    labs        = require('../utils/labs'),
     oauthServer,
 
     auth;
@@ -133,17 +133,8 @@ auth = {
 
     // ### Require user depending on public API being activated.
     requiresAuthorizedUserPublicAPI: function requiresAuthorizedUserPublicAPI(req, res, next) {
-        return api.settings.read({key: 'labs', context: {internal: true}}).then(function (response) {
-            var labs,
-                labsValue;
-
-            labs = _.find(response.settings, function (setting) {
-                return setting.key === 'labs';
-            });
-
-            labsValue = JSON.parse(labs.value);
-
-            if (labsValue.publicAPI && labsValue.publicAPI === true) {
+        return labs.isSet('publicAPI').then(function (publicAPI) {
+            if (publicAPI === true) {
                 return next();
             } else {
                 if (req.user) {
