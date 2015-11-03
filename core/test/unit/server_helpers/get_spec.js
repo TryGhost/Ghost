@@ -11,6 +11,8 @@ var should         = require('should'),
     helpers        = require('../../../server/helpers'),
     api            = require('../../../server/api'),
 
+    labs           = require('../../../server/utils/labs'),
+
     sandbox = sinon.sandbox.create();
 
 describe('{{#get}} helper', function () {
@@ -23,6 +25,7 @@ describe('{{#get}} helper', function () {
     beforeEach(function () {
         fn = sandbox.spy();
         inverse = sandbox.spy();
+        sandbox.stub(labs, 'isSet').returns(new Promise.resolve(true));
     });
 
     afterEach(function () {
