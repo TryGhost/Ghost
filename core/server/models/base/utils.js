@@ -3,27 +3,8 @@
  * Parts of the model code which can be split out and unit tested
  */
 var _ = require('lodash'),
-    collectionQuery,
     processGQLResult,
-    addPostCount,
     tagUpdate;
-
-addPostCount = function addPostCount(options, model) {
-    if (options.include && options.include.indexOf('post_count') > -1) {
-        model.query('columns', 'tags.*', function (qb) {
-            qb.count('posts_tags.post_id').from('posts_tags').whereRaw('tag_id = tags.id').as('post_count');
-        });
-
-        options.withRelated = _.pull([].concat(options.withRelated), 'post_count');
-        options.include = _.pull([].concat(options.include), 'post_count');
-    }
-};
-
-collectionQuery = {
-    count: function count(model, options) {
-        addPostCount(options, model);
-    }
-};
 
 processGQLResult = function processGQLResult(itemCollection, options) {
     var joinTables = options.filter.joins,
@@ -126,6 +107,4 @@ tagUpdate = {
 };
 
 module.exports.processGQLResult = processGQLResult;
-module.exports.collectionQuery = collectionQuery;
-module.exports.addPostCount = addPostCount;
 module.exports.tagUpdate = tagUpdate;
