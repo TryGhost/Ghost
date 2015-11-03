@@ -173,9 +173,9 @@ var simplemde = new SimpleMDE({
 var simplemde = new SimpleMDE({
 	toolbar: [{
 			name: "bold",
-			action: toggleBold,
+			action: SimpleMDE.toggleBold,
 			className: "fa fa-bold",
-			title: "Bold (Ctrl+B)",
+			title: "Bold (Ctrl+B)", // 'Ctrl' is replaced with '⌘' on Mac
 		},
 		"|", // Separator
 		...
