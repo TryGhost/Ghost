@@ -77,10 +77,14 @@ simplemde.value("This text will appear in the editor");
 - **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
+- **insertTexts**: Customize how certain buttons that insert text behave. Takes an array with two elements. The first element will be the text inserted before the cursor or highlight, and the second element will be inserted after. For example, this is the default link value: `["[", "](http://)"]`.
+  - horizontalRule
+  - image
+  - link
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
-  - **allowAtxHeaderWithoutSpace**:  If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
-  - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
+  - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
+  - **strikethrough**: If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
@@ -94,6 +98,7 @@ simplemde.value("This text will appear in the editor");
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
 
 ```JavaScript
+// Most options demonstrate the non-default behavior
 var simplemde = new SimpleMDE({
 	autofocus: true,
 	autosave: {
@@ -105,6 +110,11 @@ var simplemde = new SimpleMDE({
 	hideIcons: ["guide", "heading"],
 	indentWithTabs: false,
 	initialValue: "Hello world!",
+	insertTexts: {
+		horizontalRule: ["", "\n\n-----\n\n"],
+		image: ["![](http://", ")"],
+		link: ["[", "](http://)"],
+	},
 	lineWrapping: false,
 	parsingConfig: {
 		allowAtxHeaderWithoutSpace: true,
@@ -136,7 +146,7 @@ var simplemde = new SimpleMDE({
 
 #### Toolbar icons
 
-Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. The `Ctrl` and `Alt` in the title tags will be changed automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
+Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. Any `Ctrl` or `Alt` in the title tags will be converted automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
 Name | Action | Tooltip<br>Class
 :--- | :----- | :--------------
@@ -173,7 +183,7 @@ var simplemde = new SimpleMDE({
 var simplemde = new SimpleMDE({
 	toolbar: [{
 			name: "bold",
-			action: toggleBold,
+			action: SimpleMDE.toggleBold,
 			className: "fa fa-bold",
 			title: "Bold (Ctrl+B)",
 		},

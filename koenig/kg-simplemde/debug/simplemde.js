@@ -1,3 +1,9 @@
+/**
+ * simplemde v1.8.1
+ * Copyright Next Step Webs, Inc.
+ * @link https://github.com/NextStepWebs/simplemde-markdown-editor
+ * @license MIT
+ */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SimpleMDE = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
@@ -1469,7 +1475,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
       if (horiz.clientWidth) scroll(horiz.scrollLeft, "horizontal");
     });
 
-    this.checkedOverlay = false;
+    this.checkedZeroWidth = false;
     // Need to set a minimum width to see the scrollbar on IE7 (but must not set it on IE8).
     if (ie && ie_version < 8) this.horiz.style.minHeight = this.vert.style.minWidth = "18px";
   }
@@ -1504,29 +1510,43 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
         this.horiz.firstChild.style.width = "0";
       }
 
-      if (!this.checkedOverlay && measure.clientHeight > 0) {
-        if (sWidth == 0) this.overlayHack();
-        this.checkedOverlay = true;
+      if (!this.checkedZeroWidth && measure.clientHeight > 0) {
+        if (sWidth == 0) this.zeroWidthHack();
+        this.checkedZeroWidth = true;
       }
 
       return {right: needsV ? sWidth : 0, bottom: needsH ? sWidth : 0};
     },
     setScrollLeft: function(pos) {
       if (this.horiz.scrollLeft != pos) this.horiz.scrollLeft = pos;
+      if (this.disableHoriz) this.enableZeroWidthBar(this.horiz, this.disableHoriz);
     },
     setScrollTop: function(pos) {
       if (this.vert.scrollTop != pos) this.vert.scrollTop = pos;
+      if (this.disableVert) this.enableZeroWidthBar(this.vert, this.disableVert);
     },
-    overlayHack: function() {
+    zeroWidthHack: function() {
       var w = mac && !mac_geMountainLion ? "12px" : "18px";
-      this.horiz.style.minHeight = this.vert.style.minWidth = w;
-      var self = this;
-      var barMouseDown = function(e) {
-        if (e_target(e) != self.vert && e_target(e) != self.horiz)
-          operation(self.cm, onMouseDown)(e);
-      };
-      on(this.vert, "mousedown", barMouseDown);
-      on(this.horiz, "mousedown", barMouseDown);
+      this.horiz.style.height = this.vert.style.width = w;
+      this.horiz.style.pointerEvents = this.vert.style.pointerEvents = "none";
+      this.disableHoriz = new Delayed;
+      this.disableVert = new Delayed;
+    },
+    enableZeroWidthBar: function(bar, delay) {
+      bar.style.pointerEvents = "auto";
+      function maybeDisable() {
+        // To find out whether the scrollbar is still visible, we
+        // check whether the element under the pixel in the bottom
+        // left corner of the scrollbar box is the scrollbar box
+        // itself (when the bar is still visible) or its filler child
+        // (when the bar is hidden). If it is still visible, we keep
+        // it enabled, if it's hidden, we disable pointer events.
+        var box = bar.getBoundingClientRect();
+        var elt = document.elementFromPoint(box.left + 1, box.bottom - 1);
+        if (elt != bar) bar.style.pointerEvents = "none";
+        else delay.set(1000, maybeDisable);
+      }
+      delay.set(1000, maybeDisable);
     },
     clear: function() {
       var parent = this.horiz.parentNode;
@@ -4152,7 +4172,8 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
     if (cm.state.focused && op.updateInput)
       cm.display.input.reset(op.typing);
-    if (op.focus && op.focus == activeElt()) ensureFocus(op.cm);
+    if (op.focus && op.focus == activeElt() && (!document.hasFocus || document.hasFocus()))
+      ensureFocus(op.cm);
   }
 
   function endOperation_finish(op) {
@@ -4837,7 +4858,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
   // Determines whether an event happened in the gutter, and fires the
   // handlers for the corresponding event.
-  function gutterEvent(cm, e, type, prevent, signalfn) {
+  function gutterEvent(cm, e, type, prevent) {
     try { var mX = e.clientX, mY = e.clientY; }
     catch(e) { return false; }
     if (mX >= Math.floor(cm.display.gutters.getBoundingClientRect().right)) return false;
@@ -4854,14 +4875,14 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
       if (g && g.getBoundingClientRect().right >= mX) {
         var line = lineAtHeight(cm.doc, mY);
         var gutter = cm.options.gutters[i];
-        signalfn(cm, type, cm, line, gutter, e);
+        signal(cm, type, cm, line, gutter, e);
         return e_defaultPrevented(e);
       }
     }
   }
 
   function clickInGutter(cm, e) {
-    return gutterEvent(cm, e, "gutterClick", true, signalLater);
+    return gutterEvent(cm, e, "gutterClick", true);
   }
 
   // Kludge to work around strange IE behavior where it'll sometimes
@@ -5300,7 +5321,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
   function contextMenuInGutter(cm, e) {
     if (!hasHandler(cm, "gutterContextMenu")) return false;
-    return gutterEvent(cm, e, "gutterContextMenu", false, signal);
+    return gutterEvent(cm, e, "gutterContextMenu", false);
   }
 
   // UPDATING
@@ -12805,7 +12826,9 @@ var shortcuts = {
 
 var isMobile = function() {
 	var check = false;
-	(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)))check = true;})(navigator.userAgent||navigator.vendor||window.opera);
+	(function(a) {
+		if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true;
+	})(navigator.userAgent || navigator.vendor || window.opera);
 	return check;
 };
 
@@ -13035,16 +13058,15 @@ function toggleOrderedList(editor) {
 	_toggleLine(cm, "ordered-list");
 }
 
-
 /**
  * Action for drawing a link.
  */
 function drawLink(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.link, "[", "](http://)");
+	var options = editor.options;
+	_replaceSelection(cm, stat.link, options.insertTexts.link);
 }
-
 
 /**
  * Action for drawing an img.
@@ -13052,9 +13074,9 @@ function drawLink(editor) {
 function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.image, "![](http://", ")");
+	var options = editor.options;
+	_replaceSelection(cm, stat.image, options.insertTexts.image);
 }
-
 
 /**
  * Action for drawing a horizontal rule.
@@ -13062,7 +13084,8 @@ function drawImage(editor) {
 function drawHorizontalRule(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
-	_replaceSelection(cm, stat.image, "", "\n\n-----\n\n");
+	var options = editor.options;
+	_replaceSelection(cm, stat.image, options.insertTexts.horizontalRule);
 }
 
 
@@ -13174,11 +13197,13 @@ function togglePreview(editor) {
 		toggleSideBySide(editor);
 }
 
-function _replaceSelection(cm, active, start, end) {
+function _replaceSelection(cm, active, startEnd) {
 	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
 
 	var text;
+	var start = startEnd[0];
+	var end = startEnd[1];
 	var startPoint = cm.getCursor("start");
 	var endPoint = cm.getCursor("end");
 	if(active) {
@@ -13379,6 +13404,35 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 	cm.focus();
 }
 
+// Merge the properties of one object into another.
+function _mergeProperties(target, source) {
+	for(var property in source) {
+		if(source.hasOwnProperty(property)) {
+			if(source[property] instanceof Array) {
+				target[property] = source[property].concat(target[property] instanceof Array ? target[property] : []);
+			} else if(
+				source[property] !== null &&
+				typeof source[property] === "object" &&
+				source[property].constructor === Object
+			) {
+				target[property] = _mergeProperties(target[property] || {}, source[property]);
+			} else {
+				target[property] = source[property];
+			}
+		}
+	}
+
+	return target;
+}
+
+// Merge an arbitrary number of objects into one.
+function extend(target) {
+	for(var i = 1; i < arguments.length; i++) {
+		target = _mergeProperties(target, arguments[i]);
+	}
+
+	return target;
+}
 
 /* The right word count in respect for CJK. */
 function wordCount(data) {
@@ -13520,6 +13574,12 @@ var toolbarBuiltInButtons = {
 	}
 };
 
+var insertTexts = {
+	link: ["[", "](http://)"],
+	image: ["![](http://", ")"],
+	horizontalRule: ["", "\n\n-----\n\n"]
+};
+
 
 /**
  * Interface of SimpleMDE.
@@ -13590,6 +13650,10 @@ function SimpleMDE(options) {
 
 	// Set default options for parsing config
 	options.parsingConfig = options.parsingConfig || {};
+
+
+	// Merging the insertTexts, with the given options
+	options.insertTexts = extend({}, insertTexts, options.insertTexts || {});
 
 
 	// Update this options
@@ -13842,7 +13906,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 		if(self.options.hideIcons && self.options.hideIcons.indexOf(items[i].name) != -1)
 			continue;
-		
+
 		// Fullscreen does not work well on mobile devices (even tablets)
 		// In the future, hopefully this can be resolved
 		if((items[i].name == "fullscreen" || items[i].name == "side-by-side") && isMobile())
@@ -14044,7 +14108,7 @@ SimpleMDE.prototype.isPreviewActive = function() {
 	var cm = this.codemirror;
 	var wrapper = cm.getWrapperElement();
 	var preview = wrapper.lastChild;
-	
+
 	return /editor-preview-active/.test(preview.className);
 };
 
@@ -14052,13 +14116,13 @@ SimpleMDE.prototype.isSideBySideActive = function() {
 	var cm = this.codemirror;
 	var wrapper = cm.getWrapperElement();
 	var preview = wrapper.nextSibling;
-	
+
 	return /editor-preview-active-side/.test(preview.className);
 };
 
 SimpleMDE.prototype.isFullscreenActive = function() {
 	var cm = this.codemirror;
-	
+
 	return cm.getOption("fullScreen");
 };
 
