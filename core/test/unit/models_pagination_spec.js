@@ -175,7 +175,7 @@ describe('pagination', function () {
     });
 
     describe('fetchPage', function () {
-        var model, bookshelf, knex, on, mockQuery, fetch, colQuery;
+        var model, bookshelf, knex, mockQuery;
 
         before(function () {
             paginationUtils = pagination.__get__('paginationUtils');
@@ -195,21 +195,10 @@ describe('pagination', function () {
             mockQuery.clone.returns(mockQuery);
             mockQuery.select.returns([{aggregate: 1}]);
 
-            fetch = sandbox.stub().returns(Promise.resolve({}));
-            colQuery = sandbox.stub();
-            on = function () { return this; };
-            on = sandbox.spy(on);
-
             model = function () {};
-            model.prototype.constructor = {
-                collection: sandbox.stub().returns({
-                    on: on,
-                    fetch: fetch,
-                    query: colQuery
-                })
-            };
+
+            model.prototype.fetchAll = sandbox.stub().returns(Promise.resolve({}));
             model.prototype.query = sandbox.stub();
-            model.prototype.resetQuery = sandbox.stub();
             model.prototype.query.returns(mockQuery);
 
             knex = {raw: sandbox.stub().returns(Promise.resolve())};
@@ -230,16 +219,11 @@ describe('pagination', function () {
             bookshelf.Model.prototype.fetchPage().then(function () {
                 sinon.assert.callOrder(
                     paginationUtils.parseOptions,
-                    model.prototype.constructor.collection,
                     model.prototype.query,
                     mockQuery.clone,
                     mockQuery.select,
-                    model.prototype.query,
-                    mockQuery.clone,
                     paginationUtils.addLimitAndOffset,
-                    on,
-                    on,
-                    fetch,
+                    model.prototype.fetchAll,
                     paginationUtils.formatResponse
                 );
 
@@ -249,26 +233,17 @@ describe('pagination', function () {
                 paginationUtils.addLimitAndOffset.calledOnce.should.be.true;
                 paginationUtils.formatResponse.calledOnce.should.be.true;
 
-                model.prototype.constructor.collection.calledOnce.should.be.true;
-                model.prototype.constructor.collection.calledWith().should.be.true;
-
-                model.prototype.query.calledTwice.should.be.true;
+                model.prototype.query.calledOnce.should.be.true;
                 model.prototype.query.firstCall.calledWith().should.be.true;
-                model.prototype.query.secondCall.calledWith().should.be.true;
 
-                mockQuery.clone.calledTwice.should.be.true;
+                mockQuery.clone.calledOnce.should.be.true;
                 mockQuery.clone.firstCall.calledWith().should.be.true;
-                mockQuery.clone.secondCall.calledWith().should.be.true;
 
                 mockQuery.select.calledOnce.should.be.true;
                 mockQuery.select.calledWith().should.be.true;
 
-                on.calledTwice.should.be.true;
-                on.firstCall.calledWith('fetching').should.be.true;
-                on.secondCall.calledWith('fetched').should.be.true;
-
-                fetch.calledOnce.should.be.true;
-                fetch.calledWith({}).should.be.true;
+                model.prototype.fetchAll.calledOnce.should.be.true;
+                model.prototype.fetchAll.calledWith({}).should.be.true;
 
                 done();
             }).catch(done);
@@ -276,22 +251,17 @@ describe('pagination', function () {
 
         it('fetchPage calls all paginationUtils and methods when order set', function (done) {
             var orderOptions = {order: {id: 'DESC'}};
-
             paginationUtils.parseOptions.returns(orderOptions);
+
             bookshelf.Model.prototype.fetchPage(orderOptions).then(function () {
                 sinon.assert.callOrder(
                     paginationUtils.parseOptions,
-                    model.prototype.constructor.collection,
                     model.prototype.query,
                     mockQuery.clone,
                     mockQuery.select,
-                    model.prototype.query,
-                    mockQuery.clone,
                     paginationUtils.addLimitAndOffset,
-                    colQuery,
-                    on,
-                    on,
-                    fetch,
+                    model.prototype.query,
+                    model.prototype.fetchAll,
                     paginationUtils.formatResponse
                 );
 
@@ -301,29 +271,57 @@ describe('pagination', function () {
                 paginationUtils.addLimitAndOffset.calledOnce.should.be.true;
                 paginationUtils.formatResponse.calledOnce.should.be.true;
 
-                model.prototype.constructor.collection.calledOnce.should.be.true;
-                model.prototype.constructor.collection.calledWith().should.be.true;
-
                 model.prototype.query.calledTwice.should.be.true;
                 model.prototype.query.firstCall.calledWith().should.be.true;
-                model.prototype.query.secondCall.calledWith().should.be.true;
+                model.prototype.query.secondCall.calledWith('orderBy', 'undefined.id', 'DESC').should.be.true;
 
-                mockQuery.clone.calledTwice.should.be.true;
+                mockQuery.clone.calledOnce.should.be.true;
                 mockQuery.clone.firstCall.calledWith().should.be.true;
-                mockQuery.clone.secondCall.calledWith().should.be.true;
 
                 mockQuery.select.calledOnce.should.be.true;
                 mockQuery.select.calledWith().should.be.true;
 
-                colQuery.calledOnce.should.be.true;
-                colQuery.calledWith('orderBy', 'undefined.id', 'DESC').should.be.true;
+                model.prototype.fetchAll.calledOnce.should.be.true;
+                model.prototype.fetchAll.calledWith(orderOptions).should.be.true;
 
-                on.calledTwice.should.be.true;
-                on.firstCall.calledWith('fetching').should.be.true;
-                on.secondCall.calledWith('fetched').should.be.true;
+                done();
+            }).catch(done);
+        });
 
-                fetch.calledOnce.should.be.true;
-                fetch.calledWith(orderOptions).should.be.true;
+        it('fetchPage calls all paginationUtils and methods when group by set', function (done) {
+            var groupOptions = {groups: ['posts.id']};
+            paginationUtils.parseOptions.returns(groupOptions);
+
+            bookshelf.Model.prototype.fetchPage(groupOptions).then(function () {
+                sinon.assert.callOrder(
+                    paginationUtils.parseOptions,
+                    model.prototype.query,
+                    mockQuery.clone,
+                    mockQuery.select,
+                    paginationUtils.addLimitAndOffset,
+                    model.prototype.query,
+                    model.prototype.fetchAll,
+                    paginationUtils.formatResponse
+                );
+
+                paginationUtils.parseOptions.calledOnce.should.be.true;
+                paginationUtils.parseOptions.calledWith(groupOptions).should.be.true;
+
+                paginationUtils.addLimitAndOffset.calledOnce.should.be.true;
+                paginationUtils.formatResponse.calledOnce.should.be.true;
+
+                model.prototype.query.calledTwice.should.be.true;
+                model.prototype.query.firstCall.calledWith().should.be.true;
+                model.prototype.query.secondCall.calledWith('groupBy', 'posts.id').should.be.true;
+
+                mockQuery.clone.calledOnce.should.be.true;
+                mockQuery.clone.firstCall.calledWith().should.be.true;
+
+                mockQuery.select.calledOnce.should.be.true;
+                mockQuery.select.calledWith().should.be.true;
+
+                model.prototype.fetchAll.calledOnce.should.be.true;
+                model.prototype.fetchAll.calledWith(groupOptions).should.be.true;
 
                 done();
             }).catch(done);
@@ -331,6 +329,21 @@ describe('pagination', function () {
 
         it('fetchPage returns expected response', function (done) {
             paginationUtils.parseOptions.returns({});
+            bookshelf.Model.prototype.fetchPage().then(function (result) {
+                result.should.have.ownProperty('collection');
+                result.should.have.ownProperty('pagination');
+                result.collection.should.be.an.Object;
+                result.pagination.should.be.an.Object;
+
+                done();
+            });
+        });
+
+        it('fetchPage returns expected response even when aggregate is empty', function (done) {
+            // override aggregate response
+            mockQuery.select.returns([]);
+            paginationUtils.parseOptions.returns({});
+
             bookshelf.Model.prototype.fetchPage().then(function (result) {
                 result.should.have.ownProperty('collection');
                 result.should.have.ownProperty('pagination');
