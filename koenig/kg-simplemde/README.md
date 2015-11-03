@@ -77,10 +77,14 @@ simplemde.value("This text will appear in the editor");
 - **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
+- **insertTexts**: Customize how certain buttons that insert text behave. Takes an array with two elements. The first element will be the text inserted before the cursor or highlight, and the second element will be inserted after. For example, this is the default link value: `["[", "](http://)"]`.
+  - horizontalRule
+  - image
+  - link
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
-  - **allowAtxHeaderWithoutSpace**:  If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
-  - **strikethrough**:  If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
+  - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
+  - **strikethrough**: If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
@@ -105,6 +109,11 @@ var simplemde = new SimpleMDE({
 	hideIcons: ["guide", "heading"],
 	indentWithTabs: false,
 	initialValue: "Hello world!",
+	insertTexts: {
+		horizontalRule: ["", "\n\n-----\n\n"],
+		image: ["![](http://", ")"],
+		link: ["[", "](http://)"],
+	},
 	lineWrapping: false,
 	parsingConfig: {
 		allowAtxHeaderWithoutSpace: true,
