@@ -48,12 +48,12 @@ paginationUtils = {
     /**
      * ### Query
      * Apply the necessary parameters to paginate the query
-     * @param {Bookshelf.Model|Bookshelf.Collection} itemCollection
+     * @param {bookshelf.Model} model
      * @param {options} options
      */
-    addLimitAndOffset: function addLimitAndOffset(itemCollection, options) {
+    addLimitAndOffset: function addLimitAndOffset(model, options) {
         if (_.isNumber(options.limit)) {
-            itemCollection
+            model
                 .query('limit', options.limit)
                 .query('offset', options.limit * (options.page - 1));
         }
@@ -97,26 +97,26 @@ paginationUtils = {
 /**
  * ### Pagination Object
  * @typedef {Object} pagination
- * @property {Number} `page` \- page in set to display
- * @property {Number|String} `limit` \- no. results per page, or 'all'
- * @property {Number} `pages` \- total no. pages in the full set
- * @property {Number} `total` \- total no. items in the full set
- * @property {Number|null} `next` \- next page
- * @property {Number|null} `prev` \- previous page
+ * @property {Number} page \- page in set to display
+ * @property {Number|String} limit \- no. results per page, or 'all'
+ * @property {Number} pages \- total no. pages in the full set
+ * @property {Number} total \- total no. items in the full set
+ * @property {Number|null} next \- next page
+ * @property {Number|null} prev \- previous page
  */
 
 /**
  * ### Fetch Page Options
  * @typedef {Object} options
- * @property {Number} `page` \- page in set to display
- * @property {Number|String} `limit` \- no. results per page, or 'all'
- * @property {Object} `order` \- set of order by params and directions
+ * @property {Number} page \- page in set to display
+ * @property {Number|String} limit \- no. results per page, or 'all'
+ * @property {Object} order \- set of order by params and directions
  */
 
 /**
  * ### Fetch Page Response
  * @typedef {Object} paginatedResult
- * @property {Array} `collection` \- set of results
+ * @property {Array} collection \- set of results
  * @property {pagination} pagination \- pagination metadata
  */
 
@@ -141,8 +141,6 @@ pagination = function pagination(bookshelf) {
             // Get the table name and idAttribute for this model
             var tableName = _.result(this.constructor.prototype, 'tableName'),
                 idAttribute = _.result(this.constructor.prototype, 'idAttribute'),
-            // Create a new collection for running `this` query, ensuring we're using collection, rather than model
-                collection = this.constructor.collection(),
                 countPromise,
                 collectionPromise,
                 self = this;
@@ -156,48 +154,31 @@ pagination = function pagination(bookshelf) {
                 bookshelf.knex.raw('count(distinct ' + tableName + '.' + idAttribute + ') as aggregate')
             );
 
-            // Clone the base query into our collection
-            collection._knex = this.query().clone();
-
             // #### Post count clauses
             // Add any where or join clauses which need to NOT be included with the aggregate query
 
             // Setup the pagination parameters so that we return the correct items from the set
-            paginationUtils.addLimitAndOffset(collection, options);
+            paginationUtils.addLimitAndOffset(self, options);
 
             // Apply ordering options if they are present
             if (options.order && !_.isEmpty(options.order)) {
                 _.forOwn(options.order, function (direction, property) {
-                    collection.query('orderBy', tableName + '.' + property, direction);
+                    self.query('orderBy', tableName + '.' + property, direction);
                 });
             }
 
             if (options.groups && !_.isEmpty(options.groups)) {
                 _.each(options.groups, function (group) {
-                    collection.query('groupBy', group);
+                    self.query('groupBy', group);
                 });
             }
 
             // Apply count options if they are present
-            baseUtils.collectionQuery.count(collection, options);
-
-            this.resetQuery();
-            if (this.relatedData) {
-                collection.relatedData = this.relatedData;
-            }
-
-            // ensure that our model (self) gets the correct events fired upon it
-            collection
-                .on('fetching', function (collection, columns, options) {
-                    return self.triggerThen('fetching:collection', collection, columns, options);
-                })
-                .on('fetched', function (collection, resp, options) {
-                    return self.triggerThen('fetched:collection', collection, resp, options);
-                });
+            baseUtils.collectionQuery.count(self, options);
 
             // Setup the promise to do a fetch on our collection, running the specified query
             // @TODO: ensure option handling is done using an explicit pick elsewhere
-            collectionPromise = collection.fetch(_.omit(options, ['page', 'limit']));
+            collectionPromise = self.fetchAll(_.omit(options, ['page', 'limit']));
 
             // Resolve the two promises
             return Promise.join(collectionPromise, countPromise).then(function formatResponse(results) {
