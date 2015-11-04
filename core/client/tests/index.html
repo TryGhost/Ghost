@@ -24,6 +24,16 @@
 
     {{content-for 'head-footer'}}
     {{content-for 'test-head-footer'}}
+
+    <style>
+        /* fix to ensure we use full viewport height when testing */
+        #ember-testing {
+            height: 100%;
+        }
+        #ember-testing > div {
+            height: 100%;
+        }
+    </style>
   </head>
   <body>
 
