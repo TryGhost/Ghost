@@ -24,6 +24,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             this.get('session').authenticate(authStrategy, this.get('identification'), this.get('password')).then(function () {
                 self.send('closeModal');
                 self.set('password', '');
+                self.get('notifications').closeAlerts('post.save');
             }).catch(function () {
                 // if authentication fails a rejected promise will be returned.
                 // it needs to be caught so it doesn't generate an exception in the console,
