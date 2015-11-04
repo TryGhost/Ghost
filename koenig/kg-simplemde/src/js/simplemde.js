@@ -12,6 +12,7 @@ require("spell-checker");
 var marked = require("marked");
 
 
+// Some variables
 var isMac = /Mac/.test(navigator.platform);
 
 var shortcuts = {
