@@ -22,6 +22,9 @@ const {run} = Ember,
 // TODO: These tests have way too much duplication, consider creating test
 // helpers for validations
 
+// TODO: Move testing of validation-engine behaviour into validation-engine-test
+// and replace these tests with specific validator tests
+
 describe('Unit: Validator: tag-settings', function () {
     it('validates all fields by default', function () {
         let tag = Tag.create({}),

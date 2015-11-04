@@ -79,7 +79,7 @@ describe('Acceptance: Settings - Tags', function () {
             // TODO: this should always be run for acceptance tests
             server.loadFixtures();
 
-            authenticateSession(application);
+            return authenticateSession(application);
         });
 
         it('it renders, can be navigated, can edit, create & delete tags', function () {
@@ -138,7 +138,9 @@ describe('Acceptance: Settings - Tags', function () {
                     keydown(38);
                     keyup(38);
                 });
+            });
 
+            andThen(() => {
                 // it navigates to previous tag
                 expect(currentURL(), 'url after keyboard up arrow').to.equal(`/settings/tags/${tag1.slug}`);
 
@@ -153,7 +155,9 @@ describe('Acceptance: Settings - Tags', function () {
                     keydown(40);
                     keyup(40);
                 });
+            });
 
+            andThen(() => {
                 // it navigates to previous tag
                 expect(currentURL(), 'url after keyboard down arrow').to.equal(`/settings/tags/${tag2.slug}`);
 
