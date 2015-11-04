@@ -3,6 +3,7 @@ First of all, thanks for your interest in helping make SimpleMDE even better. Co
 
 ### Guidelines for contributing
 - The *most important* guideline for contributing is to compare against the `development` branch when creating a pull request. This allows time to test and modify code changes before merging them into the stable master branch with the next release.
+- Travis CI is configured to build and verify all PRs. If your PR causes the build to fail, please add an additional commit that resolves any problems.
 - If you really want to earn some brownie points, create a JSFiddle that demonstrates your code changes. Seriously, this helps immensely and allows one or multiple people to easily provide feedback on the great work you've done.
   - When creating the JSFiddle, keep in mind that you can use http://rawgit.com for your files.
 - Do your best to fully test your changes. Anticipate edge-case behavior.

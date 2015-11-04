@@ -69,10 +69,10 @@ simplemde.value("This text will appear in the editor");
 
 - **autoDownloadFontAwesome**: If set to `true`, force downloads Font Awesome (used for icons). If set to false, prevents downloading. Defaults to `undefined`, which will intelligently check whether Font Awesome has already been included, then download accordingly.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
-- **autosave**: *Saves the text that's being written. It will forget the text when the form is submitted.*
+- **autosave**: *Saves the text that's being written and will load it back in the future. It will forget the text when the form it's contained in is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
-  - **unique_id**: You must set a unique identifier so that SimpleMDE can autosave. Something that separates this from other textareas.
+  - **unique_id**: You must set a unique string identifier so that SimpleMDE can autosave. Something that separates this from other instances of SimpleMDE elsewhere on your website.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
@@ -137,7 +137,7 @@ var simplemde = new SimpleMDE({
 	},
 	spellChecker: false,
 	status: false,
-	status: ['autosave', 'lines', 'words', 'cursor'], // Optional usage
+	status: ["autosave", "lines", "words", "cursor"], // Optional usage
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
