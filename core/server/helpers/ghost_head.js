@@ -21,21 +21,47 @@ var hbs             = require('express-hbs'),
     excerpt             = require('./excerpt'),
     tagsHelper          = require('./tags'),
     imageHelper         = require('./image'),
+
+    labs                = require('../utils/labs'),
+
     blog,
     ghost_head;
 
-function getImage(ops, context, contextObject) {
+function getClient() {
+    return labs.isSet('publicAPI').then(function (publicAPI) {
+        if (publicAPI === true) {
+            return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
+                client = client.clients[0];
+                if (client.status === 'enabled') {
+                    return {
+                        id: client.slug,
+                        secret: client.secret
+                    };
+                }
+
+                return {};
+            });
+        }
+
+        return {};
+    });
+}
+
+function writeMetaTag(property, content, type) {
+    type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
+    return '<meta ' + type + '="' + property + '" content="' + content + '" />';
+}
+
+function getImage(props, context, contextObject) {
     if (context === 'home' || context === 'author') {
         contextObject.image = contextObject.cover;
     }
 
-    ops.push(imageHelper.call(contextObject, {hash: {absolute: true}}));
+    props.image = imageHelper.call(contextObject, {hash: {absolute: true}});
 
     if (context === 'post' && contextObject.author) {
-        ops.push(imageHelper.call(contextObject.author, {hash: {absolute: true}}));
+        props.author_image = imageHelper.call(contextObject.author, {hash: {absolute: true}});
     }
-
-    return ops;
 }
 
 function getPaginationUrls(pagination, relativeUrl, secure, head) {
@@ -84,11 +110,11 @@ function addContextMetaData(context, data, metaData) {
 
 function initMetaData(context, data, results) {
     var metaData = {
-        url: results[0].value(),
-        metaDescription: results[1].value() || null,
-        metaTitle: results[2].value(),
-        coverImage:  results.length > 3 ? results[3].value() : null,
-        authorImage: results.length > 4 ? results[4].value() : null,
+        url: results.url,
+        metaDescription: results.meta_description || null,
+        metaTitle: results.meta_title,
+        coverImage:  results.image,
+        authorImage: results.author_image,
         publishedDate: null,
         modifiedDate: null,
         tags: null,
@@ -97,7 +123,9 @@ function initMetaData(context, data, results) {
         ogType: 'website',
         keywords: null,
         blog: blog,
-        title: blog.title
+        title: blog.title,
+        clientId: results.client.id,
+        clientSecret: results.client.secret
     };
 
     if (!metaData.metaDescription) {
@@ -228,19 +256,17 @@ function chooseSchema(metaData, context, data) {
 }
 
 function finaliseStructuredData(structuredData, tags, head) {
-    var type;
     _.each(structuredData, function (content, property) {
         if (property === 'article:tag') {
             _.each(tags, function (tag) {
                 if (tag !== '') {
                     tag = hbs.handlebars.Utils.escapeExpression(tag.trim());
-                    head.push('<meta property="' + property + '" content="' + tag + '" />');
+                    head.push(writeMetaTag(property, tag));
                 }
             });
             head.push('');
         } else if (content !== null && content !== undefined) {
-            type = property.substring(0, 7) === 'twitter' ? 'name' : 'property';
-            head.push('<meta ' + type + '="' + property + '" content="' + content + '" />');
+            head.push(writeMetaTag(property, content));
         }
     });
     return head;
@@ -262,21 +288,22 @@ ghost_head = function (options) {
         useStructuredData = !config.isPrivacyDisabled('useStructuredData'),
         head = [],
         safeVersion = this.safeVersion,
-        ops = [],
+        props = {},
         structuredData,
         schema,
         title = hbs.handlebars.Utils.escapeExpression(blog.title),
         context = self.context ? self.context[0] : null,
         contextObject = self[context] || blog;
 
-    // Push Async calls to an array of promises
-    ops.push(urlHelper.call(self, {hash: {absolute: true}}));
-    ops.push(meta_description.call(self, options));
-    ops.push(meta_title.call(self, options));
-    ops = getImage(ops, context, contextObject);
+    // Store Async calls in an object of named promises
+    props.url = urlHelper.call(self, {hash: {absolute: true}});
+    props.meta_description = meta_description.call(self, options);
+    props.meta_title = meta_title.call(self, options);
+    props.client = getClient();
+    getImage(props, context, contextObject);
 
     // Resolves promises then push pushes meta data into ghost_head
-    return Promise.settle(ops).then(function (results) {
+    return Promise.props(props).then(function (results) {
         if (context) {
             var metaData = initMetaData(context, self, results),
                 tags = tagsHelper.call(self.post, {hash: {autolink: 'false'}}).string.split(',');
@@ -310,7 +337,13 @@ ghost_head = function (options) {
                 // Formats schema script/JSONLD data and pushes to head array
                 finaliseSchema(schema, head);
             }
+
+            if (metaData.clientId && metaData.clientSecret) {
+                head.push(writeMetaTag('ghost:client_id', metaData.clientId));
+                head.push(writeMetaTag('ghost:client_secret', metaData.clientSecret));
+            }
         }
+
         head.push('<meta name="generator" content="Ghost ' + safeVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             title  + '" href="' + config.urlFor('rss', null, true) + '" />');
