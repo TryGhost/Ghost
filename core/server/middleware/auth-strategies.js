@@ -17,7 +17,7 @@ strategies = {
             .then(function then(model) {
                 if (model) {
                     var client = model.toJSON({include: ['trustedDomains']});
-                    if (client.secret === clientSecret) {
+                    if (client.status === 'enabled' && client.secret === clientSecret) {
                         return done(null, client);
                     }
                 }
