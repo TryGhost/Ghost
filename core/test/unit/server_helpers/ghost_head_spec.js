@@ -10,13 +10,46 @@ var should         = require('should'),
 // Stuff we are testing
     handlebars     = hbs.handlebars,
     helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api');
+    api            = require('../../../server/api'),
+
+    labs           = require('../../../server/utils/labs'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('{{ghost_head}} helper', function () {
-    var sandbox;
+    var settingsReadStub;
+
     before(function () {
         utils.loadHelpers();
     });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+    after(function () {
+        utils.restoreConfig();
+    });
+
+    beforeEach(function () {
+        settingsReadStub = sandbox.stub(api.settings, 'read').returns(new Promise.resolve({
+            settings: [
+                {value: ''}
+            ]
+        }));
+
+        sandbox.stub(api.clients, 'read').returns(new Promise.resolve({
+            clients: [
+                {slug: 'ghost-frontend', secret: 'a1bcde23cfe5', status: 'enabled'}
+            ]
+        }));
+
+        sandbox.stub(labs, 'isSet').returns(new Promise.resolve(true));
+    });
+
+    function expectGhostClientMeta(rendered) {
+        rendered.string.should.match(/<meta property="ghost:client_id" content="ghost-frontend" \/>/);
+        rendered.string.should.match(/<meta property="ghost:client_secret" content="[a-f0-9]{12}" \/>/);
+    }
 
     describe('without Code Injection', function () {
         before(function () {
@@ -30,25 +63,6 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        after(function () {
-            utils.restoreConfig();
-        });
-
-        beforeEach(function () {
-            sandbox = sinon.sandbox.create();
-            sandbox.stub(api.settings, 'read', function () {
-                return Promise.resolve({
-                    settings: [
-                        {value: ''}
-                    ]
-                });
-            });
-        });
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
         it('has loaded ghost_head helper', function () {
             should.exist(handlebars.helpers.ghost_head);
         });
@@ -59,6 +73,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['paged', 'index']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/page\/2\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
@@ -75,6 +90,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['home', 'index']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
                 rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
@@ -115,6 +131,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/tag\/tagtitle\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
@@ -156,6 +173,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/tag\/tagtitle\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
@@ -196,6 +214,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                     should.exist(rendered);
+                    expectGhostClientMeta(rendered);
                     rendered.string.should.not.match(/<meta property="og:description" \/>/);
                     rendered.string.should.not.match(/<meta name="twitter:description"\/>/);
                     rendered.string.should.not.match(/"description":/);
@@ -217,6 +236,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['tag']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/tag\/tagtitle\/page\/2\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
@@ -242,6 +262,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['author']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/author\/AuthorName\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="profile" \/>/);
@@ -284,6 +305,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['paged', 'author']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/author\/AuthorName\/page\/2\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
@@ -335,7 +357,7 @@ describe('{{ghost_head}} helper', function () {
                     re4 = new RegExp('"dateModified": "' + post.updated_at);
 
                 should.exist(rendered);
-
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
@@ -407,7 +429,7 @@ describe('{{ghost_head}} helper', function () {
                     re4 = new RegExp('"dateModified": "' + post.updated_at);
 
                 should.exist(rendered);
-
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
@@ -477,7 +499,7 @@ describe('{{ghost_head}} helper', function () {
                     re4 = new RegExp('"dateModified": "' + post.updated_at);
 
                 should.exist(rendered);
-
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
@@ -546,7 +568,7 @@ describe('{{ghost_head}} helper', function () {
                     re4 = new RegExp('"dateModified": "' + post.updated_at);
 
                 should.exist(rendered);
-
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
                 rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
@@ -593,6 +615,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['page']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/about\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
@@ -609,6 +632,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 4, page: 3, next: 4, prev: 2}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/page\/3\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="prev" href="http:\/\/testurl.com\/page\/2\/" \/>/);
@@ -627,6 +651,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['index', 'paged'], pagination: {total: 3, page: 2, next: 3, prev: 1}}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/page\/2\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="prev" href="http:\/\/testurl.com\/" \/>/);
@@ -661,6 +686,7 @@ describe('{{ghost_head}} helper', function () {
                     {data: {root: {context: []}}}
                 ).then(function (rendered) {
                     should.exist(rendered);
+                    expectGhostClientMeta(rendered);
                     rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/blog\/" \/>/);
                     rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                     rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/blog\/rss\/" \/>/);
@@ -684,19 +710,6 @@ describe('{{ghost_head}} helper', function () {
                     useStructuredData: false
                 }
             });
-            sandbox = sinon.sandbox.create();
-            sandbox.stub(api.settings, 'read', function () {
-                return Promise.resolve({
-                    settings: [
-                        {value: ''}
-                    ]
-                });
-            });
-        });
-
-        after(function () {
-            utils.restoreConfig();
-            sandbox.restore();
         });
 
         it('does not return structured data', function (done) {
@@ -721,6 +734,7 @@ describe('{{ghost_head}} helper', function () {
                 {data: {root: {context: ['post']}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/post\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
@@ -733,13 +747,10 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with Code Injection', function () {
-        before(function () {
-            sandbox = sinon.sandbox.create();
-            sandbox.stub(api.settings, 'read', function () {
-                return Promise.resolve({
-                    settings: [{value: '<style>body {background: red;}</style>'}]
-                });
-            });
+        beforeEach(function () {
+            settingsReadStub.returns(new Promise.resolve({
+                settings: [{value: '<style>body {background: red;}</style>'}]
+            }));
 
             utils.overrideConfig({
                 url: 'http://testurl.com/',
@@ -751,17 +762,13 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        after(function () {
-            sandbox.restore();
-            utils.restoreConfig();
-        });
-
         it('returns meta tag plus injected code', function (done) {
             helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index'], post: false},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
+                expectGhostClientMeta(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
