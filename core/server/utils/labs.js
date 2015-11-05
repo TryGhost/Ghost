@@ -11,7 +11,15 @@ flagIsSet = function flagIsSet(flag) {
             return setting.key === 'labs';
         });
 
-        labsValue = JSON.parse(labs.value);
+        if (!labs || !labs.value) {
+            return false;
+        }
+
+        try {
+            labsValue = JSON.parse(labs.value);
+        } catch (e) {
+            return false;
+        }
 
         return !!labsValue[flag] && labsValue[flag] === true;
     });
