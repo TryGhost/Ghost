@@ -52,6 +52,23 @@ export default function () {
 
     this.get('/notifications/', 'notifications');
 
+    /* Posts ---------------------------------------------------------------- */
+
+    this.post('/posts/', function (db, request) {
+        const [attrs] = JSON.parse(request.requestBody).posts;
+        let post;
+
+        if (isBlank(attrs.slug) && !isBlank(attrs.title)) {
+            attrs.slug = attrs.title.dasherize();
+        }
+
+        post = db.posts.insert(attrs);
+
+        return {
+            posts: [post]
+        }
+    });
+
     /* Settings ------------------------------------------------------------- */
 
     this.get('/settings/', function (db, request) {
@@ -81,6 +98,16 @@ export default function () {
         return {
             meta: {},
             settings: db.settings
+        };
+    });
+
+    /* Slugs ---------------------------------------------------------------- */
+
+    this.get('/slugs/post/:slug/', function (db, request) {
+        return {
+            slugs: [
+                { slug: request.params.slug.dasherize }
+            ]
         };
     });
 
@@ -132,11 +159,13 @@ export default function () {
     /* Users ---------------------------------------------------------------- */
 
     // /users/me = Always return the user with ID=1
-    this.get('/users/me', function (db) {
+    this.get('/users/me', function (db, request) {
         return {
             users: [db.users.find(1)]
         };
     });
+
+    this.get('/users/', 'users');
 }
 
 /*
