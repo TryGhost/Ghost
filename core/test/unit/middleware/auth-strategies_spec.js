@@ -12,7 +12,8 @@ var should           = require('should'),
 
     fakeClient =  {
         slug: 'ghost-admin',
-        secret: 'not_available'
+        secret: 'not_available',
+        status: 'enabled'
     },
 
     fakeValidToken = {
@@ -88,6 +89,21 @@ describe('Auth Strategies', function () {
         it('shouldn\'t find client with invalid secret', function (done) {
             var clientId = 'ghost-admin',
                 clientSecret = 'invalid_secret';
+            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+                clientStub.calledOnce.should.be.true;
+                clientStub.calledWith({slug: clientId}).should.be.true;
+                next.called.should.be.true;
+                next.calledWith(null, false).should.be.true;
+                done();
+            }).catch(done);
+        });
+
+        it('shouldn\'t auth client that is disabled', function (done) {
+            var clientId = 'ghost-admin',
+                clientSecret = 'not_available';
+
+            fakeClient.status = 'disabled';
+
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
                 clientStub.calledOnce.should.be.true;
                 clientStub.calledWith({slug: clientId}).should.be.true;
