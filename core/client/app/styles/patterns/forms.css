@@ -58,6 +58,11 @@ input {
     font-size: 1.3rem;
 }
 
+.form-group h3 {
+    margin-bottom: 1.6em;
+    font-size: 1.5rem;
+}
+
 .form-group label {
     margin-bottom: 4px;
 }
