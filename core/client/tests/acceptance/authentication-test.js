@@ -10,9 +10,50 @@ import Ember from 'ember';
 import startApp from '../helpers/start-app';
 import { authenticateSession, currentSession, invalidateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
-import onerrorDefault from 'ember';
 
 const {run} = Ember;
+
+/* jshint ignore:start */
+/* global onerrorDefault */
+/* jscs:disable */
+// ember packages aren't directly importable so this is copied from:
+// https://github.com/emberjs/ember.js/blob/v1.13.10/packages/ember-runtime/lib/ext/rsvp.js
+function onerrorDefault(e) {
+    var error;
+
+    if (e && e.errorThrown) {
+        // jqXHR provides this
+        error = e.errorThrown;
+        if (typeof error === 'string') {
+            error = new Error(error);
+        }
+        error.__reason_with_error_thrown__ = e;
+    } else {
+        error = e;
+    }
+
+    if (error && error.name !== 'TransitionAborted') {
+        if (Ember.testing) {
+            // ES6TODO: remove when possible
+            if (!Test && Ember.__loader.registry[testModuleName]) {
+                Test = requireModule(testModuleName)['default'];
+            }
+
+            if (Test && Test.adapter) {
+                Test.adapter.exception(error);
+                Logger.error(error.stack);
+            } else {
+                throw error;
+            }
+        } else if (Ember.onerror) {
+            Ember.onerror(error);
+        } else {
+            Logger.error(error.stack);
+        }
+    }
+}
+/* jshint ignore:end */
+/* jscs:enable */
 
 describe('Acceptance: Authentication', function () {
     let application;
