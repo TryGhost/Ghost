@@ -45,7 +45,7 @@ requests](#pull-requests), but please respect the following restrictions:
 * Please **search for existing issues**. Help us keep duplicate issues to a minimum by checking to see if someone
 has already reported your problem or requested your idea.
 
-* Please **do not** use the issue tracker for personal support requests (use [slack](http://ghost.org/slack) or 
+* Please **do not** use the issue tracker for personal support requests (use [slack](http://ghost.org/slack) or
 [stackoverflow](http://stackoverflow.com/questions/tagged/ghost-blog) if you prefer).
 
 * Please **do not** derail or troll issues. Keep the discussion on topic and respect the opinions of others.
@@ -194,7 +194,7 @@ Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://gith
 **What you'll need:**
 
 - Node version 0.10.x & npm
-- phantomjs 1.9.x
+- phantomjs 2.1.x
 ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running tests
 
 
