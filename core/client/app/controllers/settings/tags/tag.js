@@ -9,6 +9,7 @@ export default Ember.Controller.extend({
     isMobile: alias('tagsController.isMobile'),
 
     tagsController: inject.controller('settings.tags'),
+    notifications: inject.service(),
 
     saveTagProperty: function (propKey, newValue) {
         const tag = this.get('tag'),
@@ -30,7 +31,7 @@ export default Ember.Controller.extend({
             this.replaceWith('settings.tags.tag', savedTag);
         }).catch((error) => {
             if (error) {
-                this.notifications.showAPIError(error, {key: 'tag.save'});
+                this.get('notifications').showAPIError(error, {key: 'tag.save'});
             }
         });
     },
