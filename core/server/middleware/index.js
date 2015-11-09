@@ -8,7 +8,6 @@ var bodyParser      = require('body-parser'),
     slashes         = require('connect-slashes'),
     storage         = require('../storage'),
     passport        = require('passport'),
-    oauth2orize     = require('oauth2orize'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
 
@@ -38,8 +37,8 @@ middleware = {
     cacheControl: cacheControl,
     spamPrevention: spamPrevention,
     privateBlogging: privateBlogging,
+    oauth: oauth,
     api: {
-        cacheOauthServer: auth.cacheOauthServer,
         authenticateClient: auth.authenticateClient,
         authenticateUser: auth.authenticateUser,
         requiresAuthorizedUser: auth.requiresAuthorizedUser,
@@ -51,16 +50,13 @@ middleware = {
 
 setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     var logging = config.logging,
-        corePath = config.paths.corePath,
-        oauthServer = oauth2orize.createServer();
+        corePath = config.paths.corePath;
 
-    // silence JSHint without disabling unused check for the whole file
     passport.use(new ClientPasswordStrategy(authStrategies.clientPasswordStrategy));
     passport.use(new BearerStrategy(authStrategies.bearerStrategy));
 
-    // Cache express server instance
-    middleware.api.cacheOauthServer(oauthServer);
-    oauth.init(oauthServer, spamPrevention.resetCounter);
+    // Initialize OAuth middleware
+    oauth.init();
 
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
