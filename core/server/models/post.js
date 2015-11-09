@@ -357,14 +357,6 @@ Post = ghostBookshelf.Model.extend({
             options.where['posts.page'] = options.staticPages;
         }
 
-        if (_.has(options, 'featured')) {
-            // convert string true/false to boolean
-            if (!_.isBoolean(options.featured)) {
-                options.featured = _.contains(['true', '1'], options.featured);
-            }
-            options.where['posts.featured'] = options.featured;
-        }
-
         // Unless `all` is passed as an option, filter on
         // the status provided.
         if (options.status !== 'all') {
