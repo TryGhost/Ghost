@@ -1,17 +1,12 @@
-var _             = require('lodash'),
-    passport      = require('passport'),
-    url           = require('url'),
+var _           = require('lodash'),
+    passport    = require('passport'),
+    url         = require('url'),
     os            = require('os'),
-    errors        = require('../errors'),
-    config        = require('../config'),
-    labs          = require('../utils/labs'),
-    oauthServer,
+    errors      = require('../errors'),
+    config      = require('../config'),
+    labs        = require('../utils/labs'),
 
     auth;
-
-function cacheOauthServer(server) {
-    oauthServer = server;
-}
 
 function isBearerAutorizationHeader(req) {
     var parts,
@@ -174,14 +169,7 @@ auth = {
                 }
             }
         });
-    },
-
-    // ### Generate access token Middleware
-    // register the oauth2orize middleware for password and refresh token grants
-    generateAccessToken: function generateAccessToken(req, res, next) {
-        return oauthServer.token()(req, res, next);
     }
 };
 
 module.exports = auth;
-module.exports.cacheOauthServer = cacheOauthServer;
