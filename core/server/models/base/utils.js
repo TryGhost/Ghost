@@ -2,13 +2,13 @@
  * # Utils
  * Parts of the model code which can be split out and unit tested
  */
-var _ = require('lodash'),
+var _   = require('lodash'),
+    gql = require('ghost-gql'),
     processGQLResult,
     tagUpdate;
 
 processGQLResult = function processGQLResult(itemCollection, options) {
-    var joinTables = options.filter.joins,
-        tagsHasIn = false;
+    var joinTables = options.filter.joins;
 
     if (joinTables && joinTables.indexOf('tags') > -1) {
         // We need to use leftOuterJoin to insure we still include posts which don't have tags in the result
@@ -21,13 +21,7 @@ processGQLResult = function processGQLResult(itemCollection, options) {
         // TODO move the order handling to the query building that is currently inside pagination
         // TODO make the order handling in pagination handle orderByRaw
         // TODO extend this handling to all joins
-        _.each(options.filter.statements, function (statement) {
-            if (statement.op === 'IN' && statement.prop.match(/tags/)) {
-                tagsHasIn = true;
-            }
-        });
-
-        if (tagsHasIn) {
+        if (gql.json.findStatement(options.filter.statements, {prop: /^tags/, op: 'IN'})) {
             // TODO make this count the number of MATCHING tags, not just the number of tags
             itemCollection.query('orderByRaw', 'count(tags.id) DESC');
         }
