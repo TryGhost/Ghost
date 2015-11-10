@@ -77,7 +77,6 @@ describe('Public API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .end(function (err, res) {
-                console.log(res.body);
                 if (err) {
                     return done(err);
                 }
