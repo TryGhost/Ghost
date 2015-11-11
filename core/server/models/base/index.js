@@ -274,20 +274,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Filter options so that only permitted ones remain
         options = this.filterOptions(options, 'findPage');
 
-        // Extend the model defaults
-        options = _.defaults(options, this.findPageDefaultOptions());
-
-        // Run specific conversion of model query options to where options
-        options = this.processOptions(itemCollection, options);
-
-        // Ensure only valid fields/columns are added to query
-        if (options.columns) {
-            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
-        }
+        // This applies default properties like 'staticPages' and 'status'
+        // And then converts them to 'where' options... this behaviour is effectively deprecated in favour
+        // of using filter - it's only be being kept here so that we can transition cleanly.
+        this.processOptions(_.defaults(options, this.findPageDefaultOptions()));
 
         // If there are `where` conditionals specified, add those to the query.
         if (options.where) {
-            itemCollection.query('where', options.where);
+            itemCollection.query(function (qb) {
+                gql.knexify(qb, options.where);
+            });
         }
 
         // Apply FILTER
@@ -303,6 +299,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // Handle related objects
         // TODO: this should just be done for all methods @ the API level
         options.withRelated = _.union(options.withRelated, options.include);
+
+        // Ensure only valid fields/columns are added to query
+        if (options.columns) {
+            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+        }
 
         if (options.order) {
             options.order = self.parseOrderOption(options.order);
