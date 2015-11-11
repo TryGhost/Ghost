@@ -10,6 +10,8 @@ var hbs             = require('express-hbs'),
     moment          = require('moment'),
     _               = require('lodash'),
     Promise         = require('bluebird'),
+    fs              = require('fs'),
+    path            = require('path'),
 
     config          = require('../config'),
     filters         = require('../filters'),
@@ -279,6 +281,23 @@ function finaliseSchema(schema, head) {
     return head;
 }
 
+function getAjaxHelper() {
+    var ghostUrlScript = fs.readFileSync(path.join(config.paths.corePath, 'shared', 'ghost-url.js'), 'utf8'),
+        template = hbs.compile(ghostUrlScript, path.join(config.paths.subdir || '/', 'shared', 'ghost-url.js')),
+        apiPath = require('../routes').apiBaseUri,
+        url, useOrigin;
+
+    if (config.forceAdminSSL) {
+        url = 'https://' + (config.urlSSL || config.url).replace(/.*?:\/\//g, '').replace(/\/$/, '') + apiPath;
+        useOrigin = false;
+    } else {
+        url = config.paths.subdir + apiPath;
+        useOrigin = true;
+    }
+
+    return '<script type="text/javascript">' + template({api_url: url, useOrigin: useOrigin ? 'true' : 'false'}) + '</script>';
+}
+
 ghost_head = function (options) {
     // create a shortcut for theme config
     blog = config.theme;
@@ -341,6 +360,7 @@ ghost_head = function (options) {
             if (metaData.clientId && metaData.clientSecret) {
                 head.push(writeMetaTag('ghost:client_id', metaData.clientId));
                 head.push(writeMetaTag('ghost:client_secret', metaData.clientSecret));
+                head.push(getAjaxHelper());
             }
         }
 
