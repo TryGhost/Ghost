@@ -3,6 +3,7 @@ language: node_js
 node_js:
   - "0.10"
   - "0.12"
+  - "4.2"
 sudo: false
 cache:
   directories:
@@ -14,6 +15,7 @@ addons:
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
+    - GHOST_NODE_VERSION_CHECK=false
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
