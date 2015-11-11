@@ -137,13 +137,14 @@ utils = {
     },
 
     /**
-     * ## Is Public Context?
-     * If this is a public context, return true
+     * ## Detect Public Context
+     * Calls parse context to expand the options.context object
      * @param {Object} options
      * @returns {Boolean}
      */
-    isPublicContext: function isPublicContext(options) {
-        return permissions.parseContext(options.context).public;
+    detectPublicContext: function detectPublicContext(options) {
+        options.context = permissions.parseContext(options.context);
+        return options.context.public;
     },
     /**
      * ## Apply Public Permissions
@@ -174,7 +175,7 @@ utils = {
         return function doHandlePublicPermissions(options) {
             var permsPromise;
 
-            if (utils.isPublicContext(options)) {
+            if (utils.detectPublicContext(options)) {
                 permsPromise = utils.applyPublicPermissions(docName, method, options);
             } else {
                 permsPromise = permissions.canThis(options.context)[method][singular](options.data);
