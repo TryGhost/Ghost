@@ -134,6 +134,18 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         // noop default for unhandled save (used from shortcuts)
-        save: Ember.K
+        save: Ember.K,
+
+        error: function (error) {
+            const [_error] = error.errors;
+
+            // sign-out and redirect to sign-in if our session is invalid
+            if (_error.status === '401' || _error.errorType === 'UnauthorizedError') {
+                this.get('session').invalidate();
+                return;
+            }
+
+            return true;
+        }
     }
 });
