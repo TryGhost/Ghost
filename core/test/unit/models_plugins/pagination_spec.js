@@ -6,7 +6,7 @@ var should = require('should'),
     rewire = require('rewire'),
 
 // Thing we're testing
-    pagination = rewire('../../server/models/base/pagination');
+    pagination = rewire('../../../server/models/plugins/pagination');
 
 // To stop jshint complaining
 should.equal(true, true);

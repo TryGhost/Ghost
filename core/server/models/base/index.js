@@ -18,8 +18,7 @@ var _          = require('lodash'),
     uuid       = require('node-uuid'),
     validation = require('../../data/validation'),
     baseUtils  = require('./utils'),
-    includeCount = require('./include-count'),
-    pagination = require('./pagination'),
+    plugins    = require('../plugins'),
     gql        = require('ghost-gql'),
 
     ghostBookshelf;
@@ -32,10 +31,10 @@ ghostBookshelf = bookshelf(config.database.knex);
 ghostBookshelf.plugin('registry');
 
 // Load the Ghost include count plugin, which allows for the inclusion of cross-table counts
-ghostBookshelf.plugin(includeCount);
+ghostBookshelf.plugin(plugins.includeCount);
 
 // Load the Ghost pagination plugin, which gives us the `fetchPage` method on Models
-ghostBookshelf.plugin(pagination);
+ghostBookshelf.plugin(plugins.pagination);
 
 // ## ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
