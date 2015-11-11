@@ -166,9 +166,7 @@ User = ghostBookshelf.Model.extend({
 }, {
     findPageDefaultOptions: function findPageDefaultOptions() {
         return {
-            status: 'active',
-            where: {},
-            whereIn: {}
+            status: 'active'
         };
     },
 
@@ -180,27 +178,38 @@ User = ghostBookshelf.Model.extend({
         };
     },
 
-    processOptions: function processOptions(itemCollection, options) {
-        // TODO: there are multiple statuses that make a user "active" or "invited" - we a way to translate/map them:
-        // TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
-        // TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
+    /**
+     * @deprecated in favour of filter
+     */
+    processOptions: function processOptions(options) {
+        if (!options.status) {
+            return options;
+        }
+
+        // This is the only place that 'options.where' is set now
+        options.where = {statements: []};
+
+        var allStates = activeStates.concat(invitedStates),
+            value;
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
-        if (options.status && options.status !== 'all') {
+        if (options.status !== 'all') {
             // make sure that status is valid
-            // TODO: need a better way of getting a list of statuses other than hard-coding them...
-            options.status = _.indexOf(
-                ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked', 'invited', 'inactive'],
-                options.status) !== -1 ? options.status : 'active';
+            options.status = allStates.indexOf(options.status) > -1 ? options.status : 'active';
         }
 
         if (options.status === 'active') {
-            itemCollection.query().whereIn('status', activeStates);
+            value = activeStates;
         } else if (options.status === 'invited') {
-            itemCollection.query().whereIn('status', invitedStates);
-        } else if (options.status !== 'all') {
-            options.where.status = options.status;
+            value = invitedStates;
+        } else if (options.status === 'all') {
+            value = allStates;
+        } else {
+            value = options.status;
         }
+
+        options.where.statements.push({prop: 'status', op: 'IN', value: value});
+        delete options.status;
 
         return options;
     },
