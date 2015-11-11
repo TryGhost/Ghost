@@ -30,6 +30,9 @@ ghostBookshelf = bookshelf(config.database.knex);
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');
 
+// Load the Ghost access rules plugin, which handles passing permissions/context through the model layer
+ghostBookshelf.plugin(plugins.accessRules);
+
 // Load the Ghost include count plugin, which allows for the inclusion of cross-table counts
 ghostBookshelf.plugin(plugins.includeCount);
 
@@ -268,7 +271,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         options = options || {};
 
         var self = this,
-            itemCollection = this.forge(),
+            itemCollection = this.forge(null, {context: options.context}),
             tableName      = _.result(this.prototype, 'tableName');
 
         // Filter options so that only permitted ones remain
