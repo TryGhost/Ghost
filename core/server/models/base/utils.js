@@ -2,41 +2,8 @@
  * # Utils
  * Parts of the model code which can be split out and unit tested
  */
-var _   = require('lodash'),
-    gql = require('ghost-gql'),
-    processGQLResult,
+var _ = require('lodash'),
     tagUpdate;
-
-processGQLResult = function processGQLResult(itemCollection, options) {
-    var joinTables = options.filter.joins;
-
-    if (joinTables && joinTables.indexOf('tags') > -1) {
-        // We need to use leftOuterJoin to insure we still include posts which don't have tags in the result
-        // The where clause should restrict which items are returned
-        itemCollection
-            .query('leftOuterJoin', 'posts_tags', 'posts_tags.post_id', '=', 'posts.id')
-            .query('leftOuterJoin', 'tags', 'posts_tags.tag_id', '=', 'tags.id');
-
-        // The order override should ONLY happen if we are doing an "IN" query
-        // TODO move the order handling to the query building that is currently inside pagination
-        // TODO make the order handling in pagination handle orderByRaw
-        // TODO extend this handling to all joins
-        if (gql.json.findStatement(options.filter.statements, {prop: /^tags/, op: 'IN'})) {
-            // TODO make this count the number of MATCHING tags, not just the number of tags
-            itemCollection.query('orderByRaw', 'count(tags.id) DESC');
-        }
-
-        // We need to add a group by to counter the double left outer join
-        // TODO improve on th group by handling
-        options.groups = options.groups || [];
-        options.groups.push('posts.id');
-    }
-
-    if (joinTables && joinTables.indexOf('author') > -1) {
-        itemCollection
-            .query('join', 'users as author', 'author.id', '=', 'posts.author_id');
-    }
-};
 
 tagUpdate = {
     fetchCurrentPost: function fetchCurrentPost(PostModel, id, options) {
@@ -100,5 +67,4 @@ tagUpdate = {
     }
 };
 
-module.exports.processGQLResult = processGQLResult;
 module.exports.tagUpdate = tagUpdate;

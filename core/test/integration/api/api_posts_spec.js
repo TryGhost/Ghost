@@ -99,6 +99,15 @@ describe('Post API', function () {
             }).catch(done);
         });
 
+        it('can fetch static and normal posts (filter version)', function (done) {
+            PostAPI.browse({context: {user: 1}, filter: 'page:[false,true]'}).then(function (results) {
+                // should be the same as the current staticPages: 'all'
+                should.exist(results.posts);
+                results.posts.length.should.eql(5);
+                done();
+            }).catch(done);
+        });
+
         it('can fetch page 1', function (done) {
             PostAPI.browse({context: {user: 1}, page: 1, limit: 2, status: 'all'}).then(function (results) {
                 should.exist(results.posts);
