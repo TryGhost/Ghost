@@ -79,10 +79,15 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(10);
+                    result.posts.should.be.an.Array.with.lengthOf(9);
 
                     ids = _.pluck(result.posts, 'id');
-                    ids.should.eql([15, 14, 11, 9, 8, 7, 6, 5, 3, 2]);
+                    ids.should.eql([14, 11, 9, 8, 7, 6, 5, 3, 2]);
+
+                    _.each(result.posts, function (post) {
+                        post.page.should.be.false;
+                        post.status.should.eql('published');
+                    });
 
                     // TODO: Should be in published order
 
@@ -92,7 +97,7 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(10);
+                    result.meta.pagination.total.should.eql(9);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
 
@@ -433,7 +438,7 @@ describe('Filter Param Spec', function () {
         });
 
         describe('Handling "page" (staticPages)', function () {
-            it('Will return only posts by default', function (done) {
+            it('Will return only published posts by default', function (done) {
                 PostAPI.browse({limit: 'all'}).then(function (result) {
                     var ids, page;
                     // 1. Result should have the correct base structure
@@ -470,8 +475,8 @@ describe('Filter Param Spec', function () {
                 }).catch(done);
             });
 
-            // TODO: determine if this should be supported via filter, or whether it should only be available via a 'PageAPI'
-            it.skip('Will return only pages when requested', function (done) {
+            // @TODO: determine if this should be supported via filter, or whether it should only be available via a 'PageAPI'
+            it('Will return only pages when requested', function (done) {
                 PostAPI.browse({filter: 'page:true'}).then(function (result) {
                     var ids, page;
                     // 1. Result should have the correct base structure
@@ -541,6 +546,72 @@ describe('Filter Param Spec', function () {
                     done();
                 }).catch(done);
             });
+        });
+    });
+
+    describe('Bad behaviour', function () {
+        it('Try to get draft posts (filter with or)', function (done) {
+            PostAPI.browse({filter: 'status:published,status:draft', limit: 'all'}).then(function (result) {
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('posts');
+                result.should.have.property('meta');
+
+                _.each(result.posts, function (post) {
+                    post.page.should.be.false;
+                    post.status.should.eql('published');
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('Try to get draft posts (filter with in)', function (done) {
+            PostAPI.browse({filter: 'status:[published,draft]', limit: 'all'}).then(function (result) {
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('posts');
+                result.should.have.property('meta');
+
+                _.each(result.posts, function (post) {
+                    post.page.should.be.false;
+                    post.status.should.eql('published');
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('Try to get draft posts (filter with group)', function (done) {
+            PostAPI.browse({filter: 'page:false,(status:draft)', limit: 'all'}).then(function (result) {
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('posts');
+                result.should.have.property('meta');
+
+                _.each(result.posts, function (post) {
+                    post.page.should.be.false;
+                    post.status.should.eql('published');
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('Try to get draft posts (filter with group and in)', function (done) {
+            PostAPI.browse({filter: 'page:false,(status:[draft,published])', limit: 'all'}).then(function (result) {
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('posts');
+                result.should.have.property('meta');
+
+                _.each(result.posts, function (post) {
+                    post.page.should.be.false;
+                    post.status.should.eql('published');
+                });
+
+                done();
+            }).catch(done);
         });
     });
 });
