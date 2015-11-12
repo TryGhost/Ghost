@@ -206,6 +206,19 @@ describe('Filter', function () {
                     {prop: 'title', op: '=', value: 'Hello Word'}
                 ]});
             });
+
+            it('should print statements in debug mode', function () {
+                ghostBookshelf.Model.prototype.debug = true;
+                ghostBookshelf.Model.prototype._filters = {statements: [
+                    {prop: 'tags', op: 'IN', value: ['photo', 'video']}
+                ]};
+
+                ghostBookshelf.Model.prototype.applyFilters();
+                filterGQL.json.printStatements.calledOnce.should.be.true;
+                filterGQL.json.printStatements.firstCall.args[0].should.eql([
+                    {prop: 'tags', op: 'IN', value: ['photo', 'video']}
+                ]);
+            });
         });
 
         describe('Post Process Filters', function () {

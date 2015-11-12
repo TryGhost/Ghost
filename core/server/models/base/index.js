@@ -275,6 +275,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             itemCollection = this.forge(null, {context: options.context}),
             tableName      = _.result(this.prototype, 'tableName');
 
+        // Set this to true or pass ?debug=true as an API option to get output
+        itemCollection.debug = options.debug && process.env.NODE_ENV !== 'production';
+
         // Filter options so that only permitted ones remain
         options = this.filterOptions(options, 'findPage');
 

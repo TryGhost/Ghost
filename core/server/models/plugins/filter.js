@@ -143,6 +143,10 @@ filter = function filter(Bookshelf) {
             }
 
             if (this._filters) {
+                if (this.debug) {
+                    gql.json.printStatements(this._filters.statements);
+                }
+
                 this.query(function (qb) {
                     gql.knexify(qb, self._filters);
                 });

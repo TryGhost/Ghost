@@ -190,7 +190,8 @@ describe('pagination', function () {
             // Mock out bookshelf model
             mockQuery = {
                 clone: sandbox.stub(),
-                select: sandbox.stub()
+                select: sandbox.stub(),
+                toQuery: sandbox.stub()
             };
             mockQuery.clone.returns(mockQuery);
             mockQuery.select.returns([{aggregate: 1}]);
@@ -213,7 +214,7 @@ describe('pagination', function () {
             bookshelf.Model.prototype.fetchPage.should.be.a.Function;
         });
 
-        it('fetchPage calls all paginationUtils and methods', function (done) {
+        it('calls all paginationUtils and methods', function (done) {
             paginationUtils.parseOptions.returns({});
 
             bookshelf.Model.prototype.fetchPage().then(function () {
@@ -249,7 +250,7 @@ describe('pagination', function () {
             }).catch(done);
         });
 
-        it('fetchPage calls all paginationUtils and methods when order set', function (done) {
+        it('calls all paginationUtils and methods when order set', function (done) {
             var orderOptions = {order: {id: 'DESC'}};
             paginationUtils.parseOptions.returns(orderOptions);
 
@@ -288,7 +289,7 @@ describe('pagination', function () {
             }).catch(done);
         });
 
-        it('fetchPage calls all paginationUtils and methods when group by set', function (done) {
+        it('calls all paginationUtils and methods when group by set', function (done) {
             var groupOptions = {groups: ['posts.id']};
             paginationUtils.parseOptions.returns(groupOptions);
 
@@ -327,7 +328,7 @@ describe('pagination', function () {
             }).catch(done);
         });
 
-        it('fetchPage returns expected response', function (done) {
+        it('returns expected response', function (done) {
             paginationUtils.parseOptions.returns({});
             bookshelf.Model.prototype.fetchPage().then(function (result) {
                 result.should.have.ownProperty('collection');
@@ -339,7 +340,7 @@ describe('pagination', function () {
             });
         });
 
-        it('fetchPage returns expected response even when aggregate is empty', function (done) {
+        it('returns expected response even when aggregate is empty', function (done) {
             // override aggregate response
             mockQuery.select.returns([]);
             paginationUtils.parseOptions.returns({});
@@ -350,6 +351,19 @@ describe('pagination', function () {
                 result.collection.should.be.an.Object;
                 result.pagination.should.be.an.Object;
 
+                done();
+            });
+        });
+
+        it('will output sql statements in debug mode', function (done) {
+            model.prototype.debug = true;
+            mockQuery.select.returns({toQuery: function () {}});
+            paginationUtils.parseOptions.returns({});
+
+            var consoleSpy = sandbox.spy(console, 'log');
+
+            bookshelf.Model.prototype.fetchPage().then(function () {
+                consoleSpy.calledOnce.should.be.true;
                 done();
             });
         });
