@@ -36,7 +36,7 @@ export default AuthenticatedRoute.extend(base, {
                 return post;
             }
 
-            return self.replaceWith('posts.index');
+            return self.replaceRoute('posts.index');
         });
     },
 
@@ -45,7 +45,7 @@ export default AuthenticatedRoute.extend(base, {
 
         return self.get('session.user').then(function (user) {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
-                return self.replaceWith('posts.index');
+                return self.replaceRoute('posts.index');
             }
         });
     },

@@ -32,7 +32,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
                 return post;
             }
 
-            return self.replaceWith('posts.index');
+            return self.replaceRoute('posts.index');
         });
     },
 
@@ -41,7 +41,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
 
         return self.get('session.user').then(function (user) {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
-                return self.replaceWith('posts.index');
+                return self.replaceRoute('posts.index');
             }
         });
     },
