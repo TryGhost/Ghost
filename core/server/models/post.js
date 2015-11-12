@@ -333,8 +333,7 @@ Post = ghostBookshelf.Model.extend({
     findPageDefaultOptions: function findPageDefaultOptions() {
         return {
             staticPages: false, // include static pages
-            status: 'published',
-            where: {}
+            status: 'published'
         };
     },
 
@@ -347,14 +346,28 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    processOptions: function processOptions(itemCollection, options) {
+    /**
+     * @deprecated in favour of filter
+     */
+    processOptions: function processOptions(options) {
+        if (!options.staticPages && !options.status) {
+            return options;
+        }
+
+        // This is the only place that 'options.where' is set now
+        options.where = {statements: []};
+
         // Step 4: Setup filters (where clauses)
         if (options.staticPages !== 'all') {
             // convert string true/false to boolean
             if (!_.isBoolean(options.staticPages)) {
                 options.staticPages = _.contains(['true', '1'], options.staticPages);
             }
-            options.where['posts.page'] = options.staticPages;
+            options.where.statements.push({prop: 'page', op: '=', value: options.staticPages});
+            delete options.staticPages;
+        } else if (options.staticPages === 'all') {
+            options.where.statements.push({prop: 'page', op: 'IN', value: [true, false]});
+            delete options.staticPages;
         }
 
         // Unless `all` is passed as an option, filter on
@@ -362,7 +375,11 @@ Post = ghostBookshelf.Model.extend({
         if (options.status !== 'all') {
             // make sure that status is valid
             options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
-            options.where['posts.status'] = options.status;
+            options.where.statements.push({prop: 'status', op: '=', value: options.status});
+            delete options.status;
+        } else {
+            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft']});
+            delete options.status;
         }
 
         return options;
