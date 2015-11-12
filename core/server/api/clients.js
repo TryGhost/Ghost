@@ -6,6 +6,7 @@ var Promise      = require('bluebird'),
     errors       = require('../errors'),
     utils        = require('./utils'),
     pipeline     = require('../utils/pipeline'),
+    i18n         = require('../i18n'),
 
     docName      = 'clients',
     clients;
@@ -52,7 +53,7 @@ clients = {
                 return {clients: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError('Client not found.'));
+            return Promise.reject(new errors.NotFoundError(i18n.t('common.api.clients.clientNotFound')));
         });
     }
 };

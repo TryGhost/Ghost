@@ -6,6 +6,7 @@ var _                   = require('lodash'),
     errors              = require('../errors'),
     Models              = require('../models'),
     effectivePerms      = require('./effective'),
+    i18n                = require('../i18n'),
     init,
     refresh,
     canThis,
@@ -49,7 +50,7 @@ function parseContext(context) {
 }
 
 function applyStatusRules(docName, method, opts) {
-    var errorMsg = 'You do not have permission to retrieve ' + docName + ' with that status';
+    var errorMsg = i18n.t('errors.permissions.applyStatusRules.error', {docName: docName});
 
     // Enforce status 'active' for users
     if (docName === 'users') {
@@ -193,7 +194,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     return;
                 }
 
-                return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
+                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.permissions.noPermissionToAction')));
             });
         };
 
@@ -211,7 +212,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     context = parseContext(context);
 
     if (!hasActionsMap()) {
-        throw new Error('No actions map found, please call permissions.init() before use.');
+        throw new Error(i18n.t('errors.permissions.noActionsMapFound.error'));
     }
 
     // Kick off loading of effective user permissions if necessary

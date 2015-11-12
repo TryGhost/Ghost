@@ -4,7 +4,8 @@ var _          = require('lodash'),
     Promise    = require('bluebird'),
     nodemailer = require('nodemailer'),
     validator  = require('validator'),
-    config     = require('../config');
+    config     = require('../config'),
+    i18n       = require('../i18n');
 
 function GhostMailer(opts) {
     opts = opts || {};
@@ -43,7 +44,7 @@ GhostMailer.prototype.from = function () {
     // If we do have a from address, and it's just an email
     if (validator.isEmail(from)) {
         if (!config.theme.title) {
-            config.theme.title = 'Ghost at ' + this.getDomain();
+            config.theme.title = i18n.t('common.mail.title', {domain: this.getDomain()});
         }
         from = '"' + config.theme.title + '" <' + from + '>';
     }
@@ -68,10 +69,10 @@ GhostMailer.prototype.send = function (message) {
     to = message.to || false;
 
     if (!this.transport) {
-        return Promise.reject(new Error('Error: No email transport configured.'));
+        return Promise.reject(new Error(i18n.t('errors.mail.noEmailTransportConfigured.error')));
     }
     if (!(message && message.subject && message.html && message.to)) {
-        return Promise.reject(new Error('Error: Incomplete message data.'));
+        return Promise.reject(new Error(i18n.t('errors.mail.incompleteMessageData.error')));
     }
     sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
@@ -93,27 +94,27 @@ GhostMailer.prototype.send = function (message) {
             }
 
             response.statusHandler.once('failed', function (data) {
-                var reason = 'Error: Failed to send email';
+                var reason = i18n.t('errors.mail.failedSendingEmail.error');
 
                 if (data.error && data.error.errno === 'ENOTFOUND') {
-                    reason += ' - no mail server found at ' + data.domain;
+                    reason += i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain});
                 }
                 reason += '.';
                 return reject(new Error(reason));
             });
 
             response.statusHandler.once('requeue', function (data) {
-                var errorMessage = 'Error: Message could not be sent';
+                var errorMessage = i18n.t('errors.mail.messageNotSent.error');
 
                 if (data.error && data.error.message) {
-                    errorMessage += '\nMore info: ' + data.error.message;
+                    errorMessage += i18n.t('errors.general.moreInfo', {info: data.error.message});
                 }
 
                 return reject(new Error(errorMessage));
             });
 
             response.statusHandler.once('sent', function () {
-                return resolve('Message sent. Double check inbox and spam folder!');
+                return resolve(i18n.t('notices.mail.messageSent'));
             });
         });
     });
