@@ -172,6 +172,10 @@ pagination = function pagination(bookshelf) {
                 });
             }
 
+            if (this.debug) {
+                console.log('COUNT', countPromise.toQuery());
+            }
+
             // Setup the promise to do a fetch on our collection, running the specified query
             // @TODO: ensure option handling is done using an explicit pick elsewhere
             collectionPromise = self.fetchAll(_.omit(options, ['page', 'limit']));
