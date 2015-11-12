@@ -19,6 +19,8 @@ function isBearerAutorizationHeader(req) {
 
     if (req.headers && req.headers.authorization) {
         parts = req.headers.authorization.split(' ');
+    } else if (req.query && req.query.access_token) {
+        return true;
     } else {
         return false;
     }
