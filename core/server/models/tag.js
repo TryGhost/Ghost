@@ -59,16 +59,17 @@ Tag = ghostBookshelf.Model.extend({
     }
 }, {
     findPageDefaultOptions: function findPageDefaultOptions() {
-        return {
-            where: {}
-        };
+        return {};
     },
 
     orderDefaultOptions: function orderDefaultOptions() {
         return {};
     },
 
-    processOptions: function processOptions(itemCollection, options) {
+    /**
+     * @deprecated in favour of filter
+     */
+    processOptions: function processOptions(options) {
         return options;
     },
 
