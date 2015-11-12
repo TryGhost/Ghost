@@ -1,9 +1,11 @@
 /* global key */
 
 import Ember from 'ember';
+import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
+import windowProxy from 'ghost/utils/window-proxy';
 
 const shortcuts = {};
 
@@ -42,6 +44,10 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         });
     },
 
+    sessionInvalidated: function () {
+        this.send('authorizationFailed');
+    },
+
     actions: {
         openMobileMenu: function () {
             this.controller.set('showMobileMenu', true);
@@ -73,6 +79,10 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             this.get('session').invalidate().catch(function (error) {
                 this.get('notifications').showAlert(error.message, {type: 'error', key: 'session.invalidate.failed'});
             });
+        },
+
+        authorizationFailed: function () {
+            windowProxy.replaceLocation(AuthConfiguration.baseURL);
         },
 
         openModal: function (modalName, model, type) {

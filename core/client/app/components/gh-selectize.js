@@ -17,16 +17,18 @@ export default EmberSelectizeComponent.extend({
         if (!openOnFocus) {
             Ember.run.next(this, function () {
                 var selectize = this._selectize;
-                selectize.on('dropdown_open', function () {
-                    if (Ember.isBlank(selectize.$control_input.val())) {
-                        selectize.close();
-                    }
-                });
-                selectize.on('type', function (filter) {
-                    if (Ember.isBlank(filter)) {
-                        selectize.close();
-                    }
-                });
+                if (selectize) {
+                    selectize.on('dropdown_open', function () {
+                        if (Ember.isBlank(selectize.$control_input.val())) {
+                            selectize.close();
+                        }
+                    });
+                    selectize.on('type', function (filter) {
+                        if (Ember.isBlank(filter)) {
+                            selectize.close();
+                        }
+                    });
+                }
             });
         }
     }),
