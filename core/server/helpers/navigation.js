@@ -4,6 +4,7 @@
 
 var _               = require('lodash'),
     hbs             = require('express-hbs'),
+    i18n            = require('../i18n'),
 
     errors          = require('../errors'),
     template        = require('./template'),
@@ -17,13 +18,13 @@ navigation = function (options) {
         context;
 
     if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
-        return errors.logAndThrowError('navigation data is not an object or is a function');
+        return errors.logAndThrowError(i18n.t('warnings.helpers.navigation.invalidData'));
     }
 
     if (navigationData.filter(function (e) {
         return (_.isUndefined(e.label) || _.isUndefined(e.url));
     }).length > 0) {
-        return errors.logAndThrowError('All values must be defined for label, url and current');
+        return errors.logAndThrowError(i18n.t('warnings.helpers.navigation.valuesMustBeDefined'));
     }
 
     // check for non-null string values
@@ -31,7 +32,7 @@ navigation = function (options) {
         return ((!_.isNull(e.label) && !_.isString(e.label)) ||
             (!_.isNull(e.url) && !_.isString(e.url)));
     }).length > 0) {
-        return errors.logAndThrowError('Invalid value, Url and Label must be strings');
+        return errors.logAndThrowError(i18n.t('warnings.helpers.navigation.valuesMustBeString'));
     }
 
     function _slugify(label) {

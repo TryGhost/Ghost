@@ -6,6 +6,7 @@ var Promise = require('bluebird'),
     errors  = require('../errors'),
     permissions = require('../permissions'),
     validation  = require('../data/validation'),
+    i18n    = require('../i18n'),
 
     utils;
 
@@ -211,7 +212,7 @@ utils = {
                 return options;
             }).catch(errors.NoPermissionError, function handleNoPermissionError(error) {
                 // pimp error message
-                error.message = 'You do not have permission to ' + method + ' ' + docName;
+                error.message = i18n.t('errors.api.utils.noPermissionToCall', {method: method, docName: docName});
                 // forward error to next catch()
                 return Promise.reject(error);
             }).catch(function handleError(error) {
@@ -271,7 +272,7 @@ utils = {
      */
     checkObject: function (object, docName, editId) {
         if (_.isEmpty(object) || _.isEmpty(object[docName]) || _.isEmpty(object[docName][0])) {
-            return errors.logAndRejectError(new errors.BadRequestError('No root key (\'' + docName + '\') provided.'));
+            return errors.logAndRejectError(new errors.BadRequestError(i18n.t('errors.api.utils.noRootKeyProvided', {docName: docName})));
         }
 
         // convert author property to author_id to match the name in the database
@@ -283,7 +284,7 @@ utils = {
         }
 
         if (editId && object[docName][0].id && parseInt(editId, 10) !== parseInt(object[docName][0].id, 10)) {
-            return errors.logAndRejectError(new errors.BadRequestError('Invalid id provided.'));
+            return errors.logAndRejectError(new errors.BadRequestError(i18n.t('errors.api.utils.invalidIdProvided')));
         }
 
         return Promise.resolve(object);

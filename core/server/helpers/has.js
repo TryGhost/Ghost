@@ -5,6 +5,7 @@
 
 var _               = require('lodash'),
     errors          = require('../errors'),
+    i18n            = require('../i18n'),
     has;
 
 has = function (options) {
@@ -40,7 +41,7 @@ has = function (options) {
     }
 
     if (!tagList && !authorList) {
-        errors.logWarn('Invalid or no attribute given to has helper');
+        errors.logWarn(i18n.t('warnings.helpers.has.invalidAttribute'));
         return;
     }
 

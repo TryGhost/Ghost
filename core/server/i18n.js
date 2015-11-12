@@ -5,7 +5,6 @@ var supportedLocales    = ['en'],
     fs                  = require('fs'),
     chalk               = require('chalk'),
     MessageFormat       = require('intl-messageformat'),
-    errors              = require('./errors'),
 
     // TODO: fetch this dynamically based on overall blog settings (`key = "defaultLang"` in the `settings` table
     currentLocale       = 'en',
@@ -51,11 +50,14 @@ I18n = {
      */
     findString: function findString(msgPath) {
         var matchingString, path;
-
         // no path? no string
         if (_.isEmpty(msgPath) || !_.isString(msgPath)) {
             chalk.yellow('i18n:t() - received an empty path.');
             return '';
+        }
+
+        if (blos === undefined) {
+            I18n.init();
         }
 
         matchingString = blos;
@@ -67,7 +69,7 @@ I18n = {
         });
 
         if (_.isNull(matchingString)) {
-            errors.logError('Unable to find matching path [' + msgPath + '] in locale file.');
+            console.error('Unable to find matching path [' + msgPath + '] in locale file.\n');
             matchingString = 'i18n error: path "' + msgPath + '" was not found.';
         }
 
@@ -83,7 +85,6 @@ I18n = {
         // read file for current locale and keep its content in memory
         blos = fs.readFileSync(__dirname + '/translations/' + currentLocale + '.json');
         blos = JSON.parse(blos);
-
         if (global.Intl) {
             // Determine if the built-in `Intl` has the locale data we need.
             var hasBuiltInLocaleData,

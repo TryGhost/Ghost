@@ -6,8 +6,10 @@ var should          = require('should'),
     // Stuff we are testing
     mailer          = require('../../server/mail'),
     configUtils     = require('../utils/configUtils'),
+    i18n            = require('../../server/i18n'),
 
     SMTP;
+i18n.init();
 
 // Mock SMTP config
 SMTP = {

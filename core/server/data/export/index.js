@@ -6,6 +6,7 @@ var _           = require('lodash'),
     serverUtils = require('../../utils'),
     errors      = require('../../errors'),
     settings    = require('../../api/settings'),
+    i18n        = require('../../i18n'),
 
     excludedTables = ['accesstokens', 'refreshtokens', 'clients'],
     exporter,
@@ -53,7 +54,7 @@ exporter = function () {
 
             return exportData;
         }).catch(function (err) {
-            errors.logAndThrowError(err, 'Error exporting data', '');
+            errors.logAndThrowError(err, i18n.t('errors.data.export.errorExportingData'), '');
         });
     });
 };

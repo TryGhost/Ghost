@@ -14,6 +14,7 @@ var _            = require('lodash'),
     MarkdownHandler = require('./handlers/markdown'),
     ImageImporter   = require('./importers/image'),
     DataImporter    = require('./importers/data'),
+    i18n            = require('../../i18n'),
 
     // Glob levels
     ROOT_ONLY = 0,
@@ -107,7 +108,8 @@ _.extend(ImportManager.prototype, {
             _.each(filesToDelete, function (fileToDelete) {
                 fs.remove(fileToDelete, function (err) {
                     if (err) {
-                        errors.logError(err, 'Import could not clean up file ', 'Your blog will continue to work as expected');
+                        errors.logError(err, i18n.t('errors.data.importer.index.couldNotCleanUpFile.error'),
+                                        i18n.t('errors.data.importer.index.couldNotCleanUpFile.context'));
                     }
                 });
             });
@@ -147,7 +149,7 @@ _.extend(ImportManager.prototype, {
         // This is a temporary extra message for the old format roon export which doesn't work with Ghost
         if (oldRoonMatches.length > 0) {
             throw new errors.UnsupportedMediaTypeError(
-                'Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.'
+                i18n.t('errors.data.importer.index.unsupportedRoonExport')
             );
         }
 
@@ -157,10 +159,12 @@ _.extend(ImportManager.prototype, {
         }
 
         if (extMatchesAll.length < 1) {
-            throw new errors.UnsupportedMediaTypeError('Zip did not include any content to import.');
+            throw new errors.UnsupportedMediaTypeError(
+                i18n.t('errors.data.importer.index.noContentToImport'));
         }
 
-        throw new errors.UnsupportedMediaTypeError('Invalid zip file structure.');
+        throw new errors.UnsupportedMediaTypeError(
+            i18n.t('errors.data.importer.index.invalidZipStructure'));
     },
     /**
      * Use the extract module to extract the given zip file to a temp directory & return the temp directory path
@@ -207,9 +211,8 @@ _.extend(ImportManager.prototype, {
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
         );
         if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
-            throw new errors.ValidationError('Invalid zip file: base directory read failed');
+            throw new errors.ValidationError(i18n.t('errors.data.importer.index.invalidZipFileBaseDirectory'));
         }
-
         return extMatchesAll[0].split('/')[0];
     },
     /**
@@ -236,7 +239,7 @@ _.extend(ImportManager.prototype, {
                 if (importData.hasOwnProperty(handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
                     return Promise.reject(new errors.UnsupportedMediaTypeError(
-                        'Zip file contains multiple data formats. Please split up and import separately.'
+                        i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
                     ));
                 }
 
@@ -253,7 +256,7 @@ _.extend(ImportManager.prototype, {
 
             if (ops.length === 0) {
                 return Promise.reject(new errors.UnsupportedMediaTypeError(
-                    'Zip did not include any content to import.'
+                    i18n.t('errors.data.importer.index.noContentToImport')
                 ));
             }
 

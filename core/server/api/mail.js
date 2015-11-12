@@ -12,9 +12,9 @@ var _            = require('lodash').runInContext(),
     fs           = require('fs'),
     templatesDir = path.resolve(__dirname, '..', 'mail', 'templates'),
     htmlToText   = require('html-to-text'),
-
     readFile     = Promise.promisify(fs.readFile),
     docName      = 'mail',
+    i18n         = require('../i18n'),
     mail;
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
@@ -112,7 +112,7 @@ mail = {
                     mail: [{
                         message: {
                             to: result.get('email'),
-                            subject: 'Test Ghost Email',
+                            subject: i18n.t('common.api.mail.testGhostEmail'),
                             html: content.html,
                             text: content.text
                         }
