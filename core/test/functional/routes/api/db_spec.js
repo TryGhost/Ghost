@@ -47,4 +47,20 @@ describe('DB API', function () {
                 done();
             });
     });
+
+    it('should work with access token set as query parameter', function (done) {
+        request.get(testUtils.API.getApiQuery('db/?access_token=' + accesstoken))
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.db);
+                jsonResponse.db.should.have.length(1);
+                done();
+            });
+    });
 });
