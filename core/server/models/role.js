@@ -2,6 +2,7 @@ var _              = require('lodash'),
     errors         = require('../errors'),
     ghostBookshelf = require('./base'),
     Promise        = require('bluebird'),
+    i18n           = require('../i18n'),
 
     Role,
     Roles;
@@ -75,7 +76,7 @@ Role = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
+        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.role.notEnoughPermission')));
     }
 });
 

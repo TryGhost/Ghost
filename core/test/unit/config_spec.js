@@ -8,13 +8,14 @@ var should         = require('should'),
     _              = require('lodash'),
 
     testUtils      = require('../utils'),
+	i18n            = require('../../server/i18n'),
 
     // Thing we are testing
     configUtils    = require('../utils/configUtils'),
     config         = configUtils.config,
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
-
+i18n.init();
 // To stop jshint complaining
 should.equal(true, true);
 
