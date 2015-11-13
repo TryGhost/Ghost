@@ -541,11 +541,16 @@ var _              = require('lodash'),
         grunt.registerTask('ensureConfig', function () {
             var config = require('./core/server/config'),
                 done = this.async();
-            config.load().then(function () {
+
+            if (!process.env.TEST_SUITE || process.env.TEST_SUITE !== 'client') {
+                config.load().then(function () {
+                    done();
+                }).catch(function (err) {
+                    grunt.fail.fatal(err.stack);
+                });
+            } else {
                 done();
-            }).catch(function (err) {
-                grunt.fail.fatal(err.stack);
-            });
+            }
         });
 
         // #### Reset Database to "New" state *(Utility Task)*
@@ -584,7 +589,19 @@ var _              = require('lodash'),
         // manages the build of your environment and then calls `grunt test`
         //
         // `grunt validate` is called by `npm test` and is used by Travis.
-        grunt.registerTask('validate', 'Run tests and lint code',
+        grunt.registerTask('validate', 'Run tests and lint code', function () {
+            if (process.env.TEST_SUITE === 'server') {
+                grunt.task.run(['test-server']);
+            } else if (process.env.TEST_SUITE === 'client') {
+                grunt.task.run(['test-client']);
+            } else if (process.env.TEST_SUITE === 'lint') {
+                grunt.task.run(['lint']);
+            } else {
+                grunt.task.run(['validate-all']);
+            }
+        });
+
+        grunt.registerTask('validate-all', 'Lint code and run all tests',
             ['init', 'lint', 'test-all']);
 
         // ### Test-All
@@ -592,11 +609,17 @@ var _              = require('lodash'),
         //
         // `grunt test-all` will lint and test your pre-built local Ghost codebase.
         //
-        // `grunt test-all` runs jshint and jscs as well as all 6 test suites. See the individual sub tasks below for
+        // `grunt test-all` runs all 6 test suites. See the individual sub tasks below for
         // details of each of the test suites.
         //
-        grunt.registerTask('test-all', 'Run tests and lint code',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-ember']);
+        grunt.registerTask('test-all', 'Run tests for both server and client',
+            ['init', 'test-server', 'test-client']);
+
+        grunt.registerTask('test-server', 'Run server tests',
+            ['init', 'test-routes', 'test-module', 'test-unit', 'test-integration']);
+
+        grunt.registerTask('test-client', 'Run client tests',
+            ['init', 'test-ember']);
 
         // ### Lint
         //
