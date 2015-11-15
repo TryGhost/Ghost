@@ -34,6 +34,7 @@ export default Component.extend({
     }),
 
     didInsertElement() {
+        this._super(...arguments);
         this.$('.js-modal-container, .js-modal-background').addClass('fade-in open');
         this.$('.js-modal').addClass('open');
     },

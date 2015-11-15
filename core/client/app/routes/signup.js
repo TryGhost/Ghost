@@ -15,6 +15,8 @@ export default Route.extend(styleBody, {
     session: inject.service(),
 
     beforeModel() {
+        this._super(...arguments);
+
         if (this.get('session.isAuthenticated')) {
             this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
             this.transitionTo(Configuration.routeIfAlreadyAuthenticated);

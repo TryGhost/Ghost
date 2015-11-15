@@ -77,6 +77,8 @@ export default Component.extend({
     }),
 
     didReceiveAttrs(attrs) {
+        this._super(...arguments);
+
         if (get(attrs, 'newAttrs.tag.value.id') !== get(attrs, 'oldAttrs.tag.value.id')) {
             this.reset();
         }

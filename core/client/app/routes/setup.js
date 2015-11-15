@@ -16,6 +16,8 @@ export default Route.extend(styleBody, {
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
     beforeModel() {
+        this._super(...arguments);
+
         if (this.get('session.isAuthenticated')) {
             this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
             return;

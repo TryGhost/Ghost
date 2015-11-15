@@ -22,11 +22,13 @@ export default Component.extend({
     },
 
     willRender() {
+        this._super(...arguments);
         // register the tabs with the tab manager
         this.get('tabsManager').registerTab(this);
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         // unregister the tabs with the tab manager
         this.get('tabsManager').unregisterTab(this);
     }
