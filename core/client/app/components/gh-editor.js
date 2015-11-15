@@ -44,6 +44,7 @@ export default Component.extend({
     },
 
     didInsertElement() {
+        this._super(...arguments);
         this.scheduleAfterRender();
     },
 
@@ -61,6 +62,7 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         // removes scroll handlers from the view
         this.get('$previewViewPort').off('scroll');
     },

@@ -24,6 +24,8 @@ export default Mixin.create({
     },
 
     didInsertElement() {
+        this._super(...arguments);
+
         let el = this.get('element');
 
         el.onscroll = run.bind(this, this.checkScroll);
@@ -34,6 +36,8 @@ export default Mixin.create({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
+
         // turn off the scroll handler
         this.get('element').onscroll = null;
     }

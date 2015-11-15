@@ -28,6 +28,8 @@ export default Component.extend({
         let oldValue = attrs.oldAttrs && get(attrs.oldAttrs, 'image.value');
         let newValue = attrs.newAttrs && get(attrs.newAttrs, 'image.value');
 
+        this._super(...arguments);
+
         // always reset when we receive a blank image
         // - handles navigating to populated image from blank image
         if (isEmpty(newValue) && !isEmpty(oldValue)) {
@@ -45,10 +47,12 @@ export default Component.extend({
     },
 
     didInsertElement() {
+        this._super(...arguments);
         this.send('initUploader');
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         this.removeListeners();
     },
 

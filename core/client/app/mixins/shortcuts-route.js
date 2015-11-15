@@ -78,12 +78,12 @@ export default Mixin.create({
     },
 
     activate() {
-        this._super();
+        this._super(...arguments);
         this.registerShortcuts();
     },
 
     deactivate() {
-        this._super();
+        this._super(...arguments);
         this.removeShortcuts();
     }
 });

@@ -17,6 +17,8 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     afterModel(user) {
+        this._super(...arguments);
+
         return this.get('session.user').then((currentUser) => {
             let isOwnProfile = user.get('id') === currentUser.get('id');
             let isAuthor = currentUser.get('isAuthor');

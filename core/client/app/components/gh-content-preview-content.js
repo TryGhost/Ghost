@@ -9,6 +9,8 @@ export default Component.extend({
     content: null,
 
     didInsertElement() {
+        this._super(...arguments);
+
         let el = this.$();
 
         el.on('scroll', run.bind(el, setScrollClassName, {
@@ -18,6 +20,8 @@ export default Component.extend({
     },
 
     didReceiveAttrs(options) {
+        this._super(...arguments);
+
         // adjust when didReceiveAttrs gets both newAttrs and oldAttrs
         if (options.newAttrs.content && this.get('content') !== options.newAttrs.content.value) {
             let el = this.$();
@@ -29,6 +33,8 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
+
         let el = this.$();
 
         el.off('scroll');

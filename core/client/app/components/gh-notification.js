@@ -30,6 +30,8 @@ export default Component.extend({
     }),
 
     didInsertElement() {
+        this._super(...arguments);
+
         this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
                 this.get('notifications').closeNotification(this.get('message'));
@@ -38,6 +40,7 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         this.$().off('animationend webkitAnimationEnd oanimationend MSAnimationEnd');
     },
 
