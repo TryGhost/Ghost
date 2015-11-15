@@ -25,7 +25,7 @@ export default AuthenticatedRoute.extend(base, {
         });
     },
 
-    setupController(controller, model) {
+    setupController() {
         let psm = this.controllerFor('post-settings-menu');
 
         // make sure there are no titleObserver functions hanging around
@@ -36,7 +36,7 @@ export default AuthenticatedRoute.extend(base, {
         psm.send('resetUploader');
         psm.send('resetPubDate');
 
-        this._super(controller, model);
+        this._super(...arguments);
     },
 
     actions: {

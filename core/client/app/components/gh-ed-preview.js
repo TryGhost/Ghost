@@ -9,12 +9,15 @@ export default Component.extend({
     _scrollWrapper: null,
 
     didInsertElement() {
+        this._super(...arguments);
         this._scrollWrapper = this.$().closest('.entry-preview-content');
         this.adjustScrollPosition(this.get('scrollPosition'));
         run.scheduleOnce('afterRender', this, this.dropzoneHandler);
     },
 
     didReceiveAttrs(attrs) {
+        this._super(...arguments);
+
         if (!attrs.oldAttrs) {
             return;
         }

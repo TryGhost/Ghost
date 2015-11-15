@@ -53,6 +53,7 @@ export default Component.extend({
     }),
 
     willDestroy() {
+        this._super(...arguments);
         run.cancel(this.get('showSpinnerTimeout'));
     }
 });

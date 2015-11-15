@@ -39,6 +39,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
     },
 
     deactivate() {
+        this._super(...arguments);
         this.send('resetPagination');
     },
 

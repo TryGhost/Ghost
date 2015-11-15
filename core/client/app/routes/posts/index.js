@@ -13,6 +13,7 @@ export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
 
     // Transition to a specific post if we're not on mobile
     beforeModel() {
+        this._super(...arguments);
         if (!this.get('isMobile')) {
             return this.goToPost();
         }
@@ -20,6 +21,7 @@ export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
 
     setupController(controller) {
         controller.set('noPosts', this.get('noPosts'));
+        this._super(...arguments);
     },
 
     goToPost() {

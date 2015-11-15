@@ -31,6 +31,7 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         this.$('.ui-sortable').sortable('destroy');
     }
 });
