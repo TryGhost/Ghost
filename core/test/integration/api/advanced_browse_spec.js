@@ -310,26 +310,98 @@ describe('Filter Param Spec', function () {
         });
     });
 
-    describe.skip('Count capabilities', function () {
-        it('can fetch `posts.count` for tags (published only)', function (done) {
-            // This could be posts.count & posts.all.count?
-            done();
+    describe('Count capabilities', function () {
+        it('can fetch `post_count` for tags (public data only)', function (done) {
+            TagAPI.browse({include: 'post_count'}).then(function (result) {
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('tags');
+                result.should.have.property('meta');
+
+                // 2. The data part of the response should be correct
+                // We should have 5 matching items
+                result.tags.should.be.an.Array.with.lengthOf(5);
+
+                // Each tag should have the correct count
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Getting Started';
+                }).post_count.should.eql(4);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'photo';
+                }).post_count.should.eql(4);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Video';
+                }).post_count.should.eql(5);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Audio';
+                }).post_count.should.eql(6);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'No Posts';
+                }).post_count.should.eql(0);
+
+                // 3. The meta object should contain the right details
+                result.meta.should.have.property('pagination');
+                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.page.should.eql(1);
+                result.meta.pagination.limit.should.eql(15);
+                result.meta.pagination.pages.should.eql(1);
+                result.meta.pagination.total.should.eql(5);
+                should.equal(result.meta.pagination.next, null);
+                should.equal(result.meta.pagination.prev, null);
+
+                done();
+            }).catch(done);
         });
 
-        it('can fetch `posts.all.count` for tags (all posts)', function (done) {
+        it.skip('can fetch `posts.count` for tags (all data)', function (done) {
+            // This is tested elsewhere for now using user context
+            // No way to override it for public requests
             done();
         });
 
         it('can fetch `posts.count` for users (published only)', function (done) {
-            // This could be posts.count & posts.all.count?
+            UserAPI.browse({include: 'post_count'}).then(function (result) {
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('users');
+                result.should.have.property('meta');
+
+                // 2. The data part of the response should be correct
+                // We should have 5 matching items
+                result.users.should.be.an.Array.with.lengthOf(2);
+
+                // Each user should have the correct count
+                _.find(result.users, function (user) {
+                    return user.slug === 'leslie';
+                }).post_count.should.eql(15);
+
+                _.find(result.users, function (user) {
+                    return user.slug === 'pat-smith';
+                }).post_count.should.eql(3);
+
+                // 3. The meta object should contain the right details
+                result.meta.should.have.property('pagination');
+                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.page.should.eql(1);
+                result.meta.pagination.limit.should.eql(15);
+                result.meta.pagination.pages.should.eql(1);
+                result.meta.pagination.total.should.eql(2);
+                should.equal(result.meta.pagination.next, null);
+                should.equal(result.meta.pagination.prev, null);
+
+                done();
+            }).catch(done);
+        });
+
+        it.skip('can fetch `posts.all.count` for users (all posts)', function (done) {
             done();
         });
 
-        it('can fetch `posts.all.count` for users (all posts)', function (done) {
-            done();
-        });
-
-        it('can fetch `tags.count` for posts', function (done) {
+        it.skip('can fetch `tags.count` for posts', function (done) {
             done();
         });
     });

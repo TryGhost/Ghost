@@ -20,7 +20,9 @@ describe('Users API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
 
-    beforeEach(testUtils.setup('users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
+    beforeEach(testUtils.setup(
+        'users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+    ));
     afterEach(testUtils.teardown);
 
     function checkForErrorType(type, done) {
@@ -131,7 +133,6 @@ describe('Users API', function () {
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
                 response.users.should.have.length(7);
-                response.users.should.have.length(7);
                 testUtils.API.checkResponse(response.users[0], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[1], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[2], 'user', 'roles');
@@ -184,6 +185,41 @@ describe('Users API', function () {
                 })
                 .then(done)
                 .catch(done);
+        });
+
+        it('can browse with include post_count', function (done) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {include: 'post_count'})).then(function (response) {
+                should.exist(response);
+                testUtils.API.checkResponse(response, 'users');
+                should.exist(response.users);
+                response.users.should.have.length(7);
+                response.users.should.have.length(7);
+
+                testUtils.API.checkResponse(response.users[0], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[1], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[2], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[3], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[4], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[5], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[6], 'user', 'post_count');
+
+                response.users[0].post_count.should.eql(0);
+                response.users[1].post_count.should.eql(0);
+                response.users[2].post_count.should.eql(0);
+                response.users[3].post_count.should.eql(7);
+                response.users[4].post_count.should.eql(0);
+                response.users[5].post_count.should.eql(0);
+                response.users[6].post_count.should.eql(0);
+
+                response.meta.pagination.should.have.property('page', 1);
+                response.meta.pagination.should.have.property('limit', 15);
+                response.meta.pagination.should.have.property('pages', 1);
+                response.meta.pagination.should.have.property('total', 7);
+                response.meta.pagination.should.have.property('next', null);
+                response.meta.pagination.should.have.property('prev', null);
+
+                done();
+            }).catch(done);
         });
     });
 
