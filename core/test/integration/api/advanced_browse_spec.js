@@ -178,7 +178,7 @@ describe('Filter Param Spec', function () {
 
         describe('5. Users - filter="posts.tags:photo" order="posts.count DESC" limit="3"', function () {
             it('Will fetch the 3 most prolific users who write posts with the tag `photo` ordered by most posts.', function (done) {
-                UserAPI.browse({filter: 'posts.tags:photo', order: 'posts.count DESC', limit: 3}).then(function (result) {
+                UserAPI.browse({filter: 'posts.tags:special', order: 'posts.count DESC', limit: 3}).then(function (result) {
                     var ids;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -225,6 +225,79 @@ describe('Filter Param Spec', function () {
                     result.meta.should.have.property('pagination');
                     result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     // TODO complete meta data assertions
+
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('7. Users filter: "website:-null", order: "website"', function () {
+            it('Will fetch users that have a website and order them by website', function (done) {
+                UserAPI.browse({filter: 'website:-null', order: 'website ASC'}).then(function (result) {
+                    var ids;
+                    // 1. Result should have the correct base structure
+                    should.exist(result);
+                    result.should.have.property('users');
+                    result.should.have.property('meta');
+
+                    // 2. The data part of the response should be correct
+                    // We should have 2 matching items
+                    result.users.should.be.an.Array.with.lengthOf(2);
+
+                    ids = _.pluck(result.users, 'id');
+                    ids.should.eql([2, 1]);
+
+                    should.exist(result.users[0].website);
+                    should.exist(result.users[1].website);
+
+                    // 3. The meta object should contain the right details
+                    result.meta.should.have.property('pagination');
+                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.page.should.eql(1);
+                    result.meta.pagination.limit.should.eql(15);
+                    result.meta.pagination.pages.should.eql(1);
+                    result.meta.pagination.total.should.eql(2);
+                    should.equal(result.meta.pagination.next, null);
+                    should.equal(result.meta.pagination.prev, null);
+
+                    done();
+                }).catch(done);
+            });
+        });
+
+        describe('8. Tags filter: "image:-null+description:-null"', function () {
+            it('Will fetch tags which have an image and a description', function (done) {
+                TagAPI.browse({filter: 'image:-null+description:-null', order: 'name ASC'}).then(function (result) {
+                    var ids;
+                    // 1. Result should have the correct base structure
+                    should.exist(result);
+                    result.should.have.property('tags');
+                    result.should.have.property('meta');
+
+                    // 2. The data part of the response should be correct
+                    // We should have 3 matching items
+                    result.tags.should.be.an.Array.with.lengthOf(3);
+
+                    ids = _.pluck(result.tags, 'id');
+                    ids.should.eql([4, 3, 2]);
+
+                    should.exist(result.tags[0].image);
+                    should.exist(result.tags[1].image);
+                    should.exist(result.tags[2].image);
+
+                    should.exist(result.tags[0].description);
+                    should.exist(result.tags[1].description);
+                    should.exist(result.tags[2].description);
+
+                    // 3. The meta object should contain the right details
+                    result.meta.should.have.property('pagination');
+                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.page.should.eql(1);
+                    result.meta.pagination.limit.should.eql(15);
+                    result.meta.pagination.pages.should.eql(1);
+                    result.meta.pagination.total.should.eql(3);
+                    should.equal(result.meta.pagination.next, null);
+                    should.equal(result.meta.pagination.prev, null);
 
                     done();
                 }).catch(done);
