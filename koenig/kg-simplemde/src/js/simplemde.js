@@ -994,7 +994,6 @@ SimpleMDE.prototype.render = function(el) {
 };
 
 SimpleMDE.prototype.autosave = function() {
-	var content = this.value();
 	var simplemde = this;
 
 	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == "") {
@@ -1016,7 +1015,7 @@ SimpleMDE.prototype.autosave = function() {
 	}
 
 	if(localStorage) {
-		localStorage.setItem(this.options.autosave.unique_id, content);
+		localStorage.setItem(this.options.autosave.unique_id, simplemde.value());
 	}
 
 	var el = document.getElementById("autosaved");
