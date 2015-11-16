@@ -7,7 +7,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SimpleMDE = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-; Typo = global.Typo = require("/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js");
+; Typo = global.Typo = require("D:\\My Web Sites\\simplemde-markdown-editor\\node_modules\\codemirror-spell-checker\\src\\js\\typo.js");
 CodeMirror = global.CodeMirror = require("codemirror");
 ; var __browserify_shim_require__=require;(function browserifyShim(module, define, require) {
 // Initialize data globally to reduce memory consumption
@@ -105,7 +105,7 @@ if(!String.prototype.includes) {
 }).call(global, module, undefined, undefined);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js":2,"codemirror":6}],2:[function(require,module,exports){
+},{"D:\\My Web Sites\\simplemde-markdown-editor\\node_modules\\codemirror-spell-checker\\src\\js\\typo.js":2,"codemirror":6}],2:[function(require,module,exports){
 (function (global){
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 'use strict';
@@ -10782,7 +10782,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
         f: s.f,
 
         prevLine: s.prevLine,
-        thisLine: s.this,
+        thisLine: s.thisLine,
 
         block: s.block,
         htmlState: s.htmlState && CodeMirror.copyState(htmlMode, s.htmlState),
@@ -12808,6 +12808,7 @@ require("spell-checker");
 var marked = require("marked");
 
 
+// Some variables
 var isMac = /Mac/.test(navigator.platform);
 
 var shortcuts = {
@@ -13789,7 +13790,6 @@ SimpleMDE.prototype.render = function(el) {
 };
 
 SimpleMDE.prototype.autosave = function() {
-	var content = this.value();
 	var simplemde = this;
 
 	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == "") {
@@ -13804,14 +13804,14 @@ SimpleMDE.prototype.autosave = function() {
 	}
 
 	if(this.options.autosave.loaded !== true) {
-		if(localStorage.getItem(this.options.autosave.unique_id) != null)
+		if(typeof localStorage.getItem(this.options.autosave.unique_id) == "string" && localStorage.getItem(this.options.autosave.unique_id) != "")
 			this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
 
 		this.options.autosave.loaded = true;
 	}
 
 	if(localStorage) {
-		localStorage.setItem(this.options.autosave.unique_id, content);
+		localStorage.setItem(this.options.autosave.unique_id, simplemde.value());
 	}
 
 	var el = document.getElementById("autosaved");
