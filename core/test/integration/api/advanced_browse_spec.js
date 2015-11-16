@@ -126,10 +126,10 @@ describe('Filter Param Spec', function () {
             });
         });
 
-        describe('4. Posts - filter="author:[leslie,pat]+(featured:true,tag:audio)"', function () {
+        describe('4. Posts - filter="author:[leslie,pat]+(tag:audio,image:-null)"', function () {
             // Note that `pat` doesn't exist (it's `pat-smith`)
-            it('Will fetch posts by the author `leslie` or `pat` which are either featured or have tag `audio`.', function (done) {
-                PostAPI.browse({filter: 'author:[leslie,pat]+(featured:true,tag:audio)', include: 'author,tags'}).then(function (result) {
+            it('Will fetch posts by the author `leslie` or `pat` which are either have tag `audio` or an image.', function (done) {
+                PostAPI.browse({filter: 'author:[leslie,pat]+(tag:audio,image:-null)', include: 'author,tags'}).then(function (result) {
                     var ids, authors;
                     // 1. Result should have the correct base structure
                     should.exist(result);
@@ -138,7 +138,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 2 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(4);
+                    result.posts.should.be.an.Array.with.lengthOf(6);
 
                     // Each post must either have the author 'leslie' or 'pat'
                     authors = _.map(result.posts, function (post) {
@@ -148,10 +148,10 @@ describe('Filter Param Spec', function () {
 
                     // Each post must either be featured or have the tag 'audio'
                     _.each(result.posts, function (post) {
-                        var tags;
+                        var tags = _.pluck(post.tags, 'slug');
                         // This construct ensures we get an assertion or a failure
-                        if (post.featured === 'true') {
-                            post.featured.should.be.true;
+                        if (!_.isEmpty(post.image)) {
+                            post.image.should.not.be.empty;
                         } else {
                             tags = _.pluck(post.tags, 'slug');
                             tags.should.containEql('audio');
@@ -159,7 +159,7 @@ describe('Filter Param Spec', function () {
                     });
 
                     ids = _.pluck(result.posts, 'id');
-                    ids.should.eql([14, 12, 9, 8]);
+                    ids.should.eql([14, 12, 11, 9, 8, 7]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
@@ -167,7 +167,7 @@ describe('Filter Param Spec', function () {
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
-                    result.meta.pagination.total.should.eql(4);
+                    result.meta.pagination.total.should.eql(6);
                     should.equal(result.meta.pagination.next, null);
                     should.equal(result.meta.pagination.prev, null);
 
