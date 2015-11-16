@@ -70,6 +70,7 @@ module.exports = function (defaults) {
 
     if (app.env === 'test') {
         app.import('bower_components/jquery.simulate.drag-sortable/jquery.simulate.drag-sortable.js');
+        app.import('bower_components/jquery-deparam/jquery-deparam.js');
     }
 
     // 'dem Styles

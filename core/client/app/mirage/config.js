@@ -1,11 +1,13 @@
 import Ember from 'ember';
 
-const {isBlank} = Ember;
+let {isBlank} = Ember;
 
 function paginatedResponse(modelName, allModels, request) {
-    const page = +request.queryParams.page || 1;
+    let page = +request.queryParams.page || 1;
     let limit = request.queryParams.limit || 15;
     let pages, models, next, prev;
+
+    allModels = allModels || [];
 
     if (limit === 'all') {
         models = allModels;
@@ -48,6 +50,27 @@ export default function () {
     this.namespace = 'ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
 
+    /* Authentication ------------------------------------------------------- */
+
+    this.post('/authentication/token', function () {
+        return {
+            access_token: '5JhTdKI7PpoZv4ROsFoERc6wCHALKFH5jxozwOOAErmUzWrFNARuH1q01TYTKeZkPW7FmV5MJ2fU00pg9sm4jtH3Z1LjCf8D6nNqLYCfFb2YEKyuvG7zHj4jZqSYVodN2YTCkcHv6k8oJ54QXzNTLIDMlCevkOebm5OjxGiJpafMxncm043q9u1QhdU9eee3zouGRMVVp8zkKVoo5zlGMi3zvS2XDpx7xsfk8hKHpUgd7EDDQxmMueifWv7hv6n',
+            expires_in: 3600,
+            refresh_token: 'XP13eDjwV5mxOcrq1jkIY9idhdvN3R1Br5vxYpYIub2P5Hdc8pdWMOGmwFyoUshiEB62JWHTl8H1kACJR18Z8aMXbnk5orG28br2kmVgtVZKqOSoiiWrQoeKTqrRV0t7ua8uY5HdDUaKpnYKyOdpagsSPn3WEj8op4vHctGL3svOWOjZhq6F2XeVPMR7YsbiwBE8fjT3VhTB3KRlBtWZd1rE0Qo2EtSplWyjGKv1liAEiL0ndQoLeeSOCH4rTP7',
+            token_type: 'Bearer'
+        };
+    });
+
+    /* Download Count ------------------------------------------------------- */
+
+    let downloadCount = 0;
+    this.get('http://ghost.org/count/', function () {
+        downloadCount++;
+        return {
+            count: downloadCount
+        };
+    });
+
     /* Notifications -------------------------------------------------------- */
 
     this.get('/notifications/', 'notifications');
@@ -55,13 +78,14 @@ export default function () {
     /* Posts ---------------------------------------------------------------- */
 
     this.post('/posts/', function (db, request) {
-        const [attrs] = JSON.parse(request.requestBody).posts;
+        let [attrs] = JSON.parse(request.requestBody).posts;
         let post;
 
         if (isBlank(attrs.slug) && !isBlank(attrs.title)) {
             attrs.slug = attrs.title.dasherize();
         }
 
+        // NOTE: this does not use the post factory to fill in blank fields
         post = db.posts.insert(attrs);
 
         return {
@@ -69,11 +93,21 @@ export default function () {
         };
     });
 
+    this.get('/posts/', function (db, request) {
+        // TODO: handle status/staticPages/author params
+        let response = paginatedResponse('posts', db.posts, request);
+        return response;
+    });
+
+    /* Roles ---------------------------------------------------------------- */
+
+    this.get('/roles/', 'roles');
+
     /* Settings ------------------------------------------------------------- */
 
     this.get('/settings/', function (db, request) {
-        const filters = request.queryParams.type.split(','),
-              settings = [];
+        let filters = request.queryParams.type.split(',');
+        let settings = [];
 
         filters.forEach(filter => {
             settings.pushObjects(db.settings.where({type: filter}));
@@ -90,7 +124,7 @@ export default function () {
     });
 
     this.put('/settings/', function (db, request) {
-        const newSettings = JSON.parse(request.requestBody);
+        let newSettings = JSON.parse(request.requestBody);
 
         db.settings.remove();
         db.settings.insert(newSettings);
@@ -111,16 +145,52 @@ export default function () {
         };
     });
 
+    /* Setup ---------------------------------------------------------------- */
+
+    this.post('/authentication/setup', function (db, request) {
+        let [attrs] = $.deparam(request.requestBody).setup;
+        let [role] = db.roles.where({name: 'Owner'});
+        let user;
+
+        // create owner role unless already exists
+        if (!role) {
+            role = db.roles.insert({name: 'Owner'});
+        }
+        attrs.roles = [role];
+
+        if (!isBlank(attrs.email)) {
+            attrs.slug = attrs.email.split('@')[0].dasherize();
+        }
+
+        // NOTE: this does not use the user factory to fill in blank fields
+        user = db.users.insert(attrs);
+
+        delete user.roles;
+
+        return {
+            users: [user]
+        };
+    });
+
+    this.get('/authentication/setup/', function () {
+        return {
+            setup: [
+                {status: true}
+            ]
+        };
+    });
+
     /* Tags ----------------------------------------------------------------- */
 
     this.post('/tags/', function (db, request) {
-        const [attrs] = JSON.parse(request.requestBody).tags;
+        let [attrs] = JSON.parse(request.requestBody).tags;
         let tag;
 
         if (isBlank(attrs.slug) && !isBlank(attrs.name)) {
             attrs.slug = attrs.name.dasherize();
         }
 
+        // NOTE: this does not use the tag factory to fill in blank fields
         tag = db.tags.insert(attrs);
 
         return {
@@ -129,13 +199,13 @@ export default function () {
     });
 
     this.get('/tags/', function (db, request) {
-        const response = paginatedResponse('tags', db.tags, request);
+        let response = paginatedResponse('tags', db.tags, request);
         // TODO: remove post_count unless requested?
         return response;
     });
 
     this.get('/tags/slug/:slug/', function (db, request) {
-        const [tag] = db.tags.where({slug: request.params.slug});
+        let [tag] = db.tags.where({slug: request.params.slug});
 
         // TODO: remove post_count unless requested?
 
@@ -145,9 +215,9 @@ export default function () {
     });
 
     this.put('/tags/:id/', function (db, request) {
-        const id = request.params.id,
-              [attrs] = JSON.parse(request.requestBody).tags,
-              record = db.tags.update(id, attrs);
+        let id = request.params.id;
+        let [attrs] = JSON.parse(request.requestBody).tags;
+        let record = db.tags.update(id, attrs);
 
         return {
             tag: record
@@ -157,6 +227,22 @@ export default function () {
     this.del('/tags/:id/', 'tag');
 
     /* Users ---------------------------------------------------------------- */
+
+    this.post('/users/', function (db, request) {
+        let [attrs] = JSON.parse(request.requestBody).users;
+        let user;
+
+        if (!isBlank(attrs.email)) {
+            attrs.slug = attrs.email.split('@')[0].dasherize();
+        }
+
+        // NOTE: this does not use the user factory to fill in blank fields
+        user = db.users.insert(attrs);
+
+        return {
+            users: [user]
+        };
+    });
 
     // /users/me = Always return the user with ID=1
     this.get('/users/me', function (db) {
