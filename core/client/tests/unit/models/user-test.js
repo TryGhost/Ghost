@@ -74,13 +74,13 @@ describeModel(
             var model = this.subject();
 
             run(() => {
-                let role = this.store().push('role', {id: 1, name: 'Author'});
+                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
                 model.get('roles').pushObject(role);
             });
             expect(model.get('role.name')).to.equal('Author');
 
             run(() => {
-                let role = this.store().push('role', {id: 1, name: 'Editor'});
+                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
                 model.set('role', role);
             });
             expect(model.get('role.name')).to.equal('Editor');
@@ -90,7 +90,7 @@ describeModel(
             var model = this.subject();
 
             run(() => {
-                let role = this.store().push('role', {id: 1, name: 'Author'});
+                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
                 model.set('role', role);
             });
             expect(model.get('isAuthor')).to.be.ok;
@@ -103,7 +103,7 @@ describeModel(
             var model = this.subject();
 
             run(() => {
-                let role = this.store().push('role', {id: 1, name: 'Editor'});
+                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
                 model.set('role', role);
             });
             expect(model.get('isEditor')).to.be.ok;
@@ -116,7 +116,7 @@ describeModel(
             var model = this.subject();
 
             run(() => {
-                let role = this.store().push('role', {id: 1, name: 'Administrator'});
+                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Administrator'}}});
                 model.set('role', role);
             });
             expect(model.get('isAdmin')).to.be.ok;
@@ -129,7 +129,7 @@ describeModel(
             var model = this.subject();
 
             run(() => {
-                let role = this.store().push('role', {id: 1, name: 'Owner'});
+                let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Owner'}}});
                 model.set('role', role);
             });
             expect(model.get('isOwner')).to.be.ok;
