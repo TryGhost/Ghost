@@ -14,7 +14,7 @@ var Promise         = require('bluebird'),
 
     docName         = 'users',
     // TODO: implement created_by, updated_by
-    allowedIncludes = ['permissions', 'roles', 'roles.permissions'],
+    allowedIncludes = ['post_count', 'permissions', 'roles', 'roles.permissions'],
     users,
     sendInviteEmail;
 
