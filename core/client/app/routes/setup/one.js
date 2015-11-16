@@ -12,12 +12,14 @@ var DownloadCountPoller = Ember.Object.extend({
     },
 
     poll: function () {
-        var interval = 2000,
+        var interval = Ember.testing ? 20 : 2000,
             runId;
 
         runId = Ember.run.later(this, function () {
             this.downloadCounter();
-            this.poll();
+            if (!Ember.testing) {
+                this.poll();
+            }
         }, interval);
 
         this.set('runId', runId);
