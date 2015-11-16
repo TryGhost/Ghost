@@ -14,21 +14,32 @@ data.tags = [
     {
         name: 'photo',
         slug: 'photo',
+        image: 'some/image/path.jpg',
+        description: 'Photo posts',
         created_by: 2
     },
     {
         name: 'Video',
         slug: 'video',
+        image: 'some/image/path.jpg',
+        description: 'Video posts',
         created_by: 1
     },
     {
         name: 'Audio',
         slug: 'audio',
+        image: 'some/image/path.jpg',
+        description: 'Audio posts',
         created_by: 1
     },
     {
         name: 'No Posts',
         slug: 'no-posts',
+        created_by: 2
+    },
+    {
+        name: 'Special',
+        slug: 'special',
         created_by: 2
     }
 ];
@@ -39,12 +50,20 @@ data.users = [
         name: 'Leslie Jones',
         slug: 'leslie',
         email: 'ljones@nothere.com',
-        password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
+        password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+        website: 'http://twitter.com/ljonestestuser'
     },
     {
         name: 'Pat Smith',
         slug: 'pat-smith',
         email: 'pat-smith@nothere.com',
+        password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6',
+        website: 'http://github.com/patsmithtestuser'
+    },
+    {
+        name: 'Cameron Howe',
+        slug: 'camhowe',
+        email: 'camhowe@c-e-is-real.com',
         password: '$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKZL6'
     }
 ];
@@ -64,7 +83,7 @@ data.posts = [
         markdown: 'Hello World!',
         featured: false,
         author_id: 2,
-        tags: [2, 3, 4]
+        tags: [2, 3, 4, 6]
     },
     {
         title: 'Third Post',
@@ -88,7 +107,7 @@ data.posts = [
         markdown: 'Hello World!',
         featured: true,
         author_id: 2,
-        tags: []
+        tags: [6]
     },
     {
         title: 'Sixth Post',
@@ -97,7 +116,7 @@ data.posts = [
         featured: false,
         author_id: 2,
         image: 'some/image/path.jpg',
-        tags: [1, 4]
+        tags: [1, 4, 6]
     },
     {
         title: 'Seventh Post',
