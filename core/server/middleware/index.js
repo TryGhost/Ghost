@@ -123,8 +123,8 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     blogApp.use(uncapitalise);
 
     // Body parsing
-    blogApp.use(bodyParser.json());
-    blogApp.use(bodyParser.urlencoded({extended: true}));
+    blogApp.use(bodyParser.json({limit: '1mb'}));
+    blogApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
     blogApp.use(passport.initialize());
 
