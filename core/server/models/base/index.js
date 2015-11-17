@@ -17,9 +17,7 @@ var _          = require('lodash'),
     utils      = require('../../utils'),
     uuid       = require('node-uuid'),
     validation = require('../../data/validation'),
-    baseUtils  = require('./utils'),
     plugins    = require('../plugins'),
-    gql        = require('ghost-gql'),
 
     ghostBookshelf;
 
@@ -32,6 +30,9 @@ ghostBookshelf.plugin('registry');
 
 // Load the Ghost access rules plugin, which handles passing permissions/context through the model layer
 ghostBookshelf.plugin(plugins.accessRules);
+
+// Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
+ghostBookshelf.plugin(plugins.filter);
 
 // Load the Ghost include count plugin, which allows for the inclusion of cross-table counts
 ghostBookshelf.plugin(plugins.includeCount);
@@ -280,24 +281,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         // This applies default properties like 'staticPages' and 'status'
         // And then converts them to 'where' options... this behaviour is effectively deprecated in favour
         // of using filter - it's only be being kept here so that we can transition cleanly.
-        this.processOptions(_.defaults(options, this.findPageDefaultOptions()));
+        this.processOptions(options);
 
-        // If there are `where` conditionals specified, add those to the query.
-        if (options.where) {
-            itemCollection.query(function (qb) {
-                gql.knexify(qb, options.where);
-            });
-        }
-
-        // Apply FILTER
-        if (options.filter) {
-            options.filter = gql.parse(options.filter);
-            itemCollection.query(function (qb) {
-                gql.knexify(qb, options.filter);
-            });
-
-            baseUtils.processGQLResult(itemCollection, options);
-        }
+        // Add Filter behaviour
+        itemCollection.applyFilters(options);
 
         // Handle related objects
         // TODO: this should just be done for all methods @ the API level

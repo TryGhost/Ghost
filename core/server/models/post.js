@@ -328,15 +328,14 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return attrs;
+    },
+    enforcedFilters: function enforcedFilters() {
+        return this.isPublicContext() ? 'status:published' : null;
+    },
+    defaultFilters: function defaultFilters() {
+        return this.isPublicContext() ? 'page:false' : 'page:false+status:published';
     }
 }, {
-    findPageDefaultOptions: function findPageDefaultOptions() {
-        return {
-            staticPages: false, // include static pages
-            status: 'published'
-        };
-    },
-
     orderDefaultOptions: function orderDefaultOptions() {
         return {
             status: 'ASC',
@@ -358,7 +357,7 @@ Post = ghostBookshelf.Model.extend({
         options.where = {statements: []};
 
         // Step 4: Setup filters (where clauses)
-        if (options.staticPages !== 'all') {
+        if (options.staticPages && options.staticPages !== 'all') {
             // convert string true/false to boolean
             if (!_.isBoolean(options.staticPages)) {
                 options.staticPages = _.contains(['true', '1'], options.staticPages);
@@ -372,12 +371,12 @@ Post = ghostBookshelf.Model.extend({
 
         // Unless `all` is passed as an option, filter on
         // the status provided.
-        if (options.status !== 'all') {
+        if (options.status && options.status !== 'all') {
             // make sure that status is valid
             options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
             options.where.statements.push({prop: 'status', op: '=', value: options.status});
             delete options.status;
-        } else {
+        } else if (options.status === 'all') {
             options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft']});
             delete options.status;
         }
