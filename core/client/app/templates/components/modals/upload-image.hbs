@@ -1,0 +1,11 @@
+<div class="modal-body">
+    <section class="js-drop-zone">
+        <img class="js-upload-target" src="{{imageUrl}}" alt="logo">
+        <input data-url="upload" class="js-fileupload main" type="file" name="uploadimage" accept="{{acceptEncoding}}">
+    </section>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
+    {{#gh-spin-button action="confirm" class="btn btn-blue right js-button-accept" submitting=submitting}}Save{{/gh-spin-button}}
+</div>

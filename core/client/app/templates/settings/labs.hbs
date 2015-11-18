@@ -28,7 +28,7 @@
             <fieldset>
                 <div class="form-group">
                     <label>Delete all Content</label>
-                    <button type="button" class="btn btn-red js-delete" {{action "openModal" "deleteAll"}}>Delete</button>
+                    <button type="button" class="btn btn-red js-delete" {{action "toggleDeleteAllModal"}}>Delete</button>
                     <p>Delete all posts and tags from the database.</p>
                 </div>
             </fieldset>
@@ -57,3 +57,9 @@
         </form>
     </section>
 </section>
+
+{{#if showDeleteAllModal}}
+    {{gh-fullscreen-modal "delete-all"
+                          close=(action "toggleDeleteAllModal")
+                          modifier="action wide"}}
+{{/if}}

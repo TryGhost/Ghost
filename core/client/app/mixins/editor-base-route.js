@@ -63,7 +63,7 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
 
             if (!fromNewToEdit && !deletedWithoutChanges && controllerIsDirty) {
                 transition.abort();
-                this.send('openModal', 'leave-editor', [controller, transition]);
+                controller.send('toggleLeaveEditorModal', transition);
                 return;
             }
 

@@ -1,5 +1,3 @@
-/* global key */
-
 import Ember from 'ember';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
@@ -16,7 +14,6 @@ function K() {
 let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'all'};
-shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
@@ -37,9 +34,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     sessionAuthenticated() {
-        let appController = this.controllerFor('application');
-
-        if (appController && appController.get('skipAuthSuccessHandler')) {
+        if (this.get('session.skipAuthSuccessHandler')) {
             return;
         }
 
@@ -64,7 +59,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
         closeMenus() {
             this.get('dropdown').closeDropdowns();
-            this.send('closeModal');
             this.controller.setProperties({
                 showSettingsMenu: false,
                 showMobileMenu: false
@@ -90,48 +84,6 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             windowProxy.replaceLocation(AuthConfiguration.baseURL);
         },
 
-        openModal(modalName, model, type) {
-            this.get('dropdown').closeDropdowns();
-            key.setScope('modal');
-            modalName = `modals/${modalName}`;
-            this.set('modalName', modalName);
-
-            // We don't always require a modal to have a controller
-            // so we're skipping asserting if one exists
-            if (this.controllerFor(modalName, true)) {
-                this.controllerFor(modalName).set('model', model);
-
-                if (type) {
-                    this.controllerFor(modalName).set('imageType', type);
-                    this.controllerFor(modalName).set('src', model.get(type));
-                }
-            }
-
-            return this.render(modalName, {
-                into: 'application',
-                outlet: 'modal'
-            });
-        },
-
-        confirmModal() {
-            let modalName = this.get('modalName');
-
-            this.send('closeModal');
-
-            if (this.controllerFor(modalName, true)) {
-                this.controllerFor(modalName).send('confirmAccept');
-            }
-        },
-
-        closeModal() {
-            this.disconnectOutlet({
-                outlet: 'modal',
-                parentView: 'application'
-            });
-
-            key.setScope('default');
-        },
-
         loadServerNotifications(isDelayed) {
             if (this.get('session.isAuthenticated')) {
                 this.get('session.user').then((user) => {
@@ -144,6 +96,10 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     }
                 });
             }
+        },
+
+        toggleMarkdownHelpModal() {
+            this.get('controller').toggleProperty('showMarkdownHelpModal');
         },
 
         // noop default for unhandled save (used from shortcuts)

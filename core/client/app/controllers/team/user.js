@@ -1,41 +1,44 @@
 import Ember from 'ember';
+import {request as ajax} from 'ic-ajax';
 import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, computed, inject} = Ember;
+const {Controller, RSVP, computed, inject, isArray} = Ember;
 const {alias, and, not, or, readOnly} = computed;
 
 export default Controller.extend(ValidationEngine, {
     // ValidationEngine settings
     validationType: 'user',
     submitting: false,
+    lastPromise: null,
+    showDeleteUserModal: false,
+    showTransferOwnerModal: false,
+    showUploadCoverModal: false,
+    showUplaodImageModal: false,
 
+    dropdown: inject.service(),
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
     session: inject.service(),
 
-    lastPromise: null,
-
-    currentUser: alias('session.user'),
     user: alias('model'),
-    email: readOnly('user.email'),
-    slugValue: boundOneWay('user.slug'),
+    currentUser: alias('session.user'),
+
+    email: readOnly('model.email'),
+    slugValue: boundOneWay('model.slug'),
+
+    isNotOwnersProfile: not('user.isOwner'),
+    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
+    canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
+    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
+    rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
+    userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
     isNotOwnProfile: computed('user.id', 'currentUser.id', function () {
         return this.get('user.id') !== this.get('currentUser.id');
     }),
-
-    isNotOwnersProfile: not('user.isOwner'),
-
-    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
-
-    canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
-
-    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
-
-    rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
 
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner')) ||
@@ -44,8 +47,6 @@ export default Controller.extend(ValidationEngine, {
             return true;
         }
     }),
-
-    userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
     // duplicated in gh-user-active -- find a better home and consolidate?
     userDefault: computed('ghostPaths', function () {
@@ -84,6 +85,23 @@ export default Controller.extend(ValidationEngine, {
     roles: computed(function () {
         return this.store.query('role', {permissions: 'assign'});
     }),
+
+    _deleteUser() {
+        if (this.get('deleteUserActionIsVisible')) {
+            let user = this.get('user');
+            return user.destroyRecord();
+        }
+    },
+
+    _deleteUserSuccess() {
+        this.get('notifications').closeAlerts('user.delete');
+        this.store.unloadAll('post');
+        this.transitionToRoute('team');
+    },
+
+    _deleteUserFailure() {
+        this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+    },
 
     actions: {
         changeRole(newRole) {
@@ -135,6 +153,20 @@ export default Controller.extend(ValidationEngine, {
             });
 
             this.set('lastPromise', promise);
+        },
+
+        deleteUser() {
+            return this._deleteUser().then(() => {
+                this._deleteUserSuccess();
+            }, () => {
+                this._deleteUserFailure();
+            });
+        },
+
+        toggleDeleteUserModal() {
+            if (this.get('deleteUserActionIsVisible')) {
+                this.toggleProperty('showDeleteUserModal');
+            }
         },
 
         password() {
@@ -210,6 +242,51 @@ export default Controller.extend(ValidationEngine, {
             });
 
             this.set('lastPromise', promise);
+        },
+
+        transferOwnership() {
+            let user = this.get('user');
+            let url = this.get('ghostPaths.url').api('users', 'owner');
+
+            this.get('dropdown').closeDropdowns();
+
+            return ajax(url, {
+                type: 'PUT',
+                data: {
+                    owner: [{
+                        id: user.get('id')
+                    }]
+                }
+            }).then((response) => {
+                // manually update the roles for the users that just changed roles
+                // because store.pushPayload is not working with embedded relations
+                if (response && isArray(response.users)) {
+                    response.users.forEach((userJSON) => {
+                        let user = this.store.peekRecord('user', userJSON.id);
+                        let role = this.store.peekRecord('role', userJSON.roles[0].id);
+
+                        user.set('role', role);
+                    });
+                }
+
+                this.get('notifications').showAlert(`Ownership successfully transferred to ${user.get('name')}`, {type: 'success', key: 'owner.transfer.success'});
+            }).catch((error) => {
+                this.get('notifications').showAPIError(error, {key: 'owner.transfer'});
+            });
+        },
+
+        toggleTransferOwnerModal() {
+            if (this.get('canMakeOwner')) {
+                this.toggleProperty('showTransferOwnerModal');
+            }
+        },
+
+        toggleUploadCoverModal() {
+            this.toggleProperty('showUploadCoverModal');
+        },
+
+        toggleUploadImageModal() {
+            this.toggleProperty('showUploadImageModal');
         }
     }
 });

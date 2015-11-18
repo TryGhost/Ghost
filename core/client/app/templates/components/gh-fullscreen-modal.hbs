@@ -1,0 +1,11 @@
+<div class="liquid-tether-overlay {{overlayClass}} {{if on-overlay-click 'clickable'}}" {{action 'clickOverlay'}}></div>
+<div class="liquid-tether {{tetherClass}}">
+    {{#if hasBlock}}
+      {{yield}}
+    {{else}}
+      {{component modalPath
+                  model=model
+                  confirm=(action 'confirm')
+                  closeModal=(action 'close')}}
+    {{/if}}
+</div>

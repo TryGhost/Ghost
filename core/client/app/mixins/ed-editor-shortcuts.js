@@ -113,7 +113,7 @@ let shortcuts = {
         }
 
         // Talk to the editor
-        editor.sendAction('openModal', 'copy-html', {generatedHTML});
+        editor.send('toggleCopyHTMLModal', generatedHTML);
     },
 
     currentDate(replacement) {

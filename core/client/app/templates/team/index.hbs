@@ -4,8 +4,14 @@
         {{!-- Do not show Invite user button to authors --}}
         {{#unless session.user.isAuthor}}
             <section class="view-actions">
-                <button class="btn btn-green" {{action "openModal" "invite-new-user"}} >Invite People</button>
+                <button class="btn btn-green" {{action "toggleInviteUserModal"}} >Invite People</button>
             </section>
+
+            {{#if showInviteUserModal}}
+                {{gh-fullscreen-modal "invite-new-user"
+                                      close=(action "toggleInviteUserModal")
+                                      modifier="action"}}
+            {{/if}}
         {{/unless}}
     </header>
 
@@ -26,15 +32,15 @@
                                 <span class="user-list-item-icon icon-mail">ic</span>
                                 <div class="user-list-item-body">
                                     <span class="name">{{user.email}}</span><br>
-                                        {{#if user.pending}}
-                                            <span class="description-error">
-                                                Invitation not sent - please try again
-                                            </span>
-                                        {{else}}
-                                            <span class="description">
-                                                Invitation sent: {{component.createdAt}}
-                                            </span>
-                                        {{/if}}
+                                    {{#if user.pending}}
+                                        <span class="description-error">
+                                            Invitation not sent - please try again
+                                        </span>
+                                    {{else}}
+                                        <span class="description">
+                                            Invitation sent: {{component.createdAt}}
+                                        </span>
+                                    {{/if}}
                                 </div>
                                 <aside class="user-list-item-aside">
                                     {{#if component.isSending}}
@@ -61,7 +67,7 @@
                 {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
                 {{#unless session.user.isAuthor}}
                     {{#gh-user-active user=user as |component|}}
-                        {{#link-to 'team.user' user class="user-list-item"}}
+                        {{#link-to 'team.user' user.slug class="user-list-item"}}
                             {{partial 'user-list-item'}}
                         {{/link-to}}
                     {{/gh-user-active}}

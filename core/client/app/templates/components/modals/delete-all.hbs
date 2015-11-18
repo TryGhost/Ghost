@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Would you really like to delete all content from your blog?</h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>This is permanent! No backups, no restores, no magic undo button. <br /> We warned you, ok?</p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
+    {{#gh-spin-button action="confirm" class="btn btn-red" submitting=submitting}}Delete{{/gh-spin-button}}
+</div>
