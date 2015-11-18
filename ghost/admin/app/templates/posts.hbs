@@ -44,3 +44,10 @@
     </section>
 </div>
 {{/gh-content-view-container}}
+
+{{#if showDeletePostModal}}
+    {{gh-fullscreen-modal "delete-post"
+                          model=currentPost
+                          close=(action "toggleDeletePostModal")
+                          modifier="action wide"}}
+{{/if}}

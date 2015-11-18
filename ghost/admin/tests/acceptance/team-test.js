@@ -112,7 +112,7 @@ describe('Acceptance: Team', function () {
         });
 
         describe('invite new user', function () {
-            let emailInputField = '.modal-body .form-group input[name="email"]';
+            let emailInputField = '.fullscreen-modal input[name="email"]';
 
             // @TODO: Evaluate after the modal PR goes in
             it('modal loads correctly', function () {
@@ -162,8 +162,6 @@ describe('Acceptance: Team', function () {
                 visit('/team');
 
                 andThen(() => {
-                    expect(currentURL(), 'currentURL').to.equal('/team');
-
                     expect(find('.user-list.invited-users .user-list-item').length, 'number of invited users').to.equal(0);
                 });
 
@@ -177,7 +175,7 @@ describe('Acceptance: Team', function () {
                 });
 
                 fillIn(emailInputField, 'test@example.com');
-                click('.modal-footer .js-button-accept');
+                click('.fullscreen-modal .btn-green');
 
                 andThen(() => {
                     expect(find('.user-list.invited-users .user-list-item').length, 'number of invited users').to.equal(1);
@@ -197,33 +195,42 @@ describe('Acceptance: Team', function () {
 
                 visit('/team');
 
+                // check our users lists are what we expect
                 andThen(() => {
-                    expect(currentURL(), 'currentURL').to.equal('/team');
-
-                    expect(find('.user-list.invited-users .user-list-item').length, 'number of invited users').to.equal(1);
+                    expect(find('.user-list.invited-users .user-list-item').length, 'number of invited users')
+                        .to.equal(1);
                     // number of active users is 2 because of the logged-in user
-                    expect(find('.user-list.active-users .user-list-item').length, 'number of active users').to.equal(2);
+                    expect(find('.user-list.active-users .user-list-item').length, 'number of active users')
+                        .to.equal(2);
                 });
 
+                // click the "invite new user" button to open the modal
                 click('.view-actions .btn-green');
+
+                // fill in and submit the invite user modal with an existing user
                 fillIn(emailInputField, 'test1@example.com');
-                click('.modal-footer .js-button-accept');
+                click('.fullscreen-modal .btn-green');
 
                 andThen(() => {
-                    expect(find('.gh-alerts .gh-alert').length, 'number of alerts').to.equal(1);
-                    expect(find('.gh-alerts .gh-alert:first').hasClass('gh-alert-yellow'), 'alert is yellow').to.be.true;
-                    expect(find('.gh-alerts .gh-alert:first .gh-alert-content').text(), 'first alert\'s text').to.contain('A user with that email address already exists.');
+                    // check the inline-validation
+                    expect(find('.fullscreen-modal .error .response').text().trim(), 'inviting existing user error')
+                        .to.equal('A user with that email address already exists.');
                 });
 
-                click('.gh-alerts .gh-alert:first .gh-alert-close');
-                click('.view-actions .btn-green');
+                // fill in and submit the invite user modal with an invited user
                 fillIn(emailInputField, 'test2@example.com');
-                click('.modal-footer .js-button-accept');
+                click('.fullscreen-modal .btn-green');
 
                 andThen(() => {
-                    expect(find('.gh-alerts .gh-alert').length, 'number of alerts').to.equal(1);
-                    expect(find('.gh-alerts .gh-alert:first').hasClass('gh-alert-yellow'), 'alert is yellow').to.be.true;
-                    expect(find('.gh-alerts .gh-alert:first .gh-alert-content').text(), 'first alert\'s text').to.contain('A user with that email address was already invited.');
+                    // check the inline-validation
+                    expect(find('.fullscreen-modal .error .response').text().trim(), 'inviting invited user error')
+                        .to.equal('A user with that email address was already invited.');
+
+                    // ensure that there's been no change in our user lists
+                    expect(find('.user-list.invited-users .user-list-item').length, 'number of invited users after failed invites')
+                        .to.equal(1);
+                    expect(find('.user-list.active-users .user-list-item').length, 'number of active users after failed invites')
+                        .to.equal(2);
                 });
             });
         });

@@ -20,6 +20,9 @@ export default Mixin.create({
     editor: null,
     submitting: false,
 
+    showLeaveEditorModal: false,
+    showReAuthenticateModal: false,
+
     postSettingsMenuController: inject.controller('post-settings-menu'),
     notifications: inject.service(),
 
@@ -251,13 +254,12 @@ export default Mixin.create({
 
     actions: {
         save(options) {
-            let status;
             let prevStatus = this.get('model.status');
             let isNew = this.get('model.isNew');
             let autoSaveId = this._autoSaveId;
             let timedSaveId = this._timedSaveId;
             let psmController = this.get('postSettingsMenuController');
-            let promise;
+            let promise, status;
 
             options = options || {};
 
@@ -388,6 +390,44 @@ export default Mixin.create({
 
         updateHeight(height) {
             this.set('height', height);
+        },
+
+        toggleLeaveEditorModal(transition) {
+            this.set('leaveEditorTransition', transition);
+            this.toggleProperty('showLeaveEditorModal');
+        },
+
+        leaveEditor() {
+            let transition = this.get('leaveEditorTransition');
+            let model = this.get('model');
+
+            if (!transition) {
+                this.get('notifications').showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+                return;
+            }
+
+            // definitely want to clear the data store and post of any unsaved, client-generated tags
+            model.updateTags();
+
+            if (model.get('isNew')) {
+                // the user doesn't want to save the new, unsaved post, so delete it.
+                model.deleteRecord();
+            } else {
+                // roll back changes on model props
+                model.rollbackAttributes();
+            }
+
+            // setting hasDirtyAttributes to false here allows willTransition on the editor route to succeed
+            this.set('hasDirtyAttributes', false);
+
+            // since the transition is now certain to complete, we can unset window.onbeforeunload here
+            window.onbeforeunload = null;
+
+            return transition.retry();
+        },
+
+        toggleReAuthenticateModal() {
+            this.toggleProperty('showReAuthenticateModal');
         }
     }
 });

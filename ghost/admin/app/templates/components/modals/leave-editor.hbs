@@ -1,0 +1,18 @@
+<header class="modal-header">
+    <h1>Are you sure you want to leave this page?</h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        Hey there! It looks like you're in the middle of writing something and
+        you haven't saved all of your content.
+    </p>
+
+    <p>Save before you go!</p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="btn btn-default btn-minor">Stay</button>
+    <button {{action "confirm"}} class="btn btn-red">Leave</button>
+</div>

@@ -125,7 +125,7 @@ export default Component.extend({
         },
 
         deleteTag() {
-            this.sendAction('openModal', 'delete-tag', this.get('tag'));
+            this.attrs.showDeleteTagModal();
         }
     }
 

@@ -1,0 +1,41 @@
+<header class="modal-header">
+    <h1>Invite a New User</h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <fieldset>
+        {{#gh-form-group errors=errors hasValidated=hasValidated property="email"}}
+            <label for="new-user-email">Email Address</label>
+            {{gh-input enter="sendInvite"
+                       class="email"
+                       id="new-user-email"
+                       type="email"
+                       placeholder="Email Address"
+                       name="email"
+                       autofocus="autofocus"
+                       autocapitalize="off"
+                       autocorrect="off"
+                       value=email
+                       focusOut=(action "validate" "email")}}
+            {{gh-error-message errors=errors property="email"}}
+        {{/gh-form-group}}
+
+        <div class="form-group for-select">
+            <label for="new-user-role">Role</label>
+            <span class="gh-select" tabindex="0">
+                {{gh-select-native id="new-user-role"
+                    content=roles
+                    optionValuePath="id"
+                    optionLabelPath="name"
+                    selection=role
+                    action="setRole"
+                }}
+            </span>
+        </div>
+    </fieldset>
+</div>
+
+<div class="modal-footer">
+    {{#gh-spin-button action="confirm" class="btn btn-green" submitting=submitting}}Send invitation now{{/gh-spin-button}}
+</div>

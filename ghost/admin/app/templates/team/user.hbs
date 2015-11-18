@@ -14,16 +14,28 @@
                     {{#gh-dropdown name="user-actions-menu" tagName="ul" classNames="user-actions-menu dropdown-menu dropdown-triangle-top-right"}}
                         {{#if canMakeOwner}}
                             <li>
-                                <button {{action "openModal" "transfer-owner" this}}>
+                                <button {{action "toggleTransferOwnerModal"}}>
                                     Make Owner
                                 </button>
+                                {{#if showTransferOwnerModal}}
+                                    {{gh-fullscreen-modal "transfer-owner"
+                                                          confirm=(action "transferOwnership")
+                                                          close=(action "toggleTransferOwnerModal")
+                                                          modifier="action wide"}}
+                                {{/if}}
                             </li>
                         {{/if}}
                         {{#if deleteUserActionIsVisible}}
                             <li>
-                                <button {{action "openModal" "delete-user" this}} class="delete">
+                                <button {{action "toggleDeleteUserModal"}} class="delete">
                                     Delete User
                                 </button>
+                                {{#if showDeleteUserModal}}
+                                    {{gh-fullscreen-modal "delete-user"
+                                                          confirm=(action "deleteUser")
+                                                          close=(action "toggleDeleteUserModal")
+                                                          modifier="action wide"}}
+                                {{/if}}
                             </li>
                         {{/if}}
                     {{/gh-dropdown}}
@@ -37,7 +49,13 @@
     <div class="view-container settings-user">
 
         <figure class="user-cover" style={{coverImageBackground}}>
-            <button class="btn btn-default user-cover-edit js-modal-cover" {{action "openModal" "upload" user "cover"}}>Change Cover</button>
+            <button class="btn btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}>Change Cover</button>
+            {{#if showUploadCoverModal}}
+                {{gh-fullscreen-modal "upload-image"
+                                      model=(hash model=user imageProperty="cover")
+                                      close=(action "toggleUploadCoverModal")
+                                      modifier="action wide"}}
+            {{/if}}
         </figure>
 
         <form class="user-profile" novalidate="novalidate" autocomplete="off">
@@ -50,7 +68,13 @@
 
                 <figure class="user-image">
                     <div id="user-image" class="img" style={{userImageBackground}}><span class="hidden">{{user.name}}"s Picture</span></div>
-                    <button type="button" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</button>
+                    <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
+                    {{#if showUploadImageModal}}
+                        {{gh-fullscreen-modal "upload-image"
+                                              model=(hash model=user imageProperty="image")
+                                              close=(action "toggleUploadImageModal")
+                                              modifier="action wide"}}
+                    {{/if}}
                 </figure>
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
