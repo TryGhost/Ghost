@@ -115,7 +115,7 @@ describe('Acceptance: Authentication', function () {
 
             andThen(() => {
                 // we should see a re-auth modal
-                expect(find('.modal-container #login').length, 'modal exists').to.equal(1);
+                expect(find('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
             });
         });
 

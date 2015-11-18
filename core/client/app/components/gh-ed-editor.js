@@ -57,5 +57,11 @@ export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
     enable() {
         let textarea = this.get('element');
         textarea.removeAttribute('readonly');
+    },
+
+    actions: {
+        toggleCopyHTMLModal(generatedHTML) {
+            this.attrs.toggleCopyHTMLModal(generatedHTML);
+        }
     }
 });
