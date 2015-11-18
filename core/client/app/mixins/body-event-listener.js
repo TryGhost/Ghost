@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const {Mixin, run} = Ember;
+const {$, Mixin, run} = Ember;
 
 function K() {
     return this;
