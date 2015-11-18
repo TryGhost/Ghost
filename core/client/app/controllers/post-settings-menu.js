@@ -5,7 +5,7 @@ import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-const {ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, observer, run} = Ember;
+const {$, ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, observer, run} = Ember;
 
 export default Controller.extend(SettingsMenuMixin, {
     debounceId: null,

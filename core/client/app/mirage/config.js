@@ -1,7 +1,7 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 
-const {isBlank} = Ember;
+const {$, isBlank} = Ember;
 
 function paginatedResponse(modelName, allModels, request) {
     let page = +request.queryParams.page || 1;
