@@ -1,4 +1,4 @@
-{{#gh-editor editorScrollInfo=editorScrollInfo as |ghEditor|}}
+{{#gh-editor editorScrollInfo=editorScrollInfo as |ghEditor toggleCopyHTMLModal|}}
     <header class="view-header">
         {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
             {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle}}
@@ -14,7 +14,7 @@
                 isNew=model.isNew
                 save="save"
                 setSaveType="setSaveType"
-                delete="openDeleteModal"
+                delete="toggleDeletePostModal"
                 submitting=submitting
             }}
         </section>
@@ -23,22 +23,30 @@
     <section class="view-container view-editor">
         <section class="entry-markdown js-entry-markdown {{if ghEditor.markdownActive 'active'}}">
             <header class="floatingheader">
-                <span class="desktop-tabs"><a class="markdown-help-label" href="" title="Markdown Help" {{action "openModal" "markdown"}}>Markdown</a></span>
+                <span class="desktop-tabs"><a class="markdown-help-label" href="" title="Markdown Help" {{action "toggleMarkdownHelpModal"}}>Markdown</a></span>
                 <span class="mobile-tabs">
                     <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
                     <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
                 </span>
-                <a class="markdown-help-icon" href="" title="Markdown Help" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
+                <a class="markdown-help-icon" href="" title="Markdown Help" {{action "toggleMarkdownHelpModal"}}><i class="icon-markdown"></i></a>
             </header>
             <section id="entry-markdown-content" class="entry-markdown-content">
-                {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch setEditor="setEditor" updateScrollInfo="updateEditorScrollInfo" openModal="openModal" onFocusIn="autoSaveNew" height=height focus=shouldFocusEditor}}
+                {{gh-ed-editor classNames="markdown-editor js-markdown-editor"
+                               tabindex="1"
+                               spellcheck="true"
+                               value=model.scratch
+                               setEditor="setEditor"
+                               updateScrollInfo="updateEditorScrollInfo"
+                               toggleCopyHTMLModal=toggleCopyHTMLModal
+                               onFocusIn="autoSaveNew"
+                               height=height
+                               focus=shouldFocusEditor}}
             </section>
         </section>
 
         <section class="entry-preview js-entry-preview {{if ghEditor.previewActive 'active'}}">
             <header class="floatingheader">
-                <span class="desktop-tabs"><a target="_blank" href="{{model.previewUrl}}">
-                    Preview</a></span>
+                <span class="desktop-tabs"><a target="_blank" href="{{model.previewUrl}}">Preview</a></span>
                 <span class="mobile-tabs">
                     <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
                     <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
@@ -53,3 +61,23 @@
         </section>
     </section>
 {{/gh-editor}}
+
+{{#if showDeletePostModal}}
+    {{gh-fullscreen-modal "delete-post"
+                          model=model
+                          close=(action "toggleDeletePostModal")
+                          modifier="action wide"}}
+{{/if}}
+
+{{#if showLeaveEditorModal}}
+    {{gh-fullscreen-modal "leave-editor"
+                          confirm=(action "leaveEditor")
+                          close=(action "toggleLeaveEditorModal")
+                          modifier="action wide"}}
+{{/if}}
+
+{{#if showReAuthenticateModal}}
+    {{gh-fullscreen-modal "re-authenticate"
+                          close=(action "toggleReAuthenticateModal")
+                          modifier="action wide"}}
+{{/if}}

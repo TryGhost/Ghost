@@ -7,6 +7,7 @@ export default Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
     submitting: false,
+    showDeleteAllModal: false,
 
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
@@ -65,8 +66,7 @@ export default Controller.extend({
                 // Reload currentUser and set session
                 this.set('session.user', this.store.findRecord('user', currentUserId));
                 // TODO: keep as notification, add link to view content
-                notifications.showNotification('Import successful.');
-                notifications.closeAlerts('import.upload');
+                notifications.showNotification('Import successful.', {key: 'import.upload.success'});
             }).catch((response) => {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
                     this.set('importErrors', response.jqXHR.responseJSON.errors);
@@ -109,6 +109,10 @@ export default Controller.extend({
                 }
                 this.toggleProperty('submitting');
             });
+        },
+
+        toggleDeleteAllModal() {
+            this.toggleProperty('showDeleteAllModal');
         }
     }
 });
