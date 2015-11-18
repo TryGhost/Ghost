@@ -38,11 +38,19 @@ module.exports = function (Bookshelf) {
         fetch: function () {
             this.addCounts.apply(this, arguments);
 
+            if (this.debug) {
+                console.log('QUERY', this.query().toQuery());
+            }
+
             // Call parent fetch
             return modelProto.fetch.apply(this, arguments);
         },
         fetchAll: function () {
             this.addCounts.apply(this, arguments);
+
+            if (this.debug) {
+                console.log('QUERY', this.query().toQuery());
+            }
 
             // Call parent fetchAll
             return modelProto.fetchAll.apply(this, arguments);
