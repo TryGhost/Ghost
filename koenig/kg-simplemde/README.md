@@ -221,14 +221,15 @@ simplemde.codemirror.on("change", function(){
 });
 ```
 
-## State methods
-The following methods will let you check on the state of the editor.
+## Useful methods
+The following self-explanatory methods may be of use while developing with SimpleMDE.
 
 ```js
 var simplemde = new SimpleMDE();
-simplemde.isPreviewActive();
-simplemde.isSideBySideActive();
-simplemde.isFullscreenActive();
+simplemde.isPreviewActive(); // returns boolean
+simplemde.isSideBySideActive(); // returns boolean
+simplemde.isFullscreenActive(); // returns boolean
+simplemde.clearAutosavedValue(); // no returned value
 ```
 
 ## How it works

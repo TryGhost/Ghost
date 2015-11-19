@@ -999,52 +999,67 @@ SimpleMDE.prototype.render = function(el) {
 };
 
 SimpleMDE.prototype.autosave = function() {
-	var simplemde = this;
-
-	if(this.options.autosave.uniqueId == undefined || this.options.autosave.uniqueId == "") {
-		console.log("SimpleMDE: You must set a uniqueId to use the autosave feature");
-		return;
-	}
-
-	if(simplemde.element.form != null && simplemde.element.form != undefined) {
-		simplemde.element.form.addEventListener("submit", function() {
-			localStorage.setItem(simplemde.options.autosave.uniqueId, "");
-		});
-	}
-
-	if(this.options.autosave.loaded !== true) {
-		if(typeof localStorage.getItem(this.options.autosave.uniqueId) == "string" && localStorage.getItem(this.options.autosave.uniqueId) != "")
-			this.codemirror.setValue(localStorage.getItem(this.options.autosave.uniqueId));
-
-		this.options.autosave.loaded = true;
-	}
-
 	if(localStorage) {
-		localStorage.setItem(this.options.autosave.uniqueId, simplemde.value());
-	}
+		var simplemde = this;
 
-	var el = document.getElementById("autosaved");
-	if(el != null && el != undefined && el != "") {
-		var d = new Date();
-		var hh = d.getHours();
-		var m = d.getMinutes();
-		var dd = "am";
-		var h = hh;
-		if(h >= 12) {
-			h = hh - 12;
-			dd = "pm";
+		if(this.options.autosave.uniqueId == undefined || this.options.autosave.uniqueId == "") {
+			console.log("SimpleMDE: You must set a uniqueId to use the autosave feature");
+			return;
 		}
-		if(h == 0) {
-			h = 12;
+
+		if(simplemde.element.form != null && simplemde.element.form != undefined) {
+			simplemde.element.form.addEventListener("submit", function() {
+				localStorage.removeItem("smde_" + simplemde.options.autosave.uniqueId);
+			});
 		}
-		m = m < 10 ? "0" + m : m;
 
-		el.innerHTML = "Autosaved: " + h + ":" + m + " " + dd;
+		if(this.options.autosave.loaded !== true) {
+			if(typeof localStorage.getItem("smde_" + this.options.autosave.uniqueId) == "string" && localStorage.getItem("smde_" + this.options.autosave.uniqueId) != "")
+				this.codemirror.setValue(localStorage.getItem("smde_" + this.options.autosave.uniqueId));
+
+			this.options.autosave.loaded = true;
+		}
+
+		localStorage.setItem("smde_" + this.options.autosave.uniqueId, simplemde.value());
+
+		var el = document.getElementById("autosaved");
+		if(el != null && el != undefined && el != "") {
+			var d = new Date();
+			var hh = d.getHours();
+			var m = d.getMinutes();
+			var dd = "am";
+			var h = hh;
+			if(h >= 12) {
+				h = hh - 12;
+				dd = "pm";
+			}
+			if(h == 0) {
+				h = 12;
+			}
+			m = m < 10 ? "0" + m : m;
+
+			el.innerHTML = "Autosaved: " + h + ":" + m + " " + dd;
+		}
+
+		setTimeout(function() {
+			simplemde.autosave();
+		}, this.options.autosave.delay || 10000);
+	} else {
+		console.log("SimpleMDE: localStorage not available, cannot autosave");
 	}
+};
 
-	setTimeout(function() {
-		simplemde.autosave();
-	}, this.options.autosave.delay || 10000);
+SimpleMDE.prototype.clearAutosavedValue = function() {
+	if(localStorage) {
+		if(this.options.autosave.uniqueId == undefined || this.options.autosave.uniqueId == "") {
+			console.log("SimpleMDE: You must set a uniqueId to use the autosave feature");
+			return;
+		}
+
+		localStorage.removeItem("smde_" + this.options.autosave.uniqueId);
+	} else {
+		console.log("SimpleMDE: localStorage not available, cannot autosave");
+	}
 };
 
 SimpleMDE.prototype.createSideBySide = function() {
