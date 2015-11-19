@@ -23,7 +23,7 @@
   "dependencies": {
     "codemirror": "codemirror/CodeMirror",
     "codemirror-spell-checker": "nextstepwebs/codemirror-spell-checker",
-    "marked": "chjj/marked"
+    "marked": "0.3.5"
   },
   "devDependencies": {
     "browserify": "^11.2.0",
