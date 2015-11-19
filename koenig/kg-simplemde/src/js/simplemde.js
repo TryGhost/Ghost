@@ -861,6 +861,11 @@ function SimpleMDE(options) {
 	options.insertTexts = extend({}, insertTexts, options.insertTexts || {});
 
 
+	// Change unique_id to uniqueId for backwards compatibility
+	if(options.autosave.unique_id != undefined && options.autosave.unique_id != "")
+		options.autosave.uniqueId = options.autosave.unique_id;
+
+
 	// Update this options
 	this.options = options;
 
@@ -996,26 +1001,26 @@ SimpleMDE.prototype.render = function(el) {
 SimpleMDE.prototype.autosave = function() {
 	var simplemde = this;
 
-	if(this.options.autosave.unique_id == undefined || this.options.autosave.unique_id == "") {
-		console.log("SimpleMDE: You must set a unique_id to use the autosave feature");
+	if(this.options.autosave.uniqueId == undefined || this.options.autosave.uniqueId == "") {
+		console.log("SimpleMDE: You must set a uniqueId to use the autosave feature");
 		return;
 	}
 
 	if(simplemde.element.form != null && simplemde.element.form != undefined) {
 		simplemde.element.form.addEventListener("submit", function() {
-			localStorage.setItem(simplemde.options.autosave.unique_id, "");
+			localStorage.setItem(simplemde.options.autosave.uniqueId, "");
 		});
 	}
 
 	if(this.options.autosave.loaded !== true) {
-		if(typeof localStorage.getItem(this.options.autosave.unique_id) == "string" && localStorage.getItem(this.options.autosave.unique_id) != "")
-			this.codemirror.setValue(localStorage.getItem(this.options.autosave.unique_id));
+		if(typeof localStorage.getItem(this.options.autosave.uniqueId) == "string" && localStorage.getItem(this.options.autosave.uniqueId) != "")
+			this.codemirror.setValue(localStorage.getItem(this.options.autosave.uniqueId));
 
 		this.options.autosave.loaded = true;
 	}
 
 	if(localStorage) {
-		localStorage.setItem(this.options.autosave.unique_id, simplemde.value());
+		localStorage.setItem(this.options.autosave.uniqueId, simplemde.value());
 	}
 
 	var el = document.getElementById("autosaved");
