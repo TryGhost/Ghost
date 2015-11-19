@@ -9,10 +9,33 @@ module.exports = function (Bookshelf) {
         tags: {
             posts: function addPostCountToTags(model) {
                 model.query('columns', 'tags.*', function (qb) {
-                    qb.count('posts_tags.post_id')
-                        .from('posts_tags')
-                        .whereRaw('tag_id = tags.id')
+                    qb.count('posts.id')
+                        .from('posts')
+                        .leftOuterJoin('posts_tags', 'posts.id', 'posts_tags.post_id')
+                        .whereRaw('posts_tags.tag_id = tags.id')
                         .as('post_count');
+
+                    if (model.isPublicContext()) {
+                        // @TODO use the filter behavior for posts
+                        qb.andWhere('posts.page', '=', false);
+                        qb.andWhere('posts.status', '=', 'published');
+                    }
+                });
+            }
+        },
+        users: {
+            posts: function addPostCountToTags(model) {
+                model.query('columns', 'users.*', function (qb) {
+                    qb.count('posts.id')
+                        .from('posts')
+                        .whereRaw('posts.author_id = users.id')
+                        .as('post_count');
+
+                    if (model.isPublicContext()) {
+                        // @TODO use the filter behavior for posts
+                        qb.andWhere('posts.page', '=', false);
+                        qb.andWhere('posts.status', '=', 'published');
+                    }
                 });
             }
         }
