@@ -9,8 +9,7 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationRouteMixin, {
     paginationModel: 'post',
     paginationSettings: {
         status: 'all',
-        staticPages: 'all',
-        filter: ''
+        staticPages: 'all'
     },
 
     model: function () {
@@ -19,7 +18,8 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationRouteMixin, {
 
         return this.get('session.user').then(function (user) {
             if (user.get('isAuthor')) {
-                paginationSettings.filter += `+author:${user.get('slug')}`;
+                paginationSettings.filter = paginationSettings.filter ?
+                    `${paginationSettings.filter}+author:${user.get('slug')}` : `author:${user.get('slug')}`;
             }
 
             return self.loadFirstPage().then(function () {

@@ -1,5 +1,4 @@
 import Ember from 'ember';
-/*global Ember */
 
 var trailingHistory = Ember.HistoryLocation.extend({
     formatURL: function () {
