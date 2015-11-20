@@ -18,6 +18,9 @@ export default Ember.Component.extend({
 
     config: Ember.inject.service(),
 
+    mediaQueries: Ember.inject.service(),
+    isMobile: Ember.computed.reads('mediaQueries.maxWidth600'),
+
     title: Ember.computed('tag.isNew', function () {
         if (this.get('tag.isNew')) {
             return 'New Tag';
