@@ -13,7 +13,7 @@ module.exports = function (Bookshelf) {
                         .from('posts')
                         .leftOuterJoin('posts_tags', 'posts.id', 'posts_tags.post_id')
                         .whereRaw('posts_tags.tag_id = tags.id')
-                        .as('post_count');
+                        .as('count__posts');
 
                     if (model.isPublicContext()) {
                         // @TODO use the filter behavior for posts
@@ -29,7 +29,7 @@ module.exports = function (Bookshelf) {
                     qb.count('posts.id')
                         .from('posts')
                         .whereRaw('posts.author_id = users.id')
-                        .as('post_count');
+                        .as('count__posts');
 
                     if (model.isPublicContext()) {
                         // @TODO use the filter behavior for posts
@@ -49,10 +49,9 @@ module.exports = function (Bookshelf) {
 
             var tableName = _.result(this, 'tableName');
 
-            if (options.include && options.include.indexOf('post_count') > -1) {
+            if (options.include && options.include.indexOf('count.posts') > -1) {
                 // remove post_count from withRelated and include
-                options.withRelated = _.pull([].concat(options.withRelated), 'post_count');
-                options.include = _.pull([].concat(options.include), 'post_count');
+                options.withRelated = _.pull([].concat(options.withRelated), 'count.posts');
 
                 // Call the query builder
                 countQueryBuilder[tableName].posts(this);
@@ -77,6 +76,20 @@ module.exports = function (Bookshelf) {
 
             // Call parent fetchAll
             return modelProto.fetchAll.apply(this, arguments);
+        },
+
+        finalize: function (attrs) {
+            var countRegex = /^(count)(__)(.*)$/;
+            _.forOwn(attrs, function (value, key) {
+                var match = key.match(countRegex);
+                if (match) {
+                    attrs[match[1]] = attrs[match[1]] || {};
+                    attrs[match[1]][match[3]] = value;
+                    delete attrs[key];
+                }
+            });
+
+            return attrs;
         }
     });
 
