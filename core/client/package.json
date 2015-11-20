@@ -43,7 +43,6 @@
     "ember-disable-proxy-controllers": "^1.0.0",
     "ember-export-application-global": "^1.0.3",
     "ember-myth": "0.1.1",
-    "ember-resize": "0.0.10",
     "ember-simple-auth": "1.0.0",
     "ember-sinon": "0.2.1",
     "ember-watson": "^0.6.4",
