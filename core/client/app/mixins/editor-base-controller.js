@@ -14,20 +14,17 @@ PostModel.eachAttribute(function (name) {
 export default Ember.Mixin.create({
     postSettingsMenuController: Ember.inject.controller('post-settings-menu'),
 
-    autoSaveId: null,
-    timedSaveId: null,
+    _autoSaveId: null,
+    _timedSaveId: null,
     editor: null,
     submitting: false,
 
     notifications: Ember.inject.service(),
 
     init: function () {
-        var self = this;
-
-        this._super();
-
-        window.onbeforeunload = function () {
-            return self.get('hasDirtyAttributes') ? self.unloadDirtyMessage() : null;
+        this._super(...arguments);
+        window.onbeforeunload = () => {
+            return this.get('hasDirtyAttributes') ? this.unloadDirtyMessage() : null;
         };
     },
 
@@ -47,10 +44,10 @@ export default Ember.Mixin.create({
             };
 
             timedSaveId = Ember.run.throttle(this, 'send', 'save', saveOptions, 60000, false);
-            this.set('timedSaveId', timedSaveId);
+            this._timedSaveId = timedSaveId;
 
             autoSaveId = Ember.run.debounce(this, 'send', 'save', saveOptions, 3000);
-            this.set('autoSaveId', autoSaveId);
+            this._autoSaveId = autoSaveId;
         }
     }),
 
@@ -254,8 +251,8 @@ export default Ember.Mixin.create({
             var status,
                 prevStatus = this.get('model.status'),
                 isNew = this.get('model.isNew'),
-                autoSaveId = this.get('autoSaveId'),
-                timedSaveId = this.get('timedSaveId'),
+                autoSaveId = this._autoSaveId,
+                timedSaveId = this._timedSaveId,
                 self = this,
                 psmController = this.get('postSettingsMenuController'),
                 promise;
@@ -280,12 +277,12 @@ export default Ember.Mixin.create({
 
             if (autoSaveId) {
                 Ember.run.cancel(autoSaveId);
-                this.set('autoSaveId', null);
+                this._autoSaveId = null;
             }
 
             if (timedSaveId) {
                 Ember.run.cancel(timedSaveId);
-                this.set('timedSaveId', null);
+                this._timedSaveId = null;
             }
 
             // Set the properties that are indirected
