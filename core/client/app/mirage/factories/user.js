@@ -8,7 +8,7 @@ export default Mirage.Factory.extend({
     created_at() { return '2015-09-02T13:41:50.000Z'; },
     created_by() { return null; },
     email(i) { return `user-${i}@example.com`; },
-    image() { return '//www.gravatar.com/avatar/3ae045bc198a157401827c8455cd7c99?s=250&d=mm&r=x'; },
+    image() { return '//gravatar.com/avatar/3ae045bc198a157401827c8455cd7c99?s=250&d=mm&r=x'; },
     language() { return 'en_US'; },
     last_login() { return '2015-11-02T16:12:05.000Z'; },
     location() { return null; },

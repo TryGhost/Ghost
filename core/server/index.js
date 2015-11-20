@@ -185,6 +185,11 @@ function init(options) {
             blogApp.use(compress());
         }
 
+        blogApp.use(function (req, res, next) {
+            res.removeHeader("X-Powered-By");
+            next();
+        });
+
         // ## View engine
         // set the view engine
         blogApp.set('view engine', 'hbs');
