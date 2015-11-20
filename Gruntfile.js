@@ -130,7 +130,6 @@ var _              = require('lodash'),
                     '!config*.js', // note: i added this, do we want this linted?
                     'core/*.js',
                     'core/server/**/*.js',
-                    'core/shared/**/*.js',
                     'core/test/**/*.js',
                     '!core/test/coverage/**',
                     '!core/shared/vendor/**/*.js'
@@ -167,7 +166,6 @@ var _              = require('lodash'),
                             '!config*.js', // note: i added this, do we want this linted?
                             'core/*.js',
                             'core/server/**/*.js',
-                            'core/shared/**/*.js',
                             'core/test/**/*.js',
                             '!core/test/coverage/**',
                             '!core/shared/vendor/**/*.js'
