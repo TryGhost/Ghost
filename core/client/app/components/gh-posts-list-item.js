@@ -25,7 +25,7 @@ export default Ember.Component.extend({
     }),
 
     authorAvatarBackground: Ember.computed('authorAvatar', function () {
-        return `background-image: url(${this.get('authorAvatar')})`.htmlSafe();
+        return Ember.String.htmlSafe(`background-image: url(${this.get('authorAvatar')})`);
     }),
 
     viewOrEdit: Ember.computed('previewIsHidden', function () {
