@@ -3,13 +3,11 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 
 export default AuthenticatedRoute.extend({
 
-    // HACK: ugly way of changing behaviour when on mobile
-    beforeModel: function () {
-        const firstTag = this.modelFor('settings.tags').get('firstObject'),
-              mobileWidth = this.controllerFor('settings.tags').get('mobileWidth'),
-              viewportWidth = Ember.$(window).width();
+    mediaQueries: Ember.inject.service(),
 
-        if (firstTag && viewportWidth > mobileWidth) {
+    beforeModel: function () {
+        let firstTag = this.modelFor('settings.tags').get('firstObject');
+        if (firstTag && !this.get('mediaQueries.maxWidth600')) {
             this.transitionTo('settings.tags.tag', firstTag);
         }
     }
