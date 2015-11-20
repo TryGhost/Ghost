@@ -1,4 +1,3 @@
-/* global md5 */
 import Ember from 'ember';
 
 /**
@@ -27,6 +26,12 @@ export default Ember.Component.extend({
     ghostPaths: Ember.inject.service('ghost-paths'),
     displayGravatar: Ember.computed.notEmpty('validEmail'),
 
+    init: function () {
+        this._super(...arguments);
+        // Fire this immediately in case we're initialized with a valid email
+        this.trySetValidEmail();
+    },
+
     defaultImage: Ember.computed('ghostPaths', function () {
         const url = this.get('ghostPaths.url').asset('/shared/img/user-image.png');
         return Ember.String.htmlSafe(`background-image: url(${url})`);
@@ -50,7 +55,7 @@ export default Ember.Component.extend({
 
         let style = '';
         if (email) {
-            let url = `http://www.gravatar.com/avatar/${md5(email)}?s=${size}&d=blank`;
+            let url = `http://www.gravatar.com/avatar/${window.md5(email)}?s=${size}&d=blank`;
             style = `background-image: url(${url})`;
         }
         return Ember.String.htmlSafe(style);
@@ -59,9 +64,6 @@ export default Ember.Component.extend({
     didInsertElement: function () {
         var size = this.get('size'),
             uploadElement = this.$('.js-file-input');
-
-        // Fire this immediately in case we're initialized with a valid email
-        this.trySetValidEmail();
 
         // while theoretically the 'add' and 'processalways' functions could be
         // added as properties of the hash passed to fileupload(), for some reason

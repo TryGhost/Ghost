@@ -6,7 +6,7 @@ export default Ember.Component.extend({
 
     content: null,
 
-    didRender: function () {
+    didInsertElement: function () {
         var el = this.$();
 
         el.on('scroll', Ember.run.bind(el, setScrollClassName, {
