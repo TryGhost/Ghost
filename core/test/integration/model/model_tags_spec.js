@@ -49,11 +49,11 @@ describe('Tag Model', function () {
         }).catch(done);
     });
 
-    it('returns post_count if include post_count', function (done) {
+    it('returns count.posts if include count.posts', function (done) {
         testUtils.fixtures.insertPosts().then(function () {
-            TagModel.findOne({slug: 'kitchen-sink'}, {include: 'post_count'}).then(function (tag) {
+            TagModel.findOne({slug: 'kitchen-sink'}, {include: 'count.posts'}).then(function (tag) {
                 should.exist(tag);
-                tag.get('post_count').should.equal(2);
+                tag.toJSON().count.posts.should.equal(2);
 
                 done();
             }).catch(done);
@@ -78,13 +78,13 @@ describe('Tag Model', function () {
             }).catch(done);
         });
 
-        it('with include post_count', function (done) {
-            TagModel.findPage({limit: 'all', include: 'post_count'}).then(function (results) {
+        it('with include count.posts', function (done) {
+            TagModel.findPage({limit: 'all', include: 'count.posts'}).then(function (results) {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal('all');
                 results.meta.pagination.pages.should.equal(1);
                 results.tags.length.should.equal(5);
-                should.exist(results.tags[0].post_count);
+                should.exist(results.tags[0].count.posts);
 
                 done();
             }).catch(done);
