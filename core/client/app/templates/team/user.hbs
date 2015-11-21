@@ -36,7 +36,7 @@
 
     <div class="view-container settings-user">
 
-        <figure class="user-cover" style="{{coverImageBackground}}">
+        <figure class="user-cover" style={{coverImageBackground}}>
             <button class="btn btn-default user-cover-edit js-modal-cover" {{action "openModal" "upload" user "cover"}}>Change Cover</button>
         </figure>
 
@@ -49,7 +49,7 @@
             <fieldset class="user-details-top">
 
                 <figure class="user-image">
-                    <div id="user-image" class="img" style="{{userImageBackground}}"><span class="hidden">{{user.name}}"s Picture</span></div>
+                    <div id="user-image" class="img" style={{userImageBackground}}><span class="hidden">{{user.name}}"s Picture</span></div>
                     <button type="button" {{action "openModal" "upload" user "image"}} class="edit-user-image js-modal-image">Edit Picture</button>
                 </figure>
 

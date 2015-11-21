@@ -48,10 +48,12 @@ export default Ember.Component.extend({
         const email = this.get('validEmail'),
               size = this.get('size');
 
+        let style = '';
         if (email) {
             let url = `http://www.gravatar.com/avatar/${md5(email)}?s=${size}&d=blank`;
-            return Ember.String.htmlSafe(`background-image: url(${url})`);
+            style = `background-image: url(${url})`;
         }
+        return Ember.String.htmlSafe(style);
     }),
 
     didInsertElement: function () {

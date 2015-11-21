@@ -56,7 +56,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     userImageBackground: Ember.computed('user.image', 'userDefault', function () {
         var url = this.get('user.image') || this.get('userDefault');
 
-        return `background-image: url(${url})`.htmlSafe();
+        return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
     // end duplicated
@@ -68,7 +68,7 @@ export default Ember.Controller.extend(ValidationEngine, {
     coverImageBackground: Ember.computed('user.cover', 'coverDefault', function () {
         var url = this.get('user.cover') || this.get('coverDefault');
 
-        return `background-image: url(${url})`.htmlSafe();
+        return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
     coverTitle: Ember.computed('user.name', function () {
