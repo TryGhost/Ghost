@@ -8,7 +8,7 @@ export default Ember.Component.extend({
     isFocused: false,
 
     value: '', // make sure a value exists
-    editor: null, // reference to CodeMirror editor
+    _editor: null, // reference to CodeMirror editor
 
     // options for the editor
     lineNumbers: true,
@@ -31,13 +31,13 @@ export default Ember.Component.extend({
             });
         });
 
-        this.set('editor', editor);
+        this._editor = editor;
     },
 
     willDestroyElement: function () {
-        var editor = this.get('editor').getWrapperElement();
+        var editor = this._editor.getWrapperElement();
         editor.parentNode.removeChild(editor);
-        this.set('editor', null);
+        this._editor = null;
     }
 
 });

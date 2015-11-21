@@ -15,7 +15,7 @@ export default EmberSelectizeComponent.extend({
         var openOnFocus = this.get('openOnFocus');
 
         if (!openOnFocus) {
-            Ember.run.next(this, function () {
+            Ember.run.schedule('afterRender', this, function () {
                 var selectize = this._selectize;
                 if (selectize) {
                     selectize.on('dropdown_open', function () {
