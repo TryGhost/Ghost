@@ -14,7 +14,7 @@ export default Ember.Component.extend({
     userImageBackground: Ember.computed('user.image', 'userDefault', function () {
         var url = this.get('user.image') || this.get('userDefault');
 
-        return `background-image: url(${url})`.htmlSafe();
+        return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
     lastLogin: Ember.computed('user.last_login', function () {
