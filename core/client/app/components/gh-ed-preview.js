@@ -4,8 +4,10 @@ import uploader from 'ghost/assets/lib/uploader';
 export default Ember.Component.extend({
     config: Ember.inject.service(),
 
+    _scrollWrapper: null,
+
     didInsertElement: function () {
-        this.set('scrollWrapper', this.$().closest('.entry-preview-content'));
+        this._scrollWrapper = this.$().closest('.entry-preview-content');
         this.adjustScrollPosition(this.get('scrollPosition'));
         Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);
     },
@@ -23,7 +25,7 @@ export default Ember.Component.extend({
     },
 
     adjustScrollPosition: function (scrollPosition) {
-        var scrollWrapper = this.get('scrollWrapper');
+        var scrollWrapper = this._scrollWrapper;
 
         if (scrollWrapper) {
             scrollWrapper.scrollTop(scrollPosition);
