@@ -162,7 +162,11 @@ pagination = function pagination(bookshelf) {
             // Apply ordering options if they are present
             if (options.order && !_.isEmpty(options.order)) {
                 _.forOwn(options.order, function (direction, property) {
-                    self.query('orderBy', tableName + '.' + property, direction);
+                    if (property === 'count.posts') {
+                        self.query('orderBy', 'count__posts', direction);
+                    } else {
+                        self.query('orderBy', tableName + '.' + property, direction);
+                    }
                 });
             }
 

@@ -304,7 +304,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         if (options.order) {
-            options.order = self.parseOrderOption(options.order);
+            options.order = self.parseOrderOption(options.order, options.include);
         } else {
             options.order = self.orderDefaultOptions();
         }
@@ -463,10 +463,13 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         });
     },
 
-    parseOrderOption: function (order) {
+    parseOrderOption: function (order, include) {
         var permittedAttributes, result, rules;
 
         permittedAttributes = this.prototype.permittedAttributes();
+        if (include && include.indexOf('count.posts') > -1) {
+            permittedAttributes.push('count.posts');
+        }
         result = {};
         rules = order.split(',');
 
