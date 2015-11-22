@@ -228,16 +228,16 @@ describe('Tags API', function () {
             }).catch(done);
         });
 
-        it('can browse with include post_count', function (done) {
-            TagAPI.browse({context: {user: 1}, include: 'post_count'}).then(function (results) {
+        it('can browse with include count.posts', function (done) {
+            TagAPI.browse({context: {user: 1}, include: 'count.posts'}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(15);
-                testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
-                should.exist(results.tags[0].post_count);
+                testUtils.API.checkResponse(results.tags[0], 'tag', 'count');
+                should.exist(results.tags[0].count.posts);
 
-                results.tags[0].post_count.should.eql(2);
-                results.tags[1].post_count.should.eql(2);
+                results.tags[0].count.posts.should.eql(2);
+                results.tags[1].count.posts.should.eql(2);
                 results.meta.pagination.should.have.property('page', 1);
                 results.meta.pagination.should.have.property('limit', 15);
                 results.meta.pagination.should.have.property('pages', 4);
@@ -249,13 +249,13 @@ describe('Tags API', function () {
             }).catch(done);
         });
 
-        it('can browse page 4 with include post_count', function (done) {
-            TagAPI.browse({context: {user: 1}, include: 'post_count', page: 4}).then(function (results) {
+        it('can browse page 4 with include count.posts', function (done) {
+            TagAPI.browse({context: {user: 1}, include: 'count.posts', page: 4}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.should.have.lengthOf(10);
-                testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
-                should.exist(results.tags[0].post_count);
+                testUtils.API.checkResponse(results.tags[0], 'tag', 'count');
+                should.exist(results.tags[0].count.posts);
 
                 results.meta.pagination.should.have.property('page', 4);
                 results.meta.pagination.should.have.property('limit', 15);
@@ -320,15 +320,15 @@ describe('Tags API', function () {
             return _.filter(tags, {id: 1})[0];
         }
 
-        it('returns post_count with include post_count', function (done) {
-            TagAPI.read({context: {user: 1}, include: 'post_count', slug: 'kitchen-sink'}).then(function (results) {
+        it('returns count.posts with include count.posts', function (done) {
+            TagAPI.read({context: {user: 1}, include: 'count.posts', slug: 'kitchen-sink'}).then(function (results) {
                 should.exist(results);
                 should.exist(results.tags);
                 results.tags.length.should.be.above(0);
 
-                testUtils.API.checkResponse(results.tags[0], 'tag', 'post_count');
-                should.exist(results.tags[0].post_count);
-                results.tags[0].post_count.should.equal(2);
+                testUtils.API.checkResponse(results.tags[0], 'tag', 'count');
+                should.exist(results.tags[0].count.posts);
+                results.tags[0].count.posts.should.equal(2);
 
                 done();
             }).catch(done);

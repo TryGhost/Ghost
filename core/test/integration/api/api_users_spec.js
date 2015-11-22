@@ -187,29 +187,29 @@ describe('Users API', function () {
                 .catch(done);
         });
 
-        it('can browse with include post_count', function (done) {
-            UserAPI.browse(_.extend({}, testUtils.context.admin, {include: 'post_count'})).then(function (response) {
+        it('can browse with include count.posts', function (done) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {include: 'count.posts'})).then(function (response) {
                 should.exist(response);
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
                 response.users.should.have.length(7);
                 response.users.should.have.length(7);
 
-                testUtils.API.checkResponse(response.users[0], 'user', 'post_count');
-                testUtils.API.checkResponse(response.users[1], 'user', 'post_count');
-                testUtils.API.checkResponse(response.users[2], 'user', 'post_count');
-                testUtils.API.checkResponse(response.users[3], 'user', 'post_count');
-                testUtils.API.checkResponse(response.users[4], 'user', 'post_count');
-                testUtils.API.checkResponse(response.users[5], 'user', 'post_count');
-                testUtils.API.checkResponse(response.users[6], 'user', 'post_count');
+                testUtils.API.checkResponse(response.users[0], 'user', 'count');
+                testUtils.API.checkResponse(response.users[1], 'user', 'count');
+                testUtils.API.checkResponse(response.users[2], 'user', 'count');
+                testUtils.API.checkResponse(response.users[3], 'user', 'count');
+                testUtils.API.checkResponse(response.users[4], 'user', 'count');
+                testUtils.API.checkResponse(response.users[5], 'user', 'count');
+                testUtils.API.checkResponse(response.users[6], 'user', 'count');
 
-                response.users[0].post_count.should.eql(0);
-                response.users[1].post_count.should.eql(0);
-                response.users[2].post_count.should.eql(0);
-                response.users[3].post_count.should.eql(7);
-                response.users[4].post_count.should.eql(0);
-                response.users[5].post_count.should.eql(0);
-                response.users[6].post_count.should.eql(0);
+                response.users[0].count.posts.should.eql(0);
+                response.users[1].count.posts.should.eql(0);
+                response.users[2].count.posts.should.eql(0);
+                response.users[3].count.posts.should.eql(7);
+                response.users[4].count.posts.should.eql(0);
+                response.users[5].count.posts.should.eql(0);
+                response.users[6].count.posts.should.eql(0);
 
                 response.meta.pagination.should.have.property('page', 1);
                 response.meta.pagination.should.have.property('limit', 15);
