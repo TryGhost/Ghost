@@ -369,6 +369,61 @@ describe('Filter Param Spec', function () {
             }).catch(done);
         });
 
+        it('can fetch and order by `count.posts` for tags (public data only)', function (done) {
+            TagAPI.browse({include: 'count.posts', order: 'count.posts DESC'}).then(function (result) {
+                var ids;
+
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('tags');
+                result.should.have.property('meta');
+
+                // 2. The data part of the response should be correct
+                // We should have 5 matching items
+                result.tags.should.be.an.Array.with.lengthOf(6);
+
+                // Each tag should have the correct count
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Getting Started';
+                }).count.posts.should.eql(4);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'photo';
+                }).count.posts.should.eql(4);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Video';
+                }).count.posts.should.eql(5);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Audio';
+                }).count.posts.should.eql(6);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'No Posts';
+                }).count.posts.should.eql(0);
+
+                _.find(result.tags, function (tag) {
+                    return tag.name === 'Special';
+                }).count.posts.should.eql(3);
+
+                ids = _.pluck(result.tags, 'id');
+                ids.should.eql([4, 3, 1, 2, 6, 5]);
+
+                // 3. The meta object should contain the right details
+                result.meta.should.have.property('pagination');
+                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.page.should.eql(1);
+                result.meta.pagination.limit.should.eql(15);
+                result.meta.pagination.pages.should.eql(1);
+                result.meta.pagination.total.should.eql(6);
+                should.equal(result.meta.pagination.next, null);
+                should.equal(result.meta.pagination.prev, null);
+
+                done();
+            }).catch(done);
+        });
+
         it.skip('can fetch `count.posts` for tags (all data)', function (done) {
             // This is tested elsewhere for now using user context
             // No way to override it for public requests
@@ -398,6 +453,49 @@ describe('Filter Param Spec', function () {
                 _.find(result.users, function (user) {
                     return user.slug === 'camhowe';
                 }).count.posts.should.eql(0);
+
+                // 3. The meta object should contain the right details
+                result.meta.should.have.property('pagination');
+                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.page.should.eql(1);
+                result.meta.pagination.limit.should.eql(15);
+                result.meta.pagination.pages.should.eql(1);
+                result.meta.pagination.total.should.eql(3);
+                should.equal(result.meta.pagination.next, null);
+                should.equal(result.meta.pagination.prev, null);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can fetch and order by `count.posts` for users (published only)', function (done) {
+            UserAPI.browse({include: 'count.posts', order: 'count.posts ASC'}).then(function (result) {
+                var ids;
+
+                // 1. Result should have the correct base structure
+                should.exist(result);
+                result.should.have.property('users');
+                result.should.have.property('meta');
+
+                // 2. The data part of the response should be correct
+                // We should have 5 matching items
+                result.users.should.be.an.Array.with.lengthOf(3);
+
+                // Each user should have the correct count
+                _.find(result.users, function (user) {
+                    return user.slug === 'leslie';
+                }).count.posts.should.eql(15);
+
+                _.find(result.users, function (user) {
+                    return user.slug === 'pat-smith';
+                }).count.posts.should.eql(3);
+
+                _.find(result.users, function (user) {
+                    return user.slug === 'camhowe';
+                }).count.posts.should.eql(0);
+
+                ids = _.pluck(result.users, 'id');
+                ids.should.eql([3, 2, 1]);
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
