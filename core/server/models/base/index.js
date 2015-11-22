@@ -19,7 +19,8 @@ var _          = require('lodash'),
     validation = require('../../data/validation'),
     plugins    = require('../plugins'),
 
-    ghostBookshelf;
+    ghostBookshelf,
+    proto;
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
@@ -39,6 +40,9 @@ ghostBookshelf.plugin(plugins.includeCount);
 
 // Load the Ghost pagination plugin, which gives us the `fetchPage` method on Models
 ghostBookshelf.plugin(plugins.pagination);
+
+// Cache an instance of the base model prototype
+proto = ghostBookshelf.Model.prototype;
 
 // ## ghostBookshelf.Model
 // The Base Model which other Ghost objects will inherit from,
@@ -173,7 +177,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
             }
         });
 
-        return attrs;
+        // @TODO upgrade bookshelf & knex and use serialize & toJSON to do this in a neater way (see #6103)
+        return proto.finalize.call(this, attrs);
     },
 
     sanitize: function sanitize(attr) {
