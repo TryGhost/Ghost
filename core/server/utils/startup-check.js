@@ -19,19 +19,17 @@ checks = {
     // Make sure the node version is supported
     nodeVersion: function checkNodeVersion() {
         // Tell users if their node version is not supported, and exit
-        try {
-            var semver = require('semver');
-            if (!semver.satisfies(process.versions.node, packages.engines.node) &&
-                !semver.satisfies(process.versions.node, packages.engines.iojs)) {
-                console.error('\x1B[31mERROR: Unsupported version of Node');
-                console.error('\x1B[31mGhost needs Node version ' + packages.engines.node +
-                              ' you are using version ' + process.versions.node + '\033[0m\n');
-                console.error('\x1B[32mPlease go to http://nodejs.org to get a supported version\033[0m');
+        var semver = require('semver');
 
-                process.exit(0);
-            }
-        } catch (e) {
-            return;
+        if (process.env.GHOST_NODE_VERSION_CHECK !== 'false' &&
+            !semver.satisfies(process.versions.node, packages.engines.node) &&
+            !semver.satisfies(process.versions.node, packages.engines.iojs)) {
+            console.error('\x1B[31mERROR: Unsupported version of Node');
+            console.error('\x1B[31mGhost needs Node version ' + packages.engines.node +
+                          ' you are using version ' + process.versions.node + '\033[0m\n');
+            console.error('\x1B[32mPlease go to http://nodejs.org to get a supported version or set GHOST_NODE_VERSION_CHECK=false\033[0m');
+
+            process.exit(1);
         }
     },
 
@@ -57,7 +55,7 @@ checks = {
             console.error('\x1B[32mEnsure your config.js has a section for the current NODE_ENV value' +
                             ' and is formatted properly.\033[0m');
 
-            process.exit(0);
+            process.exit(1);
         }
     },
 
@@ -87,7 +85,7 @@ checks = {
         console.error('\x1B[32m\nPlease run `npm install --production` and try starting Ghost again.');
         console.error('\x1B[32mHelp and documentation can be found at http://support.ghost.org.\033[0m\n');
 
-        process.exit(0);
+        process.exit(1);
     },
 
     // Check content path permissions
@@ -131,7 +129,7 @@ checks = {
             console.error('  ' + e.message);
             console.error('\n' + errorHelp);
 
-            process.exit(0);
+            process.exit(1);
         }
 
         // Check each of the content path subdirectories
@@ -153,7 +151,7 @@ checks = {
             console.error('  ' + e.message);
             console.error('\n' + errorHelp);
 
-            process.exit(0);
+            process.exit(1);
         }
     },
 
@@ -201,7 +199,7 @@ checks = {
             console.error('\n\x1B[32mCheck that the sqlite3 database file permissions allow read and write access.');
             console.error('Help and documentation can be found at http://support.ghost.org.\033[0m');
 
-            process.exit(0);
+            process.exit(1);
         }
     }
 };
