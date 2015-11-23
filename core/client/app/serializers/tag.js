@@ -12,7 +12,7 @@ export default ApplicationSerializer.extend({
         // Properties that exist on the model but we don't want sent in the payload
 
         delete data.uuid;
-        delete data.post_count;
+        delete data.count;
 
         hash[root] = [data];
     }
