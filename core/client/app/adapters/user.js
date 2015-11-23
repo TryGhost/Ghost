@@ -1,6 +1,7 @@
 import ApplicationAdapter from 'ghost/adapters/application';
+import SlugUrl from 'ghost/mixins/slug-url';
 
-export default ApplicationAdapter.extend({
+export default ApplicationAdapter.extend(SlugUrl, {
     find: function (store, type, id) {
         return this.findQuery(store, type, {id: id, status: 'all'});
     },

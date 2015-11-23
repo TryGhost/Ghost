@@ -39,7 +39,7 @@ Router.map(function () {
     });
 
     this.route('team', {path: '/team'}, function () {
-        this.route('user', {path: ':slug'});
+        this.route('user', {path: ':user_slug'});
     });
 
     this.route('settings.general', {path: '/settings/general'});
