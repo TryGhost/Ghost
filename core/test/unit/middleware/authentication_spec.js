@@ -406,6 +406,54 @@ describe('Auth', function () {
             done();
         });
 
+        it('should authenticate client with origin `localhost` while in development', function (done) {
+            var resetEnvironment = auth.__set__('process.env.NODE_ENV', 'development');
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            req.headers = {};
+            req.headers.origin = 'http://localhost';
+
+            res.header = {};
+
+            sandbox.stub(res, 'header', function (key, value) {
+                key.should.equal('Access-Control-Allow-Origin');
+                value.should.equal('http://localhost');
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+
+            next.called.should.be.true;
+            next.calledWith(null, client).should.be.true;
+            resetEnvironment();
+            done();
+        });
+
+        it('shouldn\'t authenticate client with origin `localhost` by default', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            req.headers = {};
+            req.headers.origin = 'http://localhost';
+
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerSuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            done();
+        });
+
         it('should authenticate client with id in query', function (done) {
             req.body = {};
             req.query = {};
