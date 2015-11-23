@@ -1,9 +1,10 @@
-var _           = require('lodash'),
-    passport    = require('passport'),
-    url         = require('url'),
-    errors      = require('../errors'),
-    config      = require('../config'),
-    labs        = require('../utils/labs'),
+var _             = require('lodash'),
+    passport      = require('passport'),
+    url           = require('url'),
+    errors        = require('../errors'),
+    config        = require('../config'),
+    labs          = require('../utils/labs'),
+    isDevelopment,
     oauthServer,
 
     auth;
@@ -36,10 +37,14 @@ function isBearerAutorizationHeader(req) {
 }
 
 function isValidOrigin(origin, client) {
+    isDevelopment = process.env.NODE_ENV === 'development';
+
     if (origin && client && client.type === 'ua' && (
         _.some(client.trustedDomains, {trusted_domain: origin})
         || origin === url.parse(config.url).hostname
         || origin === url.parse(config.urlSSL ? config.urlSSL : '').hostname
+        || (origin === '127.0.0.1' && isDevelopment)
+        || (origin === 'localhost' && isDevelopment)
     )) {
         return true;
     } else {
@@ -70,7 +75,8 @@ auth = {
 
         return passport.authenticate(['oauth2-client-password'], {session: false, failWithError: false},
             function authenticate(err, client) {
-                var origin = null;
+                var origin = null,
+                    error;
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
@@ -94,7 +100,12 @@ auth = {
                     req.client = client;
                     return next(null, client);
                 } else {
-                    return errors.handleAPIError(new errors.UnauthorizedError('Access denied.'), req, res, next);
+                    error = new errors.UnauthorizedError('Access Denied from url: ' + origin + '. Please use the url configured in config.js.');
+                    errors.logError(error,
+                        'You have attempted to access your Ghost admin panel from a url that does not appear in config.js.',
+                        'For information on how to fix this, please visit http://support.ghost.org/config/#url.'
+                    );
+                    return errors.handleAPIError(error, req, res, next);
                 }
             }
         )(req, res, next);
