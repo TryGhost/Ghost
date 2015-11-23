@@ -63,7 +63,7 @@
     "rss": "1.2.0",
     "semver": "5.0.3",
     "showdown-ghost": "0.3.6",
-    "sqlite3": "3.1.0",
+    "sqlite3": "3.1.1",
     "unidecode": "0.1.7",
     "validator": "4.1.0",
     "xml": "1.0.0"
