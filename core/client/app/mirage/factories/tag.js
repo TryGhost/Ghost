@@ -11,9 +11,13 @@ export default Mirage.Factory.extend({
     meta_title(i) { return  `Meta Title for tag ${i}`; },
     name(i) { return  `Tag ${i}`; },
     parent() { return  null; },
-    post_count() { return 1; },
     slug(i) { return  `tag-${i}`; },
     updated_at() { return  '2015-10-19T16:25:07.756Z'; },
     updated_by() { return  1; },
-    uuid(i) { return  `tag-${i}`; }
+    uuid(i) { return  `tag-${i}`; },
+    count() {
+        return {
+            posts: 1
+        };
+    },
 });
