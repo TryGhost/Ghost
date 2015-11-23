@@ -8,20 +8,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     classNames: ['team-view-user'],
 
     model: function (params) {
-        var self = this;
-        // TODO: Make custom user adapter that uses /api/users/:slug endpoint
-        // return this.store.find('user', { slug: params.slug });
+        return this.store.queryRecord('user', {slug: params.user_slug});
+    },
 
-        // Instead, get all the users and then find by slug
-        return this.store.findAll('user', {reload: true}).then(function (result) {
-            var user = result.findBy('slug', params.slug);
-
-            if (!user) {
-                return self.transitionTo('error404', 'team/' + params.slug);
-            }
-
-            return user;
-        });
+    serialize: function (model) {
+        return {user_slug: model.get('slug')};
     },
 
     afterModel: function (user) {
