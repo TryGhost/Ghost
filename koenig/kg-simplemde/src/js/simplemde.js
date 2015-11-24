@@ -284,6 +284,16 @@ function drawImage(editor) {
 }
 
 /**
+ * Action for drawing a table.
+ */
+function drawTable(editor) {
+	var cm = editor.codemirror;
+	var stat = getState(cm);
+	var options = editor.options;
+	_replaceSelection(cm, stat.table, options.insertTexts.table);
+}
+
+/**
  * Action for drawing a horizontal rule.
  */
 function drawHorizontalRule(editor) {
@@ -747,6 +757,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)"
 	},
+	"table": {
+		name: "table",
+		action: drawTable,
+		className: "fa fa-table",
+		title: "Insert Table"
+	},
 	"horizontal-rule": {
 		name: "horizontal-rule",
 		action: drawHorizontalRule,
@@ -782,6 +798,7 @@ var toolbarBuiltInButtons = {
 var insertTexts = {
 	link: ["[", "](http://)"],
 	image: ["![](http://", ")"],
+	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n\n"],
 	horizontalRule: ["", "\n\n-----\n\n"]
 };
 
@@ -1257,6 +1274,7 @@ SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
 SimpleMDE.drawLink = drawLink;
 SimpleMDE.drawImage = drawImage;
+SimpleMDE.drawTable = drawTable;
 SimpleMDE.drawHorizontalRule = drawHorizontalRule;
 SimpleMDE.undo = undo;
 SimpleMDE.redo = redo;
@@ -1308,6 +1326,9 @@ SimpleMDE.prototype.drawLink = function() {
 };
 SimpleMDE.prototype.drawImage = function() {
 	drawImage(this);
+};
+SimpleMDE.prototype.drawTable = function() {
+	drawTable(this);
 };
 SimpleMDE.prototype.drawHorizontalRule = function() {
 	drawHorizontalRule(this);
