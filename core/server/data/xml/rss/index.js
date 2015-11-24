@@ -199,12 +199,14 @@ generate = function generate(req, res, next) {
     // Set page on postOptions for the query made later
     req.channelConfig.postOptions.page = pageParam;
 
+    req.channelConfig.slugParam = slugParam;
+
     // No negative pages, or page 1
     if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
         return res.redirect(baseUrl);
     }
 
-    return getData(req.channelConfig, slugParam).then(function then(data) {
+    return getData(req.channelConfig).then(function then(data) {
         var maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
