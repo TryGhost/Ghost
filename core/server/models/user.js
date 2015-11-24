@@ -245,6 +245,7 @@ User = ghostBookshelf.Model.extend({
     findOne: function findOne(data, options) {
         var query,
             status,
+            optInc,
             lookupRole = data.role;
 
         delete data.role;
@@ -257,6 +258,7 @@ User = ghostBookshelf.Model.extend({
         delete data.status;
 
         options = options || {};
+        optInc = options.include;
         options.withRelated = _.union(options.withRelated, options.include);
         data = this.filterData(data);
 
@@ -285,6 +287,7 @@ User = ghostBookshelf.Model.extend({
 
         options = this.filterOptions(options, 'findOne');
         delete options.include;
+        options.include = optInc;
 
         return query.fetch(options);
     },
