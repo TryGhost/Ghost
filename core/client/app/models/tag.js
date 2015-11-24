@@ -17,5 +17,5 @@ export default DS.Model.extend(ValidationEngine, {
     updated_at: DS.attr('moment-date'),
     created_by: DS.attr(),
     updated_by: DS.attr(),
-    post_count: DS.attr('number')
+    count: DS.attr('raw')
 });
