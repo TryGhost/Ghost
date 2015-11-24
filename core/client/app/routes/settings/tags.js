@@ -9,7 +9,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
 
     paginationModel: 'tag',
     paginationSettings: {
-        include: 'post_count',
+        include: 'count.posts',
         limit: 15
     },
 
