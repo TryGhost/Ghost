@@ -12,7 +12,7 @@ var _           = require('lodash'),
     errors      = require('../../errors'),
     filters     = require('../../filters'),
     Promise     = require('bluebird'),
-    template    = require('../../helpers/template'),
+    templates    = require('./templates'),
     routeMatch  = require('path-match')(),
     safeString  = require('../../utils/index').safeString,
     handleError = require('./error'),
@@ -21,7 +21,6 @@ var _           = require('lodash'),
     channelConfig  = require('./channel-config'),
     setResponseContext = require('./context'),
     setRequestIsSecure   = require('./secure'),
-    getActiveThemePaths = require('./theme-paths'),
 
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
@@ -34,8 +33,7 @@ var _           = require('lodash'),
 */
 function renderPost(req, res) {
     return function renderPost(post) {
-        var paths = getActiveThemePaths(req),
-            view = template.getThemeViewForPost(paths, post),
+        var view = templates.single(req.app.get('activeTheme'), post),
             response = formatResponse.single(post);
 
         setResponseContext(req, res, response);
@@ -53,6 +51,7 @@ function renderChannel(channelOpts) {
         channelOpts.postOptions = channelOpts.postOptions || {};
         // Set page on postOptions for the query made later
         channelOpts.postOptions.page = pageParam;
+        channelOpts.slugParam = slugParam;
 
         // @TODO this should really use the url building code in config.url
         function createUrl(page) {
@@ -75,7 +74,7 @@ function renderChannel(channelOpts) {
         }
 
         // Call fetchData to get everything we need from the API
-        return fetchData(channelOpts, slugParam).then(function handleResult(result) {
+        return fetchData(channelOpts).then(function handleResult(result) {
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > result.meta.pagination.pages) {
                 return res.redirect(createUrl(result.meta.pagination.pages));
@@ -90,17 +89,7 @@ function renderChannel(channelOpts) {
 
             // @TODO: properly design these filters
             filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
-                var paths = getActiveThemePaths(req),
-                    view = 'index';
-
-                // Calculate which template to use to render the data
-                if (channelOpts.firstPageTemplate && paths.hasOwnProperty(channelOpts.firstPageTemplate + '.hbs')) {
-                    view = (pageParam > 1) ? 'index' : channelOpts.firstPageTemplate;
-                } else if (channelOpts.slugTemplate) {
-                    view = template.getThemeViewForChannel(paths, channelOpts.name, slugParam);
-                } else if (paths.hasOwnProperty(channelOpts.name + '.hbs')) {
-                    view = channelOpts.name;
-                }
+                var view = templates.channel(req.app.get('activeTheme'), channelOpts);
 
                 // Do final data formatting and then render
                 result.posts = posts;
@@ -248,7 +237,7 @@ frontendControllers = {
     },
     private: function private(req, res) {
         var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs'),
-            paths = getActiveThemePaths(req),
+            paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
             data = {};
 
         if (res.error) {
