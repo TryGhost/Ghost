@@ -29,6 +29,7 @@ export default DS.Model.extend(ValidationEngine, {
         embedded: 'always',
         async: false
     }),
+    count: DS.attr('raw'),
 
     ghostPaths: Ember.inject.service('ghost-paths'),
 
