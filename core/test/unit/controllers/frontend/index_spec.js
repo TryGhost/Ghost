@@ -987,6 +987,8 @@ describe('Frontend Controller', function () {
                         }]
                     }));
 
+                    config.set({paths: {availableThemes: {casper: casper}}});
+
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
                     mockPosts[1].posts[0].url = '/' + date + '/' + mockPosts[1].posts[0].slug + '/';
                 });
@@ -1375,6 +1377,8 @@ describe('Frontend Controller', function () {
                 render: sinon.spy(),
                 redirect: sinon.spy()
             };
+
+            config.set({paths: {availableThemes: {casper: {}}}});
         });
 
         it('should render draft post', function (done) {

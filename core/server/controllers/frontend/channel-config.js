@@ -3,9 +3,9 @@ var config = require('../../config'),
 
 defaults = {
     index: {
-        name: 'home',
+        name: 'index',
         route: '/',
-        firstPageTemplate: 'home'
+        frontPageTemplate: 'home'
     },
     tag: {
         name: 'tag',
