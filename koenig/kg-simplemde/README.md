@@ -81,6 +81,7 @@ simplemde.value("This text will appear in the editor");
   - horizontalRule
   - image
   - link
+  - table
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
@@ -114,6 +115,7 @@ var simplemde = new SimpleMDE({
 		horizontalRule: ["", "\n\n-----\n\n"],
 		image: ["![](http://", ")"],
 		link: ["[", "](http://)"],
+		table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n\n"],
 	},
 	lineWrapping: false,
 	parsingConfig: {
@@ -166,6 +168,7 @@ ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
 link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
 image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
 horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
+table | drawTable | Insert Table<br>fa fa-table
 preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye no-disable
 side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns no-disable no-mobile
 fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt no-disable no-mobile
