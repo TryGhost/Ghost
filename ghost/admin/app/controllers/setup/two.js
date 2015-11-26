@@ -48,6 +48,25 @@ export default Ember.Controller.extend(ValidationEngine, {
         });
     },
 
+    _handleSaveError: function (resp) {
+        this.toggleProperty('submitting');
+        if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
+            this.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
+        } else {
+            this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
+        }
+    },
+
+    _handleAuthenticationError: function (error) {
+        this.toggleProperty('submitting');
+        if (error && error.errors) {
+            this.set('flowErrors', error.errors[0].message);
+        } else {
+            // Connection errors don't return proper status message, only req.body
+            this.get('notifications').showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
+        }
+    },
+
     actions: {
         preValidate: function (model) {
             // Only triggers validation if a value has been entered, preventing empty errors on focusOut
@@ -99,14 +118,11 @@ export default Ember.Controller.extend(ValidationEngine, {
                             self.toggleProperty('submitting');
                             self.transitionToRoute('setup.three');
                         }
+                    }).catch(function (error) {
+                        self._handleAuthenticationError(error);
                     });
-                }).catch(function (resp) {
-                    self.toggleProperty('submitting');
-                    if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-                        self.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
-                    } else {
-                        notifications.showAPIError(resp, {key: 'setup.blog-details'});
-                    }
+                }).catch(function (error) {
+                    self._handleSaveError(error);
                 });
             }).catch(function () {
                 self.toggleProperty('submitting');
