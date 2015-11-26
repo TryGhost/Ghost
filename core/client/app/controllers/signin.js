@@ -26,7 +26,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             this.get('session').authenticate(authStrategy, model.get('identification'), model.get('password')).catch(function (error) {
                 self.toggleProperty('loggingIn');
 
-                if (error.errors) {
+                if (error && error.errors) {
                     error.errors.forEach(function (err) {
                         err.message = err.message.htmlSafe();
                     });
