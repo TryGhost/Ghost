@@ -1,10 +1,10 @@
 var _             = require('lodash'),
     passport      = require('passport'),
     url           = require('url'),
+    os            = require('os'),
     errors        = require('../errors'),
     config        = require('../config'),
     labs          = require('../utils/labs'),
-    isDevelopment,
     oauthServer,
 
     auth;
@@ -36,15 +36,32 @@ function isBearerAutorizationHeader(req) {
     return false;
 }
 
+function getIPs() {
+    var ifaces = os.networkInterfaces(),
+        ips = [];
+
+    Object.keys(ifaces).forEach(function (ifname) {
+        ifaces[ifname].forEach(function (iface) {
+            // only support IPv4
+            if (iface.family !== 'IPv4') {
+                return;
+            }
+            ips.push(iface.address);
+        });
+    });
+    return ips;
+}
+
 function isValidOrigin(origin, client) {
-    isDevelopment = process.env.NODE_ENV === 'development';
+    var configHostname = url.parse(config.url).hostname;
 
     if (origin && client && client.type === 'ua' && (
-        _.some(client.trustedDomains, {trusted_domain: origin})
-        || origin === url.parse(config.url).hostname
+        _.indexOf(getIPs(), origin) >= 0
+        || _.some(client.trustedDomains, {trusted_domain: origin})
+        || origin === configHostname
+        || configHostname === 'my-ghost-blog.com'
         || origin === url.parse(config.urlSSL ? config.urlSSL : '').hostname
-        || (origin === '127.0.0.1' && isDevelopment)
-        || (origin === 'localhost' && isDevelopment)
+        || (origin === 'localhost')
     )) {
         return true;
     } else {
