@@ -171,7 +171,7 @@ function toggleFullScreen(editor) {
  * Action for toggling bold.
  */
 function toggleBold(editor) {
-	_toggleBlock(editor, "bold", "**");
+	_toggleBlock(editor, "bold", editor.options.blockStyles.bold);
 }
 
 
@@ -179,7 +179,7 @@ function toggleBold(editor) {
  * Action for toggling italic.
  */
 function toggleItalic(editor) {
-	_toggleBlock(editor, "italic", "*");
+	_toggleBlock(editor, "italic", editor.options.blockStyles.italic);
 }
 
 
@@ -802,6 +802,10 @@ var insertTexts = {
 	horizontalRule: ["", "\n\n-----\n\n"]
 };
 
+var blockStyles = {
+	"bold": "**",
+	"italic": "*"
+};
 
 /**
  * Interface of SimpleMDE.
@@ -876,6 +880,10 @@ function SimpleMDE(options) {
 
 	// Merging the insertTexts, with the given options
 	options.insertTexts = extend({}, insertTexts, options.insertTexts || {});
+
+
+	// Merging the blockStyles, with the given options
+	options.blockStyles = extend({}, blockStyles, options.blockStyles || {});
 
 
 	// Change unique_id to uniqueId for backwards compatibility

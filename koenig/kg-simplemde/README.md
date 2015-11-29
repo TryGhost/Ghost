@@ -82,6 +82,9 @@ simplemde.value("This text will appear in the editor");
   - image
   - link
   - table
+- **blockStyles**: Customize how certain buttons that style blocks of text behave.
+  - **bold** Can be set to `**` or `__`. Defaults to `**`
+  - **italic** Can be set to `*` or `_`. Defaults to `*`
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
