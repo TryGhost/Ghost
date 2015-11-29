@@ -26,16 +26,16 @@ export default Ember.Controller.extend({
                 // because store.pushPayload is not working with embedded relations
                 if (response && Ember.isArray(response.users)) {
                     response.users.forEach(function (userJSON) {
-                        var user = self.store.getById('user', userJSON.id),
-                            role = self.store.getById('role', userJSON.roles[0].id);
+                        var user = self.store.peekRecord('user', userJSON.id),
+                            role = self.store.peekRecord('role', userJSON.roles[0].id);
 
                         user.set('role', role);
                     });
                 }
 
-                self.get('notifications').showAlert('Ownership successfully transferred to ' + user.get('name'), {type: 'success'});
+                self.get('notifications').showAlert('Ownership successfully transferred to ' + user.get('name'), {type: 'success', key: 'owner.transfer.success'});
             }).catch(function (error) {
-                self.get('notifications').showAPIError(error);
+                self.get('notifications').showAPIError(error, {key: 'owner.transfer'});
             });
         },
 

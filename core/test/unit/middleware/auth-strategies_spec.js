@@ -3,138 +3,195 @@
 var should           = require('should'),
     sinon            = require('sinon'),
     Promise          = require('bluebird'),
-    testUtils        = require('../../utils'),
+
     authStrategies   = require('../../../server/middleware/auth-strategies'),
-    models           = require('../../../server/models'),
-    globalUtils      = require('../../../server/utils');
+    Models           = require('../../../server/models'),
+    globalUtils      = require('../../../server/utils'),
+
+    sandbox = sinon.sandbox.create(),
+
+    fakeClient =  {
+        slug: 'ghost-admin',
+        secret: 'not_available',
+        status: 'enabled'
+    },
+
+    fakeValidToken = {
+        user_id: 3,
+        token: 'valid-token',
+        client_id: 1,
+        expires: Date.now() + globalUtils.ONE_DAY_MS
+    },
+    fakeInvalidToken = {
+        user_id: 3,
+        token: 'expired-token',
+        client_id: 1,
+        expires: Date.now() - globalUtils.ONE_DAY_MS
+    };
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('Auth Strategies', function () {
-    var next, sandbox;
+    var next;
 
-    before(testUtils.teardown);
+    before(function (done) {
+        // Loads all the models
+        Models.init().then(done).catch(done);
+    });
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
         next = sandbox.spy();
     });
 
     afterEach(function () {
         sandbox.restore();
     });
-    afterEach(testUtils.teardown);
 
     describe('Client Password Strategy', function () {
-        beforeEach(testUtils.setup('clients'));
+        var clientStub;
+
+        beforeEach(function () {
+            clientStub = sandbox.stub(Models.Client, 'findOne');
+            clientStub.returns(new Promise.resolve());
+            clientStub.withArgs({slug: fakeClient.slug}).returns(new Promise.resolve({
+                toJSON: function () { return fakeClient; }
+            }));
+        });
 
         it('should find client', function (done) {
             var clientId = 'ghost-admin',
                 clientSecret = 'not_available';
 
-            authStrategies.clientPasswordStrategy(clientId, clientSecret, function () {
-                arguments.length.should.eql(2);
-                should.equal(arguments[0], null);
-                arguments[1].slug.should.eql('ghost-admin');
+            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+                clientStub.calledOnce.should.be.true;
+                clientStub.calledWith({slug: clientId}).should.be.true;
+                next.called.should.be.true;
+                next.firstCall.args.length.should.eql(2);
+                should.equal(next.firstCall.args[0], null);
+                next.firstCall.args[1].slug.should.eql(clientId);
                 done();
-            });
+            }).catch(done);
         });
 
         it('shouldn\'t find client with invalid id', function (done) {
             var clientId = 'invalid_id',
                 clientSecret = 'not_available';
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+                clientStub.calledOnce.should.be.true;
+                clientStub.calledWith({slug: clientId}).should.be.true;
                 next.called.should.be.true;
                 next.calledWith(null, false).should.be.true;
                 done();
-            });
+            }).catch(done);
         });
 
         it('shouldn\'t find client with invalid secret', function (done) {
             var clientId = 'ghost-admin',
                 clientSecret = 'invalid_secret';
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+                clientStub.calledOnce.should.be.true;
+                clientStub.calledWith({slug: clientId}).should.be.true;
                 next.called.should.be.true;
                 next.calledWith(null, false).should.be.true;
                 done();
-            });
+            }).catch(done);
+        });
+
+        it('shouldn\'t auth client that is disabled', function (done) {
+            var clientId = 'ghost-admin',
+                clientSecret = 'not_available';
+
+            fakeClient.status = 'disabled';
+
+            authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
+                clientStub.calledOnce.should.be.true;
+                clientStub.calledWith({slug: clientId}).should.be.true;
+                next.called.should.be.true;
+                next.calledWith(null, false).should.be.true;
+                done();
+            }).catch(done);
         });
     });
 
     describe('Bearer Strategy', function () {
-        beforeEach(testUtils.setup('users:roles', 'users', 'clients'));
+        var tokenStub, userStub;
+
+        beforeEach(function () {
+            tokenStub = sandbox.stub(Models.Accesstoken, 'findOne');
+            tokenStub.returns(new Promise.resolve());
+            tokenStub.withArgs({token: fakeValidToken.token}).returns(new Promise.resolve({
+                toJSON: function () { return fakeValidToken; }
+            }));
+            tokenStub.withArgs({token: fakeInvalidToken.token}).returns(new Promise.resolve({
+                toJSON: function () { return fakeInvalidToken; }
+            }));
+
+            userStub = sandbox.stub(Models.User, 'findOne');
+            userStub.returns(new Promise.resolve());
+            userStub.withArgs({id: 3}).returns(new Promise.resolve({
+                toJSON: function () { return {id: 3}; }
+            }));
+        });
 
         it('should find user with valid token', function (done) {
-            var accessToken = 'valid-token';
+            var accessToken = 'valid-token',
+                userId = 3;
 
-            testUtils.fixtures.insertAccessToken({
-                user_id: 3,
-                token: accessToken,
-                client_id: 1,
-                expires: Date.now() + globalUtils.ONE_DAY_MS
-            }).then(function () {
-                authStrategies.bearerStrategy(accessToken, function () {
-                    should.equal(arguments[0], null);
-                    arguments[1].id.should.eql(3);
-                    arguments[2].scope.should.eql('*');
-                    done();
-                });
-            });
+            authStrategies.bearerStrategy(accessToken, next).then(function () {
+                tokenStub.calledOnce.should.be.true;
+                tokenStub.calledWith({token: accessToken}).should.be.true;
+                userStub.calledOnce.should.be.true;
+                userStub.calledWith({id: userId}).should.be.true;
+                next.calledOnce.should.be.true;
+                next.firstCall.args.length.should.eql(3);
+                next.calledWith(null, {id: userId}, {scope: '*'}).should.be.true;
+                done();
+            }).catch(done);
         });
 
         it('shouldn\'t find user with invalid token', function (done) {
             var accessToken = 'invalid_token';
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
+                tokenStub.calledOnce.should.be.true;
+                tokenStub.calledWith({token: accessToken}).should.be.true;
+                userStub.called.should.be.false;
                 next.called.should.be.true;
                 next.calledWith(null, false).should.be.true;
                 done();
-            });
+            }).catch(done);
         });
 
         it('should find user that doesn\'t exist', function (done) {
-            var accessToken = 'valid-token';
+            var accessToken = 'valid-token',
+                userId = 2;
 
-            // stub needed for mysql, pg
-            // this case could only happen in sqlite
-            sandbox.stub(models.User, 'forge', function () {
-                return {
-                    fetch: function () {
-                        return Promise.resolve();
-                    }
-                };
-            });
+            // override user
+            fakeValidToken.user_id = userId;
 
-            testUtils.fixtures.insertAccessToken({
-                user_id: 3,
-                token: accessToken,
-                client_id: 1,
-                expires: Date.now() + globalUtils.ONE_DAY_MS
-            }).then(function () {
-                return authStrategies.bearerStrategy(accessToken, next);
-            }).then(function () {
+            authStrategies.bearerStrategy(accessToken, next).then(function () {
+                tokenStub.calledOnce.should.be.true;
+                tokenStub.calledWith({token: accessToken}).should.be.true;
+                userStub.calledOnce.should.be.true;
+                userStub.calledWith({id: userId}).should.be.true;
                 next.called.should.be.true;
                 next.calledWith(null, false).should.be.true;
                 done();
-            });
+            }).catch(done);
         });
 
         it('should find user with expired token', function (done) {
             var accessToken = 'expired-token';
 
-            testUtils.fixtures.insertAccessToken({
-                user_id: 3,
-                token: accessToken,
-                client_id: 1,
-                expires: Date.now() - globalUtils.ONE_DAY_MS
-            }).then(function () {
-                return authStrategies.bearerStrategy(accessToken, next);
-            }).then(function () {
+            authStrategies.bearerStrategy(accessToken, next).then(function () {
+                tokenStub.calledOnce.should.be.true;
+                tokenStub.calledWith({token: accessToken}).should.be.true;
+                userStub.calledOnce.should.be.false;
                 next.called.should.be.true;
                 next.calledWith(null, false).should.be.true;
                 done();
-            });
+            }).catch(done);
         });
     });
 });

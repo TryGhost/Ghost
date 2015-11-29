@@ -4,7 +4,7 @@ import { describeModule, it } from 'ember-mocha';
 import Ember from 'ember';
 import { NavItem } from 'ghost/controllers/settings/navigation';
 
-const { run } = Ember;
+const {run} = Ember;
 
 var navSettingJSON = `[
     {"label":"Home","url":"/"},
@@ -19,7 +19,7 @@ var navSettingJSON = `[
 
 describeModule(
     'controller:settings/navigation',
-    'Unit : Controller : settings/navigation',
+    'Unit: Controller: settings/navigation',
     {
         // Specify the other units that are required for this test.
         needs: ['service:config', 'service:notifications']

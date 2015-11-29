@@ -4,8 +4,8 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 import imageManager from 'ghost/utils/ed-image-manager';
 
 // this array will hold properties we need to watch
-// to know if the model has been changed (`controller.isDirty`)
-var watchedProps = ['model.scratch', 'model.titleScratch', 'model.isDirty', 'model.tags.[]'];
+// to know if the model has been changed (`controller.hasDirtyAttributes`)
+var watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
 
 PostModel.eachAttribute(function (name) {
     watchedProps.push('model.' + name);
@@ -14,20 +14,17 @@ PostModel.eachAttribute(function (name) {
 export default Ember.Mixin.create({
     postSettingsMenuController: Ember.inject.controller('post-settings-menu'),
 
-    autoSaveId: null,
-    timedSaveId: null,
+    _autoSaveId: null,
+    _timedSaveId: null,
     editor: null,
     submitting: false,
 
     notifications: Ember.inject.service(),
 
     init: function () {
-        var self = this;
-
-        this._super();
-
-        window.onbeforeunload = function () {
-            return self.get('isDirty') ? self.unloadDirtyMessage() : null;
+        this._super(...arguments);
+        window.onbeforeunload = () => {
+            return this.get('hasDirtyAttributes') ? this.unloadDirtyMessage() : null;
         };
     },
 
@@ -47,10 +44,10 @@ export default Ember.Mixin.create({
             };
 
             timedSaveId = Ember.run.throttle(this, 'send', 'save', saveOptions, 60000, false);
-            this.set('timedSaveId', timedSaveId);
+            this._timedSaveId = timedSaveId;
 
             autoSaveId = Ember.run.debounce(this, 'send', 'save', saveOptions, 3000);
-            this.set('autoSaveId', autoSaveId);
+            this._autoSaveId = autoSaveId;
         }
     }),
 
@@ -61,8 +58,8 @@ export default Ember.Mixin.create({
      */
     willPublish: boundOneWay('model.isPublished'),
 
-    // set by the editor route and `isDirty`. useful when checking
-    // whether the number of tags has changed for `isDirty`.
+    // set by the editor route and `hasDirtyAttributes`. useful when checking
+    // whether the number of tags has changed for `hasDirtyAttributes`.
     previousTagNames: null,
 
     tagNames: Ember.computed('model.tags.@each.name', function () {
@@ -102,23 +99,23 @@ export default Ember.Mixin.create({
         // rather than in all other places save is called
         model.updateTags();
 
-        // set previousTagNames to current tagNames for isDirty check
+        // set previousTagNames to current tagNames for hasDirtyAttributes check
         this.set('previousTagNames', this.get('tagNames'));
 
-        // `updateTags` triggers `isDirty => true`.
+        // `updateTags` triggers `hasDirtyAttributes => true`.
         // for a saved model it would otherwise be false.
 
         // if the two "scratch" properties (title and content) match the model, then
-        // it's ok to set isDirty to false
+        // it's ok to set hasDirtyAttributes to false
         if (model.get('titleScratch') === model.get('title') &&
             model.get('scratch') === model.get('markdown')) {
-            this.set('isDirty', false);
+            this.set('hasDirtyAttributes', false);
         }
     },
 
     // an ugly hack, but necessary to watch all the model's properties
     // and more, without having to be explicit and do it manually
-    isDirty: Ember.computed.apply(Ember, watchedProps.concat({
+    hasDirtyAttributes: Ember.computed.apply(Ember, watchedProps.concat({
         get: function () {
             var model = this.get('model'),
                 markdown = model.get('markdown'),
@@ -147,10 +144,10 @@ export default Ember.Mixin.create({
                 return true;
             }
 
-            // models created on the client always return `isDirty: true`,
+            // models created on the client always return `hasDirtyAttributes: true`,
             // so we need to see which properties have actually changed.
             if (model.get('isNew')) {
-                changedAttributes = Ember.keys(model.changedAttributes());
+                changedAttributes = Object.keys(model.changedAttributes());
 
                 if (changedAttributes.length) {
                     return true;
@@ -160,10 +157,10 @@ export default Ember.Mixin.create({
             }
 
             // even though we use the `scratch` prop to show edits,
-            // which does *not* change the model's `isDirty` property,
-            // `isDirty` will tell us if the other props have changed,
+            // which does *not* change the model's `hasDirtyAttributes` property,
+            // `hasDirtyAttributes` will tell us if the other props have changed,
             // as long as the model is not new (model.isNew === false).
-            return model.get('isDirty');
+            return model.get('hasDirtyAttributes');
         },
         set: function (key, value) {
             return value;
@@ -246,7 +243,7 @@ export default Ember.Mixin.create({
 
         message += '<br />' + error;
 
-        notifications.showAlert(message.htmlSafe(), {type: 'error', delayed: delay});
+        notifications.showAlert(message.htmlSafe(), {type: 'error', delayed: delay, key: 'post.save'});
     },
 
     actions: {
@@ -254,8 +251,8 @@ export default Ember.Mixin.create({
             var status,
                 prevStatus = this.get('model.status'),
                 isNew = this.get('model.isNew'),
-                autoSaveId = this.get('autoSaveId'),
-                timedSaveId = this.get('timedSaveId'),
+                autoSaveId = this._autoSaveId,
+                timedSaveId = this._timedSaveId,
                 self = this,
                 psmController = this.get('postSettingsMenuController'),
                 promise;
@@ -280,12 +277,12 @@ export default Ember.Mixin.create({
 
             if (autoSaveId) {
                 Ember.run.cancel(autoSaveId);
-                this.set('autoSaveId', null);
+                this._autoSaveId = null;
             }
 
             if (timedSaveId) {
                 Ember.run.cancel(timedSaveId);
-                this.set('timedSaveId', null);
+                this._timedSaveId = null;
             }
 
             // Set the properties that are indirected

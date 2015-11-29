@@ -42,12 +42,12 @@ key.setScope('default');
  * To have all your shortcut work in all scopes, give it the scope "all".
  * Find out more at the keymaster docs
  */
-var ShortcutsRoute = Ember.Mixin.create({
+export default Ember.Mixin.create({
     registerShortcuts: function () {
         var self = this,
             shortcuts = this.get('shortcuts');
 
-        Ember.keys(shortcuts).forEach(function (shortcut) {
+        Object.keys(shortcuts).forEach(function (shortcut) {
             var scope = shortcuts[shortcut].scope || 'default',
                 action = shortcuts[shortcut],
                 options;
@@ -60,7 +60,9 @@ var ShortcutsRoute = Ember.Mixin.create({
             key(shortcut, scope, function (event) {
                 // stop things like ctrl+s from actually opening a save dialogue
                 event.preventDefault();
-                self.send(action, options);
+                Ember.run(self, function () {
+                    this.send(action, options);
+                });
             });
         });
     },
@@ -68,7 +70,7 @@ var ShortcutsRoute = Ember.Mixin.create({
     removeShortcuts: function () {
         var shortcuts = this.get('shortcuts');
 
-        Ember.keys(shortcuts).forEach(function (shortcut) {
+        Object.keys(shortcuts).forEach(function (shortcut) {
             var scope = shortcuts[shortcut].scope || 'default';
             key.unbind(shortcut, scope);
         });
@@ -84,5 +86,3 @@ var ShortcutsRoute = Ember.Mixin.create({
         this.removeShortcuts();
     }
 });
-
-export default ShortcutsRoute;

@@ -3,22 +3,32 @@ import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-select
 
 export default EmberSelectizeComponent.extend({
 
+    selectizeOptions: Ember.computed(function () {
+        const options = this._super(...arguments);
+
+        options.onChange = Ember.run.bind(this, '_onChange');
+
+        return options;
+    }),
+
     _dontOpenWhenBlank: Ember.on('didInsertElement', function () {
         var openOnFocus = this.get('openOnFocus');
 
         if (!openOnFocus) {
-            Ember.run.next(this, function () {
+            Ember.run.schedule('afterRender', this, function () {
                 var selectize = this._selectize;
-                selectize.on('dropdown_open', function () {
-                    if (Ember.isBlank(selectize.$control_input.val())) {
-                        selectize.close();
-                    }
-                });
-                selectize.on('type', function (filter) {
-                    if (Ember.isBlank(filter)) {
-                        selectize.close();
-                    }
-                });
+                if (selectize) {
+                    selectize.on('dropdown_open', function () {
+                        if (Ember.isBlank(selectize.$control_input.val())) {
+                            selectize.close();
+                        }
+                    });
+                    selectize.on('type', function (filter) {
+                        if (Ember.isBlank(filter)) {
+                            selectize.close();
+                        }
+                    });
+                }
             });
         }
     }),
@@ -27,7 +37,7 @@ export default EmberSelectizeComponent.extend({
     * Event callback that is triggered when user creates a tag
     * - modified to pass the caret position to the action
     */
-    _create(input, callback) {
+    _create: function (input, callback) {
         var caret = this._selectize.caretPos;
 
         // Delete user entered text
@@ -43,7 +53,7 @@ export default EmberSelectizeComponent.extend({
         callback(null);
     },
 
-    _addSelection(obj) {
+    _addSelection: function (obj) {
         var _valuePath = this.get('_valuePath'),
             val = Ember.get(obj, _valuePath),
             caret = this._selectize.caretPos;
@@ -59,6 +69,37 @@ export default EmberSelectizeComponent.extend({
             this.sendAction('add-item', obj);
             this.sendAction('add-value', val);
         });
+    },
+
+    _onChange: function (args) {
+        const selection = Ember.get(this, 'selection'),
+              valuePath = Ember.get(this, '_valuePath');
+
+        if (!args || !selection || !Ember.isArray(selection) || args.length !== selection.length) {
+            return;
+        }
+
+        let hasNoChanges = selection.every(function (obj, idx) {
+            return Ember.get(obj, valuePath) === args[idx];
+        });
+
+        if (hasNoChanges) {
+            return;
+        }
+
+        let reorderedSelection = Ember.A([]);
+
+        args.forEach(function (value) {
+            const obj = selection.find(function (item) {
+                return (Ember.get(item, valuePath) + '') === value;
+            });
+
+            if (obj) {
+                reorderedSelection.addObject(obj);
+            }
+        });
+
+        this.set('selection', reorderedSelection);
     }
 
 });

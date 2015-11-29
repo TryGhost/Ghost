@@ -2,33 +2,32 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import ApplicationSerializer from 'ghost/serializers/application';
 
-var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
+export default ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.
     attrs: {
         tags: {embedded: 'always'}
     },
 
-    normalize: function (type, hash) {
+    normalize: function (typeClass, hash, prop) {
         // this is to enable us to still access the raw author_id
         // without requiring an extra get request (since it is an
         // async relationship).
         hash.author_id = hash.author;
 
-        return this._super(type, hash);
+        return this._super(typeClass, hash, prop);
     },
 
-    extractSingle: function (store, primaryType, payload) {
-        var root = this.keyForAttribute(primaryType.modelName),
-            pluralizedRoot = Ember.String.pluralize(primaryType.modelName);
+    normalizeSingleResponse: function (store, primaryModelClass, payload) {
+        var root = this.keyForAttribute(primaryModelClass.modelName),
+            pluralizedRoot = Ember.String.pluralize(primaryModelClass.modelName);
 
-        // make payload { post: { title: '', tags: [obj, obj], etc. } }.
-        // this allows ember-data to pull the embedded tags out again,
-        // in the function `updatePayloadWithEmbeddedHasMany` of the
-        // EmbeddedRecordsMixin (line: `if (!partial[attribute])`):
-        // https://github.com/emberjs/data/blob/master/packages/activemodel-adapter/lib/system/embedded_records_mixin.js#L499
         payload[root] = payload[pluralizedRoot][0];
         delete payload[pluralizedRoot];
 
+        return this._super.apply(this, arguments);
+    },
+
+    normalizeArrayResponse: function () {
         return this._super.apply(this, arguments);
     },
 
@@ -52,5 +51,3 @@ var PostSerializer = ApplicationSerializer.extend(DS.EmbeddedRecordsMixin, {
         hash[root] = [data];
     }
 });
-
-export default PostSerializer;

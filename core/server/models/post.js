@@ -104,7 +104,7 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
-        this.on('destroyed', function onDestroyed(model) {
+        this.on('destroying', function onDestroying(model) {
             if (model.previous('status') === 'published') {
                 model.emitChange('unpublished');
             }
@@ -115,6 +115,7 @@ Post = ghostBookshelf.Model.extend({
     saving: function saving(model, attr, options) {
         var self = this,
             tagsToCheck,
+            title,
             i;
 
         options = options || {};
@@ -138,7 +139,8 @@ Post = ghostBookshelf.Model.extend({
 
         // disabling sanitization until we can implement a better version
         // this.set('title', this.sanitize('title').trim());
-        this.set('title', this.get('title').trim());
+        title = this.get('title') || '(Untitled)';
+        this.set('title', title.trim());
 
         // ### Business logic for published_at and published_by
         // If the current status is 'published' and published_at is not set, set it to now
@@ -326,30 +328,14 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return attrs;
+    },
+    enforcedFilters: function enforcedFilters() {
+        return this.isPublicContext() ? 'status:published' : null;
+    },
+    defaultFilters: function defaultFilters() {
+        return this.isPublicContext() ? 'page:false' : 'page:false+status:published';
     }
 }, {
-    setupFilters: function setupFilters(options) {
-        var filterObjects = {};
-        // Deliberately switch from singular 'tag' to 'tags' and 'role' to 'roles' here
-        // TODO: make this consistent
-        if (options.tag !== undefined) {
-            filterObjects.tags = ghostBookshelf.model('Tag').forge({slug: options.tag});
-        }
-        if (options.author !== undefined) {
-            filterObjects.author = ghostBookshelf.model('User').forge({slug: options.author});
-        }
-
-        return filterObjects;
-    },
-
-    findPageDefaultOptions: function findPageDefaultOptions() {
-        return {
-            staticPages: false, // include static pages
-            status: 'published',
-            where: {}
-        };
-    },
-
     orderDefaultOptions: function orderDefaultOptions() {
         return {
             status: 'ASC',
@@ -359,30 +345,40 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    processOptions: function processOptions(itemCollection, options) {
+    /**
+     * @deprecated in favour of filter
+     */
+    processOptions: function processOptions(options) {
+        if (!options.staticPages && !options.status) {
+            return options;
+        }
+
+        // This is the only place that 'options.where' is set now
+        options.where = {statements: []};
+
         // Step 4: Setup filters (where clauses)
-        if (options.staticPages !== 'all') {
+        if (options.staticPages && options.staticPages !== 'all') {
             // convert string true/false to boolean
             if (!_.isBoolean(options.staticPages)) {
                 options.staticPages = _.contains(['true', '1'], options.staticPages);
             }
-            options.where.page = options.staticPages;
-        }
-
-        if (_.has(options, 'featured')) {
-            // convert string true/false to boolean
-            if (!_.isBoolean(options.featured)) {
-                options.featured = _.contains(['true', '1'], options.featured);
-            }
-            options.where.featured = options.featured;
+            options.where.statements.push({prop: 'page', op: '=', value: options.staticPages});
+            delete options.staticPages;
+        } else if (options.staticPages === 'all') {
+            options.where.statements.push({prop: 'page', op: 'IN', value: [true, false]});
+            delete options.staticPages;
         }
 
         // Unless `all` is passed as an option, filter on
         // the status provided.
-        if (options.status !== 'all') {
+        if (options.status && options.status !== 'all') {
             // make sure that status is valid
             options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
-            options.where.status = options.status;
+            options.where.statements.push({prop: 'status', op: '=', value: options.status});
+            delete options.status;
+        } else if (options.status === 'all') {
+            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft']});
+            delete options.status;
         }
 
         return options;
@@ -399,9 +395,8 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findAll: ['withRelated'],
                 findOne: ['importing', 'withRelated'],
-                findPage: ['page', 'limit', 'columns', 'status', 'staticPages', 'featured'],
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
                 add: ['importing']
             };
 
@@ -430,20 +425,6 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // ## Model Data Functions
-
-    /**
-     * ### Find All
-     *
-     * @param {Object} options
-     * @returns {*}
-     */
-    findAll:  function findAll(options) {
-        options = options || {};
-
-        // fetch relations passed to options.include
-        options.withRelated = _.union(options.withRelated, options.include);
-        return ghostBookshelf.Model.findAll.call(this, options);
-    },
 
     /**
      * ### Find One

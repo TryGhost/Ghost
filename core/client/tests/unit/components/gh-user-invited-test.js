@@ -7,8 +7,9 @@ import {
 
 describeComponent(
     'gh-user-invited',
-    'GhUserInvitedComponent',
+    'Unit: Component: gh-user-invited',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },

@@ -13,12 +13,11 @@ strategies = {
      * Use of the client password strategy is implemented to support ember-simple-auth.
      */
     clientPasswordStrategy: function clientPasswordStrategy(clientId, clientSecret, done) {
-        return models.Client.forge({slug: clientId})
-            .fetch()
+        return models.Client.findOne({slug: clientId}, {withRelated: ['trustedDomains']})
             .then(function then(model) {
                 if (model) {
-                    var client = model.toJSON();
-                    if (client.secret === clientSecret) {
+                    var client = model.toJSON({include: ['trustedDomains']});
+                    if (client.status === 'enabled' && client.secret === clientSecret) {
                         return done(null, client);
                     }
                 }
@@ -35,14 +34,12 @@ strategies = {
      * the authorizing user.
      */
     bearerStrategy: function bearerStrategy(accessToken, done) {
-        return models.Accesstoken.forge({token: accessToken})
-            .fetch()
+        return models.Accesstoken.findOne({token: accessToken})
             .then(function then(model) {
                 if (model) {
                     var token = model.toJSON();
                     if (token.expires > Date.now()) {
-                        return models.User.forge({id: token.user_id})
-                            .fetch()
+                        return models.User.findOne({id: token.user_id})
                             .then(function then(model) {
                                 if (model) {
                                     var user = model.toJSON(),

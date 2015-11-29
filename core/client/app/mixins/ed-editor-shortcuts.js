@@ -3,8 +3,7 @@ import Ember from 'ember';
 import titleize from 'ghost/utils/titleize';
 
 var simpleShortcutSyntax,
-    shortcuts,
-    EditorShortcuts;
+    shortcuts;
 
 // Used for simple, noncomputational replace-and-go! shortcuts.
 // See default case in shortcut function below.
@@ -137,7 +136,7 @@ shortcuts = {
     }
 };
 
-EditorShortcuts = Ember.Mixin.create({
+export default Ember.Mixin.create({
     shortcut: function (type) {
         var selection = this.getSelection(),
             replacement = {
@@ -171,5 +170,3 @@ EditorShortcuts = Ember.Mixin.create({
         }
     }
 });
-
-export default EditorShortcuts;

@@ -6,6 +6,9 @@ var should          = require('should'),
     _               = require('lodash'),
     Promise         = require('bluebird'),
     testUtils       = require('../utils'),
+
+    channelConfig   = require('../../server/controllers/frontend/channel-config'),
+
     // Things that get overridden
     api             = require('../../server/api'),
     config          = require('../../server/config'),
@@ -101,6 +104,8 @@ describe('RSS', function () {
                 done();
             };
 
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
 
@@ -141,6 +146,8 @@ describe('RSS', function () {
                 done();
             };
 
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
 
@@ -168,6 +175,8 @@ describe('RSS', function () {
                 done();
             };
 
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
 
@@ -200,6 +209,8 @@ describe('RSS', function () {
                 done();
             };
 
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
 
@@ -230,32 +241,34 @@ describe('RSS', function () {
                 done();
             };
 
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
     });
 
     describe('dataBuilder', function () {
-        var apiSettingsStub, apiBrowseStub;
+        var apiSettingsStub, apiBrowseStub, apiTagStub, apiUserStub;
         beforeEach(function () {
             apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('title').returns(Promise.resolve({
-                settings: [{
-                    key: 'title',
-                    value: 'Test'
-                }]
-            }));
-            apiSettingsStub.withArgs('description').returns(Promise.resolve({
-                settings: [{
-                    key: 'description',
-                    value: 'Some Text'
-                }]
-            }));
             apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
                 settings: [{
                     key: 'permalinks',
                     value: '/:slug/'
                 }]
             }));
+
+            apiBrowseStub = sandbox.stub(api.posts, 'browse', function () {
+                return Promise.resolve({posts: [], meta: {pagination: {pages: 3}}});
+            });
+
+            apiTagStub = sandbox.stub(api.tags, 'read', function () {
+                return Promise.resolve({tags: [{name: 'Magic'}]});
+            });
+
+            apiUserStub = sandbox.stub(api.users, 'read', function () {
+                return Promise.resolve({users: [{name: 'Joe Blogs'}]});
+            });
 
             req = {
                 params: {},
@@ -269,37 +282,39 @@ describe('RSS', function () {
                 set: sinon.stub()
             };
 
-            config.set({url: 'http://my-ghost-blog.com'});
+            config.set({url: 'http://my-ghost-blog.com', theme: {
+                title: 'Test',
+                description: 'Some Text'
+            }});
         });
 
         it('should process the data correctly for the index feed', function (done) {
-            apiBrowseStub = sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: [], meta: {pagination: {pages: 3}}});
-            });
             res.send = function send(xmlData) {
-                apiSettingsStub.calledThrice.should.be.true;
+                apiSettingsStub.calledOnce.should.be.true;
                 apiBrowseStub.calledOnce.should.be.true;
                 apiBrowseStub.calledWith({page: 1, include: 'author,tags,fields'}).should.be.true;
                 xmlData.should.match(/<channel><title><!\[CDATA\[Test\]\]><\/title>/);
                 done();
             };
 
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
 
         it('should process the data correctly for a tag feed', function (done) {
             // setup
-            apiBrowseStub = sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: [], meta: {pagination: {pages: 3}, filters: {tags: [{name: 'Magic'}]}}});
-            });
             req.originalUrl = '/tag/magic/rss/';
             req.params.slug = 'magic';
+            req.channelConfig = channelConfig.tag;
+            req.channelConfig.isRSS = true;
 
             // test
             res.send = function send(xmlData) {
-                apiSettingsStub.calledThrice.should.be.true;
+                apiSettingsStub.calledOnce.should.be.true;
                 apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, tag: 'magic', include: 'author,tags,fields'}).should.be.true;
+                apiBrowseStub.calledWith({page: 1, filter: 'tags:magic', include: 'author,tags,fields'}).should.be.true;
+                apiTagStub.calledOnce.should.be.true;
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
                 done();
             };
@@ -308,18 +323,17 @@ describe('RSS', function () {
         });
 
         it('should process the data correctly for an author feed', function (done) {
-            // setup
-            apiBrowseStub = sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({posts: [], meta: {pagination: {pages: 3}, filters: {author: {name: 'Joe Blogs'}}}});
-            });
             req.originalUrl = '/author/joe/rss/';
             req.params.slug = 'joe';
+            req.channelConfig = channelConfig.author;
+            req.channelConfig.isRSS = true;
 
             // test
             res.send = function send(xmlData) {
-                apiSettingsStub.calledThrice.should.be.true;
+                apiSettingsStub.calledOnce.should.be.true;
                 apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, author: 'joe', include: 'author,tags,fields'}).should.be.true;
+                apiBrowseStub.calledWith({page: 1, filter: 'author:joe', include: 'author,tags,fields'}).should.be.true;
+                apiUserStub.calledOnce.should.be.true;
                 xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
                 done();
             };
@@ -355,6 +369,8 @@ describe('RSS', function () {
                     results: {posts: [], meta: {pagination: {pages: 1}}}
                 });
             });
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             function secondCall() {
                 res.send = function sendFirst(data) {
@@ -404,6 +420,8 @@ describe('RSS', function () {
         it('Redirects to /rss/ if page number is -1', function () {
             req = {params: {page: -1}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, null);
 
@@ -415,6 +433,8 @@ describe('RSS', function () {
         it('Redirects to /rss/ if page number is 0', function () {
             req = {params: {page: 0}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, null);
 
@@ -426,6 +446,8 @@ describe('RSS', function () {
         it('Redirects to /rss/ if page number is 1', function () {
             req = {params: {page: 1}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, null);
 
@@ -439,6 +461,8 @@ describe('RSS', function () {
 
             req = {params: {page: 0}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, null);
 
@@ -452,6 +476,8 @@ describe('RSS', function () {
 
             req = {params: {page: 1}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, null);
 
@@ -465,6 +491,8 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, failTest(done)).then(function () {
                 res.redirect.called.should.be.true;
@@ -479,6 +507,8 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
+            req.channelConfig = channelConfig.index;
+            req.channelConfig.isRSS = true;
 
             rss(req, res, failTest(done)).then(function () {
                 res.redirect.calledOnce.should.be.true;

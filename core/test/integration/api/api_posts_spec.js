@@ -21,7 +21,7 @@ describe('Post API', function () {
 
     describe('Browse', function () {
         it('can fetch featured posts', function (done) {
-            PostAPI.browse({context: {user: 1}, featured: true}).then(function (results) {
+            PostAPI.browse({context: {user: 1}, filter: 'featured:true'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(4);
                 results.posts[0].featured.should.eql(true);
@@ -31,7 +31,7 @@ describe('Post API', function () {
         });
 
         it('can exclude featured posts', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', featured: false}).then(function (results) {
+            PostAPI.browse({context: {user: 1}, status: 'all', filter: 'featured:false'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(1);
                 results.posts[0].featured.should.eql(false);
@@ -95,6 +95,15 @@ describe('Post API', function () {
                 should.exist(results.posts);
                 results.posts.length.should.eql(5);
 
+                done();
+            }).catch(done);
+        });
+
+        it('can fetch static and normal posts (filter version)', function (done) {
+            PostAPI.browse({context: {user: 1}, filter: 'page:[false,true]'}).then(function (results) {
+                // should be the same as the current staticPages: 'all'
+                should.exist(results.posts);
+                results.posts.length.should.eql(5);
                 done();
             }).catch(done);
         });
@@ -202,26 +211,54 @@ describe('Post API', function () {
         });
 
         it('can fetch all posts for a tag', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', tag: 'kitchen-sink'}).then(function (results) {
+            PostAPI.browse({context: {user: 1}, status: 'all', filter: 'tags:kitchen-sink', include: 'tags'}).then(function (results) {
                 results.posts.length.should.be.eql(2);
-                results.meta.filters.tags[0].slug.should.eql('kitchen-sink');
+
+                _.each(results.posts, function (post) {
+                    var slugs = _.pluck(post.tags, 'slug');
+                    slugs.should.containEql('kitchen-sink');
+                });
+
+                done();
+            }).catch(done);
+        });
+
+        it('can include author and be case insensitive', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: 'Author'}).then(function (results) {
+                should.exist(results.posts);
+                should.exist(results.posts[0].author.name);
+                results.posts[0].author.name.should.eql('Joe Bloggs');
+
+                done();
+            }).catch(done);
+        });
+
+        it('can include author and ignore space in include', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', include: ' author'}).then(function (results) {
+                should.exist(results.posts);
+                should.exist(results.posts[0].author.name);
+                results.posts[0].author.name.should.eql('Joe Bloggs');
 
                 done();
             }).catch(done);
         });
 
         it('can fetch all posts for an author', function (done) {
-            PostAPI.browse({context: {user: 1}, status: 'all', author: 'joe-bloggs'}).then(function (results) {
+            PostAPI.browse({context: {user: 1}, status: 'all', filter: 'author:joe-bloggs', include: 'author'}).then(function (results) {
                 should.exist(results.posts);
                 results.posts.length.should.eql(5);
-                results.meta.filters.author[0].slug.should.eql('joe-bloggs');
+
+                _.each(results.posts, function (post) {
+                    post.author.slug.should.eql('joe-bloggs');
+                });
 
                 done();
             }).catch(done);
         });
 
-        it('cannot fetch all posts for a tag with invalid slug', function (done) {
-            PostAPI.browse({tag: 'invalid!'}).then(function () {
+        // @TODO: ensure filters are fully validated
+        it.skip('cannot fetch all posts for a tag with invalid slug', function (done) {
+            PostAPI.browse({filter: 'tags:invalid!'}).then(function () {
                 done(new Error('Should not return a result with invalid tag'));
             }).catch(function (err) {
                 should.exist(err);
@@ -231,8 +268,8 @@ describe('Post API', function () {
             });
         });
 
-        it('cannot fetch all posts for an author with invalid slug', function (done) {
-            PostAPI.browse({author: 'invalid!'}).then(function () {
+        it.skip('cannot fetch all posts for an author with invalid slug', function (done) {
+            PostAPI.browse({filter: 'author:invalid!'}).then(function () {
                 done(new Error('Should not return a result with invalid author'));
             }).catch(function (err) {
                 should.exist(err);
@@ -240,6 +277,115 @@ describe('Post API', function () {
                 err.code.should.eql(422);
                 done();
             });
+        });
+
+        it('with context.user can fetch a single field', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].title.should.exist;
+                should.not.exist(results.posts[0].slug);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch multiple fields', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'slug,published_at'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].published_at.should.exist;
+                results.posts[0].slug.should.exist;
+                should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch multiple fields and be case insensitive', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'Slug,Published_At'}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].published_at.should.exist;
+                results.posts[0].slug.should.exist;
+                should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch multiple fields ignoring spaces', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: ' slug , published_at  '}).then(function (results) {
+                should.exist(results.posts);
+
+                results.posts[0].published_at.should.exist;
+                results.posts[0].slug.should.exist;
+                should.not.exist(results.posts[0].title);
+
+                done();
+            }).catch(done);
+        });
+
+        it('with context.user can fetch a field and not return invalid field', function (done) {
+            PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'foo,title'}).then(function (results) {
+                var objectKeys;
+                should.exist(results.posts);
+
+                results.posts[0].title.should.exist;
+                should.not.exist(results.posts[0].foo);
+                objectKeys = _.keys(results.posts[0]);
+                objectKeys.length.should.eql(1);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can order posts using asc', function (done) {
+            var posts, expectedTitles;
+
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).pluck('title').sortBy().value();
+
+            PostAPI.browse({context: {user: 1}, status: 'all', order: 'title asc', fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                var titles = _.pluck(results.posts, 'title');
+                titles.should.eql(expectedTitles);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can order posts using desc', function (done) {
+            var posts, expectedTitles;
+
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).pluck('title').sortBy().reverse().value();
+
+            PostAPI.browse({context: {user: 1}, status: 'all', order: 'title DESC', fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                var titles = _.pluck(results.posts, 'title');
+                titles.should.eql(expectedTitles);
+
+                done();
+            }).catch(done);
+        });
+
+        it('can order posts and filter disallowed attributes', function (done) {
+            var posts, expectedTitles;
+
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            expectedTitles = _(posts).pluck('title').sortBy().value();
+
+            PostAPI.browse({context: {user: 1}, status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}).then(function (results) {
+                should.exist(results.posts);
+
+                var titles = _.pluck(results.posts, 'title');
+                titles.should.eql(expectedTitles);
+
+                done();
+            }).catch(done);
         });
     });
 

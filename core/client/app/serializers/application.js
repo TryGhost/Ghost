@@ -1,6 +1,10 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-var ApplicationSerializer = DS.RESTSerializer.extend({
+
+export default DS.RESTSerializer.extend({
+
+    isNewSerializerAPI: true,
+
     serializeIntoHash: function (hash, type, record, options) {
         // Our API expects an id on the posted object
         options = options || {};
@@ -16,5 +20,3 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         hash[root] = [data];
     }
 });
-
-export default ApplicationSerializer;

@@ -2,26 +2,17 @@ import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Team - User',
 
     classNames: ['team-view-user'],
 
     model: function (params) {
-        var self = this;
-        // TODO: Make custom user adapter that uses /api/users/:slug endpoint
-        // return this.store.find('user', { slug: params.slug });
+        return this.store.queryRecord('user', {slug: params.user_slug});
+    },
 
-        // Instead, get all the users and then find by slug
-        return this.store.find('user').then(function (result) {
-            var user = result.findBy('slug', params.slug);
-
-            if (!user) {
-                return self.transitionTo('error404', 'team/' + params.slug);
-            }
-
-            return user;
-        });
+    serialize: function (model) {
+        return {user_slug: model.get('slug')};
     },
 
     afterModel: function (user) {
@@ -42,8 +33,8 @@ var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         var model = this.modelFor('team.user');
 
         // we want to revert any unsaved changes on exit
-        if (model && model.get('isDirty')) {
-            model.rollback();
+        if (model && model.get('hasDirtyAttributes')) {
+            model.rollbackAttributes();
         }
 
         model.get('errors').clear();
@@ -61,5 +52,3 @@ var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         }
     }
 });
-
-export default TeamUserRoute;

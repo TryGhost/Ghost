@@ -36,9 +36,16 @@ posts = {
      * @returns {Promise<Posts>} Posts Collection with Meta
      */
     browse: function browse(options) {
-        var extraOptions = ['tag', 'author', 'status', 'staticPages', 'featured'],
-            permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
+        var extraOptions = ['status'],
+            permittedOptions,
             tasks;
+
+        // Workaround to remove static pages from results
+        // TODO: rework after https://github.com/TryGhost/Ghost/issues/5151
+        if (options && options.context && (options.context.user || options.context.internal)) {
+            extraOptions.push('staticPages');
+        }
+        permittedOptions = utils.browseDefaultOptions.concat(extraOptions);
 
         /**
          * ### Model Query

@@ -161,28 +161,14 @@ User = ghostBookshelf.Model.extend({
         return roles.some(function getRole(role) {
             return role.get('name') === roleName;
         });
+    },
+    enforcedFilters: function enforcedFilters() {
+        return this.isPublicContext() ? 'status:[' + activeStates.join(',') + ']' : null;
+    },
+    defaultFilters: function defaultFilters() {
+        return this.isPublicContext() ? null : 'status:[' + activeStates.join(',') + ']';
     }
-
 }, {
-    setupFilters: function setupFilters(options) {
-        var filterObjects = {};
-        // Deliberately switch from singular 'tag' to 'tags' and 'role' to 'roles' here
-        // TODO: make this consistent
-        if (options.role !== undefined) {
-            filterObjects.roles = ghostBookshelf.model('Role').forge({name: options.role});
-        }
-
-        return filterObjects;
-    },
-
-    findPageDefaultOptions: function findPageDefaultOptions() {
-        return {
-            status: 'active',
-            where: {},
-            whereIn: {}
-        };
-    },
-
     orderDefaultOptions: function orderDefaultOptions() {
         return {
             last_login: 'DESC',
@@ -191,27 +177,38 @@ User = ghostBookshelf.Model.extend({
         };
     },
 
-    processOptions: function processOptions(itemCollection, options) {
-        // TODO: there are multiple statuses that make a user "active" or "invited" - we a way to translate/map them:
-        // TODO (cont'd from above): * valid "active" statuses: active, warn-1, warn-2, warn-3, warn-4, locked
-        // TODO (cont'd from above): * valid "invited" statuses" invited, invited-pending
+    /**
+     * @deprecated in favour of filter
+     */
+    processOptions: function processOptions(options) {
+        if (!options.status) {
+            return options;
+        }
+
+        // This is the only place that 'options.where' is set now
+        options.where = {statements: []};
+
+        var allStates = activeStates.concat(invitedStates),
+            value;
 
         // Filter on the status.  A status of 'all' translates to no filter since we want all statuses
-        if (options.status && options.status !== 'all') {
+        if (options.status !== 'all') {
             // make sure that status is valid
-            // TODO: need a better way of getting a list of statuses other than hard-coding them...
-            options.status = _.indexOf(
-                ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked', 'invited', 'inactive'],
-                options.status) !== -1 ? options.status : 'active';
+            options.status = allStates.indexOf(options.status) > -1 ? options.status : 'active';
         }
 
         if (options.status === 'active') {
-            itemCollection.query().whereIn('status', activeStates);
+            value = activeStates;
         } else if (options.status === 'invited') {
-            itemCollection.query().whereIn('status', invitedStates);
-        } else if (options.status !== 'all') {
-            options.where.status = options.status;
+            value = invitedStates;
+        } else if (options.status === 'all') {
+            value = allStates;
+        } else {
+            value = options.status;
         }
+
+        options.where.statements.push({prop: 'status', op: 'IN', value: value});
+        delete options.status;
 
         return options;
     },
@@ -228,10 +225,9 @@ User = ghostBookshelf.Model.extend({
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
                 findOne: ['withRelated', 'status'],
-                findAll: ['withRelated'],
                 setup: ['id'],
                 edit: ['withRelated', 'id'],
-                findPage: ['page', 'limit', 'columns', 'status']
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status']
             };
 
         if (validOptions[methodName]) {
@@ -239,18 +235,6 @@ User = ghostBookshelf.Model.extend({
         }
 
         return options;
-    },
-
-    /**
-     * ### Find All
-     *
-     * @param {Object} options
-     * @returns {*}
-     */
-    findAll:  function findAll(options) {
-        options = options || {};
-        options.withRelated = _.union(options.withRelated, options.include);
-        return ghostBookshelf.Model.findAll.call(this, options);
     },
 
     /**
@@ -469,17 +453,17 @@ User = ghostBookshelf.Model.extend({
 
         if (action === 'edit') {
             // Owner can only be editted by owner
-            if (userModel.hasRole('Owner')) {
+            if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 hasUserPermission = _.any(loadedPermissions.user.roles, {name: 'Owner'});
             }
             // Users with the role 'Editor' and 'Author' have complex permissions when the action === 'edit'
             // We now have all the info we need to construct the permissions
-            if (_.any(loadedPermissions.user.roles, {name: 'Author'})) {
+            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Author'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = hasUserPermission || context.user === userModel.get('id');
             }
 
-            if (_.any(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 
@@ -490,12 +474,12 @@ User = ghostBookshelf.Model.extend({
 
         if (action === 'destroy') {
             // Owner cannot be deleted EVER
-            if (userModel.hasRole('Owner')) {
+            if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 return Promise.reject(new errors.NoPermissionError('You do not have permission to perform this action'));
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (_.any(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (loadedPermissions.user && _.any(loadedPermissions.user.roles, {name: 'Editor'})) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = context.user === userModel.get('id');
 

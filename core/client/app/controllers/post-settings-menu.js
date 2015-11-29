@@ -15,6 +15,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
     config: Ember.inject.service(),
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
+    session: Ember.inject.service(),
 
     initializeSelectedAuthor: Ember.observer('model', function () {
         var self = this;
@@ -29,7 +30,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
         // Loaded asynchronously, so must use promise proxies.
         var deferred = {};
 
-        deferred.promise = this.store.find('user', {limit: 'all'}).then(function (users) {
+        deferred.promise = this.store.query('user', {limit: 'all'}).then(function (users) {
             return users.rejectBy('id', 'me').sortBy('name');
         }).then(function (users) {
             return users.filter(function (user) {
@@ -217,7 +218,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
             this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
+                self.get('model').rollbackAttributes();
             });
         },
 
@@ -234,7 +235,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
             this.get('model').save(this.get('saveOptions')).catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
+                self.get('model').rollbackAttributes();
             });
         },
 
@@ -299,7 +300,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
                 return self.get('model').save();
             }).catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
+                self.get('model').rollbackAttributes();
             });
         },
 
@@ -355,7 +356,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
             this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
+                self.get('model').rollbackAttributes();
             });
         },
 
@@ -412,7 +413,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
             this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
+                self.get('model').rollbackAttributes();
             });
         },
 
@@ -427,7 +428,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
 
             this.get('model').save().catch(function (errors) {
                 self.showErrors(errors);
-                self.get('model').rollback();
+                self.get('model').rollbackAttributes();
             });
         },
 
@@ -467,7 +468,7 @@ export default Ember.Controller.extend(SettingsMenuMixin, {
             model.save().catch(function (errors) {
                 self.showErrors(errors);
                 self.set('selectedAuthor', author);
-                model.rollback();
+                model.rollbackAttributes();
             });
         },
 

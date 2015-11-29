@@ -2,18 +2,15 @@ import Ember from 'ember';
 /* global Showdown, html_sanitize*/
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-var showdown,
-    formatMarkdown;
+var showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
-showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
-
-formatMarkdown = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
-    if (!arr || !arr.length) {
+export default Ember.Helper.helper(function (params) {
+    if (!params || !params.length) {
         return;
     }
 
     var escapedhtml = '',
-        markdown = arr[0] || '';
+        markdown = params[0] || '';
 
     // convert markdown to HTML
     escapedhtml = showdown.makeHtml(markdown);
@@ -31,5 +28,3 @@ formatMarkdown = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) 
 
     return Ember.String.htmlSafe(escapedhtml);
 });
-
-export default formatMarkdown;

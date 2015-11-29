@@ -1,5 +1,6 @@
 import Ember from 'ember';
-var documentTitle = function () {
+
+export default function () {
     Ember.Route.reopen({
         // `titleToken` can either be a static string or a function
         // that accepts a model object and returns a string (or array
@@ -44,18 +45,12 @@ var documentTitle = function () {
     });
 
     Ember.Router.reopen({
-        updateTitle: function () {
+        updateTitle: Ember.on('didTransition', function () {
             this.send('collectTitleTokens', []);
-        }.on('didTransition'),
+        }),
 
         setTitle: function (title) {
-            if (Ember.testing) {
-                this._title = title;
-            } else {
-                window.document.title = title;
-            }
+            window.document.title = title;
         }
     });
-};
-
-export default documentTitle;
+}

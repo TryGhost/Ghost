@@ -12,29 +12,24 @@ var bodyParser      = require('body-parser'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
 
-    apiErrorHandlers = require('./api-error-handlers'),
-    authenticate     = require('./authenticate'),
     authStrategies   = require('./auth-strategies'),
     busboy           = require('./ghost-busboy'),
-    clientAuth       = require('./client-auth'),
+    auth             = require('./auth'),
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
     decideIsAdmin    = require('./decide-is-admin'),
+    oauth            = require('./oauth'),
     privateBlogging  = require('./private-blogging'),
     redirectToSetup  = require('./redirect-to-setup'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
     staticTheme      = require('./static-theme'),
-    uncapitalise     = require('./uncapitalise'),
-    oauth            = require('./oauth'),
-
     themeHandler     = require('./theme-handler'),
-    privateBlogging  = require('./private-blogging'),
+    uncapitalise     = require('./uncapitalise'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
 
-    blogApp,
     middleware,
     setupMiddleware;
 
@@ -44,14 +39,17 @@ middleware = {
     spamPrevention: spamPrevention,
     privateBlogging: privateBlogging,
     api: {
-        cacheOauthServer: clientAuth.cacheOauthServer,
-        authenticateClient: clientAuth.authenticateClient,
-        generateAccessToken: clientAuth.generateAccessToken,
-        errorHandler: apiErrorHandlers.errorHandler
+        cacheOauthServer: auth.cacheOauthServer,
+        authenticateClient: auth.authenticateClient,
+        authenticateUser: auth.authenticateUser,
+        requiresAuthorizedUser: auth.requiresAuthorizedUser,
+        requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
+        generateAccessToken: auth.generateAccessToken,
+        errorHandler: errors.handleAPIError
     }
 };
 
-setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
+setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     var logging = config.logging,
         corePath = config.paths.corePath,
         oauthServer = oauth2orize.createServer();
@@ -61,7 +59,6 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     passport.use(new BearerStrategy(authStrategies.bearerStrategy));
 
     // Cache express server instance
-    blogApp = blogAppInstance;
     middleware.api.cacheOauthServer(oauthServer);
     oauth.init(oauthServer, spamPrevention.resetCounter);
 
@@ -82,17 +79,17 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
     // Static assets
-    blogApp.use('/shared', express['static'](path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
+    blogApp.use('/shared', express.static(path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
     blogApp.use('/content/images', storage.getStorage().serve());
-    blogApp.use('/public', express['static'](path.join(corePath, '/built/public'), {maxAge: utils.ONE_YEAR_MS}));
+    blogApp.use('/public', express.static(path.join(corePath, '/built/public'), {maxAge: utils.ONE_YEAR_MS}));
 
     // First determine whether we're serving admin or theme content
     blogApp.use(decideIsAdmin);
-    blogApp.use(themeHandler(blogApp).updateActiveTheme);
-    blogApp.use(themeHandler(blogApp).configHbsForContext);
+    blogApp.use(themeHandler.updateActiveTheme);
+    blogApp.use(themeHandler.configHbsForContext);
 
     // Admin only config
-    blogApp.use('/ghost', express['static'](config.paths.clientAssets, {maxAge: utils.ONE_YEAR_MS}));
+    blogApp.use('/ghost', express.static(config.paths.clientAssets, {maxAge: utils.ONE_YEAR_MS}));
 
     // Force SSL
     // NOTE: Importantly this is _after_ the check above for admin-theme static resources,
@@ -126,8 +123,8 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     blogApp.use(uncapitalise);
 
     // Body parsing
-    blogApp.use(bodyParser.json());
-    blogApp.use(bodyParser.urlencoded({extended: true}));
+    blogApp.use(bodyParser.json({limit: '1mb'}));
+    blogApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
 
     blogApp.use(passport.initialize());
 
@@ -139,11 +136,8 @@ setupMiddleware = function setupMiddleware(blogAppInstance, adminApp) {
     // API shouldn't be cached
     blogApp.use(routes.apiBaseUri, cacheControl('private'));
 
-    // enable authentication
-    blogApp.use(authenticate);
-
     // local data
-    blogApp.use(themeHandler(blogApp).ghostLocals);
+    blogApp.use(themeHandler.ghostLocals);
 
     // ### Routing
     // Set up API routes

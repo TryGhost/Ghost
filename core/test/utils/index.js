@@ -10,6 +10,7 @@ var Promise       = require('bluebird'),
     permissions   = require('../../server/permissions'),
     permsFixtures = require('../../server/data/fixtures/permissions/permissions.json'),
     DataGenerator = require('./fixtures/data-generator'),
+    filterData    = require('./fixtures/filter-param'),
     API           = require('./api'),
     fork          = require('./fork'),
     config        = require('../../server/config'),
@@ -214,11 +215,14 @@ fixtures = {
         });
     },
 
-    overrideOwnerUser: function overrideOwnerUser() {
+    overrideOwnerUser: function overrideOwnerUser(slug) {
         var user,
             knex = config.database.knex;
 
         user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+        if (slug) {
+            user.slug = slug;
+        }
 
         return knex('users')
             .where('id', '=', '1')
@@ -419,7 +423,8 @@ toDoList = {
     perms: function permissionsFor(obj) {
         return function permissionsForObj() { return fixtures.permissionsFor(obj); };
     },
-    clients: function insertClients() { return fixtures.insertClients(); }
+    clients: function insertClients() { return fixtures.insertClients(); },
+    filter: function createFilterParamFixtures() { return filterData(DataGenerator); }
 };
 
 /**
@@ -525,8 +530,14 @@ login = function login(request) {
 
     return new Promise(function (resolve, reject) {
         request.post('/ghost/api/v0.1/authentication/token/')
-            .send({grant_type: 'password', username: user.email, password: user.password, client_id: 'ghost-admin', client_secret: 'not_available'})
-            .end(function (err, res) {
+            .set('Origin', config.url)
+            .send({
+                grant_type: 'password',
+                username: user.email,
+                password: user.password,
+                client_id: 'ghost-admin',
+                client_secret: 'not_available'
+            }).end(function (err, res) {
                 if (err) {
                     return reject(err);
                 }

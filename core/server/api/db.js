@@ -6,10 +6,11 @@ var _                = require('lodash'),
     importer         = require('../data/importer'),
     models           = require('../models'),
     errors           = require('../errors'),
-    canThis          = require('../permissions').canThis,
     utils            = require('./utils'),
+    pipeline         = require('../utils/pipeline'),
 
     api              = {},
+    docName      = 'db',
     db;
 
 api.settings         = require('./settings');
@@ -29,18 +30,25 @@ db = {
      * @returns {Promise} Ghost Export JSON format
      */
     exportContent: function (options) {
+        var tasks = [];
+
         options = options || {};
 
         // Export data, otherwise send error 500
-        return canThis(options.context).exportContent.db().then(function () {
+        function exportContent() {
             return dataExport().then(function (exportedData) {
                 return {db: [exportedData]};
             }).catch(function (error) {
                 return Promise.reject(new errors.InternalServerError(error.message || error));
             });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data (no rights).'));
-        });
+        }
+
+        tasks = [
+            utils.handlePermissions(docName, 'exportContent'),
+            exportContent
+        ];
+
+        return pipeline(tasks, options);
     },
     /**
      * ### Import Content
@@ -51,31 +59,42 @@ db = {
      * @returns {Promise} Success
      */
     importContent: function (options) {
+        var tasks = [];
+
         options = options || {};
 
-        // Check if a file was provided
-        if (!utils.checkFileExists(options, 'importfile')) {
-            return Promise.reject(new errors.NoPermissionError('Please select a file to import.'));
+        function validate(options) {
+            // Check if a file was provided
+            if (!utils.checkFileExists(options, 'importfile')) {
+                return Promise.reject(new errors.ValidationError('Please select a file to import.'));
+            }
+
+            // Check if the file is valid
+            if (!utils.checkFileIsValid(options.importfile, importer.getTypes(), importer.getExtensions())) {
+                return Promise.reject(new errors.UnsupportedMediaTypeError(
+                    'Unsupported file. Please try any of the following formats: ' +
+                        _.reduce(importer.getExtensions(), function (memo, ext) {
+                            return memo ? memo + ', ' + ext : ext;
+                        })
+                ));
+            }
+
+            return options;
         }
 
-        // Check if the file is valid
-        if (!utils.checkFileIsValid(options.importfile, importer.getTypes(), importer.getExtensions())) {
-            return Promise.reject(new errors.UnsupportedMediaTypeError(
-                'Unsupported file. Please try any of the following formats: ' +
-                    _.reduce(importer.getExtensions(), function (memo, ext) {
-                        return memo ? memo + ', ' + ext : ext;
-                    })
-            ));
-        }
-
-        // Permissions check
-        return canThis(options.context).importContent.db().then(function () {
+        function importContent(options) {
             return importer.importFromFile(options.importfile)
                 .then(api.settings.updateSettingsCache)
                 .return({db: []});
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to import data (no rights).'));
-        });
+        }
+
+        tasks = [
+            validate,
+            utils.handlePermissions(docName, 'importContent'),
+            importContent
+        ];
+
+        return pipeline(tasks, options);
     },
     /**
      * ### Delete All Content
@@ -86,17 +105,24 @@ db = {
      * @returns {Promise} Success
      */
     deleteAllContent: function (options) {
+        var tasks;
+
         options = options || {};
 
-        return canThis(options.context).deleteAllContent.db().then(function () {
+        function deleteContent() {
             return Promise.resolve(models.deleteAllContent())
                 .return({db: []})
                 .catch(function (error) {
                     return Promise.reject(new errors.InternalServerError(error.message || error));
                 });
-        }, function () {
-            return Promise.reject(new errors.NoPermissionError('You do not have permission to export data (no rights).'));
-        });
+        }
+
+        tasks = [
+            utils.handlePermissions(docName, 'deleteAllContent'),
+            deleteContent
+        ];
+
+        return pipeline(tasks, options);
     }
 };
 

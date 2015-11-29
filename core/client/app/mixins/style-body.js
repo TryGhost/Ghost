@@ -1,7 +1,7 @@
 import Ember from 'ember';
 // mixin used for routes that need to set a css className on the body tag
 
-var styleBody = Ember.Mixin.create({
+export default Ember.Mixin.create({
     activate: function () {
         this._super();
 
@@ -28,5 +28,3 @@ var styleBody = Ember.Mixin.create({
         });
     }
 });
-
-export default styleBody;

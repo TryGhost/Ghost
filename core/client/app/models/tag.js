@@ -1,7 +1,7 @@
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var Tag = DS.Model.extend(ValidationEngine, {
+export default DS.Model.extend(ValidationEngine, {
     validationType: 'tag',
 
     uuid: DS.attr('string'),
@@ -17,7 +17,5 @@ var Tag = DS.Model.extend(ValidationEngine, {
     updated_at: DS.attr('moment-date'),
     created_by: DS.attr(),
     updated_by: DS.attr(),
-    post_count: DS.attr('number')
+    count: DS.attr('raw')
 });
-
-export default Tag;

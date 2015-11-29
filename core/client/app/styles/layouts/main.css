@@ -1,12 +1,21 @@
 /* Global Layout
 /* ---------------------------------------------------------- */
 
+/*
+  Ember's app container, set height so that .gh-app and .gh-viewport
+  don't need to use 100vh where bottom of screen gets covered by iOS menus
+  http://nicolas-hoizey.com/2015/02/viewport-height-is-taller-than-the-visible-part-of-the-document-in-some-mobile-browsers.html
+*/
+body > .ember-view {
+    height: 100%;
+}
+
 /* Main viewport, contains main content, and alerts */
 .gh-app {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    height: 100vh;
+    height: 100%;
 }
 
 /* Content viewport, contains everything else */
@@ -14,7 +23,7 @@
     flex-grow: 1;
     display: flex;
     overflow: hidden;
-    max-height: 100vh;
+    max-height: 100%;
 }
 
 .gh-main {

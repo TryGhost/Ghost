@@ -1,7 +1,6 @@
 var _              = require('lodash'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
-    baseUtils      = require('./base/utils'),
     Tag,
     Tags;
 
@@ -59,21 +58,14 @@ Tag = ghostBookshelf.Model.extend({
         return attrs;
     }
 }, {
-    setupFilters: function setupFilters() {
-        return {};
-    },
-
-    findPageDefaultOptions: function findPageDefaultOptions() {
-        return {
-            where: {}
-        };
-    },
-
     orderDefaultOptions: function orderDefaultOptions() {
         return {};
     },
 
-    processOptions: function processOptions(itemCollection, options) {
+    /**
+     * @deprecated in favour of filter
+     */
+    processOptions: function processOptions(options) {
         return options;
     },
 
@@ -83,7 +75,7 @@ Tag = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findPage: ['page', 'limit', 'columns']
+                findPage: ['page', 'limit', 'columns', 'filter', 'order']
             };
 
         if (validOptions[methodName]) {
@@ -104,8 +96,6 @@ Tag = ghostBookshelf.Model.extend({
         data = this.filterData(data, 'findOne');
 
         var tag = this.forge(data);
-
-        baseUtils.addPostCount(options, tag);
 
         // Add related objects
         options.withRelated = _.union(options.withRelated, options.include);

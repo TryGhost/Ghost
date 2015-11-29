@@ -20,7 +20,9 @@ describe('Users API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
 
-    beforeEach(testUtils.setup('users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
+    beforeEach(testUtils.setup(
+        'users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+    ));
     afterEach(testUtils.teardown);
 
     function checkForErrorType(type, done) {
@@ -131,11 +133,91 @@ describe('Users API', function () {
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
                 response.users.should.have.length(7);
-                response.users.should.have.length(7);
                 testUtils.API.checkResponse(response.users[0], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[1], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[2], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[3], 'user', 'roles');
+                done();
+            }).catch(done);
+        });
+
+        it('can browse and order by name using asc', function (done) {
+            var expectedUsers;
+
+            UserAPI.browse(testUtils.context.admin)
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedUsers = _(results.users).pluck('slug').sortBy().value();
+
+                    return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug asc'}));
+                })
+                .then(function (results) {
+                    var users;
+
+                    should.exist(results);
+
+                    users = _.pluck(results.users, 'slug');
+                    users.should.eql(expectedUsers);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('can browse and order by name using desc', function (done) {
+            var expectedUsers;
+
+            UserAPI.browse(testUtils.context.admin)
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedUsers = _(results.users).pluck('slug').sortBy().reverse().value();
+
+                    return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug desc'}));
+                })
+                .then(function (results) {
+                    var users;
+
+                    should.exist(results);
+
+                    users = _.pluck(results.users, 'slug');
+                    users.should.eql(expectedUsers);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('can browse with include count.posts', function (done) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {include: 'count.posts'})).then(function (response) {
+                should.exist(response);
+                testUtils.API.checkResponse(response, 'users');
+                should.exist(response.users);
+                response.users.should.have.length(7);
+                response.users.should.have.length(7);
+
+                testUtils.API.checkResponse(response.users[0], 'user', 'count');
+                testUtils.API.checkResponse(response.users[1], 'user', 'count');
+                testUtils.API.checkResponse(response.users[2], 'user', 'count');
+                testUtils.API.checkResponse(response.users[3], 'user', 'count');
+                testUtils.API.checkResponse(response.users[4], 'user', 'count');
+                testUtils.API.checkResponse(response.users[5], 'user', 'count');
+                testUtils.API.checkResponse(response.users[6], 'user', 'count');
+
+                response.users[0].count.posts.should.eql(0);
+                response.users[1].count.posts.should.eql(0);
+                response.users[2].count.posts.should.eql(0);
+                response.users[3].count.posts.should.eql(7);
+                response.users[4].count.posts.should.eql(0);
+                response.users[5].count.posts.should.eql(0);
+                response.users[6].count.posts.should.eql(0);
+
+                response.meta.pagination.should.have.property('page', 1);
+                response.meta.pagination.should.have.property('limit', 15);
+                response.meta.pagination.should.have.property('pages', 1);
+                response.meta.pagination.should.have.property('total', 7);
+                response.meta.pagination.should.have.property('next', null);
+                response.meta.pagination.should.have.property('prev', null);
+
                 done();
             }).catch(done);
         });

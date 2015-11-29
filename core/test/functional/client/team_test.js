@@ -5,7 +5,7 @@
 // These classes relate to elements which only appear when a given tab is loaded.
 // These are used to check that a switch to a tab is complete, or that we are on the right tab.
 var generalTabDetector = '.gh-nav-settings-general.active',
-    usersTabDetector = '.gh-nav-main-users';
+    usersTabDetector = '.gh-nav-main-users.active';
 
 CasperTest.begin('Team tab is correct', 4, function suite(test) {
     // TODO make sure settings nav tests are refactored into app_test.js
@@ -14,14 +14,14 @@ CasperTest.begin('Team tab is correct', 4, function suite(test) {
         casper.thenClick('.gh-nav-main-users');
         casper.waitForSelector(usersTabDetector, function then() {
             // assert that the right menu item is active
-            test.assertExists('.gh-nav-main-users.active', 'Users link is active');
+            test.assert(true, 'Users link is active');
             test.assertDoesntExist('.gh-nav-settings-general.active', 'General link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
 
         casper.thenClick('.gh-nav-settings-general');
         casper.waitForSelector(generalTabDetector, function then() {
             // assert that the right menu item is active
-            test.assertExists('.gh-nav-settings-general.active', 'General link is active');
+            test.assert(true, 'General link is active');
             test.assertDoesntExist('.gh-nav-main-users.active', 'User link is not active');
         }, casper.failOnTimeout(test, 'waitForSelector `generalTabDetector` timed out'));
     });
@@ -113,7 +113,7 @@ CasperTest.begin('Can save settings', 5, function suite(test) {
                     return document.querySelector('.gh-nav-settings-general').classList.contains('active');
                 }, 'general tab is marked active');
             },
-            casper.failOnTimeout(test, 'waitForSelector `usersTabDetector` timed out'));
+            casper.failOnTimeout(test, 'waitForSelector `generalTabDetector` timed out'));
     });
 
     casper.thenClick('.btn-blue');

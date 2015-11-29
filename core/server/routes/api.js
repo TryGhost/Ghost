@@ -4,72 +4,87 @@ var express     = require('express'),
     apiRoutes;
 
 apiRoutes = function apiRoutes(middleware) {
-    var router = express.Router();
+    var router = express.Router(),
+        // Authentication for public endpoints
+        authenticatePublic = [
+            middleware.api.authenticateClient,
+            middleware.api.authenticateUser,
+            middleware.api.requiresAuthorizedUserPublicAPI
+        ],
+        // Require user for private endpoints
+        authenticatePrivate = [
+            middleware.api.authenticateClient,
+            middleware.api.authenticateUser,
+            middleware.api.requiresAuthorizedUser
+        ];
+
     // alias delete with del
     router.del = router.delete;
 
     // ## Configuration
-    router.get('/configuration', api.http(api.configuration.browse));
-    router.get('/configuration/:key', api.http(api.configuration.read));
+    router.get('/configuration', authenticatePrivate, api.http(api.configuration.browse));
+    router.get('/configuration/:key', authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
-    router.get('/posts', api.http(api.posts.browse));
-    router.post('/posts', api.http(api.posts.add));
-    router.get('/posts/:id', api.http(api.posts.read));
-    router.get('/posts/slug/:slug', api.http(api.posts.read));
-    router.put('/posts/:id', api.http(api.posts.edit));
-    router.del('/posts/:id', api.http(api.posts.destroy));
+    router.get('/posts', authenticatePublic, api.http(api.posts.browse));
+
+    router.post('/posts', authenticatePrivate, api.http(api.posts.add));
+    router.get('/posts/:id', authenticatePublic, api.http(api.posts.read));
+    router.get('/posts/slug/:slug', authenticatePublic, api.http(api.posts.read));
+    router.put('/posts/:id', authenticatePrivate, api.http(api.posts.edit));
+    router.del('/posts/:id', authenticatePrivate, api.http(api.posts.destroy));
 
     // ## Settings
-    router.get('/settings', api.http(api.settings.browse));
-    router.get('/settings/:key', api.http(api.settings.read));
-    router.put('/settings', api.http(api.settings.edit));
+    router.get('/settings', authenticatePrivate, api.http(api.settings.browse));
+    router.get('/settings/:key', authenticatePrivate, api.http(api.settings.read));
+    router.put('/settings', authenticatePrivate, api.http(api.settings.edit));
 
     // ## Users
-    router.get('/users', api.http(api.users.browse));
-    router.get('/users/:id', api.http(api.users.read));
-    router.get('/users/slug/:slug', api.http(api.users.read));
-    router.get('/users/email/:email', api.http(api.users.read));
-    router.put('/users/password', api.http(api.users.changePassword));
-    router.put('/users/owner', api.http(api.users.transferOwnership));
-    router.put('/users/:id', api.http(api.users.edit));
-    router.post('/users', api.http(api.users.add));
-    router.del('/users/:id', api.http(api.users.destroy));
+    router.get('/users', authenticatePublic, api.http(api.users.browse));
+
+    router.get('/users/:id', authenticatePublic, api.http(api.users.read));
+    router.get('/users/slug/:slug', authenticatePublic, api.http(api.users.read));
+    router.get('/users/email/:email', authenticatePublic, api.http(api.users.read));
+    router.put('/users/password', authenticatePrivate, api.http(api.users.changePassword));
+    router.put('/users/owner', authenticatePrivate, api.http(api.users.transferOwnership));
+    router.put('/users/:id', authenticatePrivate, api.http(api.users.edit));
+    router.post('/users', authenticatePrivate, api.http(api.users.add));
+    router.del('/users/:id', authenticatePrivate, api.http(api.users.destroy));
 
     // ## Tags
-    router.get('/tags', api.http(api.tags.browse));
-    router.get('/tags/:id', api.http(api.tags.read));
-    router.get('/tags/slug/:slug', api.http(api.tags.read));
-    router.post('/tags', api.http(api.tags.add));
-    router.put('/tags/:id', api.http(api.tags.edit));
-    router.del('/tags/:id', api.http(api.tags.destroy));
+    router.get('/tags', authenticatePublic, api.http(api.tags.browse));
+    router.get('/tags/:id', authenticatePublic, api.http(api.tags.read));
+    router.get('/tags/slug/:slug', authenticatePublic, api.http(api.tags.read));
+    router.post('/tags', authenticatePrivate, api.http(api.tags.add));
+    router.put('/tags/:id', authenticatePrivate, api.http(api.tags.edit));
+    router.del('/tags/:id', authenticatePrivate, api.http(api.tags.destroy));
 
     // ## Roles
-    router.get('/roles/', api.http(api.roles.browse));
+    router.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
 
     // ## Clients
     router.get('/clients/slug/:slug', api.http(api.clients.read));
 
     // ## Slugs
-    router.get('/slugs/:type/:name', api.http(api.slugs.generate));
+    router.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
 
     // ## Themes
-    router.get('/themes', api.http(api.themes.browse));
-    router.put('/themes/:name', api.http(api.themes.edit));
+    router.get('/themes', authenticatePrivate, api.http(api.themes.browse));
+    router.put('/themes/:name', authenticatePrivate, api.http(api.themes.edit));
 
     // ## Notifications
-    router.get('/notifications', api.http(api.notifications.browse));
-    router.post('/notifications', api.http(api.notifications.add));
-    router.del('/notifications/:id', api.http(api.notifications.destroy));
+    router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));
+    router.post('/notifications', authenticatePrivate, api.http(api.notifications.add));
+    router.del('/notifications/:id', authenticatePrivate, api.http(api.notifications.destroy));
 
     // ## DB
-    router.get('/db', api.http(api.db.exportContent));
-    router.post('/db', middleware.busboy, api.http(api.db.importContent));
-    router.del('/db', api.http(api.db.deleteAllContent));
+    router.get('/db', authenticatePrivate, api.http(api.db.exportContent));
+    router.post('/db', authenticatePrivate, middleware.busboy, api.http(api.db.importContent));
+    router.del('/db', authenticatePrivate, api.http(api.db.deleteAllContent));
 
     // ## Mail
-    router.post('/mail', api.http(api.mail.send));
-    router.post('/mail/test', api.http(api.mail.sendTest));
+    router.post('/mail', authenticatePrivate, api.http(api.mail.send));
+    router.post('/mail/test', authenticatePrivate, api.http(api.mail.sendTest));
 
     // ## Authentication
     router.post('/authentication/passwordreset',
@@ -87,10 +102,10 @@ apiRoutes = function apiRoutes(middleware) {
         middleware.api.authenticateClient,
         middleware.api.generateAccessToken
     );
-    router.post('/authentication/revoke', api.http(api.authentication.revoke));
+    router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
-    router.post('/uploads', middleware.busboy, api.http(api.uploads.add));
+    router.post('/uploads', authenticatePrivate, middleware.busboy, api.http(api.uploads.add));
 
     // API Router middleware
     router.use(middleware.api.errorHandler);

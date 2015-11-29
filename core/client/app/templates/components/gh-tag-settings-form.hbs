@@ -1,0 +1,84 @@
+<div class="{{if isViewingSubview 'settings-menu-pane-out-left' 'settings-menu-pane-in'}} settings-menu settings-menu-pane tag-settings-pane">
+    <div class="settings-menu-header {{if isMobile 'subview'}}">
+        {{#if isMobile}}
+            {{#link-to 'settings.tags' class="back icon-arrow-left settings-menu-header-action"}}<span class="hidden">Back</span>{{/link-to}}
+            <h4>{{title}}</h4>
+            <div style="width:23px;">{{!flexbox space-between}}</div>
+        {{else}}
+            <h4>{{title}}</h4>
+        {{/if}}
+    </div>
+    <div class="settings-menu-content">
+        {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=tag.image initUploader="setUploaderReference" tagName="section"}}
+        <form>
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="name"}}
+                <label for="tag-name">Name</label>
+                {{gh-input id="tag-name" name="name" type="text" value=scratchName focus-out=(action 'setProperty' 'name')}}
+                {{gh-error-message errors=tag.errors property="name"}}
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="slug"}}
+                <label for="tag-slug">URL</label>
+                {{gh-input id="tag-slug" name="slug" type="text" value=scratchSlug focus-out=(action 'setProperty' 'slug')}}
+                {{gh-url-preview prefix="tag" slug=scratchSlug tagName="p" classNames="description"}}
+                {{gh-error-message errors=activeTag.errors property="slug"}}
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="description"}}
+                <label for="tag-description">Description</label>
+                {{gh-textarea id="tag-description" name="description" value=scratchDescription focus-out=(action 'setProperty' 'description')}}
+                {{gh-error-message errors=tag.errors property="description"}}
+                <p>Maximum: <b>200</b> characters. You’ve used {{gh-count-down-characters scratchDescription 200}}</p>
+            {{/gh-form-group}}
+
+            <ul class="nav-list nav-list-block">
+                <li class="nav-list-item" {{action 'openMeta'}}>
+                    <button type="button" class="meta-data-button">
+                        <b>Meta Data</b>
+                        <span>Extra content for SEO and social media.</span>
+                    </button>
+                    <i class="icon-arrow-right"></i>
+                </li>
+            </ul>
+
+            {{#unless tag.isNew}}
+                <button type="button" class="btn btn-link btn-sm tag-delete-button" {{action "deleteTag"}}><i class="icon-trash"></i> Delete Tag</button>
+            {{/unless}}
+        </form>
+    </div>
+</div>{{! .settings-menu-pane }}
+
+<div class="{{if isViewingSubview 'settings-menu-pane-in' 'settings-menu-pane-out-right'}} settings-menu settings-menu-pane tag-meta-settings-pane">
+    <div class="settings-menu-header subview">
+        <button {{action "closeMeta"}} class="back icon-arrow-left settings-menu-header-action"><span class="hidden">Back</span></button>
+        <h4>Meta Data</h4>
+        <div style="width:23px;">{{!flexbox space-between}}</div>
+    </div>
+
+    <div class="settings-menu-content">
+        <form>
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="meta_title"}}
+                <label for="meta-title">Meta Title</label>
+                {{gh-input id="meta-title" name="meta_title" type="text" value=scratchMetaTitle focus-out=(action 'setProperty' 'meta_title')}}
+                {{gh-error-message errors=tag.errors property="meta_title"}}
+                <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters scratchMetaTitle 70}}</p>
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="meta_description"}}
+                <label for="meta-description">Meta Description</label>
+                {{gh-textarea id="meta-description" name="meta_description" value=scratchMetaDescription focus-out=(action 'setProperty' 'meta_description')}}
+                {{gh-error-message errors=tag.errors property="meta_description"}}
+                <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters scratchMetaDescription 156}}</p>
+            {{/gh-form-group}}
+
+            <div class="form-group">
+                <label>Search Engine Result Preview</label>
+                <div class="seo-preview">
+                    <div class="seo-preview-title">{{seoTitle}}</div>
+                    <div class="seo-preview-link">{{seoURL}}</div>
+                    <div class="seo-preview-description">{{seoDescription}}</div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

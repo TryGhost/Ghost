@@ -3,7 +3,7 @@ import Ember from 'ember';
 // Code modified from Addepar/ember-widgets
 // https://github.com/Addepar/ember-widgets/blob/master/src/mixins.coffee#L39
 
-var BodyEventListener = Ember.Mixin.create({
+export default Ember.Mixin.create({
     bodyElementSelector: 'html',
     bodyClick: Ember.K,
 
@@ -43,5 +43,3 @@ var BodyEventListener = Ember.Mixin.create({
         return event.stopPropagation();
     }
 });
-
-export default BodyEventListener;

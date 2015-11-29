@@ -14,7 +14,7 @@ var Promise         = require('bluebird'),
 
     docName         = 'users',
     // TODO: implement created_by, updated_by
-    allowedIncludes = ['permissions', 'roles', 'roles.permissions'],
+    allowedIncludes = ['count.posts', 'permissions', 'roles', 'roles.permissions'],
     users,
     sendInviteEmail;
 
@@ -73,7 +73,7 @@ users = {
      * @returns {Promise<Users>} Users Collection
      */
     browse: function browse(options) {
-        var extraOptions = ['role', 'status'],
+        var extraOptions = ['status'],
             permittedOptions = utils.browseDefaultOptions.concat(extraOptions),
             tasks;
 
@@ -212,7 +212,7 @@ users = {
                     });
                 });
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to edit this user');
+                return errors.formatAndRejectAPIError(error, 'You do not have permission to edit this user');
             });
         }
 
@@ -280,7 +280,7 @@ users = {
 
                 return options;
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to add this user');
+                return errors.formatAndRejectAPIError(error, 'You do not have permission to add this user');
             });
         }
 
@@ -375,7 +375,7 @@ users = {
                 options.status = 'all';
                 return options;
             }).catch(function handleError(error) {
-                return errors.handleAPIError(error, 'You do not have permission to destroy this user.');
+                return errors.formatAndRejectAPIError(error, 'You do not have permission to destroy this user.');
             });
         }
 
@@ -407,7 +407,7 @@ users = {
                     return Promise.reject(new errors.InternalServerError(error));
                 });
             }, function (error) {
-                return errors.handleAPIError(error);
+                return errors.formatAndRejectAPIError(error);
             });
         }
 
@@ -442,7 +442,7 @@ users = {
             return canThis(options.context).edit.user(options.data.password[0].user_id).then(function permissionGranted() {
                 return options;
             }).catch(function (error) {
-                return errors.handleAPIError(error, 'You do not have permission to change the password for this user');
+                return errors.formatAndRejectAPIError(error, 'You do not have permission to change the password for this user');
             });
         }
 
@@ -494,7 +494,7 @@ users = {
             }).then(function () {
                 return options;
             }).catch(function (error) {
-                return errors.handleAPIError(error);
+                return errors.formatAndRejectAPIError(error);
             });
         }
 
@@ -520,7 +520,7 @@ users = {
         return pipeline(tasks, object, options).then(function formatResult(result) {
             return Promise.resolve({users: result});
         }).catch(function (error) {
-            return errors.handleAPIError(error);
+            return errors.formatAndRejectAPIError(error);
         });
     }
 };

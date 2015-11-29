@@ -1,11 +1,20 @@
 import DS from 'ember-data';
 import ghostPaths from 'ghost/utils/ghost-paths';
+import Ember from 'ember';
 
-var BaseAdapter = DS.RESTAdapter.extend({
+const {inject} = Ember;
+
+export default DS.RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
-    findQuery: function (store, type, query) {
+    session: inject.service('session'),
+
+    shouldBackgroundReloadRecord: function () {
+        return false;
+    },
+
+    query: function (store, type, query) {
         var id;
 
         if (query.id) {
@@ -39,7 +48,15 @@ var BaseAdapter = DS.RESTAdapter.extend({
         return response.then(function () {
             return null;
         });
+    },
+
+    handleResponse: function (status) {
+        if (status === 401) {
+            if (this.get('session.isAuthenticated')) {
+                this.get('session').invalidate();
+            }
+        }
+
+        return this._super(...arguments);
     }
 });
-
-export default BaseAdapter;

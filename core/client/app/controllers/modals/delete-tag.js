@@ -1,21 +1,29 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    notifications: Ember.inject.service(),
+const {Controller, computed, inject} = Ember;
 
-    postInflection: Ember.computed('model.post_count', function () {
-        return this.get('model.post_count') > 1 ? 'posts' : 'post';
+export default Controller.extend({
+    application: inject.controller(),
+    notifications: inject.service(),
+
+    postInflection: computed('model.count.posts', function () {
+        return this.get('model.count.posts') > 1 ? 'posts' : 'post';
     }),
 
     actions: {
         confirmAccept: function () {
-            var tag = this.get('model'),
-                self = this;
+            let tag = this.get('model');
 
             this.send('closeMenus');
 
-            tag.destroyRecord().catch(function (error) {
-                self.get('notifications').showAPIError(error);
+            tag.destroyRecord().then(() => {
+                let currentRoute = this.get('application.currentRouteName') || '';
+
+                if (currentRoute.match(/^settings\.tags/)) {
+                    this.transitionToRoute('settings.tags.index');
+                }
+            }).catch((error) => {
+                this.get('notifications').showAPIError(error, {key: 'tag.delete'});
             });
         },
 

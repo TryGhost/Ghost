@@ -11,7 +11,7 @@ function GhostMailer(opts) {
     this.transport = opts.transport || null;
 }
 
-// ## E-mail transport setup
+// ## Email transport setup
 // *This promise should always resolve to avoid halting Ghost::init*.
 GhostMailer.prototype.init = function () {
     var self = this;
@@ -57,7 +57,7 @@ GhostMailer.prototype.getDomain = function () {
     return domain && domain[1];
 };
 
-// Sends an e-mail message enforcing `to` (blog owner) and `from` fields
+// Sends an email message enforcing `to` (blog owner) and `from` fields
 // This assumes that api.settings.read('email') was already done on the API level
 GhostMailer.prototype.send = function (message) {
     var self = this,
@@ -68,10 +68,10 @@ GhostMailer.prototype.send = function (message) {
     to = message.to || false;
 
     if (!this.transport) {
-        return Promise.reject(new Error('Email Error: No e-mail transport configured.'));
+        return Promise.reject(new Error('Error: No email transport configured.'));
     }
     if (!(message && message.subject && message.html && message.to)) {
-        return Promise.reject(new Error('Email Error: Incomplete message data.'));
+        return Promise.reject(new Error('Error: Incomplete message data.'));
     }
     sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
@@ -93,17 +93,17 @@ GhostMailer.prototype.send = function (message) {
             }
 
             response.statusHandler.once('failed', function (data) {
-                var reason = 'Email Error: Failed sending email';
+                var reason = 'Error: Failed to send email';
 
                 if (data.error && data.error.errno === 'ENOTFOUND') {
-                    reason += ': there is no mail server at this address: ' + data.domain;
+                    reason += ' - no mail server found at ' + data.domain;
                 }
                 reason += '.';
                 return reject(new Error(reason));
             });
 
             response.statusHandler.once('requeue', function (data) {
-                var errorMessage = 'Email Error: message was not sent, requeued. Probably will not be sent. :(';
+                var errorMessage = 'Error: Message could not be sent';
 
                 if (data.error && data.error.message) {
                     errorMessage += '\nMore info: ' + data.error.message;
@@ -113,7 +113,7 @@ GhostMailer.prototype.send = function (message) {
             });
 
             response.statusHandler.once('sent', function () {
-                return resolve('Message was accepted by the mail server. Make sure to check inbox and spam folders. :)');
+                return resolve('Message sent. Double check inbox and spam folder!');
             });
         });
     });
