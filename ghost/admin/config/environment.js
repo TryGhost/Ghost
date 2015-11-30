@@ -23,13 +23,6 @@ module.exports = function (environment) {
             authenticationRoute: 'signin',
             routeAfterAuthentication: 'posts',
             routeIfAlreadyAuthenticated: 'posts'
-        },
-
-        resizeServiceDefaults: {
-            debounceTimeout: 100,
-            heightSensitive: false,
-            widthSensitive: true,
-            injectionFactories: []
         }
     };
 

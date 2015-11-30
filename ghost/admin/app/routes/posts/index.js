@@ -1,19 +1,21 @@
+import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
-import mobileQuery from 'ghost/utils/mobile';
 
 export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
     noPosts: false,
 
+    mediaQueries: Ember.inject.service(),
+    isMobile: Ember.computed.reads('mediaQueries.isMobile'),
+
     // Transition to a specific post if we're not on mobile
     beforeModel: function () {
-        if (!mobileQuery.matches) {
+        if (!this.get('isMobile')) {
             return this.goToPost();
         }
     },
 
-    setupController: function (controller, model) {
-        /*jshint unused:false*/
+    setupController: function (controller) {
         controller.set('noPosts', this.get('noPosts'));
     },
 
