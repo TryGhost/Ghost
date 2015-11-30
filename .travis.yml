@@ -16,10 +16,17 @@ env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
     - GHOST_NODE_VERSION_CHECK=false
+    - TEST_SUITE=server
   matrix:
     - DB=sqlite3 NODE_ENV=testing
     - DB=mysql NODE_ENV=testing-mysql
     - DB=pg NODE_ENV=testing-pg
+matrix:
+  include:
+    - node_js: "0.10"
+      env: TEST_SUITE=client
+    - node_js: "0.10"
+      env: TEST_SUITE=lint
 before_install:
   - git clone git://github.com/n1k0/casperjs.git ~/casperjs
   - cd ~/casperjs
