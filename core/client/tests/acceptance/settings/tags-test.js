@@ -9,6 +9,7 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../../helpers/start-app';
+import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
 
 const {run} = Ember;
@@ -48,7 +49,7 @@ describe('Acceptance: Settings - Tags', function () {
     });
 
     afterEach(function () {
-        run(application, 'destroy');
+        destroyApp(application);
     });
 
     it('redirects to signin when not authenticated', function () {
