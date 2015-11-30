@@ -2,12 +2,11 @@
 import Ember from 'ember';
 import titleize from 'ghost/utils/titleize';
 
-var simpleShortcutSyntax,
-    shortcuts;
+const {Mixin} = Ember;
 
 // Used for simple, noncomputational replace-and-go! shortcuts.
 // See default case in shortcut function below.
-simpleShortcutSyntax = {
+let simpleShortcutSyntax = {
     bold: {
         regex: '**|**',
         cursor: '|'
@@ -46,10 +45,10 @@ simpleShortcutSyntax = {
     }
 };
 
-shortcuts = {
-    simple: function (type, replacement, selection, line) {
-        var shortcut,
-            startIndex = 0;
+let shortcuts = {
+    simple(type, replacement, selection, line) {
+        let startIndex = 0;
+        let shortcut;
 
         if (simpleShortcutSyntax.hasOwnProperty(type)) {
             shortcut = simpleShortcutSyntax[type];
@@ -59,7 +58,7 @@ shortcuts = {
             // add a newline if needed
             if (shortcut.newline && line.text !== '') {
                 startIndex = 1;
-                replacement.text = '\n' + replacement.text;
+                replacement.text = `\n${replacement.text}`;
             }
 
             // handle cursor position
@@ -77,11 +76,10 @@ shortcuts = {
 
         return replacement;
     },
-    cycleHeaderLevel: function (replacement, line) {
-        // jscs:disable
-        var match = line.text.match(/^#+/),
-        // jscs:enable
-            currentHeaderLevel,
+
+    cycleHeaderLevel(replacement, line) {
+        let match = line.text.match(/^#+/);
+        let currentHeaderLevel,
             hashPrefix;
 
         if (!match) {
@@ -96,18 +94,17 @@ shortcuts = {
 
         hashPrefix = new Array(currentHeaderLevel + 2).join('#');
 
-        // jscs:disable
-        replacement.text = hashPrefix + ' ' + line.text.replace(/^#* /, '');
-        // jscs:enable
+        replacement.text = `${hashPrefix} ${line.text.replace(/^#* /, '')}`;
 
         replacement.start = line.start;
         replacement.end = line.end;
 
         return replacement;
     },
-    copyHTML: function (editor, selection) {
-        var converter = new Showdown.converter(),
-            generatedHTML;
+
+    copyHTML(editor, selection) {
+        let converter = new Showdown.converter();
+        let generatedHTML;
 
         if (selection.text) {
             generatedHTML = converter.makeHtml(selection.text);
@@ -116,34 +113,38 @@ shortcuts = {
         }
 
         // Talk to the editor
-        editor.sendAction('openModal', 'copy-html', {generatedHTML: generatedHTML});
+        editor.sendAction('openModal', 'copy-html', {generatedHTML});
     },
-    currentDate: function (replacement) {
+
+    currentDate(replacement) {
         replacement.text = moment(new Date()).format('D MMMM YYYY');
         return replacement;
     },
-    uppercase: function (replacement, selection) {
+
+    uppercase(replacement, selection) {
         replacement.text = selection.text.toLocaleUpperCase();
         return replacement;
     },
-    lowercase: function (replacement, selection) {
+
+    lowercase(replacement, selection) {
         replacement.text = selection.text.toLocaleLowerCase();
         return replacement;
     },
-    titlecase: function (replacement, selection) {
+
+    titlecase(replacement, selection) {
         replacement.text = titleize(selection.text);
         return replacement;
     }
 };
 
-export default Ember.Mixin.create({
-    shortcut: function (type) {
-        var selection = this.getSelection(),
-            replacement = {
-                start: selection.start,
-                end: selection.end,
-                position: 'collapseToEnd'
-            };
+export default Mixin.create({
+    shortcut(type) {
+        let selection = this.getSelection();
+        let replacement = {
+            start: selection.start,
+            end: selection.end,
+            position: 'collapseToEnd'
+        };
 
         switch (type) {
             // This shortcut is special as it needs to send an action

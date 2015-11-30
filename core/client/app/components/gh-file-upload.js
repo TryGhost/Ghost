@@ -1,10 +1,11 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component} = Ember;
+
+export default Component.extend({
     _file: null,
 
     uploadButtonText: 'Text',
-
     uploadButtonDisabled: true,
 
     onUpload: null,
@@ -12,14 +13,14 @@ export default Ember.Component.extend({
 
     shouldResetForm: true,
 
-    change: function (event) {
+    change(event) {
         this.set('uploadButtonDisabled', false);
         this.sendAction('onAdd');
         this._file = event.target.files[0];
     },
 
     actions: {
-        upload: function () {
+        upload() {
             if (!this.get('uploadButtonDisabled') && this._file) {
                 this.sendAction('onUpload', this._file);
             }
@@ -29,7 +30,7 @@ export default Ember.Component.extend({
 
             // Reset form
             if (this.get('shouldResetForm')) {
-                this.$().closest('form').get(0).reset();
+                this.$().closest('form')[0].reset();
             }
         }
     }

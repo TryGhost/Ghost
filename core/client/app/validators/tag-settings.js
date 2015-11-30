@@ -3,8 +3,8 @@ import BaseValidator from './base';
 export default BaseValidator.create({
     properties: ['name', 'slug', 'description', 'metaTitle', 'metaDescription'],
 
-    name: function (model) {
-        var name = model.get('name');
+    name(model) {
+        let name = model.get('name');
 
         if (validator.empty(name)) {
             model.get('errors').add('name', 'You must specify a name for the tag.');
@@ -18,8 +18,8 @@ export default BaseValidator.create({
         }
     },
 
-    slug: function (model) {
-        var slug = model.get('slug');
+    slug(model) {
+        let slug = model.get('slug');
 
         if (!validator.isLength(slug, 0, 150)) {
             model.get('errors').add('slug', 'URL cannot be longer than 150 characters.');
@@ -27,8 +27,8 @@ export default BaseValidator.create({
         }
     },
 
-    description: function (model) {
-        var description = model.get('description');
+    description(model) {
+        let description = model.get('description');
 
         if (!validator.isLength(description, 0, 200)) {
             model.get('errors').add('description', 'Description cannot be longer than 200 characters.');
@@ -36,8 +36,8 @@ export default BaseValidator.create({
         }
     },
 
-    metaTitle: function (model) {
-        var metaTitle = model.get('meta_title');
+    metaTitle(model) {
+        let metaTitle = model.get('meta_title');
 
         if (!validator.isLength(metaTitle, 0, 150)) {
             model.get('errors').add('meta_title', 'Meta Title cannot be longer than 150 characters.');
@@ -45,8 +45,8 @@ export default BaseValidator.create({
         }
     },
 
-    metaDescription: function (model) {
-        var metaDescription = model.get('meta_description');
+    metaDescription(model) {
+        let metaDescription = model.get('meta_description');
 
         if (!validator.isLength(metaDescription, 0, 200)) {
             model.get('errors').add('meta_description', 'Meta Description cannot be longer than 200 characters.');

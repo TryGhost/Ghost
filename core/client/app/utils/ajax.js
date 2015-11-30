@@ -1,9 +1,11 @@
 import Ember from 'ember';
 
+const {isArray} = Ember;
+
 // Used in API request fail handlers to parse a standard api error
 // response json for the message to display
 export default function getRequestErrorMessage(request, performConcat) {
-    var message,
+    let message,
         msgDetail;
 
     // Can't really continue without a request
@@ -18,20 +20,20 @@ export default function getRequestErrorMessage(request, performConcat) {
     if (request.status !== 200) {
         try {
             // Try to parse out the error, or default to 'Unknown'
-            if (request.responseJSON.errors && Ember.isArray(request.responseJSON.errors)) {
-                message = request.responseJSON.errors.map(function (errorItem) {
+            if (request.responseJSON.errors && isArray(request.responseJSON.errors)) {
+                message = request.responseJSON.errors.map((errorItem) => {
                     return errorItem.message;
                 });
             } else {
                 message =  request.responseJSON.error || 'Unknown Error';
             }
         } catch (e) {
-            msgDetail = request.status ? request.status + ' - ' + request.statusText : 'Server was not available';
-            message = 'The server returned an error (' + msgDetail + ').';
+            msgDetail = request.status ? `${request.status} - ${request.statusText}` : 'Server was not available';
+            message = `The server returned an error (${msgDetail}).`;
         }
     }
 
-    if (performConcat && Ember.isArray(message)) {
+    if (performConcat && isArray(message)) {
         message = message.join('<br />');
     }
 

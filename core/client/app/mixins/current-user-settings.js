@@ -1,24 +1,22 @@
 import Ember from 'ember';
 
-export default Ember.Mixin.create({
-    transitionAuthor: function () {
-        var self = this;
+const {Mixin} = Ember;
 
-        return function (user) {
+export default Mixin.create({
+    transitionAuthor() {
+        return (user) => {
             if (user.get('isAuthor')) {
-                return self.transitionTo('team.user', user);
+                return this.transitionTo('team.user', user);
             }
 
             return user;
         };
     },
 
-    transitionEditor: function () {
-        var self = this;
-
-        return function (user) {
+    transitionEditor() {
+        return (user) => {
             if (user.get('isEditor')) {
-                return self.transitionTo('team');
+                return this.transitionTo('team');
             }
 
             return user;

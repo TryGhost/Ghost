@@ -1,4 +1,5 @@
 /* jshint expr:true */
+/* jscs:disable requireTemplateStringsForConcatenation */
 import { expect } from 'chai';
 import {
     describeComponent,
@@ -8,10 +9,11 @@ import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 import DS from 'ember-data';
 
-const {run} = Ember,
-      configStub = Ember.Service.extend({
-          blogUrl: 'http://localhost:2368'
-      });
+const {run} = Ember;
+
+let configStub = Ember.Service.extend({
+    blogUrl: 'http://localhost:2368'
+});
 
 describeComponent(
     'gh-tag-settings-form',
@@ -21,6 +23,7 @@ describeComponent(
     },
     function () {
         beforeEach(function () {
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
             let tag = Ember.Object.create({
                 id: 1,
                 name: 'Test',
@@ -31,6 +34,7 @@ describeComponent(
                 errors: DS.Errors.create(),
                 hasValidated: []
             });
+            /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
 
             this.set('tag', tag);
             this.set('actions.setProperty', function (property, value) {
@@ -120,8 +124,8 @@ describeComponent(
         });
 
         it('triggers setProperty action on blur of all fields', function () {
-            let expectedProperty = '',
-                expectedValue = '';
+            let expectedProperty = '';
+            let expectedValue = '';
 
             this.set('actions.setProperty', function (property, value) {
                 expect(property, 'property').to.equal(expectedProperty);
@@ -164,8 +168,8 @@ describeComponent(
         });
 
         it('displays error messages for validated fields', function () {
-            let errors = this.get('tag.errors'),
-                hasValidated = this.get('tag.hasValidated');
+            let errors = this.get('tag.errors');
+            let hasValidated = this.get('tag.hasValidated');
 
             errors.add('name', 'must be present');
             hasValidated.push('name');

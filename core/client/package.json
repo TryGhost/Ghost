@@ -45,7 +45,7 @@
     "ember-myth": "0.1.1",
     "ember-simple-auth": "1.0.0",
     "ember-sinon": "0.2.1",
-    "ember-watson": "^0.6.4",
+    "ember-suave": "1.2.2",
     "fs-extra": "0.16.3",
     "glob": "^4.0.5",
     "walk-sync": "^0.1.3"

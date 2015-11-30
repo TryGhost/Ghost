@@ -1,16 +1,18 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed, inject} = Ember;
+
+export default Component.extend({
     tagName: 'article',
     classNames: ['gh-alert'],
     classNameBindings: ['typeClass'],
 
-    notifications: Ember.inject.service(),
+    notifications: inject.service(),
 
-    typeClass: Ember.computed('message.type', function () {
-        var classes = '',
-            type = this.get('message.type'),
-            typeMapping;
+    typeClass: computed('message.type', function () {
+        let type = this.get('message.type');
+        let classes = '';
+        let typeMapping;
 
         typeMapping = {
             success: 'green',
@@ -20,14 +22,14 @@ export default Ember.Component.extend({
         };
 
         if (typeMapping[type] !== undefined) {
-            classes += 'gh-alert-' + typeMapping[type];
+            classes += `gh-alert-${typeMapping[type]}`;
         }
 
         return classes;
     }),
 
     actions: {
-        closeNotification: function () {
+        closeNotification() {
             this.get('notifications').closeNotification(this.get('message'));
         }
     }

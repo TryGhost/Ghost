@@ -1,0 +1,4 @@
+{
+    "preset": "../.jscsrc",
+    "requireBlocksOnNewline": null
+}

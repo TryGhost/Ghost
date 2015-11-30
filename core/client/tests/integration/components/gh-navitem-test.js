@@ -73,7 +73,9 @@ describeComponent(
             this.set('navItem', NavItem.create({label: 'Test', url: '/url', last: true}));
 
             let addActionCallCount = 0;
-            this.on('add', () => { addActionCallCount++; });
+            this.on('add', () => {
+                addActionCallCount++;
+            });
 
             this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl addItem="add"}}`);
             this.$('.gh-blognav-add').trigger('click');
@@ -85,7 +87,9 @@ describeComponent(
             this.set('navItem', NavItem.create({label: 'Test', url: '/url'}));
 
             let updateActionCallCount = 0;
-            this.on('update', () => { updateActionCallCount++; });
+            this.on('update', () => {
+                updateActionCallCount++;
+            });
 
             this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateUrl="update"}}`);
             this.$('.gh-blognav-url input').trigger('blur');
