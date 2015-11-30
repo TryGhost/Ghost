@@ -8,11 +8,10 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../helpers/start-app';
+import destroyApp from '../helpers/destroy-app';
 import { authenticateSession, currentSession, invalidateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import windowProxy from 'ghost/utils/window-proxy';
-
-const {run} = Ember;
 
 describe('Acceptance: Authentication', function () {
     let application,
@@ -23,7 +22,7 @@ describe('Acceptance: Authentication', function () {
     });
 
     afterEach(function () {
-        run(application, 'destroy');
+        destroyApp(application);
     });
 
     describe('general page', function () {
