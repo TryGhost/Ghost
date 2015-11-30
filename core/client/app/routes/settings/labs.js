@@ -7,15 +7,15 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     classNames: ['settings'],
 
-    beforeModel: function (transition) {
+    beforeModel(transition) {
         this._super(transition);
         return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },
 
-    model: function () {
-        return this.store.query('setting', {type: 'blog,theme'}).then(function (records) {
+    model() {
+        return this.store.query('setting', {type: 'blog,theme'}).then((records) => {
             return records.get('firstObject');
         });
     }

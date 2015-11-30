@@ -1,9 +1,11 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed, inject} = Ember;
+
+export default Component.extend({
     tagName: 'section',
     classNames: ['gh-view', 'content-view-container'],
 
-    mediaQueries: Ember.inject.service(),
-    previewIsHidden: Ember.computed.reads('mediaQueries.maxWidth900')
+    mediaQueries: inject.service(),
+    previewIsHidden: computed.reads('mediaQueries.maxWidth900')
 });

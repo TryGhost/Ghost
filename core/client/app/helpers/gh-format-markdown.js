@@ -1,16 +1,18 @@
-import Ember from 'ember';
 /* global Showdown, html_sanitize*/
+import Ember from 'ember';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-var showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+const {Helper} = Ember;
 
-export default Ember.Helper.helper(function (params) {
+let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+
+export default Helper.helper(function (params) {
     if (!params || !params.length) {
         return;
     }
 
-    var escapedhtml = '',
-        markdown = params[0] || '';
+    let markdown = params[0] || '';
+    let escapedhtml = '';
 
     // convert markdown to HTML
     escapedhtml = showdown.makeHtml(markdown);

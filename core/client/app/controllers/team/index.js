@@ -1,17 +1,20 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
+const {Controller, computed, inject} = Ember;
+const {alias, filter} = computed;
 
-    session: Ember.inject.service(),
+export default Controller.extend({
 
-    users: Ember.computed.alias('model'),
+    session: inject.service(),
 
-    activeUsers: Ember.computed.filter('users', function (user) {
+    users: alias('model'),
+
+    activeUsers: filter('users', function (user) {
         return /^active|warn-[1-4]|locked$/.test(user.get('status'));
     }),
 
-    invitedUsers: Ember.computed.filter('users', function (user) {
-        var status = user.get('status');
+    invitedUsers: filter('users', function (user) {
+        let status = user.get('status');
 
         return status === 'invited' || status === 'invited-pending';
     })

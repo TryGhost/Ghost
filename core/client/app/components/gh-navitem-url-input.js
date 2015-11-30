@@ -1,11 +1,10 @@
 import Ember from 'ember';
 
-var joinUrlParts,
-    isRelative;
+const {TextField, computed, run} = Ember;
 
-joinUrlParts = function (url, path) {
+let joinUrlParts = function (url, path) {
     if (path[0] !== '/' && url.slice(-1) !== '/') {
-        path = '/' + path;
+        path = `/${path}`;
     } else if (path[0] === '/' && url.slice(-1) === '/') {
         path = path.slice(1);
     }
@@ -13,19 +12,27 @@ joinUrlParts = function (url, path) {
     return url + path;
 };
 
-isRelative = function (url) {
+let isRelative = function (url) {
     // "protocol://", "//example.com", "scheme:", "#anchor", & invalid paths
     // should all be treated as absolute
     return !url.match(/\s/) && !validator.isURL(url) && !url.match(/^(\/\/|#|[a-zA-Z0-9\-]+:)/);
 };
 
-export default Ember.TextField.extend({
+export default TextField.extend({
     classNames: 'gh-input',
     classNameBindings: ['fakePlaceholder'],
 
-    didReceiveAttrs: function () {
-        var url = this.get('url'),
-            baseUrl = this.get('baseUrl');
+    isBaseUrl: computed('baseUrl', 'value', function () {
+        return this.get('baseUrl') === this.get('value');
+    }),
+
+    fakePlaceholder: computed('isBaseUrl', 'hasFocus', function () {
+        return this.get('isBaseUrl') && this.get('last') && !this.get('hasFocus');
+    }),
+
+    didReceiveAttrs() {
+        let baseUrl = this.get('baseUrl');
+        let url = this.get('url');
 
         // if we have a relative url, create the absolute url to be displayed in the input
         if (isRelative(url)) {
@@ -35,28 +42,20 @@ export default Ember.TextField.extend({
         this.set('value', url);
     },
 
-    isBaseUrl: Ember.computed('baseUrl', 'value', function () {
-        return this.get('baseUrl') === this.get('value');
-    }),
-
-    fakePlaceholder: Ember.computed('isBaseUrl', 'hasFocus', function () {
-        return this.get('isBaseUrl') && this.get('last') && !this.get('hasFocus');
-    }),
-
-    focusIn: function (event) {
+    focusIn(event) {
         this.set('hasFocus', true);
 
         if (this.get('isBaseUrl')) {
             // position the cursor at the end of the input
-            Ember.run.next(function (el) {
-                var length = el.value.length;
+            run.next(function (el) {
+                let {length} = el.value;
 
                 el.setSelectionRange(length, length);
             }, event.target);
         }
     },
 
-    keyDown: function (event) {
+    keyDown(event) {
         // delete the "placeholder" value all at once
         if (this.get('isBaseUrl') && (event.keyCode === 8 || event.keyCode === 46)) {
             this.set('value', '');
@@ -70,7 +69,7 @@ export default Ember.TextField.extend({
         }
     },
 
-    keyPress: function (event) {
+    keyPress(event) {
         // enter key
         if (event.keyCode === 13) {
             event.preventDefault();
@@ -80,19 +79,21 @@ export default Ember.TextField.extend({
         return true;
     },
 
-    focusOut: function () {
+    focusOut() {
         this.set('hasFocus', false);
 
         this.notifyUrlChanged();
     },
 
-    notifyUrlChanged: function () {
-        this.set('value', this.get('value').trim());
+    notifyUrlChanged() {
+        let value = this.get('value').trim();
+        let urlParts = document.createElement('a');
+        let baseUrl = this.get('baseUrl');
+        let baseUrlParts = document.createElement('a');
+        let url = value;
 
-        var url = this.get('value'),
-            urlParts = document.createElement('a'),
-            baseUrl = this.get('baseUrl'),
-            baseUrlParts = document.createElement('a');
+        // ensure value property is trimmed
+        this.set('value', value);
 
         // leverage the browser's native URI parsing
         urlParts.href = url;
@@ -117,7 +118,7 @@ export default Ember.TextField.extend({
             url = url.replace(baseUrlParts.host, '');
             url = url.replace(baseUrlParts.pathname, '');
             if (!url.match(/^\//)) {
-                url = '/' + url;
+                url = `/${url}`;
             }
         }
 

@@ -1,9 +1,9 @@
 export default {
-    changeLocation: function (url) {
+    changeLocation(url) {
         window.location = url;
     },
 
-    replaceLocation: function (url) {
+    replaceLocation(url) {
         window.location.replace(url);
     }
 };

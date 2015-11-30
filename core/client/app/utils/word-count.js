@@ -2,8 +2,7 @@
 /* global XRegExp */
 
 export default function (s) {
-
-    var nonANumLetters = new XRegExp("[^\\s\\d\\p{L}]", "g"); // all non-alphanumeric letters regexp
+    let nonANumLetters = new XRegExp("[^\\s\\d\\p{L}]", 'g'); // all non-alphanumeric letters regexp
 
     s = s.replace(/<(.|\n)*?>/g, ' '); // strip tags
     s = s.replace(nonANumLetters, ''); // ignore non-alphanumeric letters

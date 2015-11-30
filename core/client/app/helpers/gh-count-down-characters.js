@@ -1,17 +1,17 @@
 import Ember from 'ember';
 
-export default Ember.Helper.helper(function (params) {
-    var el = document.createElement('span'),
-        content,
-        maxCharacters,
-        length;
+const {Helper} = Ember;
 
+export default Helper.helper(function (params) {
     if (!params || params.length < 2) {
         return;
     }
 
-    content = params[0] || '';
-    maxCharacters = params[1];
+    let el = document.createElement('span');
+    let [content, maxCharacters] = params;
+    let length;
+
+    content = content || '';
     length = content.length;
 
     el.className = 'word-count';

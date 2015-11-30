@@ -1,10 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed, inject} = Ember;
+const {alias} = computed;
+
+export default Component.extend({
     tagName: 'aside',
     classNames: 'gh-notifications',
 
-    notifications: Ember.inject.service(),
+    notifications: inject.service(),
 
-    messages: Ember.computed.alias('notifications.notifications')
+    messages: alias('notifications.notifications')
 });

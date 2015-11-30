@@ -17,9 +17,9 @@ describeComponent(
     },
     function () {
         it('closes notification through notifications service', function () {
-            var component = this.subject(),
-                notifications = {},
-                notification = {message: 'Test close', type: 'success'};
+            let component = this.subject();
+            let notifications = {};
+            let notification = {message: 'Test close', type: 'success'};
 
             notifications.closeNotification = sinon.spy();
             component.set('notifications', notifications);
@@ -31,9 +31,9 @@ describeComponent(
         });
 
         it('closes notification when animationend event is triggered', function (done) {
-            var component = this.subject(),
-                notifications = {},
-                notification = {message: 'Test close', type: 'success'};
+            let component = this.subject();
+            let notifications = {};
+            let notification = {message: 'Test close', type: 'success'};
 
             notifications.closeNotification = sinon.spy();
             component.set('notifications', notifications);

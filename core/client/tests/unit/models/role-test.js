@@ -4,16 +4,18 @@ import {
     it
 } from 'ember-mocha';
 
+const {run} = Ember;
+
 describeModel('role', 'Unit: Model: role', function () {
     it('provides a lowercase version of the name', function () {
-        var model = this.subject({
+        const model = this.subject({
             name: 'Author'
         });
 
         expect(model.get('name')).to.equal('Author');
         expect(model.get('lowerCaseName')).to.equal('author');
 
-        Ember.run(function () {
+        run(function () {
             model.set('name', 'Editor');
 
             expect(model.get('name')).to.equal('Editor');

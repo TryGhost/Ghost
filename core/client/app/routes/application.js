@@ -7,57 +7,62 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 import windowProxy from 'ghost/utils/window-proxy';
 
-const shortcuts = {};
+const {Route, inject} = Ember;
+
+function K() {
+    return this;
+}
+
+let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'all'};
 shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
-shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
+shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 
-export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
-    shortcuts: shortcuts,
+export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
+    shortcuts,
 
-    config: Ember.inject.service(),
-    dropdown: Ember.inject.service(),
-    notifications: Ember.inject.service(),
+    config: inject.service(),
+    dropdown: inject.service(),
+    notifications: inject.service(),
 
-    afterModel: function (model, transition) {
+    afterModel(model, transition) {
         if (this.get('session.isAuthenticated')) {
             transition.send('loadServerNotifications');
         }
     },
 
-    title: function (tokens) {
-        return tokens.join(' - ') + ' - ' + this.get('config.blogTitle');
+    title(tokens) {
+        return `${tokens.join(' - ')} - ${this.get('config.blogTitle')}`;
     },
 
-    sessionAuthenticated: function () {
-        const appController = this.controllerFor('application'),
-            self = this;
+    sessionAuthenticated() {
+        let appController = this.controllerFor('application');
 
         if (appController && appController.get('skipAuthSuccessHandler')) {
             return;
         }
 
         this._super(...arguments);
-        this.get('session.user').then(function (user) {
-            self.send('signedIn', user);
+        this.get('session.user').then((user) => {
+            this.send('signedIn', user);
         });
     },
 
-    sessionInvalidated: function () {
+    sessionInvalidated() {
         this.send('authorizationFailed');
     },
 
     actions: {
-        openMobileMenu: function () {
+        openMobileMenu() {
             this.controller.set('showMobileMenu', true);
         },
 
-        openSettingsMenu: function () {
+        openSettingsMenu() {
             this.controller.set('showSettingsMenu', true);
         },
 
-        closeMenus: function () {
+        closeMenus() {
             this.get('dropdown').closeDropdowns();
             this.send('closeModal');
             this.controller.setProperties({
@@ -66,29 +71,29 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             });
         },
 
-        didTransition: function () {
+        didTransition() {
             this.send('closeMenus');
         },
 
-        signedIn: function () {
+        signedIn() {
             this.get('notifications').clearAll();
             this.send('loadServerNotifications', true);
         },
 
-        invalidateSession: function () {
-            this.get('session').invalidate().catch(function (error) {
+        invalidateSession() {
+            this.get('session').invalidate().catch((error) => {
                 this.get('notifications').showAlert(error.message, {type: 'error', key: 'session.invalidate.failed'});
             });
         },
 
-        authorizationFailed: function () {
+        authorizationFailed() {
             windowProxy.replaceLocation(AuthConfiguration.baseURL);
         },
 
-        openModal: function (modalName, model, type) {
+        openModal(modalName, model, type) {
             this.get('dropdown').closeDropdowns();
             key.setScope('modal');
-            modalName = 'modals/' + modalName;
+            modalName = `modals/${modalName}`;
             this.set('modalName', modalName);
 
             // We don't always require a modal to have a controller
@@ -108,7 +113,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             });
         },
 
-        confirmModal: function () {
+        confirmModal() {
             let modalName = this.get('modalName');
 
             this.send('closeModal');
@@ -118,7 +123,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             }
         },
 
-        closeModal: function () {
+        closeModal() {
             this.disconnectOutlet({
                 outlet: 'modal',
                 parentView: 'application'
@@ -127,15 +132,13 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             key.setScope('default');
         },
 
-        loadServerNotifications: function (isDelayed) {
-            let self = this;
-
+        loadServerNotifications(isDelayed) {
             if (this.get('session.isAuthenticated')) {
-                this.get('session.user').then(function (user) {
+                this.get('session.user').then((user) => {
                     if (!user.get('isAuthor') && !user.get('isEditor')) {
-                        self.store.findAll('notification', {reload: true}).then(function (serverNotifications) {
-                            serverNotifications.forEach(function (notification) {
-                                self.get('notifications').handleNotification(notification, isDelayed);
+                        this.store.findAll('notification', {reload: true}).then((serverNotifications) => {
+                            serverNotifications.forEach((notification) => {
+                                this.get('notifications').handleNotification(notification, isDelayed);
                             });
                         });
                     }
@@ -144,6 +147,6 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         // noop default for unhandled save (used from shortcuts)
-        save: Ember.K
+        save: K
     }
 });

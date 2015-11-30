@@ -1,22 +1,22 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    dropdown: Ember.inject.service(),
+const {Controller, computed, inject} = Ember;
 
-    // jscs: disable
-    signedOut: Ember.computed.match('currentPath', /(signin|signup|setup|reset)/),
-    // jscs: enable
+export default Controller.extend({
+    dropdown: inject.service(),
+
+    signedOut: computed.match('currentPath', /(signin|signup|setup|reset)/),
 
     topNotificationCount: 0,
     showMobileMenu: false,
     showSettingsMenu: false,
 
     autoNav: false,
-    autoNavOpen: Ember.computed('autoNav', {
-        get: function () {
+    autoNavOpen: computed('autoNav', {
+        get() {
             return false;
         },
-        set: function (key, value) {
+        set(key, value) {
             if (this.get('autoNav')) {
                 return value;
             }
@@ -25,23 +25,23 @@ export default Ember.Controller.extend({
     }),
 
     actions: {
-        topNotificationChange: function (count) {
+        topNotificationChange(count) {
             this.set('topNotificationCount', count);
         },
 
-        toggleAutoNav: function () {
+        toggleAutoNav() {
             this.toggleProperty('autoNav');
         },
 
-        openAutoNav: function () {
+        openAutoNav() {
             this.set('autoNavOpen', true);
         },
 
-        closeAutoNav: function () {
+        closeAutoNav() {
             this.set('autoNavOpen', false);
         },
 
-        closeMobileMenu: function () {
+        closeMobileMenu() {
             this.set('showMobileMenu', false);
         }
     }

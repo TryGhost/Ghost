@@ -1,13 +1,15 @@
-import Ember from 'ember';
 /* global html_sanitize*/
+import Ember from 'ember';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-export default Ember.Helper.helper(function (params) {
+const {Helper} = Ember;
+
+export default Helper.helper(function (params) {
     if (!params || !params.length) {
         return;
     }
 
-    var escapedhtml = params[0] || '';
+    let escapedhtml = params[0] || '';
 
     // replace script and iFrame
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,

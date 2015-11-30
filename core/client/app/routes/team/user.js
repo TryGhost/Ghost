@@ -1,3 +1,4 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
@@ -7,30 +8,30 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
     classNames: ['team-view-user'],
 
-    model: function (params) {
+    model(params) {
         return this.store.queryRecord('user', {slug: params.user_slug});
     },
 
-    serialize: function (model) {
+    serialize(model) {
         return {user_slug: model.get('slug')};
     },
 
-    afterModel: function (user) {
-        var self = this;
-        return this.get('session.user').then(function (currentUser) {
-            var isOwnProfile = user.get('id') === currentUser.get('id'),
-                isAuthor = currentUser.get('isAuthor'),
-                isEditor = currentUser.get('isEditor');
+    afterModel(user) {
+        return this.get('session.user').then((currentUser) => {
+            let isOwnProfile = user.get('id') === currentUser.get('id');
+            let isAuthor = currentUser.get('isAuthor');
+            let isEditor = currentUser.get('isEditor');
+
             if (isAuthor && !isOwnProfile) {
-                self.transitionTo('team.user', currentUser);
+                this.transitionTo('team.user', currentUser);
             } else if (isEditor && !isOwnProfile && !user.get('isAuthor')) {
-                self.transitionTo('team');
+                this.transitionTo('team');
             }
         });
     },
 
-    deactivate: function () {
-        var model = this.modelFor('team.user');
+    deactivate() {
+        let model = this.modelFor('team.user');
 
         // we want to revert any unsaved changes on exit
         if (model && model.get('hasDirtyAttributes')) {
@@ -39,15 +40,15 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
 
         model.get('errors').clear();
 
-        this._super();
+        this._super(...arguments);
     },
 
     actions: {
-        didTransition: function () {
+        didTransition() {
             this.modelFor('team.user').get('errors').clear();
         },
 
-        save: function () {
+        save() {
             this.get('controller').send('save');
         }
     }

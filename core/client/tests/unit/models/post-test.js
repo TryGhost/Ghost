@@ -8,18 +8,18 @@ describeModel(
     'post',
     'Unit: Model: post',
     {
-        needs:['model:user', 'model:tag', 'model:role']
+        needs: ['model:user', 'model:tag', 'model:role']
     },
 
     function () {
         it('has a validation type of "post"', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             expect(model.validationType).to.equal('post');
         });
 
         it('isPublished and isDraft are correct', function () {
-            var model = this.subject({
+            let model = this.subject({
                 status: 'published'
             });
 
@@ -35,10 +35,12 @@ describeModel(
         });
 
         it('isAuthoredByUser is correct', function () {
-            var model = this.subject({
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            let model = this.subject({
                 author_id: 15
-            }),
-            user = Ember.Object.create({id: '15'});
+            });
+            /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+            let user = Ember.Object.create({id: '15'});
 
             expect(model.isAuthoredByUser(user)).to.be.ok;
 
@@ -50,13 +52,13 @@ describeModel(
         });
 
         it('updateTags removes and deletes old tags', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             Ember.run(this, function () {
-                var modelTags = model.get('tags'),
-                    tag1 = this.store().createRecord('tag', {id: '1'}),
-                    tag2 = this.store().createRecord('tag', {id: '2'}),
-                    tag3 = this.store().createRecord('tag');
+                let modelTags = model.get('tags');
+                let tag1 = this.store().createRecord('tag', {id: '1'});
+                let tag2 = this.store().createRecord('tag', {id: '2'});
+                let tag3 = this.store().createRecord('tag');
 
                 // During testing a record created without an explicit id will get
                 // an id of 'fixture-n' instead of null

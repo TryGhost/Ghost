@@ -1,4 +1,5 @@
 /* jshint expr:true */
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import {
     describe,
     it,
@@ -33,8 +34,8 @@ describe('Acceptance: Settings - Navigation', function () {
     });
 
     it('redirects to team page when authenticated as author', function () {
-        const role = server.create('role', {name: 'Author'}),
-              user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Author'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/navigation');
@@ -46,8 +47,8 @@ describe('Acceptance: Settings - Navigation', function () {
 
     describe('when logged in', function () {
         beforeEach(function () {
-            const role = server.create('role', {name: 'Administrator'}),
-                  user = server.create('user', {roles: [role]});
+            let role = server.create('role', {name: 'Administrator'});
+            let user = server.create('user', {roles: [role]});
 
             // load the settings fixtures
             // TODO: this should always be run for acceptance tests
