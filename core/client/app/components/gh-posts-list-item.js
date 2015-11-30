@@ -42,10 +42,12 @@ export default Component.extend({
     },
 
     didInsertElement() {
+        this._super(...arguments);
         this.addObserver('active', this, this.scrollIntoView);
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         this.removeObserver('active', this, this.scrollIntoView);
     },
 

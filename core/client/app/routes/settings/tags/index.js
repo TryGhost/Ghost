@@ -9,6 +9,9 @@ export default AuthenticatedRoute.extend({
 
     beforeModel() {
         let firstTag = this.modelFor('settings.tags').get('firstObject');
+
+        this._super(...arguments);
+
         if (firstTag && !this.get('mediaQueries.maxWidth600')) {
             this.transitionTo('settings.tags.tag', firstTag);
         }

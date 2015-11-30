@@ -31,6 +31,8 @@ export default TextField.extend({
     }),
 
     didReceiveAttrs() {
+        this._super(...arguments);
+
         let baseUrl = this.get('baseUrl');
         let url = this.get('url');
 

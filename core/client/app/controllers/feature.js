@@ -26,6 +26,8 @@ export default Controller.extend(PromiseProxyMixin, {
     }),
 
     init() {
+        this._super(...arguments);
+
         let promise = this.store.query('setting', {type: 'blog,theme'}).then((settings) => {
             return settings.get('firstObject');
         });

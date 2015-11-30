@@ -21,11 +21,13 @@ export default Component.extend({
     active: alias('tab.active'),
 
     willRender() {
+        this._super(...arguments);
         // Register with the tabs manager
         this.get('tabsManager').registerTabPane(this);
     },
 
     willDestroyElement() {
+        this._super(...arguments);
         // Deregister with the tabs manager
         this.get('tabsManager').unregisterTabPane(this);
     }

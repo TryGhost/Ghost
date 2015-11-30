@@ -13,6 +13,7 @@ export default AuthenticatedRoute.extend({
 
     // reset the model so that mobile screens react to an empty selectedTag
     deactivate() {
+        this._super(...arguments);
         this.set('controller.model', null);
     }
 

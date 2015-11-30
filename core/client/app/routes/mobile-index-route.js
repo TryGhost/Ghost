@@ -12,6 +12,7 @@ export default Route.extend({
     mediaQueries: inject.service(),
 
     activate() {
+        this._super(...arguments);
         this._callDesktopTransition = () => {
             if (!this.get('mediaQueries.isMobile')) {
                 this.desktopTransition();
@@ -21,6 +22,7 @@ export default Route.extend({
     },
 
     deactivate() {
+        this._super(...arguments);
         if (this._callDesktopTransition) {
             removeObserver(this, 'mediaQueries.isMobile', this._callDesktopTransition);
             this._callDesktopTransition = null;

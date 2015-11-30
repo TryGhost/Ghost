@@ -9,6 +9,7 @@ let DownloadCountPoller = Ember.Object.extend({
     runId: null,
 
     init() {
+        this._super(...arguments);
         this.downloadCounter();
         this.poll();
     },

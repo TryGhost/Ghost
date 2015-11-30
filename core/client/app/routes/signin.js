@@ -14,6 +14,8 @@ export default Route.extend(styleBody, {
     session: inject.service(),
 
     beforeModel() {
+        this._super(...arguments);
+
         if (this.get('session.isAuthenticated')) {
             this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
