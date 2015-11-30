@@ -5,7 +5,7 @@ import setScrollClassName from 'ghost/utils/set-scroll-classname';
 const {Component, run} = Ember;
 
 export default Component.extend(InfiniteScrollMixin, {
-    didRender() {
+    didInsertElement() {
         let el = this.$();
 
         this._super(...arguments);

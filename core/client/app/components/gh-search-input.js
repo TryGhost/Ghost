@@ -117,6 +117,7 @@ export default Component.extend({
     },
 
     willDestroy() {
+        this._super(...arguments);
         this._resetKeymasterScope();
     },
 

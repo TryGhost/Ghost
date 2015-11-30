@@ -48,6 +48,7 @@ export default Component.extend({
     },
 
     didReceiveAttrs(attrs) {
+        this._super(...arguments);
         let timeout = parseInt(attrs.newAttrs.throttle || this.get('debounce'));
         run.debounce(this, 'trySetValidEmail', timeout);
     },
@@ -68,6 +69,8 @@ export default Component.extend({
         let size = this.get('size');
         let uploadElement = this.$('.js-file-input');
 
+        this._super(...arguments);
+
         // while theoretically the 'add' and 'processalways' functions could be
         // added as properties of the hash passed to fileupload(), for some reason
         // they needed to be placed in an on() call for the add method to work correctly
@@ -85,6 +88,8 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
+
         if (this.$('.js-file-input').data()['blueimp-fileupload']) {
             this.$('.js-file-input').fileupload('destroy');
         }
