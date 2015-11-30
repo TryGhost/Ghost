@@ -73,6 +73,9 @@ simplemde.value("This text will appear in the editor");
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
   - **uniqueId**: You must set a unique string identifier so that SimpleMDE can autosave. Something that separates this from other instances of SimpleMDE elsewhere on your website.
+- **blockStyles**: Customize how certain buttons that style blocks of text behave.
+  - **bold** Can be set to `**` or `__`. Defaults to `**`.
+  - **italic** Can be set to `*` or `_`. Defaults to `*`.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
@@ -82,9 +85,6 @@ simplemde.value("This text will appear in the editor");
   - image
   - link
   - table
-- **blockStyles**: Customize how certain buttons that style blocks of text behave.
-  - **bold** Can be set to `**` or `__`. Defaults to `**`
-  - **italic** Can be set to `*` or `_`. Defaults to `*`
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
@@ -109,6 +109,10 @@ var simplemde = new SimpleMDE({
 		enabled: true,
 		uniqueId: "MyUniqueID",
 		delay: 1000,
+	},
+	blockStyles: {
+		bold: "**",
+		italic: "_"
 	},
 	element: document.getElementById("MyID"),
 	hideIcons: ["guide", "heading"],
