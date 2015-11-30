@@ -111,7 +111,7 @@ var simplemde = new SimpleMDE({
 		delay: 1000,
 	},
 	blockStyles: {
-		bold: "**",
+		bold: "__",
 		italic: "_"
 	},
 	element: document.getElementById("MyID"),
