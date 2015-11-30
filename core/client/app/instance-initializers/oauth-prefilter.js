@@ -7,7 +7,7 @@ export default {
     after: 'ember-simple-auth',
 
     initialize(application) {
-        let session = application.container.lookup('service:session');
+        let session = application.lookup('service:session');
 
         Ember.$.ajaxPrefilter(function (options) {
             session.authorize('authorizer:oauth2', function (headerName, headerValue) {

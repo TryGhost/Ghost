@@ -1,4 +1,4 @@
-import Resolver from 'ember/resolver';
+import Resolver from 'ember-resolver';
 import config from '../../config/environment';
 
 let resolver = Resolver.create();
