@@ -21,13 +21,20 @@ upload = {
      * @param {{context}} options
      * @returns {Promise} Success
      */
-    add: function (options) {
+    add: function (options, params) {
         var store = storage.getStorage(),
             filepath;
+
+        options.uploadimage = options.uploadimage || params.uploadimage;
 
         // Check if a file was provided
         if (!utils.checkFileExists(options, 'uploadimage')) {
             return Promise.reject(new errors.NoPermissionError('Please select an image.'));
+        }
+
+        // If filename is overriden then take it instead of the original filename
+        if (options.filename) {
+            options.uploadimage.name = options.filename;
         }
 
         // Check if the file is valid
