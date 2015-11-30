@@ -6,8 +6,8 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     titleToken: 'Settings - Code Injection',
     classNames: ['settings-view-code'],
 
-    beforeModel(transition) {
-        this._super(transition);
+    beforeModel() {
+        this._super(...arguments);
         return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());

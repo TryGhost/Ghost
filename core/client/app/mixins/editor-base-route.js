@@ -125,7 +125,7 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
         model.set('scratch', model.get('markdown'));
         model.set('titleScratch', model.get('title'));
 
-        this._super(controller, model);
+        this._super(...arguments);
 
         if (tags) {
             // used to check if anything has changed in the editor

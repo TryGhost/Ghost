@@ -18,6 +18,8 @@ export default Component.extend({
     _editor: null, // reference to CodeMirror editor
 
     didInsertElement() {
+        this._super(...arguments);
+
         let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme');
         let editor = new CodeMirror(this.get('element'), options);
 
@@ -36,6 +38,8 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        this._super(...arguments);
+
         let editor = this._editor.getWrapperElement();
         editor.parentNode.removeChild(editor);
         this._editor = null;
