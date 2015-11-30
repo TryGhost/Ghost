@@ -2,6 +2,7 @@ import Ember from 'ember';
 import ModalDialog from 'ghost/components/gh-modal-dialog';
 import upload from 'ghost/assets/lib/uploader';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
+import keyboardCodes from 'ghost/utils/keyboard-codes';
 
 export default ModalDialog.extend({
     layoutName: 'components/gh-modal-dialog',
@@ -11,6 +12,7 @@ export default ModalDialog.extend({
     didInsertElement: function () {
         this._super();
         upload.call(this.$('.js-drop-zone'), {fileStorage: this.get('config.fileStorage')});
+        this.addKeyboardShortcutHandler();
     },
     keyDown: function () {
         this.setErrorState(false);
@@ -21,6 +23,19 @@ export default ModalDialog.extend({
         } else {
             this.$('.js-upload-url').removeClass('error');
         }
+    },
+    addKeyboardShortcutHandler: function () {
+        var self = this;
+
+        this.$(document).on('keydown', function (event) {
+            event.preventDefault();
+            if (event.keyCode === keyboardCodes.enter) {
+                self.get('controller').send('confirm', 'accept');
+            }
+        });
+    },
+    willDestroyElement: function () {
+        this.$(document).off('keydown');
     },
     confirm: {
         reject: {
