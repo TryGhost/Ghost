@@ -113,9 +113,7 @@ export default Mixin.create({
     * You can supply options to be passed into the `validate` method, since the ED `save` method takes no options.
     */
     save(options) {
-        // this is a hack, but needed for async _super calls.
-        // ref: https://github.com/emberjs/ember.js/pull/4301
-        let _super = this.__nextSuper;
+        let {_super} = this;
 
         options = options || {};
         options.wasSave = true;
