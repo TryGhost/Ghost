@@ -7,13 +7,18 @@ var Promise            = require('bluebird'),
     utils              = require('./utils'),
     pipeline           = require('../utils/pipeline'),
     canThis            = permissions.canThis,
+    settings = require('./settings'),
 
-    // Holds the persistent notifications
+// Holds the persistent notifications
     notificationsStore = [],
-    // Holds the last used id
+// Holds the last used id
     notificationCounter = 0,
     notifications;
 
+function isRemoteNotifications(notification) {
+    // only notifications that come from remote ghost endpoint have uuids set
+    return notification.uuid !== undefined;
+}
 /**
  * ## Notification API Methods
  *
@@ -86,7 +91,7 @@ notifications = {
             _.each(options.data.notifications, function (notification) {
                 notificationCounter = notificationCounter + 1;
 
-                notification = _.assign(defaults, notification, {
+                notification = _.assign(notification, defaults, {
                     id: notificationCounter
                     // status: 'alert'
                 });
@@ -153,7 +158,23 @@ notifications = {
             });
             notificationCounter = notificationCounter - 1;
 
-            return notification;
+            if (isRemoteNotifications(notification)) {
+                return settings.read({
+                    context: {internal: true},
+                    key: 'seenNotifications'
+                }).then(function (response) {
+                    var seenNotifications = JSON.parse(response.settings[0].value),
+                        seenNotificationsSettings = {
+                            settings: [{
+                                key: 'seenNotifications',
+                                value: _.unique(seenNotifications.concat([notification.uuid]))
+                            }]
+                        };
+                    return settings.edit(seenNotificationsSettings, options);
+                });
+            } else {
+                return notification;
+            }
         }
 
         tasks = [

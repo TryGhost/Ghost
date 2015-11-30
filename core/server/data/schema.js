@@ -92,7 +92,7 @@ var db = {
             uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
             key: {type: 'string', maxlength: 150, nullable: false, unique: true},
             value: {type: 'text', maxlength: 65535, nullable: true},
-            type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'core', validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private']]}},
+            type: {type: 'string', maxlength: 150, nullable: false, defaultTo: 'core', validations: {isIn: [['core', 'blog', 'theme', 'app', 'plugin', 'private', 'notifications']]}},
             created_at: {type: 'dateTime', nullable: false},
             created_by: {type: 'integer', nullable: false},
             updated_at: {type: 'dateTime', nullable: true},

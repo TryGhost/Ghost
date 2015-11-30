@@ -60,6 +60,16 @@
     font-size: 2.4rem;
 }
 
+/* Contributors
+/* ---------------------------------------------------------- */
+.gh-upgrade-notification {
+    color: var(--red);
+}
+
+.gh-upgrade-notification a {
+    color: var(--red);
+    text-decoration: underline;
+}
 
 /* Contributors
 /* ---------------------------------------------------------- */
