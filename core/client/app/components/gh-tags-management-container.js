@@ -6,16 +6,18 @@ export default Ember.Component.extend({
     classNames: ['view-container'],
     classNameBindings: ['isMobile'],
 
-    mobileWidth: 600,
+    mediaQueries: Ember.inject.service(),
+
     tags: null,
     selectedTag: null,
 
-    isMobile: false,
+    isMobile: Ember.computed.reads('mediaQueries.maxWidth600'),
     isEmpty: Ember.computed.equal('tags.length', 0),
 
-    resizeService: Ember.inject.service('resize-service'),
-
-    _resizeListener: null,
+    init: function () {
+        this._super(...arguments);
+        Ember.run.schedule('actions', this, this.fireMobileChangeActions);
+    },
 
     displaySettingsPane: Ember.computed('isEmpty', 'selectedTag', 'isMobile', function () {
         const isEmpty = this.get('isEmpty'),
@@ -36,25 +38,9 @@ export default Ember.Component.extend({
         return true;
     }),
 
-    toggleMobile: function () {
-        let width = Ember.$(window).width();
-
-        if (width < this.get('mobileWidth')) {
-            this.set('isMobile', true);
-            this.sendAction('enteredMobile');
-        } else {
-            this.set('isMobile', false);
+    fireMobileChangeActions: Ember.observer('isMobile', function () {
+        if (!this.get('isMobile')) {
             this.sendAction('leftMobile');
         }
-    },
-
-    didInitAttrs: function () {
-        this._resizeListener = Ember.run.bind(this, this.toggleMobile);
-        this.get('resizeService').on('debouncedDidResize', this._resizeListener);
-        this.toggleMobile();
-    },
-
-    willDestroyElement: function () {
-        this.get('resizeService').off('debouncedDidResize', this._resizeListener);
-    }
+    })
 });

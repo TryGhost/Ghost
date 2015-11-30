@@ -7,7 +7,7 @@
         </section>
     </header>
 
-    {{#gh-tags-management-container mobileWidth=mobileWidth tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
+    {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
         {{#gh-infinite-scroll
             fetch="loadNextPage"
             isLoading=isLoading
