@@ -10,7 +10,7 @@ describeModel(
     'user',
     'Unit: Model: user',
     {
-        needs: ['model:role']
+        needs: ['model:role', 'serializer:application', 'serializer:user']
     },
 
     function () {
