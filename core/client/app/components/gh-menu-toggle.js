@@ -10,12 +10,12 @@ closes the mobile menu
 */
 
 import Ember from 'ember';
-import mobileQuery from 'ghost/utils/mobile';
 
 export default Ember.Component.extend({
     classNames: ['gh-menu-toggle'],
 
-    isMobile: false,
+    mediaQueries: Ember.inject.service(),
+    isMobile: Ember.computed.reads('mediaQueries.isMobile'),
     maximise: false,
 
     iconClass: Ember.computed('maximise', 'isMobile', function () {
@@ -25,18 +25,6 @@ export default Ember.Component.extend({
             return 'icon-minimise';
         }
     }),
-
-    didInsertElement: function () {
-        this.set('isMobile', mobileQuery.matches);
-        this.set('mqListener', Ember.run.bind(this, function (mql) {
-            this.set('isMobile', mql.matches);
-        }));
-        mobileQuery.addListener(this.get('mqListener'));
-    },
-
-    willDestroyElement: function () {
-        mobileQuery.removeListener(this.get('mqListener'));
-    },
 
     click: function () {
         if (this.get('isMobile')) {
