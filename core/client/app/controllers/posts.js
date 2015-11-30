@@ -1,17 +1,20 @@
 import Ember from 'ember';
 
+const {Controller, compare, computed} = Ember;
+const {equal} = computed;
+
 // a custom sort function is needed in order to sort the posts list the same way the server would:
 //     status: ASC
 //     published_at: DESC
 //     updated_at: DESC
 //     id: DESC
 function comparator(item1, item2) {
-    var updated1 = item1.get('updated_at'),
-        updated2 = item2.get('updated_at'),
-        idResult,
+    let updated1 = item1.get('updated_at');
+    let updated2 = item2.get('updated_at');
+    let idResult,
+        publishedAtResult,
         statusResult,
-        updatedAtResult,
-        publishedAtResult;
+        updatedAtResult;
 
     // when `updated_at` is undefined, the model is still
     // being written to with the results from the server
@@ -23,9 +26,9 @@ function comparator(item1, item2) {
         return 1;
     }
 
-    idResult = Ember.compare(parseInt(item1.get('id')), parseInt(item2.get('id')));
-    statusResult = Ember.compare(item1.get('status'), item2.get('status'));
-    updatedAtResult = Ember.compare(updated1.valueOf(), updated2.valueOf());
+    idResult = compare(parseInt(item1.get('id')), parseInt(item2.get('id')));
+    statusResult = compare(item1.get('status'), item2.get('status'));
+    updatedAtResult = compare(updated1.valueOf(), updated2.valueOf());
     publishedAtResult = publishedAtCompare(item1, item2);
 
     if (statusResult === 0) {
@@ -45,8 +48,8 @@ function comparator(item1, item2) {
 }
 
 function publishedAtCompare(item1, item2) {
-    var published1 = item1.get('published_at'),
-        published2 = item2.get('published_at');
+    let published1 = item1.get('published_at');
+    let published2 = item2.get('published_at');
 
     if (!published1 && !published2) {
         return 0;
@@ -60,23 +63,23 @@ function publishedAtCompare(item1, item2) {
         return 1;
     }
 
-    return Ember.compare(published1.valueOf(), published2.valueOf());
+    return compare(published1.valueOf(), published2.valueOf());
 }
 
-export default Ember.Controller.extend({
+export default Controller.extend({
 
     // See PostsRoute's shortcuts
-    postListFocused: Ember.computed.equal('keyboardFocus', 'postList'),
-    postContentFocused: Ember.computed.equal('keyboardFocus', 'postContent'),
+    postListFocused: equal('keyboardFocus', 'postList'),
+    postContentFocused: equal('keyboardFocus', 'postContent'),
 
-    sortedPosts: Ember.computed('model.@each.status', 'model.@each.published_at', 'model.@each.isNew', 'model.@each.updated_at', function () {
-        var postsArray = this.get('model').toArray();
+    sortedPosts: computed('model.@each.status', 'model.@each.published_at', 'model.@each.isNew', 'model.@each.updated_at', function () {
+        let postsArray = this.get('model').toArray();
 
         return postsArray.sort(comparator);
     }),
 
     actions: {
-        showPostContent: function (post) {
+        showPostContent(post) {
             if (!post) {
                 return;
             }

@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed} = Ember;
+
+export default Component.extend({
     tagName: 'section',
     classNames: ['splitbtn', 'js-publish-splitbutton'],
     classNameBindings: ['isNew:unsaved'],
@@ -12,36 +14,36 @@ export default Ember.Component.extend({
     submitting: false,
 
     // Tracks whether we're going to change the state of the post on save
-    isDangerous: Ember.computed('isPublished', 'willPublish', function () {
+    isDangerous: computed('isPublished', 'willPublish', function () {
         return this.get('isPublished') !== this.get('willPublish');
     }),
 
-    publishText: Ember.computed('isPublished', 'postOrPage', function () {
-        return this.get('isPublished') ? 'Update ' + this.get('postOrPage') : 'Publish Now';
+    publishText: computed('isPublished', 'postOrPage', function () {
+        return this.get('isPublished') ? `Update ${this.get('postOrPage')}` : 'Publish Now';
     }),
 
-    draftText: Ember.computed('isPublished', function () {
+    draftText: computed('isPublished', function () {
         return this.get('isPublished') ? 'Unpublish' : 'Save Draft';
     }),
 
-    deleteText: Ember.computed('postOrPage', function () {
-        return 'Delete ' + this.get('postOrPage');
+    deleteText: computed('postOrPage', function () {
+        return `Delete ${this.get('postOrPage')}`;
     }),
 
-    saveText: Ember.computed('willPublish', 'publishText', 'draftText', function () {
+    saveText: computed('willPublish', 'publishText', 'draftText', function () {
         return this.get('willPublish') ? this.get('publishText') : this.get('draftText');
     }),
 
     actions: {
-        save: function () {
+        save() {
             this.sendAction('save');
         },
 
-        setSaveType: function (saveType) {
+        setSaveType(saveType) {
             this.sendAction('setSaveType', saveType);
         },
 
-        delete: function () {
+        delete() {
             this.sendAction('delete');
         }
     }
