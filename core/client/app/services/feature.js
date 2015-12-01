@@ -39,6 +39,7 @@ export default Service.extend({
     _settings: null,
 
     publicAPI: feature('publicAPI'),
+    hashtags: feature('hashtags'),
 
     _parseLabs(settings) {
         let labs = settings.get('labs');

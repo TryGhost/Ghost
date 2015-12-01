@@ -19,6 +19,7 @@ function getValidKeys() {
     var validKeys = {
             fileStorage: {value: (config.fileStorage !== false), type: 'bool'},
             publicAPI: labsFlag('publicAPI'),
+            hashtags: labsFlag('hashtags'),
             apps: {value: (config.apps === true), type: 'bool'},
             version: {value: config.ghostVersion, type: 'string'},
             environment: process.env.NODE_ENV,
