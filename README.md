@@ -20,9 +20,7 @@ The project is maintained by a non-profit organisation called the **Ghost Founda
 
 # Quick Start Install
 
-Make sure you've installed Node.js - We recommend the latest **Node v0.10.x** release.
-
-Ghost is also compatible with **Node v0.12** and **io.js v1.2**, but please note that these versions are more likely to run into installation problems. May contain nuts.
+Make sure you've installed Node.js - We recommend the latest **Node v0.10.x** release. For other versions [click here](http://support.ghost.org/supported-node-versions/). May contain nuts.
 
 1. Download the [latest release](https://ghost.org/download/) of Ghost
 1. Unzip in the location you want to install
@@ -41,8 +39,8 @@ More [install docs](http://support.ghost.org/installation/) here in case you got
 Install Node.js.
 
 ```bash
-# Node v0.10.x - full support
-# Node v0.12.x and io.js v1.2 - partial support
+# Node v0.10.x - recommended
+# Node v0.12.x and v4.2.x - supported
 #
 # Choose wisely
 ```
