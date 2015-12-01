@@ -100,7 +100,7 @@ describeModule(
                     done();
                 }).catch(function failedValidation() {
                     let navItems = ctrl.get('navigationItems');
-                    expect(navItems[0].get('errors')).to.be.empty;
+                    expect(navItems[0].get('errors').toArray()).to.be.empty;
                     expect(navItems[1].get('errors.firstObject.attribute')).to.equal('label');
                     expect(navItems[2].get('errors.firstObject.attribute')).to.equal('url');
                     done();
