@@ -16,8 +16,8 @@ let UploadUi = function ($dropzone, settings) {
         }));
 
     $.extend(this, {
-        complete(result) {
-            function showImage(width, height) {
+        complete: (result) => {
+            let showImage = (width, height) => {
                 $dropzone.find('img.js-upload-target').attr({width, height}).css({display: 'block'});
                 $dropzone.find('.fileupload-loading').remove();
                 $dropzone.css({height: 'auto'});
@@ -25,9 +25,9 @@ let UploadUi = function ($dropzone, settings) {
                     $('.js-button-accept').prop('disabled', false);
                     this.init();
                 });
-            }
+            };
 
-            function animateDropzone($img) {
+            let animateDropzone = ($img) => {
                 $dropzone.animate({opacity: 0}, 250, () => {
                     $dropzone.removeClass('image-uploader').addClass('pre-image-uploader');
                     $dropzone.css({minHeight: 0});
@@ -36,9 +36,9 @@ let UploadUi = function ($dropzone, settings) {
                         showImage($img.width(), $img.height());
                     });
                 });
-            }
+            };
 
-            function preLoadImage() {
+            let preLoadImage = () => {
                 let $img = $dropzone.find('img.js-upload-target')
                     .attr({src: '', width: 'auto', height: 'auto'});
 
@@ -49,7 +49,7 @@ let UploadUi = function ($dropzone, settings) {
                     $dropzone.trigger('uploadsuccess', [result]);
                     animateDropzone($img);
                 }).attr('src', result);
-            }
+            };
             preLoadImage();
         },
 
@@ -82,7 +82,7 @@ let UploadUi = function ($dropzone, settings) {
                         $progress.find('.js-upload-progress-bar').css('width', `${progress}%`);
                     }
                 },
-                fail(e, data) {
+                fail: (e, data) => {
                     /*jshint unused:false*/
                     $('.js-button-accept').prop('disabled', false);
                     $dropzone.trigger('uploadfailure', [data.result]);
@@ -102,7 +102,7 @@ let UploadUi = function ($dropzone, settings) {
                         this.init();
                     });
                 },
-                done(e, data) {
+                done: (e, data) => {
                     /*jshint unused:false*/
                     this.complete(data.result);
                 }
