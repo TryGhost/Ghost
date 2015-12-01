@@ -11,7 +11,7 @@ let trailingHistory = HistoryLocation.extend({
 export default {
     name: 'registerTrailingLocationHistory',
 
-    initialize(registry, application) {
+    initialize(application) {
         application.register('location:trailing-history', trailingHistory);
     }
 };
