@@ -49,7 +49,7 @@ Role = ghostBookshelf.Model.extend({
         if (_.isNumber(roleModelOrId) || _.isString(roleModelOrId)) {
             // Grab the original args without the first one
             origArgs = _.toArray(arguments).slice(1);
-            // Get the actual post model
+            // Get the actual role model
             return this.findOne({id: roleModelOrId, status: 'all'}).then(function then(foundRoleModel) {
                 // Build up the original args but substitute with actual model
                 var newArgs = [foundRoleModel].concat(origArgs);
