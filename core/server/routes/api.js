@@ -100,7 +100,7 @@ apiRoutes = function apiRoutes(middleware) {
     router.post('/authentication/token',
         middleware.spamPrevention.signin,
         middleware.api.authenticateClient,
-        middleware.api.generateAccessToken
+        middleware.oauth.generateAccessToken
     );
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
