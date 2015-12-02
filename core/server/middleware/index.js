@@ -43,7 +43,6 @@ middleware = {
         authenticateUser: auth.authenticateUser,
         requiresAuthorizedUser: auth.requiresAuthorizedUser,
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
-        generateAccessToken: auth.generateAccessToken,
         errorHandler: errors.handleAPIError
     }
 };
