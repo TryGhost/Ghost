@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, computed, inject} = Ember;
+const {$, Controller, computed, inject} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     validationType: 'signin',

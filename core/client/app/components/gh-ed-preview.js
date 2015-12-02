@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-const {Component, inject, run} = Ember;
+const {$, Component, inject, run} = Ember;
 
 export default Component.extend({
     config: inject.service(),

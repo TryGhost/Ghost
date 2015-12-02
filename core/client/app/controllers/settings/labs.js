@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
-const {Controller, computed, inject} = Ember;
+const {$, Controller, computed, inject} = Ember;
 
 export default Controller.extend({
     uploadButtonText: 'Import',
