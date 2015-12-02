@@ -409,48 +409,46 @@ describe('Config', function () {
 
         describe('urlPathForPost', function () {
             it('should output correct url for post', function () {
-                var permalinkSetting = '/:slug/',
-                /*jshint unused:false*/
-                    testData = testUtils.DataGenerator.Content.posts[2],
+                config.set({theme: {permalinks: '/:slug/'}});
+
+                var testData = testUtils.DataGenerator.Content.posts[2],
                     postLink = '/short-and-sweet/';
 
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+                config.urlPathForPost(testData).should.equal(postLink);
             });
 
             it('should output correct url for post with date permalink', function () {
-                var permalinkSetting = '/:year/:month/:day/:slug/',
-                /*jshint unused:false*/
-                    testData = testUtils.DataGenerator.Content.posts[2],
+                config.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
+                var testData = testUtils.DataGenerator.Content.posts[2],
                     today = testData.published_at,
                     dd = ('0' + today.getDate()).slice(-2),
                     mm = ('0' + (today.getMonth() + 1)).slice(-2),
                     yyyy = today.getFullYear(),
                     postLink = '/' + yyyy + '/' + mm + '/' + dd + '/short-and-sweet/';
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+
+                config.urlPathForPost(testData).should.equal(postLink);
             });
 
             it('should output correct url for page with date permalink', function () {
-                var permalinkSetting = '/:year/:month/:day/:slug/',
-                /*jshint unused:false*/
-                    testData = testUtils.DataGenerator.Content.posts[5],
+                config.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
+
+                var testData = testUtils.DataGenerator.Content.posts[5],
                     postLink = '/static-page-test/';
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+
+                config.urlPathForPost(testData).should.equal(postLink);
             });
 
             it('should output correct url for post with complex permalink', function () {
-                var permalinkSetting = '/:year/:id/:author/',
-                /*jshint unused:false*/
-                    testData = _.extend(
+                config.set({theme: {permalinks: '/:year/:id/:author/'}});
+
+                var testData = _.extend(
                         {}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-bloggs'}}
                     ),
                     today = testData.published_at,
                     yyyy = today.getFullYear(),
                     postLink = '/' + yyyy + '/3/joe-bloggs/';
-                // next test
-                config.urlPathForPost(testData, permalinkSetting).should.equal(postLink);
+
+                config.urlPathForPost(testData).should.equal(postLink);
             });
         });
     });

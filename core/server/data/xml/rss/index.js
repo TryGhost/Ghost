@@ -32,22 +32,16 @@ function handleError(next) {
 
 function getData(channelOpts, slugParam) {
     channelOpts.data = channelOpts.data || {};
-    channelOpts.data.permalinks = {
-        type: 'read',
-        resource: 'settings',
-        options: 'permalinks'
-    };
 
     return fetchData(channelOpts, slugParam).then(function (result) {
         var response = {},
             titleStart = '';
 
-        if (result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
-        if (result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
+        if (result.data && result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
+        if (result.data && result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
 
         response.title = titleStart + config.theme.title;
         response.description = config.theme.description;
-        response.permalinks = result.data.permalinks[0];
         response.results = {
             posts: result.posts,
             meta: result.meta
@@ -141,7 +135,7 @@ generateFeed = function generateFeed(data) {
     });
 
     data.results.posts.forEach(function forEach(post) {
-        var itemUrl = config.urlFor('post', {post: post, permalinks: data.permalinks, secure: data.secure}, true),
+        var itemUrl = config.urlFor('post', {post: post, secure: data.secure}, true),
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
                 title: post.title,

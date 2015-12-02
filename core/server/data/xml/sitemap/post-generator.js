@@ -39,8 +39,8 @@ _.extend(PostMapGenerator.prototype, {
         });
     },
 
-    getUrlForDatum: function (post, permalinks) {
-        return config.urlFor('post', {post: post, permalinks: permalinks}, true);
+    getUrlForDatum: function (post) {
+        return config.urlFor('post', {post: post}, true);
     },
 
     getPriorityForDatum: function (post) {

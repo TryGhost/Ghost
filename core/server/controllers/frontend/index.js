@@ -131,46 +131,40 @@ frontendControllers = {
     single: function single(req, res, next) {
         var postPath = req.path,
             params,
-            usingStaticPermalink = false;
+            usingStaticPermalink = false,
+            permalink = config.theme.permalinks,
+            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?',
+            postLookup,
+            match;
 
-        api.settings.read('permalinks').then(function then(response) {
-            var permalink = response.settings[0].value,
-                editFormat,
-                postLookup,
-                match;
+        // Convert saved permalink into a path-match function
+        permalink = routeMatch(permalink + editFormat);
+        match = permalink(postPath);
 
-            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?';
-
-            // Convert saved permalink into a path-match function
-            permalink = routeMatch(permalink + editFormat);
-            match = permalink(postPath);
-
-            // Check if the path matches the permalink structure.
-            //
-            // If there are no matches found we then
-            // need to verify it's not a static post,
-            // and test against that permalink structure.
+        // Check if the path matches the permalink structure.
+        //
+        // If there are no matches found we then
+        // need to verify it's not a static post,
+        // and test against that permalink structure.
+        if (match === false) {
+            match = staticPostPermalink(postPath);
+            // If there are still no matches then call next.
             if (match === false) {
-                match = staticPostPermalink(postPath);
-                // If there are still no matches then return.
-                if (match === false) {
-                    // Reject promise chain with type 'NotFound'
-                    return Promise.reject(new errors.NotFoundError());
-                }
-
-                usingStaticPermalink = true;
+                return next();
             }
 
-            params = match;
+            usingStaticPermalink = true;
+        }
 
-            // Sanitize params we're going to use to lookup the post.
-            postLookup = _.pick(params, 'slug', 'id');
-            // Add author, tag and fields
-            postLookup.include = 'author,tags,fields';
+        params = match;
 
-            // Query database to find post
-            return api.posts.read(postLookup);
-        }).then(function then(result) {
+        // Sanitize params we're going to use to lookup the post.
+        postLookup = _.pick(params, 'slug', 'id');
+        // Add author, tag and fields
+        postLookup.include = 'author,tags,fields';
+
+        // Query database to find post
+        return api.posts.read(postLookup).then(function then(result) {
             var post = result.posts[0],
                 postUrl = (params.edit) ? postPath.replace(params.edit + '/', '') : postPath;
 

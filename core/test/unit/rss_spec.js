@@ -248,16 +248,8 @@ describe('RSS', function () {
     });
 
     describe('dataBuilder', function () {
-        var apiSettingsStub, apiBrowseStub, apiTagStub, apiUserStub;
+        var apiBrowseStub, apiTagStub, apiUserStub;
         beforeEach(function () {
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                settings: [{
-                    key: 'permalinks',
-                    value: '/:slug/'
-                }]
-            }));
-
             apiBrowseStub = sandbox.stub(api.posts, 'browse', function () {
                 return Promise.resolve({posts: [], meta: {pagination: {pages: 3}}});
             });
@@ -284,13 +276,13 @@ describe('RSS', function () {
 
             config.set({url: 'http://my-ghost-blog.com', theme: {
                 title: 'Test',
-                description: 'Some Text'
+                description: 'Some Text',
+                permalinks: '/:slug/'
             }});
         });
 
         it('should process the data correctly for the index feed', function (done) {
             res.send = function send(xmlData) {
-                apiSettingsStub.calledOnce.should.be.true;
                 apiBrowseStub.calledOnce.should.be.true;
                 apiBrowseStub.calledWith({page: 1, include: 'author,tags,fields'}).should.be.true;
                 xmlData.should.match(/<channel><title><!\[CDATA\[Test\]\]><\/title>/);
@@ -311,7 +303,6 @@ describe('RSS', function () {
 
             // test
             res.send = function send(xmlData) {
-                apiSettingsStub.calledOnce.should.be.true;
                 apiBrowseStub.calledOnce.should.be.true;
                 apiBrowseStub.calledWith({page: 1, filter: 'tags:magic', include: 'author,tags,fields'}).should.be.true;
                 apiTagStub.calledOnce.should.be.true;
@@ -330,7 +321,6 @@ describe('RSS', function () {
 
             // test
             res.send = function send(xmlData) {
-                apiSettingsStub.calledOnce.should.be.true;
                 apiBrowseStub.calledOnce.should.be.true;
                 apiBrowseStub.calledWith({page: 1, filter: 'author:joe', include: 'author,tags,fields'}).should.be.true;
                 apiUserStub.calledOnce.should.be.true;

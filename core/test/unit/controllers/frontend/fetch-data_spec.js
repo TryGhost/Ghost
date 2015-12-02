@@ -3,16 +3,19 @@
 var should   = require('should'),
     sinon    = require('sinon'),
     Promise  = require('bluebird'),
+    _        = require('lodash'),
 
     // Stuff we are testing
     api      = require('../../../../server/api'),
     fetchData = require('../../../../server/controllers/frontend/fetch-data'),
 
+    config   = require('../../../../server/config'),
+    origConfig = _.cloneDeep(config),
+
     sandbox = sinon.sandbox.create();
 
 describe('fetchData', function () {
-    var apiSettingsStub,
-        apiPostsStub,
+    var apiPostsStub,
         apiTagStub,
         apiUserStub;
 
@@ -21,21 +24,16 @@ describe('fetchData', function () {
             .returns(new Promise.resolve({posts: [], meta: {pagination: {}}}));
         apiTagStub = sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: []}));
         apiUserStub = sandbox.stub(api.users, 'read').returns(new Promise.resolve({users: []}));
-        apiSettingsStub = sandbox.stub(api.settings, 'read');
     });
 
     afterEach(function () {
+        config.set(origConfig);
         sandbox.restore();
     });
 
     describe('channel config', function () {
         beforeEach(function () {
-            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
-                settings: [{
-                    key: 'postsPerPage',
-                    value: '10'
-                }]
-            }));
+            config.set({theme: {postsPerPage: 10}});
         });
 
         it('should handle no post options', function (done) {
@@ -44,7 +42,6 @@ describe('fetchData', function () {
                 result.should.be.an.Object.with.properties('posts', 'meta');
                 result.should.not.have.property('data');
 
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledOnce.should.be.true;
                 apiPostsStub.firstCall.args[0].should.be.an.Object;
                 apiPostsStub.firstCall.args[0].should.have.property('include');
@@ -60,7 +57,6 @@ describe('fetchData', function () {
                 result.should.be.an.Object.with.properties('posts', 'meta');
                 result.should.not.have.property('data');
 
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledOnce.should.be.true;
                 apiPostsStub.firstCall.args[0].should.be.an.Object;
                 apiPostsStub.firstCall.args[0].should.have.property('include');
@@ -88,7 +84,6 @@ describe('fetchData', function () {
                 result.data.featured.should.be.an.Object.with.properties('posts', 'meta');
                 result.data.featured.should.not.have.properties('data');
 
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledTwice.should.be.true;
                 apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags,fields');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
@@ -117,7 +112,6 @@ describe('fetchData', function () {
                 result.data.featured.should.be.an.Object.with.properties('posts', 'meta');
                 result.data.featured.should.not.have.properties('data');
 
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledTwice.should.be.true;
                 apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags,fields');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
@@ -148,7 +142,6 @@ describe('fetchData', function () {
                 result.should.be.an.Object.with.properties('posts', 'meta', 'data');
                 result.data.should.be.an.Object.with.properties('tag');
 
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledOnce.should.be.true;
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
@@ -160,17 +153,11 @@ describe('fetchData', function () {
 
     describe('valid postsPerPage', function () {
         beforeEach(function () {
-            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
-                settings: [{
-                    key: 'postsPerPage',
-                    value: '10'
-                }]
-            }));
+            config.set({theme: {postsPerPage: 10}});
         });
 
         it('Adds limit & includes to options by default', function (done) {
             fetchData({}).then(function () {
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledOnce.should.be.true;
                 apiPostsStub.firstCall.args[0].should.be.an.Object;
                 apiPostsStub.firstCall.args[0].should.have.property('include');
@@ -182,17 +169,11 @@ describe('fetchData', function () {
 
     describe('invalid postsPerPage', function () {
         beforeEach(function () {
-            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
-                settings: [{
-                    key: 'postsPerPage',
-                    value: '-1'
-                }]
-            }));
+            config.set({theme: {postsPerPage: '-1'}});
         });
 
         it('Will not add limit if postsPerPage is not valid', function (done) {
             fetchData({}).then(function () {
-                apiSettingsStub.calledOnce.should.be.true;
                 apiPostsStub.calledOnce.should.be.true;
                 apiPostsStub.firstCall.args[0].should.be.an.Object;
                 apiPostsStub.firstCall.args[0].should.have.property('include');
