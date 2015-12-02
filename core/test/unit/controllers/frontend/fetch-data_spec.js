@@ -133,6 +133,7 @@ describe('fetchData', function () {
                 postOptions: {
                     filter: 'tags:%s'
                 },
+                slugParam: 'testing',
                 data: {
                     tag: {
                         type: 'read',
@@ -140,10 +141,9 @@ describe('fetchData', function () {
                         options: {slug: '%s'}
                     }
                 }
-            },
-                slugParam = 'testing';
+            };
 
-            fetchData(channelOpts, slugParam).then(function (result) {
+            fetchData(channelOpts).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object.with.properties('posts', 'meta', 'data');
                 result.data.should.be.an.Object.with.properties('tag');

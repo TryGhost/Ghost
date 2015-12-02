@@ -82,10 +82,9 @@ function processQuery(query, slugParam) {
  * Does a first round of formatting on the response, and returns
  *
  * @param {Object} channelOptions
- * @param {String} slugParam
  * @returns {Promise} response
  */
-function fetchData(channelOptions, slugParam) {
+function fetchData(channelOptions) {
     // Temporary workaround to make RSS work, moving towards dynamic channels will provide opportunities to
     // improve this, I hope :)
     function handlePostsPerPage(channelOptions) {
@@ -102,10 +101,10 @@ function fetchData(channelOptions, slugParam) {
 
         // All channels must have a posts query, use the default if not provided
         postQuery = _.defaultsDeep({}, pageOptions, defaultPostQuery);
-        props.posts = processQuery(postQuery, slugParam);
+        props.posts = processQuery(postQuery, channelOptions.slugParam);
 
         _.each(channelOptions.data, function (query, name) {
-            props[name] = processQuery(query, slugParam);
+            props[name] = processQuery(query, channelOptions.slugParam);
         });
 
         return Promise.props(props).then(function formatResponse(results) {

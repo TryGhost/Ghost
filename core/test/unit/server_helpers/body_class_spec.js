@@ -1,26 +1,16 @@
-/*globals describe, before, after, it*/
+/*globals describe, before, beforeEach, after, it*/
 /*jshint expr:true*/
 var should         = require('should'),
-    sinon          = require('sinon'),
-    Promise        = require('bluebird'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers'),
-    api            = require('../../../server/api');
+    helpers        = require('../../../server/helpers');
 
 describe('{{body_class}} helper', function () {
-    var sandbox;
-
+    var options = {};
     before(function () {
-        sandbox = sinon.sandbox.create();
-        sandbox.stub(api.settings, 'read', function () {
-            return Promise.resolve({
-                settings: [{value: 'casper'}]
-            });
-        });
         utils.loadHelpers();
         utils.overrideConfig({paths: {
             availableThemes: {
@@ -36,9 +26,19 @@ describe('{{body_class}} helper', function () {
         }});
     });
 
+    beforeEach(function () {
+        options = {
+            data: {
+                root: {
+                    context: [],
+                    settings: {activeTheme: 'casper'}
+                }
+            }
+        };
+    });
+
     after(function () {
         utils.restoreConfig();
-        sandbox.restore();
     });
 
     it('has loaded body_class helper', function () {
@@ -46,7 +46,9 @@ describe('{{body_class}} helper', function () {
     });
 
     it('can render class string', function (done) {
-        helpers.body_class.call({}, {data: {root: {context: ['home']}}}).then(function (rendered) {
+        options.data.root.context = ['home'];
+
+        helpers.body_class.call({}, options).then(function (rendered) {
             should.exist(rendered);
 
             rendered.string.should.equal('home-template');
@@ -55,111 +57,90 @@ describe('{{body_class}} helper', function () {
         }).catch(done);
     });
 
-    it('can render class string for context', function (done) {
-        Promise.all([
-            // Standard home page
-            helpers.body_class.call(
-                {relativeUrl: '/'},
-                {data: {root: {context: ['home', 'index']}}}
-            ),
-            // A post
-            helpers.body_class.call(
-                {relativeUrl: '/a-post-title', post: {}},
-                {data: {root: {context: ['post']}}}
-            ),
-            // Paginated index
-            helpers.body_class.call(
-                {relativeUrl: '/page/4'},
-                {data: {root: {context: ['index', 'paged']}}}
-            ),
-            // Tag page
-            helpers.body_class.call(
-                {relativeUrl: '/tag/foo', tag: {slug: 'foo'}},
-                {data: {root: {context: ['tag']}}}
-            ),
-            // Paginated tag page
-            helpers.body_class.call(
-                {relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}},
-                {data: {root: {context: ['tag', 'paged']}}}
-            ),
-            // Author page
-            helpers.body_class.call(
-                {relativeUrl: '/author/bar', author: {slug: 'bar'}},
-                {data: {root: {context: ['author']}}}
-            ),
-            // Paginated author page
-            helpers.body_class.call(
-                {relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}},
-                {data: {root: {context: ['author', 'paged']}}}
-            ),
-            // Private route for password protection
-            helpers.body_class.call(
-                {relativeUrl: '/private/'},
-                {data: {root: {context: ['private']}}}
-            ),
-            // Post with tags
-            helpers.body_class.call(
-                {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}},
-                {data: {root: {context: ['post']}}}
-            )
-        ]).then(function (rendered) {
-            rendered.length.should.equal(9);
+    describe('can render class string for context', function () {
+        function callBodyClassWithContext(context, self) {
+            options.data.root.context = context;
+            return helpers.body_class.call(
+                self,
+                options
+            );
+        }
 
-            should.exist(rendered[0]);
-            should.exist(rendered[1]);
-            should.exist(rendered[2]);
-            should.exist(rendered[3]);
-            should.exist(rendered[4]);
-            should.exist(rendered[5]);
-            should.exist(rendered[6]);
-            should.exist(rendered[7]);
-            should.exist(rendered[8]);
+        it('Standard home page', function (done) {
+            callBodyClassWithContext(['home', 'index'], {relativeUrl: '/'}).then(function (rendered) {
+                rendered.string.should.equal('home-template');
+                done();
+            }).catch(done);
+        });
 
-            rendered[0].string.should.equal('home-template');
-            rendered[1].string.should.equal('post-template');
-            rendered[2].string.should.equal('paged archive-template');
-            rendered[3].string.should.equal('tag-template tag-foo');
-            rendered[4].string.should.equal('tag-template tag-foo paged archive-template');
-            rendered[5].string.should.equal('author-template author-bar');
-            rendered[6].string.should.equal('author-template author-bar paged archive-template');
-            rendered[7].string.should.equal('private-template');
-            rendered[8].string.should.equal('post-template tag-foo tag-bar');
+        it('a post', function (done) {
+            callBodyClassWithContext(['post'], {relativeUrl: '/a-post-title', post: {}}).then(function (rendered) {
+                rendered.string.should.equal('post-template');
+                done();
+            }).catch(done);
+        });
 
-            done();
-        }).catch(done);
-    });
+        it('paginated index', function (done) {
+            callBodyClassWithContext(['index', 'paged'], {relativeUrl: '/page/4'}).then(function (rendered) {
+                rendered.string.should.equal('paged archive-template');
+                done();
+            }).catch(done);
+        });
 
-    it('can render class for static page', function (done) {
-        helpers.body_class.call(
-            {
-                relativeUrl: '/about',
-                post: {
-                    page: true
-                }
-            },
-            {data: {root: {context: ['page']}}}
-        ).then(function (rendered) {
-            should.exist(rendered);
-            rendered.string.should.equal('post-template page-template page');
+        it('tag page', function (done) {
+            callBodyClassWithContext(['tag'], {relativeUrl: '/tag/foo', tag: {slug: 'foo'}}).then(function (rendered) {
+                rendered.string.should.equal('tag-template tag-foo');
+                done();
+            }).catch(done);
+        });
 
-            done();
-        }).catch(done);
-    });
+        it('paginated tag page', function (done) {
+            callBodyClassWithContext(['tag', 'paged'], {relativeUrl: '/tag/foo/page/2', tag: {slug: 'foo'}}).then(function (rendered) {
+                rendered.string.should.equal('tag-template tag-foo paged archive-template');
+                done();
+            }).catch(done);
+        });
 
-    it('can render class for static page with custom template', function (done) {
-        helpers.body_class.call(
-            {
-                relativeUrl: '/about',
-                post: {
-                    page: true,
-                    slug: 'about'
-                }
-            },
-            {data: {root: {context: ['page']}}}).then(function (rendered) {
-            should.exist(rendered);
-            rendered.string.should.equal('post-template page-template page page-about page-template-about');
+        it('author page', function (done) {
+            callBodyClassWithContext(['author'], {relativeUrl: '/author/bar', author: {slug: 'bar'}}).then(function (rendered) {
+                rendered.string.should.equal('author-template author-bar');
+                done();
+            }).catch(done);
+        });
 
-            done();
-        }).catch(done);
+        it('paginated author page', function (done) {
+            callBodyClassWithContext(['author', 'paged'], {relativeUrl: '/author/bar/page/2', author: {slug: 'bar'}}).then(function (rendered) {
+                rendered.string.should.equal('author-template author-bar paged archive-template');
+                done();
+            }).catch(done);
+        });
+
+        it('private route for password protection', function (done) {
+            callBodyClassWithContext(['private'], {relativeUrl: '/private/'}).then(function (rendered) {
+                rendered.string.should.equal('private-template');
+                done();
+            }).catch(done);
+        });
+
+        it('post with tags', function (done) {
+            callBodyClassWithContext(['post'], {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}).then(function (rendered) {
+                rendered.string.should.equal('post-template tag-foo tag-bar');
+                done();
+            }).catch(done);
+        });
+
+        it('a static page', function (done) {
+            callBodyClassWithContext(['page'], {relativeUrl: '/about', post: {page: true}}).then(function (rendered) {
+                rendered.string.should.equal('post-template page-template page');
+                done();
+            }).catch(done);
+        });
+
+        it('a static page with custom template', function (done) {
+            callBodyClassWithContext(['page'], {relativeUrl: '/about', post: {page: true, slug: 'about'}}).then(function (rendered) {
+                rendered.string.should.equal('post-template page-template page page-about page-template-about');
+                done();
+            }).catch(done);
+        });
     });
 });
