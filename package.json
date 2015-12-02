@@ -90,6 +90,7 @@
     "grunt-mocha-istanbul": "2.4.0",
     "grunt-shell": "1.1.2",
     "grunt-update-submodules": "0.4.1",
+    "jscs": "2.6.0",
     "jscs-jsdoc": "1.2.0",
     "matchdep": "0.3.0",
     "nock": "2.3.0",
