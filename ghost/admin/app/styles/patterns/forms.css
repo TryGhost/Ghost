@@ -198,8 +198,8 @@ textarea {
 
 .for-radio p,
 .for-checkbox p {
+    overflow: auto;
     color: #b3b2a8;
-    white-space: nowrap;
     font-weight: normal;
 }
 
