@@ -45,7 +45,7 @@
     "ember-resolver": "2.0.3",
     "ember-simple-auth": "1.0.0",
     "ember-sinon": "0.3.0",
-    "ember-suave": "1.2.2",
+    "ember-suave": "1.2.3",
     "ember-watson": "0.7.0",
     "fs-extra": "0.16.3",
     "glob": "^4.0.5",
