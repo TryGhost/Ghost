@@ -90,9 +90,9 @@ function createUrl(urlPath, absolute, secure) {
 // Creates the url path for a post, given a post and a permalink
 // Parameters:
 // - post - a json object representing a post
-// - permalinks - a string containing the permalinks setting
-function urlPathForPost(post, permalinks) {
+function urlPathForPost(post) {
     var output = '',
+        permalinks = ghostConfig.theme.permalinks,
         tags = {
             year:   function () { return moment(post.published_at).format('YYYY'); },
             month:  function () { return moment(post.published_at).format('MM'); },
