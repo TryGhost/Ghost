@@ -3,7 +3,7 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
-const {Component, RSVP, computed, inject, observer} = Ember;
+const {$, Component, RSVP, computed, inject, observer} = Ember;
 const {filterBy} = computed;
 
 export default Component.extend({

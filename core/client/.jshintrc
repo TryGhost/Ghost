@@ -5,7 +5,6 @@
     "window",
     "-Promise",
     "-Notification",
-    "$",
     "validator",
     "moment"
   ],

@@ -2,7 +2,7 @@ import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 import {request as ajax} from 'ic-ajax';
 
-const {Controller, inject} = Ember;
+const {$, Controller, inject} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     submitting: false,

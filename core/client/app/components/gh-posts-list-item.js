@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const {Component, computed, inject} = Ember;
+const {$, Component, computed, inject} = Ember;
 const {alias, equal} = computed;
 
 export default Component.extend({
