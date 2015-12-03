@@ -31,6 +31,19 @@
                 <p>Maximum: <b>200</b> characters. You’ve used {{gh-count-down-characters scratchDescription 200}}</p>
             {{/gh-form-group}}
 
+            {{#if hiddenTags}}
+                {{#gh-form-group}}
+                    <label>Hidden Tag</label>
+                    <div class="for-checkbox">
+                        <label class="checkbox" for="tag-hidden">
+                            {{input id="tag-hidden" name="hidden" type="checkbox" checked=scratchHidden change=(action 'setHidden')}}
+                            <span class="input-toggle-component"></span>
+                            <p>Tag is hidden for internal use</p>
+                        </label>
+                    </div>
+                {{/gh-form-group}}
+            {{/if}}
+
             <ul class="nav-list nav-list-block">
                 <li class="nav-list-item" {{action 'openMeta'}}>
                     <button type="button" class="meta-data-button">

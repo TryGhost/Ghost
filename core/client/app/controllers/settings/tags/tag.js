@@ -8,6 +8,7 @@ export default Controller.extend({
     tag: alias('model'),
     isMobile: alias('tagsController.isMobile'),
 
+    feature: inject.controller(),
     tagsController: inject.controller('settings.tags'),
     notifications: inject.service(),
 
@@ -15,7 +16,9 @@ export default Controller.extend({
         let tag = this.get('tag');
         let currentValue = tag.get(propKey);
 
-        newValue = newValue.trim();
+        if (newValue && newValue.trim) {
+            newValue = newValue.trim();
+        }
 
         // Quit if there was no change
         if (newValue === currentValue) {
