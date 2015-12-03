@@ -23,30 +23,27 @@ var hbs             = require('express-hbs'),
     excerpt             = require('./excerpt'),
     tagsHelper          = require('./tags'),
     imageHelper         = require('./image'),
-
     labs                = require('../utils/labs'),
 
     blog,
     ghost_head;
 
 function getClient() {
-    return labs.isSet('publicAPI').then(function (publicAPI) {
-        if (publicAPI === true) {
-            return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
-                client = client.clients[0];
-                if (client.status === 'enabled') {
-                    return {
-                        id: client.slug,
-                        secret: client.secret
-                    };
-                }
+    if (labs.isSet('publicAPI') === true) {
+        return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
+            client = client.clients[0];
+            if (client.status === 'enabled') {
+                return {
+                    id: client.slug,
+                    secret: client.secret
+                };
+            }
 
-                return {};
-            });
-        }
+            return {};
+        });
+    }
 
-        return {};
-    });
+    return {};
 }
 
 function writeMetaTag(property, content, type) {
