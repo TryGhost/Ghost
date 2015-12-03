@@ -595,7 +595,7 @@ var _              = require('lodash'),
             } else if (process.env.TEST_SUITE === 'client') {
                 grunt.task.run(['test-client']);
             } else if (process.env.TEST_SUITE === 'lint') {
-                grunt.task.run(['lint']);
+                grunt.task.run(['shell:ember:init', 'shell:bower', 'lint']);
             } else {
                 grunt.task.run(['validate-all']);
             }
