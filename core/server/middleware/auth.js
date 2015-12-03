@@ -158,17 +158,15 @@ auth = {
 
     // ### Require user depending on public API being activated.
     requiresAuthorizedUserPublicAPI: function requiresAuthorizedUserPublicAPI(req, res, next) {
-        return labs.isSet('publicAPI').then(function (publicAPI) {
-            if (publicAPI === true) {
+        if (labs.isSet('publicAPI') === true) {
+            return next();
+        } else {
+            if (req.user) {
                 return next();
             } else {
-                if (req.user) {
-                    return next();
-                } else {
-                    return errors.handleAPIError(new errors.NoPermissionError('Please Sign In'), req, res, next);
-                }
+                return errors.handleAPIError(new errors.NoPermissionError('Please Sign In'), req, res, next);
             }
-        });
+        }
     }
 };
 

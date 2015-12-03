@@ -25,7 +25,7 @@ describe('{{#get}} helper', function () {
     beforeEach(function () {
         fn = sandbox.spy();
         inverse = sandbox.spy();
-        sandbox.stub(labs, 'isSet').returns(new Promise.resolve(true));
+        sandbox.stub(labs, 'isSet').returns(true);
     });
 
     afterEach(function () {

@@ -43,7 +43,7 @@ describe('{{ghost_head}} helper', function () {
             ]
         }));
 
-        sandbox.stub(labs, 'isSet').returns(new Promise.resolve(true));
+        sandbox.stub(labs, 'isSet').returns(true);
     });
 
     function expectGhostClientMeta(rendered) {
