@@ -34,6 +34,7 @@ export default Model.extend(ValidationEngine, {
         embedded: 'always',
         async: false
     }),
+    count: DS.attr('raw'),
 
     ghostPaths: inject.service('ghost-paths'),
 
