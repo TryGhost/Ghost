@@ -1,10 +1,11 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import base from 'ghost/mixins/editor-base-route';
+import NotFoundHandler from 'ghost/mixins/404-handler';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-export default AuthenticatedRoute.extend(base, {
+export default AuthenticatedRoute.extend(base, NotFoundHandler, {
     titleToken: 'Editor',
 
     beforeModel(transition) {
