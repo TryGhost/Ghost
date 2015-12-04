@@ -1,5 +1,5 @@
 /**
- * simplemde v1.8.1
+ * simplemde v1.8.2
  * Copyright Next Step Webs, Inc.
  * @link https://github.com/NextStepWebs/simplemde-markdown-editor
  * @license MIT
@@ -7,7 +7,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SimpleMDE = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-; Typo = global.Typo = require("/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js");
+; Typo = global.Typo = require("D:\\My Web Sites\\simplemde-markdown-editor\\node_modules\\codemirror-spell-checker\\src\\js\\typo.js");
 CodeMirror = global.CodeMirror = require("codemirror");
 ; var __browserify_shim_require__=require;(function browserifyShim(module, define, require) {
 // Initialize data globally to reduce memory consumption
@@ -105,7 +105,7 @@ if(!String.prototype.includes) {
 }).call(global, module, undefined, undefined);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js":2,"codemirror":6}],2:[function(require,module,exports){
+},{"D:\\My Web Sites\\simplemde-markdown-editor\\node_modules\\codemirror-spell-checker\\src\\js\\typo.js":2,"codemirror":6}],2:[function(require,module,exports){
 (function (global){
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 'use strict';
@@ -1888,7 +1888,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
   // given line.
   function updateWidgetHeight(line) {
     if (line.widgets) for (var i = 0; i < line.widgets.length; ++i)
-      line.widgets[i].height = line.widgets[i].node.offsetHeight;
+      line.widgets[i].height = line.widgets[i].node.parentNode.offsetHeight;
   }
 
   // Do a bulk-read of the DOM positions and sizes needed to draw the
@@ -3287,8 +3287,9 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
     var out;
     for (var i = 0; i < sel.ranges.length; i++) {
       var range = sel.ranges[i];
-      var newAnchor = skipAtomic(doc, range.anchor, bias, mayClear);
-      var newHead = skipAtomic(doc, range.head, bias, mayClear);
+      var old = sel.ranges.length == doc.sel.ranges.length && doc.sel.ranges[i];
+      var newAnchor = skipAtomic(doc, range.anchor, old && old.anchor, bias, mayClear);
+      var newHead = skipAtomic(doc, range.head, old && old.head, bias, mayClear);
       if (out || newAnchor != range.anchor || newHead != range.head) {
         if (!out) out = sel.ranges.slice(0, i);
         out[i] = new Range(newAnchor, newHead);
@@ -3297,54 +3298,59 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
     return out ? normalizeSelection(out, sel.primIndex) : sel;
   }
 
-  // Ensure a given position is not inside an atomic range.
-  function skipAtomic(doc, pos, bias, mayClear) {
-    var flipped = false, curPos = pos;
-    var dir = bias || 1;
-    doc.cantEdit = false;
-    search: for (;;) {
-      var line = getLine(doc, curPos.line);
-      if (line.markedSpans) {
-        for (var i = 0; i < line.markedSpans.length; ++i) {
-          var sp = line.markedSpans[i], m = sp.marker;
-          if ((sp.from == null || (m.inclusiveLeft ? sp.from <= curPos.ch : sp.from < curPos.ch)) &&
-              (sp.to == null || (m.inclusiveRight ? sp.to >= curPos.ch : sp.to > curPos.ch))) {
-            if (mayClear) {
-              signal(m, "beforeCursorEnter");
-              if (m.explicitlyCleared) {
-                if (!line.markedSpans) break;
-                else {--i; continue;}
-              }
-            }
-            if (!m.atomic) continue;
-            var newPos = m.find(dir < 0 ? -1 : 1);
-            if (cmp(newPos, curPos) == 0) {
-              newPos.ch += dir;
-              if (newPos.ch < 0) {
-                if (newPos.line > doc.first) newPos = clipPos(doc, Pos(newPos.line - 1));
-                else newPos = null;
-              } else if (newPos.ch > line.text.length) {
-                if (newPos.line < doc.first + doc.size - 1) newPos = Pos(newPos.line + 1, 0);
-                else newPos = null;
-              }
-              if (!newPos) {
-                if (flipped) {
-                  // Driven in a corner -- no valid cursor position found at all
-                  // -- try again *with* clearing, if we didn't already
-                  if (!mayClear) return skipAtomic(doc, pos, bias, true);
-                  // Otherwise, turn off editing until further notice, and return the start of the doc
-                  doc.cantEdit = true;
-                  return Pos(doc.first, 0);
-                }
-                flipped = true; newPos = pos; dir = -dir;
-              }
-            }
-            curPos = newPos;
-            continue search;
+  function skipAtomicInner(doc, pos, oldPos, dir, mayClear) {
+    var line = getLine(doc, pos.line);
+    if (line.markedSpans) for (var i = 0; i < line.markedSpans.length; ++i) {
+      var sp = line.markedSpans[i], m = sp.marker;
+      if ((sp.from == null || (m.inclusiveLeft ? sp.from <= pos.ch : sp.from < pos.ch)) &&
+          (sp.to == null || (m.inclusiveRight ? sp.to >= pos.ch : sp.to > pos.ch))) {
+        if (mayClear) {
+          signal(m, "beforeCursorEnter");
+          if (m.explicitlyCleared) {
+            if (!line.markedSpans) break;
+            else {--i; continue;}
           }
         }
+        if (!m.atomic) continue;
+
+        if (oldPos) {
+          var near = m.find(dir < 0 ? 1 : -1), diff;
+          if (dir < 0 ? m.inclusiveRight : m.inclusiveLeft) near = movePos(doc, near, -dir, line);
+          if (near && near.line == pos.line && (diff = cmp(near, oldPos)) && (dir < 0 ? diff < 0 : diff > 0))
+            return skipAtomicInner(doc, near, pos, dir, mayClear);
+        }
+
+        var far = m.find(dir < 0 ? -1 : 1);
+        if (dir < 0 ? m.inclusiveLeft : m.inclusiveRight) far = movePos(doc, far, dir, line);
+        return far ? skipAtomicInner(doc, far, pos, dir, mayClear) : null;
       }
-      return curPos;
+    }
+    return pos;
+  }
+
+  // Ensure a given position is not inside an atomic range.
+  function skipAtomic(doc, pos, oldPos, bias, mayClear) {
+    var dir = bias || 1;
+    var found = skipAtomicInner(doc, pos, oldPos, dir, mayClear) ||
+        (!mayClear && skipAtomicInner(doc, pos, oldPos, dir, true)) ||
+        skipAtomicInner(doc, pos, oldPos, -dir, mayClear) ||
+        (!mayClear && skipAtomicInner(doc, pos, oldPos, -dir, true));
+    if (!found) {
+      doc.cantEdit = true;
+      return Pos(doc.first, 0);
+    }
+    return found;
+  }
+
+  function movePos(doc, pos, dir, line) {
+    if (dir < 0 && pos.ch == 0) {
+      if (pos.line > doc.first) return clipPos(doc, Pos(pos.line - 1));
+      else return null;
+    } else if (dir > 0 && pos.ch == (line || getLine(doc, pos.line)).text.length) {
+      if (pos.line < doc.first + doc.size - 1) return Pos(pos.line + 1, 0);
+      else return null;
+    } else {
+      return new Pos(pos.line, pos.ch + dir);
     }
   }
 
@@ -5909,7 +5915,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
         if (dir > 0 && !moveOnce(!first)) break;
       }
     }
-    var result = skipAtomic(doc, Pos(line, ch), origDir, true);
+    var result = skipAtomic(doc, Pos(line, ch), pos, origDir, true);
     if (!possible) result.hitSide = true;
     return result;
   }
@@ -7733,7 +7739,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
         parentStyle += "width: " + cm.display.wrapper.clientWidth + "px;";
       removeChildrenAndAdd(cm.display.measure, elt("div", [widget.node], null, parentStyle));
     }
-    return widget.height = widget.node.offsetHeight;
+    return widget.height = widget.node.parentNode.offsetHeight;
   }
 
   function addLineWidget(doc, handle, node, options) {
@@ -8154,7 +8160,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
               spanEndStyle = "";
             }
             if (m.className) spanStyle += " " + m.className;
-            if (m.css) css = m.css;
+            if (m.css) css = (css ? css + ";" : "") + m.css;
             if (m.startStyle && sp.from == pos) spanStartStyle += " " + m.startStyle;
             if (m.endStyle && sp.to == nextChange) spanEndStyle += " " + m.endStyle;
             if (m.title && !title) title = m.title;
@@ -8423,6 +8429,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
     this.id = ++nextDocId;
     this.modeOption = mode;
     this.lineSep = lineSep;
+    this.extend = false;
 
     if (typeof text == "string") text = this.splitLines(text);
     updateDoc(this, {from: start, to: start, text: text});
@@ -9930,7 +9937,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
   // THE END
 
-  CodeMirror.version = "5.8.1";
+  CodeMirror.version = "5.9.1";
 
   return CodeMirror;
 });
@@ -10782,7 +10789,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
         f: s.f,
 
         prevLine: s.prevLine,
-        thisLine: s.this,
+        thisLine: s.thisLine,
 
         block: s.block,
         htmlState: s.htmlState && CodeMirror.copyState(htmlMode, s.htmlState),
@@ -12967,7 +12974,7 @@ function toggleFullScreen(editor) {
  * Action for toggling bold.
  */
 function toggleBold(editor) {
-	_toggleBlock(editor, "bold", "**");
+	_toggleBlock(editor, "bold", editor.options.blockStyles.bold);
 }
 
 
@@ -12975,7 +12982,7 @@ function toggleBold(editor) {
  * Action for toggling italic.
  */
 function toggleItalic(editor) {
-	_toggleBlock(editor, "italic", "*");
+	_toggleBlock(editor, "italic", editor.options.blockStyles.italic);
 }
 
 
@@ -13077,6 +13084,16 @@ function drawImage(editor) {
 	var stat = getState(cm);
 	var options = editor.options;
 	_replaceSelection(cm, stat.image, options.insertTexts.image);
+}
+
+/**
+ * Action for drawing a table.
+ */
+function drawTable(editor) {
+	var cm = editor.codemirror;
+	var stat = getState(cm);
+	var options = editor.options;
+	_replaceSelection(cm, stat.table, options.insertTexts.table);
 }
 
 /**
@@ -13543,6 +13560,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-picture-o",
 		title: "Insert Image (Ctrl+Alt+I)"
 	},
+	"table": {
+		name: "table",
+		action: drawTable,
+		className: "fa fa-table",
+		title: "Insert Table"
+	},
 	"horizontal-rule": {
 		name: "horizontal-rule",
 		action: drawHorizontalRule,
@@ -13578,9 +13601,14 @@ var toolbarBuiltInButtons = {
 var insertTexts = {
 	link: ["[", "](http://)"],
 	image: ["![](http://", ")"],
+	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n\n"],
 	horizontalRule: ["", "\n\n-----\n\n"]
 };
 
+var blockStyles = {
+	"bold": "**",
+	"italic": "*"
+};
 
 /**
  * Interface of SimpleMDE.
@@ -13657,8 +13685,12 @@ function SimpleMDE(options) {
 	options.insertTexts = extend({}, insertTexts, options.insertTexts || {});
 
 
+	// Merging the blockStyles, with the given options
+	options.blockStyles = extend({}, blockStyles, options.blockStyles || {});
+
+
 	// Change unique_id to uniqueId for backwards compatibility
-	if(options.autosave.unique_id != undefined && options.autosave.unique_id != "")
+	if(options.autosave != undefined && options.autosave.unique_id != undefined && options.autosave.unique_id != "")
 		options.autosave.uniqueId = options.autosave.unique_id;
 
 
@@ -14053,6 +14085,7 @@ SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
 SimpleMDE.drawLink = drawLink;
 SimpleMDE.drawImage = drawImage;
+SimpleMDE.drawTable = drawTable;
 SimpleMDE.drawHorizontalRule = drawHorizontalRule;
 SimpleMDE.undo = undo;
 SimpleMDE.redo = redo;
@@ -14104,6 +14137,9 @@ SimpleMDE.prototype.drawLink = function() {
 };
 SimpleMDE.prototype.drawImage = function() {
 	drawImage(this);
+};
+SimpleMDE.prototype.drawTable = function() {
+	drawTable(this);
 };
 SimpleMDE.prototype.drawHorizontalRule = function() {
 	drawHorizontalRule(this);
