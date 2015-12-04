@@ -197,6 +197,14 @@ var simplemde = new SimpleMDE({
 			className: "fa fa-bold",
 			title: "Bold (Ctrl+B)",
 		},
+		{
+			name: "custom",
+			action: customFunction(editor){
+				// Add your own code
+			},
+			className: "fa fa-star",
+			title: "Custom Button",
+		},
 		"|", // Separator
 		...
 	],
