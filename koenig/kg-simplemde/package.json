@@ -1,6 +1,6 @@
 {
   "name": "simplemde",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "description": "A simple, beautiful, and embeddable JavaScript Markdown editor. Features autosaving and spell checking.",
   "keywords": [
     "embeddable",
@@ -23,7 +23,7 @@
   "dependencies": {
     "codemirror": "codemirror/CodeMirror",
     "codemirror-spell-checker": "nextstepwebs/codemirror-spell-checker",
-    "marked": "chjj/marked"
+    "marked": "0.3.5"
   },
   "devDependencies": {
     "browserify": "^11.2.0",
@@ -39,7 +39,8 @@
     "gulp-minify-css": "^1.2.1",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "*",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-source-stream": "^1.1.0",
+    "vinyl-buffer": "*"
   },
   "browserify": {
     "transform": [

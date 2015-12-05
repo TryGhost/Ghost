@@ -67,20 +67,24 @@ simplemde.value("This text will appear in the editor");
 
 ## Configuration
 
-- **autoDownloadFontAwesome**: If set to `true`, force downloads Font Awesome (used for icons). If set to false, prevents downloading. Defaults to `undefined`, which will intelligently check whether Font Awesome has already been included, then download accordingly.
+- **autoDownloadFontAwesome**: If set to `true`, force downloads Font Awesome (used for icons). If set to `false`, prevents downloading. Defaults to `undefined`, which will intelligently check whether Font Awesome has already been included, then download accordingly.
 - **autofocus**: If set to `true`, autofocuses the editor. Defaults to `false`.
 - **autosave**: *Saves the text that's being written and will load it back in the future. It will forget the text when the form it's contained in is submitted.*
   - **enabled**: If set to `true`, autosave the text. Defaults to `false`.
   - **delay**: Delay between saves, in milliseconds. Defaults to `10000` (10s).
-  - **unique_id**: You must set a unique string identifier so that SimpleMDE can autosave. Something that separates this from other instances of SimpleMDE elsewhere on your website.
+  - **uniqueId**: You must set a unique string identifier so that SimpleMDE can autosave. Something that separates this from other instances of SimpleMDE elsewhere on your website.
+- **blockStyles**: Customize how certain buttons that style blocks of text behave.
+  - **bold** Can be set to `**` or `__`. Defaults to `**`.
+  - **italic** Can be set to `*` or `_`. Defaults to `*`.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
-- **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
+- **hideIcons**: An array of icon names to hide. Can be used to hide specific icons shown by default without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
 - **insertTexts**: Customize how certain buttons that insert text behave. Takes an array with two elements. The first element will be the text inserted before the cursor or highlight, and the second element will be inserted after. For example, this is the default link value: `["[", "](http://)"]`.
   - horizontalRule
   - image
   - link
+  - table
 - **lineWrapping**: If set to `false`, disable line wrapping. Defaults to `true`.
 - **parsingConfig**: Adjust settings for parsing the Markdown during editing (not previewing).
   - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
@@ -90,6 +94,7 @@ simplemde.value("This text will appear in the editor");
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
   - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
   - **codeSyntaxHighlighting**: If set to `true`, will highlight using [highlight.js](https://github.com/isagalaev/highlight.js). Defaults to `false`. To use this feature you must include highlight.js on your page. For example, include the script and the CSS files like:<br>`<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>`<br>`<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">`
+- **showIcons**: An array of icon names to show. Can be used to show specific icons hidden by default without completely customizing the toolbar.
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include, and in what order.
@@ -103,8 +108,12 @@ var simplemde = new SimpleMDE({
 	autofocus: true,
 	autosave: {
 		enabled: true,
-		unique_id: "MyUniqueID",
+		uniqueId: "MyUniqueID",
 		delay: 1000,
+	},
+	blockStyles: {
+		bold: "__",
+		italic: "_"
 	},
 	element: document.getElementById("MyID"),
 	hideIcons: ["guide", "heading"],
@@ -114,6 +123,7 @@ var simplemde = new SimpleMDE({
 		horizontalRule: ["", "\n\n-----\n\n"],
 		image: ["![](http://", ")"],
 		link: ["[", "](http://)"],
+		table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n\n"],
 	},
 	lineWrapping: false,
 	parsingConfig: {
@@ -135,6 +145,7 @@ var simplemde = new SimpleMDE({
 		singleLineBreaks: false,
 		codeSyntaxHighlighting: true,
 	},
+	showIcons: ["code", "table"],
 	spellChecker: false,
 	status: false,
 	status: ["autosave", "lines", "words", "cursor"], // Optional usage
@@ -165,6 +176,7 @@ unordered-list | toggleUnorderedList | Generic List (Ctrl+L)<br>fa fa-list-ul
 ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
 link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
 image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
+table | drawTable | Insert Table<br>fa fa-table
 horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
 preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye no-disable
 side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns no-disable no-mobile
@@ -186,6 +198,14 @@ var simplemde = new SimpleMDE({
 			action: SimpleMDE.toggleBold,
 			className: "fa fa-bold",
 			title: "Bold (Ctrl+B)",
+		},
+		{
+			name: "custom",
+			action: customFunction(editor){
+				// Add your own code
+			},
+			className: "fa fa-star",
+			title: "Custom Button",
 		},
 		"|", // Separator
 		...
@@ -221,14 +241,15 @@ simplemde.codemirror.on("change", function(){
 });
 ```
 
-## State methods
-The following methods will let you check on the state of the editor.
+## Useful methods
+The following self-explanatory methods may be of use while developing with SimpleMDE.
 
 ```js
 var simplemde = new SimpleMDE();
-simplemde.isPreviewActive();
-simplemde.isSideBySideActive();
-simplemde.isFullscreenActive();
+simplemde.isPreviewActive(); // returns boolean
+simplemde.isSideBySideActive(); // returns boolean
+simplemde.isFullscreenActive(); // returns boolean
+simplemde.clearAutosavedValue(); // no returned value
 ```
 
 ## How it works

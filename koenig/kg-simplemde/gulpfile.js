@@ -4,6 +4,7 @@ var gulp = require("gulp"),
 	uglify = require("gulp-uglify"),
 	concat = require("gulp-concat"),
 	header = require("gulp-header"),
+	buffer = require("vinyl-buffer"),
 	pkg = require("./package.json"),
 	debug = require("gulp-debug"),
 	eslint = require("gulp-eslint"),
@@ -50,6 +51,7 @@ function taskBrowserify(opts) {
 gulp.task("browserify:dev", ["lint"], function() {
 	return taskBrowserify({debug:true, standalone:"SimpleMDE"})
 		.pipe(source("simplemde.debug.js"))
+		.pipe(buffer())
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./debug/"));
 });
@@ -57,6 +59,7 @@ gulp.task("browserify:dev", ["lint"], function() {
 gulp.task("browserify:min", ["lint"], function() {
 	return taskBrowserify({standalone:"SimpleMDE"})
 		.pipe(source("simplemde.js"))
+		.pipe(buffer())
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./debug/"));
 });
@@ -67,6 +70,7 @@ gulp.task("scripts", ["browserify:dev", "browserify:min", "lint"], function() {
 	return gulp.src(js_files)
 		.pipe(concat("simplemde.min.js"))
 		.pipe(uglify())
+		.pipe(buffer())
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./dist/"));
 });
@@ -80,10 +84,12 @@ gulp.task("styles", ["prettify-css"], function() {
 	
 	return gulp.src(css_files)
 		.pipe(concat("simplemde.css"))
+		.pipe(buffer())
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./debug/"))
 		.pipe(minifycss())
 		.pipe(rename("simplemde.min.css"))
+		.pipe(buffer())
 		.pipe(header(banner, {pkg: pkg}))
 		.pipe(gulp.dest("./dist/"));
 });
