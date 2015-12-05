@@ -77,7 +77,7 @@ simplemde.value("This text will appear in the editor");
   - **bold** Can be set to `**` or `__`. Defaults to `**`.
   - **italic** Can be set to `*` or `_`. Defaults to `*`.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
-- **hideIcons**: An array of icon names to hide. Can be used to hide specific icons without completely customizing the toolbar.
+- **hideIcons**: An array of icon names to hide. Can be used to hide specific icons shown by default without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
 - **insertTexts**: Customize how certain buttons that insert text behave. Takes an array with two elements. The first element will be the text inserted before the cursor or highlight, and the second element will be inserted after. For example, this is the default link value: `["[", "](http://)"]`.
@@ -94,6 +94,7 @@ simplemde.value("This text will appear in the editor");
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
   - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
   - **codeSyntaxHighlighting**: If set to `true`, will highlight using [highlight.js](https://github.com/isagalaev/highlight.js). Defaults to `false`. To use this feature you must include highlight.js on your page. For example, include the script and the CSS files like:<br>`<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>`<br>`<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">`
+- **showIcons**: An array of icon names to show. Can be used to show specific icons hidden by default without completely customizing the toolbar.
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include, and in what order.
@@ -144,6 +145,7 @@ var simplemde = new SimpleMDE({
 		singleLineBreaks: false,
 		codeSyntaxHighlighting: true,
 	},
+	showIcons: ["code", "table"],
 	spellChecker: false,
 	status: false,
 	status: ["autosave", "lines", "words", "cursor"], // Optional usage
@@ -174,8 +176,8 @@ unordered-list | toggleUnorderedList | Generic List (Ctrl+L)<br>fa fa-list-ul
 ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
 link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
 image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
-horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
 table | drawTable | Insert Table<br>fa fa-table
+horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
 preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye no-disable
 side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns no-disable no-mobile
 fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt no-disable no-mobile
