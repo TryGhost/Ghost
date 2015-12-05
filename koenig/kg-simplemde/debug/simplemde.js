@@ -13785,6 +13785,14 @@ SimpleMDE.prototype.render = function(el) {
 		if(cm.getOption("fullScreen")) toggleFullScreen(self);
 	};
 
+	document.addEventListener("keydown", function(e) {
+		e = e || window.event;
+
+		if(e.keyCode == 27) {
+			if(self.codemirror.getOption("fullScreen")) toggleFullScreen(self);
+		}
+	}, false);
+
 	var mode, backdrop;
 	if(options.spellChecker !== false) {
 		mode = "spell-checker";
