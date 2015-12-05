@@ -68,6 +68,7 @@ function createIcon(options, enableTooltips) {
 		}
 	}
 
+	el.tabIndex = -1;
 	el.className = options.className;
 	return el;
 }
