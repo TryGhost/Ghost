@@ -591,9 +591,9 @@ var _              = require('lodash'),
         // `grunt validate` is called by `npm test` and is used by Travis.
         grunt.registerTask('validate', 'Run tests and lint code', function () {
             if (process.env.TEST_SUITE === 'server') {
-                grunt.task.run(['test-server']);
+                grunt.task.run(['init', 'test-server']);
             } else if (process.env.TEST_SUITE === 'client') {
-                grunt.task.run(['test-client']);
+                grunt.task.run(['init', 'test-client']);
             } else if (process.env.TEST_SUITE === 'lint') {
                 grunt.task.run(['shell:ember:init', 'shell:bower', 'lint']);
             } else {
@@ -613,13 +613,13 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests for both server and client',
-            ['init', 'test-server', 'test-client']);
+            ['test-server', 'test-client']);
 
         grunt.registerTask('test-server', 'Run server tests',
-            ['init', 'test-routes', 'test-module', 'test-unit', 'test-integration']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration']);
 
         grunt.registerTask('test-client', 'Run client tests',
-            ['init', 'test-ember']);
+            ['test-ember']);
 
         // ### Lint
         //
