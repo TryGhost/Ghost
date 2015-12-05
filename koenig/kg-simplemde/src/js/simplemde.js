@@ -941,7 +941,7 @@ function SimpleMDE(options) {
 	// The codemirror component is only available after rendering
 	// so, the setter for the initialValue can only run after
 	// the element has been rendered
-	if(options.initialValue) {
+	if(options.initialValue && (!this.options.autosave || this.options.autosave.foundSavedValue !== true)) {
 		this.value(options.initialValue);
 	}
 }
@@ -1081,8 +1081,10 @@ SimpleMDE.prototype.autosave = function() {
 		}
 
 		if(this.options.autosave.loaded !== true) {
-			if(typeof localStorage.getItem("smde_" + this.options.autosave.uniqueId) == "string" && localStorage.getItem("smde_" + this.options.autosave.uniqueId) != "")
+			if(typeof localStorage.getItem("smde_" + this.options.autosave.uniqueId) == "string" && localStorage.getItem("smde_" + this.options.autosave.uniqueId) != "") {
 				this.codemirror.setValue(localStorage.getItem("smde_" + this.options.autosave.uniqueId));
+				this.options.autosave.foundSavedValue = true;
+			}
 
 			this.options.autosave.loaded = true;
 		}
