@@ -12871,6 +12871,7 @@ function createIcon(options, enableTooltips) {
 		}
 	}
 
+	el.tabIndex = -1;
 	el.className = options.className;
 	return el;
 }
@@ -13468,19 +13469,20 @@ function wordCount(data) {
 	return count;
 }
 
-
 var toolbarBuiltInButtons = {
 	"bold": {
 		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
-		title: "Bold (Ctrl+B)"
+		title: "Bold (Ctrl+B)",
+		default: true
 	},
 	"italic": {
 		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
-		title: "Italic (Ctrl+I)"
+		title: "Italic (Ctrl+I)",
+		default: true
 	},
 	"strikethrough": {
 		name: "strikethrough",
@@ -13492,7 +13494,8 @@ var toolbarBuiltInButtons = {
 		name: "heading",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header",
-		title: "Heading (Ctrl+H)"
+		title: "Heading (Ctrl+H)",
+		default: true
 	},
 	"heading-smaller": {
 		name: "heading-smaller",
@@ -13524,6 +13527,9 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-header fa-header-x fa-header-3",
 		title: "Small Heading"
 	},
+	"separator-1": {
+		name: "separator-1"
+	},
 	"code": {
 		name: "code",
 		action: toggleCodeBlock,
@@ -13534,31 +13540,39 @@ var toolbarBuiltInButtons = {
 		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
-		title: "Quote (Ctrl+')"
+		title: "Quote (Ctrl+')",
+		default: true
 	},
 	"unordered-list": {
 		name: "unordered-list",
 		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
-		title: "Generic List (Ctrl+L)"
+		title: "Generic List (Ctrl+L)",
+		default: true
 	},
 	"ordered-list": {
 		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
-		title: "Numbered List (Ctrl+Alt+L)"
+		title: "Numbered List (Ctrl+Alt+L)",
+		default: true
+	},
+	"separator-2": {
+		name: "separator-2"
 	},
 	"link": {
 		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
-		title: "Create Link (Ctrl+K)"
+		title: "Create Link (Ctrl+K)",
+		default: true
 	},
 	"image": {
 		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
-		title: "Insert Image (Ctrl+Alt+I)"
+		title: "Insert Image (Ctrl+Alt+I)",
+		default: true
 	},
 	"table": {
 		name: "table",
@@ -13572,29 +13586,36 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-minus",
 		title: "Insert Horizontal Line"
 	},
+	"separator-3": {
+		name: "separator-3"
+	},
 	"preview": {
 		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye no-disable",
-		title: "Toggle Preview (Ctrl+P)"
+		title: "Toggle Preview (Ctrl+P)",
+		default: true
 	},
 	"side-by-side": {
 		name: "side-by-side",
 		action: toggleSideBySide,
 		className: "fa fa-columns no-disable no-mobile",
-		title: "Toggle Side by Side (F9)"
+		title: "Toggle Side by Side (F9)",
+		default: true
 	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
 		className: "fa fa-arrows-alt no-disable no-mobile",
-		title: "Toggle Fullscreen (F11)"
+		title: "Toggle Fullscreen (F11)",
+		default: true
 	},
 	"guide": {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
-		title: "Markdown Guide"
+		title: "Markdown Guide",
+		default: true
 	}
 };
 
@@ -13659,10 +13680,28 @@ function SimpleMDE(options) {
 	}
 
 
-	// Handle toolbar and status bar
-	if(options.toolbar !== false)
-		options.toolbar = options.toolbar || SimpleMDE.toolbar;
+	// Handle toolbar
+	if(options.toolbar === undefined) {
+		// Initialize
+		options.toolbar = [];
 
+
+		// Loop over the built in buttons, to get the preferred order
+		for(var key in toolbarBuiltInButtons) {
+			if(toolbarBuiltInButtons.hasOwnProperty(key)) {
+				if(key.indexOf("separator-") != -1) {
+					options.toolbar.push("|");
+				}
+
+				if(toolbarBuiltInButtons[key].default === true || (options.showIcons && options.showIcons.constructor === Array && options.showIcons.indexOf(key) != -1)) {
+					options.toolbar.push(key);
+				}
+			}
+		}
+	}
+
+
+	// Handle status bar
 	if(!options.hasOwnProperty("status")) {
 		options.status = ["autosave", "lines", "words", "cursor"];
 	}
@@ -13705,15 +13744,10 @@ function SimpleMDE(options) {
 	// The codemirror component is only available after rendering
 	// so, the setter for the initialValue can only run after
 	// the element has been rendered
-	if(options.initialValue) {
+	if(options.initialValue && (!this.options.autosave || this.options.autosave.foundSavedValue !== true)) {
 		this.value(options.initialValue);
 	}
 }
-
-/**
- * Default toolbar elements.
- */
-SimpleMDE.toolbar = ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen", "guide"];
 
 /**
  * Default markdown render.
@@ -13850,8 +13884,10 @@ SimpleMDE.prototype.autosave = function() {
 		}
 
 		if(this.options.autosave.loaded !== true) {
-			if(typeof localStorage.getItem("smde_" + this.options.autosave.uniqueId) == "string" && localStorage.getItem("smde_" + this.options.autosave.uniqueId) != "")
+			if(typeof localStorage.getItem("smde_" + this.options.autosave.uniqueId) == "string" && localStorage.getItem("smde_" + this.options.autosave.uniqueId) != "") {
 				this.codemirror.setValue(localStorage.getItem("smde_" + this.options.autosave.uniqueId));
+				this.options.autosave.foundSavedValue = true;
+			}
 
 			this.options.autosave.loaded = true;
 		}

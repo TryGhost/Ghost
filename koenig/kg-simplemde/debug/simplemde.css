@@ -559,7 +559,7 @@ span.CodeMirror-selectedtext { background: none; }
 	top: 0;
 	left: 0;
 	background: #fafafa;
-	z-index: 2;
+	z-index: 7;
 	overflow: auto;
 	display: none;
 	box-sizing: border-box;
@@ -573,7 +573,7 @@ span.CodeMirror-selectedtext { background: none; }
 	top: 50px;
 	right: 0;
 	background: #fafafa;
-	z-index: 9999;
+	z-index: 9;
 	overflow: auto;
 	display: none;
 	box-sizing: border-box;
