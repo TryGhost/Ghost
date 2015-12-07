@@ -41,10 +41,11 @@ function renderPost(req, res) {
     };
 }
 
-function renderChannel(channelOpts) {
+function renderChannel(name) {
     return function renderChannel(req, res, next) {
         // Parse the parameters we need from the URL
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+        var channelOpts = channelConfig(name),
+            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
             slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
         // Ensure we at least have an empty object for postOptions
@@ -102,20 +103,20 @@ function renderChannel(channelOpts) {
 }
 
 frontendControllers = {
-    index: renderChannel(_.cloneDeep(channelConfig.index)),
-    tag: renderChannel(_.cloneDeep(channelConfig.tag)),
-    author: renderChannel(_.cloneDeep(channelConfig.author)),
+    index: renderChannel('index'),
+    tag: renderChannel('tag'),
+    author: renderChannel('author'),
     rss: function (req, res, next) {
         // Temporary hack, channels will allow us to resolve this better eventually
         var tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/.+'),
             authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/.+');
 
         if (tagPattern.test(res.locals.relativeUrl)) {
-            req.channelConfig = _.cloneDeep(channelConfig.tag);
+            req.channelConfig = channelConfig('tag');
         } else if (authorPattern.test(res.locals.relativeUrl)) {
-            req.channelConfig = _.cloneDeep(channelConfig.author);
+            req.channelConfig = channelConfig('author');
         } else {
-            req.channelConfig = _.cloneDeep(channelConfig.index);
+            req.channelConfig = channelConfig('index');
         }
 
         req.channelConfig.isRSS = true;

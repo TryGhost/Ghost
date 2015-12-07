@@ -104,7 +104,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -146,7 +146,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -175,7 +175,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -209,7 +209,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -241,7 +241,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -297,7 +297,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -306,7 +306,7 @@ describe('RSS', function () {
             // setup
             req.originalUrl = '/tag/magic/rss/';
             req.params.slug = 'magic';
-            req.channelConfig = channelConfig.tag;
+            req.channelConfig = channelConfig('tag');
             req.channelConfig.isRSS = true;
 
             // test
@@ -325,7 +325,7 @@ describe('RSS', function () {
         it('should process the data correctly for an author feed', function (done) {
             req.originalUrl = '/author/joe/rss/';
             req.params.slug = 'joe';
-            req.channelConfig = channelConfig.author;
+            req.channelConfig = channelConfig('author');
             req.channelConfig.isRSS = true;
 
             // test
@@ -369,7 +369,7 @@ describe('RSS', function () {
                     results: {posts: [], meta: {pagination: {pages: 1}}}
                 });
             });
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             function secondCall() {
@@ -420,7 +420,7 @@ describe('RSS', function () {
         it('Redirects to /rss/ if page number is -1', function () {
             req = {params: {page: -1}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, null);
@@ -433,7 +433,7 @@ describe('RSS', function () {
         it('Redirects to /rss/ if page number is 0', function () {
             req = {params: {page: 0}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, null);
@@ -446,7 +446,7 @@ describe('RSS', function () {
         it('Redirects to /rss/ if page number is 1', function () {
             req = {params: {page: 1}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, null);
@@ -461,7 +461,7 @@ describe('RSS', function () {
 
             req = {params: {page: 0}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, null);
@@ -476,7 +476,7 @@ describe('RSS', function () {
 
             req = {params: {page: 1}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, null);
@@ -491,7 +491,7 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, failTest(done)).then(function () {
@@ -507,7 +507,7 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig.index;
+            req.channelConfig = channelConfig('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, failTest(done)).then(function () {
