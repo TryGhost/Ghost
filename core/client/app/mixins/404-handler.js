@@ -3,7 +3,7 @@ import Ember from 'ember';
 export default Ember.Mixin.create({
     actions: {
         error(error, transition) {
-            if (error.errors[0].errorType === 'NotFoundError') {
+            if (error.errors && error.errors[0].errorType === 'NotFoundError') {
                 transition.abort();
 
                 let routeInfo = transition.handlerInfos[transition.handlerInfos.length - 1];
