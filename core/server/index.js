@@ -15,7 +15,6 @@ var express     = require('express'),
     errors      = require('./errors'),
     helpers     = require('./helpers'),
     mailer      = require('./mail'),
-    middleware  = require('./middleware'),
     migrations  = require('./data/migration'),
     models      = require('./models'),
     permissions = require('./permissions'),
@@ -197,7 +196,7 @@ function init(options) {
         helpers.loadCoreHelpers(adminHbs);
 
         // ## Middleware and Routing
-        middleware(blogApp, adminApp);
+        require('./middleware')(blogApp, adminApp);
 
         // Log all theme errors and warnings
         validateThemes(config.paths.themePath)
