@@ -110,6 +110,7 @@ New releases are announced on the [dev blog](http://dev.ghost.org/tag/releases/)
 
 :saxophone::turtle:
 
+あゆた Node.js 勉強ようです
 
 # Copyright & License
 
