@@ -33,7 +33,7 @@ config = {
                 port: '5432'
             },
             debug: false
-        },
+        }, 
 
         server: {  
             host: '0.0.0.0',
