@@ -12,6 +12,7 @@ config = {
     // Configure your URL and mail settings here
     production: {
         url: 'http://minutesdepot-blog.herokuapp.com',
+        fileStorage: false,
         mail: {  
             transport: 'SMTP',
             host: 'smtp.mandrillapp.com',
