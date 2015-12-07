@@ -1,3 +1,3 @@
-[submodule "content/themes/minutesdepot"]
-	path = content/themes/minutesdepot
+[submodule "content/themes/casper"]
+	path = content/themes/casper
 	url = https://github.com/trochette/Casper.git
