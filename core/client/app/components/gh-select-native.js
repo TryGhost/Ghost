@@ -21,7 +21,9 @@ export default Component.extend({
 
     actions: {
         change() {
-            let [selectEl] = this.$('select');
+            // jscs:disable requireArrayDestructuring
+            let selectEl = this.$('select')[0];
+            // jscs:enable requireArrayDestructuring
             let {selectedIndex} = selectEl;
 
             // decrement index by 1 if we have a prompt
