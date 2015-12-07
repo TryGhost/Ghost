@@ -65,7 +65,7 @@ CHANGELOG.md
 
 # Built asset files
 #/core/built
-/core/server/views/default.hbs
+#/core/server/views/default.hbs
 
 # Coverage reports
 coverage.html
