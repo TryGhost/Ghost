@@ -3,4 +3,4 @@
 	url = https://github.com/TryGhost/Casper.git
 [submodule "content/themes/minutesdepot"]
 	path = content/themes/minutesdepot
-	url = https://github.com/TryGhost/Casper.git
+	url = https://github.com/trochette/Casper.git
