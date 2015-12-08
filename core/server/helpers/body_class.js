@@ -8,7 +8,6 @@
 
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
-    filters         = require('../filters'),
     // @TODO Fix this
     template        = require('../controllers/frontend/templates'),
     body_class;
@@ -65,10 +64,8 @@ body_class = function (options) {
         }
     }
 
-    return filters.doFilter('body_class', classes).then(function (classes) {
-        var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
-        return new hbs.handlebars.SafeString(classString.trim());
-    });
+    classes = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+    return new hbs.handlebars.SafeString(classes.trim());
 };
 
 module.exports = body_class;

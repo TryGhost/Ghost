@@ -8,7 +8,6 @@
 
 var _           = require('lodash'),
     config      = require('../config'),
-    filters     = require('../filters'),
     meta_description;
 
 meta_description = function (options) {
@@ -31,10 +30,7 @@ meta_description = function (options) {
         description = this.post.meta_description;
     }
 
-    return filters.doFilter('meta_description', description).then(function (description) {
-        description = description || '';
-        return description.trim();
-    });
+    return (description || '').trim();
 };
 
 module.exports = meta_description;
