@@ -1,5 +1,6 @@
 var _ = require('lodash'),
     config = require('../../config'),
+    labs = require('../../utils/labs'),
     channelConfig;
 
 channelConfig = function channelConfig() {
@@ -13,13 +14,13 @@ channelConfig = function channelConfig() {
             name: 'tag',
             route: '/' + config.routeKeywords.tag + '/:slug/',
             postOptions: {
-                filter: 'tags:\'%s\''
+                filter: labs.isSet('hashtags') ? 'tags:\'%s\'+tags.visibility:\'public\'' : 'tags:\'%s\''
             },
             data: {
                 tag: {
                     type: 'read',
                     resource: 'tags',
-                    options: {slug: '%s'}
+                    options: labs.isSet('hashtags') ? {slug: '%s', visibility: 'public'} : {slug: '%s'}
                 }
             },
             slugTemplate: true,
