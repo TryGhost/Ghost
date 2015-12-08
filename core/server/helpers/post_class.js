@@ -8,7 +8,6 @@
 
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
-    filters         = require('../filters'),
     post_class;
 
 post_class = function (options) {
@@ -30,10 +29,8 @@ post_class = function (options) {
         classes.push('page');
     }
 
-    return filters.doFilter('post_class', classes).then(function (classes) {
-        var classString = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
-        return new hbs.handlebars.SafeString(classString.trim());
-    });
+    classes = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+    return new hbs.handlebars.SafeString(classes.trim());
 };
 
 module.exports = post_class;
