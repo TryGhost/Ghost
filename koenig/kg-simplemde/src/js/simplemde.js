@@ -6,6 +6,7 @@ require("./codemirror/tablist");
 require("codemirror/addon/display/fullscreen.js");
 require("codemirror/mode/markdown/markdown.js");
 require("codemirror/addon/mode/overlay.js");
+require("codemirror/addon/display/placeholder.js");
 require("codemirror/mode/gfm/gfm.js");
 require("codemirror/mode/xml/xml.js");
 require("spell-checker");
@@ -1047,7 +1048,8 @@ SimpleMDE.prototype.render = function(el) {
 		autofocus: (options.autofocus === true) ? true : false,
 		extraKeys: keyMaps,
 		lineWrapping: (options.lineWrapping === false) ? false : true,
-		allowDropFileTypes: ["text/plain"]
+		allowDropFileTypes: ["text/plain"],
+		placeholder: options.placeholder || el.getAttribute('placeholder') || ''
 	});
 
 	if(options.toolbar !== false) {

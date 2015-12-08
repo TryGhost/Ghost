@@ -90,6 +90,7 @@ simplemde.value("This text will appear in the editor");
   - **allowAtxHeaderWithoutSpace**: If set to `true`, will render headers without a space after the `#`. Defaults to `false`.
   - **strikethrough**: If set to `false`, will not process GFM strikethrough syntax. Defaults to `true`.
   - **underscoresBreakWords**: If set to `true`, let underscores be a delimiter for separating words. Defaults to `false`.
+- **placeholder**: Custom placeholder that should be displayed
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
   - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
@@ -131,6 +132,7 @@ var simplemde = new SimpleMDE({
 		strikethrough: false,
 		underscoresBreakWords: true,
 	},
+    placeholder: 'Type here...',
 	previewRender: function(plainText) {
 		return customMarkdownParser(plainText); // Returns HTML from a custom parser
 	},
