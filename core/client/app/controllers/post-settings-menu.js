@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import {parseDateString, formatDate} from 'ghost/utils/date-formatting';
+import {parseDateString} from 'ghost/utils/date-formatting';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
@@ -42,25 +42,6 @@ export default Controller.extend(SettingsMenuMixin, {
             .extend(PromiseProxyMixin)
             .create(deferred);
     }),
-
-    /*jshint unused:false */
-    publishedAtValue: computed('model.published_at', {
-        get() {
-            let pubDate = this.get('model.published_at');
-
-            if (pubDate) {
-                return formatDate(pubDate);
-            }
-
-            return formatDate(moment());
-        },
-        set(key, value) {
-            // We're using a fake setter to reset
-            // the cache for this property
-            return formatDate(moment());
-        }
-    }),
-    /*jshint unused:true */
 
     slugValue: boundOneWay('model.slug'),
 
@@ -302,7 +283,7 @@ export default Controller.extend(SettingsMenuMixin, {
          */
         setPublishedAt(userInput) {
             let newPublishedAt = parseDateString(userInput);
-            let publishedAt = this.get('model.published_at');
+            let publishedAt = moment(this.get('model.published_at'));
             let errMessage = '';
 
             if (!userInput) {
@@ -326,7 +307,6 @@ export default Controller.extend(SettingsMenuMixin, {
             // If errors, notify and exit.
             if (errMessage) {
                 this.get('model.errors').add('post-setting-date', errMessage);
-
                 return;
             }
 
