@@ -320,35 +320,6 @@ describeComponent(
             testUrl('test/nested');
         });
 
-        it('handles a baseUrl with a path component', function () {
-            let expectedUrl = '';
-
-            this.set('baseUrl', `${currentUrl}blog/`);
-
-            this.on('updateUrl', (url) => {
-                expect(url).to.equal(expectedUrl);
-            });
-
-            this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
-            `);
-            let $input = this.$('input');
-
-            let testUrl = (url) => {
-                expectedUrl = url;
-                run(() => {
-                    $input.val(`${currentUrl}blog${url}`).trigger('input');
-                });
-                run(() => {
-                    $input.trigger('blur');
-                });
-            };
-
-            testUrl('/about');
-            testUrl('/about#contact');
-            testUrl('/test/nested');
-        });
-
         it('handles links to subdomains of blog domain', function () {
             let expectedUrl = '';
 
@@ -368,6 +339,73 @@ describeComponent(
                 $input.val(expectedUrl).trigger('input').trigger('blur');
             });
             expect($input.val()).to.equal(expectedUrl);
+        });
+
+        describe('with sub-folder baseUrl', function () {
+            beforeEach(function () {
+                this.set('baseUrl', `${currentUrl}blog/`);
+            });
+
+            it('handles URLs relative to base url', function () {
+                let expectedUrl = '';
+
+                this.on('updateUrl', (url) => {
+                    expect(url).to.equal(expectedUrl);
+                });
+
+                this.render(hbs `
+                    {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                `);
+                let $input = this.$('input');
+
+                let testUrl = (url) => {
+                    expectedUrl = url;
+                    run(() => {
+                        $input.val(`${currentUrl}blog${url}`).trigger('input');
+                    });
+                    run(() => {
+                        $input.trigger('blur');
+                    });
+                };
+
+                testUrl('/about');
+                testUrl('/about#contact');
+                testUrl('/test/nested');
+            });
+
+            it('handles URLs relative to base host', function () {
+                let expectedUrl = '';
+
+                this.on('updateUrl', (url) => {
+                    expect(url).to.equal(expectedUrl);
+                });
+
+                this.render(hbs `
+                    {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                `);
+                let $input = this.$('input');
+
+                let testUrl = (url) => {
+                    expectedUrl = url;
+                    run(() => {
+                        $input.val(url).trigger('input');
+                    });
+                    run(() => {
+                        $input.trigger('blur');
+                    });
+                };
+
+                testUrl(`http://${window.location.host}`);
+                testUrl(`https://${window.location.host}`);
+                testUrl(`http://${window.location.host}/`);
+                testUrl(`https://${window.location.host}/`);
+                testUrl(`http://${window.location.host}/test`);
+                testUrl(`https://${window.location.host}/test`);
+                testUrl(`http://${window.location.host}/#test`);
+                testUrl(`https://${window.location.host}/#test`);
+                testUrl(`http://${window.location.host}/another/folder`);
+                testUrl(`https://${window.location.host}/another/folder`);
+            });
         });
     }
 );
