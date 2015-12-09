@@ -15,6 +15,7 @@ export default Controller.extend(SettingsMenuMixin, {
 
     application: inject.controller(),
     config: inject.service(),
+    feature: inject.controller(),
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
     session: inject.service(),
@@ -457,34 +458,40 @@ export default Controller.extend(SettingsMenuMixin, {
             });
         },
 
-        addTag(tagName, index) {
+        addTag(name, index) {
             let currentTags = this.get('model.tags');
             let currentTagNames = currentTags.map((tag) => {
                 return tag.get('name').toLowerCase();
             });
-            let availableTagNames,
-                tagToAdd;
+            let hashtagRegex = /^#.?/;
+            let hashtag = false;
 
-            tagName = tagName.trim();
+            name = name.trim();
+
+            if (this.get('feature.hashtags')) {
+                hashtag = hashtagRegex.test(name);
+            }
 
             // abort if tag is already selected
-            if (currentTagNames.contains(tagName.toLowerCase())) {
+            if (currentTagNames.contains(name.toLowerCase())) {
                 return;
             }
 
             this.get('availableTags').then((availableTags) => {
-                availableTagNames = availableTags.map((tag) => {
+                let availableTagNames = availableTags.map((tag) => {
                     return tag.get('name').toLowerCase();
                 });
+                let tagToAdd;
 
                 // find existing tag or create new
-                if (availableTagNames.contains(tagName.toLowerCase())) {
+                if (availableTagNames.contains(name.toLowerCase())) {
                     tagToAdd = availableTags.find((tag) => {
-                        return tag.get('name').toLowerCase() === tagName.toLowerCase();
+                        return tag.get('name').toLowerCase() === name.toLowerCase();
                     });
                 } else {
                     tagToAdd = this.get('store').createRecord('tag', {
-                        name: tagName
+                        name,
+                        hashtag
                     });
 
                     // we need to set a UUID so that selectize has a unique value
