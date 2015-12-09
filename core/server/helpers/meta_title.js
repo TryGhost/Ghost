@@ -8,7 +8,6 @@
 
 var _           = require('lodash'),
     config      = require('../config'),
-    filters     = require('../filters'),
     meta_title;
 
 meta_title = function (options) {
@@ -37,10 +36,7 @@ meta_title = function (options) {
         title = blog.title + pageString;
     }
 
-    return filters.doFilter('meta_title', title).then(function (title) {
-        title = title || '';
-        return title.trim();
-    });
+    return (title || '').trim();
 };
 
 module.exports = meta_title;
