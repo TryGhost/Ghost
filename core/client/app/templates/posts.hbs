@@ -32,6 +32,11 @@
                                         <span class="draft">Draft</span>
                                     {{/if}}
                                 </span>
+                                {{#if feature.hashtags}}
+                                    {{#each post.hashtags as |hashtag|}}
+                                        <span class="label label-default">{{hashtag.name}}</span>
+                                    {{/each}}
+                                {{/if}}
                             </section>
                         {{/link-to}}
                     {{/gh-posts-list-item}}

@@ -4,7 +4,7 @@ import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {computed, inject} = Ember;
-const {equal} = computed;
+const {equal, filterBy} = computed;
 const {Model, attr, belongsTo, hasMany} = DS;
 
 export default Model.extend(ValidationEngine, {
@@ -63,6 +63,7 @@ export default Model.extend(ValidationEngine, {
 
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),
+    hashtags: filterBy('tags', 'hashtag', true),
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
