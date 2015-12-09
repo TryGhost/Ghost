@@ -88,14 +88,13 @@ export default TextField.extend({
     },
 
     notifyUrlChanged() {
-        let value = this.get('value').trim();
+        let url = this.get('value').trim();
         let urlParts = document.createElement('a');
         let baseUrl = this.get('baseUrl');
         let baseUrlParts = document.createElement('a');
-        let url = value;
 
         // ensure value property is trimmed
-        this.set('value', value);
+        this.set('value', url);
 
         // leverage the browser's native URI parsing
         urlParts.href = url;
@@ -113,12 +112,28 @@ export default TextField.extend({
             this.set('value', url);
         }
 
-        // remove the base url before sending to action
-        if (urlParts.host === baseUrlParts.host && !url.match(/^#/)) {
+        // get our baseUrl relativity checks in order
+        let isOnSameHost = urlParts.host === baseUrlParts.host;
+        let isAnchorLink = url.match(/^#/);
+        let isRelativeToBasePath = urlParts.pathname.indexOf(baseUrlParts.pathname) === 0;
+
+        // if our pathname is only missing a trailing / mark it as relative
+        if (`${urlParts.pathname}/` === baseUrlParts.pathname) {
+            isRelativeToBasePath = true;
+        }
+
+        // if relative to baseUrl, remove the base url before sending to action
+        if (!isAnchorLink && isOnSameHost && isRelativeToBasePath) {
             url = url.replace(/^[a-zA-Z0-9\-]+:/, '');
             url = url.replace(/^\/\//, '');
             url = url.replace(baseUrlParts.host, '');
             url = url.replace(baseUrlParts.pathname, '');
+
+            // handle case where url path is same as baseUrl path but missing trailing slash
+            if (urlParts.pathname.slice(-1) !== '/') {
+                url = url.replace(baseUrlParts.pathname.slice(0, -1), '');
+            }
+
             if (!url.match(/^\//)) {
                 url = `/${url}`;
             }
