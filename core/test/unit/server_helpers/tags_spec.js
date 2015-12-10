@@ -109,4 +109,15 @@ describe('{{tags}} helper', function () {
 
         String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>');
     });
+
+    it('can limit no. tags output to 1', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {limit: '1'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>');
+    });
 });
