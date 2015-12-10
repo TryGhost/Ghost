@@ -63,7 +63,11 @@ apiRoutes = function apiRoutes(middleware) {
     router.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
 
     // ## Clients
+    router.get('/clients', authenticatePrivate, api.http(api.clients.browse));
     router.get('/clients/slug/:slug', api.http(api.clients.read));
+    router.post('/clients', authenticatePrivate, api.http(api.clients.add));
+    //router.put('/clients/:id', authenticatePrivate, api.http(api.clients.edit));
+    //router.del('/clients/:id', authenticatePrivate, api.http(api.clients.destroy));
 
     // ## Slugs
     router.get('/slugs/:type/:name', authenticatePrivate, api.http(api.slugs.generate));
