@@ -117,9 +117,9 @@ clients = {
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
         return pipeline(tasks, object, options).then(function formatResponse(result) {
-            var tag = result.toJSON(options);
+            var client = result.toJSON(options);
 
-            return {tags: [tag]};
+            return {clients: [client]};
         });
     }
 };
