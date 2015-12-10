@@ -280,7 +280,7 @@ errors = {
         function renderErrorInt(errorView) {
             var stack = null;
 
-            if (process.env.NODE_ENV !== 'production' && err.stack) {
+            if (code !== 404 && process.env.NODE_ENV !== 'production' && err.stack) {
                 stack = parseStack(err.stack);
             }
 
@@ -336,7 +336,7 @@ errors = {
         // 500 errors should never be cached
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
 
-        if (err.status === 404) {
+        if (err.status === 404 || err.code === 404) {
             return this.error404(req, res, next);
         }
 

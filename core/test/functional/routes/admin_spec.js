@@ -85,16 +85,16 @@ describe('Admin Routing', function () {
         it('should redirect /signin/ to /ghost/', function (done) {
             request.get('/signin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEndNoAuth(done));
         });
 
         it('should redirect /admin/ to /ghost/', function (done) {
             request.get('/admin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEndNoAuth(done));
         });
 
