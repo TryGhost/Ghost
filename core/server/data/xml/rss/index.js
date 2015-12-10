@@ -5,6 +5,7 @@ var _        = require('lodash'),
     RSS      = require('rss'),
     url      = require('url'),
     config   = require('../../../config'),
+    errors   = require('../../../errors'),
     filters  = require('../../../filters'),
 
     // Really ugly temporary hack for location of things
@@ -190,7 +191,7 @@ generateFeed = function generateFeed(data) {
 
 generate = function generate(req, res, next) {
     // Initialize RSS
-    var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+    var pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug,
         baseUrl   = getBaseUrl(req, slugParam);
 
@@ -201,17 +202,12 @@ generate = function generate(req, res, next) {
 
     req.channelConfig.slugParam = slugParam;
 
-    // No negative pages, or page 1
-    if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-        return res.redirect(baseUrl);
-    }
-
     return getData(req.channelConfig).then(function then(data) {
         var maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
         if (pageParam > maxPage) {
-            return res.redirect(baseUrl + maxPage + '/');
+            return next(new errors.NotFoundError());
         }
 
         data.version = res.locals.safeVersion;

@@ -151,9 +151,9 @@ describe('Frontend Routing', function () {
 
             it('should not have as second page', function (done) {
                 request.get('/page/2/')
-                    .expect('Location', '/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
         });
@@ -407,25 +407,40 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/page/1/')
                 .expect('Location', '/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                // TODO: This should probably be a 301?
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEnd(done));
         });
 
-        it('should redirect to last page if page too high', function (done) {
+        it('should 404 if page too high', function (done) {
             request.get('/page/4/')
-                .expect('Location', '/page/3/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
                 .end(doEnd(done));
         });
 
-        it('should redirect to first page if page too low', function (done) {
+        it('should 404 if page is zero', function (done) {
             request.get('/page/0/')
-                .expect('Location', '/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+        });
+
+        it('should 404 if page is less than zero', function (done) {
+            request.get('/page/-5/')
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
+                .end(doEnd(done));
+        });
+
+        it('should 404 if page is NaN', function (done) {
+            request.get('/page/one/')
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
                 .end(doEnd(done));
         });
     });
@@ -555,25 +570,24 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/author/ghost-owner/page/1/')
                 .expect('Location', '/author/ghost-owner/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                // TODO: This should probably be a 301?
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEnd(done));
         });
 
-        it('should redirect to last page if page too high', function (done) {
+        it('should 404 if page too high', function (done) {
             request.get('/author/ghost-owner/page/4/')
-                .expect('Location', '/author/ghost-owner/page/3/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
                 .end(doEnd(done));
         });
 
-        it('should redirect to first page if page too low', function (done) {
+        it('should 404 if page too low', function (done) {
             request.get('/author/ghost-owner/page/0/')
-                .expect('Location', '/author/ghost-owner/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
                 .end(doEnd(done));
         });
 
@@ -597,25 +611,24 @@ describe('Frontend Routing', function () {
             it('should redirect page 1', function (done) {
                 request.get('/author/ghost-owner/rss/1/')
                     .expect('Location', '/author/ghost-owner/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    // TODO: This should probably be a 301?
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
                     .end(doEnd(done));
             });
 
-            it('should redirect to last page if page too high', function (done) {
+            it('should 404 if page too high', function (done) {
                 request.get('/author/ghost-owner/rss/2/')
-                    .expect('Location', '/author/ghost-owner/rss/1/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
-            it('should redirect to first page if page too low', function (done) {
+            it('should 404 if page too low', function (done) {
                 request.get('/author/ghost-owner/rss/0/')
-                    .expect('Location', '/author/ghost-owner/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
         });
@@ -690,25 +703,24 @@ describe('Frontend Routing', function () {
         it('should redirect page 1', function (done) {
             request.get('/tag/injection/page/1/')
                 .expect('Location', '/tag/injection/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                // TODO: This should probably be a 301?
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEnd(done));
         });
 
-        it('should redirect to last page if page too high', function (done) {
+        it('should 404 if page too high', function (done) {
             request.get('/tag/injection/page/4/')
-                .expect('Location', '/tag/injection/page/3/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
                 .end(doEnd(done));
         });
 
-        it('should redirect to first page if page too low', function (done) {
+        it('should 404 if page too low', function (done) {
             request.get('/tag/injection/page/0/')
-                .expect('Location', '/tag/injection/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(404)
+                .expect(/Page not found/)
                 .end(doEnd(done));
         });
 
@@ -732,25 +744,24 @@ describe('Frontend Routing', function () {
             it('should redirect page 1', function (done) {
                 request.get('/tag/getting-started/rss/1/')
                     .expect('Location', '/tag/getting-started/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    // TODO: This should probably be a 301?
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.year)
+                    .expect(301)
                     .end(doEnd(done));
             });
 
-            it('should redirect to last page if page too high', function (done) {
+            it('should 404 if page too high', function (done) {
                 request.get('/tag/getting-started/rss/2/')
-                    .expect('Location', '/tag/getting-started/rss/1/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
 
-            it('should redirect to first page if page too low', function (done) {
+            it('should 404 if page too low', function (done) {
                 request.get('/tag/getting-started/rss/0/')
-                    .expect('Location', '/tag/getting-started/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
                     .end(doEnd(done));
             });
         });
