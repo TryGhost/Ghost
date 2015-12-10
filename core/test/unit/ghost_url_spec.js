@@ -10,7 +10,7 @@ describe('Ghost Ajax Helper', function () {
     it('renders basic url correctly when no arguments are presented & useOrigin is set to false', function () {
         url.config = {
             url: 'http://testblog.com/',
-            useOrigin: 'false',
+            useOrigin: false,
             clientId: '',
             clientSecret: ''
         };
@@ -21,7 +21,7 @@ describe('Ghost Ajax Helper', function () {
     it('renders basic url correctly when no arguments are presented & useOrigin is set to true', function () {
         url.config = {
             url: '/url/',
-            useOrigin: 'true',
+            useOrigin: true,
             origin: 'http://originblog.com',
             clientId: '',
             clientSecret: ''
@@ -33,7 +33,7 @@ describe('Ghost Ajax Helper', function () {
     it('strips arguments of forward and trailing slashes correctly', function () {
         url.config = {
             url: 'http://testblog.com/',
-            useOrigin: 'false',
+            useOrigin: false,
             clientId: '',
             clientSecret: ''
         };
@@ -44,7 +44,7 @@ describe('Ghost Ajax Helper', function () {
     it('appends client_id & client_secret to query string automatically', function () {
         url.config = {
             url: 'http://testblog.com/',
-            useOrigin: 'false',
+            useOrigin: false,
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret'
         };
@@ -55,7 +55,7 @@ describe('Ghost Ajax Helper', function () {
     it('generates query parameters correctly', function () {
         url.config = {
             url: 'http://testblog.com/',
-            useOrigin: 'false',
+            useOrigin: false,
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret'
         };
@@ -73,7 +73,7 @@ describe('Ghost Ajax Helper', function () {
     it('generates complex query correctly', function () {
         url.config = {
             url: '/blog/ghost/api/v0.1/',
-            useOrigin: 'true',
+            useOrigin: true,
             origin: 'https://testblog.com',
             clientId: 'ghost-frontend',
             clientSecret: 'notasecret'
