@@ -45,7 +45,7 @@ function renderChannel(name) {
     return function renderChannel(req, res, next) {
         // Parse the parameters we need from the URL
         var channelOpts = channelConfig(name),
-            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            pageParam = req.params.page !== undefined ? req.params.page : 1,
             slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
         // Ensure we at least have an empty object for postOptions
@@ -54,31 +54,11 @@ function renderChannel(name) {
         channelOpts.postOptions.page = pageParam;
         channelOpts.slugParam = slugParam;
 
-        // @TODO this should really use the url building code in config.url
-        function createUrl(page) {
-            var url = config.paths.subdir + channelOpts.route;
-
-            if (slugParam) {
-                url = url.replace(':slug', slugParam);
-            }
-
-            if (page && page > 1) {
-                url += 'page/' + page + '/';
-            }
-
-            return url;
-        }
-
-        // If the page parameter isn't something sensible, redirect
-        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-            return res.redirect(createUrl());
-        }
-
         // Call fetchData to get everything we need from the API
         return fetchData(channelOpts).then(function handleResult(result) {
-            // If page is greater than number of pages we have, redirect to last page
+            // If page is greater than number of pages we have, go straight to 404
             if (pageParam > result.meta.pagination.pages) {
-                return res.redirect(createUrl(result.meta.pagination.pages));
+                return next(new errors.NotFoundError());
             }
 
             // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
