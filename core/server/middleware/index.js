@@ -70,9 +70,6 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
         }
     }
 
-    // Favicon
-    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
-
     // Static assets
     blogApp.use('/shared', express.static(path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
     blogApp.use('/content/images', storage.getStorage().serve());
@@ -95,6 +92,9 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
 
     // Theme only config
     blogApp.use(staticTheme());
+
+    // Default favicon
+    blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
     // Check if password protected blog
     blogApp.use(privateBlogging.checkIsPrivate); // check if the blog is protected
