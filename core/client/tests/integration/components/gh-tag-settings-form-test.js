@@ -167,6 +167,30 @@ describeComponent(
             });
         });
 
+        it('triggers setProperty action on hidden tag checkbox change', function () {
+            let expectedProperty = 'hidden';
+            let expectedValue;
+
+            this.set('actions.setProperty', function (property, value) {
+                expect(property, 'property').to.equal(expectedProperty);
+                expect(value, 'value').to.equal(expectedValue);
+            });
+
+            this.render(hbs`
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal' hiddenTags=true}}
+            `);
+
+            expectedValue = true;
+            run(() => {
+                this.$('input[name="hidden"]').click();
+            });
+
+            expectedValue = false;
+            run(() => {
+                this.$('input[name="hidden"]').click();
+            });
+        });
+
         it('displays error messages for validated fields', function () {
             let errors = this.get('tag.errors');
             let hasValidated = this.get('tag.hasValidated');

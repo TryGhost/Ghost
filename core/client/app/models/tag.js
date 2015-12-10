@@ -15,7 +15,7 @@ export default Model.extend(ValidationEngine, {
     meta_title: attr('string'),
     meta_description: attr('string'),
     image: attr('string'),
-    hidden: attr('boolean'),
+    hashtag: attr('boolean'),
     created_at: attr('moment-date'),
     updated_at: attr('moment-date'),
     created_by: attr(),

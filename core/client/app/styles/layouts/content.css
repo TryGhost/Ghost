@@ -106,6 +106,10 @@
     opacity: 0;
 }
 
+.content-list .status {
+    margin-right: 7px;
+}
+
 .content-list .status .draft {
     color: var(--red);
 }

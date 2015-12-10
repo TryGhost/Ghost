@@ -13,6 +13,7 @@ export default Component.extend({
     scratchDescription: boundOneWay('tag.description'),
     scratchMetaTitle: boundOneWay('tag.meta_title'),
     scratchMetaDescription: boundOneWay('tag.meta_description'),
+    scratchHidden: boundOneWay('tag.hidden'),
 
     isViewingSubview: false,
 
@@ -110,6 +111,10 @@ export default Component.extend({
 
         clearCoverImage() {
             this.attrs.setProperty('image', '');
+        },
+
+        setHidden(event) {
+            this.attrs.setProperty('hidden', event.target.checked);
         },
 
         setUploaderReference() {

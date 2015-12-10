@@ -183,6 +183,12 @@ describe('Acceptance: Settings - Tags', function () {
                     .to.equal('New Name');
             });
 
+            // trigger save of boolean value, will error if not handled correctly
+            // TODO: it may be possible to use Pretender's request tracking to
+            // verify that the correct value was sent to the API
+            // TODO: re-enable once out of labs or test with hiddenTags enabled
+            // click('input[name="hidden"]');
+
             // start new tag
             click('.view-actions .btn-green');
 

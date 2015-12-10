@@ -41,6 +41,16 @@ export default Controller.extend({
         }
     }),
 
+    useHiddenTags: computed('feature.hiddenTags', {
+        get() {
+            return this.get('feature.hiddenTags');
+        },
+        set(key, value) {
+            this.saveLabs('hiddenTags', value);
+            return value;
+        }
+    }),
+
     actions: {
         onUpload(file) {
             let formData = new FormData();

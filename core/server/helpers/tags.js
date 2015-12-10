@@ -9,6 +9,7 @@
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
     config          = require('../config'),
+    labs            = require('../utils/labs'),
     utils           = require('./utils'),
     tags;
 
@@ -20,24 +21,29 @@ tags = function (options) {
         separator = options.hash && _.isString(options.hash.separator) ? options.hash.separator : ', ',
         prefix = options.hash && _.isString(options.hash.prefix) ? options.hash.prefix : '',
         suffix = options.hash && _.isString(options.hash.suffix) ? options.hash.suffix : '',
-        output = '';
+        output;
 
     function createTagList(tags) {
-        var tagNames = _.pluck(tags, 'name');
+        return _.reduce(tags, function (tagArray, tag) {
+            // If labs.hiddenTags is set, and the tag is hidden, ignore it
+            if (labs.isSet('hiddenTags') && tag.hidden) {
+                return tagArray;
+            }
 
-        if (autolink) {
-            return _.map(tags, function (tag) {
-                return utils.linkTemplate({
-                    url: config.urlFor('tag', {tag: tag}),
-                    text: _.escape(tag.name)
-                });
-            }).join(separator);
-        }
-        return _.escape(tagNames.join(separator));
+            var tagOutput = autolink ? utils.linkTemplate({
+                url: config.urlFor('tag', {tag: tag}),
+                text: _.escape(tag.name)
+            }) : _.escape(tag.name);
+            tagArray.push(tagOutput);
+
+            return tagArray;
+        }, []).join(separator);
     }
 
-    if (this.tags && this.tags.length) {
-        output = prefix + createTagList(this.tags) + suffix;
+    output = createTagList(this.tags);
+
+    if (output) {
+        output = prefix + output + suffix;
     }
 
     return new hbs.handlebars.SafeString(output);

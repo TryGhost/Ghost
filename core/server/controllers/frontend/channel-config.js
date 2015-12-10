@@ -1,5 +1,6 @@
 var _ = require('lodash'),
     config = require('../../config'),
+    labs = require('../../utils/labs'),
     getConfig;
 
 getConfig = function getConfig(name) {
@@ -13,13 +14,13 @@ getConfig = function getConfig(name) {
             name: 'tag',
             route: '/' + config.routeKeywords.tag + '/:slug/',
             postOptions: {
-                filter: 'tags:%s'
+                filter: labs.isSet('hiddenTags') ? 'tags:%s+tags.hidden:false' : 'tags:%s'
             },
             data: {
                 tag: {
                     type: 'read',
                     resource: 'tags',
-                    options: {slug: '%s'}
+                    options: labs.isSet('hiddenTags') ? {slug: '%s', hidden: false} : {slug: '%s'}
                 }
             },
             slugTemplate: true
