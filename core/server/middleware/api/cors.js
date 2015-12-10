@@ -65,7 +65,7 @@ function getWhitelist() {
  */
 function handleCORS(req, cb) {
     var origin = req.get('origin'),
-        trustedDomains = req.client && req.client.trustedDomains;
+        trustedDomains = req.client && req.client.trusted_domains;
 
     // Request must have an Origin header
     if (!origin) {
