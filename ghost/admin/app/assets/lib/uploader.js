@@ -33,7 +33,6 @@ let UploadUi = function ($dropzone, settings) {
             let animateDropzone = ($img) => {
                 $dropzone.animate({opacity: 0}, 250, () => {
                     $dropzone.removeClass('image-uploader').addClass('pre-image-uploader');
-                    $dropzone.css({minHeight: 0});
                     this.removeExtras();
                     $dropzone.animate({height: $img.height()}, 250, () => {
                         showImage($img.width(), $img.height());
