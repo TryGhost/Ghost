@@ -2,7 +2,7 @@
     'use strict';
 
     function generateQueryString(object) {
-        var url = '?',
+        var queries = [],
             i;
 
         if (!object) {
@@ -11,25 +11,22 @@
 
         for (i in object) {
             if (object.hasOwnProperty(i) && (!!object[i] || object[i] === false)) {
-                url += i + '=' + encodeURIComponent(object[i]) + '&';
+                queries.push(i + '=' + encodeURIComponent(object[i]));
             }
         }
 
-        return url.substring(0, url.length - 1);
+        if (queries.length) {
+            return '?' + queries.join('&');
+        }
+        return '';
     }
 
     var url = {
-        config: {
-            url: '{{api_url}}',
-            useOrigin: '{{useOrigin}}',
-            origin: '',
-            clientId: '',
-            clientSecret: ''
-        },
+        config: {},
 
         api: function () {
             var args = Array.prototype.slice.call(arguments),
-                url = ((this.config.useOrigin === 'true')) ? this.config.origin + this.config.url : this.config.url,
+                url = (this.config.useOrigin) ? this.config.origin + this.config.url : this.config.url,
                 queryOptions;
 
             if (args.length && typeof args[args.length - 1] === 'object') {
@@ -52,12 +49,11 @@
     };
 
     if (typeof window !== 'undefined') {
-        url.config.origin = window.location.origin;
-        url.config.clientId = document.querySelector('meta[property=\'ghost:client_id\']').content;
-        url.config.clientSecret = document.querySelector('meta[property=\'ghost:client_secret\']').content;
         window.ghost = window.ghost || {};
+        url.config = window.ghost.config || {};
         window.ghost.url = url;
     }
+
     if (typeof module !== 'undefined') {
         module.exports = url;
     }
