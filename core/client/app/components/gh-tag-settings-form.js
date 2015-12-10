@@ -8,6 +8,8 @@ export default Component.extend({
 
     tag: null,
 
+    _previousKeymasterScope: null,
+
     scratchName: boundOneWay('tag.name'),
     scratchSlug: boundOneWay('tag.slug'),
     scratchDescription: boundOneWay('tag.description'),
@@ -91,12 +93,33 @@ export default Component.extend({
         }
     },
 
+    _setKeymasterScope() {
+        this._previousKeymasterScope = key.getScope();
+        key.setScope('gh-settings-form');
+    },
+
+    _resetKeymasterScope() {
+        key.setScope(this._previousKeymasterScope);
+    },
+
     focusIn() {
-        key.setScope('tag-settings-form');
+        this._setKeymasterScope();
     },
 
     focusOut() {
-        key.setScope('default');
+        this._resetKeymasterScope();
+    },
+
+    mouseEnter() {
+        this._setKeymasterScope();
+    },
+
+    mouseLeave() {
+        this._resetKeymasterScope();
+    },
+
+    touchStart() {
+        this._setKeymasterScope();
     },
 
     actions: {

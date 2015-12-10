@@ -13,7 +13,7 @@
             isLoading=isLoading
             classNames="tag-list"
         }}
-            <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
+            <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}" {{action "resetShortcutsScope" on="touchStart" preventDefault=false}}>
                 {{#each tags as |tag|}}
                     <div class="settings-tag">
                         {{#link-to 'settings.tags.tag' tag class="tag-edit-button"}}

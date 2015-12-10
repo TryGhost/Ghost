@@ -1,3 +1,4 @@
+/* global key */
 import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
@@ -41,6 +42,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
     deactivate() {
         this._super(...arguments);
         this.send('resetPagination');
+        this.send('resetShortcutsScope');
     },
 
     stepThroughTags(step) {
@@ -95,6 +97,10 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
 
         newTag() {
             this.transitionTo('settings.tags.new');
+        },
+
+        resetShortcutsScope() {
+            key.setScope('default');
         }
     }
 });
