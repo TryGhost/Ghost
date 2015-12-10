@@ -28,9 +28,11 @@
 
             {{#gh-form-group errors=model.errors property="post-setting-date"}}
                 <label for="post-setting-date">Publish Date</label>
-                <span class="input-icon icon-calendar">
-                    {{gh-input class="post-setting-date" id="post-setting-date" value=publishedAtValue name="post-setting-date" focus-out="setPublishedAt" stopEnterKeyDownPropagation="true"}}
-                </span>
+                {{gh-datetime-input value=model.published_at
+                                    update=(action "setPublishedAt")
+                                    inputClass="post-setting-date"
+                                    inputId="post-setting-date"
+                                    inputName="post-setting-date"}}
                 {{gh-error-message errors=model.errors property="post-setting-date"}}
             {{/gh-form-group}}
 
