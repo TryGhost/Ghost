@@ -132,7 +132,7 @@ var simplemde = new SimpleMDE({
 		strikethrough: false,
 		underscoresBreakWords: true,
 	},
-    placeholder: 'Type here...',
+    placeholder: "Type here...",
 	previewRender: function(plainText) {
 		return customMarkdownParser(plainText); // Returns HTML from a custom parser
 	},

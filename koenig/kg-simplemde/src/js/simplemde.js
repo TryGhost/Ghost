@@ -1049,7 +1049,7 @@ SimpleMDE.prototype.render = function(el) {
 		extraKeys: keyMaps,
 		lineWrapping: (options.lineWrapping === false) ? false : true,
 		allowDropFileTypes: ["text/plain"],
-		placeholder: options.placeholder || el.getAttribute('placeholder') || ''
+		placeholder: options.placeholder || el.getAttribute("placeholder") || ""
 	});
 
 	if(options.toolbar !== false) {
