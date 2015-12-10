@@ -789,15 +789,18 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders script tags with basic configuration', function (done) {
+            utils.overrideConfig({
+                url: 'http://example.com/'
+            });
+
             helpers.ghost_head.call(
                 {safeVersion: '0.3', context: ['paged', 'index'], post: false},
                 {data: {root: {context: []}}}
             ).then(function (rendered) {
                 should.exist(rendered);
                 expectGhostClientMeta(rendered);
-                rendered.string.should.match(/<script type="text\/javascript">\(function \(\) \{/);
-                rendered.string.should.match(/'use strict';/);
-                rendered.string.should.match(/<\/script>/);
+                rendered.string.should.match(/<script type="text\/javascript">/);
+                rendered.string.should.match(/<script type="text\/javascript" src="\/shared\/ghost-url\.js\?v=/);
 
                 done();
             });
@@ -815,7 +818,7 @@ describe('{{ghost_head}} helper', function () {
                 should.exist(rendered);
                 expectGhostClientMeta(rendered);
                 rendered.string.should.match(/url: '\/ghost\/api\/v0\.1\/'/);
-                rendered.string.should.match(/useOrigin: 'true'/);
+                rendered.string.should.match(/useOrigin: true/);
 
                 done();
             });
@@ -833,7 +836,7 @@ describe('{{ghost_head}} helper', function () {
                 should.exist(rendered);
                 expectGhostClientMeta(rendered);
                 rendered.string.should.match(/url: '\/blog\/ghost\/api\/v0\.1\/'/);
-                rendered.string.should.match(/useOrigin: 'true'/);
+                rendered.string.should.match(/useOrigin: true/);
 
                 done();
             });
@@ -852,7 +855,7 @@ describe('{{ghost_head}} helper', function () {
                 should.exist(rendered);
                 expectGhostClientMeta(rendered);
                 rendered.string.should.match(/url: 'https:\/\/testurl\.com\/ghost\/api\/v0\.1\/'/);
-                rendered.string.should.match(/useOrigin: 'false'/);
+                rendered.string.should.match(/useOrigin: false/);
 
                 done();
             });
@@ -872,7 +875,7 @@ describe('{{ghost_head}} helper', function () {
                 should.exist(rendered);
                 expectGhostClientMeta(rendered);
                 rendered.string.should.match(/url: 'https:\/\/sslurl\.com\/ghost\/api\/v0\.1\/'/);
-                rendered.string.should.match(/useOrigin: 'false'/);
+                rendered.string.should.match(/useOrigin: false/);
 
                 done();
             });
