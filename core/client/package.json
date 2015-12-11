@@ -43,6 +43,7 @@
     "ember-export-application-global": "1.0.5",
     "ember-myth": "0.1.1",
     "ember-resolver": "2.0.3",
+    "ember-route-action-helper": "0.2.0",
     "ember-simple-auth": "1.0.0",
     "ember-sinon": "0.3.0",
     "ember-suave": "1.2.3",
