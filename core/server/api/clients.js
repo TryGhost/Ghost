@@ -162,6 +162,43 @@ clients = {
 
             return Promise.reject(new errors.NotFoundError('Client not found.'));
         });
+    },
+
+    /**
+     * ## Destroy
+     *
+     * @public
+     * @param {{id, context}} options
+     * @return {Promise<Client>} Deleted Client
+     */
+    destroy: function destroy(options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return clients.read(options).then(function (result) {
+                return dataProvider.Client.destroy(options).then(function () {
+                    return result;
+                });
+            });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            // TODO: add permissions
+            // utils.handlePermissions(docName, 'destroy'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     }
 };
 
