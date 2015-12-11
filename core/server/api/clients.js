@@ -121,6 +121,47 @@ clients = {
 
             return {clients: [client]};
         });
+    },
+
+    /**
+     * ## Edit
+     *
+     * @public
+     * @param {Client} object Client or specific properties to update
+     * @param {{id, context, include}} options
+     * @return {Promise<Client>} Edited Client
+     */
+    edit: function edit(object, options) {
+        var tasks;
+
+        /**
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Client.edit(options.data.clients[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            // TODO: add permissions
+            // utils.handlePermissions(docName, 'edit'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            if (result) {
+                var client = result.toJSON(options);
+
+                return {clients: [client]};
+            }
+
+            return Promise.reject(new errors.NotFoundError('Client not found.'));
+        });
     }
 };
 
