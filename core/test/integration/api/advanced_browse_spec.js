@@ -520,6 +520,67 @@ describe('Filter Param Spec', function () {
         });
     });
 
+    describe('Ordering', function () {
+        describe('Order ascending by defualt', function () {
+            it('Fetches posts ordered by id defaulting to ascending', function (done) {
+                PostAPI.browse({limit: 3, order: 'id'}).then(function (result) {
+                    should.exist(result);
+                    result.should.have.property('posts');
+                    result.should.have.property('meta');
+                    var ids = _.pluck(result.posts, 'id');
+                    ids.should.eql([1, 2, 3]);
+                    done();
+                }).catch(done);
+            });
+        });
+        describe('Order ascending', function () {
+            it('Fetches posts ordered by id ascending', function (done) {
+                PostAPI.browse({limit: 3, order: 'id asc'}).then(function (result) {
+                    should.exist(result);
+                    result.should.have.property('posts');
+                    result.should.have.property('meta');
+                    var ids = _.pluck(result.posts, 'id');
+                    ids.should.eql([1, 2, 3]);
+                    done();
+                }).catch(done);
+            });
+        });
+        describe('Order descending', function () {
+            it('Fetches posts ordered by id descending', function (done) {
+                PostAPI.browse({limit: 3, order: 'id desc'}).then(function (result) {
+                    should.exist(result);
+                    result.should.have.property('posts');
+                    result.should.have.property('meta');
+                    var ids = _.pluck(result.posts, 'id');
+                    ids.should.eql([20, 18, 17]);
+                    done();
+                }).catch(done);
+            });
+        });
+        describe('Order by random', function () {
+            it('Fetches different sequence of posts each time', function (done) {
+                var search = function () {
+                    return PostAPI.browse({limit: 10, order: 'random'});
+                },
+                searchShouldBeValid = function (result) {
+                    should.exist(result);
+                    result.should.have.property('posts');
+                    result.should.have.property('meta');
+                };
+                search().then(function (firstResult) {
+                    searchShouldBeValid(firstResult);
+                    search().then(function (secondResult) {
+                        searchShouldBeValid(secondResult);
+                        var firstResultIds = _.pluck(firstResult.posts, 'id'),
+                        secondResultIds = _.pluck(secondResult.posts, 'id');
+                        firstResultIds.should.not.equal(secondResultIds);
+                        done();
+                    }).catch(done);
+                }).catch(done);
+            });
+        });
+    });
+
     describe('Old Use Cases', function () {
         // Please note: these tests are mostly here to help prove certain things whilst building out new behaviour
         describe('Old post "filters"', function () {

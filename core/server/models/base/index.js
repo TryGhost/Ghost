@@ -470,6 +470,11 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (include && include.indexOf('count.posts') > -1) {
             permittedAttributes.push('count.posts');
         }
+
+        if (order === 'random') {
+            return 'random';
+        }
+
         result = {};
         rules = order.split(',');
 
