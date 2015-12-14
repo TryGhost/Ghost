@@ -1,4 +1,4 @@
-{{#gh-editor editorScrollInfo=editorScrollInfo as |ghEditor toggleCopyHTMLModal|}}
+<section class="gh-view">
     <header class="view-header">
         {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
             {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle}}
@@ -20,47 +20,11 @@
         </section>
     </header>
 
-    <section class="view-container view-editor">
-        <section class="entry-markdown js-entry-markdown {{if ghEditor.markdownActive 'active'}}">
-            <header class="floatingheader">
-                <span class="desktop-tabs"><a class="markdown-help-label" href="" title="Markdown Help" {{action "toggleMarkdownHelpModal"}}>Markdown</a></span>
-                <span class="mobile-tabs">
-                    <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
-                    <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
-                </span>
-                <a class="markdown-help-icon" href="" title="Markdown Help" {{action "toggleMarkdownHelpModal"}}><i class="icon-markdown"></i></a>
-            </header>
-            <section id="entry-markdown-content" class="entry-markdown-content">
-                {{gh-ed-editor classNames="markdown-editor js-markdown-editor"
-                               tabindex="1"
-                               spellcheck="true"
-                               value=model.scratch
-                               setEditor="setEditor"
-                               updateScrollInfo="updateEditorScrollInfo"
-                               toggleCopyHTMLModal=toggleCopyHTMLModal
-                               onFocusIn="autoSaveNew"
-                               height=height
-                               focus=shouldFocusEditor}}
-            </section>
-        </section>
-
-        <section class="entry-preview js-entry-preview {{if ghEditor.previewActive 'active'}}">
-            <header class="floatingheader">
-                <span class="desktop-tabs"><a target="_blank" href="{{model.previewUrl}}">Preview</a></span>
-                <span class="mobile-tabs">
-                    <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
-                    <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
-                </span>
-                <span class="entry-word-count">{{gh-count-words model.scratch}}</span>
-            </header>
-            <section class="entry-preview-content js-entry-preview-content">
-                {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
-                    markdown=model.scratch scrollPosition=ghEditor.scrollPosition updateHeight="updateHeight"
-                    uploadStarted="disableEditor" uploadFinished="enableEditor" uploadSuccess="handleImgUpload"}}
-            </section>
-        </section>
-    </section>
-{{/gh-editor}}
+    {{gh-editor value=model.scratch
+                shouldFocusEditor=shouldFocusEditor
+                editorFocused=(action "autoSaveNew")
+                onTeardown=(action "cancelTimers")}}
+</section>
 
 {{#if showDeletePostModal}}
     {{gh-fullscreen-modal "delete-post"
