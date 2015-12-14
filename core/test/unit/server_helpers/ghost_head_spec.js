@@ -1,10 +1,11 @@
-/*globals describe, before, after, afterEach, beforeEach, it*/
+/*globals describe, before, afterEach, beforeEach, it*/
 /*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     Promise        = require('bluebird'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
     moment         = require('moment'),
 
 // Stuff we are testing
@@ -25,9 +26,7 @@ describe('{{ghost_head}} helper', function () {
 
     afterEach(function () {
         sandbox.restore();
-    });
-    after(function () {
-        utils.restoreConfig();
+        configUtils.restore();
     });
 
     beforeEach(function () {
@@ -52,8 +51,8 @@ describe('{{ghost_head}} helper', function () {
     }
 
     describe('without Code Injection', function () {
-        before(function () {
-            utils.overrideConfig({
+        beforeEach(function () {
+            configUtils.set({
                 url: 'http://testurl.com/',
                 theme: {
                     title: 'Ghost',
@@ -665,8 +664,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         describe('with /blog subdirectory', function () {
-            before(function () {
-                utils.overrideConfig({
+            beforeEach(function () {
+                configUtils.set({
                     url: 'http://testurl.com/blog/',
                     theme: {
                         title: 'Ghost',
@@ -674,10 +673,6 @@ describe('{{ghost_head}} helper', function () {
                         cover: '/content/images/blog-cover.png'
                     }
                 });
-            });
-
-            after(function () {
-                utils.restoreConfig();
             });
 
             it('returns correct rss url with subdirectory', function (done) {
@@ -698,8 +693,8 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('with useStructuredData is set to false in config file', function () {
-        before(function () {
-            utils.overrideConfig({
+        beforeEach(function () {
+            configUtils.set({
                 url: 'http://testurl.com/',
                 theme: {
                     title: 'Ghost',
@@ -752,7 +747,7 @@ describe('{{ghost_head}} helper', function () {
                 settings: [{value: '<style>body {background: red;}</style>'}]
             }));
 
-            utils.overrideConfig({
+            configUtils.set({
                 url: 'http://testurl.com/',
                 theme: {
                     title: 'Ghost',
@@ -781,7 +776,7 @@ describe('{{ghost_head}} helper', function () {
 
     describe('with Ajax Helper', function () {
         beforeEach(function () {
-            utils.overrideConfig({
+            configUtils.set({
                 url: '',
                 urlSSL: '',
                 forceAdminSSL: false
@@ -789,7 +784,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders script tags with basic configuration', function (done) {
-            utils.overrideConfig({
+            configUtils.set({
                 url: 'http://example.com/'
             });
 
@@ -807,7 +802,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders basic url correctly', function (done) {
-            utils.overrideConfig({
+            configUtils.set({
                 url: 'http://testurl.com/'
             });
 
@@ -825,7 +820,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders basic url correctly with subdirectory', function (done) {
-            utils.overrideConfig({
+            configUtils.set({
                 url: 'http://testurl.com/blog/'
             });
 
@@ -843,7 +838,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders correct https url with forceAdminSSL set', function (done) {
-            utils.overrideConfig({
+            configUtils.set({
                 url: 'http://testurl.com/',
                 forceAdminSSL: true
             });
@@ -862,7 +857,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('renders correct https url if urlSSL is set and forceAdminSSL is also set', function (done) {
-            utils.overrideConfig({
+            configUtils.set({
                 url: 'http://testurl.com/',
                 urlSSL: 'https://sslurl.com/',
                 forceAdminSSL: true
