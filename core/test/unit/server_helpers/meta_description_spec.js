@@ -3,6 +3,7 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -11,7 +12,7 @@ var should         = require('should'),
 describe('{{meta_description}} helper', function () {
     before(function () {
         utils.loadHelpers();
-        utils.overrideConfig({
+        configUtils.set({
             theme: {
                 description: 'Just a blogging platform.'
             }
@@ -19,7 +20,7 @@ describe('{{meta_description}} helper', function () {
     });
 
     after(function () {
-        utils.restoreConfig();
+        configUtils.restore();
     });
 
     it('has loaded meta_description helper', function () {
