@@ -1,16 +1,8 @@
-/* global key */
 import Ember from 'ember';
+import ShortcutsMixin from 'ghost/mixins/shortcuts';
 
-const {Mixin, run, typeOf} = Ember;
+const {Mixin} = Ember;
 
-// Configure KeyMaster to respond to all shortcuts,
-// even inside of
-// input, textarea, and select.
-key.filter = function () {
-    return true;
-};
-
-key.setScope('default');
 /**
  * Only routes can implement shortcuts.
  * If you need to trigger actions on the controller,
@@ -44,39 +36,7 @@ key.setScope('default');
  * To have all your shortcut work in all scopes, give it the scope "all".
  * Find out more at the keymaster docs
  */
-export default Mixin.create({
-    registerShortcuts() {
-        let shortcuts = this.get('shortcuts');
-
-        Object.keys(shortcuts).forEach((shortcut) => {
-            let scope = shortcuts[shortcut].scope || 'default';
-            let action = shortcuts[shortcut];
-            let options;
-
-            if (typeOf(action) !== 'string') {
-                options = action.options;
-                action = action.action;
-            }
-
-            key(shortcut, scope, (event) => {
-                // stop things like ctrl+s from actually opening a save dialogue
-                event.preventDefault();
-                run(this, function () {
-                    this.send(action, options);
-                });
-            });
-        });
-    },
-
-    removeShortcuts() {
-        let shortcuts = this.get('shortcuts');
-
-        Object.keys(shortcuts).forEach((shortcut) => {
-            let scope = shortcuts[shortcut].scope || 'default';
-            key.unbind(shortcut, scope);
-        });
-    },
-
+export default Mixin.create(ShortcutsMixin, {
     activate() {
         this._super(...arguments);
         this.registerShortcuts();
