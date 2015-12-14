@@ -7,12 +7,9 @@
 // We can likely have init functions which replace the need for this file
 
 var hbs     = require('express-hbs'),
-    _       = require('lodash'),
 
 // Stuff we are testing
     helpers = require('../../../server/helpers'),
-    config  = require('../../../server/config'),
-    origConfig = _.cloneDeep(config.get()),
     utils   = {};
 
 utils.loadHelpers = function () {
@@ -20,13 +17,4 @@ utils.loadHelpers = function () {
     helpers.loadCoreHelpers(adminHbs);
 };
 
-utils.overrideConfig = function (newConfig) {
-    config.set(newConfig);
-};
-
-utils.restoreConfig = function () {
-    config.set(origConfig);
-};
-
 module.exports = utils;
-module.exports.config = config;

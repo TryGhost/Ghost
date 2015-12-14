@@ -5,6 +5,7 @@ var should         = require('should'),
     Promise        = require('bluebird'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -16,7 +17,7 @@ describe('{{url}} helper', function () {
 
     before(function () {
         sandbox = sinon.sandbox.create();
-        utils.overrideConfig({url: 'http://testurl.com/'});
+        configUtils.set({url: 'http://testurl.com/'});
         utils.loadHelpers();
     });
 
@@ -32,7 +33,7 @@ describe('{{url}} helper', function () {
     });
 
     after(function () {
-        utils.restoreConfig();
+        configUtils.restore();
     });
 
     it('has loaded url helper', function () {
@@ -188,7 +189,7 @@ describe('{{url}} helper', function () {
 
     describe('with subdir', function () {
         it('external urls should be retained in a nav context with subdir', function () {
-            utils.overrideConfig({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://testurl.com/blog'});
             rendered = helpers.url.call(
                 {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
@@ -197,7 +198,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should handle subdir being set in nav context', function () {
-            utils.overrideConfig({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://testurl.com/blog'});
 
             rendered = helpers.url.call(
                 {url: '/xyzzy', label: 'xyzzy', slug: 'xyzzy', current: true},

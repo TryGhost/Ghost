@@ -11,9 +11,7 @@ var moment   = require('moment'),
     api      = require('../../../../server/api'),
     frontend = require('../../../../server/controllers/frontend'),
 
-    config   = require('../../../../server/config'),
-    origConfig = _.cloneDeep(config),
-
+    configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
 
 // To stop jshint complaining
@@ -23,8 +21,8 @@ describe('Frontend Controller', function () {
     var adminEditPagePath = '/ghost/editor/';
 
     afterEach(function () {
-        config.set(origConfig);
         sandbox.restore();
+        configUtils.restore();
     });
 
     // Helper function to prevent unit tests
@@ -52,7 +50,7 @@ describe('Frontend Controller', function () {
                 });
             });
 
-            config.set({
+            configUtils.set({
                 theme: {
                     permalinks: '/:slug/',
                     postsPerPage: 10
@@ -70,7 +68,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Renders home.hbs template when it exists in the active theme', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'index.hbs': '/content/themes/casper/index.hbs',
                 'home.hbs': '/content/themes/casper/home.hbs'
             }}}});
@@ -84,7 +82,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Renders index.hbs template on 2nd page when home.hbs exists', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'index.hbs': '/content/themes/casper/index.hbs',
                 'home.hbs': '/content/themes/casper/home.hbs'
             }}}});
@@ -102,7 +100,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Renders index.hbs template when home.hbs doesn\'t exist', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'index.hbs': '/content/themes/casper/index.hbs'
             }}}});
 
@@ -135,7 +133,7 @@ describe('Frontend Controller', function () {
 
             sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: [mockTags[0]]}));
 
-            config.set({
+            configUtils.set({
                 theme: {
                     permalinks: '/tag/:slug/',
                     postsPerPage: '10'
@@ -153,7 +151,7 @@ describe('Frontend Controller', function () {
         });
 
         it('it will render custom tag-slug template if it exists', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'tag-video.hbs': '/content/themes/casper/tag-video.hbs',
                 'tag.hbs': '/content/themes/casper/tag.hbs',
                 'index.hbs': '/content/themes/casper/index.hbs'
@@ -172,7 +170,7 @@ describe('Frontend Controller', function () {
         });
 
         it('it will render tag template if it exists and there is no tag-slug template', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'tag.hbs': '/content/themes/casper/tag.hbs',
                 'index.hbs': '/content/themes/casper/index.hbs'
             }}}});
@@ -190,7 +188,7 @@ describe('Frontend Controller', function () {
         });
 
         it('it will fall back to index if there are no custom templates', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'index.hbs': '/content/themes/casper/index.hbs'
             }}}});
 
@@ -268,7 +266,7 @@ describe('Frontend Controller', function () {
                 return Promise.resolve(post || {posts: []});
             });
 
-            config.set({
+            configUtils.set({
                 theme: {
                     permalinks: '/:slug/'
                 }
@@ -298,7 +296,7 @@ describe('Frontend Controller', function () {
         describe('static pages', function () {
             describe('custom page templates', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:slug/'
                         }
@@ -306,7 +304,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('it will render a custom page-slug template if it exists', function (done) {
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
                     req.path = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
@@ -321,7 +319,7 @@ describe('Frontend Controller', function () {
 
                 it('it will use page.hbs if it exists and no page-slug template is present', function (done) {
                     delete casper['page-about.hbs'];
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
                     req.path = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
@@ -337,7 +335,7 @@ describe('Frontend Controller', function () {
                 it('defaults to post.hbs without a page.hbs or page-slug template', function (done) {
                     delete casper['page-about.hbs'];
                     delete casper['page.hbs'];
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
                     req.path = '/' + mockPosts[2].posts[0].slug + '/';
                     req.route = {path: '*'};
                     res.render = function (view, context) {
@@ -353,7 +351,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to slug', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:slug/'
                         }
@@ -361,7 +359,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render static page via /:slug/', function (done) {
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
 
                     req.path = '/' + mockPosts[0].posts[0].slug + '/';
                     req.route = {path: '*'};
@@ -426,7 +424,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to date', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:year/:month/:day/:slug/'
                         }
@@ -434,7 +432,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render static page via /:slug', function (done) {
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
 
                     req.path = '/' + mockPosts[0].posts[0].slug + '/';
                     req.route = {path: '*'};
@@ -486,7 +484,7 @@ describe('Frontend Controller', function () {
         describe('post', function () {
             describe('permalink set to slug', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:slug/'
                         }
@@ -496,7 +494,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /:slug/', function (done) {
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
 
                     req.path = '/' + mockPosts[1].posts[0].slug + '/';
                     req.route = {path: '*'};
@@ -578,7 +576,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to date', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:year/:month/:day/:slug/'
                         }
@@ -589,7 +587,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /YYYY/MM/DD/:slug/', function (done) {
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
                     req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
@@ -668,7 +666,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to author', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: 'author/:slug/'
                         }
@@ -679,7 +677,7 @@ describe('Frontend Controller', function () {
                 });
 
                 it('will render post via /:author/:slug/', function (done) {
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
 
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
                     req.route = {path: '*'};
@@ -758,13 +756,13 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to custom format', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:year/:slug/'
                         }
                     });
 
-                    config.set({paths: {availableThemes: {casper: casper}}});
+                    configUtils.set({paths: {availableThemes: {casper: casper}}});
 
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
                     mockPosts[1].posts[0].url = '/' + date + '/' + mockPosts[1].posts[0].slug + '/';
@@ -875,7 +873,7 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to custom format no slash', function () {
                 beforeEach(function () {
-                    config.set({
+                    configUtils.set({
                         theme: {
                             permalinks: '/:year/:slug/'
                         }
@@ -923,9 +921,9 @@ describe('Frontend Controller', function () {
                 params: {}
             };
 
-            defaultPath = path.join(config.paths.appRoot, '/core/server/views/private.hbs');
+            defaultPath = path.join(configUtils.config.paths.appRoot, '/core/server/views/private.hbs');
 
-            config.set({
+            configUtils.set({
                 theme: {
                     permalinks: '/:slug/'
                 }
@@ -933,7 +931,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Should render default password page when theme has no password template', function (done) {
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             res.render = function (view) {
                 view.should.eql(defaultPath);
@@ -944,7 +942,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Should render theme password page when it exists', function (done) {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 'private.hbs': '/content/themes/casper/private.hbs'
             }}}});
 
@@ -957,7 +955,7 @@ describe('Frontend Controller', function () {
         });
 
         it('Should render with error when error is passed in', function (done) {
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
             res.error = 'Test Error';
 
             res.render = function (view, context) {
@@ -1032,7 +1030,7 @@ describe('Frontend Controller', function () {
                 return Promise.resolve(post || {posts: []});
             });
 
-            config.set({
+            configUtils.set({
                 theme: {
                     permalinks: '/:slug/'
                 }
@@ -1049,7 +1047,7 @@ describe('Frontend Controller', function () {
                 redirect: sinon.spy()
             };
 
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
         });
 
         it('should render draft post', function (done) {
@@ -1065,7 +1063,7 @@ describe('Frontend Controller', function () {
         });
 
         it('should render draft page', function (done) {
-            config.set({paths: {availableThemes: {casper: {'page.hbs': '/content/themes/casper/page.hbs'}}}});
+            configUtils.set({paths: {availableThemes: {casper: {'page.hbs': '/content/themes/casper/page.hbs'}}}});
             req.params = {uuid: 'abc-1234-01'};
             res.render = function (view, context) {
                 view.should.equal('page');
