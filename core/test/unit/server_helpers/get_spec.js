@@ -50,7 +50,7 @@ describe('{{#get}} helper', function () {
             readTagsStub = sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: []}));
             readUsersStub = sandbox.stub(api.users, 'read').returns(new Promise.resolve({users: []}));
 
-            browsePostsStub.returns(new Promise.resolve({posts: testPostsArr}));
+            browsePostsStub.returns(new Promise.resolve({posts: testPostsArr, meta: meta}));
             browsePostsStub.withArgs({limit: '3'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 3), meta: meta}));
             browsePostsStub.withArgs({limit: '1'}).returns(new Promise.resolve({posts: testPostsArr.slice(0, 1)}));
             browsePostsStub.withArgs({filter: 'tags:test'}).returns(new Promise.resolve({posts: testPostsArr.slice(2, 3)}));
@@ -70,6 +70,35 @@ describe('{{#get}} helper', function () {
                 fn.firstCall.args[0].should.be.an.Object.with.property('posts');
                 fn.firstCall.args[0].posts.should.eql(testPostsArr);
                 fn.firstCall.args[0].posts.should.have.lengthOf(4);
+                inverse.called.should.be.false;
+
+                done();
+            }).catch(done);
+        });
+
+        it('should return pagination and meta pagination with default browse posts call', function (done) {
+            helpers.get.call(
+                {},
+                'posts',
+                {hash: {}, fn: fn, inverse: inverse}
+            ).then(function () {
+                fn.firstCall.args[0].pagination.should.be.an.Object;
+                fn.firstCall.args[0].meta.should.be.an.Object;
+                fn.firstCall.args[0].meta.pagination.should.be.an.Object;
+                inverse.called.should.be.false;
+
+                done();
+            }).catch(done);
+        });
+
+        it('should not return pagination if meta pagination does not exist', function (done) {
+            helpers.get.call(
+                {},
+                'posts',
+                {hash: {limit: '1'}, fn: fn, inverse: inverse}
+            ).then(function () {
+                should.not.exist(fn.firstCall.args[0].pagination);
+                should.not.exist(fn.firstCall.args[0].meta);
                 inverse.called.should.be.false;
 
                 done();
@@ -331,4 +360,3 @@ describe('{{#get}} helper', function () {
         });
     });
 });
-
