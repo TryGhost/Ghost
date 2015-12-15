@@ -6,6 +6,7 @@ var _                       = require('lodash'),
     passport                = require('passport'),
     rewire                  = require('rewire'),
     config                  = require('../../../server/config'),
+    errors                  = require('../../../server/errors'),
     defaultConfig           = rewire('../../../../config.example')[process.env.NODE_ENV],
     auth                    = rewire('../../../server/middleware/auth'),
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -18,7 +19,9 @@ var _                       = require('lodash'),
     client                  = {
         id: 2,
         type: 'ua'
-    };
+    },
+
+    sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
 
@@ -86,13 +89,13 @@ function registerFaultyClientPasswordStrategy() {
 }
 
 describe('Auth', function () {
-    var res, req, next, sandbox;
+    var res, req, next, errorStub;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
         req = {};
         res = {};
         next = sandbox.spy();
+        errorStub = sandbox.stub(errors, 'logError');
     });
 
     afterEach(function () {
@@ -322,7 +325,7 @@ describe('Auth', function () {
             done();
         });
 
-        it('shouldn\'t authenticate client', function (done) {
+        it('shouldn\'t authenticate without full client credentials', function (done) {
             req.body = {};
             req.body.client_id = testClient;
             res.status = {};
@@ -339,6 +342,33 @@ describe('Auth', function () {
             registerUnsuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
             next.called.should.be.false;
+            errorStub.calledTwice.should.be.true;
+            errorStub.getCall(0).args[1].should.eql('Client credentials were not provided');
+
+            done();
+        });
+
+        it('shouldn\'t authenticate invalid/unknown client', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerUnsuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            errorStub.calledTwice.should.be.true;
+            errorStub.getCall(0).args[1].should.eql('Client credentials were not valid');
+
             done();
         });
 
@@ -365,7 +395,7 @@ describe('Auth', function () {
             done();
         });
 
-        it('should authenticate client', function (done) {
+        it('should authenticate valid/known client', function (done) {
             req.body = {};
             req.body.client_id = testClient;
             req.body.client_secret = testSecret;
