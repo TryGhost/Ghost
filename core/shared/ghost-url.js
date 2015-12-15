@@ -1,6 +1,12 @@
 (function () {
     'use strict';
 
+    var apiUrl = '{{api-url}}',
+        clientId,
+        clientSecret,
+        url,
+        init;
+
     function generateQueryString(object) {
         var queries = [],
             i;
@@ -21,12 +27,9 @@
         return '';
     }
 
-    var url = {
-        config: {},
-
+    url = {
         api: function () {
             var args = Array.prototype.slice.call(arguments),
-                url = (this.config.useOrigin) ? this.config.origin + this.config.url : this.config.url,
                 queryOptions;
 
             if (args.length && typeof args[args.length - 1] === 'object') {
@@ -35,26 +38,35 @@
                 queryOptions = {};
             }
 
-            queryOptions.client_id = this.config.clientId;
-            queryOptions.client_secret = this.config.clientSecret;
+            queryOptions.client_id = clientId;
+            queryOptions.client_secret = clientSecret;
 
             if (args.length) {
                 args.forEach(function (el) {
-                    url += el.replace(/^\/|\/$/g, '') + '/';
+                    apiUrl += el.replace(/^\/|\/$/g, '') + '/';
                 });
             }
 
-            return url + generateQueryString(queryOptions);
+            return apiUrl + generateQueryString(queryOptions);
         }
+    };
+
+    init = function (options) {
+        clientId = options.clientId ? options.clientId : '';
+        clientSecret = options.clientSecret ? options.clientSecret : '';
+        apiUrl = options.url ? options.url : '';
     };
 
     if (typeof window !== 'undefined') {
         window.ghost = window.ghost || {};
-        url.config = window.ghost.config || {};
         window.ghost.url = url;
+        window.ghost.init = init;
     }
 
     if (typeof module !== 'undefined') {
-        module.exports = url;
+        module.exports = {
+            url: url,
+            init: init
+        };
     }
 })();
