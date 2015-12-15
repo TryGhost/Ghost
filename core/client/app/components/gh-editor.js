@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import setScrollClassName from 'ghost/utils/set-scroll-classname';
 
 const {Component, computed, run} = Ember;
 const {equal} = computed;
@@ -54,17 +53,6 @@ export default Component.extend({
         // cache these elements for use in other methods
         this.set('$previewViewPort', $previewViewPort);
         this.set('$previewContent', this.$('.js-rendered-markdown'));
-
-        $previewViewPort.on('scroll', run.bind($previewViewPort, setScrollClassName, {
-            target: this.$('.js-entry-preview'),
-            offset: 10
-        }));
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-        // removes scroll handlers from the view
-        this.get('$previewViewPort').off('scroll');
     },
 
     actions: {
