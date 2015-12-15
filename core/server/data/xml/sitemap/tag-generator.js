@@ -36,8 +36,8 @@ _.extend(TagsMapGenerator.prototype, {
         });
     },
 
-    getUrlForDatum: function (tag, permalinks) {
-        return config.urlFor('tag', {tag: tag, permalinks: permalinks}, true);
+    getUrlForDatum: function (tag) {
+        return config.urlFor('tag', {tag: tag}, true);
     },
 
     getPriorityForDatum: function () {

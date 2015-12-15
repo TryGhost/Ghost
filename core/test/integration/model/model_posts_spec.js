@@ -4,9 +4,7 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
     sequence        = require('../../../server/utils/sequence'),
     _               = require('lodash'),
-    Promise         = require('bluebird'),
     sinon           = require('sinon'),
-    SettingsModel   = require('../../../server/models/settings').Settings,
 
     // Stuff we are testing
     ghostBookshelf  = require('../../../server/models/base'),
@@ -14,7 +12,10 @@ var testUtils       = require('../../utils'),
     events          = require('../../../server/events'),
     DataGenerator   = testUtils.DataGenerator,
     context         = testUtils.context.owner,
-    sandbox         = sinon.sandbox.create();
+    sandbox         = sinon.sandbox.create(),
+
+    config   = require('../../../server/config'),
+    origConfig = _.cloneDeep(config);
 
 describe('Post Model', function () {
     // Keep the DB clean
@@ -26,6 +27,7 @@ describe('Post Model', function () {
         afterEach(testUtils.teardown);
         afterEach(function () {
             sandbox.restore();
+            config.set(origConfig);
         });
         beforeEach(testUtils.setup('owner', 'posts', 'apps'));
 
@@ -58,11 +60,9 @@ describe('Post Model', function () {
 
         describe('findAll', function () {
             beforeEach(function () {
-                sandbox.stub(SettingsModel, 'findOne', function () {
-                    return Promise.resolve({toJSON: function () {
-                        return {value: '/:slug/'};
-                    }});
-                });
+                config.set({theme: {
+                    permalinks: '/:slug/'
+                }});
             });
 
             it('can findAll', function (done) {
@@ -95,11 +95,9 @@ describe('Post Model', function () {
 
         describe('findPage', function () {
             beforeEach(function () {
-                sandbox.stub(SettingsModel, 'findOne', function () {
-                    return Promise.resolve({toJSON: function () {
-                        return {value: '/:slug/'};
-                    }});
-                });
+                config.set({theme: {
+                    permalinks: '/:slug/'
+                }});
             });
 
             it('can findPage (default)', function (done) {
@@ -256,6 +254,12 @@ describe('Post Model', function () {
         });
 
         describe('findOne', function () {
+            beforeEach(function () {
+                config.set({theme: {
+                    permalinks: '/:slug/'
+                }});
+            });
+
             it('can findOne', function (done) {
                 var firstPost;
 
@@ -277,12 +281,6 @@ describe('Post Model', function () {
             it('can findOne, returning all related data', function (done) {
                 var firstPost;
 
-                sandbox.stub(SettingsModel, 'findOne', function () {
-                    return Promise.resolve({toJSON: function () {
-                        return {value: '/:slug/'};
-                    }});
-                });
-
                 PostModel.findOne({}, {include: ['author', 'fields', 'tags', 'created_by', 'updated_by', 'published_by']})
                     .then(function (result) {
                         should.exist(result);
@@ -296,11 +294,6 @@ describe('Post Model', function () {
 
             it('can findOne, returning a slug only permalink', function (done) {
                 var firstPost = 1;
-                sandbox.stub(SettingsModel, 'findOne', function () {
-                    return Promise.resolve({toJSON: function () {
-                        return {value: '/:slug/'};
-                    }});
-                });
 
                 PostModel.findOne({id: firstPost})
                     .then(function (result) {
@@ -320,11 +313,9 @@ describe('Post Model', function () {
                     yyyy = today.getFullYear(),
                     postLink = '/' + yyyy + '/' + mm + '/' + dd + '/html-ipsum/';
 
-                sandbox.stub(SettingsModel, 'findOne', function () {
-                    return Promise.resolve({toJSON: function () {
-                        return {value: '/:year/:month/:day/:slug/'};
-                    }});
-                });
+                config.set({theme: {
+                    permalinks: '/:year/:month/:day/:slug/'
+                }});
 
                 PostModel.findOne({id: firstPost})
                     .then(function (result) {

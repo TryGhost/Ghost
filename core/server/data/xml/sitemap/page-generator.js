@@ -43,12 +43,12 @@ _.extend(PageMapGenerator.prototype, {
         });
     },
 
-    getUrlForDatum: function (post, permalinks) {
+    getUrlForDatum: function (post) {
         if (post.id === 0 && !_.isEmpty(post.name)) {
             return config.urlFor(post.name, true);
         }
 
-        return config.urlFor('post', {post: post, permalinks: permalinks}, true);
+        return config.urlFor('post', {post: post}, true);
     },
 
     getPriorityForDatum: function (post) {
