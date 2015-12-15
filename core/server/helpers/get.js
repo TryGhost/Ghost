@@ -124,9 +124,10 @@ get = function get(context, options) {
         }
 
         // block params allows the theme developer to name the data using something like
-        // `{{#get "posts" as |result pagination|}}`
+        // `{{#get "posts" as |result pageInfo|}}`
         blockParams = [result[context]];
         if (result.meta && result.meta.pagination) {
+            result.pagination = result.meta.pagination;
             blockParams.push(result.meta.pagination);
         }
 
