@@ -2,6 +2,7 @@
 /*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
+    _              = require('lodash'),
     Promise        = require('bluebird'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
@@ -243,7 +244,7 @@ describe('{{ghost_head}} helper', function () {
                 image: '/content/images/test-author-image.png',
                 cover: '/content/images/author-cover-image.png',
                 website: 'http://authorwebsite.com'
-            };
+            }, authorBk = _.cloneDeep(author);
 
             helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/author/AuthorName/', author: author, context: ['author']},
@@ -272,6 +273,8 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/author-cover-image.png"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"description": "Author bio"/);
+
+                author.should.eql(authorBk);
 
                 done();
             }).catch(done);
@@ -331,7 +334,7 @@ describe('{{ghost_head}} helper', function () {
                     website: 'http://authorwebsite.com',
                     bio: 'Author bio'
                 }
-            };
+            }, postBk = _.cloneDeep(post);
 
             helpers.ghost_head.call(
                 {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
@@ -381,6 +384,8 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
+
+                post.should.eql(postBk);
 
                 done();
             }).catch(done);
