@@ -302,7 +302,7 @@ ghost_head = function (options) {
         schema,
         title = hbs.handlebars.Utils.escapeExpression(blog.title),
         context = self.context ? self.context[0] : null,
-        contextObject = self[context] || blog;
+        contextObject = _.cloneDeep(self[context] || blog);
 
     // Store Async calls in an object of named promises
     props.url = urlHelper.call(self, {hash: {absolute: true}});
