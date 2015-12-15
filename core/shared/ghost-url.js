@@ -54,7 +54,7 @@
     init = function (options) {
         clientId = options.clientId ? options.clientId : '';
         clientSecret = options.clientSecret ? options.clientSecret : '';
-        apiUrl = options.url ? options.url : '';
+        apiUrl = options.url ? options.url : (apiUrl.match(/{\{api-url}}/) ? '' : apiUrl);
     };
 
     if (typeof window !== 'undefined') {
