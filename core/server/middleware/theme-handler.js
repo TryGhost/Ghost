@@ -25,14 +25,17 @@ themeHandler = {
     // ### configHbsForContext Middleware
     // Setup handlebars for the current context (admin or theme)
     configHbsForContext: function configHbsForContext(req, res, next) {
-        var themeData = config.theme,
+        var themeData = _.cloneDeep(config.theme),
             blogApp = req.app;
 
         if (req.secure && config.urlSSL) {
             // For secure requests override .url property with the SSL version
-            themeData = _.clone(themeData);
             themeData.url = config.urlSSL.replace(/\/$/, '');
         }
+
+        // Change camelCase to snake_case
+        themeData.posts_per_page = themeData.postsPerPage;
+        delete themeData.postsPerPage;
 
         hbs.updateTemplateOptions({data: {blog: themeData}});
 

@@ -5,10 +5,6 @@ var hbs             = require('express-hbs'),
     coreHelpers     = {},
     registerHelpers;
 
-// Pre-load settings data:
-// - activeTheme
-// - permalinks
-
 if (!utils.isProduction) {
     hbs.handlebars.logger.level = 0;
 }
