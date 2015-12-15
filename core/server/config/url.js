@@ -3,7 +3,9 @@
 
 var moment            = require('moment'),
     _                 = require('lodash'),
-    ghostConfig = '';
+    ghostConfig = '',
+    // @TODO: unify this with routes.apiBaseUrl
+    apiPath = '/ghost/api/v0.1';
 
 // ## setConfig
 // Simple utility function to allow
@@ -146,7 +148,7 @@ function urlFor(context, data, absolute) {
     knownPaths = {
         home: '/',
         rss: '/rss/',
-        api: '/ghost/api/v0.1',
+        api: apiPath,
         sitemap_xsl: '/sitemap.xsl'
     };
 
@@ -218,7 +220,25 @@ function urlFor(context, data, absolute) {
     return createUrl(urlPath, absolute, secure);
 }
 
+function apiUrl() {
+    // @TODO unify this with urlFor
+    var url;
+
+    if (ghostConfig.forceAdminSSL) {
+        url = (ghostConfig.urlSSL || ghostConfig.url).replace(/^.*?:\/\//g, 'https://');
+    } else if (ghostConfig.urlSSL) {
+        url = ghostConfig.urlSSL.replace(/^.*?:\/\//g, 'https://');
+    } else if (ghostConfig.url.match(/^https:/)) {
+        url = ghostConfig.url;
+    } else {
+        url = ghostConfig.url.replace(/^.*?:\/\//g, '//');
+    }
+
+    return url.replace(/\/$/, '') + apiPath + '/';
+}
+
 module.exports.setConfig = setConfig;
 module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
+module.exports.apiUrl = apiUrl;
