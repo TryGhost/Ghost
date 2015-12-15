@@ -278,30 +278,14 @@ function finaliseSchema(schema, head) {
 }
 
 function getAjaxHelper(clientId, clientSecret) {
-    var apiPath = require('../routes').apiBaseUri,
-        url, useOrigin;
-
-    if (config.forceAdminSSL) {
-        url = 'https://' + (config.urlSSL || config.url).replace(/.*?:\/\//g, '').replace(/\/$/, '') + apiPath;
-        useOrigin = false;
-    } else {
-        url = config.paths.subdir + apiPath;
-        useOrigin = true;
-    }
-
-    return '<script type="text/javascript">\n' +
-        'window.ghost = window.ghost || {};\n' +
-        'window.ghost.config = {\n' +
-        '\turl: \'' + url + '\',\n' +
-        '\tuseOrigin: ' + (useOrigin ? 'true' : 'false') + ',\n' +
-        '\torigin: window.location.origin,\n' +
-        '\tclientId: \'' + clientId + '\',\n' +
-        '\tclientSecret: \'' + clientSecret + '\'\n' +
-        '};' +
-        '</script>' +
-        '<script type="text/javascript" src="' +
-            assetHelper('shared/ghost-url.js', {hash: {minifyInProduction: true}}) +
-        '"></script>';
+    return '<script type="text/javascript" src="' +
+        assetHelper('shared/ghost-url.js', {hash: {minifyInProduction: true}}) + '"></script>\n' +
+        '<script type="text/javascript">\n' +
+        'ghost.init({\n' +
+        '\tclientId: "' + clientId + '",\n' +
+        '\tclientSecret: "' + clientSecret + '"\n' +
+        '});\n' +
+        '</script>';
 }
 
 ghost_head = function (options) {
@@ -364,8 +348,6 @@ ghost_head = function (options) {
             }
 
             if (metaData.clientId && metaData.clientSecret) {
-                head.push(writeMetaTag('ghost:client_id', metaData.clientId));
-                head.push(writeMetaTag('ghost:client_secret', metaData.clientSecret));
                 head.push(getAjaxHelper(metaData.clientId, metaData.clientSecret));
             }
         }
