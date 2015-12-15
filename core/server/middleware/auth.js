@@ -56,6 +56,7 @@ function isValidOrigin(origin, client) {
         || origin === configHostname
         || configHostname === 'my-ghost-blog.com'
         || origin === url.parse(config.urlSSL ? config.urlSSL : '').hostname
+        // @TODO do this in dev mode only, once we can auto-configure the url #2240
         || (origin === 'localhost')
     )) {
         return true;
@@ -82,6 +83,11 @@ auth = {
         }
 
         if (!req.body.client_id || !req.body.client_secret) {
+            errors.logError(
+                'Client Authentication Failed',
+                'Client credentials were not provided',
+                'For information on how to fix this, please read http://api.ghost.org/docs/client-authentication'
+            );
             return errors.handleAPIError(new errors.UnauthorizedError('Access denied.'), req, res, next);
         }
 
@@ -101,6 +107,15 @@ auth = {
                 delete req.body.client_id;
                 delete req.body.client_secret;
 
+                if (!client || client.type !== 'ua') {
+                    errors.logError(
+                        'Client Authentication Failed',
+                        'Client credentials were not valid',
+                        'For information on how to fix this, please read http://api.ghost.org/docs/client-authentication'
+                    );
+                    return errors.handleAPIError(new errors.UnauthorizedError('Access denied.'), req, res, next);
+                }
+
                 if (!origin && client && client.type === 'ua') {
                     res.header('Access-Control-Allow-Origin', config.url);
                     req.client = client;
@@ -115,7 +130,7 @@ auth = {
                     error = new errors.UnauthorizedError('Access Denied from url: ' + origin + '. Please use the url configured in config.js.');
                     errors.logError(error,
                         'You have attempted to access your Ghost admin panel from a url that does not appear in config.js.',
-                        'For information on how to fix this, please visit http://support.ghost.org/config/#url.'
+                        'For information on how to fix this, please read http://support.ghost.org/config/#url.'
                     );
                     return errors.handleAPIError(error, req, res, next);
                 }
