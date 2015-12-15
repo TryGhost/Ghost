@@ -18,6 +18,15 @@ describe('Ghost Ajax Helper', function () {
         configUtils.restore();
     });
 
+    it('sets url empty if it is not set on init', function () {
+        ghostUrl.init({
+            clientId: '',
+            clientSecret: ''
+        });
+
+        ghostUrl.url.api().should.equal('');
+    });
+
     it('renders basic url correctly when no arguments are presented', function () {
         ghostUrl.init({
             clientId: '',
