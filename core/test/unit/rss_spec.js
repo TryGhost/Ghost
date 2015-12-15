@@ -11,9 +11,9 @@ var should          = require('should'),
 
     // Things that get overridden
     api             = require('../../server/api'),
-    config          = require('../../server/config'),
-    origConfig      = _.cloneDeep(config),
-    rss             = rewire('../../server/data/xml/rss');
+    rss             = rewire('../../server/data/xml/rss'),
+
+    configUtils     = require('../utils/configUtils');
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -48,7 +48,7 @@ describe('RSS', function () {
     afterEach(function () {
         sandbox.restore();
         rss = rewire('../../server/data/xml/rss');
-        config.set(_.merge({}, origConfig));
+        configUtils.restore();
     });
 
     describe('Check XML', function () {
@@ -65,7 +65,7 @@ describe('RSS', function () {
                 set: sinon.stub()
             };
 
-            config.set({url: 'http://my-ghost-blog.com'});
+            configUtils.set({url: 'http://my-ghost-blog.com'});
         });
 
         it('should get the RSS tags correct', function (done) {
@@ -215,7 +215,7 @@ describe('RSS', function () {
         });
 
         it('should process urls correctly with subdirectory', function (done) {
-            config.set({url: 'http://my-ghost-blog.com/blog/'});
+            configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
             rss.__set__('getData', function () {
                 return Promise.resolve({
                     title: 'Test Title',
@@ -274,7 +274,7 @@ describe('RSS', function () {
                 set: sinon.stub()
             };
 
-            config.set({url: 'http://my-ghost-blog.com', theme: {
+            configUtils.set({url: 'http://my-ghost-blog.com', theme: {
                 title: 'Test',
                 description: 'Some Text',
                 permalinks: '/:slug/'
@@ -346,7 +346,7 @@ describe('RSS', function () {
                 set: sinon.stub()
             };
 
-            config.set({url: 'http://my-ghost-blog.com'});
+            configUtils.set({url: 'http://my-ghost-blog.com'});
         });
 
         it('should not rebuild xml for same data and url', function (done) {
@@ -408,7 +408,7 @@ describe('RSS', function () {
         });
 
         it('Should 404 if page number too big', function (done) {
-            config.set({url: 'http://testurl.com/'});
+            configUtils.set({url: 'http://testurl.com/'});
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
@@ -425,7 +425,7 @@ describe('RSS', function () {
         });
 
         it('Redirects to last page if page number too big with subdirectory', function (done) {
-            config.set({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://testurl.com/blog'});
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);

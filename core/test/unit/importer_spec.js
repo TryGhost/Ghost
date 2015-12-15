@@ -6,7 +6,6 @@ var should    = require('should'),
     _         = require('lodash'),
     testUtils = require('../utils'),
     moment    = require('moment'),
-    config    = require('../../server/config'),
     path      = require('path'),
     errors    = require('../../server/errors'),
 
@@ -18,8 +17,10 @@ var should    = require('should'),
     DataImporter    = require('../../server/data/importer/importers/data'),
     ImageImporter   = require('../../server/data/importer/importers/image'),
 
-    storage = require('../../server/storage'),
-    sandbox = sinon.sandbox.create();
+    storage         = require('../../server/storage'),
+
+    configUtils     = require('../utils/configUtils'),
+    sandbox         = sinon.sandbox.create();
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -27,6 +28,7 @@ should.equal(true, true);
 describe('Importer', function () {
     afterEach(function () {
         sandbox.restore();
+        configUtils.restore();
     });
 
     describe('ImportManager', function () {
@@ -342,12 +344,7 @@ describe('Importer', function () {
     });
 
     describe('ImageHandler', function () {
-        var origConfig = _.cloneDeep(config),
-            store = storage.getStorage();
-
-        afterEach(function () {
-            config.set(_.merge({}, origConfig));
-        });
+        var store = storage.getStorage();
 
         it('has the correct interface', function () {
             ImageHandler.type.should.eql('images');
@@ -427,7 +424,7 @@ describe('Importer', function () {
         });
 
         it('can load a file (subdirectory)', function (done) {
-            config.set({url: 'http://testurl.com/subdir'});
+            configUtils.set({url: 'http://testurl.com/subdir'});
 
             var filename = 'test-image.jpeg',
                 file = [{

@@ -399,7 +399,7 @@ ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
 ConfigManager.prototype.checkDeprecated = function () {
     var self = this;
     _.each(this.deprecatedItems, function (property) {
-        self.displayDeprecated(self, property.split('.'), []);
+        self.displayDeprecated(self._config, property.split('.'), []);
     });
 };
 

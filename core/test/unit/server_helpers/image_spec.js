@@ -4,6 +4,7 @@ var should         = require('should'),
     sinon          = require('sinon'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -14,7 +15,7 @@ describe('{{image}} helper', function () {
 
     before(function () {
         sandbox = sinon.sandbox.create();
-        utils.overrideConfig({url: 'http://testurl.com/'});
+        configUtils.set({url: 'http://testurl.com/'});
         utils.loadHelpers();
     });
 
@@ -23,7 +24,7 @@ describe('{{image}} helper', function () {
     });
 
     after(function () {
-        utils.restoreConfig();
+        configUtils.restore();
     });
 
     it('has loaded image helper', function () {
@@ -44,12 +45,12 @@ describe('{{image}} helper', function () {
 
     it('should output absolute url of image if the option is present ', function () {
         var rendered = helpers.image.call({
-            image: '/content/images/image-relative-url.png',
-            author: {image: '/content/images/author-image-relative-url.png'}
-        },
-        {
-            hash: {absolute: 'true'}
-        });
+                image: '/content/images/image-relative-url.png',
+                author: {image: '/content/images/author-image-relative-url.png'}
+            },
+            {
+                hash: {absolute: 'true'}
+            });
 
         should.exist(rendered);
         rendered.should.equal('http://testurl.com/content/images/image-relative-url.png');
@@ -66,57 +67,50 @@ describe('{{image}} helper', function () {
 
         should.not.exist(rendered);
     });
-});
 
-describe('{{image}} helper when Ghost is running on a sub-directory', function () {
-    var sandbox;
-
-    before(function () {
-        sandbox = sinon.sandbox.create();
-        utils.overrideConfig({url: 'http://testurl.com/blog'});
-        utils.loadHelpers();
-    });
-
-    afterEach(function () {
-        sandbox.restore();
-    });
-
-    after(function () {
-        utils.restoreConfig();
-    });
-
-    it('should output relative url of image', function () {
-        var rendered = helpers.image.call({
-            image: '/blog/content/images/image-relative-url.png',
-            author: {
-                image: '/blog/content/images/author-image-relative-url.png'
-            }
+    describe('with sub-directory', function () {
+        before(function () {
+            configUtils.set({url: 'http://testurl.com/blog'});
+        });
+        after(function () {
+            configUtils.restore();
         });
 
-        should.exist(rendered);
-        rendered.should.equal('/blog/content/images/image-relative-url.png');
-    });
+        it('should output relative url of image', function () {
+            var rendered = helpers.image.call({
+                image: '/blog/content/images/image-relative-url.png',
+                author: {
+                    image: '/blog/content/images/author-image-relative-url.png'
+                }
+            });
 
-    it('should output absolute url of image if the option is present ', function () {
-        var rendered = helpers.image.call({
-            image: '/blog/content/images/image-relative-url.png',
-            author: {image: '/blog/content/images/author-image-relatve-url.png'}},
-            {hash: {absolute: 'true'}
+            should.exist(rendered);
+            rendered.should.equal('/blog/content/images/image-relative-url.png');
         });
 
-        should.exist(rendered);
-        rendered.should.equal('http://testurl.com/blog/content/images/image-relative-url.png');
-    });
+        it('should output absolute url of image if the option is present ', function () {
+            var rendered = helpers.image.call({
+                    image: '/blog/content/images/image-relative-url.png',
+                    author: {image: '/blog/content/images/author-image-relatve-url.png'}
+                },
+                {
+                    hash: {absolute: 'true'}
+                });
 
-    it('should not change output for an external url', function () {
-        var rendered = helpers.image.call({
-            image: 'http://example.com/picture.jpg',
-            author: {
-                image: '/blog/content/images/author-image-relative-url.png'
-            }
+            should.exist(rendered);
+            rendered.should.equal('http://testurl.com/blog/content/images/image-relative-url.png');
         });
 
-        should.exist(rendered);
-        rendered.should.equal('http://example.com/picture.jpg');
+        it('should not change output for an external url', function () {
+            var rendered = helpers.image.call({
+                image: 'http://example.com/picture.jpg',
+                author: {
+                    image: '/blog/content/images/author-image-relative-url.png'
+                }
+            });
+
+            should.exist(rendered);
+            rendered.should.equal('http://example.com/picture.jpg');
+        });
     });
 });

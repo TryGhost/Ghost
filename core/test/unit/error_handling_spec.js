@@ -1,17 +1,16 @@
-/*globals describe, before, beforeEach, afterEach, it*/
+/*globals describe, after, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var should     = require('should'),
     Promise    = require('bluebird'),
     sinon      = require('sinon'),
     express    = require('express'),
     rewire     = require('rewire'),
-    _          = require('lodash'),
 
     // Stuff we are testing
-
     chalk      = require('chalk'),
-    config     = rewire('../../server/config'),
     errors     = rewire('../../server/errors'),
+    configUtils = require('../utils/configUtils'),
+
     // storing current environment
     currentEnv = process.env.NODE_ENV;
 
@@ -313,12 +312,10 @@ describe('Error handling', function () {
     });
 
     describe('Rendering', function () {
-        var sandbox,
-            originalConfig;
+        var sandbox;
 
         before(function () {
-            originalConfig = _.cloneDeep(config._config);
-            errors.__set__('getConfigModule', sinon.stub().returns(_.merge({}, originalConfig, {
+            configUtils.set({
                 paths: {
                     themePath: '/content/themes',
                     availableThemes: {
@@ -334,8 +331,13 @@ describe('Error handling', function () {
                         }
                     }
                 }
-            })));
+            });
+
             errors.updateActiveTheme('casper');
+        });
+
+        after(function () {
+            configUtils.restore();
         });
 
         beforeEach(function () {

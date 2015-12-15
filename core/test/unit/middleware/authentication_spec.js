@@ -1,13 +1,11 @@
 /*globals describe, it, beforeEach, afterEach */
 /*jshint expr:true*/
-var _                       = require('lodash'),
-    sinon                   = require('sinon'),
+var sinon                   = require('sinon'),
     should                  = require('should'),
     passport                = require('passport'),
     rewire                  = require('rewire'),
-    config                  = require('../../../server/config'),
+    configUtils             = require('../../utils/configUtils'),
     errors                  = require('../../../server/errors'),
-    defaultConfig           = rewire('../../../../config.example')[process.env.NODE_ENV],
     auth                    = rewire('../../../server/middleware/auth'),
     BearerStrategy          = require('passport-http-bearer').Strategy,
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
@@ -131,11 +129,11 @@ describe('Auth', function () {
 
     describe('User Authentication', function () {
         beforeEach(function () {
-            defaultConfig.url = 'http://my-domain.com';
-            var newConfig = _.extend({}, config, defaultConfig);
+            configUtils.set({url: 'http://my-domain.com'});
+        });
 
-            auth.__get__('config', newConfig);
-            config.set(newConfig);
+        afterEach(function () {
+            configUtils.restore();
         });
 
         it('should authenticate user', function (done) {
@@ -400,13 +398,13 @@ describe('Auth', function () {
             req.body.client_id = testClient;
             req.body.client_secret = testSecret;
             req.headers = {};
-            req.headers.origin = config.url;
+            req.headers.origin = configUtils.config.url;
 
             res.header = {};
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();
@@ -426,7 +424,7 @@ describe('Auth', function () {
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();
@@ -487,13 +485,13 @@ describe('Auth', function () {
             req.query.client_id = testClient;
             req.query.client_secret = testSecret;
             req.headers = {};
-            req.headers.origin = config.url;
+            req.headers.origin = configUtils.config.url;
 
             res.header = {};
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();
@@ -510,13 +508,13 @@ describe('Auth', function () {
             req.query.client_id = testClient;
             req.query.client_secret = testSecret;
             req.headers = {};
-            req.headers.origin = config.url;
+            req.headers.origin = configUtils.config.url;
 
             res.header = {};
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();

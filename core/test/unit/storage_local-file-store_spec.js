@@ -6,25 +6,18 @@ var fs              = require('fs-extra'),
     sinon           = require('sinon'),
     rewire          = require('rewire'),
     _               = require('lodash'),
-    config          = rewire('../../server/config'),
     LocalFileStore  = rewire('../../server/storage/local-file-store'),
-    localFileStore;
+    localFileStore,
+
+    configUtils     = require('../utils/configUtils');
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('Local File System Storage', function () {
-    var image,
-        overrideConfig = function (newConfig) {
-            var existingConfig = LocalFileStore.__get__('config'),
-                updatedConfig = _.extend({}, existingConfig, newConfig);
-            config.set(updatedConfig);
-            LocalFileStore.__set__('config', updatedConfig);
-        };
+    var image;
 
     beforeEach(function () {
-        overrideConfig(config);
-
         sinon.stub(fs, 'mkdirs').yields();
         sinon.stub(fs, 'copy').yields();
         sinon.stub(fs, 'stat').yields(true);
@@ -48,6 +41,8 @@ describe('Local File System Storage', function () {
         fs.stat.restore();
         fs.unlink.restore();
         this.clock.restore();
+
+        configUtils.restore();
     });
 
     it('should send correct path to image when date is in Sep 2013', function (done) {
@@ -133,17 +128,15 @@ describe('Local File System Storage', function () {
     });
 
     describe('when a custom content path is used', function () {
-        var origContentPath = config.paths.contentPath,
-            origImagesPath = config.paths.imagesPath;
-
         beforeEach(function () {
-            config.paths.contentPath = config.paths.appRoot + '/var/ghostcms';
-            config.paths.imagesPath = config.paths.appRoot + '/var/ghostcms/' + config.paths.imagesRelPath;
-        });
+            var configPaths = configUtils.defaultConfig.paths;
 
-        afterEach(function () {
-            config.paths.contentPath = origContentPath;
-            config.paths.imagesPath = origImagesPath;
+            configUtils.set({
+                paths: _.merge({}, configPaths, {
+                    contentPath: configPaths.appRoot + '/var/ghostcms',
+                    imagesPath: configPaths.appRoot + '/var/ghostcms/' + configPaths.imagesRelPath
+                })
+            });
         });
 
         it('should send the correct path to image', function (done) {

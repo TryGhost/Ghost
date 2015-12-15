@@ -44,6 +44,5 @@ describe('{{ghost_foot}} helper', function () {
 
     afterEach(function () {
         sandbox.restore();
-        utils.restoreConfig();
     });
 });

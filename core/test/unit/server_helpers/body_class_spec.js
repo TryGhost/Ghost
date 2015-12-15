@@ -3,6 +3,7 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -12,7 +13,7 @@ describe('{{body_class}} helper', function () {
     var options = {};
     before(function () {
         utils.loadHelpers();
-        utils.overrideConfig({paths: {
+        configUtils.set({paths: {
             availableThemes: {
                 casper: {
                     assets: null,
@@ -38,7 +39,7 @@ describe('{{body_class}} helper', function () {
     });
 
     after(function () {
-        utils.restoreConfig();
+        configUtils.restore();
     });
 
     it('has loaded body_class helper', function () {
