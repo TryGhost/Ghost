@@ -20,8 +20,7 @@ var moment   = require('moment'),
 should.equal(true, true);
 
 describe('Frontend Controller', function () {
-    var apiSettingsStub,
-        adminEditPagePath = '/ghost/editor/';
+    var adminEditPagePath = '/ghost/editor/';
 
     afterEach(function () {
         config.set(origConfig);
@@ -53,13 +52,12 @@ describe('Frontend Controller', function () {
                 });
             });
 
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
-            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
-                settings: [{
-                    key: 'postsPerPage',
-                    value: '10'
-                }]
-            }));
+            config.set({
+                theme: {
+                    permalinks: '/:slug/',
+                    postsPerPage: 10
+                }
+            });
 
             req = {
                 app: {get: function () { return 'casper';}},
@@ -137,20 +135,12 @@ describe('Frontend Controller', function () {
 
             sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: [mockTags[0]]}));
 
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
-
-            apiSettingsStub.withArgs('postsPerPage').returns(Promise.resolve({
-                settings: [{
-                    key: 'postsPerPage',
-                    value: '10'
-                }]
-            }));
-            apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                settings: [{
-                    key: 'permalinks',
-                    value: '/tag/:slug/'
-                }]
-            }));
+            config.set({
+                theme: {
+                    permalinks: '/tag/:slug/',
+                    postsPerPage: '10'
+                }
+            });
 
             req = {
                 app: {get: function () { return 'casper';}},
@@ -278,7 +268,11 @@ describe('Frontend Controller', function () {
                 return Promise.resolve(post || {posts: []});
             });
 
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            config.set({
+                theme: {
+                    permalinks: '/:slug/'
+                }
+            });
 
             casper = {
                 assets: null,
@@ -304,11 +298,11 @@ describe('Frontend Controller', function () {
         describe('static pages', function () {
             describe('custom page templates', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:slug/'
+                        }
+                    });
                 });
 
                 it('it will render a custom page-slug template if it exists', function (done) {
@@ -359,11 +353,11 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to slug', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:slug/'
+                        }
+                    });
                 });
 
                 it('will render static page via /:slug/', function (done) {
@@ -432,11 +426,11 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to date', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:year/:month/:day/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:year/:month/:day/:slug/'
+                        }
+                    });
                 });
 
                 it('will render static page via /:slug', function (done) {
@@ -492,11 +486,11 @@ describe('Frontend Controller', function () {
         describe('post', function () {
             describe('permalink set to slug', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:slug/'
+                        }
+                    });
 
                     mockPosts[1].posts[0].url = '/' + mockPosts[1].posts[0].slug + '/';
                 });
@@ -584,11 +578,11 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to date', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:year/:month/:day/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:year/:month/:day/:slug/'
+                        }
+                    });
 
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
                     mockPosts[1].posts[0].url = '/' + date + '/' + mockPosts[1].posts[0].slug + '/';
@@ -674,11 +668,11 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to author', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:author/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: 'author/:slug/'
+                        }
+                    });
 
                     // set post url to permalink-defined url
                     mockPosts[1].posts[0].url = '/test/' + mockPosts[1].posts[0].slug + '/';
@@ -764,11 +758,11 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to custom format', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:year/:slug/'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:year/:slug/'
+                        }
+                    });
 
                     config.set({paths: {availableThemes: {casper: casper}}});
 
@@ -881,11 +875,11 @@ describe('Frontend Controller', function () {
 
             describe('permalink set to custom format no slash', function () {
                 beforeEach(function () {
-                    apiSettingsStub.withArgs('permalinks').returns(Promise.resolve({
-                        settings: [{
-                            value: '/:year/:slug'
-                        }]
-                    }));
+                    config.set({
+                        theme: {
+                            permalinks: '/:year/:slug/'
+                        }
+                    });
 
                     var date = moment(mockPosts[1].posts[0].published_at).format('YYYY');
                     mockPosts[1].posts[0].url = '/' + date + '/' + mockPosts[1].posts[0].slug + '/';
@@ -931,7 +925,11 @@ describe('Frontend Controller', function () {
 
             defaultPath = path.join(config.paths.appRoot, '/core/server/views/private.hbs');
 
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            config.set({
+                theme: {
+                    permalinks: '/:slug/'
+                }
+            });
         });
 
         it('Should render default password page when theme has no password template', function (done) {
@@ -1034,7 +1032,11 @@ describe('Frontend Controller', function () {
                 return Promise.resolve(post || {posts: []});
             });
 
-            apiSettingsStub = sandbox.stub(api.settings, 'read');
+            config.set({
+                theme: {
+                    permalinks: '/:slug/'
+                }
+            });
 
             req = {
                 app: {get: function () {return 'casper'; }},
