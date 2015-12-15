@@ -372,7 +372,7 @@ describe('Config', function () {
 
         describe('urlPathForPost', function () {
             it('should output correct url for post', function () {
-                config.set({theme: {permalinks: '/:slug/'}});
+                configUtils.set({theme: {permalinks: '/:slug/'}});
 
                 var testData = testUtils.DataGenerator.Content.posts[2],
                     postLink = '/short-and-sweet/';
@@ -381,7 +381,7 @@ describe('Config', function () {
             });
 
             it('should output correct url for post with date permalink', function () {
-                config.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
+                configUtils.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
                 var testData = testUtils.DataGenerator.Content.posts[2],
                     today = testData.published_at,
                     dd = ('0' + today.getDate()).slice(-2),
@@ -393,7 +393,7 @@ describe('Config', function () {
             });
 
             it('should output correct url for page with date permalink', function () {
-                config.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
+                configUtils.set({theme: {permalinks: '/:year/:month/:day/:slug/'}});
 
                 var testData = testUtils.DataGenerator.Content.posts[5],
                     postLink = '/static-page-test/';
@@ -402,7 +402,7 @@ describe('Config', function () {
             });
 
             it('should output correct url for post with complex permalink', function () {
-                config.set({theme: {permalinks: '/:year/:id/:author/'}});
+                configUtils.set({theme: {permalinks: '/:year/:id/:author/'}});
 
                 var testData = _.extend(
                         {}, testUtils.DataGenerator.Content.posts[2], {id: 3}, {author: {slug: 'joe-bloggs'}}
@@ -412,6 +412,71 @@ describe('Config', function () {
                     postLink = '/' + yyyy + '/3/joe-bloggs/';
 
                 config.urlPathForPost(testData).should.equal(postLink);
+            });
+        });
+
+        describe('apiUrl', function () {
+            it('should return https config.url if forceAdminSSL set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    forceAdminSSL: true
+                });
+
+                config.apiUrl().should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if forceAdminSSL set and urlSSL is misconfigured', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'http://other-ghost-blog.com',
+                    forceAdminSSL: true
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if forceAdminSSL set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'https://other-ghost-blog.com',
+                    forceAdminSSL: true
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if set and misconfigured & forceAdminSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'http://other-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.urlSSL if set & forceAdminSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com',
+                    urlSSL: 'https://other-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('https://other-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return https config.url if config.url is https & forceAdminSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'https://my-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('https://my-ghost-blog.com/ghost/api/v0.1/');
+            });
+
+            it('should return no protocol config.url if config.url is NOT https & forceAdminSSL/urlSSL is NOT set', function () {
+                configUtils.set({
+                    url: 'http://my-ghost-blog.com'
+                });
+
+                config.apiUrl().should.eql('//my-ghost-blog.com/ghost/api/v0.1/');
             });
         });
     });
