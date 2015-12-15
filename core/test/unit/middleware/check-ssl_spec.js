@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var sinon    = require('sinon'),
     should   = require('should'),
-    config   = require('../../../server/config'),
+    configUtils = require('../../utils/configUtils'),
     checkSSL = require('../../../server/middleware/check-ssl');
 
 should.equal(true, true);
@@ -15,17 +15,19 @@ describe('checkSSL', function () {
         req = {};
         res = {};
         next = sandbox.spy();
+
+        configUtils.set({
+            url: 'http://default.com:2368/'
+        });
     });
 
     afterEach(function () {
         sandbox.restore();
+        configUtils.restore();
     });
 
     it('should not require SSL (frontend)', function (done) {
         req.url = '/';
-        config.set({
-            url: 'http://default.com:2368/'
-        });
         checkSSL(req, res, next);
         next.called.should.be.true;
         next.calledWith().should.be.true;
@@ -35,9 +37,6 @@ describe('checkSSL', function () {
     it('should require SSL (frontend)', function (done) {
         req.url = '/';
         req.secure = true;
-        config.set({
-            url: 'https://default.com:2368/'
-        });
         checkSSL(req, res, next);
         next.called.should.be.true;
         next.calledWith().should.be.true;
@@ -47,9 +46,6 @@ describe('checkSSL', function () {
     it('should not require SSL (admin)', function (done) {
         req.url = '/ghost';
         res.isAdmin = true;
-        config.set({
-            url: 'http://default.com:2368/'
-        });
         checkSSL(req, res, next);
         next.called.should.be.true;
         next.calledWith().should.be.true;
@@ -60,9 +56,7 @@ describe('checkSSL', function () {
         req.url = '/ghost';
         res.isAdmin = true;
         res.secure = true;
-        config.set({
-            url: 'http://default.com:2368/'
-        });
+
         checkSSL(req, res, next);
         next.called.should.be.true;
         next.calledWith().should.be.true;
@@ -73,7 +67,7 @@ describe('checkSSL', function () {
         req.url = '/ghost';
         res.isAdmin = true;
         req.secure = true;
-        config.set({
+        configUtils.set({
             url: 'http://default.com:2368/',
             forceAdminSSL: true
         });
@@ -88,7 +82,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
         res.redirect = {};
         req.secure = false;
-        config.set({
+        configUtils.set({
             url: 'http://default.com:2368/',
             urlSSL: '',
             forceAdminSSL: true
@@ -109,7 +103,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
         res.redirect = {};
         req.secure = false;
-        config.set({
+        configUtils.set({
             url: 'http://default.com:2368/blog/',
             urlSSL: '',
             forceAdminSSL: true
@@ -133,7 +127,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
         res.redirect = {};
         req.secure = false;
-        config.set({
+        configUtils.set({
             url: 'http://default.com:2368/',
             urlSSL: '',
             forceAdminSSL: true
@@ -153,7 +147,7 @@ describe('checkSSL', function () {
         req.url = '/';
         req.secure = false;
         res.redirect = {};
-        config.set({
+        configUtils.set({
             url: 'https://default.com:2368',
             urlSSL: '',
             forceAdminSSL: true
@@ -174,9 +168,10 @@ describe('checkSSL', function () {
         res.isAdmin = true;
         res.redirect = {};
         req.secure = false;
-        config.set({
+        configUtils.set({
             url: 'http://default.com:2368/',
-            urlSSL: 'https://ssl-domain.com:2368/'
+            urlSSL: 'https://ssl-domain.com:2368/',
+            forceAdminSSL: true
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
@@ -194,7 +189,7 @@ describe('checkSSL', function () {
         res.isAdmin = true;
         res.sendStatus = {};
         req.secure = false;
-        config.set({
+        configUtils.set({
             url: 'http://default.com:2368/',
             forceAdminSSL: {
                 redirect: false
