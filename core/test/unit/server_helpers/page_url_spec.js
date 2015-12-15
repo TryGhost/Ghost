@@ -3,6 +3,7 @@
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
+    configUtils    = require('../../utils/configUtils'),
 
 // Stuff we are testing
     handlebars     = hbs.handlebars,
@@ -43,11 +44,11 @@ describe('{{page_url}} helper', function () {
 
     describe('with /blog subdirectory', function () {
         before(function () {
-            utils.overrideConfig({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://testurl.com/blog'});
         });
 
         after(function () {
-            utils.restoreConfig();
+            configUtils.restore();
         });
 
         it('can return a valid url with subdirectory', function () {
@@ -111,11 +112,11 @@ describe('{{pageUrl}} helper [DEPRECATED]', function () {
 
     describe('with /blog subdirectory', function () {
         before(function () {
-            utils.overrideConfig({url: 'http://testurl.com/blog'});
+            configUtils.set({url: 'http://testurl.com/blog'});
         });
 
         after(function () {
-            utils.restoreConfig();
+            configUtils.restore();
         });
 
         it('can return a valid url with subdirectory', function () {
