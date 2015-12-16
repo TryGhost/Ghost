@@ -10,18 +10,18 @@ describeModel(
     'user',
     'Unit: Model: user',
     {
-        needs: ['model:role']
+        needs: ['model:role', 'serializer:application', 'serializer:user']
     },
 
     function () {
         it('has a validation type of "user"', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             expect(model.get('validationType')).to.equal('user');
         });
 
         it('active property is correct', function () {
-            var model = this.subject({
+            let model = this.subject({
                 status: 'active'
             });
 
@@ -40,7 +40,7 @@ describeModel(
         });
 
         it('invited property is correct', function () {
-            var model = this.subject({
+            let model = this.subject({
                 status: 'invited'
             });
 
@@ -57,7 +57,7 @@ describeModel(
         });
 
         it('pending property is correct', function () {
-            var model = this.subject({
+            let model = this.subject({
                 status: 'invited-pending'
             });
 
@@ -71,7 +71,7 @@ describeModel(
         });
 
         it('role property is correct', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             run(() => {
                 let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
@@ -87,7 +87,7 @@ describeModel(
         });
 
         it('isAuthor property is correct', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             run(() => {
                 let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Author'}}});
@@ -100,7 +100,7 @@ describeModel(
         });
 
         it('isEditor property is correct', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             run(() => {
                 let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Editor'}}});
@@ -113,7 +113,7 @@ describeModel(
         });
 
         it('isAdmin property is correct', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             run(() => {
                 let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Administrator'}}});
@@ -126,7 +126,7 @@ describeModel(
         });
 
         it('isOwner property is correct', function () {
-            var model = this.subject();
+            let model = this.subject();
 
             run(() => {
                 let role = this.store().push({data: {id: 1, type: 'role', attributes: {name: 'Owner'}}});

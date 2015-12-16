@@ -1,7 +1,9 @@
 /*jshint scripturl:true*/
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {$, Component, on} = Ember;
+
+export default Component.extend({
     tagName: 'a',
     anchor: '',
     classNames: ['sr-only', 'sr-only-focusable'],
@@ -13,9 +15,9 @@ export default Ember.Component.extend({
     // anchor behaviors or ignored
     href: Ember.String.htmlSafe('javascript:;'),
 
-    scrollTo: Ember.on('click', function () {
-        var anchor = this.get('anchor'),
-            $el = Ember.$(anchor);
+    scrollTo: on('click', function () {
+        let anchor = this.get('anchor');
+        let $el = Ember.$(anchor);
 
         if ($el) {
             // Scrolls to the top of main content or whatever

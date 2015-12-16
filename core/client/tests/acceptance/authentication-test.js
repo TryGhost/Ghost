@@ -8,11 +8,10 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../helpers/start-app';
+import destroyApp from '../helpers/destroy-app';
 import { authenticateSession, currentSession, invalidateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import windowProxy from 'ghost/utils/window-proxy';
-
-const {run} = Ember;
 
 describe('Acceptance: Authentication', function () {
     let application,
@@ -23,7 +22,7 @@ describe('Acceptance: Authentication', function () {
     });
 
     afterEach(function () {
-        run(application, 'destroy');
+        destroyApp(application);
     });
 
     describe('general page', function () {
@@ -34,8 +33,8 @@ describe('Acceptance: Authentication', function () {
             };
 
             server.loadFixtures();
-            const role = server.create('role', {name: 'Administrator'}),
-                  user = server.create('user', {roles: [role], slug: 'test-user'});
+            let role = server.create('role', {name: 'Administrator'});
+            let user = server.create('user', {roles: [role], slug: 'test-user'});
         });
 
         afterEach(function () {
@@ -43,9 +42,6 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('invalidates session on 401 API response', function () {
-            const role = server.create('role', {name: 'Administrator'}),
-                  user = server.create('user', {roles: [role]});
-
             // return a 401 when attempting to retrieve tags
             server.get('/users/', (db, request) => {
                 return new Mirage.Response(401, {}, {
@@ -75,13 +71,13 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('displays re-auth modal attempting to save with invalid session', function () {
-            const role = server.create('role', {name: 'Administrator'}),
-                  user = server.create('user', {roles: [role]});
+            let role = server.create('role', {name: 'Administrator'});
+            let user = server.create('user', {roles: [role]});
 
             // simulate an invalid session when saving the edited post
             server.put('/posts/:id/', (db, request) => {
-                let post = db.posts.find(request.params.id),
-                    [attrs] = JSON.parse(request.requestBody).posts;
+                let post = db.posts.find(request.params.id);
+                let [attrs] = JSON.parse(request.requestBody).posts;
 
                 if (attrs.markdown === 'Edited post body') {
                     return new Mirage.Response(401, {}, {

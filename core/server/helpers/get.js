@@ -124,9 +124,10 @@ get = function get(context, options) {
         }
 
         // block params allows the theme developer to name the data using something like
-        // `{{#get "posts" as |result pagination|}}`
+        // `{{#get "posts" as |result pageInfo|}}`
         blockParams = [result[context]];
         if (result.meta && result.meta.pagination) {
+            result.pagination = result.meta.pagination;
             blockParams.push(result.meta.pagination);
         }
 
@@ -149,15 +150,13 @@ module.exports = function getWithLabs(context, options) {
             'See http://support.ghost.org/public-api-beta'
         ];
 
-    return labs.isSet('publicAPI').then(function (publicAPI) {
-        if (publicAPI === true) {
-            // get helper is  active
-            return get.call(self, context, options);
-        } else {
-            errors.logError.apply(this, errorMessages);
-            return Promise.resolve(function noGetHelper() {
-                return '<script>console.error("' + errorMessages.join(' ') + '");</script>';
-            });
-        }
-    });
+    if (labs.isSet('publicAPI') === true) {
+        // get helper is  active
+        return get.call(self, context, options);
+    } else {
+        errors.logError.apply(this, errorMessages);
+        return Promise.resolve(function noGetHelper() {
+            return '<script>console.error("' + errorMessages.join(' ') + '");</script>';
+        });
+    }
 };

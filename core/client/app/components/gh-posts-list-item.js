@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {$, Component, computed, inject} = Ember;
+const {alias, equal} = computed;
+
+export default Component.extend({
     tagName: 'li',
     classNameBindings: ['active', 'isFeatured:featured', 'isPage:page'],
 
@@ -8,60 +11,58 @@ export default Ember.Component.extend({
     active: false,
     previewIsHidden: false,
 
-    ghostPaths: Ember.inject.service('ghost-paths'),
+    isFeatured: alias('post.featured'),
+    isPage: alias('post.page'),
+    isPublished: equal('post.status', 'published'),
 
-    isFeatured: Ember.computed.alias('post.featured'),
+    ghostPaths: inject.service('ghost-paths'),
 
-    isPage: Ember.computed.alias('post.page'),
-
-    isPublished: Ember.computed.equal('post.status', 'published'),
-
-    authorName: Ember.computed('post.author.name', 'post.author.email', function () {
+    authorName: computed('post.author.name', 'post.author.email', function () {
         return this.get('post.author.name') || this.get('post.author.email');
     }),
 
-    authorAvatar: Ember.computed('post.author.image', function () {
+    authorAvatar: computed('post.author.image', function () {
         return this.get('post.author.image') || this.get('ghostPaths.url').asset('/shared/img/user-image.png');
     }),
 
-    authorAvatarBackground: Ember.computed('authorAvatar', function () {
+    authorAvatarBackground: computed('authorAvatar', function () {
         return Ember.String.htmlSafe(`background-image: url(${this.get('authorAvatar')})`);
     }),
 
-    viewOrEdit: Ember.computed('previewIsHidden', function () {
+    viewOrEdit: computed('previewIsHidden', function () {
         return this.get('previewIsHidden') ? 'editor.edit' : 'posts.post';
     }),
 
-    click: function () {
+    click() {
         this.sendAction('onClick', this.get('post'));
     },
 
-    doubleClick: function () {
+    doubleClick() {
         this.sendAction('onDoubleClick', this.get('post'));
     },
 
-    didInsertElement: function () {
+    didInsertElement() {
+        this._super(...arguments);
         this.addObserver('active', this, this.scrollIntoView);
     },
 
-    willDestroyElement: function () {
+    willDestroyElement() {
+        this._super(...arguments);
         this.removeObserver('active', this, this.scrollIntoView);
     },
 
-    scrollIntoView: function () {
+    scrollIntoView() {
         if (!this.get('active')) {
             return;
         }
 
-        var element = this.$(),
-            offset = element.offset().top,
-            elementHeight = element.height(),
-            container = Ember.$('.js-content-scrollbox'),
-            containerHeight = container.height(),
-            currentScroll = container.scrollTop(),
-            isBelowTop,
-            isAboveBottom,
-            isOnScreen;
+        let element = this.$();
+        let offset = element.offset().top;
+        let elementHeight = element.height();
+        let container = $('.js-content-scrollbox');
+        let containerHeight = container.height();
+        let currentScroll = container.scrollTop();
+        let isBelowTop, isAboveBottom, isOnScreen;
 
         isAboveBottom = offset < containerHeight;
         isBelowTop = offset > elementHeight;

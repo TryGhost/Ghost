@@ -1,51 +1,51 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
-export default Ember.Controller.extend({
+const {$, Controller, computed, inject} = Ember;
+
+export default Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
     submitting: false,
 
-    ghostPaths: Ember.inject.service('ghost-paths'),
-    notifications: Ember.inject.service(),
-    session: Ember.inject.service(),
-    feature: Ember.inject.controller(),
+    ghostPaths: inject.service('ghost-paths'),
+    notifications: inject.service(),
+    session: inject.service(),
+    feature: inject.controller(),
 
-    labsJSON: Ember.computed('model.labs', function () {
+    labsJSON: computed('model.labs', function () {
         return JSON.parse(this.get('model.labs') || {});
     }),
 
-    saveLabs: function (optionName, optionValue) {
-        var self = this,
-            labsJSON =  this.get('labsJSON');
+    saveLabs(optionName, optionValue) {
+        let labsJSON =  this.get('labsJSON');
 
         // Set new value in the JSON object
         labsJSON[optionName] = optionValue;
 
         this.set('model.labs', JSON.stringify(labsJSON));
 
-        this.get('model').save().catch(function (errors) {
-            self.showErrors(errors);
-            self.get('model').rollbackAttributes();
+        this.get('model').save().catch((errors) => {
+            this.showErrors(errors);
+            this.get('model').rollbackAttributes();
         });
     },
 
-    usePublicAPI: Ember.computed('feature.publicAPI', {
-        get: function () {
+    usePublicAPI: computed('feature.publicAPI', {
+        get() {
             return this.get('feature.publicAPI');
         },
-        set: function (key, value) {
+        set(key, value) {
             this.saveLabs('publicAPI', value);
             return value;
         }
     }),
 
     actions: {
-        onUpload: function (file) {
-            var self = this,
-                formData = new FormData(),
-                notifications = this.get('notifications'),
-                currentUserId = this.get('session.user.id');
+        onUpload(file) {
+            let formData = new FormData();
+            let notifications = this.get('notifications');
+            let currentUserId = this.get('session.user.id');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
@@ -59,29 +59,30 @@ export default Ember.Controller.extend({
                 cache: false,
                 contentType: false,
                 processData: false
-            }).then(function () {
+            }).then(() => {
                 // Clear the store, so that all the new data gets fetched correctly.
-                self.store.unloadAll();
+                this.store.unloadAll();
                 // Reload currentUser and set session
-                self.set('session.user', self.store.findRecord('user', currentUserId));
+                this.set('session.user', this.store.findRecord('user', currentUserId));
                 // TODO: keep as notification, add link to view content
                 notifications.showNotification('Import successful.');
                 notifications.closeAlerts('import.upload');
-            }).catch(function (response) {
+            }).catch((response) => {
                 if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
-                    self.set('importErrors', response.jqXHR.responseJSON.errors);
+                    this.set('importErrors', response.jqXHR.responseJSON.errors);
                 }
 
                 notifications.showAlert('Import Failed', {type: 'error', key: 'import.upload.failed'});
-            }).finally(function () {
-                self.set('uploadButtonText', 'Import');
+            }).finally(() => {
+                this.set('uploadButtonText', 'Import');
             });
         },
 
-        exportData: function () {
-            var iframe = $('#iframeDownload'),
-                downloadURL = this.get('ghostPaths.url').api('db') +
-                    '?access_token=' + this.get('session.data.authenticated.access_token');
+        exportData() {
+            let dbUrl = this.get('ghostPaths.url').api('db');
+            let accessToken = this.get('session.data.authenticated.access_token');
+            let downloadURL = `${dbUrl}?access_token=${accessToken}`;
+            let iframe = $('#iframeDownload');
 
             if (iframe.length === 0) {
                 iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
@@ -90,24 +91,23 @@ export default Ember.Controller.extend({
             iframe.attr('src', downloadURL);
         },
 
-        sendTestEmail: function () {
-            var notifications = this.get('notifications'),
-                self = this;
+        sendTestEmail() {
+            let notifications = this.get('notifications');
 
             this.toggleProperty('submitting');
 
             ajax(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
-            }).then(function () {
+            }).then(() => {
                 notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
-                self.toggleProperty('submitting');
-            }).catch(function (error) {
+                this.toggleProperty('submitting');
+            }).catch((error) => {
                 if (typeof error.jqXHR !== 'undefined') {
                     notifications.showAPIError(error, {key: 'test-email.send'});
                 } else {
                     notifications.showErrors(error, {key: 'test-email.send'});
                 }
-                self.toggleProperty('submitting');
+                this.toggleProperty('submitting');
             });
         }
     }

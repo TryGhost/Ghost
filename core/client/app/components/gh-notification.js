@@ -1,18 +1,20 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed, inject} = Ember;
+
+export default Component.extend({
     tagName: 'article',
     classNames: ['gh-notification', 'gh-notification-passive'],
     classNameBindings: ['typeClass'],
 
     message: null,
 
-    notifications: Ember.inject.service(),
+    notifications: inject.service(),
 
-    typeClass: Ember.computed('message.type', function () {
-        var classes = '',
-            type = this.get('message.type'),
-            typeMapping;
+    typeClass: computed('message.type', function () {
+        let type = this.get('message.type');
+        let classes = '';
+        let typeMapping;
 
         typeMapping = {
             success: 'green',
@@ -21,28 +23,29 @@ export default Ember.Component.extend({
         };
 
         if (typeMapping[type] !== undefined) {
-            classes += 'gh-notification-' + typeMapping[type];
+            classes += `gh-notification-${typeMapping[type]}`;
         }
 
         return classes;
     }),
 
-    didInsertElement: function () {
-        var self = this;
+    didInsertElement() {
+        this._super(...arguments);
 
-        self.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
-                self.get('notifications').closeNotification(self.get('message'));
+                this.get('notifications').closeNotification(this.get('message'));
             }
         });
     },
 
-    willDestroyElement: function () {
+    willDestroyElement() {
+        this._super(...arguments);
         this.$().off('animationend webkitAnimationEnd oanimationend MSAnimationEnd');
     },
 
     actions: {
-        closeNotification: function () {
+        closeNotification() {
             this.get('notifications').closeNotification(this.get('message'));
         }
     }

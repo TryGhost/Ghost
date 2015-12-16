@@ -1,4 +1,5 @@
 /* jshint expr:true */
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import {
     describe,
     it,
@@ -8,35 +9,39 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from '../../helpers/start-app';
+import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
+import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
+import Mirage from 'ember-cli-mirage';
 
-const {run} = Ember,
-    // Grabbed from keymaster's testing code because Ember's `keyEvent` helper
-    // is for some reason not triggering the events in a way that keymaster detects:
-    // https://github.com/madrobby/keymaster/blob/master/test/keymaster.html#L31
-    modifierMap = {
-        16:'shiftKey',
-        18:'altKey',
-        17:'ctrlKey',
-        91:'metaKey'
-    },
-    keydown = function (code, modifiers, el) {
-        let event = document.createEvent('Event');
-        event.initEvent('keydown', true, true);
-        event.keyCode = code;
-        if (modifiers && modifiers.length > 0) {
-            for (let i in modifiers) {
-                event[modifierMap[modifiers[i]]] = true;
-            }
+const {run} = Ember;
+
+// Grabbed from keymaster's testing code because Ember's `keyEvent` helper
+// is for some reason not triggering the events in a way that keymaster detects:
+// https://github.com/madrobby/keymaster/blob/master/test/keymaster.html#L31
+const modifierMap = {
+    16: 'shiftKey',
+    18: 'altKey',
+    17: 'ctrlKey',
+    91: 'metaKey'
+};
+let keydown = function (code, modifiers, el) {
+    let event = document.createEvent('Event');
+    event.initEvent('keydown', true, true);
+    event.keyCode = code;
+    if (modifiers && modifiers.length > 0) {
+        for (let i in modifiers) {
+            event[modifierMap[modifiers[i]]] = true;
         }
-        (el || document).dispatchEvent(event);
-    },
-    keyup = function (code, el) {
-        let event = document.createEvent('Event');
-        event.initEvent('keyup', true, true);
-        event.keyCode = code;
-        (el || document).dispatchEvent(event);
-    };
+    }
+    (el || document).dispatchEvent(event);
+};
+let keyup = function (code, el) {
+    let event = document.createEvent('Event');
+    event.initEvent('keyup', true, true);
+    event.keyCode = code;
+    (el || document).dispatchEvent(event);
+};
 
 describe('Acceptance: Settings - Tags', function () {
     let application;
@@ -46,7 +51,7 @@ describe('Acceptance: Settings - Tags', function () {
     });
 
     afterEach(function () {
-        run(application, 'destroy');
+        destroyApp(application);
     });
 
     it('redirects to signin when not authenticated', function () {
@@ -59,8 +64,8 @@ describe('Acceptance: Settings - Tags', function () {
     });
 
     it('redirects to team page when authenticated as author', function () {
-        const role = server.create('role', {name: 'Author'}),
-              user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Author'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/navigation');
@@ -72,8 +77,8 @@ describe('Acceptance: Settings - Tags', function () {
 
     describe('when logged in', function () {
         beforeEach(function () {
-            const role = server.create('role', {name: 'Administrator'}),
-                  user = server.create('user', {roles: [role]});
+            let role = server.create('role', {name: 'Administrator'});
+            let user = server.create('user', {roles: [role]});
 
             // load the settings fixtures
             // TODO: this should always be run for acceptance tests
@@ -83,8 +88,8 @@ describe('Acceptance: Settings - Tags', function () {
         });
 
         it('it renders, can be navigated, can edit, create & delete tags', function () {
-            const tag1 = server.create('tag'),
-                  tag2 = server.create('tag');
+            let tag1 = server.create('tag');
+            let tag2 = server.create('tag');
 
             visit('/settings/tags');
 
@@ -274,6 +279,29 @@ describe('Acceptance: Settings - Tags', function () {
                 // it loads the final page
                 expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
                     .to.equal(32);
+            });
+        });
+
+        describe('with 404', function () {
+            beforeEach(function () {
+                errorOverride();
+            });
+
+            afterEach(function () {
+                errorReset();
+            });
+
+            it('redirects to 404 when tag does not exist', function () {
+                server.get('/tags/slug/unknown/', function () {
+                    return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
+                });
+
+                visit('settings/tags/unknown');
+
+                andThen(() => {
+                    expect(currentPath()).to.equal('error404');
+                    expect(currentURL()).to.equal('/settings/tags/unknown');
+                });
             });
         });
     });

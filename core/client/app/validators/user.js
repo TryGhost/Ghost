@@ -1,13 +1,14 @@
 import BaseValidator from './base';
-import Ember from 'ember';
 
 export default BaseValidator.create({
     properties: ['name', 'bio', 'email', 'location', 'website', 'roles'],
-    isActive: function (model) {
+
+    isActive(model) {
         return (model.get('status') === 'active');
     },
-    name: function (model) {
-        var name = model.get('name');
+
+    name(model) {
+        let name = model.get('name');
 
         if (this.isActive(model)) {
             if (validator.empty(name)) {
@@ -19,8 +20,9 @@ export default BaseValidator.create({
             }
         }
     },
-    bio: function (model) {
-        var bio = model.get('bio');
+
+    bio(model) {
+        let bio = model.get('bio');
 
         if (this.isActive(model)) {
             if (!validator.isLength(bio, 0, 200)) {
@@ -29,16 +31,18 @@ export default BaseValidator.create({
             }
         }
     },
-    email: function (model) {
-        var email = model.get('email');
+
+    email(model) {
+        let email = model.get('email');
 
         if (!validator.isEmail(email)) {
             model.get('errors').add('email', 'Please supply a valid email address');
             this.invalidate();
         }
     },
-    location: function (model) {
-        var location = model.get('location');
+
+    location(model) {
+        let location = model.get('location');
 
         if (this.isActive(model)) {
             if (!validator.isLength(location, 0, 150)) {
@@ -47,21 +51,26 @@ export default BaseValidator.create({
             }
         }
     },
-    website: function (model) {
-        var website = model.get('website');
 
+    website(model) {
+        let website = model.get('website');
+
+        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
         if (this.isActive(model)) {
-            if (!Ember.isEmpty(website) &&
+            if (!validator.empty(website) &&
                 (!validator.isURL(website, {require_protocol: false}) ||
                 !validator.isLength(website, 0, 2000))) {
+
                 model.get('errors').add('website', 'Website is not a valid url');
                 this.invalidate();
             }
         }
+        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
     },
-    roles: function (model) {
+
+    roles(model) {
         if (!this.isActive(model)) {
-            var roles = model.get('roles');
+            let roles = model.get('roles');
 
             if (roles.length < 1) {
                 model.get('errors').add('role', 'Please select a role');

@@ -11,7 +11,7 @@ var _            = require('lodash'),
     docName      = 'settings',
     settings,
 
-    updateConfigTheme,
+    updateConfigCache,
     updateSettingsCache,
     settingsFilter,
     filterPaths,
@@ -34,15 +34,32 @@ var _            = require('lodash'),
 * Maintains the cache of theme specific variables that are reliant on settings.
 * @private
 */
-updateConfigTheme = function () {
+updateConfigCache = function () {
+    var errorMessages = [
+        'Error: Invalid JSON in settings.labs',
+        'The column with key "labs" could not be parsed as JSON',
+        'Please try updating a setting on the labs page, or manually editing your DB'
+    ], labsValue = {};
+
+    if (settingsCache.labs && settingsCache.labs.value) {
+        try {
+            labsValue = JSON.parse(settingsCache.labs.value);
+        } catch (e) {
+            errors.logError.apply(this, errorMessages);
+        }
+    }
+
     config.set({
         theme: {
             title: (settingsCache.title && settingsCache.title.value) || '',
             description: (settingsCache.description && settingsCache.description.value) || '',
             logo: (settingsCache.logo && settingsCache.logo.value) || '',
             cover: (settingsCache.cover && settingsCache.cover.value) || '',
-            navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || []
-        }
+            navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || [],
+            postsPerPage: (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || 5,
+            permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/'
+        },
+        labs: labsValue
     });
 };
 
@@ -61,7 +78,7 @@ updateSettingsCache = function (settings) {
             settingsCache[key] = setting;
         });
 
-        updateConfigTheme();
+        updateConfigCache();
 
         return Promise.resolve(settingsCache);
     }
@@ -70,7 +87,7 @@ updateSettingsCache = function (settings) {
         .then(function (result) {
             settingsCache = readSettingsResult(result.models);
 
-            updateConfigTheme();
+            updateConfigCache();
 
             return settingsCache;
         });
@@ -357,7 +374,7 @@ settings = {
 
     /**
      * ### Edit
-     * Update properties of a post
+     * Update properties of a setting
      * @param {{settings: }} object Setting or a single string name
      * @param {{id (required), include,...}} options (optional) or a single string value
      * @return {Promise(Setting)} Edited Setting

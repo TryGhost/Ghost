@@ -1,14 +1,13 @@
 /* global CodeMirror */
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component} = Ember;
 
-    // DOM stuff
+export default Component.extend({
     classNameBindings: ['isFocused:focused'],
-    isFocused: false,
 
     value: '', // make sure a value exists
-    _editor: null, // reference to CodeMirror editor
+    isFocused: false,
 
     // options for the editor
     lineNumbers: true,
@@ -16,9 +15,13 @@ export default Ember.Component.extend({
     mode: 'htmlmixed',
     theme: 'xq-light',
 
-    didInsertElement: function () {
-        var options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme'),
-            editor = new CodeMirror(this.get('element'), options);
+    _editor: null, // reference to CodeMirror editor
+
+    didInsertElement() {
+        this._super(...arguments);
+
+        let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme');
+        let editor = new CodeMirror(this.get('element'), options);
 
         editor.getDoc().setValue(this.get('value'));
 
@@ -34,10 +37,11 @@ export default Ember.Component.extend({
         this._editor = editor;
     },
 
-    willDestroyElement: function () {
-        var editor = this._editor.getWrapperElement();
+    willDestroyElement() {
+        this._super(...arguments);
+
+        let editor = this._editor.getWrapperElement();
         editor.parentNode.removeChild(editor);
         this._editor = null;
     }
-
 });

@@ -32,6 +32,7 @@ function ConfigManager(config) {
     this.urlJoin = configUrl.urlJoin;
     this.urlFor = configUrl.urlFor;
     this.urlPathForPost = configUrl.urlPathForPost;
+    this.apiUrl = configUrl.apiUrl;
 
     // If we're given an initial config object then we can set it.
     if (config && _.isObject(config)) {
@@ -399,7 +400,7 @@ ConfigManager.prototype.isPrivacyDisabled = function (privacyFlag) {
 ConfigManager.prototype.checkDeprecated = function () {
     var self = this;
     _.each(this.deprecatedItems, function (property) {
-        self.displayDeprecated(self, property.split('.'), []);
+        self.displayDeprecated(self._config, property.split('.'), []);
     });
 };
 

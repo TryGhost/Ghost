@@ -1,57 +1,56 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-export default Ember.Controller.extend(ValidationEngine, {
+const {$, Controller, computed, inject} = Ember;
+
+export default Controller.extend(ValidationEngine, {
     validationType: 'signin',
     submitting: false,
 
-    application: Ember.inject.controller(),
-    notifications: Ember.inject.service(),
-    session: Ember.inject.service(),
+    application: inject.controller(),
+    notifications: inject.service(),
+    session: inject.service(),
 
-    identification: Ember.computed('session.user.email', function () {
+    identification: computed('session.user.email', function () {
         return this.get('session.user.email');
     }),
 
     actions: {
-        authenticate: function () {
-            var appController = this.get('application'),
-                authStrategy = 'authenticator:oauth2',
-                self = this;
+        authenticate() {
+            let appController = this.get('application');
+            let authStrategy = 'authenticator:oauth2';
 
             appController.set('skipAuthSuccessHandler', true);
 
-            this.get('session').authenticate(authStrategy, this.get('identification'), this.get('password')).then(function () {
-                self.send('closeModal');
-                self.set('password', '');
-                self.get('notifications').closeAlerts('post.save');
-            }).catch(function () {
+            this.get('session').authenticate(authStrategy, this.get('identification'), this.get('password')).then(() => {
+                this.send('closeModal');
+                this.set('password', '');
+                this.get('notifications').closeAlerts('post.save');
+            }).catch(() => {
                 // if authentication fails a rejected promise will be returned.
                 // it needs to be caught so it doesn't generate an exception in the console,
                 // but it's actually "handled" by the sessionAuthenticationFailed action handler.
-            }).finally(function () {
-                self.toggleProperty('submitting');
+            }).finally(() => {
+                this.toggleProperty('submitting');
                 appController.set('skipAuthSuccessHandler', undefined);
             });
         },
 
-        validateAndAuthenticate: function () {
-            var self = this;
-
+        validateAndAuthenticate() {
             this.toggleProperty('submitting');
 
             // Manually trigger events for input fields, ensuring legacy compatibility with
             // browsers and password managers that don't send proper events on autofill
             $('#login').find('input').trigger('change');
 
-            this.validate({format: false}).then(function () {
-                self.send('authenticate');
-            }).catch(function (errors) {
-                self.get('notifications').showErrors(errors);
+            this.validate({format: false}).then(() => {
+                this.send('authenticate');
+            }).catch((errors) => {
+                this.get('notifications').showErrors(errors);
             });
         },
 
-        confirmAccept: function () {
+        confirmAccept() {
             this.send('validateAndAuthenticate');
         }
     }

@@ -12,7 +12,7 @@ var _           = require('lodash'),
     errors      = require('../../errors'),
     filters     = require('../../filters'),
     Promise     = require('bluebird'),
-    template    = require('../../helpers/template'),
+    templates    = require('./templates'),
     routeMatch  = require('path-match')(),
     safeString  = require('../../utils/index').safeString,
     handleError = require('./error'),
@@ -21,7 +21,6 @@ var _           = require('lodash'),
     channelConfig  = require('./channel-config'),
     setResponseContext = require('./context'),
     setRequestIsSecure   = require('./secure'),
-    getActiveThemePaths = require('./theme-paths'),
 
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
@@ -34,8 +33,7 @@ var _           = require('lodash'),
 */
 function renderPost(req, res) {
     return function renderPost(post) {
-        var paths = getActiveThemePaths(req),
-            view = template.getThemeViewForPost(paths, post),
+        var view = templates.single(req.app.get('activeTheme'), post),
             response = formatResponse.single(post);
 
         setResponseContext(req, res, response);
@@ -43,42 +41,24 @@ function renderPost(req, res) {
     };
 }
 
-function renderChannel(channelOpts) {
+function renderChannel(name) {
     return function renderChannel(req, res, next) {
         // Parse the parameters we need from the URL
-        var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+        var channelOpts = channelConfig(name),
+            pageParam = req.params.page !== undefined ? req.params.page : 1,
             slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
         // Ensure we at least have an empty object for postOptions
         channelOpts.postOptions = channelOpts.postOptions || {};
         // Set page on postOptions for the query made later
         channelOpts.postOptions.page = pageParam;
-
-        // @TODO this should really use the url building code in config.url
-        function createUrl(page) {
-            var url = config.paths.subdir + channelOpts.route;
-
-            if (slugParam) {
-                url = url.replace(':slug', slugParam);
-            }
-
-            if (page && page > 1) {
-                url += 'page/' + page + '/';
-            }
-
-            return url;
-        }
-
-        // If the page parameter isn't something sensible, redirect
-        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-            return res.redirect(createUrl());
-        }
+        channelOpts.slugParam = slugParam;
 
         // Call fetchData to get everything we need from the API
-        return fetchData(channelOpts, slugParam).then(function handleResult(result) {
-            // If page is greater than number of pages we have, redirect to last page
+        return fetchData(channelOpts).then(function handleResult(result) {
+            // If page is greater than number of pages we have, go straight to 404
             if (pageParam > result.meta.pagination.pages) {
-                return res.redirect(createUrl(result.meta.pagination.pages));
+                return next(new errors.NotFoundError());
             }
 
             // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
@@ -90,17 +70,7 @@ function renderChannel(channelOpts) {
 
             // @TODO: properly design these filters
             filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
-                var paths = getActiveThemePaths(req),
-                    view = 'index';
-
-                // Calculate which template to use to render the data
-                if (channelOpts.firstPageTemplate && paths.hasOwnProperty(channelOpts.firstPageTemplate + '.hbs')) {
-                    view = (pageParam > 1) ? 'index' : channelOpts.firstPageTemplate;
-                } else if (channelOpts.slugTemplate) {
-                    view = template.getThemeViewForChannel(paths, channelOpts.name, slugParam);
-                } else if (paths.hasOwnProperty(channelOpts.name + '.hbs')) {
-                    view = channelOpts.name;
-                }
+                var view = templates.channel(req.app.get('activeTheme'), channelOpts);
 
                 // Do final data formatting and then render
                 result.posts = posts;
@@ -113,20 +83,20 @@ function renderChannel(channelOpts) {
 }
 
 frontendControllers = {
-    index: renderChannel(_.cloneDeep(channelConfig.index)),
-    tag: renderChannel(_.cloneDeep(channelConfig.tag)),
-    author: renderChannel(_.cloneDeep(channelConfig.author)),
+    index: renderChannel('index'),
+    tag: renderChannel('tag'),
+    author: renderChannel('author'),
     rss: function (req, res, next) {
         // Temporary hack, channels will allow us to resolve this better eventually
         var tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/.+'),
             authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/.+');
 
         if (tagPattern.test(res.locals.relativeUrl)) {
-            req.channelConfig = _.cloneDeep(channelConfig.tag);
+            req.channelConfig = channelConfig('tag');
         } else if (authorPattern.test(res.locals.relativeUrl)) {
-            req.channelConfig = _.cloneDeep(channelConfig.author);
+            req.channelConfig = channelConfig('author');
         } else {
-            req.channelConfig = _.cloneDeep(channelConfig.index);
+            req.channelConfig = channelConfig('index');
         }
 
         req.channelConfig.isRSS = true;
@@ -161,46 +131,40 @@ frontendControllers = {
     single: function single(req, res, next) {
         var postPath = req.path,
             params,
-            usingStaticPermalink = false;
+            usingStaticPermalink = false,
+            permalink = config.theme.permalinks,
+            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?',
+            postLookup,
+            match;
 
-        api.settings.read('permalinks').then(function then(response) {
-            var permalink = response.settings[0].value,
-                editFormat,
-                postLookup,
-                match;
+        // Convert saved permalink into a path-match function
+        permalink = routeMatch(permalink + editFormat);
+        match = permalink(postPath);
 
-            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?';
-
-            // Convert saved permalink into a path-match function
-            permalink = routeMatch(permalink + editFormat);
-            match = permalink(postPath);
-
-            // Check if the path matches the permalink structure.
-            //
-            // If there are no matches found we then
-            // need to verify it's not a static post,
-            // and test against that permalink structure.
+        // Check if the path matches the permalink structure.
+        //
+        // If there are no matches found we then
+        // need to verify it's not a static post,
+        // and test against that permalink structure.
+        if (match === false) {
+            match = staticPostPermalink(postPath);
+            // If there are still no matches then call next.
             if (match === false) {
-                match = staticPostPermalink(postPath);
-                // If there are still no matches then return.
-                if (match === false) {
-                    // Reject promise chain with type 'NotFound'
-                    return Promise.reject(new errors.NotFoundError());
-                }
-
-                usingStaticPermalink = true;
+                return next();
             }
 
-            params = match;
+            usingStaticPermalink = true;
+        }
 
-            // Sanitize params we're going to use to lookup the post.
-            postLookup = _.pick(params, 'slug', 'id');
-            // Add author, tag and fields
-            postLookup.include = 'author,tags,fields';
+        params = match;
 
-            // Query database to find post
-            return api.posts.read(postLookup);
-        }).then(function then(result) {
+        // Sanitize params we're going to use to lookup the post.
+        postLookup = _.pick(params, 'slug', 'id');
+        // Add author, tag and fields
+        postLookup.include = 'author,tags,fields';
+
+        // Query database to find post
+        return api.posts.read(postLookup).then(function then(result) {
             var post = result.posts[0],
                 postUrl = (params.edit) ? postPath.replace(params.edit + '/', '') : postPath;
 
@@ -248,7 +212,7 @@ frontendControllers = {
     },
     private: function private(req, res) {
         var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs'),
-            paths = getActiveThemePaths(req),
+            paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
             data = {};
 
         if (res.error) {

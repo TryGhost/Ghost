@@ -1,10 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component} = Ember;
+
+export default Component.extend({
     tagName: 'h2',
     classNames: ['view-title'],
+
     actions: {
-        openMobileMenu: function () {
+        openMobileMenu() {
             this.sendAction('openMobileMenu');
         }
     }

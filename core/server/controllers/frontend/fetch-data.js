@@ -4,6 +4,7 @@
  */
 var api = require('../../api'),
     _   = require('lodash'),
+    config = require('../../config'),
     Promise = require('bluebird'),
     queryDefaults,
     defaultPostQuery = {};
@@ -24,7 +25,7 @@ _.extend(defaultPostQuery, queryDefaults, {
 
 /**
  * ## Fetch Posts Per page
- * Grab the postsPerPage setting from the database
+ * Grab the postsPerPage setting
  *
  * @param {Object} options
  * @returns {Object} postOptions
@@ -32,17 +33,15 @@ _.extend(defaultPostQuery, queryDefaults, {
 function fetchPostsPerPage(options) {
     options = options || {};
 
-    return api.settings.read('postsPerPage').then(function then(response) {
-        var postsPerPage = parseInt(response.settings[0].value);
+    var postsPerPage = parseInt(config.theme.postsPerPage);
 
-        // No negative posts per page, must be number
-        if (!isNaN(postsPerPage) && postsPerPage > 0) {
-            options.limit = postsPerPage;
-        }
+    // No negative posts per page, must be number
+    if (!isNaN(postsPerPage) && postsPerPage > 0) {
+        options.limit = postsPerPage;
+    }
 
-        // Ensure the options key is present, so this can be merged with other options
-        return {options: options};
-    });
+    // Ensure the options key is present, so this can be merged with other options
+    return {options: options};
 }
 
 /**
@@ -82,51 +81,41 @@ function processQuery(query, slugParam) {
  * Does a first round of formatting on the response, and returns
  *
  * @param {Object} channelOptions
- * @param {String} slugParam
  * @returns {Promise} response
  */
-function fetchData(channelOptions, slugParam) {
-    // Temporary workaround to make RSS work, moving towards dynamic channels will provide opportunities to
-    // improve this, I hope :)
-    function handlePostsPerPage(channelOptions) {
-        if (channelOptions.isRSS) {
-            return Promise.resolve({options: channelOptions.postOptions});
-        } else {
-            return fetchPostsPerPage(channelOptions.postOptions);
+function fetchData(channelOptions) {
+    // @TODO improve this further
+    var pageOptions = channelOptions.isRSS ?
+        {options: channelOptions.postOptions} : fetchPostsPerPage(channelOptions.postOptions),
+        postQuery,
+        props = {};
+
+    // All channels must have a posts query, use the default if not provided
+    postQuery = _.defaultsDeep({}, pageOptions, defaultPostQuery);
+    props.posts = processQuery(postQuery, channelOptions.slugParam);
+
+    _.each(channelOptions.data, function (query, name) {
+        props[name] = processQuery(query, channelOptions.slugParam);
+    });
+
+    return Promise.props(props).then(function formatResponse(results) {
+        var response = _.cloneDeep(results.posts);
+        delete results.posts;
+
+        // process any remaining data
+        if (!_.isEmpty(results)) {
+            response.data = {};
+
+            _.each(results, function (result, name) {
+                if (channelOptions.data[name].type === 'browse') {
+                    response.data[name] = result;
+                } else {
+                    response.data[name] = result[channelOptions.data[name].resource];
+                }
+            });
         }
-    }
 
-    return handlePostsPerPage(channelOptions).then(function fetchData(pageOptions) {
-        var postQuery,
-            props = {};
-
-        // All channels must have a posts query, use the default if not provided
-        postQuery = _.defaultsDeep({}, pageOptions, defaultPostQuery);
-        props.posts = processQuery(postQuery, slugParam);
-
-        _.each(channelOptions.data, function (query, name) {
-            props[name] = processQuery(query, slugParam);
-        });
-
-        return Promise.props(props).then(function formatResponse(results) {
-            var response = _.cloneDeep(results.posts);
-            delete results.posts;
-
-            // process any remaining data
-            if (!_.isEmpty(results)) {
-                response.data = {};
-
-                _.each(results, function (result, name) {
-                    if (channelOptions.data[name].type === 'browse') {
-                        response.data[name] = result;
-                    } else {
-                        response.data[name] = result[channelOptions.data[name].resource];
-                    }
-                });
-            }
-
-            return response;
-        });
+        return response;
     });
 }
 

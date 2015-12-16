@@ -1,5 +1,7 @@
 import Ember from 'ember';
 
-Ember.TextField.reopen({
+const {TextField} = Ember;
+
+TextField.reopen({
     attributeBindings: ['autofocus']
 });

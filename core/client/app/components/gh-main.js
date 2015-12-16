@@ -1,11 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component} = Ember;
+
+export default Component.extend({
     tagName: 'main',
     classNames: ['gh-main'],
     ariaRole: 'main',
 
-    mouseEnter: function () {
+    mouseEnter() {
         this.sendAction('onMouseEnter');
     }
 });

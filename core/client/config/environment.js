@@ -1,5 +1,5 @@
 /* jshint node: true */
-/* jscs:disable disallowEmptyBlocks */
+/* jscs:disable */
 
 module.exports = function (environment) {
     var ENV = {
@@ -23,13 +23,6 @@ module.exports = function (environment) {
             authenticationRoute: 'signin',
             routeAfterAuthentication: 'posts',
             routeIfAlreadyAuthenticated: 'posts'
-        },
-
-        resizeServiceDefaults: {
-            debounceTimeout: 100,
-            heightSensitive: false,
-            widthSensitive: true,
-            injectionFactories: []
         }
     };
 

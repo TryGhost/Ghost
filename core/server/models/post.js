@@ -10,27 +10,8 @@ var _              = require('lodash'),
     events         = require('../events'),
     config         = require('../config'),
     baseUtils      = require('./base/utils'),
-    permalinkSetting = '',
-    getPermalinkSetting,
     Post,
     Posts;
-
-// Stores model permalink format
-
-getPermalinkSetting = function getPermalinkSetting(model, attributes, options) {
-    /*jshint unused:false*/
-
-    // Transactions are used for bulk deletes and imports which don't need this anyway
-    if (options.transacting) {
-        return Promise.resolve();
-    }
-    return ghostBookshelf.model('Settings').findOne({key: 'permalinks'}).then(function then(response) {
-        if (response) {
-            response = response.toJSON(options);
-            permalinkSetting = response.hasOwnProperty('value') ? response.value : '';
-        }
-    });
-};
 
 Post = ghostBookshelf.Model.extend({
 
@@ -59,10 +40,6 @@ Post = ghostBookshelf.Model.extend({
         this.on('saved', function onSaved(model, response, options) {
             return self.updateTags(model, response, options);
         });
-
-        // Ensures local copy of permalink setting is kept up to date
-        this.on('fetching', getPermalinkSetting);
-        this.on('fetching:collection', getPermalinkSetting);
 
         this.on('created', function onCreated(model) {
             model.emitChange('added');
@@ -324,7 +301,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!options.columns || (options.columns && options.columns.indexOf('url') > -1)) {
-            attrs.url = config.urlPathForPost(attrs, permalinkSetting);
+            attrs.url = config.urlPathForPost(attrs);
         }
 
         return attrs;
@@ -614,14 +591,7 @@ Post = ghostBookshelf.Model.extend({
 });
 
 Posts = ghostBookshelf.Collection.extend({
-    model: Post,
-
-    initialize: function initialize() {
-        ghostBookshelf.Collection.prototype.initialize.apply(this, arguments);
-
-        // Ensures local copy of permalink setting is kept up to date
-        this.on('fetching', getPermalinkSetting);
-    }
+    model: Post
 });
 
 module.exports = {

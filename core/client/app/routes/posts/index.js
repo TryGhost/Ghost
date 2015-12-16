@@ -1,29 +1,35 @@
+import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
-import mobileQuery from 'ghost/utils/mobile';
+
+const {computed, inject} = Ember;
+const {reads} = computed;
 
 export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
     noPosts: false,
 
+    mediaQueries: inject.service(),
+    isMobile: reads('mediaQueries.isMobile'),
+
     // Transition to a specific post if we're not on mobile
-    beforeModel: function () {
-        if (!mobileQuery.matches) {
+    beforeModel() {
+        this._super(...arguments);
+        if (!this.get('isMobile')) {
             return this.goToPost();
         }
     },
 
-    setupController: function (controller, model) {
-        /*jshint unused:false*/
+    setupController(controller) {
         controller.set('noPosts', this.get('noPosts'));
+        this._super(...arguments);
     },
 
-    goToPost: function () {
-        var self = this,
-            // the store has been populated by PostsRoute
-            posts = this.store.peekAll('post'),
-            post;
+    goToPost() {
+        // the store has been populated by PostsRoute
+        let posts = this.store.peekAll('post');
+        let post;
 
-        return this.get('session.user').then(function (user) {
+        return this.get('session.user').then((user) => {
             post = posts.find(function (post) {
                 // Authors can only see posts they've written
                 if (user.get('isAuthor')) {
@@ -34,15 +40,15 @@ export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
             });
 
             if (post) {
-                return self.transitionTo('posts.post', post);
+                return this.transitionTo('posts.post', post);
             }
 
-            self.set('noPosts', true);
+            this.set('noPosts', true);
         });
     },
 
     // Mobile posts route callback
-    desktopTransition: function () {
+    desktopTransition() {
         this.goToPost();
     }
 });

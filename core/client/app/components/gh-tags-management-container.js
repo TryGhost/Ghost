@@ -1,26 +1,29 @@
 import Ember from 'ember';
 
-const {isBlank} = Ember;
+const {Component, computed, inject, isBlank, observer, run} = Ember;
+const {equal, reads} = computed;
 
-export default Ember.Component.extend({
+export default Component.extend({
     classNames: ['view-container'],
     classNameBindings: ['isMobile'],
 
-    mobileWidth: 600,
+    mediaQueries: inject.service(),
+
     tags: null,
     selectedTag: null,
 
-    isMobile: false,
-    isEmpty: Ember.computed.equal('tags.length', 0),
+    isMobile: reads('mediaQueries.maxWidth600'),
+    isEmpty: equal('tags.length', 0),
 
-    resizeService: Ember.inject.service('resize-service'),
+    init() {
+        this._super(...arguments);
+        run.schedule('actions', this, this.fireMobileChangeActions);
+    },
 
-    _resizeListener: null,
-
-    displaySettingsPane: Ember.computed('isEmpty', 'selectedTag', 'isMobile', function () {
-        const isEmpty = this.get('isEmpty'),
-              selectedTag = this.get('selectedTag'),
-              isMobile = this.get('isMobile');
+    displaySettingsPane: computed('isEmpty', 'selectedTag', 'isMobile', function () {
+        let isEmpty = this.get('isEmpty');
+        let selectedTag = this.get('selectedTag');
+        let isMobile = this.get('isMobile');
 
         // always display settings pane for blank-slate on mobile
         if (isMobile && isEmpty) {
@@ -36,25 +39,9 @@ export default Ember.Component.extend({
         return true;
     }),
 
-    toggleMobile: function () {
-        let width = Ember.$(window).width();
-
-        if (width < this.get('mobileWidth')) {
-            this.set('isMobile', true);
-            this.sendAction('enteredMobile');
-        } else {
-            this.set('isMobile', false);
+    fireMobileChangeActions: observer('isMobile', function () {
+        if (!this.get('isMobile')) {
             this.sendAction('leftMobile');
         }
-    },
-
-    didInitAttrs: function () {
-        this._resizeListener = Ember.run.bind(this, this.toggleMobile);
-        this.get('resizeService').on('debouncedDidResize', this._resizeListener);
-        this.toggleMobile();
-    },
-
-    willDestroyElement: function () {
-        this.get('resizeService').off('debouncedDidResize', this._resizeListener);
-    }
+    })
 });

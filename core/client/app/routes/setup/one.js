@@ -1,21 +1,22 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
 
-var DownloadCountPoller = Ember.Object.extend({
+const {Route, inject, run} = Ember;
+
+let DownloadCountPoller = Ember.Object.extend({
     url: null,
     count: '',
     runId: null,
 
-    init: function () {
+    init() {
+        this._super(...arguments);
         this.downloadCounter();
         this.poll();
     },
 
-    poll: function () {
-        var interval = Ember.testing ? 20 : 2000,
-            runId;
-
-        runId = Ember.run.later(this, function () {
+    poll() {
+        let interval = Ember.testing ? 20 : 2000;
+        let runId = run.later(this, function () {
             this.downloadCounter();
             if (!Ember.testing) {
                 this.poll();
@@ -25,34 +26,32 @@ var DownloadCountPoller = Ember.Object.extend({
         this.set('runId', runId);
     },
 
-    downloadCounter: function () {
-        var self = this;
-
-        ajax(this.get('url')).then(function (data) {
-            var count = data.count.toString(),
-                pattern = /(-?\d+)(\d{3})/;
+    downloadCounter() {
+        ajax(this.get('url')).then((data) => {
+            let pattern = /(-?\d+)(\d{3})/;
+            let count = data.count.toString();
 
             while (pattern.test(count)) {
                 count = count.replace(pattern, '$1,$2');
             }
 
-            self.set('count', count);
-        }).catch(function () {
-            self.set('count', '');
+            this.set('count', count);
+        }).catch(() => {
+            this.set('count', '');
         });
     }
 });
 
-export default Ember.Route.extend({
-    ghostPaths: Ember.inject.service('ghost-paths'),
+export default Route.extend({
+    ghostPaths: inject.service('ghost-paths'),
 
-    model: function () {
+    model() {
         return DownloadCountPoller.create({url: this.get('ghostPaths.count')});
     },
 
-    resetController: function (controller, isExiting) {
+    resetController(controller, isExiting) {
         if (isExiting) {
-            Ember.run.cancel(controller.get('model.runId'));
+            run.cancel(controller.get('model.runId'));
             controller.set('model', null);
         }
     }

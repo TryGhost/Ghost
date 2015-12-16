@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed, observer, run} = Ember;
+const {equal} = computed;
+
+export default Component.extend({
     tagName: 'button',
     buttonText: '',
     submitting: false,
@@ -12,9 +15,9 @@ export default Ember.Component.extend({
     attributeBindings: ['disabled', 'type', 'tabindex'],
 
     // Must be set on the controller
-    disabled: Ember.computed.equal('showSpinner', true),
+    disabled: equal('showSpinner', true),
 
-    click: function () {
+    click() {
         if (this.get('action')) {
             this.sendAction('action');
             return false;
@@ -22,13 +25,13 @@ export default Ember.Component.extend({
         return true;
     },
 
-    toggleSpinner: Ember.observer('submitting', function () {
-        var submitting = this.get('submitting'),
-            timeout = this.get('showSpinnerTimeout');
+    toggleSpinner: observer('submitting', function () {
+        let submitting = this.get('submitting');
+        let timeout = this.get('showSpinnerTimeout');
 
         if (submitting) {
             this.set('showSpinner', true);
-            this.set('showSpinnerTimeout', Ember.run.later(this, function () {
+            this.set('showSpinnerTimeout', run.later(this, function () {
                 if (!this.get('submitting')) {
                     this.set('showSpinner', false);
                 }
@@ -39,7 +42,7 @@ export default Ember.Component.extend({
         }
     }),
 
-    setSize: Ember.observer('showSpinner', function () {
+    setSize: observer('showSpinner', function () {
         if (this.get('showSpinner') && this.get('autoWidth')) {
             this.$().width(this.$().width());
             this.$().height(this.$().height());
@@ -49,7 +52,8 @@ export default Ember.Component.extend({
         }
     }),
 
-    willDestroy: function () {
-        Ember.run.cancel(this.get('showSpinnerTimeout'));
+    willDestroy() {
+        this._super(...arguments);
+        run.cancel(this.get('showSpinnerTimeout'));
     }
 });

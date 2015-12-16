@@ -295,20 +295,7 @@ describe('Sitemap', function () {
     });
 
     describe('Generators', function () {
-        var stubPermalinks = function (generator) {
-                sandbox.stub(generator, 'getPermalinksValue', function () {
-                    return Promise.resolve({
-                        id: 13,
-                        uuid: 'ac6d6bb2-0b64-4941-b5ef-e69000bb738a',
-                        key: 'permalinks',
-                        value: '/:slug/',
-                        type: 'blog'
-                    });
-                });
-
-                return generator;
-            },
-            stubUrl = function (generator) {
+        var stubUrl = function (generator) {
                 sandbox.stub(generator, 'getUrlForDatum', function (datum) {
                     return 'http://my-ghost-blog.com/url/' + datum.id;
                 });
@@ -329,8 +316,6 @@ describe('Sitemap', function () {
             it('can initialize with empty siteMapContent', function (done) {
                 var generator = new BaseGenerator();
 
-                stubPermalinks(generator);
-
                 generator.init().then(function () {
                     should.exist(generator.siteMapContent);
 
@@ -343,7 +328,6 @@ describe('Sitemap', function () {
             it('can initialize with non-empty siteMapContent', function (done) {
                 var generator = new BaseGenerator();
 
-                stubPermalinks(generator);
                 stubUrl(generator);
 
                 sandbox.stub(generator, 'getData', function () {
@@ -419,7 +403,6 @@ describe('Sitemap', function () {
             it('can initialize with non-empty siteMapContent', function (done) {
                 var generator = new PostGenerator();
 
-                stubPermalinks(generator);
                 stubUrl(generator);
 
                 sandbox.stub(generator, 'getData', function () {

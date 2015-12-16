@@ -1,20 +1,14 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend(Ember.PromiseProxyMixin, {
-    init: function () {
-        var promise;
+const {Controller, PromiseProxyMixin, computed} = Ember;
+const {alias} = computed;
 
-        promise = this.store.query('setting', {type: 'blog,theme'}).then(function (settings) {
-            return settings.get('firstObject');
-        });
+export default Controller.extend(PromiseProxyMixin, {
 
-        this.set('promise', promise);
-    },
+    setting: alias('content'),
 
-    setting: Ember.computed.alias('content'),
-
-    labs: Ember.computed('isSettled', 'setting.labs', function () {
-        var value = {};
+    labs: computed('isSettled', 'setting.labs', function () {
+        let value = {};
 
         if (this.get('isFulfilled')) {
             try {
@@ -27,7 +21,17 @@ export default Ember.Controller.extend(Ember.PromiseProxyMixin, {
         return value;
     }),
 
-    publicAPI: Ember.computed('config.publicAPI', 'labs.publicAPI', function () {
+    publicAPI: computed('config.publicAPI', 'labs.publicAPI', function () {
         return this.get('config.publicAPI') || this.get('labs.publicAPI');
-    })
+    }),
+
+    init() {
+        this._super(...arguments);
+
+        let promise = this.store.query('setting', {type: 'blog,theme'}).then((settings) => {
+            return settings.get('firstObject');
+        });
+
+        this.set('promise', promise);
+    }
 });

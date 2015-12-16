@@ -2,14 +2,14 @@
 /*jshint expr:true*/
 var fs              = require('fs'),
     sinon           = require('sinon'),
-    serveSharedFile = require('../../../server/middleware/serve-shared-file');
+    serveSharedFile = require('../../../server/middleware/serve-shared-file'),
+
+    sandbox = sinon.sandbox.create();
 
 describe('serveSharedFile', function () {
-    var res, req, next, sandbox;
+    var res, req, next;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
-
         res = sinon.spy();
         req = sinon.spy();
         next = sinon.spy();
@@ -27,7 +27,7 @@ describe('serveSharedFile', function () {
 
     it('should skip if the request does NOT match the file', function () {
         var middleware = serveSharedFile('robots.txt', 'text/plain', 3600);
-        req.url = '/favicon.ico';
+        req.path = '/favicon.ico';
         middleware(req, res, next);
         next.called.should.be.true;
     });
@@ -35,7 +35,7 @@ describe('serveSharedFile', function () {
     it('should load the file and send it', function () {
         var middleware = serveSharedFile('robots.txt', 'text/plain', 3600),
             body = 'User-agent: * Disallow: /';
-        req.url = '/robots.txt';
+        req.path = '/robots.txt';
 
         sandbox.stub(fs, 'readFile', function (file, cb) {
             cb(null, body);
@@ -61,7 +61,7 @@ describe('serveSharedFile', function () {
     it('should send the correct headers', function () {
         var middleware = serveSharedFile('robots.txt', 'text/plain', 3600),
             body = 'User-agent: * Disallow: /';
-        req.url = '/robots.txt';
+        req.path = '/robots.txt';
 
         sandbox.stub(fs, 'readFile', function (file, cb) {
             cb(null, body);
@@ -85,7 +85,7 @@ describe('serveSharedFile', function () {
     it('should replace {{blog-url}} in text/plain', function () {
         var middleware = serveSharedFile('robots.txt', 'text/plain', 3600),
             body = 'User-agent: {{blog-url}}';
-        req.url = '/robots.txt';
+        req.path = '/robots.txt';
 
         sandbox.stub(fs, 'readFile', function (file, cb) {
             cb(null, body);
@@ -100,6 +100,6 @@ describe('serveSharedFile', function () {
         next.called.should.be.false;
         res.writeHead.called.should.be.true;
 
-        res.end.calledWith('User-agent: http://default.com:2368').should.be.true;
+        res.end.calledWith('User-agent: http://127.0.0.1:2369').should.be.true;
     });
 });

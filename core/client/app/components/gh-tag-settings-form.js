@@ -2,9 +2,9 @@
 import Ember from 'ember';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-const {get} = Ember;
+const {Component, Handlebars, computed, get, inject} = Ember;
 
-export default Ember.Component.extend({
+export default Component.extend({
 
     tag: null,
 
@@ -16,9 +16,12 @@ export default Ember.Component.extend({
 
     isViewingSubview: false,
 
-    config: Ember.inject.service(),
+    config: inject.service(),
 
-    title: Ember.computed('tag.isNew', function () {
+    mediaQueries: Ember.inject.service(),
+    isMobile: Ember.computed.reads('mediaQueries.maxWidth600'),
+
+    title: computed('tag.isNew', function () {
         if (this.get('tag.isNew')) {
             return 'New Tag';
         } else {
@@ -26,25 +29,25 @@ export default Ember.Component.extend({
         }
     }),
 
-    seoTitle: Ember.computed('scratchName', 'scratchMetaTitle', function () {
+    seoTitle: computed('scratchName', 'scratchMetaTitle', function () {
         let metaTitle = this.get('scratchMetaTitle') || '';
 
         metaTitle = metaTitle.length > 0 ? metaTitle : this.get('scratchName');
 
         if (metaTitle && metaTitle.length > 70) {
             metaTitle = metaTitle.substring(0, 70).trim();
-            metaTitle = Ember.Handlebars.Utils.escapeExpression(metaTitle);
-            metaTitle = Ember.String.htmlSafe(metaTitle + '&hellip;');
+            metaTitle = Handlebars.Utils.escapeExpression(metaTitle);
+            metaTitle = Ember.String.htmlSafe(`${metaTitle}&hellip;`);
         }
 
         return metaTitle;
     }),
 
-    seoURL: Ember.computed('scratchSlug', function () {
-        const blogUrl = this.get('config.blogUrl'),
-              seoSlug = this.get('scratchSlug') || '';
+    seoURL: computed('scratchSlug', function () {
+        let blogUrl = this.get('config.blogUrl');
+        let seoSlug = this.get('scratchSlug') || '';
 
-        let seoURL = blogUrl + '/tag/' + seoSlug;
+        let seoURL = `${blogUrl}/tag/${seoSlug}`;
 
         // only append a slash to the URL if the slug exists
         if (seoSlug) {
@@ -53,73 +56,75 @@ export default Ember.Component.extend({
 
         if (seoURL.length > 70) {
             seoURL = seoURL.substring(0, 70).trim();
-            seoURL = Ember.String.htmlSafe(seoURL + '&hellip;');
+            seoURL = Ember.String.htmlSafe(`${seoURL}&hellip;`);
         }
 
         return seoURL;
     }),
 
-    seoDescription: Ember.computed('scratchDescription', 'scratchMetaDescription', function () {
+    seoDescription: computed('scratchDescription', 'scratchMetaDescription', function () {
         let metaDescription = this.get('scratchMetaDescription') || '';
 
         metaDescription = metaDescription.length > 0 ? metaDescription : this.get('scratchDescription');
 
         if (metaDescription && metaDescription.length > 156) {
             metaDescription = metaDescription.substring(0, 156).trim();
-            metaDescription = Ember.Handlebars.Utils.escapeExpression(metaDescription);
-            metaDescription = Ember.String.htmlSafe(metaDescription + '&hellip;');
+            metaDescription = Handlebars.Utils.escapeExpression(metaDescription);
+            metaDescription = Ember.String.htmlSafe(`${metaDescription}&hellip;`);
         }
 
         return metaDescription;
     }),
 
-    didReceiveAttrs: function (attrs) {
+    didReceiveAttrs(attrs) {
+        this._super(...arguments);
+
         if (get(attrs, 'newAttrs.tag.value.id') !== get(attrs, 'oldAttrs.tag.value.id')) {
             this.reset();
         }
     },
 
-    reset: function () {
+    reset() {
         this.set('isViewingSubview', false);
         if (this.$()) {
             this.$('.settings-menu-pane').scrollTop(0);
         }
     },
 
-    focusIn: function () {
+    focusIn() {
         key.setScope('tag-settings-form');
     },
 
-    focusOut: function () {
+    focusOut() {
         key.setScope('default');
     },
 
     actions: {
-        setProperty: function (property, value) {
+        setProperty(property, value) {
             this.attrs.setProperty(property, value);
         },
 
-        setCoverImage: function (image) {
+        setCoverImage(image) {
             this.attrs.setProperty('image', image);
         },
 
-        clearCoverImage: function () {
+        clearCoverImage() {
             this.attrs.setProperty('image', '');
         },
 
-        setUploaderReference: function () {
+        setUploaderReference() {
             // noop
         },
 
-        openMeta: function () {
+        openMeta() {
             this.set('isViewingSubview', true);
         },
 
-        closeMeta: function () {
+        closeMeta() {
             this.set('isViewingSubview', false);
         },
 
-        deleteTag: function () {
+        deleteTag() {
             this.sendAction('openModal', 'delete-tag', this.get('tag'));
         }
     }

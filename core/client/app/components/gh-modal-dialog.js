@@ -1,59 +1,67 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
-    didInsertElement: function () {
-        this.$('.js-modal-container, .js-modal-background').addClass('fade-in open');
-        this.$('.js-modal').addClass('open');
-    },
+const {Component, computed} = Ember;
 
-    close: function () {
-        var self = this;
+function K() {
+    return this;
+}
 
-        this.$('.js-modal, .js-modal-background').removeClass('fade-in').addClass('fade-out');
-
-        // The background should always be the last thing to fade out, so check on that instead of the content
-        this.$('.js-modal-background').on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
-            if (event.originalEvent.animationName === 'fade-out') {
-                self.$('.js-modal, .js-modal-background').removeClass('open');
-            }
-        });
-
-        this.sendAction();
-    },
+export default Component.extend({
 
     confirmaccept: 'confirmAccept',
     confirmreject: 'confirmReject',
 
-    actions: {
-        closeModal: function () {
-            this.close();
-        },
-        confirm: function (type) {
-            this.sendAction('confirm' + type);
-            this.close();
-        },
-        noBubble: Ember.K
-    },
+    klass: computed('type', 'style', function () {
+        let classNames = [];
 
-    klass: Ember.computed('type', 'style', function () {
-        var classNames = [];
-
-        classNames.push(this.get('type') ? 'modal-' + this.get('type') : 'modal');
+        classNames.push(this.get('type') ? `modal-${this.get('type')}` : 'modal');
 
         if (this.get('style')) {
-            this.get('style').split(',').forEach(function (style) {
-                classNames.push('modal-style-' + style);
+            this.get('style').split(',').forEach((style) => {
+                classNames.push(`modal-style-${style}`);
             });
         }
 
         return classNames.join(' ');
     }),
 
-    acceptButtonClass: Ember.computed('confirm.accept.buttonClass', function () {
+    acceptButtonClass: computed('confirm.accept.buttonClass', function () {
         return this.get('confirm.accept.buttonClass') ? this.get('confirm.accept.buttonClass') : 'btn btn-green';
     }),
 
-    rejectButtonClass: Ember.computed('confirm.reject.buttonClass', function () {
+    rejectButtonClass: computed('confirm.reject.buttonClass', function () {
         return this.get('confirm.reject.buttonClass') ? this.get('confirm.reject.buttonClass') : 'btn btn-red';
-    })
+    }),
+
+    didInsertElement() {
+        this._super(...arguments);
+        this.$('.js-modal-container, .js-modal-background').addClass('fade-in open');
+        this.$('.js-modal').addClass('open');
+    },
+
+    close() {
+        this.$('.js-modal, .js-modal-background').removeClass('fade-in').addClass('fade-out');
+
+        // The background should always be the last thing to fade out, so check on that instead of the content
+        this.$('.js-modal-background').on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
+            if (event.originalEvent.animationName === 'fade-out') {
+                this.$('.js-modal, .js-modal-background').removeClass('open');
+            }
+        });
+
+        this.sendAction();
+    },
+
+    actions: {
+        closeModal() {
+            this.close();
+        },
+
+        confirm(type) {
+            this.sendAction(`confirm${type}`);
+            this.close();
+        },
+
+        noBubble: K
+    }
 });

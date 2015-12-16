@@ -8,10 +8,9 @@ import {
 import { expect } from 'chai';
 import Ember from 'ember';
 import startApp from 'ghost/tests/helpers/start-app';
+import destroyApp from 'ghost/tests/helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
-
-const {run} = Ember;
 
 describe('Acceptance: Setup', function () {
     let application;
@@ -21,12 +20,12 @@ describe('Acceptance: Setup', function () {
     });
 
     afterEach(function () {
-        run(application, 'destroy');
+        destroyApp(application);
     });
 
     it('redirects if already authenticated', function () {
-        const role = server.create('role', {name: 'Author'}),
-              user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Author'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
 

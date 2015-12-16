@@ -3,48 +3,50 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
 
-export default Ember.Mixin.create(styleBody, ShortcutsRoute, {
+const {Mixin, RSVP, run} = Ember;
+
+export default Mixin.create(styleBody, ShortcutsRoute, {
     classNames: ['editor'],
 
     actions: {
-        save: function () {
+        save() {
             this.get('controller').send('save');
         },
 
-        publish: function () {
-            var controller = this.get('controller');
+        publish() {
+            let controller = this.get('controller');
 
             controller.send('setSaveType', 'publish');
             controller.send('save');
         },
 
-        toggleZenMode: function () {
+        toggleZenMode() {
             Ember.$('body').toggleClass('zen');
         },
 
         // The actual functionality is implemented in utils/ed-editor-shortcuts
-        editorShortcut: function (options) {
+        editorShortcut(options) {
             // Only fire editor shortcuts when the editor has focus.
             if (this.get('controller.editor').$().is(':focus')) {
                 this.get('controller.editor').shortcut(options.type);
             }
         },
 
-        willTransition: function (transition) {
-            var controller = this.get('controller'),
-                scratch = controller.get('model.scratch'),
-                controllerIsDirty = controller.get('hasDirtyAttributes'),
-                model = controller.get('model'),
-                state = model.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew'),
-                fromNewToEdit,
-                deletedWithoutChanges;
+        willTransition(transition) {
+            let controller = this.get('controller');
+            let scratch = controller.get('model.scratch');
+            let controllerIsDirty = controller.get('hasDirtyAttributes');
+            let model = controller.get('model');
+            let state = model.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+            let deletedWithoutChanges,
+                fromNewToEdit;
 
             // if a save is in-flight we don't know whether or not it's safe to leave
             // so we abort the transition and retry after the save has completed.
             if (state.isSaving) {
                 transition.abort();
-                return Ember.run.later(this, function () {
-                    Ember.RSVP.resolve(controller.get('lastPromise')).then(function () {
+                return run.later(this, function () {
+                    RSVP.resolve(controller.get('lastPromise')).then(() => {
                         transition.retry();
                     });
                 }, 100);
@@ -85,19 +87,19 @@ export default Ember.Mixin.create(styleBody, ShortcutsRoute, {
         }
     },
 
-    renderTemplate: function (controller, model) {
+    renderTemplate(controller, model) {
         this._super(controller, model);
 
         this.render('post-settings-menu', {
+            model,
             into: 'application',
-            outlet: 'settings-menu',
-            model: model
+            outlet: 'settings-menu'
         });
     },
 
     shortcuts: editorShortcuts,
 
-    attachModelHooks: function (controller, model) {
+    attachModelHooks(controller, model) {
         // this will allow us to track when the model is saved and update the controller
         // so that we can be sure controller.hasDirtyAttributes is correct, without having to update the
         // controller on each instance of `model.save()`.
@@ -112,17 +114,18 @@ export default Ember.Mixin.create(styleBody, ShortcutsRoute, {
         model.on('didUpdate', controller, controller.get('modelSaved'));
     },
 
-    detachModelHooks: function (controller, model) {
+    detachModelHooks(controller, model) {
         model.off('didCreate', controller, controller.get('modelSaved'));
         model.off('didUpdate', controller, controller.get('modelSaved'));
     },
 
-    setupController: function (controller, model) {
+    setupController(controller, model) {
+        let tags = model.get('tags');
+
         model.set('scratch', model.get('markdown'));
         model.set('titleScratch', model.get('title'));
 
-        this._super(controller, model);
-        var tags = model.get('tags');
+        this._super(...arguments);
 
         if (tags) {
             // used to check if anything has changed in the editor

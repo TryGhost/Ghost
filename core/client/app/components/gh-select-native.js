@@ -1,28 +1,36 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
+const {Component, computed} = Ember;
+const {reads} = computed;
+
+function K() {
+    return this;
+}
+
+export default Component.extend({
     content: null,
     prompt: null,
     optionValuePath: 'id',
     optionLabelPath: 'title',
     selection: null,
-    action: Ember.K, // action to fire on change
+    action: K, // action to fire on change
 
     // shadow the passed-in `selection` to avoid
     // leaking changes to it via a 2-way binding
-    _selection: Ember.computed.reads('selection'),
+    _selection: reads('selection'),
 
     actions: {
-        change: function () {
-            var selectEl = this.$('select')[0],
-                selectedIndex = selectEl.selectedIndex,
-                content = this.get('content'),
+        change() {
+            // jscs:disable requireArrayDestructuring
+            let selectEl = this.$('select')[0];
+            // jscs:enable requireArrayDestructuring
+            let {selectedIndex} = selectEl;
 
-                // decrement index by 1 if we have a prompt
-                hasPrompt = !!this.get('prompt'),
-                contentIndex = hasPrompt ? selectedIndex - 1 : selectedIndex,
+            // decrement index by 1 if we have a prompt
+            let hasPrompt = !!this.get('prompt');
+            let contentIndex = hasPrompt ? selectedIndex - 1 : selectedIndex;
 
-                selection = content.objectAt(contentIndex);
+            let selection = this.get('content').objectAt(contentIndex);
 
             // set the local, shadowed selection to avoid leaking
             // changes to `selection` out via 2-way binding

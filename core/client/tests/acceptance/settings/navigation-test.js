@@ -1,4 +1,5 @@
 /* jshint expr:true */
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import {
     describe,
     it,
@@ -6,11 +7,9 @@ import {
     afterEach
 } from 'mocha';
 import { expect } from 'chai';
-import Ember from 'ember';
 import startApp from '../../helpers/start-app';
+import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
-
-const {run} = Ember;
 
 describe('Acceptance: Settings - Navigation', function () {
     let application;
@@ -20,7 +19,7 @@ describe('Acceptance: Settings - Navigation', function () {
     });
 
     afterEach(function () {
-        run(application, 'destroy');
+        destroyApp(application);
     });
 
     it('redirects to signin when not authenticated', function () {
@@ -33,8 +32,8 @@ describe('Acceptance: Settings - Navigation', function () {
     });
 
     it('redirects to team page when authenticated as author', function () {
-        const role = server.create('role', {name: 'Author'}),
-              user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Author'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         authenticateSession(application);
         visit('/settings/navigation');
@@ -46,8 +45,8 @@ describe('Acceptance: Settings - Navigation', function () {
 
     describe('when logged in', function () {
         beforeEach(function () {
-            const role = server.create('role', {name: 'Administrator'}),
-                  user = server.create('user', {roles: [role]});
+            let role = server.create('role', {name: 'Administrator'});
+            let user = server.create('user', {roles: [role]});
 
             // load the settings fixtures
             // TODO: this should always be run for acceptance tests

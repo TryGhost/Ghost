@@ -1,5 +1,7 @@
-import Ember from 'ember';
 /* global key */
+import Ember from 'ember';
+
+const {Mixin, run, typeOf} = Ember;
 
 // Configure KeyMaster to respond to all shortcuts,
 // even inside of
@@ -42,47 +44,46 @@ key.setScope('default');
  * To have all your shortcut work in all scopes, give it the scope "all".
  * Find out more at the keymaster docs
  */
-export default Ember.Mixin.create({
-    registerShortcuts: function () {
-        var self = this,
-            shortcuts = this.get('shortcuts');
+export default Mixin.create({
+    registerShortcuts() {
+        let shortcuts = this.get('shortcuts');
 
-        Object.keys(shortcuts).forEach(function (shortcut) {
-            var scope = shortcuts[shortcut].scope || 'default',
-                action = shortcuts[shortcut],
-                options;
+        Object.keys(shortcuts).forEach((shortcut) => {
+            let scope = shortcuts[shortcut].scope || 'default';
+            let action = shortcuts[shortcut];
+            let options;
 
-            if (Ember.typeOf(action) !== 'string') {
+            if (typeOf(action) !== 'string') {
                 options = action.options;
                 action = action.action;
             }
 
-            key(shortcut, scope, function (event) {
+            key(shortcut, scope, (event) => {
                 // stop things like ctrl+s from actually opening a save dialogue
                 event.preventDefault();
-                Ember.run(self, function () {
+                run(this, function () {
                     this.send(action, options);
                 });
             });
         });
     },
 
-    removeShortcuts: function () {
-        var shortcuts = this.get('shortcuts');
+    removeShortcuts() {
+        let shortcuts = this.get('shortcuts');
 
-        Object.keys(shortcuts).forEach(function (shortcut) {
-            var scope = shortcuts[shortcut].scope || 'default';
+        Object.keys(shortcuts).forEach((shortcut) => {
+            let scope = shortcuts[shortcut].scope || 'default';
             key.unbind(shortcut, scope);
         });
     },
 
-    activate: function () {
-        this._super();
+    activate() {
+        this._super(...arguments);
         this.registerShortcuts();
     },
 
-    deactivate: function () {
-        this._super();
+    deactivate() {
+        this._super(...arguments);
         this.removeShortcuts();
     }
 });

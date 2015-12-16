@@ -5,6 +5,7 @@ var _        = require('lodash'),
     RSS      = require('rss'),
     url      = require('url'),
     config   = require('../../../config'),
+    errors   = require('../../../errors'),
     filters  = require('../../../filters'),
 
     // Really ugly temporary hack for location of things
@@ -31,22 +32,16 @@ function handleError(next) {
 
 function getData(channelOpts, slugParam) {
     channelOpts.data = channelOpts.data || {};
-    channelOpts.data.permalinks = {
-        type: 'read',
-        resource: 'settings',
-        options: 'permalinks'
-    };
 
     return fetchData(channelOpts, slugParam).then(function (result) {
         var response = {},
             titleStart = '';
 
-        if (result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
-        if (result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
+        if (result.data && result.data.tag) { titleStart = result.data.tag[0].name + ' - ' || ''; }
+        if (result.data && result.data.author) { titleStart = result.data.author[0].name + ' - ' || ''; }
 
         response.title = titleStart + config.theme.title;
         response.description = config.theme.description;
-        response.permalinks = result.data.permalinks[0];
         response.results = {
             posts: result.posts,
             meta: result.meta
@@ -140,7 +135,7 @@ generateFeed = function generateFeed(data) {
     });
 
     data.results.posts.forEach(function forEach(post) {
-        var itemUrl = config.urlFor('post', {post: post, permalinks: data.permalinks, secure: data.secure}, true),
+        var itemUrl = config.urlFor('post', {post: post, secure: data.secure}, true),
             htmlContent = processUrls(post.html, data.siteUrl, itemUrl),
             item = {
                 title: post.title,
@@ -190,7 +185,7 @@ generateFeed = function generateFeed(data) {
 
 generate = function generate(req, res, next) {
     // Initialize RSS
-    var pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+    var pageParam = req.params.page !== undefined ? req.params.page : 1,
         slugParam = req.params.slug,
         baseUrl   = getBaseUrl(req, slugParam);
 
@@ -199,17 +194,14 @@ generate = function generate(req, res, next) {
     // Set page on postOptions for the query made later
     req.channelConfig.postOptions.page = pageParam;
 
-    // No negative pages, or page 1
-    if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-        return res.redirect(baseUrl);
-    }
+    req.channelConfig.slugParam = slugParam;
 
-    return getData(req.channelConfig, slugParam).then(function then(data) {
+    return getData(req.channelConfig).then(function then(data) {
         var maxPage = data.results.meta.pagination.pages;
 
         // If page is greater than number of pages we have, redirect to last page
         if (pageParam > maxPage) {
-            return res.redirect(baseUrl + maxPage + '/');
+            return next(new errors.NotFoundError());
         }
 
         data.version = res.locals.safeVersion;

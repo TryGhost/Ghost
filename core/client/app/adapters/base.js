@@ -1,21 +1,22 @@
+import Ember from 'ember';
 import DS from 'ember-data';
 import ghostPaths from 'ghost/utils/ghost-paths';
-import Ember from 'ember';
 
 const {inject} = Ember;
+const {RESTAdapter} = DS;
 
-export default DS.RESTAdapter.extend({
+export default RESTAdapter.extend({
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
     session: inject.service('session'),
 
-    shouldBackgroundReloadRecord: function () {
+    shouldBackgroundReloadRecord() {
         return false;
     },
 
-    query: function (store, type, query) {
-        var id;
+    query(store, type, query) {
+        let id;
 
         if (query.id) {
             id = query.id;
@@ -25,9 +26,9 @@ export default DS.RESTAdapter.extend({
         return this.ajax(this.buildURL(type.modelName, id), 'GET', {data: query});
     },
 
-    buildURL: function (type, id) {
+    buildURL(type, id) {
         // Ensure trailing slashes
-        var url = this._super(type, id);
+        let url = this._super(type, id);
 
         if (url.slice(-1) !== '/') {
             url += '/';
@@ -42,18 +43,19 @@ export default DS.RESTAdapter.extend({
     // response body for successful DELETEs.
     // Non-2xx (failure) responses will still work correctly as Ember will turn
     // them into rejected promises.
-    deleteRecord: function () {
-        var response = this._super.apply(this, arguments);
+    deleteRecord() {
+        let response = this._super(...arguments);
 
-        return response.then(function () {
+        return response.then(() => {
             return null;
         });
     },
 
-    handleResponse: function (status) {
+    handleResponse(status) {
         if (status === 401) {
             if (this.get('session.isAuthenticated')) {
                 this.get('session').invalidate();
+                return; // prevent error from bubbling because invalidate is async
             }
         }
 

@@ -1,3 +1,4 @@
+/* global key */
 import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
@@ -21,14 +22,14 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
         c: 'newTag'
     },
 
-    beforeModel: function () {
+    beforeModel() {
         this._super(...arguments);
 
         return this.get('session.user')
             .then(this.transitionAuthor());
     },
 
-    model: function () {
+    model() {
         this.store.unloadAll('tag');
 
         return this.loadFirstPage().then(() => {
@@ -38,14 +39,16 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
         });
     },
 
-    deactivate: function () {
+    deactivate() {
+        this._super(...arguments);
+        this.send('resetShortcutsScope');
         this.send('resetPagination');
     },
 
-    stepThroughTags: function (step) {
-        let currentTag = this.modelFor('settings.tags.tag'),
-            tags = this.get('controller.tags'),
-            length = tags.get('length');
+    stepThroughTags(step) {
+        let currentTag = this.modelFor('settings.tags.tag');
+        let tags = this.get('controller.tags');
+        let length = tags.get('length');
 
         if (currentTag && length) {
             let newPosition = tags.indexOf(currentTag) + step;
@@ -60,15 +63,15 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
         }
     },
 
-    scrollContent: function (amount) {
-        let content = Ember.$('.tag-settings-pane'),
-            scrolled = content.scrollTop();
+    scrollContent(amount) {
+        let content = Ember.$('.tag-settings-pane');
+        let scrolled = content.scrollTop();
 
         content.scrollTop(scrolled + 50 * amount);
     },
 
     actions: {
-        moveUp: function () {
+        moveUp() {
             if (this.controller.get('tagContentFocused')) {
                 this.scrollContent(-1);
             } else {
@@ -76,7 +79,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
             }
         },
 
-        moveDown: function () {
+        moveDown() {
             if (this.controller.get('tagContentFocused')) {
                 this.scrollContent(1);
             } else {
@@ -84,16 +87,20 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
             }
         },
 
-        focusList: function () {
+        focusList() {
             this.set('controller.keyboardFocus', 'tagList');
         },
 
-        focusContent: function () {
+        focusContent() {
             this.set('controller.keyboardFocus', 'tagContent');
         },
 
-        newTag: function () {
+        newTag() {
             this.transitionTo('settings.tags.new');
+        },
+
+        resetShortcutsScope() {
+            key.setScope('default');
         }
     }
 });

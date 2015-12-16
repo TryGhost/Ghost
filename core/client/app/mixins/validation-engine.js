@@ -13,6 +13,10 @@ import UserValidator from 'ghost/validators/user';
 import TagSettingsValidator from 'ghost/validators/tag-settings';
 import NavItemValidator from 'ghost/validators/nav-item';
 
+const {Mixin, RSVP, isArray} = Ember;
+const {Errors, Model} = DS;
+const emberA = Ember.A;
+
 // our extensions to the validator library
 ValidatorExtensions.init();
 
@@ -21,7 +25,7 @@ ValidatorExtensions.init();
 * It will be able to validate any properties on itself (or the model it passes to validate())
 * with the use of a declared validator.
 */
-export default Ember.Mixin.create({
+export default Mixin.create({
     // these validators can be passed a model to validate when the class that
     // mixes in the ValidationEngine declares a validationType equal to a key on this object.
     // the model is either passed in via `this.validate({ model: object })`
@@ -42,11 +46,11 @@ export default Ember.Mixin.create({
 
     // This adds the Errors object to the validation engine, and shouldn't affect
     // ember-data models because they essentially use the same thing
-    errors: DS.Errors.create(),
+    errors: Errors.create(),
 
     // Store whether a property has been validated yet, so that we know whether or not
     // to show error / success validation for a field
-    hasValidated: Ember.A(),
+    hasValidated: emberA(),
 
     /**
     * Passes the model to the validator specified by validationType.
@@ -60,34 +64,33 @@ export default Ember.Mixin.create({
     * 					   no property is specified, the entire model will be
     * 					   validated
     */
-    validate: function (opts) {
-        // jscs:disable safeContextKeyword
-        opts = opts || {};
-
-        var model = this,
+    validate(opts) {
+        let model = this;
+        let hasValidated,
             type,
-            validator,
-            hasValidated;
+            validator;
+
+        opts = opts || {};
 
         if (opts.model) {
             model = opts.model;
-        } else if (this instanceof DS.Model) {
+        } else if (this instanceof Model) {
             model = this;
         } else if (this.get('model')) {
             model = this.get('model');
         }
 
         type = this.get('validationType') || model.get('validationType');
-        validator = this.get('validators.' + type) || model.get('validators.' + type);
+        validator = this.get(`validators.${type}`) || model.get(`validators.${type}`);
         hasValidated = this.get('hasValidated');
 
         opts.validationType = type;
 
-        return new Ember.RSVP.Promise(function (resolve, reject) {
-            var passed;
+        return new RSVP.Promise((resolve, reject) => {
+            let passed;
 
             if (!type || !validator) {
-                return reject(['The validator specified, "' + type + '", did not exist!']);
+                return reject([`The validator specified, "${type}", did not exist!`]);
             }
 
             if (opts.property) {
@@ -109,11 +112,8 @@ export default Ember.Mixin.create({
     * This allows us to run validation before actually trying to save the model to the server.
     * You can supply options to be passed into the `validate` method, since the ED `save` method takes no options.
     */
-    save: function (options) {
-        var self = this,
-            // this is a hack, but needed for async _super calls.
-            // ref: https://github.com/emberjs/ember.js/pull/4301
-            _super = this.__nextSuper;
+    save(options) {
+        let {_super} = this;
 
         options = options || {};
         options.wasSave = true;
@@ -122,26 +122,27 @@ export default Ember.Mixin.create({
         // in that case, we don't need validation checks or error propagation,
         // because the model itself is being destroyed.
         if (this.get('isDeleted')) {
-            return this._super();
+            return this._super(...arguments);
         }
 
         // If validation fails, reject with validation errors.
         // If save to the server fails, reject with server response.
-        return this.validate(options).then(function () {
-            return _super.call(self, options);
-        }).catch(function (result) {
+        return this.validate(options).then(() => {
+            return _super.call(this, options);
+        }).catch((result) => {
             // server save failed or validator type doesn't exist
-            if (result && !Ember.isArray(result)) {
+            if (result && !isArray(result)) {
                 // return the array of errors from the server
                 result = getRequestErrorMessage(result);
             }
 
-            return Ember.RSVP.reject(result);
+            return RSVP.reject(result);
         });
     },
+
     actions: {
-        validate: function (property) {
-            this.validate({property: property});
+        validate(property) {
+            this.validate({property});
         }
     }
 });
