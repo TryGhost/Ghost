@@ -19,7 +19,6 @@ export default Route.extend(styleBody, {
     },
 
     setupController(controller, params) {
-        this._super(...arguments);
         controller.token = params.token;
     },
 
