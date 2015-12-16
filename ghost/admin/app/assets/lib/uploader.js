@@ -133,7 +133,7 @@ let UploadUi = function ($dropzone, settings) {
         },
 
         removeExtras() {
-            $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-upload, a.image-webcam, div.js-fail, button.js-fail, a.js-cancel').remove();
+            $dropzone.find('span.media, div.js-upload-progress, a.image-url, a.image-upload, a.image-webcam, div.js-fail, button.js-fail, a.js-cancel, button.js-button-accept').remove();
         },
 
         initWithDropzone() {
@@ -164,7 +164,9 @@ let UploadUi = function ($dropzone, settings) {
                 this.initWithDropzone();
             });
 
-            $dropzone.find('div.description').before($url);
+            if (!$dropzone.find('.js-url')[0]) {
+                $dropzone.find('div.description').before($url);
+            }
 
             if (settings.editor) {
                 $dropzone.find('div.js-url').append('<button class="btn btn-blue js-button-accept gh-input">Save</button>');
@@ -208,9 +210,6 @@ let UploadUi = function ($dropzone, settings) {
                 $dropzone.find('img.js-upload-target').attr({src: ''});
                 $dropzone.find('div.description').show();
                 $dropzone.trigger('imagecleared');
-                $dropzone.delay(250).animate({opacity: 100}, 1000, () => {
-                    this.init();
-                });
 
                 $dropzone.trigger('uploadsuccess', 'http://');
                 this.initWithDropzone();
