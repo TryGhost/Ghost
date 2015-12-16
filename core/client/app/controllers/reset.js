@@ -37,7 +37,7 @@ export default Controller.extend(ValidationEngine, {
             let credentials = this.getProperties('newPassword', 'ne2Password', 'token');
 
             this.set('flowErrors', '');
-            this.get('hasValidated').addObjects((['newPassword', 'ne2Password']));
+            this.get('hasValidated').addObjects(['newPassword', 'ne2Password']);
             this.validate().then(() => {
                 this.toggleProperty('submitting');
                 ajax({
@@ -54,13 +54,17 @@ export default Controller.extend(ValidationEngine, {
                     this.get('notifications').showAPIError(response, {key: 'password.reset'});
                     this.toggleProperty('submitting');
                 });
-            }).catch(() => {
+            }).catch((error) => {
                 if (this.get('errors.newPassword')) {
                     this.set('flowErrors', this.get('errors.newPassword')[0].message);
                 }
 
                 if (this.get('errors.ne2Password')) {
                     this.set('flowErrors', this.get('errors.ne2Password')[0].message);
+                }
+
+                if (this.get('errors.length') === 0) {
+                    throw error;
                 }
             });
         }
