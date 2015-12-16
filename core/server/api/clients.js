@@ -9,7 +9,7 @@ var Promise      = require('bluebird'),
     i18n         = require('../i18n'),
 
     docName      = 'clients',
-    allowedIncludes = ['trustedDomains'],
+    allowedIncludes = ['trusted_domains'],
     clients;
 
 /**
