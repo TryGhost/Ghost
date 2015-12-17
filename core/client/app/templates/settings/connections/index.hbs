@@ -1,5 +1,13 @@
-<h3>Listings </h3>
+<section class="view-content">
 
-{{#each model as |client|}}
-{{client.name}}<br>
-{{/each}}
+  <h4 class="client-list-title">Clients</h4>
+  <span>The are services which connect to Ghost - for example a desktop editor which
+    allows you to send content into your Ghost account</span>
+
+    {{#each model as |client|}}
+      {{#gh-client-list-item client=client as |component|}}
+        {{partial 'client-list-item'}}
+      {{/gh-client-list-item}}
+    {{/each}}
+
+</section>
