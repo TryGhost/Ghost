@@ -9,6 +9,7 @@ require("codemirror/addon/mode/overlay.js");
 require("codemirror/mode/gfm/gfm.js");
 require("codemirror/mode/xml/xml.js");
 require("spell-checker");
+require("codemirror-asciidoc");
 var marked = require("marked");
 
 
@@ -371,6 +372,10 @@ function toggleSideBySide(editor) {
 	// Updates preview
 	cm.on("update", function() {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
+		//post preview render callback let customer programming such as fire highlight script.
+		if(editor.options.afterPreviewRender) {
+			editor.options.afterPreviewRender(preview, editor);
+		}
 	});
 }
 
@@ -1037,9 +1042,7 @@ SimpleMDE.prototype.render = function(el) {
 	}
 
 	this.codemirror = CodeMirror.fromTextArea(el, {
-		mode: mode,
-		backdrop: backdrop,
-		theme: "paper",
+		mode: "asciidoc",
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
@@ -1049,6 +1052,20 @@ SimpleMDE.prototype.render = function(el) {
 		lineWrapping: (options.lineWrapping === false) ? false : true,
 		allowDropFileTypes: ["text/plain"]
 	});
+
+	/*	this.codemirror = CodeMirror.fromTextArea(el, {
+			mode: mode,
+			backdrop: backdrop,
+			theme: "paper",
+			tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
+			indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
+			indentWithTabs: (options.indentWithTabs === false) ? false : true,
+			lineNumbers: false,
+			autofocus: (options.autofocus === true) ? true : false,
+			extraKeys: keyMaps,
+			lineWrapping: (options.lineWrapping === false) ? false : true,
+			allowDropFileTypes: ["text/plain"]
+		});*/
 
 	if(options.toolbar !== false) {
 		this.createToolbar();
