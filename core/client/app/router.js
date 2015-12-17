@@ -57,7 +57,7 @@ Router.map(function () {
     this.route('settings.navigation', {path: '/settings/navigation'});
 
     this.route('settings.connections', {path: '/settings/connections'}, function() {
-      this.route('index', {path: '/client-listings'});
+      this.route('index', {path: ''});
       this.route('new');
     });
 
