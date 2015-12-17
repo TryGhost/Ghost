@@ -83,15 +83,13 @@ trustedDomainUpdate = {
 
     removeDomain: function removeDomain(DomainModel, client, domain, options) {
         return function () {
-            return DomainModel.destroy({trusted_domain: domain.trusted_domain, client_id: client.id}, options);
+            return DomainModel.destroy(_.extend({id: domain.id}, options));
         };
     },
 
     createDomain: function createDomain(DomainModel, client, domain, options) {
         return function () {
-            //return DomainModel.add({trusted_domain: domain.trusted_domain, client_id: client.id}, options);
-
-            return client.trustedDomains().create({trusted_domain: domain.trusted_domain}, options);
+            return DomainModel.add({trusted_domain: domain.trusted_domain, client_id: client.id}, options);
         };
     },
 

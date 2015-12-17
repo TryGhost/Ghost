@@ -37,6 +37,7 @@ Client = ghostBookshelf.Model.extend({
         });
     },
 
+
     saving: function saving(model, attr, options) {
         var self = this,
             secret,
