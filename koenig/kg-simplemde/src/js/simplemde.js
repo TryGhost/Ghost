@@ -1273,6 +1273,11 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 				cm.on("update", function() {
 					el.innerHTML = wordCount(cm.getValue());
 				});
+			} else if(name == "characters") {
+				el.innerHTML = "0";
+				cm.on("update", function() {
+					el.innerHTML = cm.getValue().length;
+				});
 			} else if(name === "lines") {
 				el.innerHTML = "0";
 				cm.on("update", function() {

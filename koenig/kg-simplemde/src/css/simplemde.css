@@ -210,6 +210,10 @@
 	content: 'words: '
 }
 
+.editor-statusbar .characters:before {
+	content: 'characters: '
+}
+
 .editor-preview {
 	padding: 10px;
 	position: absolute;

@@ -171,7 +171,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
 }
 
 /* The fake, visible scrollbars. Used to force redraw during scrolling
-   before actuall scrolling happens, thus preventing shaking and
+   before actual scrolling happens, thus preventing shaking and
    flickering artifacts. */
 .CodeMirror-vscrollbar, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler {
   position: absolute;
@@ -549,6 +549,10 @@ span.CodeMirror-selectedtext { background: none; }
 
 .editor-statusbar .words:before {
 	content: 'words: '
+}
+
+.editor-statusbar .characters:before {
+	content: 'characters: '
 }
 
 .editor-preview {
