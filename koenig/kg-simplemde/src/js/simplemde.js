@@ -333,7 +333,7 @@ function toggleSideBySide(editor) {
 	var wrapper = cm.getWrapperElement();
 	var preview = wrapper.nextSibling;
 	var toolbarButton = editor.toolbarElements["side-by-side"];
-	var toggleOn = false;
+	var useSideBySideListener = false;
 	if(/editor-preview-active-side/.test(preview.className)) {
 		preview.className = preview.className.replace(
 			/\s*editor-preview-active-side\s*/g, ""
@@ -351,7 +351,7 @@ function toggleSideBySide(editor) {
 		}, 1);
 		toolbarButton.className += " active";
 		wrapper.className += " CodeMirror-sided";
-		toggleOn = true;
+		useSideBySideListener = true;
 	}
 
 	// Hide normal preview if active
@@ -366,20 +366,19 @@ function toggleSideBySide(editor) {
 		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, "");
 	}
 
-	var renderfunc = function() {
+	var sideBySideRenderingFunction = function() {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 	};
 
-	//register the function it to cm object it can be reffered by next toggle.
-	if(!cm.renderfunc) {
-		cm.renderfunc = renderfunc;
+	if(!cm.sideBySideRenderingFunction) {
+		cm.sideBySideRenderingFunction = sideBySideRenderingFunction;
 	}
-	//if toggle off should remove the old listener avoid register a new listener each click 'toggleSideBySide' button
+	
 	if(toggleOn) {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
-		cm.on("update", cm.renderfunc);
+		cm.on("update", cm.sideBySideRenderingFunction);
 	} else {
-		cm.off("update", cm.renderfunc);
+		cm.off("update", cm.sideBySideRenderingFunction);
 	}
 }
 
