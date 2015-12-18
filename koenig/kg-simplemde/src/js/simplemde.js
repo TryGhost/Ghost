@@ -368,17 +368,15 @@ function toggleSideBySide(editor) {
 
 	var renderfunc = function() {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
-		if(editor.options.afterPreviewRender) {
-			editor.options.afterPreviewRender(preview, editor);
-		}
 	};
 
-	//register the function it to cm object it can be refered by next toggle.
+	//register the function it to cm object it can be reffered by next toggle.
 	if(!cm.renderfunc) {
 		cm.renderfunc = renderfunc;
 	}
 	//if toggle off should remove the old listener avoid register a new listener each click 'toggleSideBySide' button
 	if(toggleOn) {
+		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 		cm.on("update", cm.renderfunc);
 	} else {
 		cm.off("update", cm.renderfunc);
