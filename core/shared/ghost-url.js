@@ -30,7 +30,8 @@
     url = {
         api: function () {
             var args = Array.prototype.slice.call(arguments),
-                queryOptions;
+                queryOptions,
+                requestUrl = apiUrl;
 
             if (args.length && typeof args[args.length - 1] === 'object') {
                 queryOptions = args.pop();
@@ -43,11 +44,11 @@
 
             if (args.length) {
                 args.forEach(function (el) {
-                    apiUrl += el.replace(/^\/|\/$/g, '') + '/';
+                    requestUrl += el.replace(/^\/|\/$/g, '') + '/';
                 });
             }
 
-            return apiUrl + generateQueryString(queryOptions);
+            return requestUrl + generateQueryString(queryOptions);
         }
     };
 
