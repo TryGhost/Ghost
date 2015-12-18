@@ -374,7 +374,7 @@ function toggleSideBySide(editor) {
 		cm.sideBySideRenderingFunction = sideBySideRenderingFunction;
 	}
 	
-	if(toggleOn) {
+	if(useSideBySideListener) {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 		cm.on("update", cm.sideBySideRenderingFunction);
 	} else {
