@@ -9,7 +9,6 @@ require("codemirror/addon/mode/overlay.js");
 require("codemirror/mode/gfm/gfm.js");
 require("codemirror/mode/xml/xml.js");
 require("spell-checker");
-require("codemirror-asciidoc");
 var marked = require("marked");
 
 
@@ -334,7 +333,7 @@ function toggleSideBySide(editor) {
 	var wrapper = cm.getWrapperElement();
 	var preview = wrapper.nextSibling;
 	var toolbarButton = editor.toolbarElements["side-by-side"];
-
+	var toggleOn = false;
 	if(/editor-preview-active-side/.test(preview.className)) {
 		preview.className = preview.className.replace(
 			/\s*editor-preview-active-side\s*/g, ""
@@ -352,6 +351,7 @@ function toggleSideBySide(editor) {
 		}, 1);
 		toolbarButton.className += " active";
 		wrapper.className += " CodeMirror-sided";
+		toggleOn = true;
 	}
 
 	// Hide normal preview if active
@@ -366,17 +366,23 @@ function toggleSideBySide(editor) {
 		toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, "");
 	}
 
-	// Start preview with the current text
-	preview.innerHTML = editor.options.previewRender(editor.value(), preview);
-
-	// Updates preview
-	cm.on("update", function() {
+	var renderfunc = function() {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
-		//post preview render callback let customer programming such as fire highlight script.
 		if(editor.options.afterPreviewRender) {
 			editor.options.afterPreviewRender(preview, editor);
 		}
-	});
+	};
+
+	//register the function it to cm object it can be refered by next toggle.
+	if(!cm.renderfunc) {
+		cm.renderfunc = renderfunc;
+	}
+	//if toggle off should remove the old listener avoid register a new listener each click 'toggleSideBySide' button
+	if(toggleOn) {
+		cm.on("update", cm.renderfunc);
+	} else {
+		cm.off("update", cm.renderfunc);
+	}
 }
 
 
@@ -1042,7 +1048,9 @@ SimpleMDE.prototype.render = function(el) {
 	}
 
 	this.codemirror = CodeMirror.fromTextArea(el, {
-		mode: "asciidoc",
+		mode: mode,
+		backdrop: backdrop,
+		theme: "paper",
 		tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
 		indentWithTabs: (options.indentWithTabs === false) ? false : true,
@@ -1052,20 +1060,6 @@ SimpleMDE.prototype.render = function(el) {
 		lineWrapping: (options.lineWrapping === false) ? false : true,
 		allowDropFileTypes: ["text/plain"]
 	});
-
-	/*	this.codemirror = CodeMirror.fromTextArea(el, {
-			mode: mode,
-			backdrop: backdrop,
-			theme: "paper",
-			tabSize: (options.tabSize != undefined) ? options.tabSize : 2,
-			indentUnit: (options.tabSize != undefined) ? options.tabSize : 2,
-			indentWithTabs: (options.indentWithTabs === false) ? false : true,
-			lineNumbers: false,
-			autofocus: (options.autofocus === true) ? true : false,
-			extraKeys: keyMaps,
-			lineWrapping: (options.lineWrapping === false) ? false : true,
-			allowDropFileTypes: ["text/plain"]
-		});*/
 
 	if(options.toolbar !== false) {
 		this.createToolbar();
