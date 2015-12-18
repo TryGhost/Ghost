@@ -18,7 +18,7 @@ foreach = function (context, options) {
         inverse = options.inverse,
         columns = options.hash.columns,
         length = _.size(context),
-        limit = options.hash.limit || length,
+        limit = parseInt(options.hash.limit, 10) || length,
         output = '',
         data,
         contextPath;
@@ -63,7 +63,7 @@ foreach = function (context, options) {
 
         _.each(context, function (item, key) {
             if (count <= limit) {
-                execIteration(key, count - 1, count === length);
+                execIteration(key, count - 1, count === limit);
             }
             count += 1;
         });
