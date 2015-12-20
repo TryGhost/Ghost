@@ -304,7 +304,7 @@ describe('RSS', function () {
             // test
             res.send = function send(xmlData) {
                 apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, filter: 'tags:magic', include: 'author,tags,fields'}).should.be.true;
+                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags,fields'}).should.be.true;
                 apiTagStub.calledOnce.should.be.true;
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
                 done();
@@ -322,7 +322,7 @@ describe('RSS', function () {
             // test
             res.send = function send(xmlData) {
                 apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, filter: 'author:joe', include: 'author,tags,fields'}).should.be.true;
+                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags,fields'}).should.be.true;
                 apiUserStub.calledOnce.should.be.true;
                 xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
                 done();
