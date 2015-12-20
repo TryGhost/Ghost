@@ -355,6 +355,14 @@ describe('{{#foreach}} helper', function () {
             shouldCompileToExpected(templateString, objectHash2, expected);
         });
 
+        it('@last in foreach with limit', function () {
+            var templateString = '{{#foreach goodbyes limit="2"}}{{#if @last}}{{text}}! {{/if}}{{/foreach}}cruel {{world}}!',
+                expected = 'Goodbye! cruel world!';
+
+            shouldCompileToExpected(templateString, arrayHash2, expected);
+            shouldCompileToExpected(templateString, objectHash2, expected);
+        });
+
         it('foreach with limit 1', function () {
             var templateString = '<ul>{{#foreach posts limit="1"}}<li>{{title}}</li>{{else}}not this{{/foreach}}</ul>',
                 expected = '<ul><li>first</li></ul>';
