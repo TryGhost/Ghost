@@ -13,7 +13,7 @@ getConfig = function getConfig(name) {
             name: 'tag',
             route: '/' + config.routeKeywords.tag + '/:slug/',
             postOptions: {
-                filter: 'tags:%s'
+                filter: 'tags:\'%s\''
             },
             data: {
                 tag: {
@@ -28,7 +28,7 @@ getConfig = function getConfig(name) {
             name: 'author',
             route: '/' + config.routeKeywords.author + '/:slug/',
             postOptions: {
-                filter: 'author:%s'
+                filter: 'author:\'%s\''
             },
             data: {
                 author: {
