@@ -59,6 +59,7 @@ Router.map(function () {
     this.route('settings.connections', {path: '/settings/connections'}, function() {
       this.route('index', {path: ''});
       this.route('new');
+      this.route('edit', {path: '/edit/:slug'})
     });
 
     this.route('error404', {path: '/*path'});
