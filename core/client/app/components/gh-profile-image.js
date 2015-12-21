@@ -88,10 +88,12 @@ export default Component.extend({
     },
 
     willDestroyElement() {
+        let $input = this.$('.js-file-input');
+
         this._super(...arguments);
 
-        if (this.$('.js-file-input').data()['blueimp-fileupload']) {
-            this.$('.js-file-input').fileupload('destroy');
+        if ($input.length && $input.data()['blueimp-fileupload']) {
+            $input.fileupload('destroy');
         }
     },
 
