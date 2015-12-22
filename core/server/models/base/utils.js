@@ -100,6 +100,7 @@ trustedDomainUpdate = {
         }
         return domain1.trusted_domain.toString() === domain2.trusted_domain.toString();
     },
+
     domainSetsAreEqual: function domainSetsAreEqual(domains1, domains2) {
         // If the lengths are different, they cannot be the same
         if (domains1.length !== domains2.length) {

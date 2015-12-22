@@ -166,6 +166,10 @@ Client = ghostBookshelf.Model.extend({
 
     trustedDomains: function trusted_domains() {
         return this.hasMany('ClientTrustedDomain', 'client_id');
+    },
+
+    trusted_domains: function trusted_domains2() {
+      return this.trustedDomains();
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
@@ -215,7 +219,7 @@ Client = ghostBookshelf.Model.extend({
         filteredData = _.pick(data, permittedAttributes);
 
         return filteredData;
-    },
+    }
 });
 
 Clients = ghostBookshelf.Collection.extend({
