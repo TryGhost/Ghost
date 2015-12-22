@@ -127,4 +127,20 @@ describe('Ghost Ajax Helper', function () {
         rendered.should.match(/include=tags%2Ctests/);
         rendered.should.match(/page=2/);
     });
+
+    it('should be idempotent', function () {
+        configUtils.set({
+            url: 'https://testblog.com/blog/'
+        });
+        ghostUrl.init({
+            clientId: 'ghost-frontend',
+            clientSecret: 'notasecret',
+            url: configUtils.config.apiUrl()
+        });
+
+        var rendered = ghostUrl.url.api('posts', {limit: 3}),
+            rendered2 = ghostUrl.url.api('posts', {limit: 3});
+
+        rendered.should.equal(rendered2);
+    });
 });
