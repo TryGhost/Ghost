@@ -215,6 +215,34 @@ Client = ghostBookshelf.Model.extend({
         filteredData = _.pick(data, permittedAttributes);
 
         return filteredData;
+    },
+
+    /**
+     * ### Edit
+     * @extends ghostBookshelf.Model.edit to handle returning the full object
+     * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
+     */
+    edit: function edit(data, options) {
+        var self = this;
+        options = options || {};
+
+        return ghostBookshelf.Model.edit.call(this, data, options).then(function then() {
+            return self.findOne({id: options.id}, options);
+        });
+    },
+
+    /**
+     * ### Add
+     * @extends ghostBookshelf.Model.add to handle returning the full object
+     * **See:** [ghostBookshelf.Model.add](base.js.html#add)
+     */
+    add: function add(data, options) {
+        var self = this;
+        options = options || {};
+
+        return ghostBookshelf.Model.add.call(this, data, options).then(function then(client) {
+            return self.findOne({id: client.id}, options);
+        });
     }
 });
 
