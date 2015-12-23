@@ -75,6 +75,7 @@ clients = {
             utils.validate(docName, {attrs: attrs}),
             // TODO: add permissions
             // utils.handlePublicPermissions(docName, 'read'),
+            utils.convertOptions(allowedIncludes),
             doQuery
         ];
 

@@ -98,7 +98,7 @@ Client = ghostBookshelf.Model.extend({
                 currentClient: domainUpdate.fetchCurrentClient(Client, savedModel.id, options),
                 existingDomains: domainUpdate.fetchMatchingDomains(DomainModel, newDomains, options)
             }).then(function fetchedData(results) {
-                var currentDomains = results.currentClient.related('trustedDomains').toJSON(options),
+                var currentDomains = results.currentClient.related('trusted_domains').toJSON(options),
                     existingDomains = results.existingDomains ? results.existingDomains.toJSON(options) : [],
                     domainOps = [],
                     domainsToRemove,
@@ -164,12 +164,8 @@ Client = ghostBookshelf.Model.extend({
         }
     },
 
-    trustedDomains: function trusted_domains() {
+    trusted_domains: function trusted_domains() {
         return this.hasMany('ClientTrustedDomain', 'client_id');
-    },
-
-    trusted_domains: function trusted_domains2() {
-      return this.trustedDomains();
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {

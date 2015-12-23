@@ -70,7 +70,7 @@ tagUpdate = {
 
 trustedDomainUpdate = {
     fetchCurrentClient: function fetchCurrentPost(ClientModel, id, options) {
-        return ClientModel.forge({id: id}).fetch(_.extend({}, options, {withRelated: ['trustedDomains']}));
+        return ClientModel.forge({id: id}).fetch(_.extend({}, options, {withRelated: ['trusted_domains']}));
     },
 
     fetchMatchingDomains: function fetchMatchingDomains(DomainModel, domainsToMatch, options) {
