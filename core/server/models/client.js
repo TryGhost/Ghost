@@ -243,6 +243,22 @@ Client = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.add.call(this, data, options).then(function then(client) {
             return self.findOne({id: client.id}, options);
         });
+    },
+
+    /**
+     * ### Destroy
+     * @extends ghostBookshelf.Model.destroy to clean up trusted domain relations
+     * **See:** [ghostBookshelf.Model.destroy](base.js.html#destroy)
+     */
+    destroy: function destroy(options) {
+        var id = options.id;
+        options = this.filterOptions(options, 'destroy');
+
+        return this.forge({id: id}).fetch({withRelated: ['trusted_domains']}).then(function destroyTrustedDomains(client) {
+            return client.related('trusted_domains').invokeThen('destroy').then(function destroyClients() {
+                return client.destroy(options);
+            });
+        });
     }
 });
 
