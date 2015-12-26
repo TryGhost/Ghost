@@ -37,7 +37,6 @@ Client = ghostBookshelf.Model.extend({
         });
     },
 
-
     saving: function saving(model, attr, options) {
         var self = this,
             secret,
@@ -164,7 +163,7 @@ Client = ghostBookshelf.Model.extend({
         }
     },
 
-    trusted_domains: function trusted_domains() {
+    trusted_domains: function trustedDomains() {
         return this.hasMany('ClientTrustedDomain', 'client_id');
     }
 }, {

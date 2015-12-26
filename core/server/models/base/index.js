@@ -330,7 +330,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         data = this.filterData(data);
         options = this.filterOptions(options, 'findOne');
 
-
         // Handle related objects
         // TODO: this should just be done for all methods @ the API level
         options.withRelated = _.union(options.withRelated, options.include);
