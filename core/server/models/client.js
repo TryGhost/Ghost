@@ -42,9 +42,11 @@ Client = ghostBookshelf.Model.extend({
             secret,
             status,
             domainsToCheck,
+            context,
             i;
 
         options = options || {};
+        context = options.context || {};
 
         // keep trusted domains for 'saved' event and deduplicate upper/lowercase trusted domains
         domainsToCheck = this.get('trusted_domains');
@@ -70,7 +72,7 @@ Client = ghostBookshelf.Model.extend({
         status = this.get('status') || 'enabled';
         this.set('status', status.trim());
 
-        if (this.hasChanged('slug') || !this.get('slug')) {
+        if (!context.internal && (this.hasChanged('slug') || !this.get('slug'))) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Client, this.get('slug') || this.get('name'),
                 {transacting: options.transacting})
