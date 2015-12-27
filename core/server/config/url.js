@@ -149,7 +149,9 @@ function urlFor(context, data, absolute) {
         home: '/',
         rss: '/rss/',
         api: apiPath,
-        sitemap_xsl: '/sitemap.xsl'
+        sitemap_xsl: '/sitemap.xsl',
+        ht: '/ht',
+        hometeaching: '/hometeaching'
     };
 
     // Make data properly optional
