@@ -46,19 +46,21 @@ Client = ghostBookshelf.Model.extend({
 
         options = options || {};
 
-        // keep tags for 'saved' event and deduplicate upper/lowercase trusted domains
+        // keep trusted domains for 'saved' event and deduplicate upper/lowercase trusted domains
         domainsToCheck = this.get('trusted_domains');
-        this.myTrustedDomains = [];
+        if (domainsToCheck) {
+            this.myTrustedDomains = [];
 
-        _.each(domainsToCheck, function each(item) {
-            for (i = 0; i < self.myTrustedDomains.length; i = i + 1) {
-                if (self.myTrustedDomains[i].trusted_domain.toLocaleLowerCase() === item.trusted_domain.toLocaleLowerCase()) {
-                    return;
+            _.each(domainsToCheck, function each(item) {
+                for (i = 0; i < self.myTrustedDomains.length; i = i + 1) {
+                    if (self.myTrustedDomains[i].trusted_domain.toLocaleLowerCase() === item.trusted_domain.toLocaleLowerCase()) {
+                        return;
+                    }
                 }
-            }
 
-            self.myTrustedDomains.push(item);
-        });
+                self.myTrustedDomains.push(item);
+            });
+        }
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
@@ -89,6 +91,11 @@ Client = ghostBookshelf.Model.extend({
     updateTrustedDomains: function updateTrustedDomains(savedModel, response, options) {
         var newDomains = this.myTrustedDomains,
             DomainModel = ghostBookshelf.model('ClientTrustedDomain');
+
+        if (!newDomains) {
+            // no new domains don't delete old domains
+            return;
+        }
 
         options = options || {};
 
@@ -222,11 +229,31 @@ Client = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.edit](base.js.html#edit)
      */
     edit: function edit(data, options) {
-        var self = this;
+        var self = this,
+            frontendAllowedFields = ['secret', 'status'],
+            slug;
         options = options || {};
 
-        return ghostBookshelf.Model.edit.call(this, data, options).then(function then() {
-            return self.findOne({id: options.id}, options);
+        return self.findOne({id: options.id}, options).then(function then(client) {
+            if (!client) {
+                return Promise.reject(new errors.NotFoundError('Client not found.'));
+            }
+
+            slug = client.get('slug');
+
+            if (slug === 'ghost-admin') {
+                // can't edit "ghost-admin" Client
+                return Promise.reject(new errors.BadRequestError('Can not edit "Ghost Admin" client.'));
+            } else if (slug === 'ghost-frontend') {
+                // only can change 'secret' and/or 'status'
+                if (_.difference(_.keys(data), frontendAllowedFields).length) {
+                    return Promise.reject(new errors.BadRequestError('Can not edit "Ghost Frontend" fields other than "secret" and "status".'));
+                }
+            }
+
+            return ghostBookshelf.Model.edit.call(self, data, options).then(function then() {
+                return self.findOne({id: options.id}, options);
+            });
         });
     },
 
