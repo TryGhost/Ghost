@@ -45,7 +45,7 @@ function renderChannel(name) {
     return function renderChannel(req, res, next) {
         // Parse the parameters we need from the URL
         var channelOpts = channelConfig(name),
-            pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
+            pageParam = req.params.page !== undefined ? req.params.page : 1,
             slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
 
         // Ensure we at least have an empty object for postOptions
@@ -54,31 +54,11 @@ function renderChannel(name) {
         channelOpts.postOptions.page = pageParam;
         channelOpts.slugParam = slugParam;
 
-        // @TODO this should really use the url building code in config.url
-        function createUrl(page) {
-            var url = config.paths.subdir + channelOpts.route;
-
-            if (slugParam) {
-                url = url.replace(':slug', slugParam);
-            }
-
-            if (page && page > 1) {
-                url += 'page/' + page + '/';
-            }
-
-            return url;
-        }
-
-        // If the page parameter isn't something sensible, redirect
-        if (isNaN(pageParam) || pageParam < 1 || (req.params.page !== undefined && pageParam === 1)) {
-            return res.redirect(createUrl());
-        }
-
         // Call fetchData to get everything we need from the API
         return fetchData(channelOpts).then(function handleResult(result) {
-            // If page is greater than number of pages we have, redirect to last page
+            // If page is greater than number of pages we have, go straight to 404
             if (pageParam > result.meta.pagination.pages) {
-                return res.redirect(createUrl(result.meta.pagination.pages));
+                return next(new errors.NotFoundError());
             }
 
             // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
@@ -151,46 +131,40 @@ frontendControllers = {
     single: function single(req, res, next) {
         var postPath = req.path,
             params,
-            usingStaticPermalink = false;
+            usingStaticPermalink = false,
+            permalink = config.theme.permalinks,
+            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?',
+            postLookup,
+            match;
 
-        api.settings.read('permalinks').then(function then(response) {
-            var permalink = response.settings[0].value,
-                editFormat,
-                postLookup,
-                match;
+        // Convert saved permalink into a path-match function
+        permalink = routeMatch(permalink + editFormat);
+        match = permalink(postPath);
 
-            editFormat = permalink.substr(permalink.length - 1) === '/' ? ':edit?' : '/:edit?';
-
-            // Convert saved permalink into a path-match function
-            permalink = routeMatch(permalink + editFormat);
-            match = permalink(postPath);
-
-            // Check if the path matches the permalink structure.
-            //
-            // If there are no matches found we then
-            // need to verify it's not a static post,
-            // and test against that permalink structure.
+        // Check if the path matches the permalink structure.
+        //
+        // If there are no matches found we then
+        // need to verify it's not a static post,
+        // and test against that permalink structure.
+        if (match === false) {
+            match = staticPostPermalink(postPath);
+            // If there are still no matches then call next.
             if (match === false) {
-                match = staticPostPermalink(postPath);
-                // If there are still no matches then return.
-                if (match === false) {
-                    // Reject promise chain with type 'NotFound'
-                    return Promise.reject(new errors.NotFoundError());
-                }
-
-                usingStaticPermalink = true;
+                return next();
             }
 
-            params = match;
+            usingStaticPermalink = true;
+        }
 
-            // Sanitize params we're going to use to lookup the post.
-            postLookup = _.pick(params, 'slug', 'id');
-            // Add author, tag and fields
-            postLookup.include = 'author,tags,fields';
+        params = match;
 
-            // Query database to find post
-            return api.posts.read(postLookup);
-        }).then(function then(result) {
+        // Sanitize params we're going to use to lookup the post.
+        postLookup = _.pick(params, 'slug', 'id');
+        // Add author, tag and fields
+        postLookup.include = 'author,tags,fields';
+
+        // Query database to find post
+        return api.posts.read(postLookup).then(function then(result) {
             var post = result.posts[0],
                 postUrl = (params.edit) ? postPath.replace(params.edit + '/', '') : postPath;
 

@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "0.7.2",
+  "version": "0.7.4",
   "description": "Just a blogging platform.",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -82,6 +82,7 @@
     "grunt-contrib-compress": "0.13.0",
     "grunt-contrib-copy": "0.8.0",
     "grunt-contrib-jshint": "0.11.2",
+    "grunt-contrib-uglify": "0.11.0",
     "grunt-contrib-watch": "0.6.1",
     "grunt-docker": "0.0.10",
     "grunt-express-server": "0.5.1",

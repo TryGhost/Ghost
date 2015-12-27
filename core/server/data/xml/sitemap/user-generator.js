@@ -38,8 +38,8 @@ _.extend(UserMapGenerator.prototype, {
         });
     },
 
-    getUrlForDatum: function (user, permalinks) {
-        return config.urlFor('author', {author: user, permalinks: permalinks}, true);
+    getUrlForDatum: function (user) {
+        return config.urlFor('author', {author: user}, true);
     },
 
     getPriorityForDatum: function () {

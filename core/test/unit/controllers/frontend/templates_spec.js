@@ -2,20 +2,18 @@
 /*jshint expr:true*/
 var should   = require('should'),
     rewire   = require('rewire'),
-    _        = require('lodash'),
 
 // Stuff we are testing
     templates = rewire('../../../../server/controllers/frontend/templates'),
 
-    config   = require('../../../../server/config'),
-    origConfig = _.cloneDeep(config);
+    configUtils = require('../../../utils/configUtils');
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('templates', function () {
     afterEach(function () {
-        config.set(origConfig);
+        configUtils.restore();
     });
 
     describe('utils', function () {
@@ -55,7 +53,7 @@ describe('templates', function () {
     describe('single', function () {
         describe('with many templates', function () {
             beforeEach(function () {
-                config.set({
+                configUtils.set({
                     paths: {
                         availableThemes: {
                             casper: {
@@ -110,7 +108,7 @@ describe('templates', function () {
         });
 
         it('will fall back to post even if no index.hbs', function () {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 assets: null,
                 'default.hbs': '/content/themes/casper/default.hbs'
             }}}});
@@ -124,7 +122,7 @@ describe('templates', function () {
     describe('channel', function () {
         describe('without tag templates', function () {
             beforeEach(function () {
-                config.set({paths: {availableThemes: {casper: {
+                configUtils.set({paths: {availableThemes: {casper: {
                     assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs'
@@ -140,7 +138,7 @@ describe('templates', function () {
 
         describe('with tag templates', function () {
             beforeEach(function () {
-                config.set({paths: {availableThemes: {casper: {
+                configUtils.set({paths: {availableThemes: {casper: {
                     assets: null,
                     'default.hbs': '/content/themes/casper/default.hbs',
                     'index.hbs': '/content/themes/casper/index.hbs',
@@ -163,7 +161,7 @@ describe('templates', function () {
         });
 
         it('will fall back to index even if no index.hbs', function () {
-            config.set({paths: {availableThemes: {casper: {
+            configUtils.set({paths: {availableThemes: {casper: {
                 assets: null,
                 'default.hbs': '/content/themes/casper/default.hbs'
             }}}});

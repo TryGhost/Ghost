@@ -10,13 +10,12 @@ var hbs             = require('express-hbs'),
     moment          = require('moment'),
     _               = require('lodash'),
     Promise         = require('bluebird'),
-    fs              = require('fs'),
-    path            = require('path'),
 
     config          = require('../config'),
     filters         = require('../filters'),
 
     api                 = require('../api'),
+    assetHelper         = require('./asset'),
     urlHelper           = require('./url'),
     meta_description    = require('./meta_description'),
     meta_title          = require('./meta_title'),
@@ -278,21 +277,15 @@ function finaliseSchema(schema, head) {
     return head;
 }
 
-function getAjaxHelper() {
-    var ghostUrlScript = fs.readFileSync(path.join(config.paths.corePath, 'shared', 'ghost-url.js'), 'utf8'),
-        template = hbs.compile(ghostUrlScript, path.join(config.paths.subdir || '/', 'shared', 'ghost-url.js')),
-        apiPath = require('../routes').apiBaseUri,
-        url, useOrigin;
-
-    if (config.forceAdminSSL) {
-        url = 'https://' + (config.urlSSL || config.url).replace(/.*?:\/\//g, '').replace(/\/$/, '') + apiPath;
-        useOrigin = false;
-    } else {
-        url = config.paths.subdir + apiPath;
-        useOrigin = true;
-    }
-
-    return '<script type="text/javascript">' + template({api_url: url, useOrigin: useOrigin ? 'true' : 'false'}) + '</script>';
+function getAjaxHelper(clientId, clientSecret) {
+    return '<script type="text/javascript" src="' +
+        assetHelper('shared/ghost-url.js', {hash: {minifyInProduction: true}}) + '"></script>\n' +
+        '<script type="text/javascript">\n' +
+        'ghost.init({\n' +
+        '\tclientId: "' + clientId + '",\n' +
+        '\tclientSecret: "' + clientSecret + '"\n' +
+        '});\n' +
+        '</script>';
 }
 
 ghost_head = function (options) {
@@ -309,7 +302,7 @@ ghost_head = function (options) {
         schema,
         title = hbs.handlebars.Utils.escapeExpression(blog.title),
         context = self.context ? self.context[0] : null,
-        contextObject = self[context] || blog;
+        contextObject = _.cloneDeep(self[context] || blog);
 
     // Store Async calls in an object of named promises
     props.url = urlHelper.call(self, {hash: {absolute: true}});
@@ -355,9 +348,7 @@ ghost_head = function (options) {
             }
 
             if (metaData.clientId && metaData.clientSecret) {
-                head.push(writeMetaTag('ghost:client_id', metaData.clientId));
-                head.push(writeMetaTag('ghost:client_secret', metaData.clientSecret));
-                head.push(getAjaxHelper());
+                head.push(getAjaxHelper(metaData.clientId, metaData.clientSecret));
             }
         }
 

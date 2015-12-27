@@ -1,12 +1,11 @@
 /*globals describe, it, beforeEach, afterEach */
 /*jshint expr:true*/
-var _                       = require('lodash'),
-    sinon                   = require('sinon'),
+var sinon                   = require('sinon'),
     should                  = require('should'),
     passport                = require('passport'),
     rewire                  = require('rewire'),
-    config                  = require('../../../server/config'),
-    defaultConfig           = rewire('../../../../config.example')[process.env.NODE_ENV],
+    configUtils             = require('../../utils/configUtils'),
+    errors                  = require('../../../server/errors'),
     auth                    = rewire('../../../server/middleware/auth'),
     BearerStrategy          = require('passport-http-bearer').Strategy,
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
@@ -18,7 +17,9 @@ var _                       = require('lodash'),
     client                  = {
         id: 2,
         type: 'ua'
-    };
+    },
+
+    sandbox = sinon.sandbox.create();
 
 should.equal(true, true);
 
@@ -86,13 +87,13 @@ function registerFaultyClientPasswordStrategy() {
 }
 
 describe('Auth', function () {
-    var res, req, next, sandbox;
+    var res, req, next, errorStub;
 
     beforeEach(function () {
-        sandbox = sinon.sandbox.create();
         req = {};
         res = {};
         next = sandbox.spy();
+        errorStub = sandbox.stub(errors, 'logError');
     });
 
     afterEach(function () {
@@ -128,11 +129,11 @@ describe('Auth', function () {
 
     describe('User Authentication', function () {
         beforeEach(function () {
-            defaultConfig.url = 'http://my-domain.com';
-            var newConfig = _.extend({}, config, defaultConfig);
+            configUtils.set({url: 'http://my-domain.com'});
+        });
 
-            auth.__get__('config', newConfig);
-            config.set(newConfig);
+        afterEach(function () {
+            configUtils.restore();
         });
 
         it('should authenticate user', function (done) {
@@ -322,7 +323,7 @@ describe('Auth', function () {
             done();
         });
 
-        it('shouldn\'t authenticate client', function (done) {
+        it('shouldn\'t authenticate without full client credentials', function (done) {
             req.body = {};
             req.body.client_id = testClient;
             res.status = {};
@@ -339,6 +340,33 @@ describe('Auth', function () {
             registerUnsuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
             next.called.should.be.false;
+            errorStub.calledTwice.should.be.true;
+            errorStub.getCall(0).args[1].should.eql('Client credentials were not provided');
+
+            done();
+        });
+
+        it('shouldn\'t authenticate invalid/unknown client', function (done) {
+            req.body = {};
+            req.body.client_id = testClient;
+            req.body.client_secret = testSecret;
+            res.status = {};
+
+            sandbox.stub(res, 'status', function (statusCode) {
+                statusCode.should.eql(401);
+                return {
+                    json: function (err) {
+                        err.errors[0].errorType.should.eql('UnauthorizedError');
+                    }
+                };
+            });
+
+            registerUnsuccessfulClientPasswordStrategy();
+            auth.authenticateClient(req, res, next);
+            next.called.should.be.false;
+            errorStub.calledTwice.should.be.true;
+            errorStub.getCall(0).args[1].should.eql('Client credentials were not valid');
+
             done();
         });
 
@@ -365,18 +393,18 @@ describe('Auth', function () {
             done();
         });
 
-        it('should authenticate client', function (done) {
+        it('should authenticate valid/known client', function (done) {
             req.body = {};
             req.body.client_id = testClient;
             req.body.client_secret = testSecret;
             req.headers = {};
-            req.headers.origin = config.url;
+            req.headers.origin = configUtils.config.url;
 
             res.header = {};
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();
@@ -396,7 +424,7 @@ describe('Auth', function () {
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();
@@ -457,13 +485,13 @@ describe('Auth', function () {
             req.query.client_id = testClient;
             req.query.client_secret = testSecret;
             req.headers = {};
-            req.headers.origin = config.url;
+            req.headers.origin = configUtils.config.url;
 
             res.header = {};
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();
@@ -480,13 +508,13 @@ describe('Auth', function () {
             req.query.client_id = testClient;
             req.query.client_secret = testSecret;
             req.headers = {};
-            req.headers.origin = config.url;
+            req.headers.origin = configUtils.config.url;
 
             res.header = {};
 
             sandbox.stub(res, 'header', function (key, value) {
                 key.should.equal('Access-Control-Allow-Origin');
-                value.should.equal(config.url);
+                value.should.equal(configUtils.config.url);
             });
 
             registerSuccessfulClientPasswordStrategy();

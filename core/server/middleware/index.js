@@ -73,6 +73,10 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
+    // Ghost-Url
+    blogApp.use(serveSharedFile('shared/ghost-url.js', 'application/javascript', utils.ONE_HOUR_S));
+    blogApp.use(serveSharedFile('shared/ghost-url.min.js', 'application/javascript', utils.ONE_HOUR_S));
+
     // Static assets
     blogApp.use('/shared', express.static(path.join(corePath, '/shared'), {maxAge: utils.ONE_HOUR_MS}));
     blogApp.use('/content/images', storage.getStorage().serve());

@@ -1,7 +1,6 @@
 /*globals describe, it, beforeEach, afterEach */
 /*jshint expr:true*/
-var _            = require('lodash'),
-    sinon        = require('sinon'),
+var sinon        = require('sinon'),
     should       = require('should'),
     express      = require('express'),
     Promise      = require('bluebird'),
@@ -11,12 +10,10 @@ var _            = require('lodash'),
     hbs          = require('express-hbs'),
     themeHandler = require('../../../server/middleware/theme-handler'),
     errors       = require('../../../server/errors'),
+    api          = require('../../../server/api'),
 
-    api      = require('../../../server/api'),
-    config   = require('../../../server/config'),
-    origConfig = _.cloneDeep(config),
-    defaultConfig  = require('../../../../config.example')[process.env.NODE_ENV],
-    sandbox = sinon.sandbox.create();
+    configUtils  = require('../../utils/configUtils'),
+    sandbox      = sinon.sandbox.create();
 
 should.equal(true, true);
 
@@ -33,9 +30,7 @@ describe('Theme Handler', function () {
 
     afterEach(function () {
         sandbox.restore();
-
-        // Reset config
-        config.set(_.merge({}, origConfig, defaultConfig));
+        configUtils.restore();
     });
 
     describe('ghostLocals', function () {
@@ -101,7 +96,7 @@ describe('Theme Handler', function () {
             var themeOptSpy = sandbox.stub(hbs, 'updateTemplateOptions');
             req.secure = true;
             res.locals = {};
-            config.set({urlSSL: 'https://secure.blog'});
+            configUtils.set({urlSSL: 'https://secure.blog'});
 
             themeHandler.configHbsForContext(req, res, next);
 
@@ -145,7 +140,7 @@ describe('Theme Handler', function () {
                 }]
             }));
             blogApp.set('activeTheme', 'not-casper');
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.true;
@@ -162,7 +157,7 @@ describe('Theme Handler', function () {
                 }]
             }));
             blogApp.set('activeTheme', 'casper');
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 activateThemeSpy.called.should.be.false;
@@ -181,7 +176,7 @@ describe('Theme Handler', function () {
                 }]
             }));
             blogApp.set('activeTheme', 'not-casper');
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function (err) {
                 should.exist(err);
@@ -205,7 +200,7 @@ describe('Theme Handler', function () {
             }));
             res.isAdmin = true;
             blogApp.set('activeTheme', 'not-casper');
-            config.set({paths: {availableThemes: {casper: {}}}});
+            configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
                 errorSpy.called.should.be.false;
