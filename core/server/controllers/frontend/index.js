@@ -225,9 +225,6 @@ frontendControllers = {
         } else {
             return res.render(defaultPage, data);
         }
-    },
-    ht: function ht(req, res) {
-      return res.send('This is a hometeaching page, I don\'t know what to do next...');
     }
 };
 
