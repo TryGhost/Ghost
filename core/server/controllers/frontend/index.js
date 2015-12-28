@@ -227,7 +227,7 @@ frontendControllers = {
         }
     },
     ht: function ht(req, res) {
-      return res.render('hometeaching.hbs');
+      return res.send('This is a hometeaching page, I don\'t know what to do next...');
     }
 };
 
