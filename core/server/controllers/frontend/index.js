@@ -225,6 +225,9 @@ frontendControllers = {
         } else {
             return res.render(defaultPage, data);
         }
+    },
+    ht: function ht(req, res) {
+      res.render('hometeaching.hbs');
     }
 };
 
