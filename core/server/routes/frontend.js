@@ -117,7 +117,7 @@ frontendRoutes = function frontendRoutes(middleware) {
     // Hometeaching
     router.get(/^\/(ht|hometeaching)\/$/, function(req, res) {
       console.log('IN HOMETEACHING');
-      res.render('../views/hometeaching.hbs');
+      res.render('hometeaching.hbs');
     });
 
     return router;
