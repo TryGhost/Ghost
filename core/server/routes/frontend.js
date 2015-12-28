@@ -115,7 +115,7 @@ frontendRoutes = function frontendRoutes(middleware) {
     router.get('*', frontend.single);
 
     // Hometeaching
-    router.get(/^\/(ht|hometeaching)\/$/).get(frontend.ht);
+    router.get(/^\/(ht|hometeaching)\/$/, frontend.ht);
 
     return router;
 };
