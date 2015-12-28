@@ -227,7 +227,7 @@ frontendControllers = {
         }
     },
     ht: function ht(req, res) {
-      res.render('hometeaching.hbs');
+      return res.render('hometeaching.hbs');
     }
 };
 
