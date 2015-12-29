@@ -21,6 +21,8 @@ tags = function (options) {
         prefix    = _.isString(options.hash.prefix) ? options.hash.prefix : '',
         suffix    = _.isString(options.hash.suffix) ? options.hash.suffix : '',
         limit     = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined,
+        from      = options.hash.from ? parseInt(options.hash.from, 10) : 1,
+        to        = options.hash.to ? parseInt(options.hash.to, 10) : undefined,
         output = '';
 
     function createTagList(tags) {
@@ -37,12 +39,10 @@ tags = function (options) {
 
     if (this.tags && this.tags.length) {
         output = createTagList(this.tags);
+        from -= 1; // From uses 1-indexed, but array uses 0-indexed.
+        to = to || limit + from || this.tags.length;
 
-        if (limit) {
-            output = output.slice(0, limit);
-        }
-
-        output = prefix + output.join(separator) + suffix;
+        output = prefix + output.slice(from, to).join(separator) + suffix;
     }
 
     return new hbs.handlebars.SafeString(output);
