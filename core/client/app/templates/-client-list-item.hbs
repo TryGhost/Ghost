@@ -7,6 +7,6 @@
     <span class="description">Last seen: {{component.lastUsed}}</span>
   </div>
   <div class="client-revoke">
-    <button class="btn btn-red" {{action 'edit' client}}>Edit</button>
+    {{#link-to 'settings.connections.edit' client.slug tagName="button" classNames="btn btn-red"}}Edit{{/link-to}}
   </div>
 </div>

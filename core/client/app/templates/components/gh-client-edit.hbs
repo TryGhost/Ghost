@@ -1,0 +1,17 @@
+<b>Name:</b>   {{name}}<br>
+<b>Status:</b> {{status}}<br>
+<b>Secret:</b> {{secret}}<br>
+<b>Logo:</b>   {{logo}}<br>
+<b>Description:</b> {{description}}<br>
+
+<button type='button' class="btn btn-blue" onclick={{action 'changeClientStatus' client}}>
+  {{#if isEnabled}}
+  Disable
+  {{else}}
+  Enable
+  {{/if}}
+</button>
+
+<button type='button' class="btn btn-blue" onclick={{action 'refreshClientToken' client}}>
+Refresh Token
+</button>

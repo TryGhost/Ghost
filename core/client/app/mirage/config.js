@@ -52,7 +52,8 @@ export default function () {
     this.namespace = 'ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
 
-    this.passthrough();
+    this.passthrough('/clients/slug/:slug');
+    //this.passthrough('ghost/api/v0.1/clients/slug/ghost-frontend');
 
     /* Authentication ------------------------------------------------------- */
 
