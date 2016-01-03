@@ -374,7 +374,7 @@ function toggleSideBySide(editor) {
 	if(!cm.sideBySideRenderingFunction) {
 		cm.sideBySideRenderingFunction = sideBySideRenderingFunction;
 	}
-	
+
 	if(useSideBySideListener) {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 		cm.on("update", cm.sideBySideRenderingFunction);
@@ -821,6 +821,23 @@ var toolbarBuiltInButtons = {
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
 		title: "Markdown Guide",
+		default: true
+	},
+	"separator-4": {
+		name: "separator-4"
+	},
+	"undo": {
+		name: "undo",
+		action: undo,
+		className: "fa fa-undo no-disable",
+		title: "Undo",
+		default: true
+	},
+	"redo": {
+		name: "redo",
+		action: redo,
+		className: "fa fa-repeat no-disable",
+		title: "Redo",
 		default: true
 	}
 };
