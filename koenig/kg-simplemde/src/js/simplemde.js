@@ -830,15 +830,13 @@ var toolbarBuiltInButtons = {
 		name: "undo",
 		action: undo,
 		className: "fa fa-undo no-disable",
-		title: "Undo",
-		default: true
+		title: "Undo"
 	},
 	"redo": {
 		name: "redo",
 		action: redo,
 		className: "fa fa-repeat no-disable",
-		title: "Redo",
-		default: true
+		title: "Redo"
 	}
 };
 
