@@ -37,6 +37,7 @@ export default Component.extend({
         }
 
         this.set('isLoading', true);
+        this.set('content', []);
         promises.pushObject(this._loadPosts());
         promises.pushObject(this._loadUsers());
         promises.pushObject(this._loadTags());
@@ -54,8 +55,6 @@ export default Component.extend({
         let content = this.get('content');
 
         return ajax(postsUrl, {data: postsQuery}).then((posts) => {
-            content.removeObjects(this.get('posts'));
-            content.removeObjects(this.get('pages'));
             content.pushObjects(posts.posts.map((post) => {
                 return {
                     id: `post.${post.id}`,
@@ -73,7 +72,6 @@ export default Component.extend({
         let content = this.get('content');
 
         return ajax(usersUrl, {data: usersQuery}).then((users) => {
-            content.removeObjects(this.get('users'));
             content.pushObjects(users.users.map((user) => {
                 return {
                     id: `user.${user.slug}`,
@@ -91,7 +89,6 @@ export default Component.extend({
         let content = this.get('content');
 
         return ajax(tagsUrl, {data: tagsQuery}).then((tags) => {
-            content.removeObjects(this.get('tags'));
             content.pushObjects(tags.tags.map((tag) => {
                 return {
                     id: `tag.${tag.slug}`,
