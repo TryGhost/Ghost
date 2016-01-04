@@ -11,7 +11,7 @@
         {{#gh-infinite-scroll-box tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage"}}
             <ol class="posts-list">
                 {{#each sortedPosts key="id" as |post|}}
-                    {{#gh-posts-list-item post=post active=(is-equal post currentPost) onDoubleClick="openEditor" previewIsHidden=container.previewIsHidden as |component|}}
+                    {{#gh-posts-list-item post=post onDoubleClick="openEditor" previewIsHidden=container.previewIsHidden as |component|}}
                         {{#link-to component.viewOrEdit post.id class="permalink" title="Edit this post"}}
                             <h3 class="entry-title">{{post.title}}</h3>
                             <section class="entry-meta">
