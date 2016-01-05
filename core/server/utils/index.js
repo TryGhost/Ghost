@@ -60,8 +60,8 @@ utils = {
         // Remove non ascii characters
         string = unidecode(string);
 
-        // Replace URL reserved chars: `:/?#[]!$&()*+,;=` as well as `\%<>|^~£"`
-        string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|–|—)/g, '-')
+        // Replace URL reserved chars: `@:/?#[]!$&()*+,;=` as well as `\%<>|^~£"{}` and \`
+        string = string.replace(/(\s|\.|@|:|\/|\?|#|\[|\]|!|\$|&|\(|\)|\*|\+|,|;|=|\\|%|<|>|\||\^|~|"|\{|\}|`|–|—)/g, '-')
             // Remove apostrophes
             .replace(/'/g, '')
             // Make the whole thing lowercase
