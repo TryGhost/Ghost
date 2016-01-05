@@ -163,11 +163,73 @@ describe('Acceptance: Setup', function () {
                 // it redirects to the home / "content" screen
                 expect(currentURL(), 'url after submitting invites')
                     .to.equal('/');
+
+                // it displays success alert
+                expect(find('.gh-alert-green').length, 'number of success alerts')
+                    .to.equal(1);
             });
         });
 
-        it('handles server validation errors in step 2');
-        it('handles server validation errors in step 3');
+        it('handles validation errors in step 2', function () {
+            let postCount = 0;
+
+            invalidateSession(application);
+            server.loadFixtures('roles');
+
+            server.post('/authentication/setup', function () {
+                postCount++;
+
+                // validation error
+                if (postCount === 1) {
+                    return new Mirage.Response(422, {}, {
+                        errors: [
+                            {
+                                errorType: 'ValidationError',
+                                message: 'Server response message'
+                            }
+                        ]
+                    });
+                }
+
+                // server error
+                if (postCount === 2) {
+                    return new Mirage.Response(500, {}, null);
+                }
+            });
+
+            visit('/setup/two');
+            click('.btn-green');
+
+            andThen(() => {
+                // non-server validation
+                expect(find('.main-error').text().trim(), 'error text')
+                    .to.not.be.blank;
+            });
+
+            fillIn('[name="email"]', 'test@example.com');
+            fillIn('[name="name"]', 'Test User');
+            fillIn('[name="password"]', 'password');
+            fillIn('[name="blog-title"]', 'Blog Title');
+
+            // first post - simulated validation error
+            click('.btn-green');
+
+            andThen(() => {
+                expect(find('.main-error').text().trim(), 'error text')
+                    .to.equal('Server response message');
+            });
+
+            // second post - simulated server error
+            click('.btn-green');
+
+            andThen(() => {
+                expect(find('.main-error').text().trim(), 'error text')
+                    .to.be.blank;
+
+                expect(find('.gh-alert-red').length, 'number of alerts')
+                    .to.equal(1);
+            });
+        });
 
         it('handles invalid origin error on step 2', function () {
             // mimick the API response for an invalid origin
@@ -199,6 +261,141 @@ describe('Acceptance: Setup', function () {
                 // we should show an error message
                 expect(find('.main-error').text(), 'error text')
                     .to.equal('Access Denied from url: unknown.com. Please use the url configured in config.js.');
+            });
+        });
+
+        it('handles validation errors in step 3', function () {
+            let input = '[name="users"]';
+            let postCount = 0;
+            let button, formGroup, user;
+
+            invalidateSession(application);
+            server.loadFixtures('roles');
+
+            server.post('/users', function (db, request) {
+                let [params] = JSON.parse(request.requestBody).users;
+
+                postCount++;
+
+                // invalid
+                if (postCount === 1) {
+                    return new Mirage.Response(422, {}, {
+                        errors: [
+                            {
+                                errorType: 'ValidationError',
+                                message: 'Dummy validation error'
+                            }
+                        ]
+                    });
+                }
+
+                // valid
+                user = db.users.insert(params);
+                return {
+                    users: [user]
+                };
+            });
+
+            // complete step 2 so we can access step 3
+            visit('/setup/two');
+            fillIn('[name="email"]', 'test@example.com');
+            fillIn('[name="name"]', 'Test User');
+            fillIn('[name="password"]', 'password');
+            fillIn('[name="blog-title"]', 'Blog Title');
+            click('.btn-green');
+
+            // default field/button state
+            andThen(() => {
+                formGroup = find('.gh-flow-invite .form-group');
+                button = find('.gh-flow-invite button[type="submit"]');
+
+                expect(formGroup.hasClass('error'), 'default field has error class')
+                    .to.be.false;
+
+                expect(button.text().trim(), 'default button text')
+                    .to.equal('Invite some users');
+
+                expect(button.hasClass('btn-minor'), 'default button is disabled')
+                    .to.be.true;
+            });
+
+            // no users submitted state
+            click('.gh-flow-invite button[type="submit"]');
+
+            andThen(() => {
+                expect(formGroup.hasClass('error'), 'no users submitted field has error class')
+                    .to.be.true;
+
+                expect(button.text().trim(), 'no users submitted button text')
+                    .to.equal('No users to invite');
+
+                expect(button.hasClass('btn-minor'), 'no users submitted button is disabled')
+                    .to.be.true;
+            });
+
+            // single invalid email
+            fillIn(input, 'invalid email');
+            triggerEvent(input, 'blur');
+
+            andThen(() => {
+                expect(formGroup.hasClass('error'), 'invalid field has error class')
+                    .to.be.true;
+
+                expect(button.text().trim(), 'single invalid button text')
+                    .to.equal('1 invalid email address');
+
+                expect(button.hasClass('btn-minor'), 'invalid email button is disabled')
+                    .to.be.true;
+            });
+
+            // multiple invalid emails
+            fillIn(input, 'invalid email\nanother invalid address');
+            triggerEvent(input, 'blur');
+
+            andThen(() => {
+                expect(button.text().trim(), 'multiple invalid button text')
+                    .to.equal('2 invalid email addresses');
+            });
+
+            // single valid email
+            fillIn(input, 'invited@example.com');
+            triggerEvent(input, 'blur');
+
+            andThen(() => {
+                expect(formGroup.hasClass('error'), 'valid field has error class')
+                    .to.be.false;
+
+                expect(button.text().trim(), 'single valid button text')
+                    .to.equal('Invite 1 user');
+
+                expect(button.hasClass('btn-green'), 'valid email button is enabled')
+                    .to.be.true;
+            });
+
+            // multiple valid emails
+            fillIn(input, 'invited1@example.com\ninvited2@example.com');
+            triggerEvent(input, 'blur');
+
+            andThen(() => {
+                expect(button.text().trim(), 'multiple valid button text')
+                    .to.equal('Invite 2 users');
+            });
+
+            // submit invitations with simulated failure on 1 invite
+            click('.btn-green');
+
+            andThen(() => {
+                // it redirects to the home / "content" screen
+                expect(currentURL(), 'url after submitting invites')
+                    .to.equal('/');
+
+                // it displays success alert
+                expect(find('.gh-alert-green').length, 'number of success alerts')
+                    .to.equal(1);
+
+                // it displays failure alert
+                expect(find('.gh-alert-red').length, 'number of failure alerts')
+                    .to.equal(1);
             });
         });
     });
