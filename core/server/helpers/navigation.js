@@ -13,6 +13,7 @@ navigation = function (options) {
     /*jshint unused:false*/
     var navigationData = options.data.blog.navigation,
         currentUrl = options.data.root.relativeUrl,
+        self = this,
         output,
         context;
 
@@ -49,6 +50,7 @@ navigation = function (options) {
         out.label = e.label;
         out.slug = _slugify(e.label);
         out.url = hbs.handlebars.Utils.escapeExpression(e.url);
+        out.secure = self.secure;
         return out;
     });
 
