@@ -64,6 +64,28 @@ describe('{{url}} helper', function () {
         rendered.should.equal('http://testurl.com/slug/');
     });
 
+    it('should output an absolute URL with https if the option is present and secure', function () {
+        rendered = helpers.url.call(
+            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
+            url: '/slug/', created_at: new Date(0), secure: true},
+            {hash: {absolute: 'true'}}
+        );
+
+        should.exist(rendered);
+        rendered.should.equal('https://testurl.com/slug/');
+    });
+
+    it('should output an absolute URL with https if secure', function () {
+        rendered = helpers.url.call(
+            {html: 'content', markdown: 'ff', title: 'title', slug: 'slug',
+            url: '/slug/', created_at: new Date(0), secure: true},
+            {hash: {absolute: 'true'}}
+        );
+
+        should.exist(rendered);
+        rendered.should.equal('https://testurl.com/slug/');
+    });
+
     it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
         rendered = helpers.url.call({
             name: 'the tag',
@@ -109,6 +131,14 @@ describe('{{url}} helper', function () {
         rendered.should.equal('http://testurl.com/bar');
     });
 
+    it('should return an absolute url with https if context is secure', function () {
+        rendered = helpers.url.call(
+            {url: '/bar', label: 'Bar', slug: 'bar', current: true, secure: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('https://testurl.com/bar');
+    });
+
     it('external urls should be retained in a nav context', function () {
         rendered = helpers.url.call(
             {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
@@ -123,6 +153,24 @@ describe('{{url}} helper', function () {
             {hash: {absolute: 'true'}});
         should.exist(rendered);
         rendered.should.equal('http://testurl.com/qux');
+    });
+
+    it('should handle hosted urls in a nav context with secure', function () {
+        rendered = helpers.url.call(
+            {url: 'http://testurl.com/qux', label: 'Qux', slug: 'qux', current: true,
+            secure: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('https://testurl.com/qux');
+    });
+
+    it('should handle hosted https urls in a nav context with secure', function () {
+        rendered = helpers.url.call(
+            {url: 'https://testurl.com/qux', label: 'Qux', slug: 'qux', current: true,
+            secure: true},
+            {hash: {absolute: 'true'}});
+        should.exist(rendered);
+        rendered.should.equal('https://testurl.com/qux');
     });
 
     it('should handle hosted urls with the wrong protocol in a nav context', function () {

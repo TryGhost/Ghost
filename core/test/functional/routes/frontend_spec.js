@@ -985,11 +985,11 @@ describe('Frontend Routing', function () {
                 .end(doEnd(done));
         });
 
-        it('should set links to urlSSL over HTTPS', function (done) {
+        it('should set links to urlSSL over HTTPS besides canonical', function (done) {
             request.get('/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
-                .expect(/<link rel="canonical" href="https:\/\/localhost\/" \/\>/)
+                .expect(/<link rel="canonical" href="http:\/\/127.0.0.1:2370\/" \/\>/)
                 .expect(/<a href="https:\/\/localhost">Ghost<\/a\>/)
                 .end(doEnd(done));
         });
