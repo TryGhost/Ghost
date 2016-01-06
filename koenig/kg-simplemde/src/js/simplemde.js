@@ -374,7 +374,7 @@ function toggleSideBySide(editor) {
 	if(!cm.sideBySideRenderingFunction) {
 		cm.sideBySideRenderingFunction = sideBySideRenderingFunction;
 	}
-	
+
 	if(useSideBySideListener) {
 		preview.innerHTML = editor.options.previewRender(editor.value(), preview);
 		cm.on("update", cm.sideBySideRenderingFunction);
@@ -828,7 +828,7 @@ var toolbarBuiltInButtons = {
 var insertTexts = {
 	link: ["[", "](http://)"],
 	image: ["![](http://", ")"],
-	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n\n"],
+	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text     | Text     |\n\n"],
 	horizontalRule: ["", "\n\n-----\n\n"]
 };
 
