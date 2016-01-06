@@ -289,6 +289,11 @@ function getAjaxHelper(clientId, clientSecret) {
 }
 
 ghost_head = function (options) {
+    // if error page do nothing
+    if (this.code >= 400) {
+        return;
+    }
+
     // create a shortcut for theme config
     blog = config.theme;
 
