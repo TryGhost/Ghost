@@ -114,31 +114,50 @@ describe('Private Blogging', function () {
             });
 
             it('filterPrivateRoutes should call next if is the "private" route', function () {
-                req.url = '/private/';
+                req.path = req.url = '/private/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
                 next.called.should.be.true;
             });
 
             it('filterPrivateRoutes should throw 404 if url is sitemap', function () {
-                req.url = '/sitemap.xml';
+                req.path = req.url = '/sitemap.xml';
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                errorSpy.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should throw 404 if url is sitemap with param', function () {
+                req.url = '/sitemap.xml?weird=param';
+                req.path = '/sitemap.xml';
                 privateBlogging.filterPrivateRoutes(req, res, next);
                 errorSpy.called.should.be.true;
             });
 
             it('filterPrivateRoutes should throw 404 if url is rss', function () {
-                req.url = '/rss';
+                req.path = req.url = '/rss/';
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                errorSpy.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should throw 404 if url is author rss', function () {
+                req.path = req.url = '/author/halfdan/rss/';
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                errorSpy.called.should.be.true;
+            });
+
+            it('filterPrivateRoutes should throw 404 if url is tag rss', function () {
+                req.path = req.url = '/tag/slimer/rss/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
                 errorSpy.called.should.be.true;
             });
 
             it('filterPrivateRoutes should throw 404 if url is rss plus something', function () {
-                req.url = '/rss/sometag';
+                req.path = req.url = '/rss/sometag';
                 privateBlogging.filterPrivateRoutes(req, res, next);
                 errorSpy.called.should.be.true;
             });
 
             it('filterPrivateRoutes should render custom robots.txt', function () {
-                req.url = '/robots.txt';
+                req.url = req.path = '/robots.txt';
                 res.writeHead = sinon.spy();
                 res.end = sinon.spy();
                 sandbox.stub(fs, 'readFile', function (file, cb) {
