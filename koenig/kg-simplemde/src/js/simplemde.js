@@ -646,9 +646,9 @@ function _cleanBlock(cm) {
 	var endPoint = cm.getCursor("end");
 	var text;
 
-	for (var line = startPoint.line; line <= endPoint.line; line++) {
+	for(var line = startPoint.line; line <= endPoint.line; line++) {
 		text = cm.getLine(line);
-		text = text.replace(/^[ ]*([# ]+|\*|\-|[> ]+|[0-9]+(.|\)))[ ]*/, '')
+		text = text.replace(/^[ ]*([# ]+|\*|\-|[> ]+|[0-9]+(.|\)))[ ]*/, "");
 
 		cm.replaceRange(text, {
 			line: line,
