@@ -176,6 +176,7 @@ code | toggleCodeBlock | Code (Ctrl+Alt+C)<br>fa fa-code
 quote | toggleBlockquote | Quote (Ctrl+')<br>fa fa-quote-left
 unordered-list | toggleUnorderedList | Generic List (Ctrl+L)<br>fa fa-list-ul
 ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
+clean-block | cleanBlock | Clean block (Ctrl+E)<br>fa fa-eraser fa-clean-block
 link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
 image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
 table | drawTable | Insert Table<br>fa fa-table

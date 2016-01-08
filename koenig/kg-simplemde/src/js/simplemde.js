@@ -22,6 +22,7 @@ var shortcuts = {
 	"Cmd-K": drawLink,
 	"Cmd-H": toggleHeadingSmaller,
 	"Shift-Cmd-H": toggleHeadingBigger,
+	"Cmd-E": cleanBlock,
 	"Cmd-Alt-I": drawImage,
 	"Cmd-'": toggleBlockquote,
 	"Cmd-Alt-L": toggleOrderedList,
@@ -263,6 +264,14 @@ function toggleUnorderedList(editor) {
 function toggleOrderedList(editor) {
 	var cm = editor.codemirror;
 	_toggleLine(cm, "ordered-list");
+}
+
+/**
+ * Action for clean block (remove headline, list, blockquote code, markers)
+ */
+function cleanBlock(editor) {
+	var cm = editor.codemirror;
+	_cleanBlock(cm);
 }
 
 /**
@@ -629,6 +638,28 @@ function _toggleBlock(editor, type, start_chars, end_chars) {
 	cm.focus();
 }
 
+function _cleanBlock(cm) {
+	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
+		return;
+
+	var startPoint = cm.getCursor("start");
+	var endPoint = cm.getCursor("end");
+	var text;
+
+	for(var line = startPoint.line; line <= endPoint.line; line++) {
+		text = cm.getLine(line);
+		text = text.replace(/^[ ]*([# ]+|\*|\-|[> ]+|[0-9]+(.|\)))[ ]*/, "");
+
+		cm.replaceRange(text, {
+			line: line,
+			ch: 0
+		}, {
+			line: line,
+			ch: 99999999999999
+		});
+	}
+}
+
 // Merge the properties of one object into another.
 function _mergeProperties(target, source) {
 	for(var property in source) {
@@ -762,6 +793,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-list-ol",
 		title: "Numbered List (Ctrl+Alt+L)",
 		default: true
+	},
+	"clean-block": {
+		name: "clean-block",
+		action: cleanBlock,
+		className: "fa fa-eraser fa-clean-block",
+		title: "Clean block (Ctrl+E)"
 	},
 	"separator-2": {
 		name: "separator-2"
@@ -1354,6 +1391,7 @@ SimpleMDE.toggleHeading3 = toggleHeading3;
 SimpleMDE.toggleCodeBlock = toggleCodeBlock;
 SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
+SimpleMDE.cleanBlock = cleanBlock;
 SimpleMDE.drawLink = drawLink;
 SimpleMDE.drawImage = drawImage;
 SimpleMDE.drawTable = drawTable;
@@ -1402,6 +1440,9 @@ SimpleMDE.prototype.toggleUnorderedList = function() {
 };
 SimpleMDE.prototype.toggleOrderedList = function() {
 	toggleOrderedList(this);
+};
+SimpleMDE.prototype.cleanBlock = function() {
+	cleanBlock(this);
 };
 SimpleMDE.prototype.drawLink = function() {
 	drawLink(this);
