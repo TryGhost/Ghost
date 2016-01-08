@@ -35,8 +35,20 @@ describe('Server Utilities', function () {
         });
 
         it('should replace most special characters with dashes', function () {
-            var result = safeString('a:b/c?d#e[f]g!h$i&j(k)l*m+n,o;p=q\\r%s<t>u|v^w~x£y"z@1.2', options);
-            result.should.equal('a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z-1-2');
+            var result = safeString('a:b/c?d#e[f]g!h$i&j(k)l*m+n,o;{p}=q\\r%s<t>u|v^w~x£y"z@1.2`3', options);
+            result.should.equal('a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t-u-v-w-x-y-z-1-2-3');
+        });
+
+        it('should replace all of the html4 compat symbols in ascii except hyphen and underscore', function () {
+            // note: This is missing the soft-hyphen char that isn't much-liked by linters/browsers/etc,
+            // it passed the test before it was removed
+            var result = safeString('!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿');
+            result.should.equal('_-c-y-ss-c-a-r-deg-23up-1o-1-41-23-4');
+        });
+
+        it('should replace all of the foreign chars in ascii', function () {
+            var result = safeString('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ');
+            result.should.equal('aaaaaaaeceeeeiiiidnoooooxouuuuuthssaaaaaaaeceeeeiiiidnooooo-ouuuuythy');
         });
 
         it('should remove special characters at the beginning of a string', function () {
