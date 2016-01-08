@@ -43,6 +43,17 @@ describeComponent(
             expect(this.$()).to.have.length(1);
         });
 
+        it('renders and tears down ok with fileStorage:false', function () {
+            this.set('fileStorage', false);
+
+            this.render(hbs`
+                {{gh-profile-image fileStorage=fileStorage}}
+            `);
+
+            expect(this.$()).to.have.length(1);
+            expect(this.$('input')).to.have.length(0);
+        }),
+
         it('immediately renders the gravatar if valid email supplied', function () {
             let email = 'test@example.com';
             let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
