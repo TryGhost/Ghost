@@ -95,6 +95,7 @@ simplemde.value("This text will appear in the editor");
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
   - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
   - **codeSyntaxHighlighting**: If set to `true`, will highlight using [highlight.js](https://github.com/isagalaev/highlight.js). Defaults to `false`. To use this feature you must include highlight.js on your page. For example, include the script and the CSS files like:<br>`<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>`<br>`<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">`
+- **shortcuts**: Keyboard shortcuts associated with this instance. Defaults to the [array of shortcuts](#keyboard-shortcuts).
 - **showIcons**: An array of icon names to show. Can be used to show specific icons hidden by default without completely customizing the toolbar.
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
@@ -140,12 +141,15 @@ var simplemde = new SimpleMDE({
 		setTimeout(function(){
 			preview.innerHTML = customMarkdownParser(plainText);
 		}, 250);
-		
+
 		return "Loading...";
 	},
 	renderingConfig: {
 		singleLineBreaks: false,
 		codeSyntaxHighlighting: true,
+	},
+	shortcuts: {
+		drawTable: "Cmd-Alt-T"
 	},
 	showIcons: ["code", "table"],
 	spellChecker: false,
@@ -159,31 +163,33 @@ var simplemde = new SimpleMDE({
 
 #### Toolbar icons
 
-Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. Any `Ctrl` or `Alt` in the title tags will be converted automatically to their Mac equivalents when needed. Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
+Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. Note that shortcut hints are added automatically and reflect the specified "action" if it has a keybind assigned to it (ie. with the value of "action" set to `bold` and that of "tootip" set to "Bold", the final text the user will see - assuming the default shortcuts are unchanged - would be "Bold (Ctrl-B)").
+
+Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
 Name | Action | Tooltip<br>Class
 :--- | :----- | :--------------
-bold | toggleBold | Bold (Ctrl+B)<br>fa fa-bold
-italic | toggleItalic | Italic (Ctrl+I)<br>fa fa-italic
+bold | toggleBold | Bold<br>fa fa-bold
+italic | toggleItalic | Italic<br>fa fa-italic
 strikethrough | toggleStrikethrough | Strikethrough<br>fa fa-strikethrough
-heading | toggleHeadingSmaller | Heading (Ctrl+H)<br>fa fa-header
-heading-smaller | toggleHeadingSmaller | Smaller Heading (Ctrl+H)<br>fa fa-header
-heading-bigger | toggleHeadingBigger | Bigger Heading (Shift+Ctrl+H)<br>fa fa-lg fa-header
+heading | toggleHeadingSmaller | Heading<br>fa fa-header
+heading-smaller | toggleHeadingSmaller | Smaller Heading<br>fa fa-header
+heading-bigger | toggleHeadingBigger | Bigger Heading<br>fa fa-lg fa-header
 heading-1 | toggleHeading1 | Big Heading<br>fa fa-header fa-header-x fa-header-1
 heading-2 | toggleHeading2 | Medium Heading<br>fa fa-header fa-header-x fa-header-2
 heading-3 | toggleHeading3 | Small Heading<br>fa fa-header fa-header-x fa-header-3
-code | toggleCodeBlock | Code (Ctrl+Alt+C)<br>fa fa-code
-quote | toggleBlockquote | Quote (Ctrl+')<br>fa fa-quote-left
-unordered-list | toggleUnorderedList | Generic List (Ctrl+L)<br>fa fa-list-ul
-ordered-list | toggleOrderedList | Numbered List (Ctrl+Alt+L)<br>fa fa-list-ol
-clean-block | cleanBlock | Clean block (Ctrl+E)<br>fa fa-eraser fa-clean-block
-link | drawLink | Create Link (Ctrl+K)<br>fa fa-link
-image | drawImage | Insert Image (Ctrl+Alt+I)<br>fa fa-picture-o
+code | toggleCodeBlock | Code<br>fa fa-code
+quote | toggleBlockquote | Quote<br>fa fa-quote-left
+unordered-list | toggleUnorderedList | Generic List<br>fa fa-list-ul
+ordered-list | toggleOrderedList | Numbered List<br>fa fa-list-ol
+clean-block | cleanBlock | Clean block<br>fa fa-eraser fa-clean-block
+link | drawLink | Create Link<br>fa fa-link
+image | drawImage | Insert Image<br>fa fa-picture-o
 table | drawTable | Insert Table<br>fa fa-table
 horizontal-rule | drawHorizontalRule | Insert Horizontal Line<br>fa fa-minus
-preview | togglePreview | Toggle Preview (Ctrl+P)<br>fa fa-eye no-disable
-side-by-side | toggleSideBySide | Toggle Side by Side (F9)<br>fa fa-columns no-disable no-mobile
-fullscreen | toggleFullScreen | Toggle Fullscreen (F11)<br>fa fa-arrows-alt no-disable no-mobile
+preview | togglePreview | Toggle Preview<br>fa fa-eye no-disable
+side-by-side | toggleSideBySide | Toggle Side by Side<br>fa fa-columns no-disable no-mobile
+fullscreen | toggleFullScreen | Toggle Fullscreen<br>fa fa-arrows-alt no-disable no-mobile
 guide | [This link](http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide) | Markdown Guide<br>fa fa-question-circle
 
 Customize the toolbar using the `toolbar` option like:
@@ -200,7 +206,7 @@ var simplemde = new SimpleMDE({
 			name: "bold",
 			action: SimpleMDE.toggleBold,
 			className: "fa fa-bold",
-			title: "Bold (Ctrl+B)",
+			title: "Bold",
 		},
 		{
 			name: "custom",
@@ -215,6 +221,43 @@ var simplemde = new SimpleMDE({
 	],
 });
 ```
+
+#### Keyboard shortcuts
+
+SimpleMDE comes with an array of predefined keyboard shortcuts, but they can be altered with a configuration option. The list of default ones is as follows:
+
+Shortcut | Action
+:------- | :-----
+*Cmd-'* | "toggleBlockquote"
+*Cmd-B* | "toggleBold"
+*Cmd-E* | "cleanBlock"
+*Cmd-H* | "toggleHeadingSmaller"
+*Cmd-I* | "toggleItalic"
+*Cmd-K* | "drawLink"
+*Cmd-L* | "toggleUnorderedList"
+*Cmd-P* | "togglePreview"
+*Cmd-Alt-C* | "toggleCodeBlock"
+*Cmd-Alt-I* | "drawImage"
+*Cmd-Alt-L* | "toggleOrderedList"
+*Shift-Cmd-H* | "toggleHeadingBigger"
+*F9* | "toggleSideBySide"
+*F11* | "toggleFullScreen"
+
+Here is how you can change a few, while leaving others untouched:
+
+```JavaScript
+var simplemde = new SimpleMDE({
+	shortcuts: {
+		"toggleOrderedList": "Ctrl-Alt-K", // alter the shortcut for toggleOrderedList
+		"toggleCodeBlock": null, // unbind Ctrl-Alt-C
+		"drawTable": "Cmd-Alt-T" // bind Cmd-Alt-T to drawTable action, which doesn't come with a default shortcut
+	}
+});
+```
+
+Shortcuts are automatically converted between platforms. If you define a shortcut as "Cmd-B", on PC that shortcut will be changed to "Ctrl-B". Conversely, a shortcut defined as "Ctrl-I" will become "Cmd-I" in a browser of a Mac user.
+
+The list of actions that can be bound is the same as the list of built-in actions available for [toolbar buttons](#toolbar-icons).
 
 #### Height
 

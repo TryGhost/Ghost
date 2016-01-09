@@ -16,7 +16,7 @@ var marked = require("marked");
 // Some variables
 var isMac = /Mac/.test(navigator.platform);
 
-// Mapping of actions that can be bound to keyboard shortcuts
+// Mapping of actions that can be bound to keyboard shortcuts or toolbar buttons
 var bindings = {
 	"toggleBold": toggleBold,
 	"toggleItalic": toggleItalic,
@@ -29,10 +29,17 @@ var bindings = {
 	"toggleUnorderedList": toggleUnorderedList,
 	"toggleCodeBlock": toggleCodeBlock,
 	"togglePreview": togglePreview,
-	// the two below are handled manually during SimpleMDE's initialization
-	// phase and the null value tells the bootstrapper to skip them
-	"toggleSideBySide": null,
-	"toggleFullScreen": null
+	"toggleStrikethrough": toggleStrikethrough,
+	"toggleHeading1": toggleHeading1,
+	"toggleHeading2": toggleHeading2,
+	"toggleHeading3": toggleHeading3,
+	"cleanBlock": cleanBlock,
+	"drawTable": drawTable,
+	"drawHorizontalRule": drawHorizontalRule,
+	"undo": undo,
+	"redo": redo,
+	"toggleSideBySide": toggleSideBySide,
+	"toggleFullScreen": toggleFullScreen
 };
 
 var shortcuts = {
@@ -41,7 +48,7 @@ var shortcuts = {
 	"drawLink": "Cmd-K",
 	"toggleHeadingSmaller": "Cmd-H",
 	"toggleHeadingBigger": "Shift-Cmd-H",
-	cleanBlock: "Cmd-E",
+	"cleanBlock": "Cmd-E",
 	"drawImage": "Cmd-Alt-I",
 	"toggleBlockquote": "Cmd-'",
 	"toggleOrderedList": "Cmd-Alt-L",
@@ -50,6 +57,15 @@ var shortcuts = {
 	"togglePreview": "Cmd-P",
 	"toggleSideBySide": "F9",
 	"toggleFullScreen": "F11"
+};
+
+var getBindingName = function(f) {
+	for(var key in bindings) {
+		if(bindings[key] === f) {
+			return key;
+		}
+	}
+	return null;
 };
 
 var isMobile = function() {
@@ -83,11 +99,7 @@ function createIcon(options, enableTooltips, shortcuts) {
 	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
 
 	if(options.title && enableTooltips) {
-		el.title = options.title[0];
-
-		if(shortcuts[options.title[1]]) {
-			el.title = options.title[0] + " (" + fixShortcut(shortcuts[options.title[1]]) + ")";
-		}
+		el.title = createTootlip(options.title, options.action, shortcuts);
 
 		if(isMac) {
 			el.title = el.title.replace("Ctrl", "⌘");
@@ -107,6 +119,19 @@ function createSep() {
 	return el;
 }
 
+function createTootlip(title, action, shortcuts) {
+	var actionName;
+	var tooltip = title;
+
+	if(action) {
+		actionName = getBindingName(action);
+		if(shortcuts[actionName]) {
+			tooltip += " (" + fixShortcut(shortcuts[actionName]) + ")";
+		}
+	}
+
+	return tooltip;
+}
 
 /**
  * The state of CodeMirror at the given position.
@@ -736,58 +761,58 @@ var toolbarBuiltInButtons = {
 		name: "bold",
 		action: toggleBold,
 		className: "fa fa-bold",
-		title: ["Bold", "toggleBold"],
+		title: "Bold",
 		default: true
 	},
 	"italic": {
 		name: "italic",
 		action: toggleItalic,
 		className: "fa fa-italic",
-		title: ["Italic", "toggleItalic"],
+		title: "Italic",
 		default: true
 	},
 	"strikethrough": {
 		name: "strikethrough",
 		action: toggleStrikethrough,
 		className: "fa fa-strikethrough",
-		title: ["Strikethrough", "toggleStrikethrough"]
+		title: "Strikethrough"
 	},
 	"heading": {
 		name: "heading",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header",
-		title: ["Heading", "toggleHeadingSmaller"],
+		title: "Heading",
 		default: true
 	},
 	"heading-smaller": {
 		name: "heading-smaller",
 		action: toggleHeadingSmaller,
 		className: "fa fa-header fa-header-x fa-header-smaller",
-		title: ["Smaller Heading", "toggleHeadingSmaller"]
+		title: "Smaller Heading"
 	},
 	"heading-bigger": {
 		name: "heading-bigger",
 		action: toggleHeadingBigger,
 		className: "fa fa-header fa-header-x fa-header-bigger",
-		title: ["Bigger Heading", "toggleHeadingBigger"]
+		title: "Bigger Heading"
 	},
 	"heading-1": {
 		name: "heading-1",
 		action: toggleHeading1,
 		className: "fa fa-header fa-header-x fa-header-1",
-		title: ["Big Heading", "toggleHeading1"]
+		title: "Big Heading"
 	},
 	"heading-2": {
 		name: "heading-2",
 		action: toggleHeading2,
 		className: "fa fa-header fa-header-x fa-header-2",
-		title: ["Medium Heading", "toggleHeading2"]
+		title: "Medium Heading"
 	},
 	"heading-3": {
 		name: "heading-3",
 		action: toggleHeading3,
 		className: "fa fa-header fa-header-x fa-header-3",
-		title: ["Small Heading", "toggleHeading3"]
+		title: "Small Heading"
 	},
 	"separator-1": {
 		name: "separator-1"
@@ -796,34 +821,34 @@ var toolbarBuiltInButtons = {
 		name: "code",
 		action: toggleCodeBlock,
 		className: "fa fa-code",
-		title: ["Code", "toggleCodeBlock"]
+		title: "Code"
 	},
 	"quote": {
 		name: "quote",
 		action: toggleBlockquote,
 		className: "fa fa-quote-left",
-		title: ["Quote", "toggleBlockquote"],
+		title: "Quote",
 		default: true
 	},
 	"unordered-list": {
 		name: "unordered-list",
 		action: toggleUnorderedList,
 		className: "fa fa-list-ul",
-		title: ["Generic List", "toggleUnorderedList"],
+		title: "Generic List",
 		default: true
 	},
 	"ordered-list": {
 		name: "ordered-list",
 		action: toggleOrderedList,
 		className: "fa fa-list-ol",
-		title: ["Numbered List", "toggleOrderedList"],
+		title: "Numbered List",
 		default: true
 	},
 	"clean-block": {
 		name: "clean-block",
 		action: cleanBlock,
 		className: "fa fa-eraser fa-clean-block",
-		title: "Clean block (Ctrl+E)"
+		title: "Clean block"
 	},
 	"separator-2": {
 		name: "separator-2"
@@ -832,27 +857,27 @@ var toolbarBuiltInButtons = {
 		name: "link",
 		action: drawLink,
 		className: "fa fa-link",
-		title: ["Create Link", "drawLink"],
+		title: "Create Link",
 		default: true
 	},
 	"image": {
 		name: "image",
 		action: drawImage,
 		className: "fa fa-picture-o",
-		title: ["Insert Image", "drawImage"],
+		title: "Insert Image",
 		default: true
 	},
 	"table": {
 		name: "table",
 		action: drawTable,
 		className: "fa fa-table",
-		title: ["Insert Table", "drawTable"]
+		title: "Insert Table"
 	},
 	"horizontal-rule": {
 		name: "horizontal-rule",
 		action: drawHorizontalRule,
 		className: "fa fa-minus",
-		title: ["Insert Horizontal Line", "drawHorizontalRule"]
+		title: "Insert Horizontal Line"
 	},
 	"separator-3": {
 		name: "separator-3"
@@ -861,28 +886,28 @@ var toolbarBuiltInButtons = {
 		name: "preview",
 		action: togglePreview,
 		className: "fa fa-eye no-disable",
-		title: ["Toggle Preview", "togglePreview"],
+		title: "Toggle Preview",
 		default: true
 	},
 	"side-by-side": {
 		name: "side-by-side",
 		action: toggleSideBySide,
 		className: "fa fa-columns no-disable no-mobile",
-		title: ["Toggle Side by Side", "toggleSideBySide"],
+		title: "Toggle Side by Side",
 		default: true
 	},
 	"fullscreen": {
 		name: "fullscreen",
 		action: toggleFullScreen,
 		className: "fa fa-arrows-alt no-disable no-mobile",
-		title: ["Toggle Fullscreen", "toggleFullScreen"],
+		title: "Toggle Fullscreen",
 		default: true
 	},
 	"guide": {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
 		className: "fa fa-question-circle",
-		title: ["Markdown Guide", null],
+		title: "Markdown Guide",
 		default: true
 	},
 	"separator-4": {
@@ -892,13 +917,13 @@ var toolbarBuiltInButtons = {
 		name: "undo",
 		action: undo,
 		className: "fa fa-undo no-disable",
-		title: ["Undo", "undo"]
+		title: "Undo"
 	},
 	"redo": {
 		name: "redo",
 		action: redo,
 		className: "fa fa-repeat no-disable",
-		title: ["Redo", "redo"]
+		title: "Redo"
 	}
 };
 
@@ -1096,16 +1121,9 @@ SimpleMDE.prototype.render = function(el) {
 		}
 	}
 
-
 	keyMaps["Enter"] = "newlineAndIndentContinueMarkdownList";
 	keyMaps["Tab"] = "tabAndIndentMarkdownList";
 	keyMaps["Shift-Tab"] = "shiftTabAndUnindentMarkdownList";
-	keyMaps["F11"] = function() {
-		toggleFullScreen(self);
-	};
-	keyMaps["F9"] = function() {
-		toggleSideBySide(self);
-	};
 	keyMaps["Esc"] = function(cm) {
 		if(cm.getOption("fullScreen")) toggleFullScreen(self);
 	};
