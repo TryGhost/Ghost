@@ -1,14 +1,14 @@
 import Ember from 'ember';
+import ActiveLinkWrapper from 'ghost/mixins/active-link-wrapper';
 
 const {$, Component, computed, inject} = Ember;
 const {alias, equal} = computed;
 
-export default Component.extend({
+export default Component.extend(ActiveLinkWrapper, {
     tagName: 'li',
-    classNameBindings: ['active', 'isFeatured:featured', 'isPage:page'],
+    classNameBindings: ['isFeatured:featured', 'isPage:page'],
 
     post: null,
-    active: false,
     previewIsHidden: false,
 
     isFeatured: alias('post.featured'),
