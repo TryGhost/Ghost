@@ -5,11 +5,10 @@ import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-const {$, ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, observer, run} = Ember;
+const {$, ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, isBlank, observer, run} = Ember;
 
 export default Controller.extend(SettingsMenuMixin, {
-    debounceId: null,
-    lastPromise: null,
+
     selectedAuthor: null,
     uploaderReference: null,
 
@@ -52,30 +51,6 @@ export default Controller.extend(SettingsMenuMixin, {
             slugType: 'post'
         });
     }),
-
-    // Requests slug from title
-    generateAndSetSlug(destination) {
-        let title = this.get('model.titleScratch');
-        let afterSave = this.get('lastPromise');
-        let promise;
-
-        // Only set an "untitled" slug once per post
-        if (title === '(Untitled)' && this.get('model.slug')) {
-            return;
-        }
-
-        promise = RSVP.resolve(afterSave).then(() => {
-            return this.get('slugGenerator').generateSlug(title).then((slug) => {
-                this.set(destination, slug);
-            }).catch(() => {
-                // Nothing to do (would be nice to log this somewhere though),
-                // but a rejected promise needs to be handled here so that a resolved
-                // promise is returned.
-            });
-        });
-
-        this.set('lastPromise', promise);
-    },
 
     metaTitleScratch: boundOneWay('model.meta_title'),
     metaDescriptionScratch: boundOneWay('model.meta_description'),
@@ -144,27 +119,6 @@ export default Controller.extend(SettingsMenuMixin, {
 
         return seoURL;
     }),
-
-    // observe titleScratch, keeping the post's slug in sync
-    // with it until saved for the first time.
-    addTitleObserver: observer('model', function () {
-        if (this.get('model.isNew') || this.get('model.title') === '(Untitled)') {
-            this.addObserver('model.titleScratch', this, 'titleObserver');
-        }
-    }),
-
-    titleObserver() {
-        let title = this.get('model.title');
-        let debounceId;
-
-        // generate a slug if a post is new and doesn't have a title yet or
-        // if the title is still '(Untitled)' and the slug is unaltered.
-        if ((this.get('model.isNew') && !title) || title === '(Untitled)') {
-            debounceId = run.debounce(this, 'generateAndSetSlug', 'model.slug', 700);
-        }
-
-        this.set('debounceId', debounceId);
-    },
 
     // live-query of all tags for tag input autocomplete
     availableTags: computed(function () {
@@ -258,10 +212,6 @@ export default Controller.extend(SettingsMenuMixin, {
                 }
 
                 this.set('model.slug', serverSlug);
-
-                if (this.hasObserverFor('model.titleScratch')) {
-                    this.removeObserver('model.titleScratch', this, 'titleObserver');
-                }
 
                 // If this is a new post.  Don't save the model.  Defer the save
                 // to the user pressing the save button

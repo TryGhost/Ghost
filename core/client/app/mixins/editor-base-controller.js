@@ -1,9 +1,10 @@
 import Ember from 'ember';
 import PostModel from 'ghost/models/post';
+import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import imageManager from 'ghost/utils/ed-image-manager';
 
-const {Mixin, RSVP, computed, inject, observer, run} = Ember;
+const {Mixin, RSVP, computed, getProperties, inject, isBlank, observer, run} = Ember;
 const {alias} = computed;
 
 // this array will hold properties we need to watch
@@ -17,11 +18,14 @@ PostModel.eachAttribute(function (name) {
 export default Mixin.create({
     _autoSaveId: null,
     _timedSaveId: null,
+    _slugGenerationDebounce: null,
+    _slugGenerationPromise: null,
     editor: null,
     submitting: false,
 
     postSettingsMenuController: inject.controller('post-settings-menu'),
     notifications: inject.service(),
+    ghostPaths: inject.service(),
 
     init() {
         this._super(...arguments);
@@ -111,6 +115,9 @@ export default Mixin.create({
         // it's ok to set hasDirtyAttributes to false
         if (model.get('titleScratch') === model.get('title') &&
             model.get('scratch') === model.get('markdown')) {
+
+            // TODO: is this actually doing anything? All the setter does is
+            // return the passed in value
             this.set('hasDirtyAttributes', false);
         }
     },
@@ -249,15 +256,57 @@ export default Mixin.create({
         notifications.showAlert(message, {type: 'error', delayed: delay, key: 'post.save'});
     },
 
+    // Lazy load the slug generator
+    // TODO: convert slug generator to a service
+    slugGenerator: computed(function () {
+        return SlugGenerator.create({
+            ghostPaths: this.get('ghostPaths'),
+            slugType: 'post'
+        });
+    }),
+
+    // Requests slug from title
+    generateAndSetSlug(title) {
+        let lastPromise = this._slugGenerationPromise;
+
+        // Only set an "untitled" slug once per post
+        if (title === '(Untitled)' && this.get('model.slug')) {
+            return;
+        }
+
+        this._slugGenerationPromise = RSVP.resolve(lastPromise).then(() => {
+            return this.get('slugGenerator').generateSlug(title).then((slug) => {
+                this.set('model.slug', slug);
+            }).catch(() => {
+                // Nothing to do (would be nice to log this somewhere though),
+                // but a rejected promise needs to be handled here so that a resolved
+                // promise is returned.
+            });
+        });
+    },
+
     actions: {
+        updateTitle(newTitle) {
+            let _newTitle = newTitle.trim();
+            let model = this.get('model');
+            let {title, isNew} = getProperties(model, 'title', 'isNew');
+
+            model.set('titleScratch', _newTitle);
+
+            // generate a slug if a post is new and doesn't have a title yet or
+            // if the title is still '(Untitled)' and the slug is unaltered.
+            // TODO: run slug generation unless we have a custom slug as a fix for
+            // https://github.com/TryGhost/Ghost/issues/5062
+            if ((isNew && !title) || title === '(Untitled)') {
+                this._slugGenerationDebounce = run.debounce(this, 'generateAndSetSlug', _newTitle, 700);
+            }
+        },
+
         save(options) {
-            let status;
             let prevStatus = this.get('model.status');
             let isNew = this.get('model.isNew');
-            let autoSaveId = this._autoSaveId;
-            let timedSaveId = this._timedSaveId;
             let psmController = this.get('postSettingsMenuController');
-            let promise;
+            let promise, status;
 
             options = options || {};
 
@@ -277,14 +326,19 @@ export default Mixin.create({
                 status = this.get('willPublish') ? 'published' : 'draft';
             }
 
-            if (autoSaveId) {
-                run.cancel(autoSaveId);
+            if (this._autoSaveId) {
+                run.cancel(this._autoSaveId);
                 this._autoSaveId = null;
             }
 
-            if (timedSaveId) {
-                run.cancel(timedSaveId);
+            if (this._timedSaveId) {
+                run.cancel(this._timedSaveId);
                 this._timedSaveId = null;
+            }
+
+            if (this._slugGenerationDebounce) {
+                run.cancel(this._slugGenerationDebounce);
+                this._slugGenerationDebounce = null;
             }
 
             // Set the properties that are indirected
@@ -293,7 +347,7 @@ export default Mixin.create({
             this.set('model.status', status);
 
             // Set a default title
-            if (!this.get('model.titleScratch').trim()) {
+            if (isBlank(this.get('model.titleScratch').trim())) {
                 this.set('model.titleScratch', '(Untitled)');
             }
 
@@ -301,15 +355,7 @@ export default Mixin.create({
             this.set('model.meta_title', psmController.get('metaTitleScratch'));
             this.set('model.meta_description', psmController.get('metaDescriptionScratch'));
 
-            if (!this.get('model.slug')) {
-                // Cancel any pending slug generation that may still be queued in the
-                // run loop because we need to run it before the post is saved.
-                run.cancel(psmController.get('debounceId'));
-
-                psmController.generateAndSetSlug('model.slug');
-            }
-
-            promise = RSVP.resolve(psmController.get('lastPromise')).then(() => {
+            promise = RSVP.resolve(this._slugGenerationPromise).then(() => {
                 return this.get('model').save(options).then((model) => {
                     if (!options.silent) {
                         this.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
@@ -330,7 +376,7 @@ export default Mixin.create({
                 return this.get('model');
             });
 
-            psmController.set('lastPromise', promise);
+            this._slugGenerationPromise = promise;
 
             return promise;
         },
