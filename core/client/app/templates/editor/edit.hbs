@@ -1,7 +1,7 @@
 {{#gh-editor editorScrollInfo=editorScrollInfo as |ghEditor|}}
     <header class="view-header">
         {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
-            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle}}
+            {{gh-one-way-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle update=(action 'updateTitle')}}
         {{/gh-view-title}}
         <section class="view-actions">
             <button type="button" class="post-settings" title="Post Settings" {{action "openSettingsMenu"}}>

@@ -42,6 +42,7 @@
     "ember-disable-proxy-controllers": "1.0.1",
     "ember-export-application-global": "1.0.5",
     "ember-myth": "0.1.1",
+    "ember-one-way-controls": "0.4.0",
     "ember-resolver": "2.0.3",
     "ember-simple-auth": "1.0.0",
     "ember-sinon": "0.3.0",
