@@ -23,12 +23,12 @@
     <section class="view-container view-editor">
         <section class="entry-markdown js-entry-markdown {{if ghEditor.markdownActive 'active'}}">
             <header class="floatingheader">
-                <span class="desktop-tabs">Markdown</span>
+                <span class="desktop-tabs"><a class="markdown-help-label" href="" title="Markdown Help" {{action "openModal" "markdown"}}>Markdown</a></span>
                 <span class="mobile-tabs">
                     <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
                     <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
                 </span>
-                <a class="markdown-help" href="" title="Markdown Help" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
+                <a class="markdown-help-icon" href="" title="Markdown Help" {{action "openModal" "markdown"}}><i class="icon-markdown"></i></a>
             </header>
             <section id="entry-markdown-content" class="entry-markdown-content">
                 {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch setEditor="setEditor" updateScrollInfo="updateEditorScrollInfo" openModal="openModal" onFocusIn="autoSaveNew" height=height focus=shouldFocusEditor}}
@@ -37,7 +37,8 @@
 
         <section class="entry-preview js-entry-preview {{if ghEditor.previewActive 'active'}}">
             <header class="floatingheader">
-                <span class="desktop-tabs">Preview</span>
+                <span class="desktop-tabs"><a target="_blank" href="{{model.previewUrl}}">
+                    Preview</a></span>
                 <span class="mobile-tabs">
                     <a href="#" {{action 'selectTab' 'markdown' target=ghEditor}} class="{{if ghEditor.markdownActive 'active'}}">Markdown</a>
                     <a href="#" {{action 'selectTab' 'preview' target=ghEditor}} class="{{if ghEditor.previewActive 'active'}}">Preview</a>
