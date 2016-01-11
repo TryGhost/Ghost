@@ -49,7 +49,9 @@ privateBlogging = {
         }
 
         // take care of rss and sitemap 404s
-        if (req.url.lastIndexOf('/rss', 0) === 0 || req.url.lastIndexOf('/sitemap', 0) === 0) {
+        if (req.path.lastIndexOf('/rss/', 0) === 0 ||
+            req.path.lastIndexOf('/rss/') === req.url.length - 5 ||
+            (req.path.lastIndexOf('/sitemap', 0) === 0 && req.path.lastIndexOf('.xml') === req.path.length - 4)) {
             return errors.error404(req, res, next);
         } else if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
             fs.readFile(path.join(config.paths.corePath, 'shared', 'private-robots.txt'), function readFile(err, buf) {
