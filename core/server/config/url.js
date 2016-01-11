@@ -51,8 +51,8 @@ function urlJoin() {
 
     // Deduplicate subdirectory
     if (subdir) {
-        subdirRegex = new RegExp(subdir + '\/' + subdir);
-        url = url.replace(subdirRegex, subdir);
+        subdirRegex = new RegExp(subdir + '\/' + subdir + '\/');
+        url = url.replace(subdirRegex, subdir + '/');
     }
 
     return url;
