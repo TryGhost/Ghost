@@ -5,7 +5,7 @@ import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-const {$, ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, observer, run} = Ember;
+const {$, ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, isBlank, observer, run} = Ember;
 
 export default Controller.extend(SettingsMenuMixin, {
     debounceId: null,
@@ -66,7 +66,9 @@ export default Controller.extend(SettingsMenuMixin, {
 
         promise = RSVP.resolve(afterSave).then(() => {
             return this.get('slugGenerator').generateSlug(title).then((slug) => {
-                this.set(destination, slug);
+                if (!isBlank(slug)) {
+                    this.set(destination, slug);
+                }
             }).catch(() => {
                 // Nothing to do (would be nice to log this somewhere though),
                 // but a rejected promise needs to be handled here so that a resolved
