@@ -4,9 +4,11 @@ import EditorControllerMixin from 'ghost/mixins/editor-base-controller';
 const {Controller} = Ember;
 
 export default Controller.extend(EditorControllerMixin, {
+    showDeletePostModal: false,
+
     actions: {
-        openDeleteModal() {
-            this.send('openModal', 'delete-post', this.get('model'));
+        toggleDeletePostModal() {
+            this.toggleProperty('showDeletePostModal');
         }
     }
 });

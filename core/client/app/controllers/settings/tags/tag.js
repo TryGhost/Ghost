@@ -5,13 +5,16 @@ const {alias} = computed;
 
 export default Controller.extend({
 
+    showDeleteTagModal: false,
+
     tag: alias('model'),
     isMobile: alias('tagsController.isMobile'),
 
+    applicationController: inject.controller('application'),
     tagsController: inject.controller('settings.tags'),
     notifications: inject.service(),
 
-    saveTagProperty(propKey, newValue) {
+    _saveTagProperty(propKey, newValue) {
         let tag = this.get('tag');
         let currentValue = tag.get(propKey);
 
@@ -36,9 +39,39 @@ export default Controller.extend({
         });
     },
 
+    _deleteTag() {
+        let tag = this.get('tag');
+
+        return tag.destroyRecord().then(() => {
+            this._deleteTagSuccess();
+        }, (error) => {
+            this._deleteTagFailure(error);
+        });
+    },
+
+    _deleteTagSuccess() {
+        let currentRoute = this.get('applicationController.currentRouteName') || '';
+
+        if (currentRoute.match(/^settings\.tags/)) {
+            this.transitionToRoute('settings.tags.index');
+        }
+    },
+
+    _deleteTagFailure(error) {
+        this.get('notifications').showAPIError(error, {key: 'tag.delete'});
+    },
+
     actions: {
         setProperty(propKey, value) {
-            this.saveTagProperty(propKey, value);
+            this._saveTagProperty(propKey, value);
+        },
+
+        toggleDeleteTagModal() {
+            this.toggleProperty('showDeleteTagModal');
+        },
+
+        deleteTag() {
+            return this._deleteTag();
         }
     }
 });

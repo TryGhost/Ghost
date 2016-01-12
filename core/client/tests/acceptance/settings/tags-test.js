@@ -220,7 +220,7 @@ describe('Acceptance: Settings - Tags', function () {
 
             // delete tag
             click('.tag-delete-button');
-            click('.modal-container .btn-red');
+            click('.fullscreen-modal .btn-red');
 
             andThen(() => {
                 // it redirects to the first tag
