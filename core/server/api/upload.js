@@ -4,6 +4,7 @@ var config  = require('../config'),
     storage = require('../storage'),
     errors  = require('../errors'),
     utils   = require('./utils'),
+    i18n    = require('../i18n'),
 
     upload;
 
@@ -27,12 +28,12 @@ upload = {
 
         // Check if a file was provided
         if (!utils.checkFileExists(options, 'uploadimage')) {
-            return Promise.reject(new errors.NoPermissionError('Please select an image.'));
+            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.upload.pleaseSelectImage')));
         }
 
         // Check if the file is valid
         if (!utils.checkFileIsValid(options.uploadimage, config.uploads.contentTypes, config.uploads.extensions)) {
-            return Promise.reject(new errors.UnsupportedMediaTypeError('Please select a valid image.'));
+            return Promise.reject(new errors.UnsupportedMediaTypeError(i18n.t('errors.api.upload.pleaseSelectValidImage')));
         }
 
         filepath = options.uploadimage.path;

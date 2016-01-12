@@ -2,6 +2,7 @@ var packages = require('../../../package.json'),
     path = require('path'),
     crypto = require('crypto'),
     fs = require('fs'),
+    i18n = require('../i18n'),
     mode = process.env.NODE_ENV === undefined ? 'development' : process.env.NODE_ENV,
     appRoot = path.resolve(__dirname, '../../../'),
     configFilePath = process.env.GHOST_CONFIG || path.join(appRoot, 'config.js'),
@@ -28,14 +29,16 @@ checks = {
     nodeVersion: function checkNodeVersion() {
         // Tell users if their node version is not supported, and exit
         var semver = require('semver');
+        i18n.init();
 
         if (process.env.GHOST_NODE_VERSION_CHECK !== 'false' &&
             !semver.satisfies(process.versions.node, packages.engines.node) &&
             !semver.satisfies(process.versions.node, packages.engines.iojs)) {
-            console.error('\x1B[31mERROR: Unsupported version of Node');
-            console.error('\x1B[31mGhost needs Node version ' + packages.engines.node +
-                          ' you are using version ' + process.versions.node + '\033[0m\n');
-            console.error('\x1B[32mPlease see http://support.ghost.org/supported-node-versions/ for more information\033[0m');
+            console.error(i18n.t('errors.utils.startupcheck.unsupportedNodeVersion.error'));
+            console.error(i18n.t('errors.utils.startupcheck.unsupportedNodeVersion.context',
+                                {neededVersion: packages.engines.node, usedVersion: process.versions.node}));
+            console.error(i18n.t('errors.utils.startupcheck.unsupportedNodeVersion.help',
+                                {url: 'http://support.ghost.org/supported-node-versions/'}));
 
             process.exit(exitCodes.NODE_VERSION_UNSUPPORTED);
         }
@@ -58,10 +61,9 @@ checks = {
         config = configFile[mode];
 
         if (!config) {
-            console.error('\x1B[31mERROR: Cannot find the configuration for the current NODE_ENV: ' +
-                            process.env.NODE_ENV + '\033[0m\n');
-            console.error('\x1B[32mEnsure your config.js has a section for the current NODE_ENV value' +
-                            ' and is formatted properly.\033[0m');
+            console.error(i18n.t('errors.utils.startupcheck.cannotFindConfigForCurrentNode.error',
+                                 {nodeEnv: process.env.NODE_ENV}));
+            console.error(i18n.t('errors.utils.startupcheck.cannotFindConfigForCurrentNode.help'));
 
             process.exit(exitCodes.NODE_ENV_CONFIG_MISSING);
         }
@@ -89,9 +91,9 @@ checks = {
 
         errors = errors.join('\n  ');
 
-        console.error('\x1B[31mERROR: Ghost is unable to start due to missing dependencies:\033[0m\n  ' + errors);
-        console.error('\x1B[32m\nPlease run `npm install --production` and try starting Ghost again.');
-        console.error('\x1B[32mHelp and documentation can be found at http://support.ghost.org.\033[0m\n');
+        console.error(i18n.t('errors.utils.startupcheck.ghostMissingDependencies.error', {error: errors}));
+        console.error(i18n.t('errors.utils.startupcheck.ghostMissingDependencies.explain'));
+        console.error(i18n.t('errors.utils.startupcheck.ghostMissingDependencies.help', {url: 'http://support.ghost.org'}));
 
         process.exit(exitCodes.DEPENDENCIES_MISSING);
     },
@@ -107,9 +109,8 @@ checks = {
             contentPath,
             contentSubPaths = ['apps', 'data', 'images', 'themes'],
             fd,
-            errorHeader = '\x1B[31mERROR: Unable to access Ghost\'s content path:\033[0m',
-            errorHelp = '\x1B[32mCheck that the content path exists and file system permissions are correct.' +
-                '\nHelp and documentation can be found at http://support.ghost.org.\033[0m';
+            errorHeader = i18n.t('errors.utils.startupcheck.unableToAccessContentPath.error'),
+            errorHelp = i18n.t('errors.utils.startupcheck.unableToAccessContentPath.help', {url: 'http://support.ghost.org'});
 
         // Get the content path to test.  If it's defined in config.js use that, if not use the default
         try {
@@ -202,10 +203,9 @@ checks = {
                 return;
             }
 
-            console.error('\x1B[31mERROR: Unable to open sqlite3 database file for read/write\033[0m');
+            console.error(i18n.t('errors.utils.startupcheck.unableToOpenSqlite3Db.error'));
             console.error('  ' + e.message);
-            console.error('\n\x1B[32mCheck that the sqlite3 database file permissions allow read and write access.');
-            console.error('Help and documentation can be found at http://support.ghost.org.\033[0m');
+            console.error(i18n.t('errors.utils.startupcheck.unableToOpenSqlite3Db.help', {url: 'http://support.ghost.org'}));
 
             process.exit(exitCodes.SQLITE_DB_NOT_WRITABLE);
         }
