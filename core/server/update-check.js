@@ -32,7 +32,7 @@ var crypto   = require('crypto'),
     api      = require('./api'),
     config   = require('./config'),
     errors   = require('./errors'),
-
+    i18n     = require('./i18n'),
     internal = {context: {internal: true}},
     allowedCheckEnvironments = ['development', 'production'],
     checkEndpoint = 'updates.ghost.org',
@@ -46,8 +46,8 @@ function updateCheckError(error) {
 
     errors.logError(
         error,
-        'Checking for updates failed, your blog will continue to function.',
-        'If you get this error repeatedly, please seek help on http://support.ghost.org.'
+        i18n.t('errors.update-check.checkingForUpdatesFailed.error'),
+        i18n.t('errors.update-check.checkingForUpdatesFailed.help', {url: 'http://support.ghost.org'})
     );
 }
 
@@ -126,7 +126,7 @@ function updateCheckRequest() {
                         resData = JSON.parse(resData);
                         resolve(resData);
                     } catch (e) {
-                        reject('Unable to decode update response');
+                        reject(i18n.t('errors.update-check.unableToDecodeUpdateResponse.error'));
                     }
                 });
             });

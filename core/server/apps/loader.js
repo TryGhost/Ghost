@@ -7,6 +7,7 @@ var path = require('path'),
     AppSandbox = require('./sandbox'),
     AppDependencies = require('./dependencies'),
     AppPermissions = require('./permissions'),
+    i18n = require('../i18n'),
     loader;
 
 // Get the full path to an app by name
@@ -66,7 +67,7 @@ loader = {
 
                 return perms.read().catch(function (err) {
                     // Provide a helpful error about which app
-                    return Promise.reject(new Error('Error loading app named ' + name + '; problem reading permissions: ' + err.message));
+                    return Promise.reject(new Error(i18n.t('errors.apps.permissionsErrorLoadingApp.error', {name: name, message: err.message})));
                 });
             })
             .then(function (appPerms) {
@@ -76,7 +77,7 @@ loader = {
 
                 // Check for an install() method on the app.
                 if (!_.isFunction(app.install)) {
-                    return Promise.reject(new Error('Error loading app named ' + name + '; no install() method defined.'));
+                    return Promise.reject(new Error(i18n.t('errors.apps.noInstallMethodLoadingApp.error', {name: name})));
                 }
 
                 // Run the app.install() method
@@ -97,7 +98,7 @@ loader = {
 
             // Check for an activate() method on the app.
             if (!_.isFunction(app.activate)) {
-                return Promise.reject(new Error('Error loading app named ' + name + '; no activate() method defined.'));
+                return Promise.reject(new Error(i18n.t('errors.apps.noActivateMethodLoadingApp.error', {name: name})));
             }
 
             // Wrapping the activate() with a when because it's possible

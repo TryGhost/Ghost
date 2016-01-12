@@ -8,12 +8,14 @@ var path         = require('path'),
     Promise      = require('bluebird'),
     helpers      = require('../../server/helpers'),
     filters      = require('../../server/filters'),
+    i18n         = require('../../server/i18n'),
 
     // Stuff we are testing
     AppProxy        = require('../../server/apps/proxy'),
     AppSandbox      = require('../../server/apps/sandbox'),
     AppDependencies = require('../../server/apps/dependencies'),
     AppPermissions  = require('../../server/apps/permissions');
+i18n.init();
 
 describe('Apps', function () {
     var sandbox,

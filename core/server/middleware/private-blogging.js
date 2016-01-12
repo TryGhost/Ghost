@@ -8,6 +8,7 @@ var _           = require('lodash'),
     errors      = require('../errors'),
     session     = require('cookie-session'),
     utils       = require('../utils'),
+    i18n        = require('../i18n'),
     privateBlogging;
 
 function verifySessionHash(salt, hash) {
@@ -127,7 +128,7 @@ privateBlogging = {
                 return res.redirect(config.urlFor({relativeUrl: decodeURIComponent(forward)}));
             } else {
                 res.error = {
-                    message: 'Wrong password'
+                    message: i18n.t('errors.middleware.privateblogging.wrongPassword')
                 };
                 return next();
             }

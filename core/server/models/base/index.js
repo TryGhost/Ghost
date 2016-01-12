@@ -18,6 +18,7 @@ var _          = require('lodash'),
     uuid       = require('node-uuid'),
     validation = require('../../data/validation'),
     plugins    = require('../plugins'),
+    i18n       = require('../../i18n'),
 
     ghostBookshelf,
     proto;
@@ -139,7 +140,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         } else if (options.context && options.context.internal) {
             return 1;
         } else {
-            errors.logAndThrowError(new Error('missing context'));
+            errors.logAndThrowError(new Error(i18n.t('errors.models.base.index.missingContext')));
         }
     },
 

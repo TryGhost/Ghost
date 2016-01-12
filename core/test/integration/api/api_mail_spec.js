@@ -4,6 +4,7 @@ var testUtils       = require('../../utils'),
     should          = require('should'),
     config          = require('../../../server/config'),
     mailer          = require('../../../server/mail'),
+	i18n             = require('../../../../core/server/i18n'),
 
     // Stuff we are testing
     MailAPI         = require('../../../server/api/mail'),
@@ -36,6 +37,7 @@ var testUtils       = require('../../utils'),
             options: {}
         }]
     };
+i18n.init();
 
 describe('Mail API', function () {
     before(testUtils.teardown);
