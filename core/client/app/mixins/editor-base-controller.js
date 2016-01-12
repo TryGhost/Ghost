@@ -212,13 +212,18 @@ export default Mixin.create({
     // TODO: Update for new notification click-action API
     showSaveNotification(prevStatus, status, delay) {
         let message = this.messageMap.success.post[prevStatus][status];
-        let path = this.get('model.absoluteUrl');
-        let type = this.get('postOrPage');
         let notifications = this.get('notifications');
+        let type, path;
 
         if (status === 'published') {
-            message += `&nbsp;<a href="${path}">View ${type}</a>`;
+            type = this.get('postOrPage');
+            path = this.get('model.absoluteUrl');
+        } else {
+            type = 'Preview';
+            path = this.get('model.previewUrl');
         }
+
+        message += `&nbsp;<a href="${path}" target="_blank">View ${type}</a>`;
 
         notifications.showNotification(message.htmlSafe(), {delayed: delay});
     },
