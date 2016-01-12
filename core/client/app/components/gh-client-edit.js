@@ -8,45 +8,20 @@ const {
 } = Ember;
 
 export default Ember.Component.extend({
-  init() {
-  this.setProperties({
-    name: '',
-    type: '',
-    secret: '',
-    logo: '',
-    status: '',
-    description: ''
-  });
-  this._super(...arguments);
-},
-didReceiveAttrs() {
-  this.copyClient();
-},
-copyClient() {
-  const client = this.get('client');
-  if (client) {
-    const values = getProperties(client, 'name', 'type', 'secret', 'logo', 'status', 'description');
-    this.setProperties(values);
-  }
-},
+
 isEnabled: computed('status', {
   get() {
-    let status = this.get('status');
-    if (status == 'enabled'){
-      return true;
-    }else{
-      return false;
-    }
+    return this.get('status') === 'enabled';
   }
 }),
 
  actions: {
-   changeClientStatus(client){
-     this.sendAction('changeClientStatus', client);
+   changeClientStatus(newStatus){
+     this.sendAction('changeClientStatus', newStatus);
    },
 
-   refreshToken(client){
-     this.sendAction('refreshToken', client);
+   refreshSecret(){
+     this.sendAction('refreshSecret');
    }
  }
 });

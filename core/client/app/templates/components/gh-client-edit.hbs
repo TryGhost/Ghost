@@ -4,14 +4,10 @@
 <b>Logo:</b>   {{logo}}<br>
 <b>Description:</b> {{description}}<br>
 
-<button type='button' class="btn btn-blue" {{action "changeClientStatus" client}}>
-  {{#if isEnabled}}
-  Disable
-  {{else}}
-  Enable
-  {{/if}}
+<button type='button' class="btn btn-blue" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
+  {{if isEnabled 'Disable' 'Enable'}}
 </button>
 
-<button type='button' class="btn btn-blue" {{action "refreshToken" client}}>
-Refresh Token
+<button type='button' class="btn btn-blue" {{action "refreshSecret"}}>
+  Refresh Token
 </button>

@@ -1,1 +1,9 @@
-{{gh-client-edit client=model changeClientStatus="changeClientStatus" refreshToken="refreshToken"}}
+{{gh-client-edit
+  name=model.name
+  status=model.status
+  description=model.description
+  secret=model.secret
+  logo=model.logo
+  changeClientStatus="changeClientStatus"
+  refreshSecret="refreshSecret"
+}}

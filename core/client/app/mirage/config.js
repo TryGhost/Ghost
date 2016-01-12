@@ -352,7 +352,8 @@ export default function () {
               "type":"ua",
               "id":2,
               "uuid":"0be92c46-452e-4d2c-8e05-4c6972a57ab4",
-              "name":"Ghost Frontend","secret":"2f5c4f62913e",
+              "name":"Ghost Frontend",
+              "secret":"2f5c4f62913e",
               "redirection_uri":null,
               "logo":null,
               "status":"enabled",
@@ -361,7 +362,23 @@ export default function () {
               "created_by":1,
               "updated_at":"2015-12-07T17:55:06.861Z",
               "updated_by":1
-            }
+            },
+            {
+              "slug":"test-client",
+              "type":"ua",
+              "id":3,
+              "uuid":"0be92c46-452e-4d2c-8e05-4c6972a57cv8",
+              "name":"Test Client",
+              "secret":"2f5c4f65764k",
+              "redirection_uri":null,
+              "logo":null,
+              "status":"enabled",
+              "description":null,
+              "created_at":"2015-12-07T17:55:06.861Z",
+              "created_by":1,
+              "updated_at":"2015-12-07T17:55:06.861Z",
+              "updated_by":1
+          }
           ]};
     });
 

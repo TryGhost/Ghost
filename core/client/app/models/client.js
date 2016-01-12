@@ -12,7 +12,7 @@ export default Model.extend(ValidationEngine, {
   secret: attr('string'),
   redirection_uri: attr('string'),
   logo: attr('string'),
-  status: attr('string'),
+  status: attr('string'), // "enabled" || "disabled"
   description: attr('string'),
   created_at: attr('moment-date'),
   updated_at: attr('moment-date'),

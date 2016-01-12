@@ -3,16 +3,18 @@ import Ember from 'ember';
 const {Controller, computed, inject} = Ember;
 
 export default Controller.extend({
-
+  // model <- client
   actions: {
-      changeClientStatus(clientObject) {
-        let client = this.get(clientObject[0]);
-        console.log(this.get('client'));
-        //this.set('client.status', 'disabled');
+      changeClientStatus(status) {
+        let client = this.get('model');
+        client.set('status', status);
+        client.save();
       },
 
-      refreshToken(clientObject) {
-        console.log(client);
+      refreshSecret() {
+        let client = this.get('model');
+        client.set('secret', '');
+        client.save();
       }
   }
 });
