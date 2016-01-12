@@ -5,6 +5,10 @@ import randomPassword from 'ghost/utils/random-password';
 const {Controller, computed, inject, observer} = Ember;
 
 export default Controller.extend(SettingsSaveMixin, {
+
+    showUploadLogoModal: false,
+    showUploadCoverModal: false,
+
     notifications: inject.service(),
     config: inject.service(),
 
@@ -97,6 +101,14 @@ export default Controller.extend(SettingsSaveMixin, {
 
         setTheme(theme) {
             this.set('model.activeTheme', theme.name);
+        },
+
+        toggleUploadCoverModal() {
+            this.toggleProperty('showUploadCoverModal');
+        },
+
+        toggleUploadLogoModal() {
+            this.toggleProperty('showUploadLogoModal');
         }
     }
 });

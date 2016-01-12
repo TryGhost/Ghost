@@ -10,6 +10,7 @@ export default Controller.extend({
     topNotificationCount: 0,
     showMobileMenu: false,
     showSettingsMenu: false,
+    showMarkdownHelpModal: false,
 
     autoNav: false,
     autoNavOpen: computed('autoNav', {

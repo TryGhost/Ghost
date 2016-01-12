@@ -5,7 +5,7 @@
 
     <div class="gh-viewport {{if autoNav 'gh-autonav'}} {{if showSettingsMenu 'settings-menu-expanded'}} {{if showMobileMenu 'mobile-menu-expanded'}}">
         {{#unless signedOut}}
-            {{gh-nav-menu open=autoNavOpen toggleMaximise="toggleAutoNav" openAutoNav="openAutoNav" openModal="openModal" closeMobileMenu="closeMobileMenu"}}
+            {{gh-nav-menu open=autoNavOpen toggleMaximise="toggleAutoNav" openAutoNav="openAutoNav" showMarkdownHelp="toggleMarkdownHelpModal" closeMobileMenu="closeMobileMenu"}}
         {{/unless}}
 
         {{#gh-main onMouseEnter="closeAutoNav" data-notification-count=topNotificationCount}}
@@ -21,3 +21,9 @@
         {{outlet "settings-menu"}}
     </div>{{!gh-viewport}}
 {{/gh-app}}
+
+{{#if showMarkdownHelpModal}}
+    {{gh-fullscreen-modal "markdown-help"
+                          close=(route-action "toggleMarkdownHelpModal")
+                          modifier="wide"}}
+{{/if}}

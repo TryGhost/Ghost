@@ -1,1 +1,8 @@
-{{yield this}}
+{{yield this (action 'toggleCopyHTMLModal')}}
+
+{{#if showCopyHTMLModal}}
+    {{gh-fullscreen-modal "copy-html"
+                          model=copyHTMLModalContent
+                          close=(action "toggleCopyHTMLModal")
+                          modifier="action"}}
+{{/if}}
