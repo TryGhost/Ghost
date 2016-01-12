@@ -1,1 +1,12 @@
-{{gh-tag-settings-form tag=tag setProperty=(action "setProperty") openModal="openModal"}}
+{{gh-tag-settings-form tag=tag
+                       setProperty=(action "setProperty")
+                       showDeleteTagModal=(action "toggleDeleteTagModal")
+                       isMobile=isMobile}}
+
+{{#if showDeleteTagModal}}
+    {{gh-fullscreen-modal "delete-tag"
+                          model=tag
+                          confirm=(action "deleteTag")
+                          close=(action "toggleDeleteTagModal")
+                          modifier="action wide"}}
+{{/if}}

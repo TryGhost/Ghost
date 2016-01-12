@@ -68,6 +68,8 @@ function publishedAtCompare(item1, item2) {
 
 export default Controller.extend({
 
+    showDeletePostModal: false,
+
     // See PostsRoute's shortcuts
     postListFocused: equal('keyboardFocus', 'postList'),
     postContentFocused: equal('keyboardFocus', 'postContent'),
@@ -85,6 +87,10 @@ export default Controller.extend({
             }
 
             this.transitionToRoute('posts.post', post);
+        },
+
+        toggleDeletePostModal() {
+            this.toggleProperty('showDeletePostModal');
         }
     }
 });

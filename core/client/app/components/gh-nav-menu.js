@@ -21,8 +21,8 @@ export default Component.extend({
             this.sendAction('toggleMaximise');
         },
 
-        openModal(modal) {
-            this.sendAction('openModal', modal);
+        showMarkdownHelp() {
+            this.sendAction('showMarkdownHelp');
         },
 
         closeMobileMenu() {

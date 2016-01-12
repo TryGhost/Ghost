@@ -7,6 +7,9 @@ export default Component.extend({
     tagName: 'section',
     classNames: ['gh-view'],
 
+    showCopyHTMLModal: false,
+    copyHTMLModalContent: null,
+
     // updated when gh-ed-editor component scrolls
     editorScrollInfo: null,
     // updated when markdown is rendered
@@ -58,6 +61,11 @@ export default Component.extend({
     actions: {
         selectTab(tab) {
             this.set('activeTab', tab);
+        },
+
+        toggleCopyHTMLModal(generatedHTML) {
+            this.set('copyHTMLModalContent', generatedHTML);
+            this.toggleProperty('showCopyHTMLModal');
         }
     }
 });
