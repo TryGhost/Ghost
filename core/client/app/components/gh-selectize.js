@@ -2,7 +2,7 @@
 import Ember from 'ember';
 import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-selectize';
 
-const {computed, isArray, isBlank, get, on, run} = Ember;
+const {computed, isArray, isBlank, get, run} = Ember;
 const emberA = Ember.A;
 
 export default EmberSelectizeComponent.extend({
@@ -13,28 +13,6 @@ export default EmberSelectizeComponent.extend({
         options.onChange = run.bind(this, '_onChange');
 
         return options;
-    }),
-
-    _dontOpenWhenBlank: on('didInsertElement', function () {
-        let openOnFocus = this.get('openOnFocus');
-
-        if (!openOnFocus) {
-            run.schedule('afterRender', this, function () {
-                let selectize = this._selectize;
-                if (selectize) {
-                    selectize.on('dropdown_open', function () {
-                        if (isBlank(selectize.$control_input.val())) {
-                            selectize.close();
-                        }
-                    });
-                    selectize.on('type', function (filter) {
-                        if (isBlank(filter)) {
-                            selectize.close();
-                        }
-                    });
-                }
-            });
-        }
     }),
 
     /**
@@ -105,9 +83,7 @@ export default EmberSelectizeComponent.extend({
         // we have a re-order, update the selection
         args.forEach((value) => {
             let obj = selection.find(function (item) {
-                // jscs:disable
-                return (get(item, valuePath) + '') === value;
-                // jscs:enable
+                return `${get(item, valuePath)}` === value;
             });
 
             if (obj) {
@@ -116,6 +92,33 @@ export default EmberSelectizeComponent.extend({
         });
 
         this.set('selection', reorderedSelection);
+    },
+
+    _preventOpeningWhenBlank() {
+        let openOnFocus = this.get('openOnFocus');
+
+        if (!openOnFocus) {
+            run.schedule('afterRender', this, function () {
+                let selectize = this._selectize;
+                if (selectize) {
+                    selectize.on('dropdown_open', function () {
+                        if (isBlank(selectize.$control_input.val())) {
+                            selectize.close();
+                        }
+                    });
+                    selectize.on('type', function (filter) {
+                        if (isBlank(filter)) {
+                            selectize.close();
+                        }
+                    });
+                }
+            });
+        }
+    },
+
+    didInsertElement() {
+        this._super(...arguments);
+        this._preventOpeningWhenBlank();
     }
 
 });

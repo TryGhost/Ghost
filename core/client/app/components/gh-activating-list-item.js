@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const {Component, on, run} = Ember;
+const {Component, run} = Ember;
 
 export default Component.extend({
     tagName: 'li',
@@ -8,9 +8,9 @@ export default Component.extend({
     active: false,
     linkClasses: null,
 
-    unfocusLink: on('click', function () {
+    click() {
         this.$('a').blur();
-    }),
+    },
 
     actions: {
         setActive(value) {
