@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import Model from 'ember-data/model';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
@@ -15,7 +16,7 @@ import NavItemValidator from 'ghost/validators/nav-item';
 import InviteUserValidator from 'ghost/validators/invite-user';
 
 const {Mixin, RSVP, isArray} = Ember;
-const {Errors, Model} = DS;
+const {Errors} = DS;
 const emberA = Ember.A;
 
 // our extensions to the validator library

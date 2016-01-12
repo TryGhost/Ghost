@@ -37,7 +37,7 @@
     "ember-cli-selectize": "0.4.3",
     "ember-cli-sri": "1.2.0",
     "ember-cli-uglify": "1.2.0",
-    "ember-data": "2.2.1",
+    "ember-data": "2.3.2",
     "ember-data-filter": "1.13.0",
     "ember-disable-proxy-controllers": "1.0.1",
     "ember-export-application-global": "1.0.5",

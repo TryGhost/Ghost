@@ -1,7 +1,5 @@
 import Ember from 'ember';
-import DS from 'ember-data';
-
-const {RESTSerializer} = DS;
+import RESTSerializer from 'ember-data/serializers/rest';
 
 export default RESTSerializer.extend({
     serializeIntoHash(hash, type, record, options) {

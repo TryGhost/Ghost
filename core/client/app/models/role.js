@@ -1,9 +1,9 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 
 const {computed} = Ember;
-const {Model, attr} = DS;
 
 export default Model.extend({
     uuid: attr('string'),
