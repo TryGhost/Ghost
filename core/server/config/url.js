@@ -18,7 +18,15 @@ function setConfig(config) {
 }
 
 function getBaseUrl(secure) {
-    return (secure && ghostConfig.urlSSL) ? ghostConfig.urlSSL : ghostConfig.url;
+    if (secure && ghostConfig.urlSSL) {
+        return ghostConfig.urlSSL;
+    } else {
+        if (secure) {
+            return ghostConfig.url.replace('http://', 'https://');
+        } else {
+            return ghostConfig.url;
+        }
+    }
 }
 
 function urlJoin() {
@@ -190,6 +198,7 @@ function urlFor(context, data, absolute) {
             return urlPath;
         } else if (context === 'nav' && data.nav) {
             urlPath = data.nav.url;
+            secure = data.nav.secure || secure;
             baseUrl = getBaseUrl(secure);
             hostname = baseUrl.split('//')[1] + ghostConfig.paths.subdir;
             if (urlPath.indexOf(hostname) > -1
@@ -242,3 +251,4 @@ module.exports.urlJoin = urlJoin;
 module.exports.urlFor = urlFor;
 module.exports.urlPathForPost = urlPathForPost;
 module.exports.apiUrl = apiUrl;
+module.exports.getBaseUrl = getBaseUrl;

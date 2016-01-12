@@ -109,6 +109,7 @@ function addContextMetaData(context, data, metaData) {
 function initMetaData(context, data, results) {
     var metaData = {
         url: results.url,
+        canonicalUrl: results.canonicalUrl,
         metaDescription: results.meta_description || null,
         metaTitle: results.meta_title,
         coverImage:  results.image,
@@ -148,7 +149,7 @@ function getStructuredData(metaData) {
         'og:type': metaData.ogType,
         'og:title': metaData.metaTitle,
         'og:description': metaData.metaDescription,
-        'og:url': metaData.url,
+        'og:url': metaData.canonicalUrl,
         'og:image': metaData.coverImage,
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
@@ -156,7 +157,7 @@ function getStructuredData(metaData) {
         'twitter:card': metaData.card,
         'twitter:title': metaData.metaTitle,
         'twitter:description': metaData.metaDescription,
-        'twitter:url': metaData.url,
+        'twitter:url': metaData.canonicalUrl,
         'twitter:image:src': metaData.coverImage
     };
 
@@ -311,6 +312,8 @@ ghost_head = function (options) {
 
     // Store Async calls in an object of named promises
     props.url = urlHelper.call(self, {hash: {absolute: true}});
+    props.canonicalUrl = config.urlJoin(config.getBaseUrl(false),
+        urlHelper.call(self, {hash: {absolute: false}}));
     props.meta_description = meta_description.call(self, options);
     props.meta_title = meta_title.call(self, options);
     props.client = getClient();
@@ -330,7 +333,7 @@ ghost_head = function (options) {
             }
 
             // head is our main array that holds our meta data
-            head.push('<link rel="canonical" href="' + metaData.url + '" />');
+            head.push('<link rel="canonical" href="' + metaData.canonicalUrl + '" />');
             head.push('<meta name="referrer" content="origin" />');
 
             // Generate context driven pagination urls
@@ -359,7 +362,8 @@ ghost_head = function (options) {
 
         head.push('<meta name="generator" content="Ghost ' + safeVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-            title  + '" href="' + config.urlFor('rss', null, true) + '" />');
+            title  + '" href="' + config.urlFor('rss', {secure: self.secure},
+            true) + '" />');
     }).then(function () {
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {

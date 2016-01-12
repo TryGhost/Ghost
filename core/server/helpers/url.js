@@ -12,22 +12,22 @@ url = function (options) {
     var absolute = options && options.hash.absolute;
 
     if (schema.isPost(this)) {
-        return config.urlFor('post', {post: this}, absolute);
+        return config.urlFor('post', {post: this, secure: this.secure}, absolute);
     }
 
     if (schema.isTag(this)) {
-        return config.urlFor('tag', {tag: this}, absolute);
+        return config.urlFor('tag', {tag: this, secure: this.secure}, absolute);
     }
 
     if (schema.isUser(this)) {
-        return config.urlFor('author', {author: this}, absolute);
+        return config.urlFor('author', {author: this, secure: this.secure}, absolute);
     }
 
     if (schema.isNav(this)) {
-        return config.urlFor('nav', {nav: this}, absolute);
+        return config.urlFor('nav', {nav: this, secure: this.secure}, absolute);
     }
 
-    return config.urlFor(this, absolute);
+    return config.urlFor(this, {}, absolute);
 };
 
 module.exports = url;
