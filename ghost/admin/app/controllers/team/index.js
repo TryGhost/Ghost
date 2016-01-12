@@ -5,9 +5,11 @@ const {alias, filter} = computed;
 
 export default Controller.extend({
 
-    session: inject.service(),
+    showInviteUserModal: false,
 
     users: alias('model'),
+
+    session: inject.service(),
 
     activeUsers: filter('users', function (user) {
         return /^active|warn-[1-4]|locked$/.test(user.get('status'));
@@ -17,5 +19,11 @@ export default Controller.extend({
         let status = user.get('status');
 
         return status === 'invited' || status === 'invited-pending';
-    })
+    }),
+
+    actions: {
+        toggleInviteUserModal() {
+            this.toggleProperty('showInviteUserModal');
+        }
+    }
 });
