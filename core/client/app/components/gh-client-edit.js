@@ -25,7 +25,7 @@ didReceiveAttrs() {
 copyClient() {
   const client = this.get('client');
   if (client) {
-    const values = getProperties(client[0], 'name', 'type', 'secret', 'logo', 'status', 'description');
+    const values = getProperties(client, 'name', 'type', 'secret', 'logo', 'status', 'description');
     this.setProperties(values);
   }
 },
@@ -38,5 +38,15 @@ isEnabled: computed('status', {
       return false;
     }
   }
-  })
+}),
+
+ actions: {
+   changeClientStatus(client){
+     this.sendAction('changeClientStatus', client);
+   },
+
+   refreshToken(client){
+     this.sendAction('refreshToken', client);
+   }
+ }
 });

@@ -364,6 +364,18 @@ export default function () {
             }
           ]};
     });
+
+    /**
+      very helpful for debugging
+    */
+    this.handledRequest = function(verb, path, request) {
+      console.log(`👊${verb} ${path}`);
+    };
+
+    this.unhandledRequest = function(verb, path, request) {
+      console.log(`🔥${verb} ${path}`);
+    };
+
 }
 
 /*

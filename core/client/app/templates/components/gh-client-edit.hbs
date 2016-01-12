@@ -4,7 +4,7 @@
 <b>Logo:</b>   {{logo}}<br>
 <b>Description:</b> {{description}}<br>
 
-<button type='button' class="btn btn-blue" onclick={{action 'changeClientStatus' client}}>
+<button type='button' class="btn btn-blue" {{action "changeClientStatus" client}}>
   {{#if isEnabled}}
   Disable
   {{else}}
@@ -12,6 +12,6 @@
   {{/if}}
 </button>
 
-<button type='button' class="btn btn-blue" onclick={{action 'refreshClientToken' client}}>
+<button type='button' class="btn btn-blue" {{action "refreshToken" client}}>
 Refresh Token
 </button>
