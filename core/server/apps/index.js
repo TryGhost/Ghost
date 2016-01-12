@@ -4,6 +4,7 @@ var _           = require('lodash'),
     errors      = require('../errors'),
     api         = require('../api'),
     loader      = require('./loader'),
+    i18n        = require('../i18n'),
     // Holds the available apps
     availableApps = {};
 
@@ -44,9 +45,9 @@ module.exports = {
             });
         } catch (e) {
             errors.logError(
-                'Failed to parse activeApps setting value: ' + e.message,
-                'Your apps will not be loaded.',
-                'Check your settings table for typos in the activeApps value. It should look like: ["app-1", "app2"] (double quotes required).'
+                i18n.t('errors.apps.failedToParseActiveAppsSettings.error', {message: e.message}),
+                i18n.t('errors.apps.failedToParseActiveAppsSettings.context'),
+                i18n.t('errors.apps.failedToParseActiveAppsSettings.help')
             );
 
             return Promise.resolve();
@@ -86,8 +87,8 @@ module.exports = {
             }).catch(function (err) {
                 errors.logError(
                     err.message || err,
-                    'The app will not be loaded',
-                    'Check with the app creator, or read the app documentation for more details on app requirements'
+                    i18n.t('errors.apps.appWillNotBeLoaded.error'),
+                    i18n.t('errors.apps.appWillNotBeLoaded.help')
                 );
             });
         });

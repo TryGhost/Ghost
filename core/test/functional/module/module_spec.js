@@ -4,7 +4,9 @@
 // This tests using Ghost as an npm module
 var should     = require('should'),
 
-    ghost      = require('../../../../core');
+    ghost      = require('../../../../core'),
+    i18n       = require('../../../../core/server/i18n');
+i18n.init();
 
 describe('Module', function () {
     describe('Setup', function () {
