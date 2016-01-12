@@ -378,11 +378,12 @@
 /* Markdown Help Icon + Modal
 /* ---------------------------------------------------------- */
 
-.markdown-help {
+.markdown-help-icon {
     font-size: 16px;
 }
 
-.markdown-help:hover {
+.markdown-help-icon:hover,
+.markdown-help-label:hover {
     cursor: help;
 }
 
