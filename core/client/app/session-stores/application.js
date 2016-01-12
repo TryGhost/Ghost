@@ -1,5 +1,6 @@
-import LocalStorageStore from 'ember-simple-auth/session-stores/local-storage';
+import AdaptiveStore from 'ember-simple-auth/session-stores/adaptive';
 
-export default LocalStorageStore.extend({
-    key: 'ghost:session'
+export default AdaptiveStore.extend({
+    localStorageKey: 'ghost:session',
+    cookieName: 'ghost:session'
 });
