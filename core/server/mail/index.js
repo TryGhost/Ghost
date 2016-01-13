@@ -62,19 +62,15 @@ GhostMailer.prototype.getDomain = function () {
 // This assumes that api.settings.read('email') was already done on the API level
 GhostMailer.prototype.send = function (message) {
     var self = this,
-        to,
-        sendMail;
+        to;
 
-    message = message || {};
+    // important to clone message as we modify it
+    message = _.clone(message) || {};
     to = message.to || false;
 
-    if (!this.transport) {
-        return Promise.reject(new Error(i18n.t('errors.mail.noEmailTransportConfigured.error')));
-    }
     if (!(message && message.subject && message.html && message.to)) {
         return Promise.reject(new Error(i18n.t('errors.mail.incompleteMessageData.error')));
     }
-    sendMail = Promise.promisify(self.transport.sendMail.bind(self.transport));
 
     message = _.extend(message, {
         from: self.from(),
@@ -84,7 +80,7 @@ GhostMailer.prototype.send = function (message) {
     });
 
     return new Promise(function (resolve, reject) {
-        sendMail(message, function (error, response) {
+        self.transport.sendMail(message, function (error, response) {
             if (error) {
                 return reject(new Error(error));
             }
