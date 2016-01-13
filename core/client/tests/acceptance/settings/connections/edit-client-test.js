@@ -43,9 +43,31 @@ describe('Acceptance: Settings: Connections', function() {
     visit('/settings/connections/edit/ghost-admin/');
 
     click('button:contains(Disable)');
-    return pauseTest();
 
     andThen(function() {
+      let name = find('#status').text();
+      expect(name).to.equal('disabled');
+      expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin/');
+    });
+  });
+
+  it('can refresh a client secret', function() {
+    const role = server.create('role', {name: 'Editor'});
+    const user = server.create('user', {roles: [role], slug: 'test-user'});
+
+    authenticateSession(application);
+    visit('/settings/connections/edit/ghost-admin/');
+
+    andThen(function() {
+      let name = find('#secret').text();
+      expect(name).to.equal('2f5c4f62913e');
+    });
+
+    click('button:contains(Refresh Token)');
+
+    andThen(function() {
+      let name = find('#secret').text();
+      expect(name).to.equal('');
       expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin/');
     });
   });
