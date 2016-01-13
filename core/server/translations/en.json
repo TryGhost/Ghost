@@ -191,9 +191,6 @@
             }
         },
         "mail": {
-            "noEmailTransportConfigured": {
-                "error": "Error: No email transport configured."
-            },
             "incompleteMessageData": {
                 "error": "Error: Incomplete message data."
             },
