@@ -4,7 +4,6 @@ import ajax from 'ic-ajax';
 
 export default AuthenticatedRoute.extend(NotFoundHandler, {
   model(params) {
-    //return ajax(`/ghost/api/v0.1/clients/slug/${params.slug}`)
     return this.store.queryRecord('client', params);
   }
 });

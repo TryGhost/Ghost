@@ -52,7 +52,7 @@ export default function () {
     this.namespace = 'ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
 
-    this.passthrough('/clients/slug/:slug');
+    //this.passthrough('/clients/slug/:slug');
     //this.passthrough('ghost/api/v0.1/clients/slug/ghost-frontend');
 
     /* Authentication ------------------------------------------------------- */
@@ -380,6 +380,51 @@ export default function () {
               "updated_by":1
           }
           ]};
+    });
+
+    this.put('/clients/slug/:slug', 'client');
+    this.post('/clients/slug/:slug', 'client');
+
+    this.get('/clients/slug/ghost-admin/', function (db) {
+        return {
+            clients: [{
+                "slug": "ghost-admin",
+                "type": "ua",
+                "id": 1,
+                "uuid": "c712cbcd-326d-4f85-a8e0-15d74188c56f",
+                "name": "Ghost Admin",
+                "secret": "bf9b141079f9",
+                "redirection_uri": null,
+                "logo": null,
+                "status": "enabled",
+                "description": null,
+                "created_at": "2015-12-07T17:55:06.861Z",
+                "created_by": 1,
+                "updated_at": "2015-12-07T17:55:06.861Z",
+                "updated_by": 1
+                }]
+        };
+    });
+
+    this.get('/clients/slug/ghost-admin/', function (db) {
+        return {
+            clients: [{
+                      "slug":"ghost-frontend",
+                      "type":"ua",
+                      "id":2,
+                      "uuid":"0be92c46-452e-4d2c-8e05-4c6972a57ab4",
+                      "name":"Ghost Frontend",
+                      "secret":"2f5c4f62913e",
+                      "redirection_uri":null,
+                      "logo":null,
+                      "status":"enabled",
+                      "description":null,
+                      "created_at":"2015-12-07T17:55:06.861Z",
+                      "created_by":1,
+                      "updated_at":"2015-12-07T17:55:06.861Z",
+                      "updated_by":1
+                    }]
+        };
     });
 
     /**
