@@ -8,7 +8,7 @@
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.6",
     "ember-cli-test-loader": "0.2.1",
     "ember-data": "2.2.1",
-    "ember-mocha": "0.8.6",
+    "ember-mocha": "0.8.8",
     "ember-load-initializers": "ember-cli/ember-load-initializers#0.1.7",
     "es5-shim": "4.2.0",
     "Faker": "3.0.1",
