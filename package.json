@@ -46,7 +46,7 @@
     "glob": "5.0.15",
     "html-to-text": "1.3.2",
     "intl": "1.0.1",
-    "intl-messageformat": "1.1.0",
+    "intl-messageformat": "1.2.0",
     "jsonpath": "0.2.0",
     "knex": "0.7.3",
     "lodash": "3.10.1",
