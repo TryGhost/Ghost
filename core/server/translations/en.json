@@ -116,30 +116,6 @@
                 "willBeRequired": "This will be required in future. Please see {url}",
                 "themeFileIsMalformed": "Theme package.json file is malformed"
             },
-            "startupcheck": {
-                "unsupportedNodeVersion": {
-                    "error": "ERROR: Unsupported version of Node",
-                    "context": "Ghost needs Node version {neededVersion} you are using version {usedVersion}\n",
-                    "help": "Please see {url} for more information"
-                },
-                "cannotFindConfigForCurrentNode": {
-                    "error": "ERROR: Cannot find the configuration for the current NODE_ENV: {nodeEnv}\n",
-                    "help": "Ensure your config.js has a section for the current NODE_ENV value and is formatted properly."
-                },
-                "ghostMissingDependencies": {
-                    "error": "ERROR: Ghost is unable to start due to missing dependencies:\n  {error}",
-                    "explain": "\nPlease run `npm install --production` and try starting Ghost again.",
-                    "help": "Help and documentation can be found at {url}.\n"
-                },
-                "unableToAccessContentPath": {
-                    "error": "ERROR: Unable to access Ghost's content path:",
-                    "help": "Check that the content path exists and file system permissions are correct. \nHelp and documentation can be found at {url}."
-                },
-                "unableToOpenSqlite3Db": {
-                    "error": "ERROR: Unable to open sqlite3 database file for read/write",
-                    "help": "\nCheck that the sqlite3 database file permissions allow read and write access. \nHelp and documentation can be found at {url}."
-                }
-            },
             "validatethemes": {
                 "themeWithNoPackage": {
                     "message": "Found a theme with no package.json file",
