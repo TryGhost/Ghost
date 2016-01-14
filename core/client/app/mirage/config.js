@@ -382,9 +382,6 @@ export default function () {
           ]};
     });
 
-    this.put('/clients/slug/:slug', 'client');
-    this.post('/clients/slug/:slug', 'client');
-
     this.get('/clients/slug/ghost-admin/', function (db) {
         return {
             clients: [{
@@ -424,6 +421,19 @@ export default function () {
                       "updated_at":"2015-12-07T17:55:06.861Z",
                       "updated_by":1
                     }]
+        };
+    });
+
+    this.post('/clients/slug/:slug', 'client');
+
+    this.put('/clients/slug/:slug', function (db, request) {
+        let [attrs] = JSON.parse(request.requestBody).clients;
+        let client;
+
+        client = db.clients.insert(attrs);
+
+        return {
+            clients: [client]
         };
     });
 
