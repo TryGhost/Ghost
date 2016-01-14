@@ -243,13 +243,6 @@ describe('Frontend Routing', function () {
         });
 
         describe('Static assets', function () {
-            it('should retrieve shared assets', function (done) {
-                request.get('/shared/img/user-image.png')
-                    .expect('Cache-Control', testUtils.cacheRules.hour)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
             it('should retrieve theme assets', function (done) {
                 request.get('/assets/css/screen.css')
                     .expect('Cache-Control', testUtils.cacheRules.year)
