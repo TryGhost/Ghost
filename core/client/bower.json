@@ -6,9 +6,8 @@
     "devicejs": "0.2.7",
     "ember": "2.3.0",
     "ember-cli-shims": "0.1.0",
-    "ember-cli-test-loader": "0.2.1",
+    "ember-cli-test-loader": "0.2.2",
     "ember-mocha": "0.8.8",
-    "ember-load-initializers": "ember-cli/ember-load-initializers#0.1.7",
     "es5-shim": "4.2.0",
     "Faker": "3.0.1",
     "fastclick": "1.0.6",
@@ -21,7 +20,6 @@
     "jqueryui-touch-punch": "furf/jquery-ui-touch-punch#4bc009145202d9c7483ba85f3a236a8f3470354d",
     "jquery.simulate.drag-sortable": "0.1.0",
     "keymaster": "1.6.3",
-    "loader.js": "3.4.0",
     "lodash": "3.7.0",
     "moment": "2.10.3",
     "normalize.css": "3.0.3",
@@ -33,5 +31,8 @@
     "sinonjs": "1.14.1",
     "validator-js": "3.39.0",
     "xregexp": "2.0.0"
+  },
+  "resolutions": {
+    "ember": "2.3.0
   }
 }

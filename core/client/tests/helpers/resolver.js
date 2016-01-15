@@ -1,7 +1,7 @@
 import Resolver from 'ember-resolver';
 import config from '../../config/environment';
 
-let resolver = Resolver.create();
+const resolver = Resolver.create();
 
 resolver.namespace = {
     modulePrefix: config.modulePrefix,
