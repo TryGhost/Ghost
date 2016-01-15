@@ -45,7 +45,7 @@ describe('Acceptance: Settings: Connections', function() {
     click('button:contains(Disable)');
 
     andThen(function() {
-      let name = find('#status').text();
+      let name = find('[data-test-selector="status"]').text();
       expect(name).to.equal('disabled');
       expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin/');
     });
@@ -59,14 +59,14 @@ describe('Acceptance: Settings: Connections', function() {
     visit('/settings/connections/edit/ghost-admin/');
 
     andThen(function() {
-      let name = find('#secret').text();
+      let name = find('[data-test-selector="secret"]').text();
       expect(name).to.equal('2f5c4f62913e');
     });
 
     click('button:contains(Refresh Token)');
 
     andThen(function() {
-      let name = find('#secret').text();
+      let name = find('[data-test-selector="secret"]').text();
       expect(name).to.equal('');
       expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin/');
     });

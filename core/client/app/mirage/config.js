@@ -425,6 +425,7 @@ export default function () {
     });
 
     this.post('/clients/slug/:slug', 'client');
+    this.post('/clients', 'client');
 
     this.put('/clients/slug/:slug', function (db, request) {
         let [attrs] = JSON.parse(request.requestBody).clients;

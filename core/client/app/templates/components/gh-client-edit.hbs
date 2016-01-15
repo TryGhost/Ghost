@@ -1,8 +1,8 @@
-<b>Name:</b>   <span id="name">{{name}}</span><br>
-<b>Status:</b> <span id="status">{{status}}</span><br>
-<b>Secret:</b> <span id="secret">{{secret}}</span><br>
-<b>Logo:</b>  <span id="logo">{{logo}}</span><br>
-<b>Description:</b> <span id="description">{{description}}</span><br>
+<b>Name:</b>   <span data-test-selector="name">{{name}}</span><br>
+<b>Status:</b> <span data-test-selector="status">{{status}}</span><br>
+<b>Secret:</b> <span data-test-selector="secret">{{secret}}</span><br>
+<b>Logo:</b>  <span data-test-selector="logo">{{logo}}</span><br>
+<b>Description:</b> <span data-test-selector="description">{{description}}</span><br>
 
 <button type='button' class="btn btn-blue" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
   {{if isEnabled 'Disable' 'Enable'}}
