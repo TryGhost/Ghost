@@ -15,7 +15,7 @@ describeModule(
     'controller:post-settings-menu',
     'Unit: Controller: post-settings-menu',
     {
-        needs: ['controller:application', 'service:notifications']
+        needs: ['controller:application', 'service:notifications', 'service:slug-generator']
     },
 
     function () {
@@ -389,7 +389,7 @@ describeModule(
             it('should generate a slug and set it on the destination', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             return Ember.RSVP.resolve(`${str}-slug`);
                         }
                     }),
@@ -413,7 +413,7 @@ describeModule(
             it('should not set the destination if the title is "(Untitled)" and the post already has a slug', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             return Ember.RSVP.resolve(`${str}-slug`);
                         }
                     }),
@@ -567,7 +567,7 @@ describeModule(
             it('should not set a new slug if the server-generated slug matches existing slug', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             let promise = Ember.RSVP.resolve(str.split('#')[0]);
                             this.set('lastPromise', promise);
                             return promise;
@@ -593,7 +593,7 @@ describeModule(
             it('should not set a new slug if the only change is to the appended increment value', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             let sanitizedStr = str.replace(/[^a-zA-Z]/g, '');
                             let promise = Ember.RSVP.resolve(`${sanitizedStr}-2`);
                             this.set('lastPromise', promise);
@@ -620,7 +620,7 @@ describeModule(
             it('should set the slug if the new slug is different', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             let promise = Ember.RSVP.resolve(str);
                             this.set('lastPromise', promise);
                             return promise;
@@ -647,7 +647,7 @@ describeModule(
             it('should save the post when the slug changes and the post is not new', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             let promise = Ember.RSVP.resolve(str);
                             this.set('lastPromise', promise);
                             return promise;
@@ -679,7 +679,7 @@ describeModule(
             it('should not save the post when the slug changes and the post is new', function (done) {
                 let controller = this.subject({
                     slugGenerator: Ember.Object.create({
-                        generateSlug(str) {
+                        generateSlug(slugType, str) {
                             let promise = Ember.RSVP.resolve(str);
                             this.set('lastPromise', promise);
                             return promise;
