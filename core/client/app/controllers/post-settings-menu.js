@@ -1,7 +1,6 @@
 import Ember from 'ember';
 import {parseDateString} from 'ghost/utils/date-formatting';
 import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
-import SlugGenerator from 'ghost/models/slug-generator';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
@@ -18,6 +17,7 @@ export default Controller.extend(SettingsMenuMixin, {
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
     session: inject.service(),
+    slugGenerator: inject.service('slug-generator'),
 
     initializeSelectedAuthor: observer('model', function () {
         return this.get('model.author').then((author) => {
@@ -45,14 +45,6 @@ export default Controller.extend(SettingsMenuMixin, {
 
     slugValue: boundOneWay('model.slug'),
 
-    // Lazy load the slug generator
-    slugGenerator: computed(function () {
-        return SlugGenerator.create({
-            ghostPaths: this.get('ghostPaths'),
-            slugType: 'post'
-        });
-    }),
-
     // Requests slug from title
     generateAndSetSlug(destination) {
         let title = this.get('model.titleScratch');
@@ -65,7 +57,7 @@ export default Controller.extend(SettingsMenuMixin, {
         }
 
         promise = RSVP.resolve(afterSave).then(() => {
-            return this.get('slugGenerator').generateSlug(title).then((slug) => {
+            return this.get('slugGenerator').generateSlug('post', title).then((slug) => {
                 if (!isBlank(slug)) {
                     this.set(destination, slug);
                 }
@@ -232,7 +224,7 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            this.get('slugGenerator').generateSlug(newSlug).then((serverSlug) => {
+            this.get('slugGenerator').generateSlug('post', newSlug).then((serverSlug) => {
                 // If after getting the sanitized and unique slug back from the API
                 // we end up with a slug that matches the existing slug, abort the change
                 if (serverSlug === slug) {
