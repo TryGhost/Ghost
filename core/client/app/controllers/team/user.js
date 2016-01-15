@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
-import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import ValidationEngine from 'ghost/mixins/validation-engine';
@@ -22,6 +21,7 @@ export default Controller.extend(ValidationEngine, {
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
     session: inject.service(),
+    slugGenerator: inject.service('slug-generator'),
 
     user: alias('model'),
     currentUser: alias('session.user'),
@@ -72,14 +72,6 @@ export default Controller.extend(ValidationEngine, {
 
     coverTitle: computed('user.name', function () {
         return `${this.get('user.name')}'s Cover Image`;
-    }),
-
-    // Lazy load the slug generator for slugPlaceholder
-    slugGenerator: computed(function () {
-        return SlugGenerator.create({
-            ghostPaths: this.get('ghostPaths'),
-            slugType: 'user'
-        });
     }),
 
     roles: computed(function () {
@@ -210,7 +202,7 @@ export default Controller.extend(ValidationEngine, {
                     return;
                 }
 
-                return this.get('slugGenerator').generateSlug(newSlug).then((serverSlug) => {
+                return this.get('slugGenerator').generateSlug('user', newSlug).then((serverSlug) => {
                     // If after getting the sanitized and unique slug back from the API
                     // we end up with a slug that matches the existing slug, abort the change
                     if (serverSlug === slug) {
