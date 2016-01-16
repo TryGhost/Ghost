@@ -13,7 +13,7 @@ var _              = require('lodash'),
 
 var md = require('markdown-it')({
   html:        true,
-  linkify:     false,
+  linkify:     true,
   typographer: true,
   breaks:      true,
 }).use(require('markdown-it-footnote'))

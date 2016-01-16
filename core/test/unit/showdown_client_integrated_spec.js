@@ -11,7 +11,7 @@ var should      = require('should'),
 // Stuff we are testing
     md = require('markdown-it')({
       html:        true,
-      linkify:     false,
+      linkify:     true,
       typographer: true,
       breaks:      true,
     }).use(require('markdown-it-footnote'))
@@ -60,7 +60,7 @@ describe('Showdown client side converter', function () {
     // });
 
     it('should not touch underscores in code blocks', function () {
-        var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz\n<\/code><\/pre>$/},
+        var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz<\/code><\/pre>$/},
             processedMarkup = render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
@@ -131,10 +131,10 @@ describe('Showdown client side converter', function () {
 
     it('should turn newlines into br tags in simple cases', function () {
         var testPhrases = [
-                {input: 'fizz\nbuzz', output: /^<p>fizz <br \/>\nbuzz<\/p>$/},
-                {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world <br \/>\nIt is a fine day<\/p>$/},
-                {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/},
-                {input: '\'first\nsecond', output: /^<p>\'first <br \/>\nsecond<\/p>$/}
+                {input: 'fizz\nbuzz', output: /^<p>fizz<br>\nbuzz<\/p>$/},
+                {input: 'Hello world\nIt is a fine day', output: /^<p>Hello world<br>\nIt is a fine day<\/p>$/},
+                {input: '\'first\nsecond', output: /^<p>\'first<br>\nsecond<\/p>$/},
+                {input: '\'first\nsecond', output: /^<p>\'first<br>\nsecond<\/p>$/}
             ],
             processedMarkup;
 
@@ -148,11 +148,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: 'ruby\npython\nerlang',
-                output: /^<p>ruby <br \/>\npython <br \/>\nerlang<\/p>$/
+                output: /^<p>ruby<br>\npython<br>\nerlang<\/p>$/
             },
             {
                 input: 'Hello world\nIt is a fine day\nout',
-                output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\nout<\/p>$/
+                output: /^<p>Hello world<br>\nIt is a fine day<br>\nout<\/p>$/
             }
         ],
         processedMarkup;
@@ -167,11 +167,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
                 {
                     input: 'ruby\npython\nerlang\ngo',
-                    output: /^<p>ruby <br \/>\npython <br \/>\nerlang <br \/>\ngo<\/p>$/
+                    output: /^<p>ruby<br>\npython<br>\nerlang<br>\ngo<\/p>$/
                 },
                 {
                     input: 'Hello world\nIt is a fine day\noutside\nthe window',
-                    output: /^<p>Hello world <br \/>\nIt is a fine day <br \/>\noutside <br \/>\nthe window<\/p>$/
+                    output: /^<p>Hello world<br>\nIt is a fine day<br>\noutside<br>\nthe window<\/p>$/
                 }
             ],
             processedMarkup;
@@ -185,8 +185,8 @@ describe('Showdown client side converter', function () {
     it('should not convert newlines in lists', function () {
         var testPhrases = [
                 {
-                    input: '#fizz\n# buzz\n### baz',
-                    output: /^<h1 id="fizz">fizz<\/h1>\n\n<h1 id="buzz">buzz<\/h1>\n\n<h3 id="baz">baz<\/h3>$/
+                    input: '# fizz\n# buzz\n### baz',
+                    output: /^<h1 id="fizz">fizz<\/h1>\n<h1 id="buzz">buzz<\/h1>\n<h3 id="baz">baz<\/h3>$/
                 },
                 {
                     input: '* foo\n* bar',
@@ -217,15 +217,15 @@ describe('Showdown client side converter', function () {
             },
             {
                 input: '>http://google.co.uk',
-                output: /^<blockquote>\n  <p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
+                output: /^<blockquote>\n<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
             },
             {
                 input: '> http://google.co.uk',
-                output: /^<blockquote>\n  <p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
+                output: /^<blockquote>\n<p><a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>\n<\/blockquote>$/
             },
             {
                 input: '<>>> http://google.co.uk',
-                output: /^<p>&lt;>>> <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
+                output: /^<p>&lt;&gt;&gt;&gt; <a href="http:\/\/google.co.uk">http:\/\/google.co.uk<\/a><\/p>$/
             },
             {
                 input: '<strong>http://google.co.uk',
@@ -300,11 +300,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: '<img src="http://placekitten.com/50">',
-                output: /^<p><img src=\"http:\/\/placekitten.com\/50\"><\/p>$/
+                output: /^<img src=\"http:\/\/placekitten.com\/50\">$/
             },
             {
                 input: '<img src="http://placekitten.com/50" />',
-                output: /^<p><img src=\"http:\/\/placekitten.com\/50\" \/><\/p>$/
+                output: /^<img src=\"http:\/\/placekitten.com\/50\" \/>$/
             },
             {
                 input: '<script type="text/javascript" src="http://google.co.uk"></script>',
@@ -330,7 +330,7 @@ describe('Showdown client side converter', function () {
     it('should NOT escape underscore inside of code/pre blocks', function () {
         var testPhrase = {
                 input: '```\n_____\n```',
-                output: /^<pre><code>_____  \n<\/code><\/pre>$/
+                output: /^<pre><code>_____\n<\/code><\/pre>$/
             },
             processedMarkup;
 

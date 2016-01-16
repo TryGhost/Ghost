@@ -10,7 +10,7 @@ const {Helper} = Ember;
 
 const md = markdownit({
   html:        true,
-  linkify:     false,
+  linkify:     true,
   typographer: true,
   breaks:      true,
 }).use(markdownitFootnote)
