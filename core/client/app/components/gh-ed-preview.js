@@ -5,14 +5,21 @@ const {$, Component, inject, run} = Ember;
 
 export default Component.extend({
     config: inject.service(),
+    scrollSync: inject.service('scroll-sync'),
 
     _scrollWrapper: null,
 
     didInsertElement() {
         this._super(...arguments);
         this._scrollWrapper = this.$().closest('.entry-preview-content');
+        this.get('scrollSync').registerRightPane(this._scrollWrapper[0]);
         this.adjustScrollPosition(this.get('scrollPosition'));
         run.scheduleOnce('afterRender', this, this.dropzoneHandler);
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        this.get('scrollSync').teardownRightPane();
     },
 
     didReceiveAttrs(attrs) {
