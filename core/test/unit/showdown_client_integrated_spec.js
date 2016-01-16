@@ -342,7 +342,7 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: '```\nurl: http://google.co.uk\n```',
-                output: /^<pre><code>url: http:\/\/google.co.uk  \n<\/code><\/pre>$/
+                output: /^<pre><code>url: http:\/\/google.co.uk\n<\/code><\/pre>$/
             },
             {
                 input: '`url: http://google.co.uk`',
