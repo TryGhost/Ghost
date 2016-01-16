@@ -29,7 +29,7 @@ describe('Showdown client side converter', function () {
     /*jslint regexp: true */
 
     it('should replace showdown strike through with html', function () {
-        var testPhrase = {input: '~~foo_bar~~', output: /^<p><del>foo_bar<\/del><\/p>$/},
+        var testPhrase = {input: '~~foo_bar~~', output: /^<p><s>foo_bar<\/s><\/p>$/},
             processedMarkup = render(testPhrase.input);
 
         // The image is the entire markup, so the image box should be too
