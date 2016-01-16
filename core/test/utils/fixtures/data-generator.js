@@ -22,7 +22,7 @@ DataGenerator.Content = {
             title: "Short and Sweet",
             slug: "short-and-sweet",
             markdown: "## testing\n\nmctesters\n\n- test\n- line\n- items",
-            html: "<h2 id=\"testing\">testing</h2>\n\n<p>mctesters</p>\n\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>",
+            html: "<h2 id=\"testing\">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n",
             image: "http://placekitten.com/500/200",
             meta_description: "test stuff",
             published_at: new Date("2015-01-03"),
