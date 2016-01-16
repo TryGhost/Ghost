@@ -11,6 +11,7 @@ const md = markdownit({
   html:        true,
   linkify:     false,
   typographer: true,
+  breaks:      true,
 }).use(markdownitFootnote)
   .use(markdownitAnchor);
 
