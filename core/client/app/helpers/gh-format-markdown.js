@@ -1,14 +1,16 @@
 /* global html_sanitize*/
 import Ember from 'ember';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
+import markdownit from 'npm:markdown-it';
+import markdownitFootnote from 'npm:markdown-it-footnote';
 
 const {Helper} = Ember;
 
-const md = window.markdownit({
+const md = markdownit({
   html:        true,
   linkify:     false,
   typographer: true,
-}).use(window.markdownitFootnote);
+}).use(markdownitFootnote);
 
 export default Helper.helper(function (params) {
     if (!params || !params.length) {
