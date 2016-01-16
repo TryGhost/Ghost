@@ -1,0 +1,29 @@
+{{!< default}}
+
+<header id="header" class="header{{#if tag.image}} has-cover{{else}}{{#if @blog.cover}} has-cover{{/if}}{{/if}}">
+	<div class="inner">
+		<span class="header-title">
+			<h1 class="header-name">{{tag.name}} <em>{{pagination.total}}</em></h1>
+			{{#if tag.description}}
+				<span class="header-description">{{tag.description}}</span>
+			{{/if}}
+		</span>
+	</div>
+	{{#if tag.image}}
+	<div class="header-cover" style="background-image: url('{{tag.image}}');"></div>
+	{{else}}
+	{{#if @blog.cover}}
+	<div class="header-cover" style="background-image: url('{{@blog.cover}}');"></div>
+	{{/if}}
+	{{/if}}
+</header>
+
+<div id="post-index" class="container">
+
+	<main class="content" role="main">
+	
+		{{> "loop"}}
+	
+	</main>
+
+</div>

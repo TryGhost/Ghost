@@ -1,0 +1,14 @@
+<div id="menu" data-target="menu">
+	<div class="menu-header">
+		<span class="menu-label">Menu</span>
+		<a class="menu-close" data-action="menu" data-target="menu"></a>
+	</div>
+	<ul class="menu-list">
+		{{#foreach navigation}}
+		<li class="menu-list-item">
+			<a class="{{slug}}{{#if current}} current{{/if}}" href="{{url absolute="true"}}">{{label}}</a>
+		</li>
+		{{/foreach}}
+	</ul>
+</div>
+<div class="overlay"></div>

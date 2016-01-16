@@ -1,0 +1,4 @@
+.DS_store
+.git*
+node_modules/**
+bower_components/**
