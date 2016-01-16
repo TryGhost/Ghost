@@ -4,7 +4,7 @@
     "blueimp-md5": "1.1.0",
     "codemirror": "5.2.0",
     "devicejs": "0.2.7",
-    "ember": "2.2.0",
+    "ember": "2.2.1",
     "ember-cli-shims": "ember-cli/ember-cli-shims#0.0.6",
     "ember-cli-test-loader": "0.2.1",
     "ember-data": "2.2.1",
