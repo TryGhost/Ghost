@@ -9,6 +9,8 @@ export default Component.extend({
     didInsertElement() {
         let navContainer = this.$('.js-gh-blognav');
         let navElements = '.gh-blognav-item:not(.gh-blognav-item:last-child)';
+        // needed because jqueryui sortable doesn't trigger babel's autoscoping
+        let _this = this;
 
         this._super(...arguments);
 
@@ -24,7 +26,7 @@ export default Component.extend({
 
             update(event, ui) {
                 run(() => {
-                    this.sendAction('moveItem', ui.item.data('start-index'), ui.item.index());
+                    _this.sendAction('moveItem', ui.item.data('start-index'), ui.item.index());
                 });
             }
         });

@@ -2,7 +2,7 @@
 import Ember from 'ember';
 import EmberSelectizeComponent from 'ember-cli-selectize/components/ember-selectize';
 
-const {computed, isBlank, get, on, run} = Ember;
+const {computed, isArray, isBlank, get, on, run} = Ember;
 const emberA = Ember.A;
 
 export default EmberSelectizeComponent.extend({
@@ -78,21 +78,31 @@ export default EmberSelectizeComponent.extend({
     _onChange(args) {
         let selection = Ember.get(this, 'selection');
         let valuePath = Ember.get(this, '_valuePath');
-
-        if (!args || !selection || !Ember.isArray(selection) || args.length !== selection.length) {
-            return;
-        }
-
-        let hasNoChanges = selection.every(function (obj, idx) {
-            return Ember.get(obj, valuePath) === args[idx];
-        });
-
-        if (hasNoChanges) {
-            return;
-        }
-
         let reorderedSelection = emberA([]);
 
+        if (!args || !selection || !isArray(selection) || args.length !== get(selection, 'length')) {
+            return;
+        }
+
+        // exit if we're not dealing with the same objects as the selection
+        let objectsHaveChanged = selection.any(function (obj) {
+            return args.indexOf(get(obj, valuePath)) === -1;
+        });
+
+        if (objectsHaveChanged) {
+            return;
+        }
+
+        // exit if the order is still the same
+        let orderIsSame = selection.every(function (obj, idx) {
+            return get(obj, valuePath) === args[idx];
+        });
+
+        if (orderIsSame) {
+            return;
+        }
+
+        // we have a re-order, update the selection
         args.forEach((value) => {
             let obj = selection.find(function (item) {
                 // jscs:disable
