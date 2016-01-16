@@ -1,10 +1,14 @@
-/* global Showdown, html_sanitize*/
+/* global html_sanitize*/
 import Ember from 'ember';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
 const {Helper} = Ember;
 
-let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+const md = window.markdownit({
+  html:        true,
+  linkify:     false,
+  typographer: true,
+}).use(window.markdownitFootnote);
 
 export default Helper.helper(function (params) {
     if (!params || !params.length) {
@@ -15,7 +19,7 @@ export default Helper.helper(function (params) {
     let escapedhtml = '';
 
     // convert markdown to HTML
-    escapedhtml = showdown.makeHtml(markdown);
+    escapedhtml = md.render(markdown);
 
     // replace script and iFrame
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
