@@ -32,7 +32,7 @@ export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
 
         this.setFocus();
 
-        this.sendAction('setEditor', this);
+        this.attrs.setEditor(this);
 
         run.scheduleOnce('afterRender', this, this.afterRenderEvent);
     },
@@ -43,19 +43,9 @@ export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
         }
     },
 
-    /**
-     * Disable editing in the textarea (used while an upload is in progress)
-     */
-    disable() {
-        let textarea = this.get('element');
-        textarea.setAttribute('readonly', 'readonly');
-    },
-
-    /**
-     * Reenable editing in the textarea
-     */
-    enable() {
-        let textarea = this.get('element');
-        textarea.removeAttribute('readonly');
+    actions: {
+        toggleCopyHTMLModal(generatedHTML) {
+            this.attrs.toggleCopyHTMLModal(generatedHTML);
+        }
     }
 });

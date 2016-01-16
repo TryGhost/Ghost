@@ -31,21 +31,35 @@
             <div class="form-group">
                 <label>Blog Logo</label>
                 {{#if model.logo}}
-                    <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "openModal" "upload" this "logo"}}>
+                    <img class="blog-logo" src="{{model.logo}}" alt="logo" role="button" {{action "toggleUploadLogoModal"}}>
                 {{else}}
-                    <button type="button" class="btn btn-green js-modal-logo" {{action "openModal" "upload" this "logo"}}>Upload Image</button>
+                    <button type="button" class="btn btn-green js-modal-logo" {{action "toggleUploadLogoModal"}}>Upload Image</button>
                 {{/if}}
                 <p>Display a sexy logo for your publication</p>
+
+                {{#if showUploadLogoModal}}
+                    {{gh-fullscreen-modal "upload-image"
+                                          model=(hash model=model imageProperty="logo")
+                                          close=(action "toggleUploadLogoModal")
+                                          modifier="action wide"}}
+                {{/if}}
             </div>
 
             <div class="form-group">
                 <label>Blog Cover</label>
                 {{#if model.cover}}
-                    <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "openModal" "upload" this "cover"}}>
+                    <img class="blog-cover" src="{{model.cover}}" alt="cover photo" role="button" {{action "toggleUploadCoverModal"}}>
                 {{else}}
-                    <button type="button" class="btn btn-green js-modal-cover" {{action "openModal" "upload" this "cover"}}>Upload Image</button>
+                    <button type="button" class="btn btn-green js-modal-cover" {{action "toggleUploadCoverModal"}}>Upload Image</button>
                 {{/if}}
                 <p>Display a cover image on your site</p>
+
+                {{#if showUploadCoverModal}}
+                    {{gh-fullscreen-modal "upload-image"
+                                          model=(hash model=model imageProperty="cover")
+                                          close=(action "toggleUploadCoverModal")
+                                          modifier="action wide"}}
+                {{/if}}
             </div>
 
             <fieldset>
@@ -105,11 +119,11 @@
                 </div>
 
                 {{#if model.isPrivate}}
-                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
-                    {{gh-input name="general[password]" type="text" value=model.password focusOut=(action "validate" "password")}}
-                    {{gh-error-message errors=model.errors property="password"}}
-                    <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
-                {{/gh-form-group}}
+                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="password"}}
+                        {{gh-input name="general[password]" type="text" value=model.password focusOut=(action "validate" "password")}}
+                        {{gh-error-message errors=model.errors property="password"}}
+                        <p>This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext.</p>
+                    {{/gh-form-group}}
                 {{/if}}
             </fieldset>
         </form>

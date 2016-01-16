@@ -1,6 +1,7 @@
 var templates     = {},
     hbs           = require('express-hbs'),
-    errors        = require('../errors');
+    errors        = require('../errors'),
+    i18n          = require('../i18n');
 
 // ## Template utils
 
@@ -10,7 +11,7 @@ templates.execute = function (name, context, options) {
     var partial = hbs.handlebars.partials[name];
 
     if (partial === undefined) {
-        errors.logAndThrowError('Template ' + name + ' not found.');
+        errors.logAndThrowError(i18n.t('warnings.helpers.template.templateNotFound', {name: name}));
         return;
     }
 

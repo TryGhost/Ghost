@@ -1,0 +1,17 @@
+<header class="modal-header">
+    <h1>Are you sure you want to delete this user?</h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    {{#if user.count.posts}}
+        <strong>WARNING:</strong> <span class="red">This user is the author of {{pluralize user.count.posts 'post'}}.</span> All posts and user data will be deleted. There is no way to recover this.
+    {{else}}
+        <strong>WARNING:</strong> All user data will be deleted. There is no way to recover this.
+    {{/if}}
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
+    {{#gh-spin-button action="confirm" class="btn btn-red" submitting=submitting}}Delete{{/gh-spin-button}}
+</div>

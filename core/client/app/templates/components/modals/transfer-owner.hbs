@@ -1,0 +1,16 @@
+<header class="modal-header">
+    <h1>Transfer Ownership</h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        Are you sure you want to transfer the ownership of this blog?
+        You will not be able to undo this action.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
+    {{#gh-spin-button action="confirm" class="btn btn-red" submitting=submitting}}Yep - I'm sure{{/gh-spin-button}}
+</div>

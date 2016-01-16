@@ -2,47 +2,25 @@
 /* ---------------------------------------------------------- */
 
 
-/* Full screen container
+/* Fullscreen Modal
 /* ---------------------------------------------------------- */
 
-.modal-container {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1040;
-    display: none;
-    overflow-x: auto;
-    overflow-y: scroll;
-    padding-right: 10px;
-    padding-left: 10px;
-    transition: all 0.15s linear 0s;
-    transform: translateZ(0);
+.fullscreen-modal-liquid-target {
+    overflow-y: auto;
+    height: 100vh;
 }
 
-.modal-background {
+.fullscreen-modal-background {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 1030;
-    display: none;
+    z-index: 0;
     background: rgba(0, 0, 0, 0.6);
 }
 
-
-/* The modal
-/* ---------------------------------------------------------- */
-
-.modal,
-.modal-action {
-    right: auto;
-    left: 50%;
-    z-index: 1050;
-    margin-right: auto;
-    margin-left: auto;
+.fullscreen-modal {
     padding-top: 30px;
     padding-bottom: 30px;
     max-width: 550px;
@@ -51,32 +29,41 @@
 }
 
 @media (max-width: 900px) {
-    .modal,
-    .modal-action {
+    .fullscreen-modal {
         padding: 10px;
     }
 }
 
-.modal button,
-.modal-action button {
-    min-width: 100px;
+/* Modifiers
+/* ---------------------------------------------------------- */
+
+.fullscreen-modal-wide {
+    width: 550px;
 }
 
-.modal .image-uploader,
-.modal .pre-image-uploader,
-.modal-action .image-uploader,
-.modal-action .pre-image-uploader {
-    margin: 0;
+@media (max-width: 900px) {
+    .fullscreen-modal-wide {
+        width: 100%;
+    }
 }
 
-.modal-action {
+.fullscreen-modal-action {
     padding: 60px 0 30px;
 }
 
 @media (max-width: 900px) {
-    .modal-action {
+    .fullscreen-modal-action {
         padding: 30px 0;
     }
+}
+
+
+/* The modal
+/* ---------------------------------------------------------- */
+
+.fullscreen-modal .image-uploader,
+.fullscreen-modal .pre-image-uploader {
+    margin: 0;
 }
 
 
@@ -149,6 +136,7 @@
 
 .modal-footer button {
     margin-left: 8px;
+    min-width: 100px;
     text-align: center;
 }
 
@@ -157,22 +145,9 @@
 }
 
 
-/* Modifiers
+/* Content Modifiers
 /* ---------------------------------------------------------- */
 
-.modal-style-wide {
-    width: 550px;
-}
-
-@media (max-width: 900px) {
-    .modal-style-wide {
-        width: 100%;
-    }
-}
-
-.modal-style-centered {
-    text-align: center;
-}
 
 /* Login styles */
 .modal-body .login-form {
@@ -206,30 +181,4 @@
     .modal-body .login-form .password-wrap {
         flex: 1;
     }
-}
-
-
-/* Open States
-/* ---------------------------------------------------------- */
-
-.modal-container.open,
-.modal-container.open > .modal,
-.modal-container.open > .modal-action {
-    display: block;
-}
-
-.modal-background.open {
-    display: block;
-}
-
-
-/* Animations
-/* ---------------------------------------------------------- */
-
-.modal-container.fade-out {
-    animation-duration: 0.08s;
-}
-
-.modal-background.fade-out {
-    animation-duration: 0.15s;
 }
