@@ -51,6 +51,7 @@
     "knex": "0.7.3",
     "lodash": "3.10.1",
     "markdown-it": "5.1.0",
+    "markdown-it-anchor": "^2.3.3",
     "markdown-it-footnote": "^2.0.0",
     "moment": "2.10.6",
     "morgan": "1.6.1",
