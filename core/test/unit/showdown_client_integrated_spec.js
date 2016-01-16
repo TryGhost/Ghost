@@ -612,11 +612,11 @@ describe('Showdown client side converter', function () {
         var testPhrases = [
             {
                 input: 'Header\n==',
-                output: /^<h1 id="header">Header  <\/h1>$/
+                output: /^<h1 id="header">Header<\/h1>$/
             },
             {
                 input: 'First Header\n==\nSecond Header\n==',
-                output: /^<h1 id="firstheader">First Header  <\/h1>\n\n<h1 id="secondheader">Second Header  <\/h1>$/
+                output: /^<h1 id="first-header">First Header<\/h1>\n<h1 id="second-header">Second Header<\/h1>$/
             }
         ];
 
