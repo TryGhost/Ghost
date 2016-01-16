@@ -3,10 +3,12 @@ import EditorAPI from 'ghost/mixins/ed-editor-api';
 import EditorShortcuts from 'ghost/mixins/ed-editor-shortcuts';
 import EditorScroll from 'ghost/mixins/ed-editor-scroll';
 
-const {TextArea, run} = Ember;
+const {TextArea, inject, run} = Ember;
 
-export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
+export default TextArea.extend(EditorAPI, EditorShortcuts, {
     focus: false,
+
+    scrollSync: inject.service('scroll-sync'),
 
     /**
      * Tell the controller about focusIn events, will trigger an autosave on a new document
@@ -34,7 +36,14 @@ export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
 
         this.attrs.setEditor(this);
 
+        this.get('scrollSync').registerLeftPane(this.$()[0]);
+
         run.scheduleOnce('afterRender', this, this.afterRenderEvent);
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        this.get('scrollSync').teardownLeftPane();
     },
 
     afterRenderEvent() {
