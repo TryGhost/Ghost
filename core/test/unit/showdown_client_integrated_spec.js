@@ -9,8 +9,17 @@
 var should      = require('should'),
 
 // Stuff we are testing
-    Showdown    = require('showdown-ghost'),
-    converter   = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
+    md = require('markdown-it')({
+      html:        true,
+      linkify:     false,
+      typographer: true,
+      breaks:      true,
+    }).use(require('markdown-it-footnote'))
+      .use(require('markdown-it-anchor'));
+
+var render = function(markdown) {
+  return md.render(markdown).trim();
+};
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -20,7 +29,7 @@ describe('Showdown client side converter', function () {
 
     it('should replace showdown strike through with html', function () {
         var testPhrase = {input: '~~foo_bar~~', output: /^<p><del>foo_bar<\/del><\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
 
         // The image is the entire markup, so the image box should be too
         processedMarkup.should.match(testPhrase.output);
@@ -28,7 +37,7 @@ describe('Showdown client side converter', function () {
 
     it('should honour escaped tildes', function () {
         var testPhrase = {input: '\\~\\~foo_bar\\~\\~', output: /^<p>~~foo_bar~~<\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
 
         // The image is the entire markup, so the image box should be too
         processedMarkup.should.match(testPhrase.output);
@@ -36,7 +45,7 @@ describe('Showdown client side converter', function () {
 
     it('should not touch single underscores inside words', function () {
         var testPhrase = {input: 'foo_bar', output: /^<p>foo_bar<\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
     });
@@ -44,14 +53,14 @@ describe('Showdown client side converter', function () {
     // Currently failing - fixing this causes other issues
     // it('should not create italic words between lines', function () {
     //     var testPhrase = {input: 'foo_bar\nbar_foo', output: /^<p>foo_bar <br \/>\nbar_foo<\/p>$/},
-    //         processedMarkup = converter.makeHtml(testPhrase.input);
+    //         processedMarkup = render(testPhrase.input);
 
     //     processedMarkup.should.match(testPhrase.output);
     // });
 
     it('should not touch underscores in code blocks', function () {
         var testPhrase = {input: '    foo_bar_baz', output: /^<pre><code>foo_bar_baz\n<\/code><\/pre>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
     });
@@ -64,7 +73,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -76,7 +85,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -95,7 +104,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -114,7 +123,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -129,7 +138,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -148,7 +157,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -167,7 +176,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -186,7 +195,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -233,7 +242,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -256,7 +265,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -280,7 +289,7 @@ describe('Showdown client side converter', function () {
      processedMarkup;
 
      testPhrases.forEach(function (testPhrase) {
-     processedMarkup = converter.makeHtml(testPhrase.input);
+     processedMarkup = render(testPhrase.input);
      processedMarkup.should.match(testPhrase.output);
      });
      });
@@ -312,7 +321,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -324,7 +333,7 @@ describe('Showdown client side converter', function () {
             },
             processedMarkup;
 
-        processedMarkup = converter.makeHtml(testPhrase.input);
+        processedMarkup = render(testPhrase.input);
         processedMarkup.should.match(testPhrase.output);
     });
 
@@ -347,7 +356,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -382,7 +391,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -397,7 +406,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -418,7 +427,7 @@ describe('Showdown client side converter', function () {
             processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             if (testPhrase.not) {
                 processedMarkup.should.not.match(testPhrase.output);
             } else {
@@ -442,7 +451,7 @@ describe('Showdown client side converter', function () {
      processedMarkup;
 
      testPhrases.forEach(function (testPhrase) {
-     processedMarkup = converter.makeHtml(testPhrase.input);
+     processedMarkup = render(testPhrase.input);
      if (testPhrase.not) {
      processedMarkup.should.not.match(testPhrase.output);
      } else {
@@ -482,7 +491,7 @@ describe('Showdown client side converter', function () {
         processedMarkup;
 
         testPhrases.forEach(function (testPhrase) {
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -504,7 +513,7 @@ describe('Showdown client side converter', function () {
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -523,7 +532,7 @@ describe('Showdown client side converter', function () {
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -569,7 +578,7 @@ describe('Showdown client side converter', function () {
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -586,7 +595,7 @@ describe('Showdown client side converter', function () {
                     '```',
             output: /^<mark><\/mark>$/
         },
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
 
         // this does not get mark tags
         processedMarkup.should.not.match(testPhrase.output);
@@ -594,7 +603,7 @@ describe('Showdown client side converter', function () {
 
     it('should ignore multiple equals', function () {
         var testPhrase = {input: '=====', output: /^<p>=====<\/p>$/},
-            processedMarkup = converter.makeHtml(testPhrase.input);
+            processedMarkup = render(testPhrase.input);
 
         processedMarkup.should.match(testPhrase.output);
     });
@@ -612,7 +621,7 @@ describe('Showdown client side converter', function () {
         ];
 
         testPhrases.forEach(function (testPhrase) {
-            var processedMarkup = converter.makeHtml(testPhrase.input);
+            var processedMarkup = render(testPhrase.input);
             processedMarkup.should.match(testPhrase.output);
         });
     });
@@ -626,7 +635,7 @@ describe('Showdown client side converter', function () {
     //    ];
 
     //    testPhrases.forEach(function (testPhrase) {
-    //        processedMarkup = converter.makeHtml(testPhrase.input);
+    //        processedMarkup = render(testPhrase.input);
     //        processedMarkup.should.match(testPhrase.output);
     //    });
     // });
