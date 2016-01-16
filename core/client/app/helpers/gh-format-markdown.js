@@ -4,6 +4,7 @@ import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 import markdownit from 'npm:markdown-it';
 import markdownitFootnote from 'npm:markdown-it-footnote';
 import markdownitAnchor from 'npm:markdown-it-anchor';
+import markdownitMark from 'npm:markdown-it-mark';
 
 const {Helper} = Ember;
 
@@ -13,7 +14,8 @@ const md = markdownit({
   typographer: true,
   breaks:      true,
 }).use(markdownitFootnote)
-  .use(markdownitAnchor);
+  .use(markdownitAnchor)
+  .use(markdownitMark);
 
 export default Helper.helper(function (params) {
     if (!params || !params.length) {

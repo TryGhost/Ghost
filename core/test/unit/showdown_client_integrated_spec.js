@@ -15,7 +15,8 @@ var should      = require('should'),
       typographer: true,
       breaks:      true,
     }).use(require('markdown-it-footnote'))
-      .use(require('markdown-it-anchor'));
+      .use(require('markdown-it-anchor'))
+      .use(require('markdown-it-mark'));
 
 var render = function(markdown) {
   return md.render(markdown).trim();
@@ -557,7 +558,7 @@ describe('Showdown client side converter', function () {
             },
             {
                 input: 'My stuff that has a ==multiple word and\n line broken highlight== in the middle.',
-                output: /^<p>My stuff that has a <mark>multiple word and <br \/>\n line broken highlight<\/mark> in the middle.<\/p>$/
+                output: /^<p>My stuff that has a <mark>multiple word and<br>\nline broken highlight<\/mark> in the middle.<\/p>$/
             },
             {
                 input: 'Test ==Highlighting with a [link](https://ghost.org) in the middle== of it.',
@@ -573,7 +574,7 @@ describe('Showdown client side converter', function () {
             },
             {
                 input: '====test==test==test====test',
-                output: /^<p><mark>==test<\/mark>test<mark>test<\/mark>==test<\/p>$/
+                output: /^<p><mark><mark>test<\/mark>test<\/mark>test====test<\/p>$/
             }
         ];
 

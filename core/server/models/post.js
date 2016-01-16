@@ -17,7 +17,8 @@ var md = require('markdown-it')({
   typographer: true,
   breaks:      true,
 }).use(require('markdown-it-footnote'))
-  .use(require('markdown-it-anchor'));
+  .use(require('markdown-it-anchor'))
+  .use(require('markdown-it-mark'));
 
 Post = ghostBookshelf.Model.extend({
 

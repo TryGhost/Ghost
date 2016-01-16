@@ -4,6 +4,7 @@ import titleize from 'ghost/utils/titleize';
 import markdownit from 'npm:markdown-it';
 import markdownitFootnote from 'npm:markdown-it-footnote';
 import markdownitAnchor from 'npm:markdown-it-anchor';
+import markdownitMark from 'npm:markdown-it-mark';
 
 const {Mixin} = Ember;
 
@@ -13,7 +14,8 @@ const md = markdownit({
   typographer: true,
   breaks:      true,
 }).use(markdownitFootnote)
-  .use(markdownitAnchor);
+  .use(markdownitAnchor)
+  .use(markdownitMark);
 
 // Used for simple, noncomputational replace-and-go! shortcuts.
 // See default case in shortcut function below.
