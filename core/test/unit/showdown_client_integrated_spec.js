@@ -98,8 +98,8 @@ describe('Showdown client side converter', function () {
                 output: /^<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
             },
             {
-                input: 'hmm<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
-                output: /^<p>hmm<\/p>\n\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
+                input: 'hmm\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>',
+                output: /^<p>hmm<\/p>\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n<\/pre>$/
             }
         ],
         processedMarkup;
