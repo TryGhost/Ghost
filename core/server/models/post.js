@@ -4,14 +4,18 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     sequence       = require('../utils/sequence'),
     errors         = require('../errors'),
-    Showdown       = require('showdown-ghost'),
-    converter      = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
     baseUtils      = require('./base/utils'),
     Post,
     Posts;
+
+var md = require('markdown-it')({
+  html:        true,
+  linkify:     false,
+  typographer: true,
+});
 
 Post = ghostBookshelf.Model.extend({
 
@@ -112,7 +116,7 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
-        this.set('html', converter.makeHtml(this.get('markdown')));
+        this.set('html', md.render(this.get('markdown')));
 
         // disabling sanitization until we can implement a better version
         // this.set('title', this.sanitize('title').trim());

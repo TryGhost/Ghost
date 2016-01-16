@@ -1,8 +1,14 @@
-/* global moment, Showdown */
+/* global moment */
 import Ember from 'ember';
 import titleize from 'ghost/utils/titleize';
 
 const {Mixin} = Ember;
+
+const md = window.markdownit({
+  html:        true,
+  linkify:     false,
+  typographer: true,
+});
 
 // Used for simple, noncomputational replace-and-go! shortcuts.
 // See default case in shortcut function below.
@@ -103,13 +109,12 @@ let shortcuts = {
     },
 
     copyHTML(editor, selection) {
-        let converter = new Showdown.converter();
         let generatedHTML;
 
         if (selection.text) {
-            generatedHTML = converter.makeHtml(selection.text);
+            generatedHTML = md.render(selection.text);
         } else {
-            generatedHTML = converter.makeHtml(editor.getValue());
+            generatedHTML = md.render(editor.getValue());
         }
 
         // Talk to the editor
