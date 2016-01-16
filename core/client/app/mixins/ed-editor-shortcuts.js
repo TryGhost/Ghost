@@ -8,7 +8,7 @@ const md = window.markdownit({
   html:        true,
   linkify:     false,
   typographer: true,
-});
+}).use(window.markdownitFootnote);
 
 // Used for simple, noncomputational replace-and-go! shortcuts.
 // See default case in shortcut function below.

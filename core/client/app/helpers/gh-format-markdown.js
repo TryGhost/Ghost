@@ -8,7 +8,7 @@ const md = window.markdownit({
   html:        true,
   linkify:     false,
   typographer: true,
-});
+}).use(window.markdownitFootnote);
 
 export default Helper.helper(function (params) {
     if (!params || !params.length) {

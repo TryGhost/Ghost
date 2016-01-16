@@ -33,6 +33,7 @@
     "markdown-it": "5.1.0",
     "sinonjs": "1.14.1",
     "validator-js": "3.39.0",
-    "xregexp": "2.0.0"
+    "xregexp": "2.0.0",
+    "markdown-it-footnote": "~2.0.0"
   }
 }
