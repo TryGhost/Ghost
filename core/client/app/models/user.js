@@ -18,6 +18,7 @@ export default Model.extend(ValidationEngine, {
     image: attr('string'),
     cover: attr('string'),
     bio: attr('string'),
+    twitter: attr('string'),
     website: attr('string'),
     location: attr('string'),
     accessibility: attr('string'),

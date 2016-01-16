@@ -11,6 +11,7 @@ export default Model.extend(ValidationEngine, {
     description: attr('string'),
     logo: attr('string'),
     cover: attr('string'),
+    twitter: attr('string'),
     defaultLang: attr('string'),
     postsPerPage: attr('number'),
     forceI18n: attr('boolean'),

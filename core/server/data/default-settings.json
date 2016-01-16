@@ -26,6 +26,9 @@
         "cover": {
             "defaultValue": ""
         },
+        "twitter": {
+            "defaultValue": ""
+        },
         "defaultLang": {
             "defaultValue": "en_US",
             "validations": {
