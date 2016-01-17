@@ -196,6 +196,10 @@ var _              = require('lodash'),
                     src: ['core/test/unit/server_helpers/*_spec.js']
                 },
 
+                metadata: {
+                    src: ['core/test/unit/metadata/*_spec.js']
+                },
+
                 middleware: {
                     src: ['core/test/unit/middleware/*_spec.js']
                 },
