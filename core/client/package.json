@@ -53,6 +53,7 @@
     "markdown-it": "^5.1.0",
     "markdown-it-anchor": "^2.3.3",
     "markdown-it-footnote": "^2.0.0",
+    "markdown-it-ghost-upload": "^1.0.1",
     "markdown-it-mark": "^2.0.0",
     "walk-sync": "^0.1.3"
   },

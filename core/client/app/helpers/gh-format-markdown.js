@@ -5,6 +5,7 @@ import markdownit from 'npm:markdown-it';
 import markdownitFootnote from 'npm:markdown-it-footnote';
 import markdownitAnchor from 'npm:markdown-it-anchor';
 import markdownitMark from 'npm:markdown-it-mark';
+import markdownitUpload from 'npm:markdown-it-ghost-upload';
 
 const {Helper} = Ember;
 
@@ -15,7 +16,8 @@ const md = markdownit({
   breaks:      true,
 }).use(markdownitFootnote)
   .use(markdownitAnchor)
-  .use(markdownitMark);
+  .use(markdownitMark)
+  .use(markdownitUpload);
 
 export default Helper.helper(function (params) {
     if (!params || !params.length) {

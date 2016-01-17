@@ -16,7 +16,8 @@ var should      = require('should'),
       breaks:      true,
     }).use(require('markdown-it-footnote'))
       .use(require('markdown-it-anchor'))
-      .use(require('markdown-it-mark'));
+      .use(require('markdown-it-mark'))
+      .use(require('markdown-it-ghost-upload'));
 
 var render = function(markdown) {
   return md.render(markdown).trim();
