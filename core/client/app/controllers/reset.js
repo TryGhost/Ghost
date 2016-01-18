@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {Controller, computed, inject} = Ember;
@@ -16,6 +15,7 @@ export default Controller.extend(ValidationEngine, {
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
     session: inject.service(),
+    ajax: inject.service(),
 
     email: computed('token', function () {
         // The token base64 encodes the email (and some other stuff),
@@ -39,10 +39,9 @@ export default Controller.extend(ValidationEngine, {
             this.set('flowErrors', '');
             this.get('hasValidated').addObjects(['newPassword', 'ne2Password']);
             this.validate().then(() => {
+                let authUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
                 this.toggleProperty('submitting');
-                ajax({
-                    url: this.get('ghostPaths.url').api('authentication', 'passwordreset'),
-                    type: 'PUT',
+                this.get('ajax').put(authUrl, {
                     data: {
                         passwordreset: [credentials]
                     }
@@ -50,8 +49,8 @@ export default Controller.extend(ValidationEngine, {
                     this.toggleProperty('submitting');
                     this.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
                     this.get('session').authenticate('authenticator:oauth2', this.get('email'), credentials.newPassword);
-                }).catch((response) => {
-                    this.get('notifications').showAPIError(response, {key: 'password.reset'});
+                }).catch((error) => {
+                    this.get('notifications').showAPIError(error, {key: 'password.reset'});
                     this.toggleProperty('submitting');
                 });
             }).catch((error) => {

@@ -1,8 +1,7 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, inject} = Ember;
+const {Controller, RSVP, inject, isArray} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     size: 90,
@@ -20,6 +19,7 @@ export default Controller.extend(ValidationEngine, {
     application: inject.controller(),
     config: inject.service(),
     session: inject.service(),
+    ajax: inject.service(),
 
     // ValidationEngine settings
     validationType: 'setup',
@@ -36,10 +36,9 @@ export default Controller.extend(ValidationEngine, {
             image.formData = {};
             image.submit()
                 .success((response) => {
+                    let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
                     user.image = response;
-                    ajax({
-                        url: this.get('ghostPaths.url').api('users', user.id.toString()),
-                        type: 'PUT',
+                    this.get('ajax').put(usersUrl, {
                         data: {
                             users: [user]
                         }
@@ -51,8 +50,9 @@ export default Controller.extend(ValidationEngine, {
 
     _handleSaveError(resp) {
         this.toggleProperty('submitting');
-        if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-            this.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
+
+        if (resp && resp.errors && isArray(resp.errors)) {
+            this.set('flowErrors', resp.errors[0].message);
         } else {
             this.get('notifications').showAPIError(resp, {key: 'setup.blog-details'});
         }
@@ -96,16 +96,15 @@ export default Controller.extend(ValidationEngine, {
             let setupProperties = ['blogTitle', 'name', 'email', 'password'];
             let data = this.getProperties(setupProperties);
             let config = this.get('config');
-            let method = this.get('blogCreated') ? 'PUT' : 'POST';
+            let method = this.get('blogCreated') ? 'put' : 'post';
 
             this.toggleProperty('submitting');
             this.set('flowErrors', '');
 
             this.get('hasValidated').addObjects(setupProperties);
             this.validate().then(() => {
-                ajax({
-                    url: this.get('ghostPaths.url').api('authentication', 'setup'),
-                    type: method,
+                let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
+                this.get('ajax')[method](authUrl, {
                     data: {
                         setup: [{
                             name: data.name,

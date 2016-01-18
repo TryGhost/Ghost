@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-import {request as ajax} from 'ic-ajax';
 import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
@@ -13,6 +12,7 @@ export default Route.extend(styleBody, {
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
     session: inject.service(),
+    ajax: inject.service(),
 
     beforeModel() {
         this._super(...arguments);
@@ -43,9 +43,9 @@ export default Route.extend(styleBody, {
             model.set('token', params.token);
             model.set('errors', Errors.create());
 
-            return ajax({
-                url: this.get('ghostPaths.url').api('authentication', 'invitation'),
-                type: 'GET',
+            let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
+
+            return this.get('ajax').request(authUrl, {
                 dataType: 'json',
                 data: {
                     email
