@@ -1,0 +1,137 @@
+/* ------------------------------------------------------------
+    Popovers
+
+    Styles for the popover component
+    * Popovers
+    * Triangles placeholder styles
+    * Triangles classes
+    * Open/close
+    * Positioning
+   ------------------------------------------------------------ */
+
+.tour {
+    --popover-triangle-size: 14px;
+    --popover-trangle-modifier: 0.8;
+}
+
+.tour-cover {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2000;
+    display: block;
+    background: rgba(54,83,109,0.08);
+}
+
+.tour-wrapper {
+    position: absolute;
+    z-index: 2010;
+}
+
+.tour .popover-item {
+    padding: 25px;
+    max-width: none;
+    width: 480px;
+    border: #bfbfbf 1px solid;
+    background: #fff;
+    box-shadow: rgba(0,0,0,0.15) 0 1px 8px;
+    color: var(--midgrey);
+}
+
+.tour .popover-triangle-top {
+    transform-origin: top center;
+}
+
+.tour .popover-triangle-top:before,
+.tour .popover-triangle-top:after {
+    content: "";
+    position: absolute;
+    top: -calc(14px * 0.8);
+    left: 50%;
+    display: block;
+    margin-left: -7px;
+    width: 0;
+    height: 0;
+}
+
+.tour .popover-triangle-top:before {
+    border-right: 14px solid transparent;
+    border-bottom: calc(14px * 0.8) solid #bfbfbf;
+    border-left: 14px solid transparent;
+}
+
+.tour .popover-triangle-top:after {
+    top: -10px;
+    border-right: 14px solid transparent;
+    border-bottom: calc(14px * 0.8) solid #fff;
+    border-left: 14px solid transparent;
+}
+
+.tour .popover-title {
+    margin-bottom: 0.4em;
+    color: var(--darkgrey);
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.tour .popover-desc {
+    margin: 0;
+}
+
+.tour .popover-body {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.55em;
+}
+
+.tour .popover-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+.tour-optout {
+    align-self: flex-end;
+}
+
+/*%popover-triangle-vertical-top {
+    &:before {
+        @include triangle($popover_triangle, #bfbfbf, up, shallow);
+    }
+    &:after {
+        @include triangle($popover_triangle, #fff, up, shallow);
+        top: -10px;
+    }
+}
+
+%popover-triangle-vertical-bottom {
+    &:before {
+        @include triangle($popover_triangle, #bfbfbf, down, shallow);
+    }
+    &:after {
+        @include triangle($popover_triangle, #fff, down, shallow);
+        bottom: -10px;
+    }
+}
+
+%popover-triangle-horizontal-left {
+    &:before {
+        @include triangle($popover_triangle, #bfbfbf, left, shallow);
+    }
+    &:after {
+        @include triangle($popover_triangle, #fff, left, shallow);
+        left: -10px;
+    }
+}
+
+%popover-triangle-horizontal-right {
+    &:before {
+        @include triangle($popover_triangle, #bfbfbf, right, shallow);
+    }
+    &:after {
+        @include triangle($popover_triangle, #fff, right, shallow);
+        right: -10px;
+    }
+}*/
