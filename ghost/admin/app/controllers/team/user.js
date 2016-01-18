@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import ValidationEngine from 'ghost/mixins/validation-engine';
@@ -17,6 +16,7 @@ export default Controller.extend(ValidationEngine, {
     showUploadCoverModal: false,
     showUplaodImageModal: false,
 
+    ajax: inject.service(),
     dropdown: inject.service(),
     ghostPaths: inject.service('ghost-paths'),
     notifications: inject.service(),
@@ -242,8 +242,7 @@ export default Controller.extend(ValidationEngine, {
 
             this.get('dropdown').closeDropdowns();
 
-            return ajax(url, {
-                type: 'PUT',
+            return this.get('ajax').put(url, {
                 data: {
                     owner: [{
                         id: user.get('id')
