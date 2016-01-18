@@ -1,10 +1,10 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 
 const {RSVP, inject, Service} = Ember;
 
 export default Service.extend({
     ghostPaths: inject.service('ghost-paths'),
+    ajax: inject.service(),
 
     generateSlug(slugType, textToSlugify) {
         let url;
@@ -15,7 +15,7 @@ export default Service.extend({
 
         url = this.get('ghostPaths.url').api('slugs', slugType, encodeURIComponent(textToSlugify));
 
-        return ajax(url).then((response) => {
+        return this.get('ajax').request(url).then((response) => {
             let [firstSlug] = response.slugs;
             let {slug} = firstSlug;
 
