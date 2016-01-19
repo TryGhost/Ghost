@@ -61,7 +61,7 @@
     "path-match": "1.2.3",
     "request": "2.67.0",
     "rss": "1.2.1",
-    "semver": "5.0.3",
+    "semver": "5.1.0",
     "showdown-ghost": "0.3.6",
     "sqlite3": "3.1.1",
     "unidecode": "0.1.8",
