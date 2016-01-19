@@ -20,6 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "2.2.0",
+    "ember-ajax": "0.7.1",
     "ember-cli": "1.13.13",
     "ember-cli-app-version": "1.0.0",
     "ember-cli-babel": "5.1.5",
@@ -29,7 +30,6 @@
     "ember-cli-fastclick": "1.0.3",
     "ember-cli-htmlbars": "1.0.1",
     "ember-cli-htmlbars-inline-precompile": "0.3.1",
-    "ember-cli-ic-ajax": "0.2.4",
     "ember-cli-mirage": "0.1.9",
     "ember-cli-mocha": "0.9.8",
     "ember-cli-pretender": "0.5.0",
