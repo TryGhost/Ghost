@@ -1,9 +1,13 @@
 import Ember from 'ember';
 
-const {Controller, computed, inject} = Ember;
+const {
+    Controller,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Controller.extend({
-    dropdown: inject.service(),
+    dropdown: service(),
 
     signedOut: computed.match('currentPath', /(signin|signup|setup|reset)/),
 

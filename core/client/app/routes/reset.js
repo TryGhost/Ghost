@@ -2,13 +2,16 @@ import Ember from 'ember';
 import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
-const {Route, inject} = Ember;
+const {
+    Route,
+    inject: {service}
+} = Ember;
 
 export default Route.extend(styleBody, {
     classNames: ['ghost-reset'],
 
-    notifications: inject.service(),
-    session: inject.service(),
+    notifications: service(),
+    session: service(),
 
     beforeModel() {
         this._super(...arguments);
