@@ -1,11 +1,16 @@
 import Ember from 'ember';
 
-const {Controller, computed, get, inject} = Ember;
+const {
+    Controller,
+    computed,
+    get,
+    inject: {service, controller}
+} = Ember;
 const {match} = computed;
 
 export default Controller.extend({
-    appController: inject.controller('application'),
-    ghostPaths: inject.service('ghost-paths'),
+    appController: controller('application'),
+    ghostPaths: service(),
 
     showBackLink: match('appController.currentRouteName', /^setup\.(two|three)$/),
 

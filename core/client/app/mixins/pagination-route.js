@@ -1,7 +1,10 @@
 import Ember from 'ember';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
-const {Mixin, inject} = Ember;
+const {
+    Mixin,
+    inject: {service}
+} = Ember;
 
 let defaultPaginationSettings = {
     page: 1,
@@ -9,7 +12,7 @@ let defaultPaginationSettings = {
 };
 
 export default Mixin.create({
-    notifications: inject.service(),
+    notifications: service(),
 
     paginationModel: null,
     paginationSettings: null,
