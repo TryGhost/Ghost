@@ -1,7 +1,12 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, inject, isArray} = Ember;
+const {
+    Controller,
+    RSVP: {Promise},
+    inject: {service},
+    isArray
+} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     // ValidationEngine settings
@@ -11,17 +16,17 @@ export default Controller.extend(ValidationEngine, {
     flowErrors: '',
     image: null,
 
-    ghostPaths: inject.service('ghost-paths'),
-    config: inject.service(),
-    notifications: inject.service(),
-    session: inject.service(),
-    ajax: inject.service(),
+    ghostPaths: service(),
+    config: service(),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
 
     sendImage() {
         let image = this.get('image');
 
         this.get('session.user').then((user) => {
-            return new RSVP.Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => {
                 image.formData = {};
                 image.submit()
                     .success((response) => {

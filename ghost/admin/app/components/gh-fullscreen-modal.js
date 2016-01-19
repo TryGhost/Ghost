@@ -1,7 +1,13 @@
 import Ember from 'ember';
 import LiquidTether from 'liquid-tether/components/liquid-tether';
 
-const {RSVP, isBlank, on, run} = Ember;
+const {
+    RSVP: {Promise},
+    inject: {service},
+    isBlank,
+    on,
+    run
+} = Ember;
 const emberA = Ember.A;
 
 const FullScreenModalComponent = LiquidTether.extend({
@@ -14,7 +20,7 @@ const FullScreenModalComponent = LiquidTether.extend({
     overlayClass: 'fullscreen-modal-background',
     modalPath: 'unknown',
 
-    dropdown: Ember.inject.service(),
+    dropdown: service(),
 
     init() {
         this._super(...arguments);
@@ -48,7 +54,7 @@ const FullScreenModalComponent = LiquidTether.extend({
                 return this.attrs.close();
             }
 
-            return new RSVP.Promise((resolve) => {
+            return new Promise((resolve) => {
                 resolve();
             });
         },
@@ -58,7 +64,7 @@ const FullScreenModalComponent = LiquidTether.extend({
                 return this.attrs.confirm();
             }
 
-            return new RSVP.Promise((resolve) => {
+            return new Promise((resolve) => {
                 resolve();
             });
         },

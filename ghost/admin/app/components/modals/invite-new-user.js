@@ -2,7 +2,11 @@ import Ember from 'ember';
 import ModalComponent from 'ghost/components/modals/base';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {RSVP, inject, run} = Ember;
+const {
+    RSVP: {Promise},
+    inject: {service},
+    run
+} = Ember;
 const emberA = Ember.A;
 
 export default ModalComponent.extend(ValidationEngine, {
@@ -15,8 +19,8 @@ export default ModalComponent.extend(ValidationEngine, {
 
     validationType: 'inviteUser',
 
-    notifications: inject.service(),
-    store: inject.service(),
+    notifications: service(),
+    store: service(),
 
     init() {
         this._super(...arguments);
@@ -49,7 +53,7 @@ export default ModalComponent.extend(ValidationEngine, {
 
         // TODO: either the validator should check the email's existence or
         // the API should return an appropriate error when attempting to save
-        return new RSVP.Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             return this._super().then(() => {
                 this.get('store').findAll('user', {reload: true}).then((result) => {
                     let invitedUser = result.findBy('email', email);

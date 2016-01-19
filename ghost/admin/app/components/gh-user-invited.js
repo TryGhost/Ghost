@@ -1,6 +1,10 @@
 import Ember from 'ember';
 
-const {Component, computed, inject} = Ember;
+const {
+    Component,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Component.extend({
     tagName: '',
@@ -8,7 +12,7 @@ export default Component.extend({
     user: null,
     isSending: false,
 
-    notifications: inject.service(),
+    notifications: service(),
 
     createdAt: computed('user.created_at', function () {
         let createdAt = this.get('user.created_at');
