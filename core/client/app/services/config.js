@@ -6,23 +6,20 @@ function isNumeric(num) {
     return Ember.$.isNumeric(num);
 }
 
-function _mapType(val) {
+function _mapType(val, type) {
     if (val === '') {
         return null;
-    } else if (val === 'true') {
-        return true;
-    } else if (val === 'false') {
-        return false;
-    } else if (isNumeric(val)) {
+    } else if (type === 'bool') {
+        return (val === 'true') ? true : false;
+    } else if (type === 'int' && isNumeric(val)) {
         return +val;
-    } else if (val.indexOf('{') === 0) {
+    } else if (type === 'json') {
         try {
             return JSON.parse(val);
         } catch (e) {
-            /*jshint unused:false */
             return val;
         }
-    } else {
+    } else { // assume string if type is null or matches nothing else
         return val;
     }
 }
@@ -35,9 +32,11 @@ export default Service.extend(_ProxyMixin, {
         metaConfigTags.each((i, el) => {
             let key = el.name;
             let value = el.content;
+            let type = el.getAttribute('data-type');
+
             let propertyName = key.substring(4);
 
-            config[propertyName] = _mapType(value);
+            config[propertyName] = _mapType(value, type);
         });
 
         return config;

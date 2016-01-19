@@ -20,8 +20,8 @@ adminControllers = {
             }).then(function getAPIClient() {
                 return api.clients.read({slug: 'ghost-admin'});
             }).then(function renderIndex(adminClient) {
-                configuration.push({key: 'clientId', value: adminClient.clients[0].slug});
-                configuration.push({key: 'clientSecret', value: adminClient.clients[0].secret});
+                configuration.push({key: 'clientId', value: adminClient.clients[0].slug, type: 'string'});
+                configuration.push({key: 'clientSecret', value: adminClient.clients[0].secret, type: 'string'});
 
                 var apiConfig = _.omit(configuration, function omit(value) {
                     return _.contains(['environment', 'database', 'mail', 'version'], value.key);
