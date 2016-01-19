@@ -1,11 +1,14 @@
 import Ember from 'ember';
 import Authenticator from 'ember-simple-auth/authenticators/oauth2-password-grant';
 
-const {computed, inject} = Ember;
+const {
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Authenticator.extend({
-    config: inject.service(),
-    ghostPaths: inject.service('ghost-paths'),
+    config: service(),
+    ghostPaths: service(),
 
     serverTokenEndpoint: computed('ghostPaths.apiRoot', function () {
         return `${this.get('ghostPaths.apiRoot')}/authentication/token`;

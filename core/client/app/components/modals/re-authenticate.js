@@ -2,7 +2,11 @@ import Ember from 'ember';
 import ModalComponent from 'ghost/components/modals/base';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {$, computed, inject} = Ember;
+const {
+    $,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default ModalComponent.extend(ValidationEngine, {
     validationType: 'signin',
@@ -10,8 +14,8 @@ export default ModalComponent.extend(ValidationEngine, {
     submitting: false,
     authenticationError: null,
 
-    notifications: inject.service(),
-    session: inject.service(),
+    notifications: service(),
+    session: service(),
 
     identification: computed('session.user.email', function () {
         return this.get('session.user.email');

@@ -1,6 +1,10 @@
 import Ember from 'ember';
 
-const {Component, computed, inject} = Ember;
+const {
+    Component,
+    computed,
+    inject: {service}
+} = Ember;
 
 /*
     This cute little component has two jobs.
@@ -15,7 +19,7 @@ const {Component, computed, inject} = Ember;
 export default Component.extend({
     classNames: ['gh-menu-toggle'],
 
-    mediaQueries: inject.service(),
+    mediaQueries: service(),
     isMobile: computed.reads('mediaQueries.isMobile'),
     maximise: false,
 

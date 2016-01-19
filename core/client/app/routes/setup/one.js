@@ -1,7 +1,11 @@
 import Ember from 'ember';
 import AjaxService from 'ember-ajax/services/ajax';
 
-const {Route, inject, run} = Ember;
+const {
+    Route,
+    inject: {service},
+    run
+} = Ember;
 
 let DownloadCountPoller = Ember.Object.extend({
     url: null,
@@ -45,7 +49,7 @@ let DownloadCountPoller = Ember.Object.extend({
 });
 
 export default Route.extend({
-    ghostPaths: inject.service('ghost-paths'),
+    ghostPaths: service('ghost-paths'),
 
     model() {
         return DownloadCountPoller.create({url: this.get('ghostPaths.count')});

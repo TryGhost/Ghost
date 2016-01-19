@@ -2,14 +2,15 @@ import Ember from 'ember';
 import ValidationStateMixin from 'ghost/mixins/validation-state';
 
 const {Component, computed} = Ember;
+const {readOnly} = computed;
 
 export default Component.extend(ValidationStateMixin, {
     classNames: 'gh-blognav-item',
     classNameBindings: ['errorClass'],
 
     attributeBindings: ['order:data-order'],
-    order: computed.readOnly('navItem.order'),
-    errors: computed.readOnly('navItem.errors'),
+    order: readOnly('navItem.order'),
+    errors: readOnly('navItem.errors'),
 
     errorClass: computed('hasError', function () {
         if (this.get('hasError')) {

@@ -3,7 +3,13 @@ import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, computed, inject, isArray} = Ember;
+const {
+    Controller,
+    RSVP,
+    computed,
+    inject: {service},
+    isArray
+} = Ember;
 const {alias, and, not, or, readOnly} = computed;
 
 export default Controller.extend(ValidationEngine, {
@@ -16,12 +22,12 @@ export default Controller.extend(ValidationEngine, {
     showUploadCoverModal: false,
     showUplaodImageModal: false,
 
-    ajax: inject.service(),
-    dropdown: inject.service(),
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    slugGenerator: inject.service('slug-generator'),
+    ajax: service(),
+    dropdown: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    slugGenerator: service(),
 
     user: alias('model'),
     currentUser: alias('session.user'),

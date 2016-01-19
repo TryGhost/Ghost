@@ -3,16 +3,19 @@ import ModalComponent from 'ghost/components/modals/base';
 import upload from 'ghost/assets/lib/uploader';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-const {computed, inject, isEmpty} = Ember;
+const {
+    computed,
+    inject: {service},
+    isEmpty
+} = Ember;
 
 export default ModalComponent.extend({
-
     acceptEncoding: 'image/*',
     model: null,
     submitting: false,
 
-    config: inject.service(),
-    notifications: inject.service(),
+    config: service(),
+    notifications: service(),
 
     imageUrl: computed('model.model', 'model.imageProperty', {
         get() {

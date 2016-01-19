@@ -1,11 +1,12 @@
 import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 
-const {inject} = Ember;
+const {
+    inject: {service}
+} = Ember;
 
 export default AuthenticatedRoute.extend({
-
-    mediaQueries: inject.service(),
+    mediaQueries: service(),
 
     beforeModel() {
         let firstTag = this.modelFor('settings.tags').get('firstObject');

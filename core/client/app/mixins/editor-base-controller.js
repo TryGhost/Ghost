@@ -2,7 +2,14 @@ import Ember from 'ember';
 import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-const {Mixin, RSVP, computed, inject, observer, run} = Ember;
+const {
+    Mixin,
+    RSVP: {resolve},
+    computed,
+    inject: {service, controller},
+    observer,
+    run
+} = Ember;
 const {alias} = computed;
 
 // this array will hold properties we need to watch
@@ -21,8 +28,8 @@ export default Mixin.create({
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
 
-    postSettingsMenuController: inject.controller('post-settings-menu'),
-    notifications: inject.service(),
+    postSettingsMenuController: controller('post-settings-menu'),
+    notifications: service(),
 
     init() {
         this._super(...arguments);
@@ -312,7 +319,7 @@ export default Mixin.create({
                 psmController.generateAndSetSlug('model.slug');
             }
 
-            promise = RSVP.resolve(psmController.get('lastPromise')).then(() => {
+            promise = resolve(psmController.get('lastPromise')).then(() => {
                 return this.get('model').save(options).then((model) => {
                     if (!options.silent) {
                         this.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);

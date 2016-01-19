@@ -1,10 +1,13 @@
 import Ember from 'ember';
 import SettingsSaveMixin from 'ghost/mixins/settings-save';
 
-const {Controller, inject} = Ember;
+const {
+    Controller,
+    inject: {service}
+} = Ember;
 
 export default Controller.extend(SettingsSaveMixin, {
-    notifications: inject.service(),
+    notifications: service(),
 
     save() {
         let notifications = this.get('notifications');
