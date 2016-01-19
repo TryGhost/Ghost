@@ -22,6 +22,10 @@ isEnabled: computed('status', {
 
    refreshSecret(){
      this.sendAction('refreshSecret');
+   },
+
+   saveClient(name, description, redirection_uri){
+     this.sendAction('saveClient', name, description, redirection_uri);
    }
  }
 });

@@ -5,15 +5,8 @@ const {Controller, computed, inject} = Ember;
 export default Controller.extend({
 
 actions: {
-    saveClient() {
-      let clientData = {
-        name: this.get('name'),
-        logo: this.get('logo'),
-        redirection_uri: this.get('redirection_uri'),
-        description: this.get('description'),
-        created_at: moment()
-      };
-    let client = this.store.createRecord('client', clientData);
+    saveClient(newClient) {
+    let client = this.store.createRecord('client', newClient);
     client.save();
     this.transitionToRoute('settings.connections.index');
     }

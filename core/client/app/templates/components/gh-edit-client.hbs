@@ -1,0 +1,33 @@
+<div class="row">
+<div><b>Name:</b>   <span data-test-selector="name">{{input value=name}}</span><br></div>
+</div>
+<div class="row">
+<div><b>Status:</b> <span data-test-selector="status">{{status}}</span><br></div>
+  <div>
+    <button type='button' class="btn btn-blue" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
+      {{if isEnabled 'Disable' 'Enable'}}
+    </button>
+  </div>
+</div>
+<div class="row">
+<div><b>Secret:</b> <span data-test-selector="secret">{{secret}}</span><br></div>
+<div>
+<button type='button' class="btn btn-blue" {{action "refreshSecret"}}>
+  Refresh Token
+</button>
+</div>
+</div>
+<div>
+  <b>redirection URL:</b>  <span data-test-selector="logo">{{input value=redirection_uri}}</span><br>
+</div>
+<div>
+  <b>Logo:</b>  <span data-test-selector="logo">{{logo}}</span><br>
+</div>
+<div>
+  <b>Description:</b> <span data-test-selector="description">{{textarea value=description}}</span><br>
+</div>
+
+
+<button type='button' class="btn btn-blue" {{action "saveClient"}}>
+  Save
+</button>

@@ -5,9 +5,12 @@
     allows you to send content into your Ghost account</span>
 
     {{#each model as |client|}}
-      {{#gh-client-list-item client=client as |component|}}
-        {{partial 'client-list-item'}}
-      {{/gh-client-list-item}}
+      {{gh-client-list-item
+        name=client.name
+        slug=client.slug
+        lastUsed=client.updated_at
+        id=client.id
+        deleteClient="deleteClient"}}
     {{/each}}
 
 </section>

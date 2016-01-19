@@ -6,7 +6,7 @@ import {
     beforeEach,
     afterEach
 } from 'mocha';
-import { expect } from 'chai';
+import { expect, assert} from 'chai';
 import startApp from '../../../helpers/start-app';
 import destroyApp from '../../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
@@ -30,8 +30,11 @@ describe('Acceptance: Settings: Connections', function() {
     authenticateSession(application);
     visit('/settings/connections/');
 
+    let clients = find('[data-test-selector="client-list-item"]').length;
+
     andThen(function() {
       expect(currentURL()).to.equal('/settings/connections/');
+      assert.equal(clients, 3, '3 clients are displayed');
     });
   });
 

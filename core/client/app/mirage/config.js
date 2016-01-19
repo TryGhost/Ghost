@@ -403,7 +403,7 @@ export default function () {
         };
     });
 
-    this.get('/clients/slug/ghost-admin/', function (db) {
+    this.get('/clients/slug/ghost-frontend/', function (db) {
         return {
             clients: [{
                       "slug":"ghost-frontend",
@@ -424,10 +424,31 @@ export default function () {
         };
     });
 
-    this.post('/clients/slug/:slug', 'client');
-    this.post('/clients', 'client');
+    this.get('/clients/slug/test-client/', function (db) {
+        return {
+            clients: [{
+              "slug":"test-client",
+              "type":"ua",
+              "id":3,
+              "uuid":"0be92c46-452e-4d2c-8e05-4c6972a57cv8",
+              "name":"Test Client",
+              "secret":"2f5c4f65764k",
+              "redirection_uri":null,
+              "logo":null,
+              "status":"enabled",
+              "description":null,
+              "created_at":"2015-12-07T17:55:06.861Z",
+              "created_by":1,
+              "updated_at":"2015-12-07T17:55:06.861Z",
+              "updated_by":1
+          }]
+        };
+    });
 
-    this.put('/clients/slug/:slug', function (db, request) {
+    this.post('/clients', 'client');
+    this.del('/clients/:id', 'client');
+
+    this.put('/clients/:id', function (db, request) {
         let [attrs] = JSON.parse(request.requestBody).clients;
         let client;
 
