@@ -1,7 +1,13 @@
 import Ember from 'ember';
+import {AjaxError} from 'ember-ajax/errors';
 
-const {Service, computed, get, set} = Ember;
-const {filter} = computed;
+const {
+    Service,
+    computed: {filter},
+    get,
+    set,
+    isArray
+} = Ember;
 const emberA = Ember.A;
 
 // Notification keys take the form of "noun.verb.message", eg:
@@ -109,14 +115,16 @@ export default Service.extend({
 
         options.defaultErrorText = options.defaultErrorText || 'There was a problem on the server, please try again.';
 
-        if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.error) {
-            this.showAlert(resp.jqXHR.responseJSON.error, options);
-        } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-            this.showErrors(resp.jqXHR.responseJSON.errors, options);
-        } else if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.message) {
-            this.showAlert(resp.jqXHR.responseJSON.message, options);
-        } else {
-            this.showAlert(options.defaultErrorText, options);
+        if (resp instanceof AjaxError) {
+            resp = resp.errors;
+        }
+
+        if (resp && isArray(resp) && resp.length) { // Array of errors
+            this.showErrors(resp, options);
+        } else if (resp && resp.detail) { // ember-ajax provided error message
+            this.showAlert(resp.detail, options);
+        } else { // text error or no error
+            this.showAlert(resp || options.defaultErrorText, options);
         }
     },
 

@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
@@ -12,6 +11,7 @@ export default Route.extend(styleBody, {
 
     ghostPaths: inject.service('ghost-paths'),
     session: inject.service(),
+    ajax: inject.service(),
 
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
@@ -23,16 +23,17 @@ export default Route.extend(styleBody, {
             return;
         }
 
-        // If user is not logged in, check the state of the setup process via the API
-        return ajax(this.get('ghostPaths.url').api('authentication/setup'), {
-            type: 'GET'
-        }).then((result) => {
-            let setup = result.setup[0].status;
+        let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
-            if (setup) {
-                return this.transitionTo('signin');
-            }
-        });
+        // If user is not logged in, check the state of the setup process via the API
+        return this.get('ajax').request(authUrl)
+            .then((result) => {
+                let setup = result.setup[0].status;
+
+                if (setup) {
+                    return this.transitionTo('signin');
+                }
+            });
     },
 
     deactivate() {
