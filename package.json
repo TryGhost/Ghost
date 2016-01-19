@@ -40,7 +40,7 @@
     "downsize": "0.0.8",
     "express": "4.13.3",
     "express-hbs": "0.8.4",
-    "extract-zip": "1.1.1",
+    "extract-zip": "1.4.1",
     "fs-extra": "0.24.0",
     "ghost-gql": "0.0.3",
     "glob": "5.0.15",
