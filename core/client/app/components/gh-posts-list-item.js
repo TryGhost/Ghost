@@ -1,7 +1,12 @@
 import Ember from 'ember';
 import ActiveLinkWrapper from 'ghost/mixins/active-link-wrapper';
 
-const {$, Component, computed, inject} = Ember;
+const {
+    $,
+    Component,
+    computed,
+    inject: {service}
+} = Ember;
 const {alias, equal} = computed;
 
 export default Component.extend(ActiveLinkWrapper, {
@@ -15,7 +20,7 @@ export default Component.extend(ActiveLinkWrapper, {
     isPage: alias('post.page'),
     isPublished: equal('post.status', 'published'),
 
-    ghostPaths: inject.service('ghost-paths'),
+    ghostPaths: service(),
 
     authorName: computed('post.author.name', 'post.author.email', function () {
         return this.get('post.author.name') || this.get('post.author.email');

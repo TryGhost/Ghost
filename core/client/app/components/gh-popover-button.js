@@ -1,14 +1,16 @@
 import Ember from 'ember';
 import DropdownButton from 'ghost/components/gh-dropdown-button';
 
-const {inject} = Ember;
+const {
+    inject: {service}
+} = Ember;
 
 function K() {
     return this;
 }
 
 export default DropdownButton.extend({
-    dropdown: inject.service(),
+    dropdown: service(),
 
     click: K,
 

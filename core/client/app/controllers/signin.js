@@ -1,18 +1,23 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {$, Controller, inject, isArray} = Ember;
+const {
+    $,
+    Controller,
+    inject: {service, controller},
+    isArray
+} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     submitting: false,
     loggingIn: false,
     authProperties: ['identification', 'password'],
 
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    application: inject.controller(),
-    ajax: inject.service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    application: controller(),
+    ajax: service(),
     flowErrors: '',
 
     // ValidationEngine settings
