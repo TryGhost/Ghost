@@ -79,7 +79,8 @@ checkDuplicateAttributes = function checkDuplicateAttributes(data, comparedValue
 
 sanitize = function sanitize(data) {
     var allProblems = {},
-        tableNames = _.sortBy(_.keys(data.data), function (tableName) {
+        tablesInData = _.keys(data.data),
+        tableNames = _.sortBy(_.keys(tables), function (tableName) {
             // We want to guarantee posts and tags go first
             if (tableName === 'posts') {
                 return 1;
@@ -89,6 +90,8 @@ sanitize = function sanitize(data) {
 
             return 3;
         });
+
+    tableNames = _.intersection(tableNames, tablesInData);
 
     _.each(tableNames, function (tableName) {
         // Sanitize the table data for duplicates and valid uuid and created_at values
