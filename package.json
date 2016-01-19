@@ -60,7 +60,7 @@
     "passport-oauth2-client-password": "0.1.2",
     "path-match": "1.2.3",
     "request": "2.67.0",
-    "rss": "1.2.0",
+    "rss": "1.2.1",
     "semver": "5.0.3",
     "showdown-ghost": "0.3.6",
     "sqlite3": "3.1.1",
