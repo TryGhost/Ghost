@@ -2,15 +2,20 @@ import Ember from 'ember';
 import SettingsSaveMixin from 'ghost/mixins/settings-save';
 import randomPassword from 'ghost/utils/random-password';
 
-const {Controller, computed, inject, observer} = Ember;
+const {
+    Controller,
+    computed,
+    inject: {service},
+    observer
+} = Ember;
 
 export default Controller.extend(SettingsSaveMixin, {
 
     showUploadLogoModal: false,
     showUploadCoverModal: false,
 
-    notifications: inject.service(),
-    config: inject.service(),
+    notifications: service(),
+    config: service(),
 
     selectedTheme: computed('model.activeTheme', 'themes', function () {
         let activeTheme = this.get('model.activeTheme');

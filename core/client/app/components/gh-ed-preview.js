@@ -1,10 +1,15 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-const {$, Component, inject, run} = Ember;
+const {
+    $,
+    Component,
+    inject: {service},
+    run
+} = Ember;
 
 export default Component.extend({
-    config: inject.service(),
+    config: service(),
 
     _scrollWrapper: null,
 

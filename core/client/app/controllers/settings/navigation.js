@@ -3,7 +3,14 @@ import DS from 'ember-data';
 import SettingsSaveMixin from 'ghost/mixins/settings-save';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, computed, inject, isBlank, observer} = Ember;
+const {
+    Controller,
+    RSVP,
+    computed,
+    inject: {service},
+    isBlank,
+    observer
+} = Ember;
 const {Errors} = DS;
 const emberA = Ember.A;
 
@@ -26,8 +33,8 @@ export const NavItem = Ember.Object.extend(ValidationEngine, {
 });
 
 export default Controller.extend(SettingsSaveMixin, {
-    config: inject.service(),
-    notifications: inject.service(),
+    config: service(),
+    notifications: service(),
 
     blogUrl: computed('config.blogUrl', function () {
         let url = this.get('config.blogUrl');
