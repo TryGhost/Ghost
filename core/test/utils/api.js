@@ -7,7 +7,7 @@ var _               = require('lodash'),
     port            = config.server.port,
     schema          = 'http://',
     expectedProperties = {
-        configuration: ['key', 'value'],
+        configuration: ['key', 'value', 'type'],
         posts: ['posts', 'meta'],
         tags: ['tags', 'meta'],
         users: ['users', 'meta'],
