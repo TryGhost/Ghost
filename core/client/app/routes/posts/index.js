@@ -2,13 +2,16 @@ import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 import MobileIndexRoute from 'ghost/routes/mobile-index-route';
 
-const {computed, inject} = Ember;
+const {
+    computed,
+    inject: {service}
+} = Ember;
 const {reads} = computed;
 
 export default MobileIndexRoute.extend(AuthenticatedRouteMixin, {
     noPosts: false,
 
-    mediaQueries: inject.service(),
+    mediaQueries: service(),
     isMobile: reads('mediaQueries.isMobile'),
 
     // Transition to a specific post if we're not on mobile

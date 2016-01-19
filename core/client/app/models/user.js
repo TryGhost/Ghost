@@ -3,7 +3,10 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {computed, inject} = Ember;
+const {
+    computed,
+    inject: {service}
+} = Ember;
 const {equal, empty} = computed;
 const {Model, attr, hasMany} = DS;
 
@@ -35,8 +38,8 @@ export default Model.extend(ValidationEngine, {
     }),
     count: DS.attr('raw'),
 
-    ghostPaths: inject.service('ghost-paths'),
-    ajax: inject.service(),
+    ghostPaths: service(),
+    ajax: service(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.

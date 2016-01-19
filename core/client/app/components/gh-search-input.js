@@ -2,7 +2,14 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 
-const {$, Component, RSVP, computed, inject, observer} = Ember;
+const {
+    $,
+    Component,
+    RSVP,
+    computed,
+    inject: {service},
+    observer
+} = Ember;
 const {filterBy} = computed;
 
 export default Component.extend({
@@ -18,9 +25,9 @@ export default Component.extend({
     users: filterBy('content', 'category', 'Users'),
     tags:  filterBy('content', 'category', 'Tags'),
 
-    _store: inject.service('store'),
-    _routing: inject.service('-routing'),
-    ajax: inject.service(),
+    _store: service('store'),
+    _routing: service('-routing'),
+    ajax: service(),
 
     _selectize: computed(function () {
         return this.$('select')[0].selectize;

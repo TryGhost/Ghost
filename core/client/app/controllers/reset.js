@@ -1,7 +1,11 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, computed, inject} = Ember;
+const {
+    Controller,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     newPassword: '',
@@ -12,10 +16,10 @@ export default Controller.extend(ValidationEngine, {
 
     validationType: 'reset',
 
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    ajax: inject.service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
 
     email: computed('token', function () {
         // The token base64 encodes the email (and some other stuff),

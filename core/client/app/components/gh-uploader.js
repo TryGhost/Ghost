@@ -1,12 +1,19 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-const {Component, computed, get, inject, isEmpty, run} = Ember;
+const {
+    Component,
+    computed,
+    get,
+    inject: {service},
+    isEmpty,
+    run
+} = Ember;
 
 export default Component.extend({
     classNames: ['image-uploader', 'js-post-image-upload'],
 
-    config: inject.service(),
+    config: service(),
 
     imageSource: computed('image', function () {
         return this.get('image') || '';

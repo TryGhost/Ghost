@@ -5,7 +5,10 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 import windowProxy from 'ghost/utils/window-proxy';
 
-const {Route, inject} = Ember;
+const {
+    Route,
+    inject: {service}
+} = Ember;
 
 function K() {
     return this;
@@ -19,9 +22,9 @@ shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
 export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     shortcuts,
 
-    config: inject.service(),
-    dropdown: inject.service(),
-    notifications: inject.service(),
+    config: service(),
+    dropdown: service(),
+    notifications: service(),
 
     afterModel(model, transition) {
         if (this.get('session.isAuthenticated')) {

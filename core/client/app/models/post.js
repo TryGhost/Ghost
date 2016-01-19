@@ -3,7 +3,10 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {computed, inject} = Ember;
+const {
+    computed,
+    inject: {service}
+} = Ember;
 const {equal} = computed;
 const {Model, attr, belongsTo, hasMany} = DS;
 
@@ -36,8 +39,8 @@ export default Model.extend(ValidationEngine, {
     }),
     url: attr('string'),
 
-    config: inject.service(),
-    ghostPaths: inject.service('ghost-paths'),
+    config: service(),
+    ghostPaths: service(),
 
     absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');

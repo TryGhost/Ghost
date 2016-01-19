@@ -1,6 +1,12 @@
 import Ember from 'ember';
 
-const {$, Controller, computed, inject, isArray} = Ember;
+const {
+    $,
+    Controller,
+    computed,
+    inject: {service, controller},
+    isArray
+} = Ember;
 
 export default Controller.extend({
     uploadButtonText: 'Import',
@@ -8,11 +14,11 @@ export default Controller.extend({
     submitting: false,
     showDeleteAllModal: false,
 
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    feature: inject.controller(),
-    ajax: inject.service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    feature: controller(),
+    ajax: service(),
 
     labsJSON: computed('model.labs', function () {
         return JSON.parse(this.get('model.labs') || {});

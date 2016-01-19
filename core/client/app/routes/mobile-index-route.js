@@ -1,15 +1,21 @@
 import Ember from 'ember';
 
-const {Route, addObserver, inject, removeObserver} = Ember;
+const {
+    Route,
+    addObserver,
+    inject: {service},
+    removeObserver,
+    K
+} = Ember;
 
 // Routes that extend MobileIndexRoute need to implement
 // desktopTransition, a function which is called when
 // the user resizes to desktop levels.
 export default Route.extend({
-    desktopTransition: Ember.K,
+    desktopTransition: K,
     _callDesktopTransition: null,
 
-    mediaQueries: inject.service(),
+    mediaQueries: service(),
 
     activate() {
         this._super(...arguments);

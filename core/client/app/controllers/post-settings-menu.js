@@ -4,7 +4,21 @@ import SettingsMenuMixin from 'ghost/mixins/settings-menu-controller';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import isNumber from 'ghost/utils/isNumber';
 
-const {$, ArrayProxy, Controller, Handlebars, PromiseProxyMixin, RSVP, computed, guidFor, inject, isArray, isBlank, observer, run} = Ember;
+const {
+    $,
+    ArrayProxy,
+    Controller,
+    Handlebars,
+    PromiseProxyMixin,
+    RSVP,
+    computed,
+    guidFor,
+    inject: {service, controller},
+    isArray,
+    isBlank,
+    observer,
+    run
+} = Ember;
 
 export default Controller.extend(SettingsMenuMixin, {
     debounceId: null,
@@ -12,12 +26,12 @@ export default Controller.extend(SettingsMenuMixin, {
     selectedAuthor: null,
     uploaderReference: null,
 
-    application: inject.controller(),
-    config: inject.service(),
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    slugGenerator: inject.service('slug-generator'),
+    application: controller(),
+    config: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    slugGenerator: service(),
 
     initializeSelectedAuthor: observer('model', function () {
         return this.get('model.author').then((author) => {

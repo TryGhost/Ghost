@@ -1,6 +1,11 @@
 import Ember from 'ember';
 
-const {Component, computed, inject, run} = Ember;
+const {
+    Component,
+    computed,
+    inject: {service},
+    run
+} = Ember;
 const {notEmpty} = computed;
 
 /**
@@ -26,7 +31,7 @@ export default Component.extend({
     hasUploadedImage: false,
     fileStorage: true,
 
-    ghostPaths: inject.service('ghost-paths'),
+    ghostPaths: service(),
     displayGravatar: notEmpty('validEmail'),
 
     init() {

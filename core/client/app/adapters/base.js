@@ -3,7 +3,9 @@ import DS from 'ember-data';
 import ghostPaths from 'ghost/utils/ghost-paths';
 import DataAdapterMixin from 'ember-simple-auth/mixins/data-adapter-mixin';
 
-const {inject} = Ember;
+const {
+    inject: {service}
+} = Ember;
 const {RESTAdapter} = DS;
 
 export default RESTAdapter.extend(DataAdapterMixin, {
@@ -12,7 +14,7 @@ export default RESTAdapter.extend(DataAdapterMixin, {
     host: window.location.origin,
     namespace: ghostPaths().apiRoot.slice(1),
 
-    session: inject.service('session'),
+    session: service(),
 
     shouldBackgroundReloadRecord() {
         return false;

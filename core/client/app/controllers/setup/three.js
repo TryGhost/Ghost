@@ -1,14 +1,20 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 
-const {Controller, RSVP, computed, inject, run} = Ember;
+const {
+    Controller,
+    RSVP,
+    computed,
+    inject: {service, controller},
+    run
+} = Ember;
 const {Errors} = DS;
 const {alias} = computed;
 const emberA = Ember.A;
 
 export default Controller.extend({
-    notifications: inject.service(),
-    two: inject.controller('setup/two'),
+    notifications: service(),
+    two: controller('setup/two'),
 
     errors: Errors.create(),
     hasValidated: emberA(),

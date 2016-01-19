@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
-const {Component, inject} = Ember;
+const {
+    Component,
+    inject: {service}
+} = Ember;
 
 export default Component.extend({
     tagName: 'nav',
@@ -9,8 +12,8 @@ export default Component.extend({
 
     open: false,
 
-    config: inject.service(),
-    session: inject.service(),
+    config: service(),
+    session: service(),
 
     mouseEnter() {
         this.sendAction('onMouseEnter');

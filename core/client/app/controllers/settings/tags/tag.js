@@ -1,6 +1,10 @@
 import Ember from 'ember';
 
-const {Controller, computed, inject} = Ember;
+const {
+    Controller,
+    computed,
+    inject: {service, controller}
+} = Ember;
 const {alias} = computed;
 
 export default Controller.extend({
@@ -10,9 +14,9 @@ export default Controller.extend({
     tag: alias('model'),
     isMobile: alias('tagsController.isMobile'),
 
-    applicationController: inject.controller('application'),
-    tagsController: inject.controller('settings.tags'),
-    notifications: inject.service(),
+    applicationController: controller('application'),
+    tagsController: controller('settings.tags'),
+    notifications: service(),
 
     _saveTagProperty(propKey, newValue) {
         let tag = this.get('tag');
