@@ -113,6 +113,14 @@ describe('Config', function () {
             config.paths.should.have.property('subdir', '/my/blog');
         });
 
+        it('should add subdir to list of protected slugs', function () {
+            configUtils.set({url: 'http://my-ghost-blog.com/blog'});
+            config.slugs.protected.should.containEql('blog');
+
+            configUtils.set({url: 'http://my-ghost-blog.com/my/blog'});
+            config.slugs.protected.should.containEql('blog');
+        });
+
         it('should allow specific properties to be user defined', function () {
             var contentPath = path.join(config.paths.appRoot, 'otherContent', '/'),
                 configFile = 'configFileDanceParty.js';
@@ -269,6 +277,10 @@ describe('Config', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/blog'});
                 config.urlFor(testContext, testData).should.equal('/blog/short-and-sweet/');
                 config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/short-and-sweet/');
+
+                testData.post.url = '/blog-one/';
+                config.urlFor(testContext, testData).should.equal('/blog/blog-one/');
+                config.urlFor(testContext, testData, true).should.equal('http://my-ghost-blog.com/blog/blog-one/');
             });
 
             it('should return url for a tag when asked for', function () {
