@@ -263,6 +263,11 @@ function toggleCodeBlock(editor) {
 		return line.styles && line.styles[2] && line.styles[2].indexOf("formatting-code-block") !== -1;
 	}
 
+	function token_state(token) {
+		// base goes an extra level deep when mode backdrops are used, e.g. spellchecker on
+		return token.state.base.base || token.state.base;
+	}
+
 	function code_type(cm, line_num, line, firstTok, lastTok) {
 		/*
 		 * Return "single", "indented", "fenced" or false
@@ -280,13 +285,13 @@ function toggleCodeBlock(editor) {
 			ch: line.text.length - 1
 		}));
 		var types = firstTok.type ? firstTok.type.split(" ") : [];
-		if(lastTok && lastTok.state.base.indentedCode) {
+		if(lastTok && token_state(lastTok).indentedCode) {
 			// have to check last char, since first chars of first line aren"t marked as indented
 			return "indented";
 		} else if(types.indexOf("comment") === -1) {
 			// has to be after "indented" check, since first chars of first indented line aren"t marked as such
 			return false;
-		} else if(firstTok.state.base.fencedChars || lastTok.state.base.fencedChars || fencing_line(line)) {
+		} else if(token_state(firstTok).fencedChars || token_state(lastTok).fencedChars || fencing_line(line)) {
 			return "fenced";
 		} else {
 			return "single";
@@ -358,7 +363,7 @@ function toggleCodeBlock(editor) {
 				line: block_start,
 				ch: 1
 			});
-			insertFencingAtSelection(cm, cur_start, cur_end, fencedTok.state.base.fencedChars);
+			insertFencingAtSelection(cm, cur_start, cur_end, token_state(fencedTok).fencedChars);
 		} else {
 			// no selection, search for ends of this fenced block
 			var search_from = cur_start.line;
@@ -449,7 +454,7 @@ function toggleCodeBlock(editor) {
 				line: block_end + 1,
 				ch: next_line.text.length - 1
 			}),
-			next_line_indented = next_line_last_tok && next_line_last_tok.state.base.indentedCode;
+			next_line_indented = next_line_last_tok && token_state(next_line_last_tok).indentedCode;
 		if(next_line_indented) {
 			cm.replaceRange("\n", {
 				line: block_end + 1,
