@@ -30,7 +30,7 @@
     "ember-cli-fastclick": "1.0.3",
     "ember-cli-htmlbars": "1.0.1",
     "ember-cli-htmlbars-inline-precompile": "0.3.1",
-    "ember-cli-mirage": "0.1.9",
+    "ember-cli-mirage": "0.1.11",
     "ember-cli-mocha": "0.9.8",
     "ember-cli-pretender": "0.5.0",
     "ember-cli-release": "0.2.8",
