@@ -34,6 +34,7 @@ function urlJoin() {
         prefixDoubleSlash = false,
         subdir = ghostConfig.paths.subdir.replace(/\//g, ''),
         subdirRegex,
+        validateSubdirRegex,
         url;
 
     // Remove empty item at the beginning
@@ -59,8 +60,16 @@ function urlJoin() {
 
     // Deduplicate subdirectory
     if (subdir) {
-        subdirRegex = new RegExp(subdir + '\/' + subdir);
-        url = url.replace(subdirRegex, subdir);
+        validateSubdirRegex = new RegExp(subdir + '\/' + subdir + '\/.+');
+
+        // Should not replace if asked path is same as subdir.
+        // For example: If we ask path for '/private', when subdir is '/private/',
+        //              result must be '/private/private'.
+        // Issue:       https://goo.gl/yptk94
+        if (validateSubdirRegex.test(url)) {
+            subdirRegex = new RegExp(subdir + '\/' + subdir);
+            url = url.replace(subdirRegex, subdir);
+        }
     }
 
     return url;

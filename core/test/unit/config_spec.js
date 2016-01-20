@@ -185,6 +185,12 @@ describe('Config', function () {
                 config.urlJoin('blog', 'blog/about').should.equal('blog/about');
                 config.urlJoin('blog/', 'blog/about').should.equal('blog/about');
             });
+
+            it('should not deduplicate subdir if path is same as subdir', function () {
+                config.set({url: 'http://my-ghost-blog.com/private'});
+                config.urlJoin('private', 'private').should.equal('private/private');
+                config.urlJoin('private/', 'private').should.equal('private/private');
+            });
         });
 
         describe('urlFor', function () {
@@ -254,6 +260,22 @@ describe('Config', function () {
                 configUtils.set({url: 'http://my-ghost-blog.com/blog/'});
                 config.urlFor(testContext).should.equal('/blog/about/');
                 config.urlFor(testContext, true).should.equal('http://my-ghost-blog.com/blog/about/');
+            });
+
+            it('should not deduplicate subdir if path is same as subdir', function () {
+                var testContext = {relativeUrl: '/private/'};
+
+                config.set({url: 'http://my-ghost-private.com'});
+                config.urlFor(testContext).should.equal('/private/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-private.com/private/');
+
+                config.set({url: 'http://my-ghost-private.com/private'});
+                config.urlFor(testContext).should.equal('/private/private/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-private.com/private/private/');
+
+                config.set({url: 'http://my-ghost-private.com/private/'});
+                config.urlFor(testContext).should.equal('/private/private/');
+                config.urlFor(testContext, true).should.equal('http://my-ghost-private.com/private/private/');
             });
 
             it('should return url for a post from post object', function () {
