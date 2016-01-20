@@ -145,6 +145,10 @@ ConfigManager.prototype.set = function (config) {
 
     subdir = localPath === '/' ? '' : localPath;
 
+    if (!_.isEmpty(subdir)) {
+        this._config.slugs.protected.push(subdir.split('/').pop());
+    }
+
     // Allow contentPath to be over-written by passed in config object
     // Otherwise default to default content path location
     contentPath = this._config.paths.contentPath || path.resolve(appRoot, 'content');
