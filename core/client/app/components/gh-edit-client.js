@@ -17,12 +17,6 @@ isEnabled: computed('status', {
 }),
 
  actions: {
-   setProperty(property, value) {
-      console.log(property);
-      console.log(value);
-      this.setProperty(property, value);
-   },
-
    changeClientStatus(newStatus){
      this.sendAction('changeClientStatus', newStatus);
    },
@@ -31,8 +25,14 @@ isEnabled: computed('status', {
      this.sendAction('refreshSecret');
    },
 
-   saveClient(name, description, redirection_uri){
-     this.sendAction('saveClient', name, description, redirection_uri);
+   saveClient(){
+     let client = {
+       name: this.get('name'),
+       redirection_uri: this.get('redirection_uri'),
+       description: this.get('description'),
+       created_at: moment()
+     }
+     this.sendAction('saveClient', client);
    }
  }
 });

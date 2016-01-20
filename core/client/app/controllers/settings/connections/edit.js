@@ -3,7 +3,7 @@ import Ember from 'ember';
 const {Controller, computed, inject} = Ember;
 
 export default Controller.extend({
-  // model <- client
+  
   actions: {
       changeClientStatus(status) {
         let client = this.get('model');
@@ -17,12 +17,12 @@ export default Controller.extend({
         client.save();
       },
 
-      saveClient(name, description, redirection_uri) {
+      saveClient(clientData) {
         let client = this.get('model');
 
-        client.set('name', name);
-        client.set('description', description);
-        client.set('redirection_uri', redirection_uri);
+        client.set('name', clientData.name);
+        client.set('description', clientData.description);
+        client.set('redirection_uri', clientData.redirection_uri);
         client.save();
         this.transitionToRoute('settings.connections.index');
       }

@@ -1,14 +1,14 @@
-<div data-test-selector="client-list-item" class="row">
+<div data-test-selector="client-list-item" class="user-list-item">
   {{#link-to 'settings.connections.edit' slug}}
   <div class="user-list-item-body">
     <span class="name">
       {{name}}
     </span>
     <br>
-    <span class="description">Last seen: {{lastUsed}}</span>
+    <span class="description">Status: {{status}}</span>
   </div>
   {{/link-to}}
-  <div class="client-revoke">
+  <div class="view-actions">
     <button class="btn btn-red" {{action 'deleteClient' id}}>REVOKE ACCESS</button>
   </div>
 </div>

@@ -6,6 +6,7 @@
 
     {{#each model as |client|}}
       {{gh-client-list-item
+        status=client.status
         name=client.name
         slug=client.slug
         lastUsed=client.updated_at

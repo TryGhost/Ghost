@@ -1,8 +1,28 @@
-<h3>New Client </h3>
+<h4>New Client </h4>
 
-Name {{input value=name}}<br>
-Logo {{input value=logo}}<br>
-Redirection URL {{input value=redirection_uri}}<br>
-Description {{textarea value=description}}<br>
+<div class="form-group">
+  <label for="client-name">Name </label>
+  <div data-test-selector="name">
+    {{gh-input class="gh-input" value=name}}
+  </div>
+</div>
+<div class="form-group">
+  <label for="client-logo">Logo </label>
+  <div data-test-selector="logo">
+    {{gh-input class="gh-input" value=logo}}
+  </div>
+</div>
+<div class="form-group">
+  <label for="client-redirection_uri">Redirection URL </label>
+  <div data-test-selector="redirectiona_uri">
+    {{gh-input class="gh-input" value=redirection_uri}}
+  </div>
+</div>
+<div class="form-group">
+  <label for="client-name">Description </label>
+  <div data-test-selector="description">
+    {{gh-textarea class="gh-input" value=description}}
+  </div>
+</div>
 
 <button class="btn btn-blue" {{action "saveClient"}}>Save</button>

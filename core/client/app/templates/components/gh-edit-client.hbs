@@ -1,45 +1,42 @@
-{{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="name"}}
-<div class="row">
-<div>
-  <label for="client-name">Name:</label>
-  <span data-test-selector="name">{{gh-input class="gh-input" name="name" value=name focusOut=(action "setProperty" "name")}}</span>
-  {{gh-error-message errors=model.errors property="name"}}
+<div class="form-group">
+  <div>
+    <label for="client-name">Name:</label>
+    <span data-test-selector="name">{{gh-input class="gh-input" name="name" value=name}}</span>
+  </div>
 </div>
-</div>
-{{/gh-form-group}}
-<div class="row">
+<div class="form-group">
   <div>
     <label for="client-name">Status:</label>
     <span data-test-selector="status">{{status}}</span>
   </div>
   <div>
-    <button type='button' class="btn btn-blue" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
+    <button type='button' class="btn btn-blue view-actions" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
       {{if isEnabled 'Disable' 'Enable'}}
     </button>
   </div>
 </div>
-<div class="row">
+<div class="form-group">
   <div>
     <label for="client-name">Secret:</label>
     <span data-test-selector="secret">{{secret}}</span>
   </div>
   <div>
-    <button type='button' class="btn btn-blue" {{action "refreshSecret"}}>
+    <button type='button' class="btn btn-blue view-actions" {{action "refreshSecret"}}>
       Refresh Token
     </button>
   </div>
 </div>
-<div>
+<div class="form-group">
   <label for="client-name">redirection URL:</label>
-  <span data-test-selector="logo">{{gh-input class="gh-input" name="redirection_uri" value=redirection_uri focusOut=(action "setProperty" "redirection_uri")}}</span>
+  <span data-test-selector="logo">{{gh-input class="gh-input" name="redirection_uri" value=redirection_uri}}</span>
 </div>
-<div>
+<div class="form-group">
   <label for="client-name">Logo:</label>
   <span data-test-selector="logo">{{logo}}</span>
 </div>
-<div>
+<div class="form-group">
   <label for="client-name">Description:</label>
-  <span data-test-selector="description">{{gh-textarea class="gh-input" name="description" value=description focusOut=(action "setProperty" "description")}}</span>
+  <span data-test-selector="description">{{gh-textarea class="gh-input" name="description" value=description}}</span>
 </div>
 
 <button type='button' class="btn btn-blue" {{action "saveClient"}}>
