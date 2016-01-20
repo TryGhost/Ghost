@@ -1,6 +1,8 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { belongsTo, hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {
@@ -8,7 +10,6 @@ const {
     inject: {service}
 } = Ember;
 const {equal} = computed;
-const {Model, attr, belongsTo, hasMany} = DS;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'post',

@@ -1,8 +1,7 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-
-const {Model, attr} = DS;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'setting',

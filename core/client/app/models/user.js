@@ -1,6 +1,8 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {
@@ -8,7 +10,6 @@ const {
     inject: {service}
 } = Ember;
 const {equal, empty} = computed;
-const {Model, attr, hasMany} = DS;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'user',
@@ -36,7 +37,7 @@ export default Model.extend(ValidationEngine, {
         embedded: 'always',
         async: false
     }),
-    count: DS.attr('raw'),
+    count: attr('raw'),
 
     ghostPaths: service(),
     ajax: service(),
