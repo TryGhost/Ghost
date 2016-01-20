@@ -7,7 +7,8 @@ import windowProxy from 'ghost/utils/window-proxy';
 
 const {
     Route,
-    inject: {service}
+    inject: {service},
+    run
 } = Ember;
 
 function K() {
@@ -48,7 +49,9 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     sessionInvalidated() {
-        this.send('authorizationFailed');
+        run.scheduleOnce('routerTransitions', this, function () {
+            this.send('authorizationFailed');
+        });
     },
 
     actions: {

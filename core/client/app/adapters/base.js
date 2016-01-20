@@ -1,12 +1,11 @@
 import Ember from 'ember';
-import DS from 'ember-data';
+import RESTAdapter from 'ember-data/adapters/rest';
 import ghostPaths from 'ghost/utils/ghost-paths';
 import DataAdapterMixin from 'ember-simple-auth/mixins/data-adapter-mixin';
 
 const {
     inject: {service}
 } = Ember;
-const {RESTAdapter} = DS;
 
 export default RESTAdapter.extend(DataAdapterMixin, {
     authorizer: 'authorizer:oauth2',
