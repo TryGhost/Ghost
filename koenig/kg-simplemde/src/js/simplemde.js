@@ -166,6 +166,12 @@ function getState(cm, pos) {
 			ret.strikethrough = true;
 		} else if(data === "comment") {
 			ret.code = true;
+		} else if(data === "link") {
+			ret.link = true;
+		} else if(data === "tag") {
+			ret.image = true;
+		} else if(data.match(/^header(\-[1-6])?$/)) {
+			ret[data.replace("header", "heading")] = true;
 		}
 	}
 	return ret;
@@ -1543,6 +1549,12 @@ SimpleMDE.prototype.isFullscreenActive = function() {
 	var cm = this.codemirror;
 
 	return cm.getOption("fullScreen");
+};
+
+SimpleMDE.prototype.getState = function() {
+	var cm = this.codemirror;
+
+	return getState(cm);
 };
 
 module.exports = SimpleMDE;
