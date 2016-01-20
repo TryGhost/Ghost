@@ -1,13 +1,14 @@
 import Ember from 'ember';
 
 const {
-  computed,
-  isEmpty,
-  getProperties,
-  get
+  computed
 } = Ember;
 
 export default Ember.Component.extend({
+
+  didReceiveAttrs(attrs) {
+      this._super(...arguments);
+  },
 
 isEnabled: computed('status', {
   get() {
@@ -16,6 +17,12 @@ isEnabled: computed('status', {
 }),
 
  actions: {
+   setProperty(property, value) {
+      console.log(property);
+      console.log(value);
+      this.setProperty(property, value);
+   },
+
    changeClientStatus(newStatus){
      this.sendAction('changeClientStatus', newStatus);
    },
