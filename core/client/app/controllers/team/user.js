@@ -56,7 +56,7 @@ export default Controller.extend(ValidationEngine, {
 
     // duplicated in gh-user-active -- find a better home and consolidate?
     userDefault: computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+        return `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
     }),
 
     userImageBackground: computed('user.image', 'userDefault', function () {
@@ -67,7 +67,7 @@ export default Controller.extend(ValidationEngine, {
     // end duplicated
 
     coverDefault: computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
+        return `${this.get('ghostPaths.subdir')}/ghost/img/user-cover.png`;
     }),
 
     coverImageBackground: computed('user.cover', 'coverDefault', function () {

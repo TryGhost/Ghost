@@ -41,7 +41,7 @@ export default Component.extend({
     },
 
     defaultImage: computed('ghostPaths', function () {
-        let url = this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+        let url = `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
         return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
