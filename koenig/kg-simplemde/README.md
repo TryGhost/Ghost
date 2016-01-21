@@ -100,6 +100,7 @@ simplemde.value("This text will appear in the editor");
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include, and in what order.
+- **statusCustom**: An object of custom elements to add to the statusbar
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
@@ -155,6 +156,17 @@ var simplemde = new SimpleMDE({
 	spellChecker: false,
 	status: false,
 	status: ["autosave", "lines", "words", "cursor"], // Optional usage
+	statusCustom: {
+	    countKeyStrokes: { // Counts the total number of keystrokes
+	        defaultValue: function(span) {
+	            this.keystrokes = 0;
+	            span.innerHTML = "0 Keystrokes";
+	        },
+	        onUpdate: function(span) {
+	            span.innerHTML = ++this.keystrokes + " Keystrokes";
+	        }
+	    }
+	},
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
