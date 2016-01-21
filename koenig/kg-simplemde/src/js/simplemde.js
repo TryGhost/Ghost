@@ -1019,6 +1019,9 @@ function SimpleMDE(options) {
 	if(!options.hasOwnProperty("status")) {
 		options.status = ["autosave", "lines", "words", "cursor"];
 	}
+	if(!options.hasOwnProperty("statusCustom")) {
+		options.statusCustom = {};
+	}
 
 
 	// Add default preview rendering function
@@ -1172,7 +1175,7 @@ SimpleMDE.prototype.render = function(el) {
 	if(options.toolbar !== false) {
 		this.createToolbar();
 	}
-	if(options.status !== false) {
+	if(options.status !== false || options.statusCustom) {
 		this.createStatusbar();
 	}
 	if(options.autosave != undefined && options.autosave.enabled === true) {
@@ -1372,47 +1375,95 @@ SimpleMDE.prototype.createToolbar = function(items) {
 };
 
 SimpleMDE.prototype.createStatusbar = function(status) {
+	var customOptions = this.options.statusCustom;
 	status = status || this.options.status;
 	var options = this.options;
 
 	if(!status || status.length === 0) return;
 
+	// Copy the defaults if the status is a boolean true
+	if(status === true) status = ["autosave", "lines", "words", "cursor"];
+
+	// Set up the in-built actions: autosave, lines, words, cursor
+	var actions = {};
+	var i, name, onUpdate, defaultValue;
+	for(i = 0; i < status.length; i++) {
+		name = status[i];
+
+		if(name === "words") {
+			defaultValue = function(el) {
+				el.innerHTML = "0";
+			};
+			onUpdate = function(el) {
+				el.innerHTML = wordCount(cm.getValue());
+			};
+		} else if(name === "lines") {
+			defaultValue = function(el) {
+				el.innerHTML = "0";
+			};
+			onUpdate = function(el) {
+				el.innerHTML = cm.lineCount();
+			};
+		} else if(name === "cursor") {
+			defaultValue = function(el) {
+				el.innerHTML = "0:0";
+			};
+			onUpdate = function(el) {
+				pos = cm.getCursor();
+				el.innerHTML = pos.line + ":" + pos.ch;
+			};
+		} else if(name === "autosave") {
+			defaultValue = function(el) {
+				if(options.autosave != undefined && options.autosave.enabled === true) {
+					el.setAttribute("id", "autosaved");
+				}
+			};
+		}
+		actions[name] = {
+			onUpdate: onUpdate,
+			defaultValue: defaultValue
+		};
+	}
+
+	// Iterate any user-provided options
+	for(var key in customOptions) {
+		if(customOptions.hasOwnProperty(key)) {
+			var thisOption = customOptions[key];
+
+			// Copy the option into the combined actions
+			// This will allow the user to override the defaults
+			actions[key] = {
+				defaultValue: thisOption.defaultValue,
+				onUpdate: thisOption.onUpdate
+			};
+		}
+	}
+
 	var bar = document.createElement("div");
 	bar.className = "editor-statusbar";
 
 	var pos, cm = this.codemirror;
-	for(var i = 0; i < status.length; i++) {
-		(function(name) {
+	// Create a new span for each action
+	for(name in actions) {
+		if(actions.hasOwnProperty(name)) {
 			var el = document.createElement("span");
 			el.className = name;
-			if(name === "words") {
-				el.innerHTML = "0";
-				cm.on("update", function() {
-					el.innerHTML = wordCount(cm.getValue());
-				});
-			} else if(name == "characters") {
-				el.innerHTML = "0";
-				cm.on("update", function() {
-					el.innerHTML = cm.getValue().length;
-				});
-			} else if(name === "lines") {
-				el.innerHTML = "0";
-				cm.on("update", function() {
-					el.innerHTML = cm.lineCount();
-				});
-			} else if(name === "cursor") {
-				el.innerHTML = "0:0";
-				cm.on("cursorActivity", function() {
-					pos = cm.getCursor();
-					el.innerHTML = pos.line + ":" + pos.ch;
-				});
-			} else if(name === "autosave") {
-				if(options.autosave != undefined && options.autosave.enabled === true) {
-					el.setAttribute("id", "autosaved");
-				}
+			// Ensure the defaultValue is a function
+			if(typeof actions[name].defaultValue === "function") {
+				actions[name].defaultValue(el);
+			}
+			// Ensure the onUpdate is a function
+			if(typeof actions[name].onUpdate === "function") {
+				// Create a closure around the span and the name
+				// of the current action, then execute the onUpdate handler
+				cm.on("update", (function(el, name) {
+					return function() {
+						actions[name].onUpdate(el);
+					};
+				}(el, name)));
 			}
 			bar.appendChild(el);
-		})(status[i]);
+		}
 	}
 
 	var cmWrapper = this.codemirror.getWrapperElement();
