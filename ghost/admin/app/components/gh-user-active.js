@@ -14,7 +14,7 @@ export default Component.extend({
     ghostPaths: service(),
 
     userDefault: computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+        return `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
     }),
 
     userImageBackground: computed('user.image', 'userDefault', function () {
