@@ -4,6 +4,7 @@ import Model from 'ember-data/model';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
+import ClientValidator from 'ghost/validators/client';
 import PostValidator from 'ghost/validators/post';
 import SetupValidator from 'ghost/validators/setup';
 import SignupValidator from 'ghost/validators/signup';
@@ -35,6 +36,7 @@ export default Mixin.create({
     // in that case the model will be the class that the ValidationEngine
     // was mixed into, i.e. the controller or Ember Data model.
     validators: {
+        client: ClientValidator,
         post: PostValidator,
         setup: SetupValidator,
         signup: SignupValidator,
