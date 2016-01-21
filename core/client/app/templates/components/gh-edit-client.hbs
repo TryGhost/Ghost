@@ -1,12 +1,36 @@
+{{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
+    <label for="client-name">Name</label>
+    <div data-test-selector="name">
+        {{gh-input value=name focusOut=(action "validate" "name")}}
+    </div>
+    {{gh-error-message errors=errors property="name"}}
+{{/gh-form-group}}
 <div class="form-group">
-  <div>
-    <label for="client-name">Name:</label>
-    <span data-test-selector="name">{{gh-input class="gh-input" name="name" value=name}}</span>
+  <label for="client-logo">Logo</label>
+  <div data-test-selector="logo">
+    {{gh-input class="gh-input" value=logo}}
   </div>
 </div>
+
+<div class="form-group">
+  <label for="client-redirection_uri">Redirection URL</label>
+  <div data-test-selector="redirectiona_uri">
+    {{gh-input class="gh-input" value=redirection_uri}}
+  </div>
+</div>
+
+{{#gh-form-group errors=errors hasValidated=hasValidated property="description"}}
+  <label for="client-description">Description</label>
+  <div data-test-selector="description">
+    {{gh-textarea value=description focusOut=(action "validate" "description")}}
+  </div>
+  {{gh-error-message errors=errors property="description"}}
+ {{/gh-form-group}}
+
+ {{#if isEditing}}
 <div class="form-group">
   <div>
-    <label for="client-name">Status:</label>
+    <label for="client-status">Status:</label>
     <span data-test-selector="status">{{status}}</span>
   </div>
   <div>
@@ -17,28 +41,15 @@
 </div>
 <div class="form-group">
   <div>
-    <label for="client-name">Secret:</label>
+    <label for="client-secret">Secret:</label>
     <span data-test-selector="secret">{{secret}}</span>
   </div>
   <div>
-    <button type='button' class="btn btn-blue view-actions" {{action "refreshSecret"}}>
+    <button type='button' class="btn btn-blue view-action" {{action "refreshSecret"}}>
       Refresh Token
     </button>
   </div>
 </div>
-<div class="form-group">
-  <label for="client-name">redirection URL:</label>
-  <span data-test-selector="logo">{{gh-input class="gh-input" name="redirection_uri" value=redirection_uri}}</span>
-</div>
-<div class="form-group">
-  <label for="client-name">Logo:</label>
-  <span data-test-selector="logo">{{logo}}</span>
-</div>
-<div class="form-group">
-  <label for="client-name">Description:</label>
-  <span data-test-selector="description">{{gh-textarea class="gh-input" name="description" value=description}}</span>
-</div>
+{{/if}}
 
-<button type='button' class="btn btn-blue" {{action "saveClient"}}>
-  Save
-</button>
+<button class="btn btn-blue" {{action "saveClient"}}>Save</button>

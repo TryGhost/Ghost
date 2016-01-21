@@ -3,7 +3,9 @@ import Ember from 'ember';
 const {Controller, computed, inject} = Ember;
 
 export default Controller.extend({
-  
+
+    isEditing: true,
+
   actions: {
       changeClientStatus(status) {
         let client = this.get('model');

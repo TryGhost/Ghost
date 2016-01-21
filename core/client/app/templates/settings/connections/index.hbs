@@ -1,8 +1,10 @@
 <section class="view-content">
 
-  <h4 class="user-list active-users">Clients</h4>
-  <span>The are services which connect to Ghost - for example a desktop editor which
-    allows you to send content into your Ghost account</span>
+    <div class="settings-tag">
+      <h3 class="view-title">Clients</h3>
+      <p>The are services which connect to Ghost - for example a desktop editor which
+        allows you to send content into your Ghost account</p>
+    </div>
 
     {{#each model as |client|}}
       {{gh-client-list-item
