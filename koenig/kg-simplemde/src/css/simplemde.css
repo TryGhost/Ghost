@@ -210,6 +210,10 @@
 	content: 'words: '
 }
 
+.editor-statusbar .characters:before {
+	content: 'characters: '
+}
+
 .editor-preview {
 	padding: 10px;
 	position: absolute;
@@ -317,4 +321,8 @@
 
 .CodeMirror .CodeMirror-code .cm-strikethrough {
 	text-decoration: line-through;
+}
+
+.CodeMirror .CodeMirror-placeholder {
+	opacity: .5;
 }
