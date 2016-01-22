@@ -13884,9 +13884,6 @@ function SimpleMDE(options) {
 	if(!options.hasOwnProperty("status")) {
 		options.status = ["autosave", "lines", "words", "cursor"];
 	}
-	if(!options.hasOwnProperty("statusCustom")) {
-		options.statusCustom = {};
-	}
 
 
 	// Add default preview rendering function
@@ -14040,7 +14037,7 @@ SimpleMDE.prototype.render = function(el) {
 	if(options.toolbar !== false) {
 		this.createToolbar();
 	}
-	if(options.status !== false || options.statusCustom) {
+	if(options.status !== false) {
 		this.createStatusbar();
 	}
 	if(options.autosave != undefined && options.autosave.enabled === true) {
@@ -14240,97 +14237,118 @@ SimpleMDE.prototype.createToolbar = function(items) {
 };
 
 SimpleMDE.prototype.createStatusbar = function(status) {
-	var customOptions = this.options.statusCustom;
+	// Initialize
 	status = status || this.options.status;
 	var options = this.options;
+	var cm = this.codemirror;
 
-	if(!status || status.length === 0) return;
 
-	// Copy the defaults if the status is a boolean true
-	if(status === true) status = ["autosave", "lines", "words", "cursor"];
+	// Make sure the status variable is valid
+	if(!status || status.length === 0)
+		return;
 
-	// Set up the in-built actions: autosave, lines, words, cursor
-	var actions = {};
-	var i, name, onUpdate, defaultValue;
+
+	// Set up the built-in items
+	var items = [];
+	var i, onUpdate, defaultValue;
+
 	for(i = 0; i < status.length; i++) {
-		name = status[i];
+		// Reset some values
+		onUpdate = undefined;
+		defaultValue = undefined;
 
-		if(name === "words") {
-			defaultValue = function(el) {
-				el.innerHTML = "0";
-			};
-			onUpdate = function(el) {
-				el.innerHTML = wordCount(cm.getValue());
-			};
-		} else if(name === "lines") {
-			defaultValue = function(el) {
-				el.innerHTML = "0";
-			};
-			onUpdate = function(el) {
-				el.innerHTML = cm.lineCount();
-			};
-		} else if(name === "cursor") {
-			defaultValue = function(el) {
-				el.innerHTML = "0:0";
-			};
-			onUpdate = function(el) {
-				pos = cm.getCursor();
-				el.innerHTML = pos.line + ":" + pos.ch;
-			};
-		} else if(name === "autosave") {
-			defaultValue = function(el) {
-				if(options.autosave != undefined && options.autosave.enabled === true) {
-					el.setAttribute("id", "autosaved");
-				}
-			};
+
+		// Handle if custom or not
+		if(typeof status[i] === "object") {
+			items.push({
+				className: status[i].className,
+				defaultValue: status[i].defaultValue,
+				onUpdate: status[i].onUpdate
+			});
+		} else {
+			var name = status[i];
+
+			if(name === "words") {
+				defaultValue = function(el) {
+					el.innerHTML = "0";
+				};
+				onUpdate = function(el) {
+					el.innerHTML = wordCount(cm.getValue());
+				};
+			} else if(name === "lines") {
+				defaultValue = function(el) {
+					el.innerHTML = "0";
+				};
+				onUpdate = function(el) {
+					el.innerHTML = cm.lineCount();
+				};
+			} else if(name === "cursor") {
+				defaultValue = function(el) {
+					el.innerHTML = "0:0";
+				};
+				onUpdate = function(el) {
+					var pos = cm.getCursor();
+					el.innerHTML = pos.line + ":" + pos.ch;
+				};
+			} else if(name === "autosave") {
+				defaultValue = function(el) {
+					if(options.autosave != undefined && options.autosave.enabled === true) {
+						el.setAttribute("id", "autosaved");
+					}
+				};
+			}
+
+			items.push({
+				className: name,
+				defaultValue: defaultValue,
+				onUpdate: onUpdate
+			});
 		}
-		actions[name] = {
-			onUpdate: onUpdate,
-			defaultValue: defaultValue
-		};
 	}
 
-	// Iterate any user-provided options
-	for(var key in customOptions) {
-		if(customOptions.hasOwnProperty(key)) {
-			var thisOption = customOptions[key];
 
-			// Copy the option into the combined actions
-			// This will allow the user to override the defaults
-			actions[key] = {
-				defaultValue: thisOption.defaultValue,
-				onUpdate: thisOption.onUpdate
-			};
-		}
-	}
-
+	// Create element for the status bar
 	var bar = document.createElement("div");
 	bar.className = "editor-statusbar";
 
-	var pos, cm = this.codemirror;
-	// Create a new span for each action
-	for(name in actions) {
-		if(actions.hasOwnProperty(name)) {
-			var el = document.createElement("span");
-			el.className = name;
-			// Ensure the defaultValue is a function
-			if(typeof actions[name].defaultValue === "function") {
-				actions[name].defaultValue(el);
-			}
-			// Ensure the onUpdate is a function
-			if(typeof actions[name].onUpdate === "function") {
-				// Create a closure around the span and the name
-				// of the current action, then execute the onUpdate handler
-				cm.on("update", (function(el, name) {
-					return function() {
-						actions[name].onUpdate(el);
-					};
-				}(el, name)));
-			}
-			bar.appendChild(el);
+
+	// Create a new span for each item
+	for(i = 0; i < items.length; i++) {
+		// Store in temporary variable
+		var item = items[i];
+
+
+		// Create span element
+		var el = document.createElement("span");
+		el.className = item.className;
+
+
+		// Ensure the defaultValue is a function
+		if(typeof item.defaultValue === "function") {
+			item.defaultValue(el);
 		}
+
+
+		// Ensure the onUpdate is a function
+		if(typeof item.onUpdate === "function") {
+			// Create a closure around the span of the current action, then execute the onUpdate handler
+			this.codemirror.on("update", (function(el, item) {
+				console.log(el);
+				console.log(item);
+				console.log("---------------");
+				return function() {
+					item.onUpdate(el);
+				};
+			}(el, item)));
+		}
+
+
+		// Append the item to the status bar
+		bar.appendChild(el);
 	}
 
+
+	// Insert the status bar into the DOM
 	var cmWrapper = this.codemirror.getWrapperElement();
 	cmWrapper.parentNode.insertBefore(bar, cmWrapper.nextSibling);
 	return bar;

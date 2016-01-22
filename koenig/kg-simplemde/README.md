@@ -100,7 +100,7 @@ simplemde.value("This text will appear in the editor");
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to `true`.
   - Optionally, you can set an array of status bar elements to include, and in what order.
-- **statusCustom**: An object of custom elements to add to the statusbar
+- **statusCustom**: An object of custom elements to add to the status bar.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
@@ -156,17 +156,16 @@ var simplemde = new SimpleMDE({
 	spellChecker: false,
 	status: false,
 	status: ["autosave", "lines", "words", "cursor"], // Optional usage
-	statusCustom: {
-	    countKeyStrokes: { // Counts the total number of keystrokes
-	        defaultValue: function(span) {
-	            this.keystrokes = 0;
-	            span.innerHTML = "0 Keystrokes";
-	        },
-	        onUpdate: function(span) {
-	            span.innerHTML = ++this.keystrokes + " Keystrokes";
-	        }
-	    }
-	},
+	status: ["autosave", "lines", "words", "cursor", {
+		className: "keystrokes",
+		defaultValue: function(el) {
+			this.keystrokes = 0;
+			el.innerHTML = "0 Keystrokes";
+		},
+		onUpdate: function(el) {
+			el.innerHTML = ++this.keystrokes + " Keystrokes";
+		}
+	}], // Another optional usage, with a custom status item that counts keystrokes
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
@@ -175,7 +174,7 @@ var simplemde = new SimpleMDE({
 
 #### Toolbar icons
 
-Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. Note that shortcut hints are added automatically and reflect the specified "action" if it has a keybind assigned to it (ie. with the value of "action" set to `bold` and that of "tootip" set to "Bold", the final text the user will see - assuming the default shortcuts are unchanged - would be "Bold (Ctrl-B)").
+Below are the built-in toolbar icons (only some of which are enabled by default), which can be reorganized however you like. "Name" is the name of the icon, referenced in the JS. "Action" is either a function or a URL to open. "Class" is the class given to the icon. "Tooltip" is the small tooltip that appears via the `title=""` attribute. Note that shortcut hints are added automatically and reflect the specified action if it has a keybind assigned to it (i.e. with the value of `action` set to `bold` and that of `tooltip` set to `Bold`, the final text the user will see would be "Bold (Ctrl-B)").
 
 Additionally, you can add a separator between any icons by adding `"|"` to the toolbar array.
 
