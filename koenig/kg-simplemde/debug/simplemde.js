@@ -13774,6 +13774,9 @@ var toolbarBuiltInButtons = {
 		title: "Toggle Fullscreen",
 		default: true
 	},
+	"separator-4": {
+		name: "separator-4"
+	},
 	"guide": {
 		name: "guide",
 		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
@@ -13781,8 +13784,8 @@ var toolbarBuiltInButtons = {
 		title: "Markdown Guide",
 		default: true
 	},
-	"separator-4": {
-		name: "separator-4"
+	"separator-5": {
+		name: "separator-5"
 	},
 	"undo": {
 		name: "undo",
@@ -14174,7 +14177,7 @@ SimpleMDE.prototype.createToolbar = function(items) {
 
 	var self = this;
 
-	var toolbar_data = {};
+	var toolbarData = {};
 	self.toolbar = items;
 
 	for(i = 0; i < items.length; i++) {
@@ -14189,6 +14192,23 @@ SimpleMDE.prototype.createToolbar = function(items) {
 		if((items[i].name == "fullscreen" || items[i].name == "side-by-side") && isMobile())
 			continue;
 
+
+		// Don't include trailing separators
+		if(items[i] === "|") {
+			var nonSeparatorIconsFollow = false;
+
+			for(var x = (i + 1); x < items.length; x++) {
+				if(items[x] !== "|") {
+					nonSeparatorIconsFollow = true;
+				}
+			}
+
+			if(!nonSeparatorIconsFollow)
+				continue;
+		}
+
+
+		// Create the icon and append to the toolbar
 		(function(item) {
 			var el;
 			if(item === "|") {
@@ -14208,20 +14228,21 @@ SimpleMDE.prototype.createToolbar = function(items) {
 					el.target = "_blank";
 				}
 			}
-			toolbar_data[item.name || item] = el;
+
+			toolbarData[item.name || item] = el;
 			bar.appendChild(el);
 		})(items[i]);
 	}
 
-	self.toolbarElements = toolbar_data;
+	self.toolbarElements = toolbarData;
 
 	var cm = this.codemirror;
 	cm.on("cursorActivity", function() {
 		var stat = getState(cm);
 
-		for(var key in toolbar_data) {
+		for(var key in toolbarData) {
 			(function(key) {
-				var el = toolbar_data[key];
+				var el = toolbarData[key];
 				if(stat[key]) {
 					el.className += " active";
 				} else if(key != "fullscreen" && key != "side-by-side") {
@@ -14333,9 +14354,6 @@ SimpleMDE.prototype.createStatusbar = function(status) {
 		if(typeof item.onUpdate === "function") {
 			// Create a closure around the span of the current action, then execute the onUpdate handler
 			this.codemirror.on("update", (function(el, item) {
-				console.log(el);
-				console.log(item);
-				console.log("---------------");
 				return function() {
 					item.onUpdate(el);
 				};
