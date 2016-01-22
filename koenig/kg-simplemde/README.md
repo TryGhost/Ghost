@@ -164,7 +164,7 @@ var simplemde = new SimpleMDE({
 		onUpdate: function(el) {
 			el.innerHTML = ++this.keystrokes + " Keystrokes";
 		}
-	}], // Another optional usage, with a custom status item that counts keystrokes
+	}], // Another optional usage, with a custom status bar item that counts keystrokes
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
