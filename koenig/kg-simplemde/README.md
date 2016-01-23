@@ -309,25 +309,6 @@ simplemde.clearAutosavedValue(); // no returned value
 ```
 
 ## How it works
-SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor) and includes a great many number of changes. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
+SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fortawesome.github.io/Font-Awesome/).
 
 CodeMirror is the backbone of the project and parses much of the Markdown syntax as it's being written. This allows us to add styles to the Markdown that's being written. Additionally, a toolbar and status bar have been added to the top and bottom, respectively. Previews are rendered by [Marked](https://github.com/chjj/marked) using GFM.
-
-## What's changed?
-As mentioned earlier, SimpleMDE is an improvement of [lepture's Editor project](https://github.com/lepture/editor). So you might be wondering, what's changed? Quite a bit actually. Here's some notable changes:
-
-- Upgraded from CodeMirror 3 to CodeMirror 5
-- Many changes to the style, appearance, and user friendliness
-- Interface more closely resembles Bootstrap
-- Now mobile friendly
-- Option to autosave the text as you type
-- Now spell checks what you write
-- The text editor now automatically grows as you type more
-- Fixed a large amount of bugs
-- Switched to Font Awesome icons
-- Improved preview rendering in many ways
-- Improved as-you-type appearance of headers and code blocks
-- Simplified the toolbar
-- Many new options during instantiation
-- New icons and tooltips
-- Additional keyboard shortcuts
