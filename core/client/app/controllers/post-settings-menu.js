@@ -85,8 +85,8 @@ export default Controller.extend(SettingsMenuMixin, {
         this.set('lastPromise', promise);
     },
 
-    metaTitleScratch: boundOneWay('model.meta_title'),
-    metaDescriptionScratch: boundOneWay('model.meta_description'),
+    metaTitleScratch: boundOneWay('model.metaTitle'),
+    metaDescriptionScratch: boundOneWay('model.metaDescription'),
 
     seoTitle: computed('model.titleScratch', 'metaTitleScratch', function () {
         let metaTitle = this.get('metaTitleScratch') || '';
@@ -291,13 +291,13 @@ export default Controller.extend(SettingsMenuMixin, {
          */
         setPublishedAt(userInput) {
             let newPublishedAt = parseDateString(userInput);
-            let publishedAt = moment(this.get('model.published_at'));
+            let publishedAt = moment(this.get('model.publishedAt'));
             let errMessage = '';
 
             if (!userInput) {
-                // Clear out the published_at field for a draft
+                // Clear out the publishedAt field for a draft
                 if (this.get('model.isDraft')) {
-                    this.set('model.published_at', null);
+                    this.set('model.publishedAt', null);
                 }
 
                 return;
@@ -324,7 +324,7 @@ export default Controller.extend(SettingsMenuMixin, {
             }
 
             // Validation complete
-            this.set('model.published_at', newPublishedAt);
+            this.set('model.publishedAt', newPublishedAt);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
@@ -339,7 +339,7 @@ export default Controller.extend(SettingsMenuMixin, {
         },
 
         setMetaTitle(metaTitle) {
-            let property = 'meta_title';
+            let property = 'metaTitle';
             let model = this.get('model');
             let currentTitle = model.get(property) || '';
 
@@ -360,7 +360,7 @@ export default Controller.extend(SettingsMenuMixin, {
         },
 
         setMetaDescription(metaDescription) {
-            let property = 'meta_description';
+            let property = 'metaDescription';
             let model = this.get('model');
             let currentDescription = model.get(property) || '';
 

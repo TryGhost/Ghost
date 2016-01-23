@@ -30,6 +30,10 @@ export default ApplicationSerializer.extend({
         return this._super(store, primaryModelClass, payload, id, requestType);
     },
 
+    keyForAttribute(attr) {
+        return attr;
+    },
+
     _extractObjectFromArrayPayload(_payload) {
         let payload = {id: '0'};
 
