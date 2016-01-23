@@ -37,19 +37,19 @@ export default BaseValidator.create({
     },
 
     metaTitle(model) {
-        let metaTitle = model.get('meta_title');
+        let metaTitle = model.get('metaTitle');
 
         if (!validator.isLength(metaTitle, 0, 150)) {
-            model.get('errors').add('meta_title', 'Meta Title cannot be longer than 150 characters.');
+            model.get('errors').add('metaTitle', 'Meta Title cannot be longer than 150 characters.');
             this.invalidate();
         }
     },
 
     metaDescription(model) {
-        let metaDescription = model.get('meta_description');
+        let metaDescription = model.get('metaDescription');
 
         if (!validator.isLength(metaDescription, 0, 200)) {
-            model.get('errors').add('meta_description', 'Meta Description cannot be longer than 200 characters.');
+            model.get('errors').add('metaDescription', 'Meta Description cannot be longer than 200 characters.');
             this.invalidate();
         }
     }
