@@ -53,39 +53,41 @@ function updateCheckError(error) {
 
 function updateCheckData() {
     var data = {},
-        ops = [],
         mailConfig = config.mail;
-
-    ops.push(api.settings.read(_.extend({key: 'dbHash'}, internal)).catch(errors.rejectError));
-    ops.push(api.settings.read(_.extend({key: 'activeTheme'}, internal)).catch(errors.rejectError));
-    ops.push(api.settings.read(_.extend({key: 'activeApps'}, internal))
-        .then(function (response) {
-            var apps = response.settings[0];
-            try {
-                apps = JSON.parse(apps.value);
-            } catch (e) {
-                return errors.rejectError(e);
-            }
-
-            return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
-        }).catch(errors.rejectError));
-    ops.push(api.posts.browse().catch(errors.rejectError));
-    ops.push(api.users.browse(internal).catch(errors.rejectError));
-    ops.push(Promise.promisify(exec)('npm -v').catch(errors.rejectError));
 
     data.ghost_version   = currentVersion;
     data.node_version    = process.versions.node;
     data.env             = process.env.NODE_ENV;
     data.database_type   = config.database.client;
-    data.email_transport = mailConfig && (mailConfig.options && mailConfig.options.service ? mailConfig.options.service : mailConfig.transport);
+    data.email_transport = mailConfig &&
+    (mailConfig.options && mailConfig.options.service ?
+        mailConfig.options.service :
+        mailConfig.transport);
 
-    return Promise.settle(ops).then(function (descriptors) {
-        var hash             = descriptors[0].value().settings[0],
-            theme            = descriptors[1].value().settings[0],
-            apps             = descriptors[2].value(),
-            posts            = descriptors[3].value(),
-            users            = descriptors[4].value(),
-            npm              = descriptors[5].value(),
+    return Promise.props({
+        hash: api.settings.read(_.extend({key: 'dbHash'}, internal)).catch(errors.rejectError).reflect(),
+        theme: api.settings.read(_.extend({key: 'activeTheme'}, internal)).catch(errors.rejectError).reflect(),
+        apps: api.settings.read(_.extend({key: 'activeApps'}, internal))
+            .then(function (response) {
+                var apps = response.settings[0];
+                try {
+                    apps = JSON.parse(apps.value);
+                } catch (e) {
+                    return errors.rejectError(e);
+                }
+
+                return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
+            }).catch(errors.rejectError).reflect(),
+        posts: api.posts.browse().catch(errors.rejectError).reflect(),
+        users: api.users.browse(internal).catch(errors.rejectError).reflect(),
+        npm: Promise.promisify(exec)('npm -v').catch(errors.rejectError).reflect()
+    }).then(function (descriptors) {
+        var hash             = descriptors.hash.value().settings[0],
+            theme            = descriptors.theme.value().settings[0],
+            apps             = descriptors.apps.value(),
+            posts            = descriptors.posts.value(),
+            users            = descriptors.users.value(),
+            npm              = descriptors.npm.value(),
             blogUrl          = url.parse(config.url),
             blogId           = blogUrl.hostname + blogUrl.pathname.replace(/\//, '') + hash.value;
 
@@ -95,7 +97,7 @@ function updateCheckData() {
         data.post_count      = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
         data.user_count      = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
-        data.npm_version     = _.isArray(npm) && npm[0] ? npm[0].toString().replace(/\n/, '') : '';
+        data.npm_version     = npm.trim();
 
         return data;
     }).catch(updateCheckError);
@@ -161,16 +163,16 @@ function updateCheckResponse(response) {
         api.settings.edit(
             {settings: [{key: 'nextUpdateCheck', value: response.next_check}]},
             internal
-        ).catch(errors.rejectError),
+        ).catch(errors.rejectError).reflect(),
         api.settings.edit(
             {settings: [{key: 'displayUpdateNotification', value: response.version}]},
             internal
-        ).catch(errors.rejectError)
+        ).catch(errors.rejectError).reflect()
     );
 
-    return Promise.settle(ops).then(function then(descriptors) {
+    return Promise.map(ops).then(function then(descriptors) {
         descriptors.forEach(function forEach(d) {
-            if (d.isRejected()) {
+            if (!d.isFulfilled()) {
                 errors.rejectError(d.reason());
             }
         });

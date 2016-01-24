@@ -52,11 +52,13 @@ DataImporter.prototype.doUserImport = function (t, tableData, owner, users, erro
         }
 
         // Import users, deduplicating with already present users
-        userOps = utils.importUsers(tableData.users, users, t);
+        userOps = utils.importUsers(tableData.users, users, t).map(function (userImport) {
+            return userImport.reflect();
+        });
 
-        return Promise.settle(userOps).then(function (descriptors) {
+        return Promise.all(userOps).then(function (descriptors) {
             descriptors.forEach(function (d) {
-                if (d.isRejected()) {
+                if (!d.isFulfilled()) {
                     errors = errors.concat(d.reason());
                 } else {
                     imported.push(d.value().toJSON(internal));
@@ -133,7 +135,7 @@ DataImporter.prototype.doImport = function (data) {
                         }
                     }).then(function () {
                         importResults.forEach(function (p) {
-                            if (p.isRejected()) {
+                            if (!p.isFulfilled()) {
                                 errors = errors.concat(p.reason());
                             }
                         });
