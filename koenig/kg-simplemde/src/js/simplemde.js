@@ -1176,17 +1176,19 @@ SimpleMDE.prototype.render = function(el) {
 		placeholder: options.placeholder || el.getAttribute("placeholder") || ""
 	});
 
+	this.gui = {};
+
 	if(options.toolbar !== false) {
-		this.createToolbar();
+		this.gui.toolbar = this.createToolbar();
 	}
 	if(options.status !== false) {
-		this.createStatusbar();
+		this.gui.statusbar = this.createStatusbar();
 	}
 	if(options.autosave != undefined && options.autosave.enabled === true) {
 		this.autosave();
 	}
 
-	this.createSideBySide();
+	this.gui.sideBySide = this.createSideBySide();
 
 	this._rendered = this.element;
 };
@@ -1236,7 +1238,7 @@ SimpleMDE.prototype.autosave = function() {
 			el.innerHTML = "Autosaved: " + h + ":" + m + " " + dd;
 		}
 
-		setTimeout(function() {
+		this.autosaveTimeoutId = setTimeout(function() {
 			simplemde.autosave();
 		}, this.options.autosave.delay || 10000);
 	} else {
@@ -1295,7 +1297,7 @@ SimpleMDE.prototype.createSideBySide = function() {
 		var move = (cm.getScrollInfo().height - cm.getScrollInfo().clientHeight) * ratio;
 		cm.scrollTo(0, move);
 	};
-	return true;
+	return preview;
 };
 
 SimpleMDE.prototype.createToolbar = function(items) {
@@ -1646,6 +1648,23 @@ SimpleMDE.prototype.getState = function() {
 	var cm = this.codemirror;
 
 	return getState(cm);
+};
+
+SimpleMDE.prototype.toTextArea = function() {
+	var cm = this.codemirror;
+	var wrapper = cm.getWrapperElement();
+
+	wrapper.parentNode.removeChild(this.gui.toolbar);
+	wrapper.parentNode.removeChild(this.gui.statusbar);
+	wrapper.parentNode.removeChild(this.gui.sideBySide);
+
+	cm.toTextArea();
+
+	if(this.autosaveTimeoutId) {
+		clearTimeout(this.autosaveTimeoutId);
+		this.autosaveTimeoutId = undefined;
+		this.clearAutosavedValue();
+	}
 };
 
 module.exports = SimpleMDE;
