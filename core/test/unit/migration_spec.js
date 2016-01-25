@@ -5,9 +5,9 @@ var should          = require('should'),
     crypto          = require('crypto'),
 
     // Stuff we are testing
-    defaultSettings = require('../../server/data/default-settings'),
     schema          = require('../../server/data/schema'),
-    permissions     = require('../../server/data/fixtures/permissions/permissions');
+    permissions     = require('../../server/data/migration/fixtures/permissions/permissions'),
+    defaultSettings = schema.defaultSettings;
 
 // To stop jshint complaining
 should.equal(true, true);
