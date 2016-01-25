@@ -12,17 +12,11 @@
             fetch="loadNextPage"
             isLoading=isLoading
             classNames="tag-list"
+            as |checkScroll|
         }}
             <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
                 {{#each tags as |tag|}}
-                    <div class="settings-tag">
-                        {{#link-to 'settings.tags.tag' tag class="tag-edit-button"}}
-                            <span class="tag-title">{{tag.name}}</span>
-                            <span class="label label-default">/{{tag.slug}}</span>
-                            <p class="tag-description">{{tag.description}}</p>
-                            <span class="tags-count">{{tag.count.posts}}</span>
-                        {{/link-to}}
-                    </div>
+                    {{gh-tag tag=tag onDelete=(action checkScroll)}}
                 {{/each}}
             </section>
         {{/gh-infinite-scroll}}
