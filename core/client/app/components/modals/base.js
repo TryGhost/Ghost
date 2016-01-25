@@ -1,7 +1,7 @@
 /* global key */
 import Ember from 'ember';
 
-const {Component, on, run} = Ember;
+const {Component, run} = Ember;
 
 export default Component.extend({
     tagName: 'section',
@@ -9,7 +9,7 @@ export default Component.extend({
 
     _previousKeymasterScope: null,
 
-    setupShortcuts: on('didInsertElement', function () {
+    _setupShortcuts() {
         run(function () {
             document.activeElement.blur();
         });
@@ -24,14 +24,24 @@ export default Component.extend({
         });
 
         key.setScope('modal');
-    }),
+    },
 
-    removeShortcuts: on('willDestroyElement', function () {
+    _removeShortcuts() {
         key.unbind('enter', 'modal');
         key.unbind('escape', 'modal');
 
         key.setScope(this._previousKeymasterScope);
-    }),
+    },
+
+    didInsertElement() {
+        this._super(...arguments);
+        this._setupShortcuts();
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+        this._removeShortcuts();
+    },
 
     actions: {
         confirm() {
