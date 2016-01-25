@@ -30,13 +30,12 @@ describe('Acceptance: Settings: Connections', function() {
     authenticateSession(application);
     visit('/settings/connections/');
 
-    let clients = find('[data-test-selector="client-list-item"]').length;
-
     andThen(function() {
-      expect(currentURL()).to.equal('/settings/connections/');
-      assert.equal(clients, 3, '3 clients are displayed');
+          let clients = find('[data-test-selector="client-list-item"]').length;
+          expect(currentURL()).to.equal('/settings/connections/');
+          assert.equal(clients, 3, '3 clients are displayed');
     });
-  });
+});
 
   it('can disable a client', function() {
     const role = server.create('role', {name: 'Editor'});
@@ -63,7 +62,7 @@ describe('Acceptance: Settings: Connections', function() {
 
     andThen(function() {
       let name = find('[data-test-selector="secret"]').text();
-      expect(name).to.equal('2f5c4f62913e');
+      expect(name).to.equal('bf9b141079f9');
     });
 
     click('button:contains(Refresh Token)');
@@ -72,6 +71,53 @@ describe('Acceptance: Settings: Connections', function() {
       let name = find('[data-test-selector="secret"]').text();
       expect(name).to.equal('');
       expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin/');
+    });
+  });
+
+  it('can create a client', function() {
+    const role = server.create('role', {name: 'Editor'});
+    const user = server.create('user', {roles: [role], slug: 'test-user'});
+
+    authenticateSession(application);
+    visit('/settings/connections/new/');
+    fillIn('[data-test-selector="name"] input', 'New Client');
+    fillIn('[data-test-selector="description"] textarea', 'Description for a client');
+    click('[data-test-selector="save-btn"]');
+
+    andThen(function() {
+    expect(currentURL()).to.equal('/settings/connections');
+    let clients = find('[data-test-selector="client-list-item"]');
+    assert.equal(clients.length, 4);
+    });
+  });
+
+  it('can not submit form which has not passed validation', function() {
+    const role = server.create('role', {name: 'Editor'});
+    const user = server.create('user', {roles: [role], slug: 'test-user'});
+
+    authenticateSession(application);
+    visit('/settings/connections/new/');
+    click('[data-test-selector="save-btn"]');
+
+    andThen(function() {
+    let error = find('p:contains(You must specify a name for the client.)');
+    expect(currentURL()).to.equal('/settings/connections/new/');
+    assert.equal(error.length, 1);
+    });
+  });
+
+  it('can edit a client', function() {
+    const role = server.create('role', {name: 'Editor'});
+    const user = server.create('user', {roles: [role], slug: 'test-user'});
+
+    authenticateSession(application);
+    visit('/settings/connections/');
+    click('span:contains(Ghost Admin)');
+    fillIn('[data-test-selector="name"] input', 'Different Client Name');
+    click('[data-test-selector="save-btn"]');
+
+    andThen(function() {
+    expect(currentURL()).to.equal('/settings/connections');
     });
   });
 });
