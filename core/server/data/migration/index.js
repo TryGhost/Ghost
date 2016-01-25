@@ -1,19 +1,19 @@
 var _               = require('lodash'),
     Promise         = require('bluebird'),
     crypto          = require('crypto'),
-    sequence        = require('../../utils/sequence'),
     path            = require('path'),
     fs              = require('fs'),
-    errors          = require('../../errors'),
-    commands        = require('./commands'),
-    versioning      = require('../versioning'),
-    models          = require('../../models'),
-    fixtures        = require('../fixtures'),
+    builder         = require('./builder'),
+    fixtures        = require('./fixtures'),
     schema          = require('../schema').tables,
+    commands        = require('../schema').commands,
+    versioning      = require('../schema').versioning,
     dataExport      = require('../export'),
-    utils           = require('../utils'),
     config          = require('../../config'),
+    errors          = require('../../errors'),
     i18n            = require('../../i18n'),
+    models          = require('../../models'),
+    sequence        = require('../../utils/sequence'),
 
     schemaTables    = _.keys(schema),
 
@@ -125,7 +125,7 @@ init = function (tablesOnly) {
 reset = function () {
     var tables = _.map(schemaTables, function (table) {
         return function () {
-            return utils.deleteTable(table);
+            return commands.deleteTable(table);
         };
     }).reverse();
 
@@ -138,7 +138,7 @@ migrateUpFreshDb = function (tablesOnly) {
         tables = _.map(schemaTables, function (table) {
             return function () {
                 logInfo(i18n.t('notices.data.migration.index.creatingTable', {table: table}));
-                return utils.createTable(table);
+                return commands.createTable(table);
             };
         });
     logInfo(i18n.t('notices.data.migration.index.creatingTables'));
@@ -162,27 +162,27 @@ migrateUp = function (fromVersion, toVersion) {
         migrateOps = [];
 
     return backupDatabase().then(function () {
-        return utils.getTables();
+        return commands.getTables();
     }).then(function (tables) {
         oldTables = tables;
         if (!_.isEmpty(oldTables)) {
-            return utils.checkTables();
+            return commands.checkTables();
         }
     }).then(function () {
-        migrateOps = migrateOps.concat(commands.getDeleteCommands(oldTables, schemaTables));
-        migrateOps = migrateOps.concat(commands.getAddCommands(oldTables, schemaTables));
+        migrateOps = migrateOps.concat(builder.getDeleteCommands(oldTables, schemaTables));
+        migrateOps = migrateOps.concat(builder.getAddCommands(oldTables, schemaTables));
         return Promise.all(
             _.map(oldTables, function (table) {
-                return utils.getIndexes(table).then(function (indexes) {
-                    modifyUniCommands = modifyUniCommands.concat(commands.modifyUniqueCommands(table, indexes));
+                return commands.getIndexes(table).then(function (indexes) {
+                    modifyUniCommands = modifyUniCommands.concat(builder.modifyUniqueCommands(table, indexes));
                 });
             })
         );
     }).then(function () {
         return Promise.all(
             _.map(oldTables, function (table) {
-                return utils.getColumns(table).then(function (columns) {
-                    migrateOps = migrateOps.concat(commands.addColumnCommands(table, columns));
+                return commands.getColumns(table).then(function (columns) {
+                    migrateOps = migrateOps.concat(builder.addColumnCommands(table, columns));
                 });
             })
         );
