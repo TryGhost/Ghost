@@ -1,0 +1,19 @@
+var downsize = require('downsize');
+
+function getExcerpt(html, truncateOptions) {
+    // Strip inline and bottom footnotes
+    var excerpt = html.replace(/<a href="#fn.*?rel="footnote">.*?<\/a>/gi, '');
+    excerpt = excerpt.replace(/<div class="footnotes"><ol>.*?<\/ol><\/div>/, '');
+    // Strip other html
+    excerpt = excerpt.replace(/<\/?[^>]+>/gi, '');
+    excerpt = excerpt.replace(/(\r\n|\n|\r)+/gm, ' ');
+    /*jslint regexp:false */
+
+    if (!truncateOptions.words && !truncateOptions.characters) {
+        truncateOptions.words = 50;
+    }
+
+    return downsize(excerpt, truncateOptions);
+}
+
+module.exports = getExcerpt;
