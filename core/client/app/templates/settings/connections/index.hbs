@@ -8,6 +8,7 @@
 
     {{#each model as |client|}}
       {{gh-client-list-item
+        client=client
         status=client.status
         name=client.name
         slug=client.slug
