@@ -1,8 +1,8 @@
 var _           = require('lodash'),
     Promise     = require('bluebird'),
-    versioning  = require('../versioning'),
     config      = require('../../config'),
-    utils       = require('../utils'),
+    commands    = require('../schema').commands,
+    versioning  = require('../schema').versioning,
     serverUtils = require('../../utils'),
     errors      = require('../../errors'),
     settings    = require('../../api/settings'),
@@ -28,7 +28,7 @@ exportFileName = function () {
 };
 
 exporter = function () {
-    return Promise.join(versioning.getDatabaseVersion(), utils.getTables()).then(function (results) {
+    return Promise.join(versioning.getDatabaseVersion(), commands.getTables()).then(function (results) {
         var version = results[0],
             tables = results[1],
             selectOps = _.map(tables, function (name) {

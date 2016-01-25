@@ -1,9 +1,9 @@
 var _       = require('lodash'),
     Promise = require('bluebird'),
     config  = require('../../config'),
-    schema  = require('../schema').tables,
-    clients = require('./clients'),
     i18n    = require('../../i18n'),
+    schema  = require('./schema'),
+    clients = require('./clients'),
 
     dbConfig;
 

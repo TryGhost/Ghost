@@ -1,6 +1,6 @@
-var  _               = require('lodash'),
+var  _              = require('lodash'),
     errors          = require('../../errors'),
-    utils           = require('../utils'),
+    commands        = require('../schema').commands,
     schema          = require('../schema').tables,
     i18n            = require('../../i18n'),
 
@@ -22,7 +22,7 @@ getDeleteCommands = function getDeleteCommands(oldTables, newTables) {
     return _.map(deleteTables, function (table) {
         return function () {
             logInfo(i18n.t('notices.data.migration.commands.deletingTable', {table: table}));
-            return utils.deleteTable(table);
+            return commands.deleteTable(table);
         };
     });
 };
@@ -31,7 +31,7 @@ getAddCommands = function getAddCommands(oldTables, newTables) {
     return _.map(addTables, function (table) {
         return function () {
             logInfo(i18n.t('notices.data.migration.commands.creatingTable', {table: table}));
-            return utils.createTable(table);
+            return commands.createTable(table);
         };
     });
 };
@@ -42,7 +42,7 @@ addColumnCommands = function addColumnCommands(table, columns) {
     return _.map(addColumns, function (column) {
         return function () {
             logInfo(i18n.t('notices.data.migration.commands.addingColumn', {table: table, column: column}));
-            return utils.addColumn(table, column);
+            return commands.addColumn(table, column);
         };
     });
 };
@@ -53,14 +53,14 @@ modifyUniqueCommands = function modifyUniqueCommands(table, indexes) {
             if (!_.contains(indexes, table + '_' + column + '_unique')) {
                 return function () {
                     logInfo(i18n.t('notices.data.migration.commands.addingUnique', {table: table, column: column}));
-                    return utils.addUnique(table, column);
+                    return commands.addUnique(table, column);
                 };
             }
         } else if (!schema[table][column].unique) {
             if (_.contains(indexes, table + '_' + column + '_unique')) {
                 return function () {
                     logInfo(i18n.t('notices.data.migration.commands.droppingUnique', {table: table, column: column}));
-                    return utils.dropUnique(table, column);
+                    return commands.dropUnique(table, column);
                 };
             }
         }

@@ -2,8 +2,7 @@ var _               = require('lodash'),
     errors          = require('../../errors'),
     config          = require('../../config'),
     i18n            = require('../../i18n'),
-
-    defaultSettings = require('../default-settings'),
+    defaultSettings = require('./default-settings'),
 
     initialVersion  = '000',
     defaultDatabaseVersion;
