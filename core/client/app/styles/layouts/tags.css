@@ -23,10 +23,6 @@
     border-left: 3px solid;
 }
 
-.settings-tag:last-of-type:hover .tag-edit-button {
-    box-shadow: inset 0 -1px 0 #dfe1e3;
-}
-
 .settings-tag .label {
     display: inline-block;
     overflow: hidden;

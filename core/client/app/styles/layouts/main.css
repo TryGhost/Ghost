@@ -63,6 +63,7 @@ body > .ember-view:not(.liquid-target-container) {
     display: flex;
     align-items: center;
     padding: 15px;
+    cursor: pointer;
 }
 
 .gh-nav-menu i {
@@ -71,10 +72,11 @@ body > .ember-view:not(.liquid-target-container) {
     height: 11px;
     font-size: 11px;
     line-height: 11px;
+    transition: margin-top 0.2s ease;
 }
 
-.gh-nav-menu:hover {
-    cursor: pointer;
+.gh-nav-menu:hover i {
+    margin-top: 5px;
 }
 
 .gh-nav-menu-icon {
