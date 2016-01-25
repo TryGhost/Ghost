@@ -353,6 +353,8 @@ function toggleCodeBlock(editor) {
 	} else if(is_code === "fenced") {
 		if(cur_start.line !== cur_end.line || cur_start.ch !== cur_end.ch) {
 			// use selection
+
+			// find the fenced line so we know what type it is (tilde, backticks, number of them)
 			for(block_start = cur_start.line; block_start >= 0; block_start--) {
 				line = cm.getLineHandle(block_start);
 				if(fencing_line(line)) {
@@ -363,7 +365,62 @@ function toggleCodeBlock(editor) {
 				line: block_start,
 				ch: 1
 			});
-			insertFencingAtSelection(cm, cur_start, cur_end, token_state(fencedTok).fencedChars);
+			var fence_chars = token_state(fencedTok).fencedChars;
+			var start_text, start_line;
+			var end_text, end_line;
+			// check for selection going up against fenced lines, in which case we don't want to add more fencing
+			if(fencing_line(cm.getLineHandle(cur_start.line))) {
+				start_text = "";
+				start_line = cur_start.line;
+			} else if(fencing_line(cm.getLineHandle(cur_start.line - 1))) {
+				start_text = "";
+				start_line = cur_start.line - 1;
+			} else {
+				start_text = fence_chars + "\n";
+				start_line = cur_start.line;
+			}
+			if(fencing_line(cm.getLineHandle(cur_end.line))) {
+				end_text = "";
+				end_line = cur_end.line;
+				if(cur_end.ch === 0) {
+					end_line += 1;
+				}
+			} else if(cur_end.ch !== 0 && fencing_line(cm.getLineHandle(cur_end.line + 1))) {
+				end_text = "";
+				end_line = cur_end.line + 1;
+			} else {
+				end_text = fence_chars + "\n";
+				end_line = cur_end.line + 1;
+			}
+			if(cur_end.ch === 0) {
+				// full last line selected, putting cursor at beginning of next
+				end_line -= 1;
+			}
+			cm.operation(function() {
+				// end line first, so that line numbers don't change
+				cm.replaceRange(end_text, {
+					line: end_line,
+					ch: 0
+				}, {
+					line: end_line + (end_text ? 0 : 1),
+					ch: 0
+				});
+				cm.replaceRange(start_text, {
+					line: start_line,
+					ch: 0
+				}, {
+					line: start_line + (start_text ? 0 : 1),
+					ch: 0
+				});
+			});
+			cm.setSelection({
+				line: start_line + (start_text ? 1 : 0),
+				ch: 0
+			}, {
+				line: end_line + (start_text ? 1 : -1),
+				ch: 0
+			});
+			cm.focus();
 		} else {
 			// no selection, search for ends of this fenced block
 			var search_from = cur_start.line;
