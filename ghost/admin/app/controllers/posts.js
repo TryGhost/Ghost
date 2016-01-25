@@ -81,14 +81,6 @@ export default Controller.extend({
     }),
 
     actions: {
-        showPostContent(post) {
-            if (!post) {
-                return;
-            }
-
-            this.transitionToRoute('posts.post', post);
-        },
-
         toggleDeletePostModal() {
             this.toggleProperty('showDeletePostModal');
         }

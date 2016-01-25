@@ -8,10 +8,9 @@ export default Mixin.create({
 
     /**
      * Determines if we are past a scroll point where we need to fetch the next page
-     * @param {object} event The scroll event
      */
-    checkScroll(event) {
-        let element = event.target;
+    _checkScroll() {
+        let element = this.get('element');
         let triggerPoint = this.get('triggerPoint');
         let isLoading = this.get('isLoading');
 
@@ -28,11 +27,11 @@ export default Mixin.create({
 
         let el = this.get('element');
 
-        el.onscroll = run.bind(this, this.checkScroll);
+        el.onscroll = run.bind(this, this._checkScroll);
 
-        if (el.scrollHeight <= el.clientHeight) {
-            this.sendAction('fetch');
-        }
+        // run on load, on the offchance that the initial load
+        // did not fill the view.
+        this._checkScroll();
     },
 
     willDestroyElement() {
