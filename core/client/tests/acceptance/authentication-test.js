@@ -12,6 +12,9 @@ import destroyApp from '../helpers/destroy-app';
 import { authenticateSession, currentSession, invalidateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 import windowProxy from 'ghost/utils/window-proxy';
+import ghostPaths from 'ghost/utils/ghost-paths';
+
+const Ghost = ghostPaths();
 
 describe('Acceptance: Authentication', function () {
     let application,
@@ -123,6 +126,40 @@ describe('Acceptance: Authentication', function () {
         afterEach(function () {
             Ember.run.debounce = origDebounce;
             Ember.run.throttle = origThrottle;
+        });
+    });
+
+    it('adds auth headers to jquery ajax', function (done) {
+        let role = server.create('role', {name: 'Administrator'});
+        let user = server.create('user', {roles: [role]});
+
+        server.post('/uploads', (db, request) => {
+            return request;
+        });
+        server.loadFixtures();
+
+        // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+        authenticateSession(application, {
+            access_token: 'test_token',
+            expires_in: 3600,
+            token_type: 'Bearer'
+        });
+        // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
+
+        // necessary to visit a page to fully boot the app in testing
+        visit('/').andThen(() => {
+            $.ajax({
+                type: 'POST',
+                url: `${Ghost.apiRoot}/uploads/`,
+                data: {test: 'Test'}
+            }).then((request) => {
+                expect(request.requestHeaders.Authorization, 'Authorization header')
+                    .to.exist;
+                expect(request.requestHeaders.Authorization, 'Authotization header content')
+                    .to.equal('Bearer test_token');
+            }).always(() => {
+                done();
+            });
         });
     });
 });
