@@ -297,6 +297,16 @@ simplemde.codemirror.on("change", function(){
 });
 ```
 
+## Removing SimpleMDE from textarea
+You can revert to the initial textarea by calling the `toTextArea` method. Note that this clears up the autosave (if enabled) associated with it. The textarea will retain any text from the destroyed SimpleMDE instance.
+
+```JavaScript
+var simplemde = new SimpleMDE();
+...
+simplemde.toTextArea();
+simplemde = null;
+```
+
 ## Useful methods
 The following self-explanatory methods may be of use while developing with SimpleMDE.
 
