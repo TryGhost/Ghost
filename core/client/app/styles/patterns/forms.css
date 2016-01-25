@@ -1,15 +1,12 @@
 /* Forms
 /* ---------------------------------------------------------- */
 
-form * {
-    user-select: text;
-}
-
 form label {
     display: block;
     color: var(--darkgrey);
     font-size: 1.3rem;
     font-weight: bold;
+    user-select: text;
 }
 
 form .word-count {
@@ -21,6 +18,7 @@ fieldset {
     margin: 0 0 3em 0;
     padding: 0;
     border: none;
+    user-select: text;
 }
 
 legend {
@@ -31,6 +29,7 @@ legend {
     color: #b1b1b1;
     font-size: 1.2em;
     line-height: 2.0em;
+    user-select: text;
 }
 
 input {
@@ -50,6 +49,7 @@ input {
     margin-bottom: 1.6em;
     max-width: 500px;
     width: 100%;
+    user-select: text;
 }
 
 .form-group p {
@@ -122,6 +122,7 @@ select {
     font-size: 1.4rem;
     font-weight: normal;
     user-select: text;
+    cursor: pointer;
     transition: border-color 0.15s linear;
 
     -webkit-appearance: none;
@@ -161,17 +162,19 @@ textarea {
 .for-checkbox label {
     display: block;
     padding-bottom: 4px;
+    cursor: pointer;
 }
 
 .for-radio label p,
 .for-checkbox label p {
+    overflow: auto;
     color: #000;
     font-weight: normal;
 }
 
-.for-radio label:hover input:not(:checked) + .input-toggle-component,
-.for-checkbox label:hover input:not(:checked) + .input-toggle-component {
-    border-color: #dfe1e3;
+.for-radio label:hover p,
+.for-checkbox label:hover p {
+    color: var(--midgrey);
 }
 
 .for-radio input,
@@ -196,11 +199,9 @@ textarea {
     background: #f7f7f7;
 }
 
-.for-radio p,
-.for-checkbox p {
-    overflow: auto;
-    color: #b3b2a8;
-    font-weight: normal;
+.for-checkbox label:hover input:not(:checked) + .input-toggle-component,
+.for-radio label:hover input:not(:checked) + .input-toggle-component {
+    border-color: var(--lightgrey);
 }
 
 .for-checkbox .input-toggle-component {
