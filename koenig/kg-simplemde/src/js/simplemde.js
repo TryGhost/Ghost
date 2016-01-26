@@ -618,7 +618,10 @@ function drawLink(editor) {
 	var options = editor.options;
 	var url = "http://";
 	if(options.promptURLs) {
-		url = prompt(options.promptTexts.link) || "http://";
+		url = prompt(options.promptTexts.link);
+		if(!url) {
+			return false;
+		}
 	}
 	_replaceSelection(cm, stat.link, options.insertTexts.link, url);
 }
@@ -632,7 +635,10 @@ function drawImage(editor) {
 	var options = editor.options;
 	var url = "http://";
 	if(options.promptURLs) {
-		url = prompt(options.promptTexts.image) || "http://";
+		url = prompt(options.promptTexts.image);
+		if(!url) {
+			return false;
+		}
 	}
 	_replaceSelection(cm, stat.image, options.insertTexts.image, url);
 }
@@ -1238,8 +1244,8 @@ var insertTexts = {
 };
 
 var promptTexts = {
-	link: "URL for link:",
-	image: "The URL of image:"
+	link: "URL for the link:",
+	image: "URL of the image:"
 };
 
 var blockStyles = {
@@ -1344,7 +1350,7 @@ function SimpleMDE(options) {
 
 
 	// Merging the promptTexts, with the given options
-	options.promptTexts = extend({}, promptTexts, options.promptTexts || {});
+	options.promptTexts = promptTexts;
 
 
 	// Merging the blockStyles, with the given options

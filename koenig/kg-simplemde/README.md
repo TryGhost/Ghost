@@ -94,9 +94,6 @@ simplemde.value("This text will appear in the editor");
 - **placeholder**: Custom placeholder that should be displayed
 - **previewRender**: Custom function for parsing the plaintext Markdown and returning HTML. Used when user previews.
 - **promptURLs**: If set to `true`, a prompt window come if you insert link or image. Defaults to `false`.
-- **promptTexts**: An object of prompt text.
-  -- image (Default: `The URL of image:`)
-  -- link  (Default: `URL for link:`)
 - **renderingConfig**: Adjust settings for parsing the Markdown during previewing (not editing).
   - **singleLineBreaks**: If set to `false`, disable parsing GFM single line breaks. Defaults to `true`.
   - **codeSyntaxHighlighting**: If set to `true`, will highlight using [highlight.js](https://github.com/isagalaev/highlight.js). Defaults to `false`. To use this feature you must include highlight.js on your page. For example, include the script and the CSS files like:<br>`<script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>`<br>`<link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css">`
@@ -149,6 +146,7 @@ var simplemde = new SimpleMDE({
 
 		return "Loading...";
 	},
+	promptURLs: true, // Show a prompt window to insert URL for link or image
 	renderingConfig: {
 		singleLineBreaks: false,
 		codeSyntaxHighlighting: true,
