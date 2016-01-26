@@ -15,6 +15,10 @@ let configStub = Ember.Service.extend({
     blogUrl: 'http://localhost:2368'
 });
 
+let mediaQueriesStub = Ember.Service.extend({
+    maxWidth600: false
+});
+
 describeComponent(
     'gh-tag-settings-form',
     'Integration: Component: gh-tag-settings-form',
@@ -44,6 +48,9 @@ describeComponent(
 
             this.register('service:config', configStub);
             this.inject.service('config', {as: 'config'});
+
+            this.register('service:media-queries', mediaQueriesStub);
+            this.inject.service('media-queries', {as: 'mediaQueries'});
         });
 
         it('renders', function () {
@@ -300,6 +307,16 @@ describeComponent(
             run(() => {
                 this.$('.tag-delete-button').click();
             });
+        });
+
+        it('shows settings.tags arrow link on mobile', function () {
+            this.set('mediaQueries.maxWidth600', true);
+
+            this.render(hbs`
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
+            `);
+
+            expect(this.$('.tag-settings-pane .settings-menu-header .settings-menu-header-action').length, 'settings.tags link is shown').to.equal(1);
         });
     }
 );
