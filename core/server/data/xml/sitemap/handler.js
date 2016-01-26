@@ -1,5 +1,5 @@
 var _       = require('lodash'),
-    utils   = require('../../utils'),
+    utils   = require('../../../utils'),
     sitemap = require('./index');
 
 // Responsible for handling requests for sitemap files
