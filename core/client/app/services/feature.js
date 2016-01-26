@@ -4,62 +4,82 @@ const {
     Service,
     computed,
     inject: {service},
-    PromiseProxyMixin,
+    RSVP: {Promise},
     set
 } = Ember;
 
 export function feature(name) {
     return computed(`config.${name}`, `labs.${name}`, {
         get() {
-            return this.get(`config.${name}`) || this.get(`labs.${name}`);
+            return new Promise((resolve) => {
+                if (this.get(`config.${name}`)) {
+                    return resolve(this.get(`config.${name}`));
+                }
+
+                this.get('labs').then((labs) => {
+                    resolve(labs[name] || false);
+                });
+            });
         },
         set(key, value) {
-            this.update(name, value);
-            return value;
+            this.update(key, value).then((savedValue) => {
+                return savedValue;
+            });
         }
     });
 }
 
-export default Service.extend(PromiseProxyMixin, {
+export default Service.extend({
     store: service(),
     config: service(),
     notifications: service(),
 
+    _settings: null,
+
     publicAPI: feature('publicAPI'),
 
-    labs: computed('isSettled', 'content.labs', function () {
-        let value = {};
+    _parseLabs(settings) {
+        let labs = settings.get('labs');
 
-        if (this.get('isFulfilled')) {
-            try {
-                value = JSON.parse(this.get('content.labs') || {});
-            } catch (err) {
-                value = {};
-            }
+        try {
+            return JSON.parse(labs) || {};
+        } catch (e) {
+            return {};
         }
+    },
 
-        return value;
+    labs: computed(function () {
+        return new Promise((resolve, reject) => {
+            if (this.get('_settings')) { // So we don't query the backend every single time
+                resolve(this._parseLabs(this.get('_settings')));
+            }
+            let store = this.get('store');
+
+            store.query('setting', {type: 'blog'}).then((settings) => {
+                let setting = settings.get('firstObject');
+
+                this.set('_settings', setting);
+                resolve(this._parseLabs(setting));
+            }).catch(reject);
+        });
     }),
 
     update(key, value) {
-        let labs = this.get('labs');
-        let content = this.get('content');
+        return new Promise((resolve, reject) => {
+            this.get('labs').then((labs) => {
+                let settings = this.get('_settings');
 
-        set(labs, key, value);
-        content.set('labs', JSON.stringify(labs));
-        content.save().catch((errors) => {
-            this.get('notifications').showErrors(errors);
-            content.rollbackAttributes();
+                set(labs, key, value);
+
+                settings.set('labs', JSON.stringify(labs));
+                settings.save().then(() => {
+                    resolve(labs[key]);
+                }).catch((errors) => {
+                    this.get('notifications').showErrors(errors);
+                    settings.rollbackAttributes();
+                    resolve(this._parseLabs(settings)[key]);
+                });
+            }).catch(reject);
         });
-    },
-
-    init() {
-        this._super(...arguments);
-
-        let promise = this.get('store').query('setting', {type: 'blog'}).then((settings) => {
-            return settings.get('firstObject');
-        });
-
-        this.set('promise', promise);
     }
 });

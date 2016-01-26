@@ -3,26 +3,33 @@ import Ember from 'ember';
 const {
     computed,
     inject: {service},
-    Component,
-    assert
+    Component
 } = Ember;
 
 const FeatureFlagComponent = Component.extend({
     tagName: 'label',
     classNames: 'checkbox',
     attributeBindings: ['for'],
+    _flagValue: null,
 
     feature: service(),
 
-    flagValue: computed('flag', 'feature.isFulfilled', {
+    isVisible: computed.notEmpty('_flagValue'),
+
+    init() {
+        this._super(...arguments);
+
+        this.get(`feature.${this.get('flag')}`).then((flagValue) => {
+            this.set('_flagValue', flagValue);
+        });
+    },
+
+    value: computed('_flagValue', {
         get() {
-            assert('The "flag" parameter must be set', this.get('flag'));
-            return this.get(`feature.${this.get('flag')}`);
+            return this.get('_flagValue');
         },
         set(key, value) {
-            assert('The "flag" parameter must be set', this.get('flag'));
-            this.get('feature').set(this.get('flag'), value);
-            return value;
+            return this.set(`feature.${this.get('flag')}`, value);
         }
     }),
 
