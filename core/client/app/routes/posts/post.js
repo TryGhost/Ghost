@@ -28,19 +28,21 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             staticPages: 'all'
         };
 
-        return this.store.queryRecord('post', query).then((post) => {
+        return this.store.queryRecord('post', query).then((records) => {
+            let post = records.get('firstObject');
+
             if (post) {
                 return post;
             }
 
-            return this.replaceRoute('posts.index');
+            this.transitionTo('error404', postId);
         });
     },
 
     afterModel(post) {
         return this.get('session.user').then((user) => {
             if (user.get('isAuthor') && !post.isAuthoredByUser(user)) {
-                return this.replaceRoute('posts.index');
+                return this.replaceWith('posts.index');
             }
         });
     },
