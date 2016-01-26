@@ -1048,6 +1048,7 @@ describe('Frontend Routing', function () {
         it('should serve sitemap.xml', function (done) {
             request.get('/sitemap.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
         });
@@ -1055,6 +1056,7 @@ describe('Frontend Routing', function () {
         it('should serve sitemap-posts.xml', function (done) {
             request.get('/sitemap-posts.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
         });
@@ -1062,6 +1064,7 @@ describe('Frontend Routing', function () {
         it('should serve sitemap-pages.xml', function (done) {
             request.get('/sitemap-posts.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
         });
