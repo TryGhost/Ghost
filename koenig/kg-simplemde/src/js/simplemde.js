@@ -616,7 +616,14 @@ function drawLink(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 	var options = editor.options;
-	_replaceSelection(cm, stat.link, options.insertTexts.link);
+	var url = "http://";
+	if(options.promptURLs) {
+		url = prompt(options.promptTexts.link);
+		if(!url) {
+			return false;
+		}
+	}
+	_replaceSelection(cm, stat.link, options.insertTexts.link, url);
 }
 
 /**
@@ -626,7 +633,14 @@ function drawImage(editor) {
 	var cm = editor.codemirror;
 	var stat = getState(cm);
 	var options = editor.options;
-	_replaceSelection(cm, stat.image, options.insertTexts.image);
+	var url = "http://";
+	if(options.promptURLs) {
+		url = prompt(options.promptTexts.image);
+		if(!url) {
+			return false;
+		}
+	}
+	_replaceSelection(cm, stat.image, options.insertTexts.image, url);
 }
 
 /**
@@ -770,7 +784,7 @@ function togglePreview(editor) {
 		toggleSideBySide(editor);
 }
 
-function _replaceSelection(cm, active, startEnd) {
+function _replaceSelection(cm, active, startEnd, url) {
 	if(/editor-preview-active/.test(cm.getWrapperElement().lastChild.className))
 		return;
 
@@ -779,6 +793,9 @@ function _replaceSelection(cm, active, startEnd) {
 	var end = startEnd[1];
 	var startPoint = cm.getCursor("start");
 	var endPoint = cm.getCursor("end");
+	if(url) {
+		end = end.replace("#url#", url);
+	}
 	if(active) {
 		text = cm.getLine(startPoint.line);
 		start = text.slice(0, startPoint.ch);
@@ -1220,10 +1237,15 @@ var toolbarBuiltInButtons = {
 };
 
 var insertTexts = {
-	link: ["[", "](http://)"],
-	image: ["![](http://", ")"],
+	link: ["[", "](#url#)"],
+	image: ["![", "](#url#)"],
 	table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text     | Text     |\n\n"],
 	horizontalRule: ["", "\n\n-----\n\n"]
+};
+
+var promptTexts = {
+	link: "URL for the link:",
+	image: "URL of the image:"
 };
 
 var blockStyles = {
@@ -1325,6 +1347,10 @@ function SimpleMDE(options) {
 
 	// Merging the insertTexts, with the given options
 	options.insertTexts = extend({}, insertTexts, options.insertTexts || {});
+
+
+	// Merging the promptTexts, with the given options
+	options.promptTexts = promptTexts;
 
 
 	// Merging the blockStyles, with the given options
