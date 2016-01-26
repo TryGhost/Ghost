@@ -75,6 +75,7 @@ simplemde.value("This text will appear in the editor");
   - **uniqueId**: You must set a unique string identifier so that SimpleMDE can autosave. Something that separates this from other instances of SimpleMDE elsewhere on your website.
 - **blockStyles**: Customize how certain buttons that style blocks of text behave.
   - **bold** Can be set to `**` or `__`. Defaults to `**`.
+  - **code** Can be set to  ```` ``` ```` or `~~~`.  Defaults to ```` ``` ````.
   - **italic** Can be set to `*` or `_`. Defaults to `*`.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
 - **hideIcons**: An array of icon names to hide. Can be used to hide specific icons shown by default without completely customizing the toolbar.
