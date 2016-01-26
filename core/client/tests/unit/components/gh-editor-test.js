@@ -15,6 +15,7 @@ describeComponent(
             'component:gh-ed-editor',
             'component:gh-ed-preview',
             'helper:gh-count-words',
+            'helper:gh-count-cjk-characters',
             'helper:route-action',
             'service:notifications'
         ]

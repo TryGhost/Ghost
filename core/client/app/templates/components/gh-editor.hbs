@@ -29,6 +29,7 @@
             <a href="#" {{action 'selectTab' 'markdown'}} class="{{if markdownActive 'active'}}">Markdown</a>
             <a href="#" {{action 'selectTab' 'preview'}} class="{{if previewActive 'active'}}">Preview</a>
         </span>
+        <span class="entry-cjk-character-count">{{gh-count-cjk-characters value}}</span>
         <span class="entry-word-count">{{gh-count-words value}}</span>
     </header>
     <section class="entry-preview-content js-entry-preview-content">
