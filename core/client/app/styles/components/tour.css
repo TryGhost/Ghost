@@ -40,35 +40,6 @@
     color: var(--midgrey);
 }
 
-.tour .popover-triangle-top {
-    transform-origin: top center;
-}
-
-.tour .popover-triangle-top:before,
-.tour .popover-triangle-top:after {
-    content: "";
-    position: absolute;
-    top: -calc(14px * 0.8);
-    left: 50%;
-    display: block;
-    margin-left: -7px;
-    width: 0;
-    height: 0;
-}
-
-.tour .popover-triangle-top:before {
-    border-right: 14px solid transparent;
-    border-bottom: calc(14px * 0.8) solid #bfbfbf;
-    border-left: 14px solid transparent;
-}
-
-.tour .popover-triangle-top:after {
-    top: -10px;
-    border-right: 14px solid transparent;
-    border-bottom: calc(14px * 0.8) solid #fff;
-    border-left: 14px solid transparent;
-}
-
 .tour .popover-title {
     margin-bottom: 0.4em;
     color: var(--darkgrey);
@@ -96,42 +67,121 @@
     align-self: flex-end;
 }
 
-/*%popover-triangle-vertical-top {
-    &:before {
-        @include triangle($popover_triangle, #bfbfbf, up, shallow);
-    }
-    &:after {
-        @include triangle($popover_triangle, #fff, up, shallow);
-        top: -10px;
-    }
+/* 'dat positioning '*/
+.tour .popover-item.popover-triangle-top,
+.tour .popover-item.popover-triangle-bottom {
+    left: calc(50% - 7px);
 }
 
-%popover-triangle-vertical-bottom {
-    &:before {
-        @include triangle($popover_triangle, #bfbfbf, down, shallow);
-    }
-    &:after {
-        @include triangle($popover_triangle, #fff, down, shallow);
-        bottom: -10px;
-    }
+.tour .popover-item.popover-triangle-top-left,
+.tour .popover-item.popover-triangle-bottom-left {
+    left: -29px;
 }
 
-%popover-triangle-horizontal-left {
-    &:before {
-        @include triangle($popover_triangle, #bfbfbf, left, shallow);
-    }
-    &:after {
-        @include triangle($popover_triangle, #fff, left, shallow);
-        left: -10px;
-    }
+.tour .popover-item.popover-triangle-top-right,
+.tour .popover-item.popover-triangle-bottom-right {
+    right: -29px;
 }
 
-%popover-triangle-horizontal-right {
-    &:before {
-        @include triangle($popover_triangle, #bfbfbf, right, shallow);
-    }
-    &:after {
-        @include triangle($popover_triangle, #fff, right, shallow);
-        right: -10px;
-    }
-}*/
+.tour .popover-item.popover-triangle-bottom,
+.tour .popover-item.popover-triangle-bottom-left,
+.tour .popover-item.popover-triangle-bottom-right {
+    bottom: calc(100% + 59px); /* diameter of throbber = 52px + triangle height / 2 */
+}
+
+.tour .popover-item.popover-triangle-right,
+.tour .popover-item.popover-triangle-left {
+    top: calc(50% - 24px);
+}
+
+.tour .popover-item.popover-triangle-right-top,
+.tour .popover-item.popover-triangle-left-top {
+    top: -24px;
+}
+
+.tour .popover-item.popover-triangle-right-bottom,
+.tour .popover-item.popover-triangle-left-bottom {
+    top: calc(50% - 22px);
+}
+
+.tour .popover-item.popover-triangle-right,
+.tour .popover-item.popover-triangle-right-top,
+.tour .popover-item.popover-triangle-right-bottom {
+    right: calc(100% + 36px);
+}
+
+.tour .popover-item.popover-triangle-left,
+.tour .popover-item.popover-triangle-left-top,
+.tour .popover-item.popover-triangle-left-bottom {
+    left: calc(100% + 36px);
+}
+
+/* 'dem Triangles */
+
+.tour .popover-triangle-top:before,
+.tour .popover-triangle-top-left:before,
+.tour .popover-triangle-top-right:before {
+    border-right: 14px solid transparent;
+    border-bottom: calc(14px * 0.8) solid #bfbfbf;
+    border-left: 14px solid transparent;
+}
+
+.tour .popover-triangle-top:after,
+.tour .popover-triangle-top-left:after,
+.tour .popover-triangle-top-right:after {
+    top: -10px;
+    border-right: 14px solid transparent;
+    border-bottom: calc(14px * 0.8) solid #fff;
+    border-left: 14px solid transparent;
+}
+
+.tour .popover-triangle-bottom:before,
+.tour .popover-triangle-bottom-left:before,
+.tour .popover-triangle-bottom-right:before {
+    border-top: calc(14px * 0.8) solid #bfbfbf;
+    border-right: 14px solid transparent;
+    border-left: 14px solid transparent;
+}
+
+.tour .popover-triangle-bottom:after,
+.tour .popover-triangle-bottom-left:after,
+.tour .popover-triangle-bottom-right:after {
+    bottom: -10px;
+    border-top: calc(14px * 0.8) solid #fff;
+    border-right: 14px solid transparent;
+    border-left: 14px solid transparent;
+}
+
+.tour .popover-triangle-left:before,
+.tour .popover-triangle-left-top:before,
+.tour .popover-triangle-left-bottom:before {
+    border-top: 14px solid transparent;
+    border-right: calc(14px * 0.8) solid #bfbfbf;
+    border-bottom: 14px solid transparent;
+}
+
+.tour .popover-triangle-left:after,
+.tour .popover-triangle-left-top:after,
+.tour .popover-triangle-left-bottom:after {
+    left: -10px;
+    border-top: 14px solid transparent;
+    border-right: calc(14px * 0.8) solid #fff;
+    border-bottom: 14px solid transparent;
+}
+
+.tour .popover-triangle-right:before,
+.tour .popover-triangle-right-top:before,
+.tour .popover-triangle-right-bottom:before {
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    border-left: calc(14px * 0.8) solid #bfbfbf;
+}
+
+.tour .popover-triangle-right:after,
+.tour .popover-triangle-right-top:after,
+.tour .popover-triangle-right-bottom:after {
+    right: -10px;
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    border-left: calc(14px * 0.8) solid #fff;
+}
