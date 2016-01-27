@@ -269,7 +269,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"sameAs": "http:\/\/authorwebsite.com"/);
                 rendered.string.should.match(/"publisher": "Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/AuthorName"/);
+                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/AuthorName\/"/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/author-cover-image.png"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"description": "Author bio"/);
@@ -371,7 +371,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/testurl.com\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author"/);
+                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author\/"/);
                 rendered.string.should.match(/"sameAs": "http:\/\/authorwebsite.com"/);
                 rendered.string.should.match(/"description": "Author bio"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
@@ -444,7 +444,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/testurl.com\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author"/);
+                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author\/"/);
                 rendered.string.should.match(/"sameAs": "http:\/\/authorwebsite.com"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost &quot;test&quot;"/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/post\/"/);
@@ -511,7 +511,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.match(/"image\": \"http:\/\/testurl.com\/content\/images\/test-author-image.png\"/);
-                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author"/);
+                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author\/"/);
                 rendered.string.should.match(/"sameAs": "http:\/\/authorwebsite.com"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/post\/"/);
@@ -581,7 +581,7 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
                 rendered.string.should.not.match(/"image\"/);
-                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author"/);
+                rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/Author\/"/);
                 rendered.string.should.match(/"sameAs": "http:\/\/authorwebsite.com"/);
                 rendered.string.should.match(/"headline": "Welcome to Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/post\/"/);
