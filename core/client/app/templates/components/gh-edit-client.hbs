@@ -1,3 +1,5 @@
+{{#if formError}}<div class="form-error">{{formError}}</div>{{/if}}
+
 {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
     <label for="client-name">Name</label>
     <div data-test-selector="name">
@@ -26,6 +28,7 @@
   </div>
   {{gh-error-message errors=errors property="description"}}
  {{/gh-form-group}}
+
 
  {{#if isEditing}}
 <div class="form-group">

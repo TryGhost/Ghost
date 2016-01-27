@@ -2,7 +2,6 @@
 
 {{gh-edit-client
     isEditing=isEditing
-    model=model
     name=model.name
     status=model.status
     description=model.description
@@ -11,6 +10,6 @@
     redirection_uri=model.redirection_uri
     changeClientStatus="changeClientStatus"
     refreshSecret="refreshSecret"
-    saveClient="saveClient"
+    saveClient=(action 'saveClient')
 }}
 </section>

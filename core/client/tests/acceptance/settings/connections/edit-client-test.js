@@ -85,9 +85,9 @@ describe('Acceptance: Settings: Connections', function() {
     click('[data-test-selector="save-btn"]');
 
     andThen(function() {
-    expect(currentURL()).to.equal('/settings/connections');
-    let clients = find('[data-test-selector="client-list-item"]');
-    assert.equal(clients.length, 4);
+        expect(currentURL()).to.equal('/settings/connections');
+        let clients = find('[data-test-selector="client-list-item"]');
+        assert.equal(clients.length, 4);
     });
   });
 
@@ -100,9 +100,9 @@ describe('Acceptance: Settings: Connections', function() {
     click('[data-test-selector="save-btn"]');
 
     andThen(function() {
-    let error = find('p:contains(You must specify a name for the client.)');
-    expect(currentURL()).to.equal('/settings/connections/new/');
-    assert.equal(error.length, 1);
+        let error = find('p:contains(You must specify a name for the client.)');
+        expect(currentURL()).to.equal('/settings/connections/new/');
+        assert.equal(error.length, 1);
     });
   });
 
@@ -112,12 +112,17 @@ describe('Acceptance: Settings: Connections', function() {
 
     authenticateSession(application);
     visit('/settings/connections/');
-    click('span:contains(Ghost Admin)');
+    click('span:contains(Test Client)');
+    andThen(function() {
+        expect(currentURL()).to.equal('/settings/connections/edit/test-client');
+    });
     fillIn('[data-test-selector="name"] input', 'Different Client Name');
     click('[data-test-selector="save-btn"]');
 
     andThen(function() {
-    expect(currentURL()).to.equal('/settings/connections');
+        expect(currentURL()).to.equal('/settings/connections');
+        let client = find('[data-test-selector="client-list-item"]:contains("Different Client Name")');
+        expect(client).to.have.length(1);
     });
   });
 });
