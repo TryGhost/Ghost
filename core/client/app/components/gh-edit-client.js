@@ -16,7 +16,10 @@ export default Ember.Component.extend(ValidationEngine, {
 
     actions: {
         changeClientStatus(newStatus){
-            this.sendAction('changeClientStatus', newStatus);
+            const changeClientStatus = this.get('changeClientStatus');
+            return changeClientStatus(newStatus).catch(err => {
+                this.set('formError', err);
+            });
         },
 
         refreshSecret(){

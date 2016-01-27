@@ -99,6 +99,33 @@ describeComponent(
         expect(this.$('.form-error').text()).to.equal('Could not refresh client secret');
     });
 
+    it('should show an error when client status fails to update', function() {
+
+        let actionCalled = false;
+        this.on('changeClientStatus', function(){
+            actionCalled = true;
+            return Ember.RSVP.reject('Could not change client status');
+        });
+
+        this.render(hbs`
+            {{gh-edit-client
+                isEditing=true
+                name='Foo'
+                status='enabled'
+                description='My connection'
+                secret='xoxo'
+                logo='foo.png'
+                redirection_uri='foo'
+                changeClientStatus=(action "changeClientStatus")
+            }}
+        `);
+
+        this.$('button:contains(Disable)').click();
+
+        expect(actionCalled).to.be.true;
+        expect(this.$('.form-error').text()).to.equal('Could not change client status');
+    });
+
 
     // write integration test for change status that uses closure action
     // and it shows that when error occurs while trying to save connection

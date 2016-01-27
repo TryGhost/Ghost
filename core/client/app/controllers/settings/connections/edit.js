@@ -10,7 +10,7 @@ actions: {
   changeClientStatus(status) {
     let client = this.get('model');
     client.set('status', status);
-    client.save();
+    return client.save();
   },
 
   refreshSecret() {
