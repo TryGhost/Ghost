@@ -97,7 +97,6 @@ describeComponent(
 
         expect(actionCalled).to.be.true;
         expect(this.$('.form-error').text()).to.equal('Could not refresh client secret');
-
     });
 
 

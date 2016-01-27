@@ -16,7 +16,7 @@ actions: {
   refreshSecret() {
     let client = this.get('model');
     client.set('secret', '');
-    client.save();
+    return client.save();
   },
 
   saveClient(clientData) {
