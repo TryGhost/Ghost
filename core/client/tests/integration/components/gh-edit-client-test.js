@@ -71,5 +71,39 @@ describeComponent(
         expect(actionCalled).to.be.true;
 
     });
+
+    it('can refresh a client secret', function() {
+
+        let actionCalled = false;
+        this.on('refreshSecret', function(){
+            actionCalled = true;
+            return Ember.RSVP.reject('Could not refresh client secret');
+        });
+
+        this.render(hbs`
+            {{gh-edit-client
+                isEditing=true
+                name='Foo'
+                status='enabled'
+                description='My connection'
+                secret='xoxo'
+                logo='foo.png'
+                redirection_uri='foo'
+                refreshSecret=(action "refreshSecret")
+            }}
+        `);
+
+        this.$('button:contains(Refresh Token)').click();
+
+        expect(actionCalled).to.be.true;
+        expect(this.$('.form-error').text()).to.equal('Could not refresh client secret');
+
+    });
+
+
+    // write integration test for change status that uses closure action
+    // and it shows that when error occurs while trying to save connection
+    // the error displays on the form
+
     }
 );

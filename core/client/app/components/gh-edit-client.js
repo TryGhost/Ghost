@@ -20,7 +20,10 @@ export default Ember.Component.extend(ValidationEngine, {
         },
 
         refreshSecret(){
-            this.sendAction('refreshSecret');
+            const refreshSecret = this.get('refreshSecret');
+            return refreshSecret().catch(err => {
+                this.set('formError', err);
+            });
         },
 
         saveClient(){
