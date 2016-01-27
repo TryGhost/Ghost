@@ -38,6 +38,18 @@ describe('getMetaDescription', function () {
         description.should.equal('Best tag ever!');
     });
 
+    it('should return data tag description if no meta description for tag', function () {
+        var description = getMetaDescription({
+            tag: {
+                meta_description: '',
+                description: 'The normal description'
+            }
+        }, {
+            context: ['tag']
+        });
+        description.should.equal('The normal description');
+    });
+
     it('should return data post meta description if on root context contains post', function () {
         var description = getMetaDescription({
             post: {
