@@ -414,7 +414,7 @@ describe('Apps', function () {
             AppPermissions.DefaultPermissions.posts.should.containEql('read');
 
             // Make it hurt to add more so additional checks are added here
-            _.keys(AppPermissions.DefaultPermissions).length.should.equal(1);
+            Object.keys(AppPermissions.DefaultPermissions).length.should.equal(1);
         });
         it('uses default permissions if no package.json', function (done) {
             var perms = new AppPermissions('test');
@@ -486,7 +486,7 @@ describe('Apps', function () {
                 should.exist(readPerms.settings);
                 readPerms.settings.length.should.equal(5);
 
-                _.keys(readPerms).length.should.equal(3);
+                Object.keys(readPerms).length.should.equal(3);
 
                 done();
             }).catch(done);

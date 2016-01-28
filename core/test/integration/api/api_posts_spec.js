@@ -333,7 +333,7 @@ describe('Post API', function () {
 
                 results.posts[0].title.should.exist;
                 should.not.exist(results.posts[0].foo);
-                objectKeys = _.keys(results.posts[0]);
+                objectKeys = Object.keys(results.posts[0]);
                 objectKeys.length.should.eql(1);
 
                 done();

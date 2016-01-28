@@ -80,7 +80,7 @@ module.exports = {
 
             return Promise.all(loadPromises).then(function () {
                 // Save our installed apps to settings
-                return saveInstalledApps(_.keys(loadedApps));
+                return saveInstalledApps(Object.keys(loadedApps));
             }).then(function () {
                 // Extend the loadedApps onto the available apps
                 _.extend(availableApps, loadedApps);

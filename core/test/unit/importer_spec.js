@@ -322,8 +322,8 @@ describe('Importer', function () {
                 name: 'export-003-api-wrapper.json'
             }];
             JSONHandler.loadFile(file).then(function (result) {
-                _.keys(result).should.containEql('meta');
-                _.keys(result).should.containEql('data');
+                Object.keys(result).should.containEql('meta');
+                Object.keys(result).should.containEql('data');
                 done();
             }).catch(done);
         });

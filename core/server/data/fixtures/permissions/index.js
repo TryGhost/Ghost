@@ -46,7 +46,7 @@ addRolesPermissionsForRole = function (roleName) {
 };
 
 addAllRolesPermissions = function () {
-    var roleNames = _.keys(fixtures.permissions_roles),
+    var roleNames = Object.keys(fixtures.permissions_roles),
         ops = [];
 
     _.each(roleNames, function (roleName) {

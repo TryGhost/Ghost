@@ -22,7 +22,7 @@ JSONHandler = {
                 importData = JSON.parse(fileData);
 
                 // if importData follows JSON-API format `{ db: [exportedData] }`
-                if (_.keys(importData).length === 1) {
+                if (Object.keys(importData).length === 1) {
                     if (!importData.db || !Array.isArray(importData.db)) {
                         throw new Error(i18n.t('errors.data.importer.handlers.json.invalidJsonFormat'));
                     }

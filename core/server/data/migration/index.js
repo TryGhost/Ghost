@@ -15,7 +15,7 @@ var _               = require('lodash'),
     config          = require('../../config'),
     i18n            = require('../../i18n'),
 
-    schemaTables    = _.keys(schema),
+    schemaTables    = Object.keys(schema),
 
     // private
     logInfo,

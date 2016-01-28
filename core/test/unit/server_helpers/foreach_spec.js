@@ -85,7 +85,7 @@ describe('{{#foreach}} helper', function () {
             options.fn.called.should.be.true;
             options.fn.getCalls().length.should.eql(_.size(context));
 
-            _.each(_.keys(context), function (value, index) {
+            _.each(Object.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
                 should(options.fn.getCall(index).args[1].data).be.undefined;
             });
@@ -153,7 +153,7 @@ describe('{{#foreach}} helper', function () {
             options.fn.called.should.be.true;
             options.fn.getCalls().length.should.eql(_.size(context));
 
-            _.each(_.keys(context), function (value, index) {
+            _.each(Object.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
                 should(options.fn.getCall(index).args[1].data).not.be.undefined;
 
@@ -230,7 +230,7 @@ describe('{{#foreach}} helper', function () {
             options.fn.called.should.be.true;
             options.fn.getCalls().length.should.eql(_.size(context));
 
-            _.each(_.keys(context), function (value, index) {
+            _.each(Object.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
                 should(options.fn.getCall(index).args[1].data).not.be.undefined;
 

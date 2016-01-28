@@ -36,7 +36,7 @@ getAddCommands = function getAddCommands(oldTables, newTables) {
     });
 };
 addColumnCommands = function addColumnCommands(table, columns) {
-    var columnKeys = _.keys(schema[table]),
+    var columnKeys = Object.keys(schema[table]),
         addColumns = _.difference(columnKeys, columns);
 
     return addColumns.map(function (column) {
@@ -47,7 +47,7 @@ addColumnCommands = function addColumnCommands(table, columns) {
     });
 };
 modifyUniqueCommands = function modifyUniqueCommands(table, indexes) {
-    var columnKeys = _.keys(schema[table]);
+    var columnKeys = Object.keys(schema[table]);
     return columnKeys.map(function (column) {
         if (schema[table][column].unique === true) {
             if (!_.contains(indexes, table + '_' + column + '_unique')) {
