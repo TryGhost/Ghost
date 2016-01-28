@@ -121,7 +121,7 @@ utils = {
             });
             if (post) {
                 tags = _.filter(tableData.tags, function (tag) {
-                    return _.indexOf(tagIds, tag.id) !== -1;
+                    return tagIds.indexOf(tag.id) !== -1;
                 });
                 post.tags = [];
                 _.each(tags, function (tag) {

@@ -150,7 +150,7 @@ filterPaths = function (paths, active) {
                 item.package = false;
             }
 
-            if (_.indexOf(active, key) !== -1) {
+            if (active.indexOf(key) !== -1) {
                 item.active = true;
             }
             res.push(item);
