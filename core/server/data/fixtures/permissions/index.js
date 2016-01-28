@@ -33,7 +33,7 @@ addRolesPermissionsForRole = function (roleName) {
                     var objectPermissions = fixturesForRole[permission.object_type];
                     if (objectPermissions === 'all') {
                         return permission.id;
-                    } else if (_.isArray(objectPermissions) && _.contains(objectPermissions, permission.action_type)) {
+                    } else if (Array.isArray(objectPermissions) && _.contains(objectPermissions, permission.action_type)) {
                         return permission.id;
                     }
                     return null;

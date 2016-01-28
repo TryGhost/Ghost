@@ -27,7 +27,7 @@ I18n = {
         // If the path returns an array (as in the case with anything that has multiple paragraphs such as emails), then
         // loop through them and return an array of translated/formatted strings. Otherwise, just return the normal
         // translated/formatted string.
-        if (_.isArray(string)) {
+        if (Array.isArray(string)) {
             msg = [];
             string.forEach(function (s) {
                 var m = new MessageFormat(s, currentLocale);

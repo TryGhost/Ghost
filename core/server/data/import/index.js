@@ -50,7 +50,7 @@ cleanError = function cleanError(error) {
 handleErrors = function handleErrors(errorList) {
     var processedErrors = [];
 
-    if (!_.isArray(errorList)) {
+    if (!Array.isArray(errorList)) {
         return Promise.reject(errorList);
     }
 
@@ -58,7 +58,7 @@ handleErrors = function handleErrors(errorList) {
         if (!error.raw) {
             // These are validation errors
             processedErrors.push(error);
-        } else if (_.isArray(error.raw)) {
+        } else if (Array.isArray(error.raw)) {
             processedErrors = processedErrors.concat(error.raw);
         } else {
             processedErrors.push(cleanError(error));

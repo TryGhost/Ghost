@@ -149,7 +149,7 @@ validate = function validate(value, key, validations) {
         if (_.isBoolean(validationOptions)) {
             goodResult = validationOptions;
             validationOptions = [];
-        } else if (!_.isArray(validationOptions)) {
+        } else if (!Array.isArray(validationOptions)) {
             validationOptions = [validationOptions];
         }
 
