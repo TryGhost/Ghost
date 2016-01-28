@@ -26,6 +26,7 @@ describe('Acceptance: Settings: Connections', function() {
   it('can visit connections screen', function() {
     const role = server.create('role', {name: 'Editor'});
     const user = server.create('user', {roles: [role], slug: 'test-user'});
+    server.createList('client', 5);
 
     authenticateSession(application);
     visit('/settings/connections/');
@@ -33,13 +34,14 @@ describe('Acceptance: Settings: Connections', function() {
     andThen(function() {
           let clients = find('[data-test-selector="client-list-item"]').length;
           expect(currentURL()).to.equal('/settings/connections/');
-          assert.equal(clients, 3, '3 clients are displayed');
+          assert.equal(clients, 5, '5 clients are displayed');
     });
 });
 
   it('can disable a client', function() {
     const role = server.create('role', {name: 'Editor'});
     const user = server.create('user', {roles: [role], slug: 'test-user'});
+    server.create('client', {name: 'Ghost Admin', slug: 'ghost-admin'});
 
     authenticateSession(application);
     visit('/settings/connections/edit/ghost-admin/');
@@ -56,27 +58,29 @@ describe('Acceptance: Settings: Connections', function() {
   it('can refresh a client secret', function() {
     const role = server.create('role', {name: 'Editor'});
     const user = server.create('user', {roles: [role], slug: 'test-user'});
+    server.create('client', {name: 'Ghost Admin', slug: 'ghost-admin'});
 
     authenticateSession(application);
     visit('/settings/connections/edit/ghost-admin/');
 
     andThen(function() {
-      let name = find('[data-test-selector="secret"]').text();
-      expect(name).to.equal('bf9b141079f9');
+      let secret = find('[data-test-selector="secret"]').text();
+      expect(secret).to.equal('2f5c4f6291e');
     });
 
-    click('button:contains(Refresh Token)');
+    click('button:contains(Refresh Secret)');
 
     andThen(function() {
-      let name = find('[data-test-selector="secret"]').text();
-      expect(name).to.equal('');
+      let secret = find('[data-test-selector="secret"]').text();
+      expect(secret).to.equal('');
       expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin/');
     });
   });
 
-  it('can create a client', function() {
+  it('can create a new client', function() {
     const role = server.create('role', {name: 'Editor'});
     const user = server.create('user', {roles: [role], slug: 'test-user'});
+    server.createList('client', 5);
 
     authenticateSession(application);
     visit('/settings/connections/new/');
@@ -87,7 +91,7 @@ describe('Acceptance: Settings: Connections', function() {
     andThen(function() {
         expect(currentURL()).to.equal('/settings/connections');
         let clients = find('[data-test-selector="client-list-item"]');
-        assert.equal(clients.length, 4);
+        assert.equal(clients.length, 6);
     });
   });
 
@@ -109,12 +113,13 @@ describe('Acceptance: Settings: Connections', function() {
   it('can edit a client', function() {
     const role = server.create('role', {name: 'Editor'});
     const user = server.create('user', {roles: [role], slug: 'test-user'});
+    server.create('client', {name: 'Ghost Admin', slug: 'ghost-admin'});
 
     authenticateSession(application);
     visit('/settings/connections/');
-    click('span:contains(Test Client)');
+    click('span:contains(Ghost Admin)');
     andThen(function() {
-        expect(currentURL()).to.equal('/settings/connections/edit/test-client');
+        expect(currentURL()).to.equal('/settings/connections/edit/ghost-admin');
     });
     fillIn('[data-test-selector="name"] input', 'Different Client Name');
     click('[data-test-selector="save-btn"]');

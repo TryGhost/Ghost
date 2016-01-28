@@ -1,12 +1,12 @@
 /* jscs:disable */
-import Mirage from 'ember-cli-mirage';
+import Mirage, {faker} from 'ember-cli-mirage';
 
 export default Mirage.Factory.extend({
-  uuid(i) { return `client-${i}`; },
-  name(i) { return `User ${i}`; },
-  slug(i) { return `ghost-${i}`; },
+  uuid() { return `c712cbcd-326d-4f85-a8e0`; },
+  name: faker.list.cycle('Ghost Admin', 'Ghost Frontend', 'Twitter', 'Github', 'Facebook'),
+  slug: faker.list.cycle('ghost-admin', 'ghost-frontend', 'twitter', 'github', 'facebook'),
   type() { return 'ua'; },
-  secret() { return `2f5c4f6291${i}e`; },
+  secret() { return `2f5c4f6291e`; },
   redirection_uri() { return null; },
   logo() { return null; },
   status() { return 'enabled'; },

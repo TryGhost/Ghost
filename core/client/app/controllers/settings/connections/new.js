@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const {Controller, computed, inject} = Ember;
+const {Controller} = Ember;
 
 export default Controller.extend({
     isEditing: false,
@@ -8,12 +8,8 @@ export default Controller.extend({
     actions: {
         saveClient(newClient) {
             let client = this.store.createRecord('client', newClient);
-            client.validate().then(() => {
-
-              this.transitionToRoute('settings.connections.index');
-
-            }, () => {
-              alert('validation failed');
+            return client.save().finally(()=>{
+                this.transitionToRoute('settings.connections.index');
             });
         }
     }
