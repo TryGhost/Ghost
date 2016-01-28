@@ -12,7 +12,7 @@ var bodyParser      = require('body-parser'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
 
     authStrategies   = require('./auth-strategies'),
-    busboy           = require('./ghost-busboy'),
+    multer           = require('./ghost-multer'),
     auth             = require('./auth'),
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
@@ -33,7 +33,7 @@ var bodyParser      = require('body-parser'),
     setupMiddleware;
 
 middleware = {
-    busboy: busboy,
+    multer: multer,
     cacheControl: cacheControl,
     spamPrevention: spamPrevention,
     privateBlogging: privateBlogging,

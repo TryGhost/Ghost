@@ -31,7 +31,6 @@
     "bluebird": "2.10.2",
     "body-parser": "1.14.2",
     "bookshelf": "0.7.9",
-    "busboy": "0.2.12",
     "chalk": "1.1.1",
     "cheerio": "0.19.0",
     "compression": "1.6.0",
