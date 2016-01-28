@@ -27,7 +27,7 @@ tags = function (options) {
 
     function createTagList(tags) {
         if (autolink) {
-            return _.map(tags, function (tag) {
+            return tags.map(function (tag) {
                 return utils.linkTemplate({
                     url: config.urlFor('tag', {tag: tag}),
                     text: _.escape(tag.name)

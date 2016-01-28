@@ -31,7 +31,7 @@ exporter = function () {
     return Promise.join(versioning.getDatabaseVersion(), utils.getTables()).then(function (results) {
         var version = results[0],
             tables = results[1],
-            selectOps = _.map(tables, function (name) {
+            selectOps = tables.map(function (name) {
                 if (excludedTables.indexOf(name) < 0) {
                     return config.database.knex(name).select();
                 }

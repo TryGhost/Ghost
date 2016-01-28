@@ -18,7 +18,7 @@ doRawAndFlatten = function doRaw(query, flattenFn) {
 
 getTables = function getTables() {
     return doRawAndFlatten('show tables', function (response) {
-        return _.map(response[0], function (entry) { return _.values(entry); });
+        return response[0].map(function (entry) { return _.values(entry); });
     });
 };
 
@@ -40,7 +40,7 @@ getColumns = function getColumns(table) {
 // For details see: https://github.com/TryGhost/Ghost/issues/1947
 checkPostTable = function checkPostTable() {
     return config.database.knex.raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
-        return _.flatten(_.map(response[0], function (entry) {
+        return _.flatten(response[0].map(function (entry) {
             if (entry.Type.toLowerCase() !== 'mediumtext') {
                 return config.database.knex.raw('ALTER TABLE posts MODIFY ' + entry.Field + ' MEDIUMTEXT');
             }

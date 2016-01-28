@@ -149,7 +149,7 @@ describe('Filter Param Spec', function () {
                     result.posts.should.be.an.Array.with.lengthOf(6);
 
                     // Each post must either have the author 'leslie' or 'pat'
-                    authors = _.map(result.posts, function (post) {
+                    authors = result.posts.map(function (post) {
                         return post.author.slug;
                     });
                     authors.should.matchAny(/leslie|pat/);

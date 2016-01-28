@@ -75,8 +75,8 @@ updateSettingsCache = function (settings) {
     settings = settings || {};
 
     if (!_.isEmpty(settings)) {
-        _.map(settings, function (setting, key) {
-            settingsCache[key] = setting;
+        Object.keys(settings).map(function (key) {
+            settingsCache[key] = settings[key];
         });
 
         updateConfigCache();
@@ -269,7 +269,7 @@ canEditAllSettings = function (settingsInfo, options) {
                 return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.settings.noPermissionToEditSettings')));
             });
         },
-        checks = _.map(settingsInfo, function (settingInfo) {
+        checks = settingsInfo.map(function (settingInfo) {
             var setting = settingsCache[settingInfo.key];
 
             if (!setting) {

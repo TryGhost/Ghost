@@ -440,13 +440,13 @@ DataGenerator.forModel = (function () {
         users,
         roles;
 
-    posts = _.map(DataGenerator.Content.posts, function (post) {
+    posts = DataGenerator.Content.posts.map(function (post) {
         return _.pick(post, 'title', 'markdown');
     });
 
     tags = DataGenerator.Content.tags;
 
-    users = _.map(DataGenerator.Content.users, function (user) {
+    users = DataGenerator.Content.users.map(function (user) {
         user = _.pick(user, 'name', 'email');
 
         return _.defaults({
@@ -454,8 +454,8 @@ DataGenerator.forModel = (function () {
         }, user);
     });
 
-    roles = _.map(DataGenerator.Content.roles, function (role, id) {
-        return _.extend({}, role, {id: id + 1});
+    roles = DataGenerator.Content.roles.map(function (id) {
+        return _.extend({}, DataGenerator.Content.roles[id], {id: id + 1});
     });
 
     return {

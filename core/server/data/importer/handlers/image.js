@@ -15,12 +15,12 @@ ImageHandler = {
     loadFile: function (files, baseDir) {
         var store = storage.getStorage(),
             baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp(''),
-            imageFolderRegexes = _.map(config.paths.imagesRelPath.split('/'), function (dir) {
+            imageFolderRegexes = config.paths.imagesRelPath.split('/').map(function (dir) {
                 return new RegExp('^' + dir + '/');
             });
 
         // normalize the directory structure
-        files = _.map(files, function (file) {
+        files = files.map(function (file) {
             var noBaseDir = file.name.replace(baseDirRegex, ''),
                 noGhostDirs = noBaseDir;
 

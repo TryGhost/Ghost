@@ -266,7 +266,7 @@ function writeFetchFix(knex, resource) {
 
 function createUsers(knex, DataGenerator) {
     // First, loop through and prep the data
-    data.users = _.map(data.users, function (user) {
+    data.users = data.users.map(function (user) {
         return DataGenerator.forKnex.createUser(user);
     });
 
@@ -275,7 +275,7 @@ function createUsers(knex, DataGenerator) {
 }
 
 function createTags(knex, DataGenerator, created) {
-    data.tags = _.map(data.tags, function (tag) {
+    data.tags = data.tags.map(function (tag) {
         tag = DataGenerator.forKnex.createBasic(tag);
         tag.created_by = created.users[tag.created_by].id;
         return tag;
@@ -287,7 +287,7 @@ function createTags(knex, DataGenerator, created) {
 
 function createPosts(knex, DataGenerator, created) {
     var postsTags = [];
-    data.posts = _.map(data.posts, function (post, index) {
+    data.posts = data.posts.map(function (post, index) {
         post = DataGenerator.forKnex.createPost(post);
         post.created_by = created.users[post.author_id].id;
         post.author_id = created.users[post.author_id].id;
@@ -301,7 +301,7 @@ function createPosts(knex, DataGenerator, created) {
     // Next, insert it into the database & return the correctly indexed data
     return writeFetchFix(knex, 'posts').then(function (createdPosts) {
         // Handle post tags
-        postsTags = _.map(postsTags, function (postTag) {
+        postsTags = postsTags.map(function (postTag) {
             postTag.post_id = createdPosts[postTag.post_id].id;
             return postTag;
         });

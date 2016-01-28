@@ -55,7 +55,7 @@ _.extend(BaseSiteMapGenerator.prototype, {
         // Create all the url elements in JSON
         var self = this,
             nodes;
-        nodes = _.map(data, function (datum) {
+        nodes = data.map(function (datum) {
             var node = self.createUrlNodeFromDatum(datum);
             self.updateLastModified(datum);
             self.updateLookups(datum, node);
@@ -69,12 +69,12 @@ _.extend(BaseSiteMapGenerator.prototype, {
     generateXmlFromNodes: function () {
         var self = this,
             // Get a mapping of node to timestamp
-            timedNodes = _.map(this.nodeLookup, function (node, id) {
+            timedNodes = Object.keys(this.nodeLookup).map(function (id) {
                 return {
                     id: id,
                     // Using negative here to sort newest to oldest
                     ts: -(self.nodeTimeLookup[id] || 0),
-                    node: node
+                    node: self.nodeLookup[id]
                 };
             }, []),
             // Sort nodes by timestamp

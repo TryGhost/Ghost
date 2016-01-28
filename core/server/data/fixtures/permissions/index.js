@@ -29,7 +29,7 @@ addRolesPermissionsForRole = function (roleName) {
     return models.Role.forge({name: roleName}).fetch({withRelated: ['permissions']}).then(function (role) {
         return models.Permissions.forge().fetch().then(function (permissions) {
             if (_.isObject(fixturesForRole)) {
-                permissionsToAdd = _.map(permissions.toJSON(), function (permission) {
+                permissionsToAdd = permissions.toJSON().map(function (permission) {
                     var objectPermissions = fixturesForRole[permission.object_type];
                     if (objectPermissions === 'all') {
                         return permission.id;

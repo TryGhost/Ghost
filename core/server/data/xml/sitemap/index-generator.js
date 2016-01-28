@@ -34,7 +34,7 @@ _.extend(SiteMapIndexGenerator.prototype, {
     generateSiteMapUrlElements: function () {
         var self = this;
 
-        return _.map(RESOURCES, function (resourceType) {
+        return RESOURCES.map(function (resourceType) {
             var url = config.urlFor({
                     relativeUrl: '/sitemap-' + resourceType + '.xml'
                 }, true),

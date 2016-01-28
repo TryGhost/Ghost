@@ -243,7 +243,7 @@ fixtures = {
             // grab 3 more users
             extraUsers = DataGenerator.Content.users.slice(2, 5);
 
-        extraUsers = _.map(extraUsers, function (user) {
+        extraUsers = extraUsers.map(function (user) {
             return DataGenerator.forKnex.createUser(_.extend({}, user, {
                 email: 'a' + user.email,
                 slug: 'a' + user.slug
@@ -274,7 +274,7 @@ fixtures = {
             // grab 3 more users
             extraUsers = DataGenerator.Content.users.slice(2, 5);
 
-        extraUsers = _.map(extraUsers, function (user) {
+        extraUsers = extraUsers.map(function (user) {
             return DataGenerator.forKnex.createUser(_.extend({}, user, {
                 email: 'inv' + user.email,
                 slug: 'inv' + user.slug,
@@ -343,7 +343,7 @@ fixtures = {
                 Owner: 4
             };
 
-        permsToInsert = _.map(permsToInsert, function (perms) {
+        permsToInsert = permsToInsert.map(function (perms) {
             perms.object_type = obj;
             actions.push(perms.action_type);
             return DataGenerator.forKnex.createBasic(perms);

@@ -21,7 +21,7 @@ filterUtils = {
         try {
             enforced = enforced ? (_.isString(enforced) ? gql.parse(enforced) : enforced) : null;
             defaults = defaults ? (_.isString(defaults) ? gql.parse(defaults) : defaults) : null;
-            custom = _.map(custom, function (arg) {
+            custom = custom.map(function (arg) {
                 return _.isString(arg) ? gql.parse(arg) : arg;
             });
         } catch (error) {
