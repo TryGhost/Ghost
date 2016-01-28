@@ -71,7 +71,7 @@ _.extend(ImportManager.prototype, {
      * @returns {String}
      */
     getGlobPattern: function (items) {
-        return '+(' + _.reduce(items, function (memo, ext) {
+        return '+(' + items.reduce(function (memo, ext) {
             return memo !== '' ? memo + '|'  + ext : ext;
         }, '') + ')';
     },

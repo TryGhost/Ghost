@@ -166,7 +166,7 @@ filterPaths = function (paths, active) {
  * @returns {Settings}
  */
 readSettingsResult = function (settingsModels) {
-    var settings = _.reduce(settingsModels, function (memo, member) {
+    var settings = settingsModels.reduce(function (memo, member) {
             if (!memo.hasOwnProperty(member.attributes.key)) {
                 memo[member.attributes.key] = member.attributes;
             }

@@ -64,7 +64,7 @@ body_class = function (options) {
         }
     }
 
-    classes = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+    classes = classes.reduce(function (memo, item) { return memo + ' ' + item; }, '');
     return new hbs.handlebars.SafeString(classes.trim());
 };
 

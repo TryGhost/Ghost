@@ -67,7 +67,7 @@ function updateCheckData() {
                 return errors.rejectError(e);
             }
 
-            return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
+            return apps.reduce(function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
         }).catch(errors.rejectError));
     ops.push(api.posts.browse().catch(errors.rejectError));
     ops.push(api.users.browse(internal).catch(errors.rejectError));

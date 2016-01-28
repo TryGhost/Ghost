@@ -39,7 +39,7 @@ generateProxyFunctions = function (name, permissions) {
                     app: name
                 };
 
-            return _.reduce(apiMethods, function (memo, apiMethod, methodName) {
+            return Object.keys(apiMethods).reduce(function (memo, methodName) {
                 memo[methodName] = function () {
                     var args = _.toArray(arguments),
                         options = args[args.length - 1];
@@ -47,7 +47,7 @@ generateProxyFunctions = function (name, permissions) {
                     if (_.isObject(options)) {
                         options.context = _.clone(appContext);
                     }
-                    return apiMethod.apply({}, args);
+                    return apiMethods[methodName].apply({}, args);
                 };
 
                 return memo;
