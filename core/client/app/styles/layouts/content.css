@@ -227,6 +227,9 @@
     border: none;
     font-size: 18px;
 }
+.content-preview .post-controls .post-edit:hover {
+    color: var(--darkgrey);
+}
 
 .content-preview img {
     width: 100%;
