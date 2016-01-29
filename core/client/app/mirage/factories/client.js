@@ -8,7 +8,7 @@ export default Mirage.Factory.extend({
   type() { return 'ua'; },
   secret() { return `2f5c4f6291e`; },
   redirection_uri() { return null; },
-  logo() { return null; },
+  logo() { return faker.internet.avatar(); },
   status() { return 'enabled'; },
   description() { return null; },
   created_at() { return '2015-12-07T17:55:06.861Z'; },

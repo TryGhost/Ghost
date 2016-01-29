@@ -1,4 +1,5 @@
 <section class="view-content">
+    {{#if formError}}<div class="form-error">{{formError}}</div>{{/if}}
 
     <div class="settings-tag">
       <h3 class="view-title">Clients</h3>
@@ -8,13 +9,13 @@
 
     {{#each model as |client|}}
       {{gh-client-list-item
-        client=client
+        logo=client.logo
         status=client.status
         name=client.name
         slug=client.slug
         lastUsed=client.updated_at
         id=client.id
-        deleteClient="deleteClient"}}
+        deleteClient=(action 'deleteClient')}}
     {{/each}}
 
 </section>

@@ -6,8 +6,8 @@ export default Controller.extend({
 
 actions: {
     deleteClient(id) {
-      this.store.findRecord('client', id).then(function(client) {
-        client.destroyRecord();
+      return this.store.findRecord('client', id).then((client) => {
+          client.destroyRecord();
       });
     }
   }

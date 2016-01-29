@@ -1,18 +1,24 @@
-<div data-test-selector="client-list-item" class="user-list-item {{if isSpecialClient 'special-client'}}">
-  {{#link-to 'settings.connections.edit' slug}}
-  <div class="user-list-item-body">
-    <span class="name">
-      {{name}}
-    </span>
-    <br>
-    <span class="description">Status: {{status}}</span>
-  </div>
-  {{/link-to}}
-  <div class="revoke">
-      {{#if isSpecialClient}}
 
-    {{else}}
-    <button class="btn btn-red" {{action 'deleteClient' id}}>REVOKE ACCESS</button>
-    {{/if}}
-  </div>
+<div data-test-selector="client-list-item" class="client-list-item {{if isSpecialClient 'special-client'}}">
+    <span class="client-list-item-figure" style={{clientImageBackground}}>
+        <span class="hidden">Photo of {{client}}</span>
+    </span>
+    <div class="client-list-item-body">
+        {{#link-to 'settings.connections.edit' slug}}
+        <span class="name">
+            {{name}}
+        </span>
+        <br>
+        <span class="description">Status: {{status}}</span>
+        {{/link-to}}
+    </div>
+    <aside class="client-list-item-aside">
+        {{#if isSpecialClient}}
+
+        {{else}}
+        <button class="btn btn-red icon-x" {{action 'deleteClient' id}}>
+            REVOKE ACCESS
+        </button>
+        {{/if}}
+    </aside>
 </div>
