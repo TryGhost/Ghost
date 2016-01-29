@@ -1,14 +1,13 @@
 /* global CodeMirror */
 import Ember from 'ember';
 
-var CodeMirrorEditor = Ember.Component.extend({
+const {Component} = Ember;
 
-    // DOM stuff
+export default Component.extend({
     classNameBindings: ['isFocused:focused'],
-    isFocused: false,
 
     value: '', // make sure a value exists
-    editor: null, // reference to CodeMirror editor
+    isFocused: false,
 
     // options for the editor
     lineNumbers: true,
@@ -16,33 +15,33 @@ var CodeMirrorEditor = Ember.Component.extend({
     mode: 'htmlmixed',
     theme: 'xq-light',
 
-    didInsertElement: function () {
-        var options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme'),
-            self = this,
-            editor;
-        editor = new CodeMirror(this.get('element'), options);
+    _editor: null, // reference to CodeMirror editor
+
+    didInsertElement() {
+        this._super(...arguments);
+
+        let options = this.getProperties('lineNumbers', 'indentUnit', 'mode', 'theme');
+        let editor = new CodeMirror(this.get('element'), options);
+
         editor.getDoc().setValue(this.get('value'));
 
         // events
-        editor.on('focus', function () {
-            self.set('isFocused', true);
-        });
-        editor.on('blur', function () {
-            self.set('isFocused', false);
-        });
-        editor.on('change', function () {
-            self.set('value', editor.getDoc().getValue());
+        editor.on('focus', Ember.run.bind(this, 'set', 'isFocused', true));
+        editor.on('blur', Ember.run.bind(this, 'set', 'isFocused', false));
+        editor.on('change', () => {
+            Ember.run(this, function () {
+                this.set('value', editor.getDoc().getValue());
+            });
         });
 
-        this.set('editor', editor);
+        this._editor = editor;
     },
 
-    willDestroyElement: function () {
-        var editor = this.get('editor').getWrapperElement();
+    willDestroyElement() {
+        this._super(...arguments);
+
+        let editor = this._editor.getWrapperElement();
         editor.parentNode.removeChild(editor);
-        this.set('editor', null);
+        this._editor = null;
     }
-
 });
-
-export default CodeMirrorEditor;

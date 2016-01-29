@@ -20,8 +20,21 @@ describe('Users API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
 
-    beforeEach(testUtils.setup('users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init'));
+    beforeEach(testUtils.setup(
+        'users:roles', 'users', 'user:token', 'perms:user', 'perms:role', 'perms:setting', 'perms:init', 'posts'
+    ));
     afterEach(testUtils.teardown);
+
+    function checkForErrorType(type, done) {
+        return function checkForErrorType(error) {
+            if (error.errorType) {
+                error.errorType.should.eql(type);
+                done();
+            } else {
+                done(error);
+            }
+        };
+    }
 
     it('dateTime fields are returned as Date objects', function (done) {
         var userData = testUtils.DataGenerator.forModel.users[0];
@@ -38,15 +51,15 @@ describe('Users API', function () {
     });
 
     describe('Browse', function () {
-        function checkBrowseResponse(response, count) {
+        function checkBrowseResponse(response, count, additional, missing) {
             should.exist(response);
             testUtils.API.checkResponse(response, 'users');
             should.exist(response.users);
             response.users.should.have.length(count);
-            testUtils.API.checkResponse(response.users[0], 'user');
-            testUtils.API.checkResponse(response.users[1], 'user');
-            testUtils.API.checkResponse(response.users[2], 'user');
-            testUtils.API.checkResponse(response.users[3], 'user');
+            testUtils.API.checkResponse(response.users[0], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[1], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[2], 'user', additional, missing);
+            testUtils.API.checkResponse(response.users[3], 'user', additional, missing);
         }
 
         it('Owner can browse', function (done) {
@@ -77,9 +90,16 @@ describe('Users API', function () {
             }).catch(done);
         });
 
-        it('No-auth CANNOT browse', function (done) {
-            UserAPI.browse().then(function () {
-                done(new Error('Browse users is not denied without authentication.'));
+        it('No-auth CAN browse, but only gets filtered active users', function (done) {
+            UserAPI.browse().then(function (response) {
+                checkBrowseResponse(response, 7, null, ['email']);
+                done();
+            }).catch(done);
+        });
+
+        it('No-auth CANNOT browse non-active users', function (done) {
+            UserAPI.browse({status: 'invited'}).then(function () {
+                done(new Error('Browse non-active users is not denied without authentication.'));
             }, function () {
                 done();
             }).catch(done);
@@ -100,21 +120,6 @@ describe('Users API', function () {
             });
         });
 
-        it('Author can browse', function (done) {
-            UserAPI.browse(context.author).then(function (response) {
-                checkBrowseResponse(response, 7);
-                done();
-            }).catch(done);
-        });
-
-        it('No-auth CANNOT browse', function (done) {
-            UserAPI.browse().then(function () {
-                done(new Error('Browse users is not denied without authentication.'));
-            }, function () {
-                done();
-            }).catch(done);
-        });
-
         it('Can browse all', function (done) {
             UserAPI.browse(_.extend({}, testUtils.context.admin, {status: 'all'})).then(function (response) {
                 checkBrowseResponse(response, 7);
@@ -128,11 +133,91 @@ describe('Users API', function () {
                 testUtils.API.checkResponse(response, 'users');
                 should.exist(response.users);
                 response.users.should.have.length(7);
-                response.users.should.have.length(7);
                 testUtils.API.checkResponse(response.users[0], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[1], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[2], 'user', 'roles');
                 testUtils.API.checkResponse(response.users[3], 'user', 'roles');
+                done();
+            }).catch(done);
+        });
+
+        it('can browse and order by name using asc', function (done) {
+            var expectedUsers;
+
+            UserAPI.browse(testUtils.context.admin)
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedUsers = _(results.users).pluck('slug').sortBy().value();
+
+                    return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug asc'}));
+                })
+                .then(function (results) {
+                    var users;
+
+                    should.exist(results);
+
+                    users = _.pluck(results.users, 'slug');
+                    users.should.eql(expectedUsers);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('can browse and order by name using desc', function (done) {
+            var expectedUsers;
+
+            UserAPI.browse(testUtils.context.admin)
+                .then(function (results) {
+                    should.exist(results);
+
+                    expectedUsers = _(results.users).pluck('slug').sortBy().reverse().value();
+
+                    return UserAPI.browse(_.extend({}, testUtils.context.admin, {order: 'slug desc'}));
+                })
+                .then(function (results) {
+                    var users;
+
+                    should.exist(results);
+
+                    users = _.pluck(results.users, 'slug');
+                    users.should.eql(expectedUsers);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('can browse with include count.posts', function (done) {
+            UserAPI.browse(_.extend({}, testUtils.context.admin, {include: 'count.posts'})).then(function (response) {
+                should.exist(response);
+                testUtils.API.checkResponse(response, 'users');
+                should.exist(response.users);
+                response.users.should.have.length(7);
+                response.users.should.have.length(7);
+
+                testUtils.API.checkResponse(response.users[0], 'user', 'count');
+                testUtils.API.checkResponse(response.users[1], 'user', 'count');
+                testUtils.API.checkResponse(response.users[2], 'user', 'count');
+                testUtils.API.checkResponse(response.users[3], 'user', 'count');
+                testUtils.API.checkResponse(response.users[4], 'user', 'count');
+                testUtils.API.checkResponse(response.users[5], 'user', 'count');
+                testUtils.API.checkResponse(response.users[6], 'user', 'count');
+
+                response.users[0].count.posts.should.eql(0);
+                response.users[1].count.posts.should.eql(0);
+                response.users[2].count.posts.should.eql(0);
+                response.users[3].count.posts.should.eql(7);
+                response.users[4].count.posts.should.eql(0);
+                response.users[5].count.posts.should.eql(0);
+                response.users[6].count.posts.should.eql(0);
+
+                response.meta.pagination.should.have.property('page', 1);
+                response.meta.pagination.should.have.property('limit', 15);
+                response.meta.pagination.should.have.property('pages', 1);
+                response.meta.pagination.should.have.property('total', 7);
+                response.meta.pagination.should.have.property('next', null);
+                response.meta.pagination.should.have.property('prev', null);
+
                 done();
             }).catch(done);
         });
@@ -191,6 +276,18 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        // TODO: this should be a 422?
+        it('cannot fetch a user with an invalid slug', function (done) {
+            UserAPI.read({slug: 'invalid!'}).then(function () {
+                done(new Error('Should not return a result with invalid slug'));
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('User not found.');
+
+                done();
+            });
+        });
     });
 
     describe('Edit', function () {
@@ -211,10 +308,7 @@ describe('Users API', function () {
             UserAPI.edit({users: [{id: userIdFor.owner, name: 'Override'}]}, options)
                 .then(function () {
                     done(new Error('ID mismatches should not be permitted'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('BadRequestError');
-                    done();
-                });
+                }).catch(checkForErrorType('BadRequestError', done));
         });
 
         it('Owner can edit all roles', function (done) {
@@ -237,13 +331,9 @@ describe('Users API', function () {
                 }).catch(done);
         });
 
-        it('Admin can edit all users in all roles', function (done) {
-            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
+        it('Admin can edit Admin, Editor and Author roles', function (done) {
+            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}))
                 .then(function (response) {
-                    checkEditResponse(response);
-
-                    return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
-                }).then(function (response) {
                     checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
                 }).then(function (response) {
@@ -257,14 +347,20 @@ describe('Users API', function () {
                 }).catch(done);
         });
 
-        it('Admin can edit all users in all roles with roles in payload', function (done) {
-            UserAPI.edit({users: [{name: newName, roles: [roleIdFor.owner]}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
-                .then(function (response) {
+        it('Admin CANNOT edit Owner role', function (done) {
+            UserAPI.edit({users: [{name: newName}]}, _.extend({}, context.admin, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Admin should not be able to edit owner account'));
+                }).catch(function (error) {
+                    error.errorType.should.eql('NoPermissionError');
+                    done();
+                });
+        });
+
+        it('Admin can edit Admin, Editor and Author roles with roles in payload', function (done) {
+            UserAPI.edit({users: [{name: newName, roles: [roleIdFor.admin]}]}, _.extend({}, context.admin, {id: userIdFor.admin})).then(function (response) {
                     checkEditResponse(response);
 
-                    return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.admin]}]}, _.extend({}, context.admin, {id: userIdFor.admin}));
-                }).then(function (response) {
-                    checkEditResponse(response);
                     return UserAPI.edit({users: [{name: newName, roles: [roleIdFor.editor]}]}, _.extend({}, context.admin, {id: userIdFor.editor}));
                 }).then(function (response) {
                     checkEditResponse(response);
@@ -381,6 +477,18 @@ describe('Users API', function () {
                 done();
             }).catch(done);
         });
+
+        it('Does not allow password to be set', function (done) {
+            UserAPI.edit(
+                {users: [{name: 'newname', password: 'newpassword'}]}, _.extend({}, context.author, {id: userIdFor.author})
+            ).then(function () {
+                return ModelUser.User.findOne({id: userIdFor.author}).then(function (response) {
+                    response.get('name').should.eql('newname');
+                    response.get('password').should.not.eql('newpassword');
+                    done();
+                });
+            }).catch(done);
+        });
     });
 
     describe('Add', function () {
@@ -417,10 +525,7 @@ describe('Users API', function () {
                 UserAPI.add({users: [newUser]}, _.extend({}, context.owner, {include: 'roles'}))
                     .then(function () {
                         done(new Error('Owner should not be able to add an owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('Can add an Admin', function (done) {
@@ -490,10 +595,7 @@ describe('Users API', function () {
                 UserAPI.add({users: [newUser]}, _.extend({}, context.admin, {include: 'roles'}))
                     .then(function () {
                         done(new Error('Admin should not be able to add an owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
             it('Can add an Admin', function (done) {
                 // Can add admin
@@ -560,10 +662,7 @@ describe('Users API', function () {
                 UserAPI.add({users: [newUser]}, _.extend({}, context.editor, {include: 'roles'}))
                     .then(function () {
                         done(new Error('Editor should not be able to add an owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('Can add an Author', function (done) {
@@ -585,10 +684,7 @@ describe('Users API', function () {
                 UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
                     .then(function () {
                         done(new Error('Author should not be able to add an owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT add an Author', function (done) {
@@ -596,10 +692,7 @@ describe('Users API', function () {
                 UserAPI.add({users: [newUser]}, _.extend({}, context.author, {include: 'roles'}))
                     .then(function () {
                         done(new Error('Author should not be able to add an author'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
         });
     });
@@ -619,10 +712,7 @@ describe('Users API', function () {
                 UserAPI.destroy(_.extend({}, context.owner, {id: userIdFor.owner}))
                     .then(function () {
                         done(new Error('Owner should not be able to delete itself'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('Can destroy admin, editor, author', function (done) {
@@ -650,10 +740,7 @@ describe('Users API', function () {
                 UserAPI.destroy(_.extend({}, context.admin, {id: userIdFor.owner}))
                     .then(function () {
                         done(new Error('Admin should not be able to delete owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('Can destroy admin, editor, author', function (done) {
@@ -682,30 +769,21 @@ describe('Users API', function () {
                 UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.owner}))
                     .then(function () {
                         done(new Error('Editor should not be able to delete owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT destroy admin', function (done) {
                 UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.admin}))
                     .then(function () {
                         done(new Error('Editor should not be able to delete admin'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT destroy other editor', function (done) {
                 UserAPI.destroy(_.extend({}, context.editor, {id: userIdFor.editor2}))
                     .then(function () {
                         done(new Error('Editor should not be able to delete other editor'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('Can destroy self', function (done) {
@@ -730,50 +808,35 @@ describe('Users API', function () {
                 UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.owner}))
                     .then(function () {
                         done(new Error('Author should not be able to delete owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT destroy admin', function (done) {
                 UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.admin}))
                     .then(function () {
                         done(new Error('Author should not be able to delete admin'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT destroy editor', function (done) {
                 UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.editor}))
                     .then(function () {
                         done(new Error('Author should not be able to delete editor'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT destroy other author', function (done) {
                 UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.author2}))
                     .then(function () {
                         done(new Error('Author should not be able to delete other author'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT destroy self', function (done) {
                 UserAPI.destroy(_.extend({}, context.author, {id: userIdFor.author}))
                     .then(function () {
                         done(new Error('Author should not be able to delete self'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    });
+                    }).catch(checkForErrorType('NoPermissionError', done));
             });
         });
     });
@@ -796,10 +859,7 @@ describe('Users API', function () {
             UserAPI.edit({users: [{id: userIdFor.owner, name: 'Override', roles: [roleIdFor.author]}]}, options)
                 .then(function () {
                     done(new Error('ID mismatches should not be permitted'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('BadRequestError');
-                    done();
-                });
+                }).catch(checkForErrorType('BadRequestError', done));
         });
 
         describe('Owner', function () {
@@ -935,10 +995,7 @@ describe('Users API', function () {
                         users: [{name: newName, roles: [roleIdFor.author]}]
                     }, options).then(function () {
                         done(new Error('Author should not be able to downgrade owner'));
-                    }).catch(function (error) {
-                        error.errorType.should.eql('NoPermissionError');
-                        done();
-                    }).catch(done);
+                    }).catch(checkForErrorType('NoPermissionError', done));
                 });
             });
         });
@@ -963,10 +1020,7 @@ describe('Users API', function () {
                     _.extend({}, context.editor, {id: userIdFor.editor}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to upgrade their role'));
-                }, function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                }).catch(done);
+                }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT assign author role to other Editor', function (done) {
@@ -975,10 +1029,7 @@ describe('Users API', function () {
                     _.extend({}, context.editor, {id: userIdFor.editor2}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to change the roles of other editors'));
-                }, function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                }).catch(done);
+                }).catch(checkForErrorType('NoPermissionError', done));
             });
 
             it('CANNOT assign author role to admin', function (done) {
@@ -987,10 +1038,7 @@ describe('Users API', function () {
                     _.extend({}, context.editor, {id: userIdFor.admin}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to change the roles of admins'));
-                }, function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                }).catch(done);
+                }).catch(checkForErrorType('NoPermissionError', done));
             });
             it('CANNOT assign admin role to author', function (done) {
                 UserAPI.edit(
@@ -998,10 +1046,7 @@ describe('Users API', function () {
                     _.extend({}, context.editor, {id: userIdFor.author}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Editor should not be able to upgrade the role of authors'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                }).catch(done);
+                }).catch(checkForErrorType('NoPermissionError', done));
             });
         });
 
@@ -1012,10 +1057,7 @@ describe('Users API', function () {
                     _.extend({}, context.author, {id: userIdFor.author}, {include: 'roles'})
                 ).then(function () {
                     done(new Error('Author should not be able to upgrade their role'));
-                }, function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                }).catch(done);
+                }).catch(checkForErrorType('NoPermissionError', done));
             });
         });
     });
@@ -1044,10 +1086,7 @@ describe('Users API', function () {
                 context.owner
             ).then(function () {
                 done(new Error('Owner should not be able to downgrade their role'));
-            }).catch(function (error) {
-                error.errorType.should.eql('ValidationError');
-                done();
-            });
+            }).catch(checkForErrorType('ValidationError', done));
         });
 
         it('Admin CANNOT transfer ownership', function (done) {
@@ -1057,10 +1096,7 @@ describe('Users API', function () {
                 context.admin
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));
-            }).catch(function (error) {
-                error.errorType.should.eql('NoPermissionError');
-                done();
-            });
+            }).catch(checkForErrorType('NoPermissionError', done));
         });
 
         it('Editor CANNOT transfer ownership', function (done) {
@@ -1070,10 +1106,7 @@ describe('Users API', function () {
                 context.editor
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));
-            }).catch(function (error) {
-                error.errorType.should.eql('NoPermissionError');
-                done();
-            });
+            }).catch(checkForErrorType('NoPermissionError', done));
         });
 
         it('Author CANNOT transfer ownership', function (done) {
@@ -1083,10 +1116,7 @@ describe('Users API', function () {
                 context.author
             ).then(function () {
                 done(new Error('Admin is not denied transferring ownership.'));
-            }).catch(function (error) {
-                error.errorType.should.eql('NoPermissionError');
-                done();
-            });
+            }).catch(checkForErrorType('NoPermissionError', done));
         });
     });
 
@@ -1119,10 +1149,7 @@ describe('Users API', function () {
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function () {
                     done(new Error('Password change is not denied.'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('ValidationError');
-                    done();
-                });
+                }).catch(checkForErrorType('ValidationError', done));
         });
 
         it('Owner can\'t change password without matching passwords', function (done) {
@@ -1137,10 +1164,7 @@ describe('Users API', function () {
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function () {
                     done(new Error('Password change is not denied.'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('ValidationError');
-                    done();
-                });
+                }).catch(checkForErrorType('ValidationError', done));
         });
 
         it('Owner can\'t change editor password without matching passwords', function (done) {
@@ -1154,10 +1178,7 @@ describe('Users API', function () {
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function () {
                     done(new Error('Password change is not denied.'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('ValidationError');
-                    done();
-                });
+                }).catch(checkForErrorType('ValidationError', done));
         });
 
         it('Owner can\'t change editor password without short passwords', function (done) {
@@ -1171,10 +1192,7 @@ describe('Users API', function () {
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function () {
                     done(new Error('Password change is not denied.'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('ValidationError');
-                    done();
-                });
+                }).catch(checkForErrorType('ValidationError', done));
         });
 
         it('Owner can change password for editor', function (done) {
@@ -1203,10 +1221,7 @@ describe('Users API', function () {
             UserAPI.changePassword(payload, _.extend({}, context.editor, {id: userIdFor.editor}))
                 .then(function () {
                     done(new Error('Password change is not denied.'));
-                }).catch(function (error) {
-                    error.errorType.should.eql('NoPermissionError');
-                    done();
-                });
+                }).catch(checkForErrorType('NoPermissionError', done));
         });
     });
 });

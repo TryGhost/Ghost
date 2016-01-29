@@ -3,57 +3,49 @@ import EditorAPI from 'ghost/mixins/ed-editor-api';
 import EditorShortcuts from 'ghost/mixins/ed-editor-shortcuts';
 import EditorScroll from 'ghost/mixins/ed-editor-scroll';
 
-var Editor;
+const {TextArea, run} = Ember;
 
-Editor = Ember.TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
-    focus: true,
+export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
+    focus: false,
 
     /**
      * Tell the controller about focusIn events, will trigger an autosave on a new document
      */
-    focusIn: function () {
+    focusIn() {
         this.sendAction('onFocusIn');
     },
 
     /**
-     * Check if the textarea should have focus, and set it if necessary
+     * Sets the focus of the textarea if needed
      */
-    setFocus: function () {
+    setFocus() {
         if (this.get('focus')) {
             this.$().val(this.$().val()).focus();
         }
-    }.on('didInsertElement'),
-
-    /**
-     * Tell the controller about this component
-     */
-    didInsertElement: function () {
-        this.sendAction('setEditor', this);
-
-        Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
     },
 
-    afterRenderEvent: function () {
+    /**
+     * Sets up properties at render time
+     */
+    didInsertElement() {
+        this._super(...arguments);
+
+        this.setFocus();
+
+        this.attrs.setEditor(this);
+
+        run.scheduleOnce('afterRender', this, this.afterRenderEvent);
+    },
+
+    afterRenderEvent() {
         if (this.get('focus') && this.get('focusCursorAtEnd')) {
             this.setSelection('end');
         }
     },
 
-    /**
-     * Disable editing in the textarea (used while an upload is in progress)
-     */
-    disable: function () {
-        var textarea = this.get('element');
-        textarea.setAttribute('readonly', 'readonly');
-    },
-
-    /**
-     * Reenable editing in the textarea
-     */
-    enable: function () {
-        var textarea = this.get('element');
-        textarea.removeAttribute('readonly');
+    actions: {
+        toggleCopyHTMLModal(generatedHTML) {
+            this.attrs.toggleCopyHTMLModal(generatedHTML);
+        }
     }
 });
-
-export default Editor;

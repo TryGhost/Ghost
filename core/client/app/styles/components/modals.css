@@ -1,0 +1,184 @@
+/* Modals
+/* ---------------------------------------------------------- */
+
+
+/* Fullscreen Modal
+/* ---------------------------------------------------------- */
+
+.fullscreen-modal-liquid-target {
+    overflow-y: auto;
+    height: 100vh;
+}
+
+.fullscreen-modal-background {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.fullscreen-modal {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    max-width: 550px;
+    width: 100%;
+    pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+    .fullscreen-modal {
+        padding: 10px;
+    }
+}
+
+/* Modifiers
+/* ---------------------------------------------------------- */
+
+.fullscreen-modal-wide {
+    width: 550px;
+}
+
+@media (max-width: 900px) {
+    .fullscreen-modal-wide {
+        width: 100%;
+    }
+}
+
+.fullscreen-modal-action {
+    padding: 60px 0 30px;
+}
+
+@media (max-width: 900px) {
+    .fullscreen-modal-action {
+        padding: 30px 0;
+    }
+}
+
+
+/* The modal
+/* ---------------------------------------------------------- */
+
+.fullscreen-modal .image-uploader,
+.fullscreen-modal .pre-image-uploader {
+    margin: 0;
+}
+
+
+/* Modal content
+/* ---------------------------------------------------------- */
+
+.modal-content {
+    position: relative;
+    padding: 18px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: var(--border-radius);
+    box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 6px;
+}
+
+.modal-content * {
+    user-select: text;
+}
+
+.modal-content .close {
+    position: absolute;
+    top: 19px;
+    right: 19px;
+    z-index: 9999;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    border: none;
+    color: #808284;
+}
+
+.modal-content .close:hover {
+    color: var(--darkgrey);
+}
+
+.modal-header {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.modal-header h1 {
+    display: inline-block;
+    margin: 0 25px 0 0;
+    font-size: 1.85em;
+    font-weight: 100;
+}
+
+.modal-body {
+    position: relative;
+    overflow-y: auto;
+}
+
+.modal-body .red {
+    color: var(--red);
+}
+
+.modal-body > *:first-child {
+    margin-top: 0;
+}
+
+.modal-body > *:last-child {
+    margin-bottom: 0;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-footer button {
+    margin-left: 8px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.modal-footer button:first-of-type {
+    margin-left: 0;
+}
+
+
+/* Content Modifiers
+/* ---------------------------------------------------------- */
+
+
+/* Login styles */
+.modal-body .login-form {
+    display: block;
+}
+
+.modal-body .login-form .password-wrap input {
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .modal-body .login-form {
+        margin: 0 auto;
+        max-width: 264px;
+    }
+    .modal-body .login-form .password-wrap {
+        margin: 0 auto 1em;
+        width: 100%;
+    }
+    .modal-body .login-form .btn {
+        margin: 0;
+        margin-bottom: 1em;
+        width: 100%;
+    }
+}
+
+@media (min-width: 901px) {
+    .modal-body .login-form {
+        display: flex;
+    }
+    .modal-body .login-form .password-wrap {
+        flex: 1;
+    }
+}

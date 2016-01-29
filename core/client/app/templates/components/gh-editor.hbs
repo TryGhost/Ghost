@@ -1,0 +1,50 @@
+<section class="entry-markdown js-entry-markdown {{if markdownActive 'active'}}">
+    <header class="floatingheader">
+        <span class="desktop-tabs"><a class="markdown-help-label" href="" title="Markdown Help" {{action (route-action "toggleMarkdownHelpModal")}}>Markdown</a></span>
+        <span class="mobile-tabs">
+            <a href="#" {{action 'selectTab' 'markdown'}} class="{{if markdownActive 'active'}}">Markdown</a>
+            <a href="#" {{action 'selectTab' 'preview'}} class="{{if previewActive 'active'}}">Preview</a>
+        </span>
+        <a class="markdown-help-icon" href="" title="Markdown Help" {{action (route-action "toggleMarkdownHelpModal")}}><i class="icon-markdown"></i></a>
+    </header>
+    <section id="entry-markdown-content" class="entry-markdown-content">
+        {{gh-ed-editor classNames="markdown-editor js-markdown-editor"
+                       tabindex="1"
+                       spellcheck="true"
+                       value=value
+                       setEditor=(action "setEditor")
+                       updateScrollInfo=(action "updateScrollInfo")
+                       toggleCopyHTMLModal=(action "toggleCopyHTMLModal")
+                       onFocusIn=editorFocused
+                       height=height
+                       focus=shouldFocusEditor
+                       readonly=editorDisabled}}
+    </section>
+</section>
+
+<section class="entry-preview js-entry-preview {{if previewActive 'active'}}">
+    <header class="floatingheader">
+        <span class="desktop-tabs"><a target="_blank" href="{{previewUrl}}">Preview</a></span>
+        <span class="mobile-tabs">
+            <a href="#" {{action 'selectTab' 'markdown'}} class="{{if markdownActive 'active'}}">Markdown</a>
+            <a href="#" {{action 'selectTab' 'preview'}} class="{{if previewActive 'active'}}">Preview</a>
+        </span>
+        <span class="entry-word-count">{{gh-count-words value}}</span>
+    </header>
+    <section class="entry-preview-content js-entry-preview-content">
+        {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
+                        markdown=value
+                        scrollPosition=scrollPosition
+                        updateHeight=(action "updateHeight")
+                        uploadStarted=(action "disableEditor")
+                        uploadFinished=(action "enableEditor")
+                        uploadSuccess=(action "handleImgUpload")}}
+    </section>
+</section>
+
+{{#if showCopyHTMLModal}}
+    {{gh-fullscreen-modal "copy-html"
+                          model=copyHTMLModalContent
+                          close=(action "toggleCopyHTMLModal")
+                          modifier="action"}}
+{{/if}}

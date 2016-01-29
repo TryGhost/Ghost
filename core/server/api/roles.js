@@ -1,10 +1,11 @@
 // # Roles API
 // RESTful API for the Role resource
 var Promise         = require('bluebird'),
-    _               = require('lodash'),
     canThis         = require('../permissions').canThis,
     dataProvider    = require('../models'),
-    errors          = require('../errors'),
+    pipeline        = require('../utils/pipeline'),
+    utils           = require('./utils'),
+    docName         = 'roles',
 
     roles;
 
@@ -28,37 +29,46 @@ roles = {
      * @returns {Promise(Roles)} Roles Collection
      */
     browse: function browse(options) {
-        var permissionMap = [];
-        options = options || {};
+        var permittedOptions = ['permissions'],
+            tasks;
 
-        return canThis(options.context).browse.role().then(function () {
-            return dataProvider.Role.findAll(options).then(function (foundRoles) {
-                if (options.permissions === 'assign') {
-                    // Hacky implementation of filtering because when.filter is only available in when 3.4.0,
-                    // but that's buggy and kills other tests and introduces Heisenbugs. Until we turn everything
-                    // to Bluebird, this works. Sorry.
-                    // TODO: replace with better filter when bluebird lands
-                    _.each(foundRoles.toJSON(), function (role) {
-                        permissionMap.push(canThis(options.context).assign.role(role).then(function () {
-                            if (role.name === 'Owner') {
-                                return null;
-                            }
-                            return role;
-                        }).catch(function () {
-                            return null;
-                        }));
-                    });
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function modelQuery(options) {
+            return dataProvider.Role.findAll(options);
+        }
 
-                    return Promise.all(permissionMap).then(function (resolved) {
-                        return {roles: _.filter(resolved, function (role) {
-                            return role !== null;
-                        })};
-                    }).catch(errors.logAndThrowError);
-                }
-                return {roles: foundRoles.toJSON()};
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: permittedOptions}),
+            utils.handlePermissions(docName, 'browse'),
+            modelQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options).then(function formatResponse(results) {
+            var roles = results.map(function (r) {
+                return r.toJSON();
             });
-        })
-        .catch(errors.logAndThrowError);
+
+            if (options.permissions !== 'assign') {
+                return {roles: roles};
+            }
+
+            return Promise.filter(roles.map(function (role) {
+                return canThis(options.context).assign.role(role)
+                    .return(role)
+                    .catch(function () {});
+            }), function (value) {
+                return value && value.name !== 'Owner';
+            }).then(function (roles) {
+                return {roles: roles};
+            });
+        });
     }
 };
 

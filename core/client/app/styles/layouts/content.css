@@ -1,0 +1,289 @@
+/* Content /ghost/
+
+/* Show/Hide on Mobile // TODO: What the fuck does that mean?
+/* ---------------------------------------------------------- */
+
+.content-list.show-menu {
+    display: block;
+}
+
+.content-list.show-content {
+    display: none;
+}
+
+.content-preview.show-menu {
+    display: none;
+}
+
+.content-preview.show-content {
+    display: block;
+}
+
+
+/* Content List (Left pane)
+/* ---------------------------------------------------------- */
+
+.content-list {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    padding: 15px;
+    width: 33%;
+    border-right: #dfe1e3 1px solid;
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .content-list {
+        right: 0;
+        z-index: 500;
+        width: auto;
+        border: none;
+    }
+}
+
+.content-list .content-list-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.content-list .entry-title {
+    font-size: 1.6rem;
+    line-height: 1.4em;
+    font-weight: normal;
+}
+
+.content-list .entry-meta {
+    margin-top: 14px;
+    line-height: 18px;
+}
+
+.content-list .avatar {
+    position: relative;
+    float: left;
+    margin-right: 14px;
+    width: 18px;
+    height: 18px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 18px;
+}
+
+.content-list .avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.content-list .status,
+.content-list .author {
+    font-size: 1.3rem;
+    font-weight: 300;
+    transition: opacity 0.15s linear;
+}
+
+.content-list .avatar:hover + .author + .status {
+    opacity: 0;
+}
+
+.content-list .avatar:hover + .author {
+    opacity: 1;
+}
+
+.content-list .author {
+    position: absolute;
+    bottom: 22px;
+    left: 56px;
+    opacity: 0;
+}
+
+.content-list .status .draft {
+    color: var(--red);
+}
+
+.content-list .status .scheduled {
+    color: var(--orange);
+}
+
+.content-list ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.content-list li {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border-bottom: #dfe1e3 1px solid;
+}
+
+.content-list li a {
+    display: block;
+    padding: 19px 20px 22px 24px;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.content-list li a:hover {
+    text-decoration: none;
+}
+
+@media (max-width: 400px) {
+    .content-list li a {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 900px) {
+    .content-list li a {
+        padding-right: 40px;
+    }
+}
+
+@media (min-width: 901px) {
+    .content-list li a:after {
+        display: none;
+    }
+}
+
+@media (min-width: 901px) {
+    .content-list .active a {
+        border-left: var(--blue) 3px solid;
+    }
+}
+
+
+/* Preview (Right pane)
+/* ---------------------------------------------------------- */
+
+.content-preview-content .content-preview-title a {
+    position: relative;
+    color: var(--darkgrey);
+    text-decoration: none;
+}
+
+.content-preview {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px;
+    width: 67%;
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .content-preview {
+        display: none;
+        overflow: visible;
+        width: 100%;
+        border: none;
+    }
+}
+
+.content-preview .content-preview-content {
+    padding: 5%;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+@media (max-width: 900px) {
+    .content-preview .content-preview-content {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.content-preview .content-preview-content .wrapper {
+    margin: 0 auto;
+    max-width: 700px;
+}
+
+.content-preview .post-controls {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+}
+
+.content-preview .post-controls .post-edit {
+    padding-top: 0;
+    padding-right: 0;
+    border: none;
+    font-size: 18px;
+}
+.content-preview .post-controls .post-edit:hover {
+    color: var(--darkgrey);
+}
+
+.content-preview img {
+    width: 100%;
+    height: auto;
+}
+
+
+/* Empty State
+/* ---------------------------------------------------------- */
+
+.no-posts-box {
+    position: relative;
+    z-index: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0;
+    height: 90%;
+}
+
+.no-posts-box .no-posts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.no-posts-box .no-posts h3 {
+    margin-bottom: 20px;
+    color: var(--midgrey);
+    font-size: 2em;
+    font-weight: 200;
+}
+
+
+/* Keyboard Focus Effects
+/* ---------------------------------------------------------- */
+
+
+/* This has to be a pseudo element to sit over the top of everything else in the content list */
+.content-list.keyboard-focused:before,
+.tag-list-content.keyboard-focused:before,
+.tag-settings.keyboard-focused:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 500;
+    animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+    pointer-events: none;
+}
+
+.content-preview.keyboard-focused {
+    animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+}

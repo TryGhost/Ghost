@@ -58,12 +58,12 @@ CHANGELOG.md
 /core/test/functional/*.png
 /core/test/coverage
 
-config.js
-/core/client/config.js
+/config.js
 
 # Built asset files
 /core/built
 /core/server/views/default.hbs
+/core/shared/ghost-url.min.js
 
 # Coverage reports
 coverage.html

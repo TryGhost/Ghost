@@ -1,20 +1,32 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import base from 'ghost/mixins/editor-base-route';
 
-var EditorNewRoute = AuthenticatedRoute.extend(base, {
+export default AuthenticatedRoute.extend(base, {
     titleToken: 'Editor',
 
-    model: function () {
-        var self = this;
-        return this.get('session.user').then(function (user) {
-            return self.store.createRecord('post', {
+    model() {
+        return this.get('session.user').then((user) => {
+            return this.store.createRecord('post', {
                 author: user
             });
         });
     },
 
-    setupController: function (controller, model) {
-        var psm = this.controllerFor('post-settings-menu');
+    renderTemplate(controller, model) {
+        this.render('editor/edit', {
+            controller,
+            model
+        });
+
+        this.render('post-settings-menu', {
+            model,
+            into: 'application',
+            outlet: 'settings-menu'
+        });
+    },
+
+    setupController() {
+        let psm = this.controllerFor('post-settings-menu');
 
         // make sure there are no titleObserver functions hanging around
         // from previous posts
@@ -24,8 +36,16 @@ var EditorNewRoute = AuthenticatedRoute.extend(base, {
         psm.send('resetUploader');
         psm.send('resetPubDate');
 
-        this._super(controller, model);
+        this._super(...arguments);
+    },
+
+    actions: {
+        willTransition(transition) {
+            // decorate the transition object so the editor.edit route
+            // knows this was the previous active route
+            transition.data.fromNew = true;
+
+            this._super(...arguments);
+        }
     }
 });
-
-export default EditorNewRoute;

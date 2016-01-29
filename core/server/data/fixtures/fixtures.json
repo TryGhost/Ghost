@@ -10,11 +10,26 @@
         {
             "title":            "Welcome to Ghost",
             "slug":             "welcome-to-ghost",
-            "markdown":         "You're live! Nice. We've put together a little post to introduce you to the Ghost editor and get you started. You can manage your content by signing in to the admin area at `<your blog URL>/ghost/`. When you arrive, you can select this post from a list on the left and see a preview of it on the right. Click the little pencil icon at the top of the preview to edit this post and read the next section!\n\n## Getting Started\n\nGhost uses something called Markdown for writing. Essentially, it's a shorthand way to manage your post formatting as you write!\n\nWriting in Markdown is really easy. In the left hand panel of Ghost, you simply write as you normally would. Where appropriate, you can use *shortcuts* to **style** your content. For example, a list:\n\n* Item number one\n* Item number two\n    * A nested item\n* A final item\n\nor with numbers!\n\n1. Remember to buy some milk\n2. Drink the milk\n3. Tweet that I remembered to buy the milk, and drank it\n\n### Links\n\nWant to link to a source? No problem. If you paste in a URL, like http://ghost.org - it'll automatically be linked up. But if you want to customise your anchor text, you can do that too! Here's a link to [the Ghost website](http://ghost.org). Neat.\n\n### What about Images?\n\nImages work too! Already know the URL of the image you want to include in your article? Simply paste it in like this to make it show up:\n\n![The Ghost Logo](https://ghost.org/images/ghost.png)\n\nNot sure which image you want to use yet? That's ok too. Leave yourself a descriptive placeholder and keep writing. Come back later and drag and drop the image in to upload:\n\n![A bowl of bananas]\n\n\n### Quoting\n\nSometimes a link isn't enough, you want to quote someone on what they've said. It was probably very wisdomous. Is wisdomous a word? Find out in a future release when we introduce spellcheck! For now - it's definitely a word.\n\n> Wisdomous - it's definitely a word.\n\n### Working with Code\n\nGot a streak of geek? We've got you covered there, too. You can write inline `<code>` blocks really easily with back ticks. Want to show off something more comprehensive? 4 spaces of indentation gets you there.\n\n    .awesome-thing {\n        display: block;\n        width: 100%;\n    }\n\n### Ready for a Break? \n\nThrow 3 or more dashes down on any new line and you've got yourself a fancy new divider. Aw yeah.\n\n---\n\n### Advanced Usage\n\nThere's one fantastic secret about Markdown. If you want, you can write plain old HTML and it'll still work! Very flexible.\n\n<input type=\"text\" placeholder=\"I'm an input field!\" />\n\nThat should be enough to get you started. Have fun - and let us know what you think :)",
+            "markdown":         "You're live! Nice. We've put together a little post to introduce you to the Ghost editor and get you started. You can manage your content by signing in to the admin area at `<your blog URL>/ghost/`. When you arrive, you can select this post from a list on the left and see a preview of it on the right. Click the little pencil icon at the top of the preview to edit this post and read the next section!\n\n## Getting Started\n\nGhost uses something called Markdown for writing. Essentially, it's a shorthand way to manage your post formatting as you write!\n\nWriting in Markdown is really easy. In the left hand panel of Ghost, you simply write as you normally would. Where appropriate, you can use *shortcuts* to **style** your content. For example, a list:\n\n* Item number one\n* Item number two\n    * A nested item\n* A final item\n\nor with numbers!\n\n1. Remember to buy some milk\n2. Drink the milk\n3. Tweet that I remembered to buy the milk, and drank it\n\n### Links\n\nWant to link to a source? No problem. If you paste in a URL, like http://ghost.org - it'll automatically be linked up. But if you want to customise your anchor text, you can do that too! Here's a link to [the Ghost website](http://ghost.org). Neat.\n\n### What about Images?\n\nImages work too! Already know the URL of the image you want to include in your article? Simply paste it in like this to make it show up:\n\n![The Ghost Logo](https://ghost.org/images/ghost.png)\n\nNot sure which image you want to use yet? That's ok too. Leave yourself a descriptive placeholder and keep writing. Come back later and drag and drop the image in to upload:\n\n![A bowl of bananas]\n\n\n### Quoting\n\nSometimes a link isn't enough, you want to quote someone on what they've said. Perhaps you've started using a new blogging platform and feel the sudden urge to share their slogan? A quote might be just the way to do it!\n\n> Ghost - Just a blogging platform\n\n### Working with Code\n\nGot a streak of geek? We've got you covered there, too. You can write inline `<code>` blocks really easily with back ticks. Want to show off something more comprehensive? 4 spaces of indentation gets you there.\n\n    .awesome-thing {\n        display: block;\n        width: 100%;\n    }\n\n### Ready for a Break? \n\nThrow 3 or more dashes down on any new line and you've got yourself a fancy new divider. Aw yeah.\n\n---\n\n### Advanced Usage\n\nThere's one fantastic secret about Markdown. If you want, you can write plain old HTML and it'll still work! Very flexible.\n\n<input type=\"text\" placeholder=\"I'm an input field!\" />\n\nThat should be enough to get you started. Have fun - and let us know what you think :)",
             "image":            null,
             "featured":         false,
             "page":             false,
             "status":           "published",
+            "language":         "en_US",
+            "meta_title":       null,
+            "meta_description": null
+        }
+    ],
+
+    "posts_0_7": [
+        {
+            "title":            "You've been upgraded to the latest version of Ghost",
+            "slug":             "ghost-0-7",
+            "markdown":         "You've just upgraded to the latest version of Ghost and we've made a few changes that you should probably know about!\n\n## Woah, why does everything look different?\n\nAfter two years and hundreds of thousands of users, we learned a great deal about what was (and wasn't) working in the old Ghost admin user interface. What you're looking at is Ghost's first major UI refresh, with a strong focus on being more usable and robust all round.\n\n![New Design](https://ghost.org/images/zelda.png)\n\nThe main navigation menu, previously located at the top of your screen, has now moved over to the left. This makes it way easier to work with on mobile devices, and has the added benefit of providing ample space for upcoming features!\n\n## Lost and found: Your old posts\n\nFrom talking to many of you we understand that finding old posts in the admin area was a real pain; so we've added a new magical search bar which lets you quickly find posts for editing, without having to scroll endlessly. Take it for a spin!\n\n![Search](https://ghost.org/images/search.gif)\n\nQuestions? Comments? Send us a tweet [@TryGhost](https://twitter.com/tryghost)\n\nOh, and yes – you can safely delete this draft post!",
+            "image":            null,
+            "featured":         false,
+            "page":             false,
+            "status":           "draft",
             "language":         "en_US",
             "meta_title":       null,
             "meta_description": null
@@ -55,6 +70,15 @@
         {
             "name":             "Ghost Admin",
             "slug":             "ghost-admin",
+            "status":           "enabled",
+            "type":             "ua",
+            "secret":           "not_available"
+        },
+        {
+            "name":             "Ghost Frontend",
+            "slug":             "ghost-frontend",
+            "status":           "enabled",
+            "type":             "ua",
             "secret":           "not_available"
         }
     ]

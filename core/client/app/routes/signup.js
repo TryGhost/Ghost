@@ -1,28 +1,43 @@
 import Ember from 'ember';
+import DS from 'ember-data';
+import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
+const {
+    Route,
+    RSVP: {Promise},
+    inject: {service}
+} = Ember;
+const {Errors} = DS;
+
+export default Route.extend(styleBody, {
     classNames: ['ghost-signup'],
-    beforeModel: function () {
-        if (this.get('session').isAuthenticated) {
-            this.notifications.showWarn('You need to sign out to register as a new user.', {delayed: true});
-            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+
+    ghostPaths: service('ghost-paths'),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
+
+    beforeModel() {
+        this._super(...arguments);
+
+        if (this.get('session.isAuthenticated')) {
+            this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
     },
 
-    model: function (params) {
-        var self = this,
-            tokenText,
-            email,
-            model = Ember.Object.create(),
-            re = /^(?:[A-Za-z0-9_\-]{4})*(?:[A-Za-z0-9_\-]{2}|[A-Za-z0-9_\-]{3})?$/;
+    model(params) {
+        let model = Ember.Object.create();
+        let re = /^(?:[A-Za-z0-9_\-]{4})*(?:[A-Za-z0-9_\-]{2}|[A-Za-z0-9_\-]{3})?$/;
+        let email,
+            tokenText;
 
-        return new Ember.RSVP.Promise(function (resolve) {
+        return new Promise((resolve) => {
             if (!re.test(params.token)) {
-                self.notifications.showError('Invalid token.', {delayed: true});
+                this.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
 
-                return resolve(self.transitionTo('signin'));
+                return resolve(this.transitionTo('signin'));
             }
 
             tokenText = atob(params.token);
@@ -30,34 +45,33 @@ var SignupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
 
             model.set('email', email);
             model.set('token', params.token);
+            model.set('errors', Errors.create());
 
-            return ic.ajax.request({
-                url: self.get('ghostPaths.url').api('authentication', 'invitation'),
-                type: 'GET',
+            let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
+
+            return this.get('ajax').request(authUrl, {
                 dataType: 'json',
                 data: {
-                    email: email
+                    email
                 }
-            }).then(function (response) {
+            }).then((response) => {
                 if (response && response.invitation && response.invitation[0].valid === false) {
-                    self.notifications.showError('The invitation does not exist or is no longer valid.', {delayed: true});
+                    this.get('notifications').showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true, key: 'signup.create.invalid-invitation'});
 
-                    return resolve(self.transitionTo('signin'));
+                    return resolve(this.transitionTo('signin'));
                 }
 
                 resolve(model);
-            }).catch(function () {
+            }).catch(() => {
                 resolve(model);
             });
         });
     },
 
-    deactivate: function () {
-        this._super();
+    deactivate() {
+        this._super(...arguments);
 
         // clear the properties that hold the sensitive data from the controller
         this.controllerFor('signup').setProperties({email: '', password: '', token: ''});
     }
 });
-
-export default SignupRoute;

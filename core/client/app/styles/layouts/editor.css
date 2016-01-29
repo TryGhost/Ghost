@@ -1,0 +1,402 @@
+/* Editor /ghost/editor/
+/* ---------------------------------------------------------- */
+
+
+/* Title
+/* ---------------------------------------------------------- */
+
+.gh-editor-title {
+    flex-grow: 1;
+}
+
+.gh-editor-title input {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--darkgrey);
+    letter-spacing: -1px;
+    font-size: 2.6rem;
+    font-weight: bold;
+}
+
+.gh-editor-title input:focus {
+    outline: 0;
+}
+
+.editor-options .dropdown-menu {
+    top: 35px;
+    right: 0;
+    left: auto;
+}
+
+
+/* Container & Headers
+/* ---------------------------------------------------------- */
+
+.view-editor {
+    display: flex;
+}
+
+.editor .entry-preview {
+    border-left: #dfe1e3 1px solid;
+}
+
+.editor .entry-markdown,
+.editor .entry-preview {
+    position: relative; /*TODO: Remove*/
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+/* Content areas at the top, and fill available space */
+.editor .entry-markdown-content,
+.editor .entry-preview-content {
+    order: 1;
+    flex-grow: 1;
+}
+
+/* Headers at the bottom, and fixed height */
+.editor .floatingheader {
+    order: 2;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    height: 40px;
+    border-top: #dfe1e3 1px solid;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    line-height: 1em;
+}
+.editor .floatingheader a {
+    padding: 5px 15px;
+    color: var(--midgrey);
+}
+.editor .floatingheader a.active {
+    font-weight: bold;
+}
+.editor .floatingheader a:first-of-type {
+    padding-left: 0;
+}
+.editor .floatingheader a:last-of-type {
+    padding-right: 0;
+}
+.editor .floatingheader span a:not(:first-of-type) {
+    border-left: 1px solid #dfe1e3;
+}
+.editor .floatingheader .mobile-tabs {
+    display: none;
+}
+
+/* Switch to 1 col editor on small screens */
+@media (max-width: 1000px) {
+    .editor .entry-markdown,
+    .editor .entry-preview {
+        width: 100%;
+        border-left: none;
+    }
+    /* We can't use display:none here as we want to keep widths/heights
+     * so that scrolling is kept in sync */
+    .editor .entry-markdown:not(.active),
+    .editor .entry-preview:not(.active) {
+        visibility: hidden;
+        position: absolute;
+        z-index: -1;
+        height: 100%;
+    }
+    .editor .floatingheader .mobile-tabs {
+        display: inline;
+    }
+    .editor .floatingheader .desktop-tabs {
+        display: none;
+    }
+}
+
+
+/* Editor (Left pane)
+/* ---------------------------------------------------------- */
+
+.editor .entry-markdown-content {
+    position: relative;
+    flex-grow: 1;
+}
+
+.editor .markdown-editor {
+    /* Legacy absolute positioning */
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 21px 20px 36px 20px;
+    max-width: 100%;
+    height: 100%;
+    border: 0;
+    color: color(var(--darkgrey) lightness(+10%));
+    font-family: var(--font-family-mono);
+    font-size: 1.6rem;
+    line-height: 2.5rem;
+    resize: none;
+}
+
+.editor .markdown-editor:focus {
+    outline: 0;
+}
+
+@media (max-width: 450px) {
+    .editor .markdown-editor {
+        padding: 15px;
+    }
+}
+
+
+/* FFF: Fucking Firefox Fixes
+/* ---------------------------------------------------------- */
+
+@-moz-document url-prefix() {
+    .editor .markdown-editor {
+        top: 40px;
+        padding-top: 0;
+        padding-bottom: 0;
+        height: calc(100% - 40px);
+    }
+}
+
+
+/* Preview (Right pane)
+/* ---------------------------------------------------------- */
+
+.editor .entry-preview-content {
+    flex-grow: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 19px 20px 37px 20px;
+    word-break: break-word;
+    hyphens: auto;
+    cursor: default;
+}
+
+/* The styles for the actual content inside the preview */
+.entry-preview-content,
+.content-preview-content {
+    font-size: 1.8rem;
+    line-height: 1.5em;
+    font-weight: 200;
+}
+
+.entry-preview-content *,
+.content-preview-content * {
+    user-select: text;
+}
+
+.entry-preview-content a,
+.content-preview-content a {
+    color: var(--blue);
+    text-decoration: underline;
+}
+
+.entry-preview-content sup a,
+.content-preview-content sup a {
+    text-decoration: none;
+}
+
+.entry-preview-content .btn,
+.content-preview-content .btn {
+    color: #dfe1e3;
+    text-decoration: none;
+}
+
+.entry-preview-content .img-placeholder,
+.content-preview-content .img-placeholder {
+    position: relative;
+    height: 100px;
+    border: 5px dashed #dfe1e3;
+}
+
+.entry-preview-content .img-placeholder span,
+.content-preview-content .img-placeholder span {
+    position: absolute;
+    top: 50%;
+    display: block;
+    margin-top: -15px;
+    width: 100%;
+    height: 30px;
+    text-align: center;
+}
+
+.entry-preview-content a.image-edit,
+.content-preview-content a.image-edit {
+    width: 16px;
+    height: 16px;
+}
+
+.entry-preview-content img,
+.content-preview-content img {
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Placeholder objects for <script> & <iframe> */
+.js-embed-placeholder,
+.iframe-embed-placeholder {
+    padding: 100px 20px;
+    border: none;
+    background: #f9f9f9;
+    text-align: center;
+    font-family: var(--font-family);
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+/* Tags input CSS (TODO: needs some revision)
+/* ------------------------------------------------------ */
+.tags-input-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.tags-input-list li {
+    flex: 1 0 auto;
+}
+
+.label-tag {
+    margin-right: 0.3em;
+    padding: 0.2em 0.6em 0.3em;
+    background-color: var(--darkgrey);
+    border-radius: 0.25em;
+    color: var(--lightgrey);
+    text-align: center;
+    font-weight: 300;
+}
+
+.label-tag.highlight {
+    background: var(--midgrey);
+    color: #fff;
+}
+
+.tag-input {
+    margin-top: 5px;
+    border: none;
+    font-weight: 300;
+    cursor: default;
+}
+
+.tag-input:focus {
+    outline: 0;
+}
+
+.publish-bar-actions {
+    flex: 1 0 auto;
+    align-self: auto;
+    display: flex;
+    text-align: right;
+}
+
+.post-settings {
+    position: relative;
+    display: inline-block;
+    padding: 15px;
+    color: var(--midgrey);
+    transition: all 0.15s ease-out 0s;
+}
+
+.post-settings:hover,
+.post-settings.active {
+    color: var(--darkgrey);
+}
+
+.post-settings i {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.post-settings-menu .dropdown-menu {
+    top: auto;
+    right: 100%;
+    bottom: 100%;
+    left: auto;
+}
+
+.post-view-link {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    font-size: 1.3rem;
+}
+
+.post-view-link i {
+    font-size: 10px;
+}
+
+
+/* Post settings meta
+/* ---------------------------------------------------------- */
+
+/* Google Imitation */
+.seo-preview {
+    font-family: Arial, sans-serif;
+}
+
+.seo-preview-title {
+    color: #1e0fbe;
+    text-overflow: ellipses;
+    word-wrap: break-word;
+    font-size: 1.8rem;
+    line-height: 2.16rem;
+
+    -webkit-text-overflow: ellipsis;
+}
+
+.seo-preview-link {
+    margin: 1px 0 2px 0;
+    color: #006621;
+    word-wrap: break-word;
+    font-size: 1.3rem;
+    line-height: 1.6rem;
+}
+
+.seo-preview-description {
+    color: #545454;
+    word-wrap: break-word;
+    font-size: 1.3rem;
+    line-height: 1.4;
+}
+
+
+/* Markdown Help Icon + Modal
+/* ---------------------------------------------------------- */
+
+.markdown-help-icon {
+    font-size: 16px;
+}
+
+.markdown-help-icon:hover,
+.markdown-help-label:hover {
+    cursor: help;
+}
+
+.modal-markdown-help-table {
+    margin: 0 0 20px;
+    width: 100%;
+}
+
+.modal-markdown-help-table td,
+.modal-markdown-help-table th {
+    padding: 8px 0;
+}
+
+.modal-markdown-help-table th {
+    text-align: left;
+}

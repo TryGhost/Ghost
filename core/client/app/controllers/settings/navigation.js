@@ -1,27 +1,50 @@
 import Ember from 'ember';
-var NavigationController,
-    NavItem;
+import DS from 'ember-data';
+import SettingsSaveMixin from 'ghost/mixins/settings-save';
+import ValidationEngine from 'ghost/mixins/validation-engine';
 
-NavItem = Ember.Object.extend({
+const {
+    Controller,
+    RSVP,
+    computed,
+    inject: {service},
+    isBlank,
+    observer
+} = Ember;
+const {Errors} = DS;
+const emberA = Ember.A;
+
+export const NavItem = Ember.Object.extend(ValidationEngine, {
     label: '',
     url: '',
     last: false,
 
-    isComplete: Ember.computed('label', 'url', function () {
-        return !(Ember.isBlank(this.get('label').trim()) || Ember.isBlank(this.get('url')));
-    })
-});
+    validationType: 'navItem',
 
-NavigationController = Ember.Controller.extend({
-    blogUrl: Ember.computed('config.blogUrl', function () {
-        var url = this.get('config.blogUrl');
-
-        return url.slice(-1) !== '/' ? url + '/' : url;
+    isComplete: computed('label', 'url', function () {
+        return !(isBlank(this.get('label').trim()) || isBlank(this.get('url')));
     }),
 
-    navigationItems: Ember.computed('model.navigation', function () {
-        var navItems,
-            lastItem;
+    init() {
+        this._super(...arguments);
+        this.set('errors', Errors.create());
+        this.set('hasValidated', emberA());
+    }
+});
+
+export default Controller.extend(SettingsSaveMixin, {
+    config: service(),
+    notifications: service(),
+
+    blogUrl: computed('config.blogUrl', function () {
+        let url = this.get('config.blogUrl');
+
+        return url.slice(-1) !== '/' ? `${url}/` : url;
+    }),
+
+    navigationItems: computed('model.navigation', function () {
+        let lastItem,
+            navItems;
 
         try {
             navItems = JSON.parse(this.get('model.navigation') || [{}]);
@@ -29,7 +52,7 @@ NavigationController = Ember.Controller.extend({
             navItems = [{}];
         }
 
-        navItems = navItems.map(function (item) {
+        navItems = navItems.map((item) => {
             return NavItem.create(item);
         });
 
@@ -41,10 +64,10 @@ NavigationController = Ember.Controller.extend({
         return navItems;
     }),
 
-    updateLastNavItem: Ember.observer('navigationItems.[]', function () {
-        var navItems = this.get('navigationItems');
+    updateLastNavItem: observer('navigationItems.[]', function () {
+        let navItems = this.get('navigationItems');
 
-        navItems.forEach(function (item, index, items) {
+        navItems.forEach((item, index, items) => {
             if (index === (items.length - 1)) {
                 item.set('last', true);
             } else {
@@ -53,92 +76,26 @@ NavigationController = Ember.Controller.extend({
         });
     }),
 
-    actions: {
-        addItem: function () {
-            var navItems = this.get('navigationItems'),
-                lastItem = navItems.get('lastObject');
+    save() {
+        let navItems = this.get('navigationItems');
+        let notifications = this.get('notifications');
+        let navSetting,
+            validationPromises;
 
-            if (lastItem && lastItem.get('isComplete')) {
-                navItems.addObject(NavItem.create({last: true})); // Adds new blank navItem
-            }
-        },
+        validationPromises = navItems.map((item) => {
+            return item.validate();
+        });
 
-        deleteItem: function (item) {
-            if (!item) {
-                return;
-            }
+        return RSVP.all(validationPromises).then(() => {
+            navSetting = navItems.map((item) => {
+                let label = item.get('label').trim();
+                let url = item.get('url').trim();
 
-            var navItems = this.get('navigationItems');
-
-            navItems.removeObject(item);
-        },
-
-        moveItem: function (index, newIndex) {
-            var navItems = this.get('navigationItems'),
-                item = navItems.objectAt(index);
-
-            navItems.removeAt(index);
-            navItems.insertAt(newIndex, item);
-        },
-
-        updateUrl: function (url, navItem) {
-            if (!navItem) {
-                return;
-            }
-
-            if (Ember.isBlank(url)) {
-                navItem.set('url', this.get('blogUrl'));
-
-                return;
-            }
-
-            navItem.set('url', url);
-        },
-
-        save: function () {
-            var self = this,
-                navSetting,
-                blogUrl = this.get('config').blogUrl,
-                blogUrlRegex = new RegExp('^' + blogUrl + '(.*)', 'i'),
-                navItems = this.get('navigationItems'),
-                message = 'One of your navigation items has an empty label. ' +
-                    '<br /> Please enter a new label or delete the item before saving.',
-                match;
-
-            // Don't save if there's a blank label.
-            if (navItems.find(function (item) { return !item.get('isComplete') && !item.get('last');})) {
-                self.notifications.showErrors([message.htmlSafe()]);
-                return;
-            }
-
-            navSetting = navItems.map(function (item) {
-                var label,
-                    url;
-
-                if (!item || !item.get('isComplete')) {
-                    return;
+                if (item.get('last') && !item.get('isComplete')) {
+                    return null;
                 }
 
-                label = item.get('label').trim();
-                url = item.get('url').trim();
-
-                // is this an internal URL?
-                match = url.match(blogUrlRegex);
-
-                if (match) {
-                    url = match[1];
-
-                    // if the last char is not a slash, then add one,
-                    // as long as there is no # or . in the URL (anchor or file extension)
-                    // this also handles the empty case for the homepage
-                    if (url[url.length - 1] !== '/' && url.indexOf('#') === -1 && url.indexOf('.') === -1) {
-                        url += '/';
-                    }
-                } else if (!validator.isURL(url) && url !== '' && url[0] !== '/' && url.indexOf('mailto:') !== 0) {
-                    url = '/' + url;
-                }
-
-                return {label: label, url: url};
+                return {label, url};
             }).compact();
 
             this.set('model.navigation', JSON.stringify(navSetting));
@@ -147,15 +104,49 @@ NavigationController = Ember.Controller.extend({
             // we need to have navigationItems recomputed.
             this.get('model').notifyPropertyChange('navigation');
 
-            this.notifications.closePassive();
-
-            this.get('model').save().then(function () {
-                self.notifications.showSuccess('Navigation items saved.');
-            }).catch(function (err) {
-                self.notifications.showErrors(err);
+            return this.get('model').save().catch((err) => {
+                notifications.showErrors(err);
             });
+        }).catch(() => {
+            // TODO: noop - needed to satisfy spinner button
+        });
+    },
+
+    actions: {
+        addItem() {
+            let navItems = this.get('navigationItems');
+            let lastItem = navItems.get('lastObject');
+
+            if (lastItem && lastItem.get('isComplete')) {
+                // Add new blank navItem
+                navItems.addObject(NavItem.create({last: true}));
+            }
+        },
+
+        deleteItem(item) {
+            if (!item) {
+                return;
+            }
+
+            let navItems = this.get('navigationItems');
+
+            navItems.removeObject(item);
+        },
+
+        moveItem(index, newIndex) {
+            let navItems = this.get('navigationItems');
+            let item = navItems.objectAt(index);
+
+            navItems.removeAt(index);
+            navItems.insertAt(newIndex, item);
+        },
+
+        updateUrl(url, navItem) {
+            if (!navItem) {
+                return;
+            }
+
+            navItem.set('url', url);
         }
     }
 });
-
-export default NavigationController;

@@ -1,10 +1,8 @@
 // isNumber function from lodash
 
-var toString = Object.prototype.toString;
+const {toString} = Object.prototype;
 
-function isNumber(value) {
+export default function (value) {
     return typeof value === 'number' ||
       value && typeof value === 'object' && toString.call(value) === '[object Number]' || false;
 }
-
-export default isNumber;

@@ -1,8 +1,10 @@
 import Ember from 'ember';
 import BaseAdapter from 'ghost/adapters/base';
 
+const {get, isNone} = Ember;
+
 // EmbeddedRelationAdapter will augment the query object in calls made to
-// DS.Store#find, findQuery, and findAll with the correct "includes"
+// DS.Store#findRecord, findAll, query, and queryRecord with the correct "includes"
 // (?include=relatedType) by introspecting on the provided subclass of the DS.Model.
 // In cases where there is no query object (DS.Model#save, or simple finds) the URL
 // that is built will be augmented with ?include=... where appropriate.
@@ -11,71 +13,80 @@ import BaseAdapter from 'ghost/adapters/base';
 // If a model has an embedded hasMany relation, the related type will be included:
 // roles: DS.hasMany('role', { embedded: 'always' }) => ?include=roles
 
-var EmbeddedRelationAdapter = BaseAdapter.extend({
-    find: function (store, type, id) {
-        return this.ajax(this.buildIncludeURL(store, type, id), 'GET');
+export default BaseAdapter.extend({
+    find(store, type, id, snapshot) {
+        return this.ajax(this.buildIncludeURL(store, type.modelName, id, snapshot, 'find'), 'GET');
     },
 
-    findQuery: function (store, type, query) {
-        return this._super(store, type, this.buildQuery(store, type, query));
+    findRecord(store, type, id, snapshot) {
+        return this.ajax(this.buildIncludeURL(store, type.modelName, id, snapshot, 'findRecord'), 'GET');
     },
 
-    findAll: function (store, type, sinceToken) {
-        var query = {};
+    findAll(store, type, sinceToken) {
+        let query, url;
 
         if (sinceToken) {
-            query.since = sinceToken;
+            query = {since: sinceToken};
         }
 
-        return this.findQuery(store, type, query);
+        url = this.buildIncludeURL(store, type.modelName, null, null, 'findAll');
+
+        return this.ajax(url, 'GET', {data: query});
     },
 
-    createRecord: function (store, type, record) {
-        return this.saveRecord(store, type, record, {method: 'POST'});
+    query(store, type, query) {
+        return this._super(store, type, this.buildQuery(store, type.modelName, query));
     },
 
-    updateRecord: function (store, type, record) {
-        var options = {
+    queryRecord(store, type, query) {
+        return this._super(store, type, this.buildQuery(store, type.modelName, query));
+    },
+
+    createRecord(store, type, snapshot) {
+        return this.saveRecord(store, type, snapshot, {method: 'POST'}, 'createRecord');
+    },
+
+    updateRecord(store, type, snapshot) {
+        let options = {
             method: 'PUT',
-            id: Ember.get(record, 'id')
+            id: get(snapshot, 'id')
         };
 
-        return this.saveRecord(store, type, record, options);
+        return this.saveRecord(store, type, snapshot, options, 'updateRecord');
     },
 
-    saveRecord: function (store, type, record, options) {
-        options = options || {};
+    saveRecord(store, type, snapshot, options, requestType) {
+        let _options = options || {};
+        let url = this.buildIncludeURL(store, type.modelName, _options.id, snapshot, requestType);
+        let payload = this.preparePayload(store, type, snapshot);
 
-        var url = this.buildIncludeURL(store, type, options.id),
-            payload = this.preparePayload(store, type, record);
-
-        return this.ajax(url, options.method, payload);
+        return this.ajax(url, _options.method, payload);
     },
 
-    preparePayload: function (store, type, record) {
-        var serializer = store.serializerFor(type.typeKey),
-            payload = {};
+    preparePayload(store, type, snapshot) {
+        let serializer = store.serializerFor(type.modelName);
+        let payload = {};
 
-        serializer.serializeIntoHash(payload, type, record);
+        serializer.serializeIntoHash(payload, type, snapshot);
 
         return {data: payload};
     },
 
-    buildIncludeURL: function (store, type, id) {
-        var url = this.buildURL(type.typeKey, id),
-            includes = this.getEmbeddedRelations(store, type);
+    buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
+        let includes = this.getEmbeddedRelations(store, modelName);
+        let url = this.buildURL(modelName, id, snapshot, requestType, query);
 
         if (includes.length) {
-            url += '?include=' + includes.join(',');
+            url += `?include=${includes.join(',')}`;
         }
 
         return url;
     },
 
-    buildQuery: function (store, type, options) {
-        var toInclude = this.getEmbeddedRelations(store, type),
-            query = options || {},
-            deDupe = {};
+    buildQuery(store, modelName, options) {
+        let deDupe = {};
+        let toInclude = this.getEmbeddedRelations(store, modelName);
+        let query = options || {};
 
         if (toInclude.length) {
             // If this is a find by id, build a query object and attach the includes
@@ -83,7 +94,7 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
                 query = {};
                 query.id = options;
                 query.include = toInclude.join(',');
-            } else if (typeof options === 'object' || Ember.isNone(options)) {
+            } else if (typeof options === 'object' || isNone(options)) {
                 // If this is a find all (no existing query object) build one and attach
                 // the includes.
                 // If this is a find with an existing query object then merge the includes
@@ -91,7 +102,7 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
                 query = query || {};
                 toInclude = toInclude.concat(query.include ? query.include.split(',') : []);
 
-                toInclude.forEach(function (include) {
+                toInclude.forEach((include) => {
                     deDupe[include] = true;
                 });
 
@@ -102,9 +113,9 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
         return query;
     },
 
-    getEmbeddedRelations: function (store, type) {
-        var model = store.modelFor(type),
-            ret = [];
+    getEmbeddedRelations(store, modelName) {
+        let model = store.modelFor(modelName);
+        let ret = [];
 
         // Iterate through the model's relationships and build a list
         // of those that need to be pulled in via "include" from the API
@@ -119,5 +130,3 @@ var EmbeddedRelationAdapter = BaseAdapter.extend({
         return ret;
     }
 });
-
-export default EmbeddedRelationAdapter;

@@ -1,6 +1,9 @@
 import Ember from 'ember';
-var documentTitle = function () {
-    Ember.Route.reopen({
+
+const {Route, Router, isArray, on} = Ember;
+
+export default function () {
+    Route.reopen({
         // `titleToken` can either be a static string or a function
         // that accepts a model object and returns a string (or array
         // of strings if there are multiple tokens).
@@ -13,16 +16,16 @@ var documentTitle = function () {
         // defined.
         title: null,
 
-        _actions: {
-            collectTitleTokens: function (tokens) {
-                var titleToken = this.titleToken,
-                    finalTitle;
+        actions: {
+            collectTitleTokens(tokens) {
+                let {titleToken} = this;
+                let finalTitle;
 
                 if (typeof this.titleToken === 'function') {
                     titleToken = this.titleToken(this.currentModel);
                 }
 
-                if (Ember.isArray(titleToken)) {
+                if (isArray(titleToken)) {
                     tokens.unshift.apply(this, titleToken);
                 } else if (titleToken) {
                     tokens.unshift(titleToken);
@@ -43,19 +46,13 @@ var documentTitle = function () {
         }
     });
 
-    Ember.Router.reopen({
-        updateTitle: function () {
+    Router.reopen({
+        updateTitle: on('didTransition', function () {
             this.send('collectTitleTokens', []);
-        }.on('didTransition'),
+        }),
 
-        setTitle: function (title) {
-            if (Ember.testing) {
-                this._title = title;
-            } else {
-                window.document.title = title;
-            }
+        setTitle(title) {
+            window.document.title = title;
         }
     });
-};
-
-export default documentTitle;
+}

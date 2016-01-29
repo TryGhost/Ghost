@@ -1,84 +1,68 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
-import SelectiveSaveMixin from 'ghost/mixins/selective-save';
 
-var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEngine, {
+const {
+    computed,
+    inject: {service}
+} = Ember;
+const {equal, empty} = computed;
+
+export default Model.extend(ValidationEngine, {
     validationType: 'user',
 
-    uuid: DS.attr('string'),
-    name: DS.attr('string'),
-    slug: DS.attr('string'),
-    email: DS.attr('string'),
-    image: DS.attr('string'),
-    cover: DS.attr('string'),
-    bio: DS.attr('string'),
-    website: DS.attr('string'),
-    location: DS.attr('string'),
-    accessibility: DS.attr('string'),
-    status: DS.attr('string'),
-    language: DS.attr('string', {defaultValue: 'en_US'}),
-    meta_title: DS.attr('string'),
-    meta_description: DS.attr('string'),
-    last_login: DS.attr('moment-date'),
-    created_at: DS.attr('moment-date'),
-    created_by: DS.attr('number'),
-    updated_at: DS.attr('moment-date'),
-    updated_by: DS.attr('number'),
-    roles: DS.hasMany('role', {embedded: 'always'}),
-
-    role: Ember.computed('roles', function (name, value) {
-        if (arguments.length > 1) {
-            // Only one role per user, so remove any old data.
-            this.get('roles').clear();
-            this.get('roles').pushObject(value);
-
-            return value;
-        }
-
-        return this.get('roles.firstObject');
+    uuid: attr('string'),
+    name: attr('string'),
+    slug: attr('string'),
+    email: attr('string'),
+    image: attr('string'),
+    cover: attr('string'),
+    bio: attr('string'),
+    website: attr('string'),
+    location: attr('string'),
+    accessibility: attr('string'),
+    status: attr('string'),
+    language: attr('string', {defaultValue: 'en_US'}),
+    meta_title: attr('string'),
+    meta_description: attr('string'),
+    last_login: attr('moment-date'),
+    created_at: attr('moment-date'),
+    created_by: attr('number'),
+    updated_at: attr('moment-date'),
+    updated_by: attr('number'),
+    roles: hasMany('role', {
+        embedded: 'always',
+        async: false
     }),
+    count: attr('raw'),
+
+    ghostPaths: service(),
+    ajax: service(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.
-    isAuthor: Ember.computed.equal('role.name', 'Author'),
-    isEditor: Ember.computed.equal('role.name', 'Editor'),
-    isAdmin: Ember.computed.equal('role.name', 'Administrator'),
-    isOwner: Ember.computed.equal('role.name', 'Owner'),
+    isAuthor: equal('role.name', 'Author'),
+    isEditor: equal('role.name', 'Editor'),
+    isAdmin: equal('role.name', 'Administrator'),
+    isOwner: equal('role.name', 'Owner'),
 
-    saveNewPassword: function () {
-        var url = this.get('ghostPaths.url').api('users', 'password');
+    isPasswordValid: empty('passwordValidationErrors.[]'),
 
-        return ic.ajax.request(url, {
-            type: 'PUT',
-            data: {
-                password: [{
-                    user_id: this.get('id'),
-                    oldPassword: this.get('password'),
-                    newPassword: this.get('newPassword'),
-                    ne2Password: this.get('ne2Password')
-                }]
-            }
-        });
-    },
+    active: computed('status', function () {
+        return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
+    }),
 
-    resendInvite: function () {
-        var fullUserData = this.toJSON(),
-            userData = {
-                email: fullUserData.email,
-                roles: fullUserData.roles
-            };
+    invited: computed('status', function () {
+        return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
+    }),
 
-        return ic.ajax.request(this.get('ghostPaths.url').api('users'), {
-            type: 'POST',
-            data: JSON.stringify({users: [userData]}),
-            contentType: 'application/json'
-        });
-    },
+    pending: equal('status', 'invited-pending').property('status'),
 
-    passwordValidationErrors: Ember.computed('password', 'newPassword', 'ne2Password', function () {
-        var validationErrors = [];
+    passwordValidationErrors: computed('password', 'newPassword', 'ne2Password', function () {
+        let validationErrors = [];
 
         if (!validator.equals(this.get('newPassword'), this.get('ne2Password'))) {
             validationErrors.push({message: 'Your new passwords do not match'});
@@ -91,17 +75,45 @@ var User = DS.Model.extend(NProgressSaveMixin, SelectiveSaveMixin, ValidationEng
         return validationErrors;
     }),
 
-    isPasswordValid: Ember.computed.empty('passwordValidationErrors.[]'),
+    role: computed('roles', {
+        get() {
+            return this.get('roles.firstObject');
+        },
+        set(key, value) {
+            // Only one role per user, so remove any old data.
+            this.get('roles').clear();
+            this.get('roles').pushObject(value);
 
-    active: function () {
-        return ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4', 'locked'].indexOf(this.get('status')) > -1;
-    }.property('status'),
+            return value;
+        }
+    }),
 
-    invited: function () {
-        return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
-    }.property('status'),
+    saveNewPassword() {
+        let url = this.get('ghostPaths.url').api('users', 'password');
 
-    pending: Ember.computed.equal('status', 'invited-pending').property('status')
+        return this.get('ajax').put(url, {
+            data: {
+                password: [{
+                    user_id: this.get('id'),
+                    oldPassword: this.get('password'),
+                    newPassword: this.get('newPassword'),
+                    ne2Password: this.get('ne2Password')
+                }]
+            }
+        });
+    },
+
+    resendInvite() {
+        let fullUserData = this.toJSON();
+        let userData = {
+            email: fullUserData.email,
+            roles: fullUserData.roles
+        };
+        let inviteUrl = this.get('ghostPaths.url').api('users');
+
+        return this.get('ajax').post(inviteUrl, {
+            data: JSON.stringify({users: [userData]}),
+            contentType: 'application/json'
+        });
+    }
 });
-
-export default User;

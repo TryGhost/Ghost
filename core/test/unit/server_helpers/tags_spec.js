@@ -109,4 +109,70 @@ describe('{{tags}} helper', function () {
 
         String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>');
     });
+
+    it('can limit no. tags output to 1', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {limit: '1'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>');
+    });
+
+    it('can list tags from a specified no.', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {from: '2'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/bar/">bar</a>');
+    });
+
+    it('can list tags to a specified no.', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {to: '1'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>');
+    });
+
+    it('can list tags in a range', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}, {name: 'baz', slug: 'baz'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {from: '2', to: '3'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/bar/">bar</a>, <a href="/tag/baz/">baz</a>');
+    });
+
+    it('can limit no. tags and output from 2', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}, {name: 'baz', slug: 'baz'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {from: '2', limit: '1'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/bar/">bar</a>');
+    });
+
+    it('can list tags in a range (ignore limit)', function () {
+        var tags = [{name: 'foo', slug: 'foo-bar'}, {name: 'bar', slug: 'bar'}, {name: 'baz', slug: 'baz'}],
+            rendered = helpers.tags.call(
+                {tags: tags},
+                {hash: {from: '1', to: '3', limit: '2'}}
+            );
+        should.exist(rendered);
+
+        String(rendered).should.equal('<a href="/tag/foo-bar/">foo</a>, <a href="/tag/bar/">bar</a>, <a href="/tag/baz/">baz</a>');
+    });
 });

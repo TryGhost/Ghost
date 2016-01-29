@@ -1,35 +1,46 @@
 import Ember from 'ember';
+import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var SetupRoute = Ember.Route.extend(styleBody, loadingIndicator, {
+const {
+    Route,
+    inject: {service}
+} = Ember;
+
+export default Route.extend(styleBody, {
     titleToken: 'Setup',
 
     classNames: ['ghost-setup'],
 
+    ghostPaths: service('ghost-paths'),
+    session: service(),
+    ajax: service(),
+
     // use the beforeModel hook to check to see whether or not setup has been
     // previously completed.  If it has, stop the transition into the setup page.
+    beforeModel() {
+        this._super(...arguments);
 
-    beforeModel: function () {
-        var self = this;
-
-        // If user is logged in, setup has already been completed.
-        if (this.get('session').isAuthenticated) {
-            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+        if (this.get('session.isAuthenticated')) {
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
             return;
         }
 
-        // If user is not logged in, check the state of the setup process via the API
-        return ic.ajax.request(this.get('ghostPaths.url').api('authentication/setup'), {
-            type: 'GET'
-        }).then(function (result) {
-            var setup = result.setup[0].status;
+        let authUrl = this.get('ghostPaths.url').api('authentication', 'setup');
 
-            if (setup) {
-                return self.transitionTo('signin');
-            }
-        });
+        // If user is not logged in, check the state of the setup process via the API
+        return this.get('ajax').request(authUrl)
+            .then((result) => {
+                let setup = result.setup[0].status;
+
+                if (setup) {
+                    return this.transitionTo('signin');
+                }
+            });
+    },
+
+    deactivate() {
+        this._super(...arguments);
+        this.controllerFor('setup/two').set('password', '');
     }
 });
-
-export default SetupRoute;

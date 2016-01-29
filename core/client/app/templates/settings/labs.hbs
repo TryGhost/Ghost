@@ -1,47 +1,65 @@
-<header class="settings-view-header">
-    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
-    <h2 class="page-title">Labs</h2>
-</header>
+<section class="gh-view">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Labs</span>{{/gh-view-title}}
+    </header>
 
-
-<section class="content settings-debug">
-    <p><strong>Important note:</strong> Labs is a testing ground for experimental features which aren't quite ready for primetime. They may change, break or inexplicably disappear at any time.</p>
-    <form id="settings-export">
-        <fieldset>
-            <div class="form-group">
-                <label>Export</label>
-                <button type="button" class="btn btn-blue" {{action "exportData"}}>Export</button>
-                <p>Export the blog settings and data.</p>
-            </div>
-        </fieldset>
-    </form>
-    {{#gh-form id="settings-import" enctype="multipart/form-data"}}
-        <fieldset>
-            <div class="form-group">
-                <label>Import</label>
-                {{partial "import-errors"}}
-                {{gh-file-upload id="importfile" uploadButtonText=uploadButtonText}}
-                <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
-            </div>
-        </fieldset>
-    {{/gh-form}}
-    <form id="settings-resetdb">
-        <fieldset>
-            <div class="form-group">
-                <label>Delete all Content</label>
-                <button type="button" class="btn btn-red js-delete" {{action "openModal" "deleteAll"}}>Delete</button>
-                <p>Delete all posts and tags from the database.</p>
-            </div>
-        </fieldset>
-    </form>
-    <form id="settings-testmail">
-        <fieldset>
-            <div class="form-group">
-                <label>Send a test email</label>
-                <button type="button" id="sendtestmail" class="btn btn-blue" {{action "sendTestEmail"}}>Send</button>
-                <p>Sends a test email to your address.</p>
-            </div>
-        </fieldset>
-    </form>
-
+    <section class="view-content settings-debug">
+        <p><strong>Important note:</strong> Labs is a testing ground for experimental features which aren't quite ready for primetime. They may change, break or inexplicably disappear at any time.</p>
+        <form id="settings-export">
+            <fieldset>
+                <div class="form-group">
+                    <label>Export</label>
+                    <button type="button" class="btn btn-blue" {{action "exportData"}}>Export</button>
+                    <p>Export the blog settings and data.</p>
+                </div>
+            </fieldset>
+        </form>
+        <form id="settings-import" enctype="multipart/form-data">
+            <fieldset>
+                <div class="form-group">
+                    <label>Import</label>
+                    {{partial "import-errors"}}
+                    {{gh-file-upload id="importfile" classNames="flex" uploadButtonText=uploadButtonText onUpload="onUpload"}}
+                    <p>Import from another Ghost installation. If you import a user, this will replace the current user & log you out.</p>
+                </div>
+            </fieldset>
+        </form>
+        <form id="settings-resetdb">
+            <fieldset>
+                <div class="form-group">
+                    <label>Delete all Content</label>
+                    <button type="button" class="btn btn-red js-delete" {{action "toggleDeleteAllModal"}}>Delete</button>
+                    <p>Delete all posts and tags from the database.</p>
+                </div>
+            </fieldset>
+        </form>
+        <form id="settings-testmail">
+            <fieldset>
+                <div class="form-group">
+                    <label>Send a test email</label>
+                    {{#gh-spin-button id="sendtestemail" class="btn btn-blue" action="sendTestEmail" submitting=submitting}}Send{{/gh-spin-button}}
+                    <p>Sends a test email to your address.</p>
+                </div>
+            </fieldset>
+        </form>
+        <hr>
+        <form>
+            <fieldset>
+                <div class="form-group for-checkbox">
+                    <h3>Enable Beta Features</h3>
+                    <label class="checkbox" for="labs-publicAPI">
+                        {{input id="labs-publicAPI" name="labs[publicAPI]" type="checkbox" checked=usePublicAPI}}
+                        <span class="input-toggle-component"></span>
+                        <p>Public API - For full instructions, read the <a href="http://support.ghost.org/public-api-beta/">developer guide</a>.</p>
+                    </label>
+                </div>
+            </fieldset>
+        </form>
+    </section>
 </section>
+
+{{#if showDeleteAllModal}}
+    {{gh-fullscreen-modal "delete-all"
+                          close=(action "toggleDeleteAllModal")
+                          modifier="action wide"}}
+{{/if}}

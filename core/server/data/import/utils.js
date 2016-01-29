@@ -3,6 +3,7 @@ var Promise     = require('bluebird'),
     models      = require('../../models'),
     errors      = require('../../errors'),
     globalUtils = require('../../utils'),
+    i18n        = require('../../i18n'),
 
     internal    = {context: {internal: true}},
     utils,
@@ -51,11 +52,9 @@ utils = {
             if (tableData[obj]) {
                 // For each object in the tableData that matches
                 _.each(tableData[obj], function (data) {
-                    // console.log('checking ' + obj + ' ' + data.slug);
                     // For each possible user foreign key
                     _.each(userKeys, function (key) {
                         if (_.has(data, key) && data[key] !== null) {
-                            // console.log('found ' + key + ' with value ' + data[key]);
                             userMap[data[key]] = {};
                         }
                     });
@@ -80,7 +79,7 @@ utils = {
                 userMap[userToMap] = existingUsers[owner.email].realId;
             } else {
                 throw new errors.DataImportError(
-                    'Attempting to import data linked to unknown user id ' + userToMap, 'user.id', userToMap
+                    i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}), 'user.id', userToMap
                 );
             }
         });
@@ -136,11 +135,43 @@ utils = {
         return tableData;
     },
 
-    preProcessRolesUsers: function preProcessRolesUsers(tableData) {
+    preProcessRolesUsers: function preProcessRolesUsers(tableData, owner, roles) {
+        var validRoles = _.pluck(roles, 'name');
+        if (!tableData.roles || !tableData.roles.length) {
+            tableData.roles = roles;
+        }
+
+        _.each(tableData.roles, function (_role) {
+            var match = false;
+            // Check import data does not contain unknown roles
+            _.each(validRoles, function (validRole) {
+                if (_role.name === validRole) {
+                    match = true;
+                    _role.oldId = _role.id;
+                    _role.id = _.find(roles, {name: validRole}).id;
+                }
+            });
+            // If unknown role is found then remove role to force down to Author
+            if (!match) {
+                _role.oldId = _role.id;
+                _role.id = _.find(roles, {name: 'Author'}).id;
+            }
+        });
+
         _.each(tableData.roles_users, function (roleUser) {
             var user = _.find(tableData.users, function (user) {
                 return user.id === parseInt(roleUser.user_id, 10);
             });
+
+            // Map role_id to updated roles id
+            roleUser.role_id = _.find(tableData.roles, {oldId: roleUser.role_id}).id;
+
+            // Check for owner users that do not match current owner and change role to administrator
+            if (roleUser.role_id === owner.roles[0].id && user && user.email && user.email !== owner.email) {
+                roleUser.role_id = _.find(roles, {name: 'Administrator'}).id;
+                user.roles = [roleUser.role_id];
+            }
+
             // just the one role for now
             if (user && !user.roles) {
                 user.roles = [roleUser.role_id];
@@ -159,7 +190,7 @@ utils = {
 
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (tag) {
-             // Validate minimum tag fields
+            // Validate minimum tag fields
             if (areEmpty(tag, 'name', 'slug')) {
                 return;
             }
@@ -188,12 +219,12 @@ utils = {
 
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (post) {
-             // Validate minimum post fields
+            // Validate minimum post fields
             if (areEmpty(post, 'title', 'slug', 'markdown')) {
                 return;
             }
 
-             // The post importer has auto-timestamping disabled
+            // The post importer has auto-timestamping disabled
             if (!post.created_at) {
                 post.created_at = Date.now();
             }
@@ -210,10 +241,9 @@ utils = {
 
     importUsers: function importUsers(tableData, existingUsers, transaction) {
         var ops = [];
-
         tableData = stripProperties(['id'], tableData);
         _.each(tableData, function (user) {
-             // Validate minimum user fields
+            // Validate minimum user fields
             if (areEmpty(user, 'name', 'slug', 'email')) {
                 return;
             }

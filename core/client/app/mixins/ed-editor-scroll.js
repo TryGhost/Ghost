@@ -1,22 +1,20 @@
 import Ember from 'ember';
 
-import setScrollClassName from 'ghost/utils/set-scroll-classname';
+const {Mixin, run} = Ember;
 
-var EditorScroll = Ember.Mixin.create({
+export default Mixin.create({
     /**
      * Determine if the cursor is at the end of the textarea
      */
-    isCursorAtEnd: function () {
-        var selection = this.$().getSelection(),
-            value = this.getValue(),
-            linesAtEnd = 3,
-            stringAfterCursor,
-            match;
+    isCursorAtEnd() {
+        let selection = this.$().getSelection();
+        let value = this.getValue();
+        let linesAtEnd = 3;
+        let match,
+            stringAfterCursor;
 
         stringAfterCursor = value.substring(selection.end);
-        /* jscs: disable */
         match = stringAfterCursor.match(/\n/g);
-        /* jscs: enable */
 
         if (!match || match.length < linesAtEnd) {
             return true;
@@ -28,9 +26,9 @@ var EditorScroll = Ember.Mixin.create({
     /**
      * Build an object that represents the scroll state
      */
-    getScrollInfo: function () {
-        var scroller = this.get('element'),
-            scrollInfo = {
+    getScrollInfo() {
+        let scroller = this.get('element');
+        let scrollInfo = {
                 top: scroller.scrollTop,
                 height: scroller.scrollHeight,
                 clientHeight: scroller.clientHeight,
@@ -45,10 +43,11 @@ var EditorScroll = Ember.Mixin.create({
     /**
      * Calculate if we're within scrollInfo.padding of the end of the document, and scroll the rest of the way
      */
-    adjustScrollPosition: function () {
+    adjustScrollPosition() {
         // If we're receiving change events from the end of the document, i.e the user is typing-at-the-end, update the
         // scroll position to ensure both panels stay in view and in sync
-        var scrollInfo = this.getScrollInfo();
+        let scrollInfo = this.getScrollInfo();
+
         if (scrollInfo.isCursorAtEnd && (scrollInfo.diff >= scrollInfo.top) &&
             (scrollInfo.diff < scrollInfo.top + scrollInfo.padding)) {
             scrollInfo.top += scrollInfo.padding;
@@ -60,35 +59,41 @@ var EditorScroll = Ember.Mixin.create({
     /**
      * Send the scrollInfo for scrollEvents to the view so that the preview pane can be synced
      */
-    scrollHandler: function () {
-        this.set('scrollThrottle', Ember.run.throttle(this, function () {
-            this.set('scrollInfo', this.getScrollInfo());
+    scrollHandler() {
+        this.set('scrollThrottle', run.throttle(this, () => {
+            this.attrs.updateScrollInfo(this.getScrollInfo());
         }, 10));
     },
 
     /**
      * once the element is in the DOM bind to the events which control scroll behaviour
      */
-    attachScrollHandlers: function () {
-        var $el = this.$();
+    attachScrollHandlers() {
+        let $el = this.$();
 
-        $el.on('keypress', Ember.run.bind(this, this.adjustScrollPosition));
+        $el.on('keypress', run.bind(this, this.adjustScrollPosition));
 
-        $el.on('scroll', Ember.run.bind(this, this.scrollHandler));
-        $el.on('scroll', Ember.run.bind($el, setScrollClassName, {
-            target: Ember.$('.js-entry-markdown'),
-            offset: 10
-        }));
-    }.on('didInsertElement'),
+        $el.on('scroll', run.bind(this, this.scrollHandler));
+    },
 
     /**
-     * once the element is in the DOM unbind from the events which control scroll behaviour
+     * once the element has been removed from the DOM unbind from the events which control scroll behaviour
      */
-    detachScrollHandlers: function () {
+    detachScrollHandlers() {
         this.$().off('keypress');
         this.$().off('scroll');
-        Ember.run.cancel(this.get('scrollThrottle'));
-    }.on('willDestroyElement')
-});
+        run.cancel(this.get('scrollThrottle'));
+    },
 
-export default EditorScroll;
+    didInsertElement() {
+        this._super(...arguments);
+
+        this.attachScrollHandlers();
+    },
+
+    willDestroyElement() {
+        this._super(...arguments);
+
+        this.detachScrollHandlers();
+    }
+});

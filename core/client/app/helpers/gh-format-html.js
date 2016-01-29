@@ -1,13 +1,15 @@
-import Ember from 'ember';
 /* global html_sanitize*/
+import Ember from 'ember';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
-var formatHTML = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) {
-    if (!arr || !arr.length) {
+const {Helper} = Ember;
+
+export default Helper.helper(function (params) {
+    if (!params || !params.length) {
         return;
     }
 
-    var escapedhtml = arr[0] || '';
+    let escapedhtml = params[0] || '';
 
     // replace script and iFrame
     escapedhtml = escapedhtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
@@ -22,5 +24,3 @@ var formatHTML = Ember.HTMLBars.makeBoundHelper(function (arr /* hashParams */) 
 
     return Ember.String.htmlSafe(escapedhtml);
 });
-
-export default formatHTML;

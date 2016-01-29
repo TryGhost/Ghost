@@ -1,5 +1,4 @@
 var _      = require('lodash'),
-    path   = require('path'),
     api    = require('../../../api'),
     config = require('../../../config'),
     validator        = require('validator'),
@@ -7,14 +6,10 @@ var _      = require('lodash'),
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function UserMapGenerator(opts) {
-    _.extend(this, _.defaults(opts || {}, UserMapGenerator.Defaults));
+    _.extend(this, opts);
 
     BaseMapGenerator.apply(this, arguments);
 }
-
-UserMapGenerator.Defaults = {
-    // TODO?
-};
 
 // Inherit from the base generator class
 _.extend(UserMapGenerator.prototype, BaseMapGenerator.prototype);
@@ -38,8 +33,8 @@ _.extend(UserMapGenerator.prototype, {
         });
     },
 
-    getUrlForDatum: function (user, permalinks) {
-        return config.urlFor('author', {author: user, permalinks: permalinks}, true);
+    getUrlForDatum: function (user) {
+        return config.urlFor('author', {author: user}, true);
     },
 
     getPriorityForDatum: function () {
@@ -47,30 +42,9 @@ _.extend(UserMapGenerator.prototype, {
         return 0.6;
     },
 
-    createUrlNodeFromDatum: function (datum) {
-        var orig = BaseMapGenerator.prototype.createUrlNodeFromDatum.apply(this, arguments),
-            imageUrl,
-            imageEl;
-
-        // Check for image and add it
-        if (datum.cover) {
-            // Grab the image url
-            imageUrl = this.getUrlForImage(datum.cover);
-            imageUrl = imageUrl.substring(0, 2) === '//' ? 'http:' + imageUrl : imageUrl;
-            if (validator.isURL(imageUrl, {protocols: ['http', 'https'], require_protocol: true})) {
-                // Create the weird xml node syntax structure that is expected
-                imageEl = [
-                    {'image:loc': imageUrl},
-                    {'image:caption': path.basename(imageUrl)}
-                ];
-                // Add the node to the url xml node
-                orig.url.push({
-                    'image:image': imageEl
-                });
-            }
-        }
-
-        return orig;
+    validateImageUrl: function (imageUrl) {
+        return imageUrl &&
+            validator.isURL(imageUrl, {protocols: ['http', 'https'], require_protocol: true});
     }
 });
 

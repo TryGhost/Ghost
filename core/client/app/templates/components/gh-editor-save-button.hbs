@@ -1,0 +1,22 @@
+{{#gh-spin-button type="button" classNameBindings=":btn :btn-sm :js-publish-button isDangerous:btn-red:btn-blue" action="save" submitting=submitting}}{{saveText}}{{/gh-spin-button}}
+
+{{#gh-dropdown-button dropdownName="post-save-menu" classNameBindings=":btn :btn-sm isDangerous:btn-red:btn-blue btnopen:active :dropdown-toggle :up"}}
+    <i class="options icon-arrow2"></i>
+    <span class="sr-only">Toggle Settings Menu</span>
+{{/gh-dropdown-button}}
+{{#gh-dropdown name="post-save-menu" closeOnClick="true" classNames="editor-options"}}
+    <ul class="dropdown-menu dropdown-triangle-bottom-right">
+        <li class="post-save-publish {{if willPublish 'active'}}">
+            <a {{action "setSaveType" "publish"}} href="#">{{publishText}}</a>
+        </li>
+        <li class="post-save-draft {{unless willPublish 'active'}}">
+            <a {{action "setSaveType" "draft"}} href="#">{{draftText}}</a>
+        </li>
+        {{#unless isNew}}
+            <li class="divider delete"></li>
+            <li class="delete">
+                <a {{action "delete"}} href="#">{{deleteText}}</a>
+            </li>
+        {{/unless}}
+    </ul>
+{{/gh-dropdown}}

@@ -1,30 +1,37 @@
 import Ember from 'ember';
-import mobileQuery from 'ghost/utils/mobile';
+
+const {
+    Route,
+    addObserver,
+    inject: {service},
+    removeObserver,
+    K
+} = Ember;
 
 // Routes that extend MobileIndexRoute need to implement
 // desktopTransition, a function which is called when
 // the user resizes to desktop levels.
-var MobileIndexRoute = Ember.Route.extend({
-    desktopTransition: Ember.K,
+export default Route.extend({
+    desktopTransition: K,
+    _callDesktopTransition: null,
 
-    activate: function attachDesktopTransition() {
-        this._super();
-        mobileQuery.addListener(this.desktopTransitionMQ);
-    },
+    mediaQueries: service(),
 
-    deactivate: function removeDesktopTransition() {
-        this._super();
-        mobileQuery.removeListener(this.desktopTransitionMQ);
-    },
-
-    setDesktopTransitionMQ: function () {
-        var self = this;
-        this.set('desktopTransitionMQ', function desktopTransitionMQ() {
-            if (!mobileQuery.matches) {
-                self.desktopTransition();
+    activate() {
+        this._super(...arguments);
+        this._callDesktopTransition = () => {
+            if (!this.get('mediaQueries.isMobile')) {
+                this.desktopTransition();
             }
-        });
-    }.on('init')
-});
+        };
+        addObserver(this, 'mediaQueries.isMobile', this._callDesktopTransition);
+    },
 
-export default MobileIndexRoute;
+    deactivate() {
+        this._super(...arguments);
+        if (this._callDesktopTransition) {
+            removeObserver(this, 'mediaQueries.isMobile', this._callDesktopTransition);
+            this._callDesktopTransition = null;
+        }
+    }
+});

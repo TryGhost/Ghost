@@ -4,7 +4,9 @@
 // This tests using Ghost as an npm module
 var should     = require('should'),
 
-    ghost      = require('../../../../core');
+    ghost      = require('../../../../core'),
+    i18n       = require('../../../../core/server/i18n');
+i18n.init();
 
 describe('Module', function () {
     describe('Setup', function () {
@@ -13,9 +15,7 @@ describe('Module', function () {
                 should.exist(ghostServer);
 
                 done();
-            }).catch(function (e) {
-                done(e);
-            });
+            }).catch(done);
         });
 
         it('should expose an express instance', function (done) {
@@ -24,9 +24,7 @@ describe('Module', function () {
                 should.exist(ghostServer.rootApp);
 
                 done();
-            }).catch(function (e) {
-                done(e);
-            });
+            }).catch(done);
         });
 
         it('should expose configuration values', function (done) {
@@ -39,9 +37,7 @@ describe('Module', function () {
                 should.equal(ghostServer.config.paths.subdir, '');
 
                 done();
-            }).catch(function (e) {
-                done(e);
-            });
+            }).catch(done);
         });
 
         it('should have start/stop/restart functions', function (done) {
@@ -52,9 +48,7 @@ describe('Module', function () {
                 ghostServer.stop.should.be.a.Function;
 
                 done();
-            }).catch(function (e) {
-                done(e);
-            });
+            }).catch(done);
         });
     });
 });

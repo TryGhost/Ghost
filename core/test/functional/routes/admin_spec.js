@@ -9,7 +9,9 @@ var request    = require('supertest'),
     should     = require('should'),
 
     testUtils  = require('../../utils'),
-    ghost      = require('../../../../core');
+    ghost      = require('../../../../core'),
+    i18n       = require('../../../../core/server/i18n');
+i18n.init();
 
 describe('Admin Routing', function () {
     function doEnd(done) {
@@ -85,16 +87,16 @@ describe('Admin Routing', function () {
         it('should redirect /signin/ to /ghost/', function (done) {
             request.get('/signin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEndNoAuth(done));
         });
 
         it('should redirect /admin/ to /ghost/', function (done) {
             request.get('/admin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEndNoAuth(done));
         });
 
@@ -188,7 +190,7 @@ describe('Admin Routing', function () {
         it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
             request.get('/ghost/')
                 .expect('Location', /ghost\/setup/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -196,7 +198,7 @@ describe('Admin Routing', function () {
         it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
             request.get('/ghost/signin/')
                 .expect('Location', /ghost\/setup/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -204,148 +206,9 @@ describe('Admin Routing', function () {
         it('should respond with html for /ghost/setup/', function (done) {
             request.get('/ghost/setup/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(doEnd(done));
         });
-
-        // Add user
-
-//        it('should redirect from /ghost/signup to /ghost/signin with user', function (done) {
-//           done();
-//        });
-
-//        it('should respond with html for /ghost/signin', function (done) {
-//           done();
-//        });
-
-        // Do Login
-
-//        it('should redirect from /ghost/signup to /ghost/ when logged in', function (done) {
-//           done();
-//        });
-
-//        it('should redirect from /ghost/signup to /ghost/ when logged in', function (done) {
-//           done();
-//        });
     });
-//
-//    describe('Ghost Admin Forgot Password', function () {
-//        before(function (done) {
-//            // Create a user / do setup etc
-//            testUtils.clearData()
-//                .then(function () {
-//                    return testUtils.initData();
-//                })
-//                .then(function () {
-//                    return testUtils.insertDefaultFixtures();
-//                }).then(function () {
-//                    done();
-//                })
-//                .catch(done);
-//        });
-//
-//        it('should respond with html for /ghost/forgotten/', function (done) {
-//            request.get('/ghost/forgotten/')
-//                .expect('Content-Type', /html/)
-//                .expect('Cache-Control', testUtils.cacheRules['private'])
-//                .expect(200)
-//                .end(doEnd(done));
-//        });
-//
-//        it('should respond 404 for /ghost/reset/', function (done) {
-//            request.get('/ghost/reset/')
-//                .expect('Cache-Control', testUtils.cacheRules['private'])
-//                .expect(404)
-//                .expect(/Page Not Found/)
-//                .end(doEnd(done));
-//        });
-//
-//        it('should redirect /ghost/reset/*/', function (done) {
-//            request.get('/ghost/reset/athing/')
-//                .expect('Location', /ghost\/forgotten/)
-//                .expect('Cache-Control', testUtils.cacheRules['private'])
-//                .expect(302)
-//                .end(doEnd(done));
-//        });
-//    });
-// });
-
-// TODO: not working anymore, needs new test for Ember
-// describe('Authenticated Admin Routing', function () {
-//     var user = testUtils.DataGenerator.forModel.users[0];
-
-//     before(function (done) {
-//         var app = express();
-
-//         ghost({app: app}).then(function (_ghostServer) {
-//             ghostServer = _ghostServer;
-//             request = agent(app);
-
-//             testUtils.clearData()
-//                 .then(function () {
-//                     return testUtils.initData();
-//                 })
-//                 .then(function () {
-//                     return testUtils.insertDefaultFixtures();
-//                 })
-//                 .then(function () {
-
-//                     request.get('/ghost/signin/')
-//                         .expect(200)
-//                         .end(function (err, res) {
-//                             if (err) {
-//                                 return done(err);
-//                             }
-
-//                             process.nextTick(function () {
-//                                 request.post('/ghost/signin/')
-//                                     .send({email: user.email, password: user.password})
-//                                     .expect(200)
-//                                     .end(function (err, res) {
-//                                         if (err) {
-//                                             return done(err);
-//                                         }
-
-//                                         request.saveCookies(res);
-//                                         request.get('/ghost/')
-//                                             .expect(200)
-//                                             .end(function (err, res) {
-//                                                 if (err) {
-//                                                     return done(err);
-//                                                 }
-
-//                                                 done();
-//                                             });
-//                                     });
-
-//                             });
-
-//                         });
-//                 }).catch(done);
-//         }).catch(function (e) {
-//             console.log('Ghost Error: ', e);
-//             console.log(e.stack);
-//         });
-//     });
-
-//     after(function () {
-//         ghostServer.stop();
-//     });
-
-//     describe('Ghost Admin magic /view/ route', function () {
-
-//         it('should redirect to the single post page on the frontend', function (done) {
-//             request.get('/ghost/editor/1/view/')
-//                 .expect(302)
-//                 .expect('Location', '/welcome-to-ghost/')
-//                 .end(function (err, res) {
-//                     if (err) {
-//                         return done(err);
-//                     }
-
-//                     done();
-//                 });
-//         });
-//     });
 });

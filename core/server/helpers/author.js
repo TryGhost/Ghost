@@ -22,7 +22,7 @@ author = function (context, options) {
     }
 
     if (options.fn) {
-        return hbs.handlebars.helpers['with'].call(this, this.author, options);
+        return hbs.handlebars.helpers.with.call(this, this.author, options);
     }
 
     var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,

@@ -1,0 +1,217 @@
+/* User profile /ghost/settings/users/<user>/
+/* ---------------------------------------------------------- */
+
+
+/* User actions menu
+/* ---------------------------------------------------------- */
+
+.user-actions-cog {
+    margin-right: 10px;
+    padding: 9px 11px;
+}
+
+.user-actions-menu {
+    top: calc(100% + 17px);
+    right: 0;
+    left: auto;
+}
+
+.user-actions-menu.fade-out {
+    animation-duration: 0.01s;
+}
+
+
+/* Layout
+/* ---------------------------------------------------------- */
+
+.content.settings-user {
+    padding: 0;
+}
+
+@media (min-width: 901px) {
+    .content.settings-user {
+        padding: 0 40px;
+    }
+}
+
+.user-cover {
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    width: auto;
+    height: 300px;
+    background: #fafafa no-repeat center center;
+    background-size: cover;
+}
+
+@media (max-width: 900px) {
+    .user-cover {
+        margin: 0;
+    }
+}
+
+.user-cover:after {
+    /* Gradient overlay */
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 110px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.18));
+}
+
+.user-cover-edit {
+    position: absolute;
+    top: 30px;
+    left: 35px;
+    z-index: 2;
+    min-height: 37px;
+    height: 37px;
+    border-width: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius);
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease, background 0.3s ease;
+}
+
+.user-cover-edit:hover {
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+}
+
+
+/* Edit user
+/* ---------------------------------------------------------- */
+
+@media (min-width: 651px) {
+    .first-form-group {
+        margin-right: 20px;
+        padding-left: 40px;
+    }
+    .first-form-group input {
+        max-width: 100%;
+    }
+}
+
+.user-details-top {
+    position: relative;
+}
+
+@media (max-width: 650px) {
+    .user-details-top {
+        margin-top: 40px;
+        margin-bottom: 0;
+    }
+}
+
+@media (min-width: 651px) {
+    .user-details-top {
+        margin-top: -91px;
+        margin-bottom: 0;
+        padding: 0;
+    }
+    .user-details-top p {
+        color: #fff;
+    }
+    .user-details-top label[for="user-name"] {
+        color: transparent;
+    }
+    .user-details-top .user-name {
+        border-color: #fff;
+    }
+}
+
+.user-profile {
+    position: relative;
+    z-index: 1;
+}
+
+@media (min-width: 651px) {
+    .user-profile {
+        padding-right: 20px;
+        padding-left: 143px;
+    }
+}
+
+@media (max-width: 650px) {
+    .user-profile fieldset {
+        padding: 0 40px;
+    }
+}
+
+@media (max-width: 550px) {
+    .user-profile fieldset {
+        padding: 0 15px;
+    }
+}
+
+.user-profile textarea {
+    min-width: 240px;
+}
+
+
+/* Profile picture
+/* ---------------------------------------------------------- */
+
+.user-image {
+    position: absolute;
+    z-index: 2;
+    display: block;
+    float: left;
+    overflow: hidden;
+    margin-right: 20px;
+    margin-left: -6px;
+    padding: 3px;
+    width: 126px;
+    height: 126px;
+    background: #fff;
+    border-radius: 100%;
+    text-align: center;
+}
+
+@media (min-width: 651px) {
+    .user-image {
+        top: -19px;
+        left: -98px;
+    }
+}
+
+@media (max-width: 650px) {
+    .user-image {
+        top: -135px;
+        left: 50%;
+        margin-right: 0;
+        margin-left: -63px;
+    }
+}
+
+.user-image .img {
+    display: block;
+    width: 120px;
+    height: 120px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+}
+
+.user-image:hover .edit-user-image {
+    opacity: 1;
+}
+
+.edit-user-image {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(100% - 6px);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 100%;
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    line-height: 120px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}

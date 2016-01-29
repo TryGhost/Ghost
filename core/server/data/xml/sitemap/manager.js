@@ -71,15 +71,6 @@ _.extend(SiteMapManager.prototype, {
         return this[type].siteMapContent;
     },
 
-    // TODO: Call this from settings model when it's changed
-    permalinksUpdated: function (permalinks) {
-        if (!this.initialized) {
-            return;
-        }
-
-        this.posts.updatePermalinksValue(permalinks.toJSON ? permalinks.toJSON() : permalinks);
-    },
-
     _refreshAllPosts: _.throttle(function () {
         this.posts.refreshAllPosts();
     }, 3000, {

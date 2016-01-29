@@ -1,29 +1,34 @@
 import Ember from 'ember';
+
+const {Component, computed} = Ember;
+const {alias} = computed;
+
 // See gh-tabs-manager.js for use
-var TabPane = Ember.Component.extend({
+export default Component.extend({
     classNameBindings: ['active'],
 
-    tabsManager: Ember.computed(function () {
+    tabsManager: computed(function () {
         return this.nearestWithProperty('isTabsManager');
     }),
 
-    tab: Ember.computed('tabsManager.tabs.[]', 'tabsManager.tabPanes.[]', function () {
-        var index = this.get('tabsManager.tabPanes').indexOf(this),
-            tabs = this.get('tabsManager.tabs');
+    tab: computed('tabsManager.tabs.[]', 'tabsManager.tabPanes.[]', function () {
+        let index = this.get('tabsManager.tabPanes').indexOf(this);
+        let tabs = this.get('tabsManager.tabs');
 
         return tabs && tabs.objectAt(index);
     }),
 
-    active: Ember.computed.alias('tab.active'),
+    active: alias('tab.active'),
 
-    // Register with the tabs manager
-    registerWithTabs: function () {
+    willRender() {
+        this._super(...arguments);
+        // Register with the tabs manager
         this.get('tabsManager').registerTabPane(this);
-    }.on('didInsertElement'),
+    },
 
-    unregisterWithTabs: function () {
+    willDestroyElement() {
+        this._super(...arguments);
+        // Deregister with the tabs manager
         this.get('tabsManager').unregisterTabPane(this);
-    }.on('willDestroyElement')
+    }
 });
-
-export default TabPane;

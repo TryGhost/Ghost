@@ -1,31 +1,44 @@
 import Ember from 'ember';
-var NavItemComponent = Ember.Component.extend({
-    classNames: 'navigation-item',
+import ValidationStateMixin from 'ghost/mixins/validation-state';
+
+const {Component, computed} = Ember;
+const {readOnly} = computed;
+
+export default Component.extend(ValidationStateMixin, {
+    classNames: 'gh-blognav-item',
+    classNameBindings: ['errorClass'],
 
     attributeBindings: ['order:data-order'],
-    order: Ember.computed.readOnly('navItem.order'),
+    order: readOnly('navItem.order'),
+    errors: readOnly('navItem.errors'),
 
-    keyPress: function (event) {
+    errorClass: computed('hasError', function () {
+        if (this.get('hasError')) {
+            return 'gh-blognav-item--error';
+        }
+    }),
+
+    keyPress(event) {
         // enter key
         if (event.keyCode === 13) {
             event.preventDefault();
-            this.get('controller').send('addItem');
+            this.send('addItem');
         }
+
+        this.get('navItem.errors').clear();
     },
 
     actions: {
-        addItem: function () {
+        addItem() {
             this.sendAction('addItem');
         },
 
-        deleteItem: function (item) {
+        deleteItem(item) {
             this.sendAction('deleteItem', item);
         },
 
-        updateUrl: function (value) {
+        updateUrl(value) {
             this.sendAction('updateUrl', value, this.get('navItem'));
         }
     }
 });
-
-export default NavItemComponent;

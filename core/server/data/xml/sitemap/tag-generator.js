@@ -5,14 +5,10 @@ var _      = require('lodash'),
 
 // A class responsible for generating a sitemap from posts and keeping it updated
 function TagsMapGenerator(opts) {
-    _.extend(this, _.defaults(opts || {}, TagsMapGenerator.Defaults));
+    _.extend(this, opts);
 
     BaseMapGenerator.apply(this, arguments);
 }
-
-TagsMapGenerator.Defaults = {
-    // TODO?
-};
 
 // Inherit from the base generator class
 _.extend(TagsMapGenerator.prototype, BaseMapGenerator.prototype);
@@ -36,8 +32,8 @@ _.extend(TagsMapGenerator.prototype, {
         });
     },
 
-    getUrlForDatum: function (tag, permalinks) {
-        return config.urlFor('tag', {tag: tag, permalinks: permalinks}, true);
+    getUrlForDatum: function (tag) {
+        return config.urlFor('tag', {tag: tag}, true);
     },
 
     getPriorityForDatum: function () {

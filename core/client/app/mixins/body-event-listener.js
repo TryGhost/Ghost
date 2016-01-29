@@ -1,47 +1,49 @@
 import Ember from 'ember';
 
+const {$, Mixin, run} = Ember;
+
+function K() {
+    return this;
+}
+
 // Code modified from Addepar/ember-widgets
 // https://github.com/Addepar/ember-widgets/blob/master/src/mixins.coffee#L39
 
-var BodyEventListener = Ember.Mixin.create({
+export default Mixin.create({
     bodyElementSelector: 'html',
-    bodyClick: Ember.K,
+    bodyClick: K,
 
-    init: function () {
-        this._super();
+    init() {
+        this._super(...arguments);
 
-        return Ember.run.next(this, this._setupDocumentHandlers);
+        return run.next(this, this._setupDocumentHandlers);
     },
 
-    willDestroy: function () {
-        this._super();
+    willDestroy() {
+        this._super(...arguments);
 
         return this._removeDocumentHandlers();
     },
 
-    _setupDocumentHandlers: function () {
+    _setupDocumentHandlers() {
         if (this._clickHandler) {
             return;
         }
 
-        var self = this;
-
-        this._clickHandler = function () {
-            return self.bodyClick();
+        this._clickHandler = () => {
+            return this.bodyClick();
         };
 
         return $(this.get('bodyElementSelector')).on('click', this._clickHandler);
     },
 
-    _removeDocumentHandlers: function () {
+    _removeDocumentHandlers() {
         $(this.get('bodyElementSelector')).off('click', this._clickHandler);
         this._clickHandler = null;
     },
 
     // http://stackoverflow.com/questions/152975/how-to-detect-a-click-outside-an-element
-    click: function (event) {
+    click(event) {
         return event.stopPropagation();
     }
 });
-
-export default BodyEventListener;

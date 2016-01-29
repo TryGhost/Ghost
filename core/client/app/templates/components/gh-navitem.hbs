@@ -1,24 +1,26 @@
 {{#unless navItem.last}}
-    <span class="navigation-item-drag-handle icon-grab">
+    <span class="gh-blognav-grab icon-grab">
         <span class="sr-only">Reorder</span>
     </span>
 {{/unless}}
-<div class="navigation-inputs">
-    <span class="navigation-item-label">
+
+<div class="gh-blognav-line">
+    {{#gh-validation-status-container tagName="span" class="gh-blognav-label" errors=navItem.errors property="label" hasValidated=navItem.hasValidated}}
         {{gh-trim-focus-input focus=navItem.last placeholder="Label" value=navItem.label}}
-    </span>
-    <span class="navigation-item-url">
+        {{gh-error-message errors=navItem.errors property="label"}}
+    {{/gh-validation-status-container}}
+    {{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
         {{gh-navitem-url-input baseUrl=baseUrl url=navItem.url last=navItem.last change="updateUrl"}}
-    </span>
+        {{gh-error-message errors=navItem.errors property="url"}}
+    {{/gh-validation-status-container}}
 </div>
-<span class="navigation-item-action">
-    {{#if navItem.last}}
-        <button type="button" class="add-navigation-link icon-add" {{action "addItem"}}>
-            <span class="sr-only">Add</span>
-        </button>
-    {{else}}
-        <button type="button" class="navigation-delete icon-trash" {{action "deleteItem" navItem}}>
-            <span class="sr-only">Delete</span>
-        </button>
-    {{/if}}
-</span>
+
+{{#if navItem.last}}
+    <button type="button" class="gh-blognav-add" {{action "addItem"}}>
+        <i class="icon-add2"><span class="sr-only">Add</span></i>
+    </button>
+{{else}}
+    <button type="button" class="gh-blognav-delete" {{action "deleteItem" navItem}}>
+        <i class="icon-trash"><span class="sr-only">Delete</span></i>
+    </button>
+{{/if}}

@@ -1,0 +1,219 @@
+/* Notifications
+/* ---------------------------------------------------------- */
+
+/* Base notification style */
+.gh-notifications {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 7000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base notification style */
+.gh-notification {
+    position: relative;
+    display: flex;
+    margin-top: 5px;
+    padding: 4px;
+    width: 220px;
+    border: #dfe1e3 1px solid;
+    background: rgba(255,255,255,0.9);
+    border-radius: 4px;
+    box-shadow: rgba(0,0,0,0.06) 0 1px 7px;
+    color: #808284;
+    font-size: 1.2rem;
+    line-height: 1.4em;
+}
+
+.gh-notification:hover {
+    cursor: pointer;
+}
+
+.gh-notification-content {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.gh-notification em {
+    color: var(--blue);
+    font-style: normal;
+}
+
+.gh-notification:hover .gh-notification-content {
+    background: color(var(--blue) lightness(+34%));
+}
+
+.gh-notification-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 6px 6px 5px 5px;
+    background: #fff;
+    border-radius: 0 4px 0 4px;
+    font-size: 7px;
+    line-height: 5px;
+}
+
+.gh-notification-close:hover {
+    background: #fff;
+    color: var(--red);
+}
+
+.gh-notification-passive {
+    animation: fade-out;
+    animation-delay: 5s;
+    animation-iteration-count: 1;
+}
+
+.gh-notification-passive:hover {
+    animation: fade-in;
+}
+
+/* Red notification
+/* ---------------------------------------------------------- */
+
+.gh-notification-red {
+    border: color(var(--red) lightness(+28%)) 1px solid;
+}
+
+.gh-notification-red em {
+    color: var(--red);
+}
+
+.gh-notification-red:hover .gh-notification-content {
+    background: color(var(--red) lightness(+40%));
+}
+
+/* Green notification
+/* ---------------------------------------------------------- */
+
+.gh-notification-green {
+    border: color(var(--green) lightness(+28%)) 1px solid;
+}
+
+.gh-notification-green em {
+    color: var(--green);
+}
+
+.gh-notification-green:hover .gh-notification-content {
+    background: color(var(--green) lightness(+40%));
+}
+
+/* Alerts
+/* ---------------------------------------------------------- */
+
+/* Alert wrapper, top of screen */
+.gh-alerts {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base alert style */
+.gh-alert {
+    z-index: 1000;
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 15px;
+    border-bottom: #dfe1e3 1px solid;
+}
+
+.gh-alert-content {
+    font-size: 1.4rem;
+    line-height: 1.3em;
+    font-weight: 200;
+    user-select: text;
+}
+
+.gh-alert a {
+    text-decoration: underline;
+    font-weight: 400;
+    user-select: text;
+}
+
+.gh-alert-close {
+    flex-shrink: 0;
+    margin-left: 20px;
+    padding: 5px;
+    font-size: 10px;
+    line-height: 10px;
+}
+
+.gh-alert-close:hover {
+    color: var(--red);
+}
+
+
+/* Blue alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-blue {
+    border-bottom: color(var(--blue) lightness(-10%)) 1px solid;
+    background: var(--blue);
+    color: #fff;
+}
+.gh-alert-blue a {
+    color: #fff;
+}
+.gh-alert-blue .gh-alert-close:hover {
+    color: #fff;
+}
+
+/* Red alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-red {
+    border-bottom: color(var(--red) lightness(-10%)) 1px solid;
+    background: var(--red);
+    color: #fff;
+}
+.gh-alert-red a {
+    color: #fff;
+}
+.gh-alert-red .gh-alert-close:hover {
+    color: #fff;
+}
+
+/* Green alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-green {
+    border-bottom: color(var(--green) lightness(-7%)) 1px solid;
+    background: var(--green);
+    color: #fff;
+}
+.gh-alert-green a {
+    color: #fff;
+}
+.gh-alert-green .gh-alert-close:hover {
+    color: #fff;
+}
+
+/* Black alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-black {
+    border-bottom: color(var(--darkgrey) lightness(-10%)) 1px solid;
+    background: var(--darkgrey);
+    color: #fff;
+}
+.gh-alert-black a {
+    color: #fff;
+}
+.gh-alert-black .gh-alert-close:hover {
+    color: #fff;
+}
+
+/* Yellow alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-yellow {
+    border-bottom: #e9ebb6 1px solid;
+    background: #fdffb6;
+}

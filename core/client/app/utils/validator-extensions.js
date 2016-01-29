@@ -1,9 +1,12 @@
 import Ember from 'ember';
+
+const {isBlank} = Ember;
+
 function init() {
     // Provide a few custom validators
     //
     validator.extend('empty', function (str) {
-        return Ember.isBlank(str);
+        return isBlank(str);
     });
 
     validator.extend('notContains', function (str, badString) {
@@ -12,5 +15,5 @@ function init() {
 }
 
 export default {
-    init: init
+    init
 };

@@ -21,10 +21,7 @@ describe('Settings API', function () {
         }).then(function (token) {
             accesstoken = token;
             done();
-        }).catch(function (e) {
-            console.log('Ghost Error: ', e);
-            console.log(e.stack);
-        });
+        }).catch(done);
     });
 
     after(function (done) {
@@ -38,7 +35,7 @@ describe('Settings API', function () {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -58,7 +55,7 @@ describe('Settings API', function () {
         request.get(testUtils.API.getApiQuery('settings/title/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -82,7 +79,7 @@ describe('Settings API', function () {
         request.get(testUtils.API.getApiQuery('settings/testsetting/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(404)
             .end(function (err, res) {
                 if (err) {
@@ -102,7 +99,7 @@ describe('Settings API', function () {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -123,7 +120,7 @@ describe('Settings API', function () {
                     .set('Authorization', 'Bearer ' + accesstoken)
                     .send(settingToChange)
                     .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(200)
                     .end(function (err, res) {
                         if (err) {
@@ -144,7 +141,7 @@ describe('Settings API', function () {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -174,7 +171,7 @@ describe('Settings API', function () {
         request.get(testUtils.API.getApiQuery('settings/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -190,7 +187,7 @@ describe('Settings API', function () {
                     .set('Authorization', 'Bearer ' + accesstoken)
                     .send(jsonResponse)
                     .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
                     .end(function (err, res) {
                         if (err) {

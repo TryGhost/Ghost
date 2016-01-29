@@ -1,71 +1,94 @@
 import Ember from 'ember';
-var LabsController = Ember.Controller.extend(Ember.Evented, {
-    needs: ['feature'],
 
+const {
+    $,
+    Controller,
+    computed,
+    inject: {service, controller},
+    isArray
+} = Ember;
+
+export default Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
-    labsJSON: Ember.computed('model.labs', function () {
+    submitting: false,
+    showDeleteAllModal: false,
+
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    feature: controller(),
+    ajax: service(),
+
+    labsJSON: computed('model.labs', function () {
         return JSON.parse(this.get('model.labs') || {});
     }),
 
-    saveLabs: function (optionName, optionValue) {
-        var self = this,
-            labsJSON =  this.get('labsJSON');
+    saveLabs(optionName, optionValue) {
+        let labsJSON =  this.get('labsJSON');
 
         // Set new value in the JSON object
         labsJSON[optionName] = optionValue;
 
         this.set('model.labs', JSON.stringify(labsJSON));
 
-        this.get('model').save().catch(function (errors) {
-            self.showErrors(errors);
-            self.get('model').rollback();
+        this.get('model').save().catch((errors) => {
+            this.showErrors(errors);
+            this.get('model').rollbackAttributes();
         });
     },
 
+    usePublicAPI: computed('feature.publicAPI', {
+        get() {
+            return this.get('feature.publicAPI');
+        },
+        set(key, value) {
+            this.saveLabs('publicAPI', value);
+            return value;
+        }
+    }),
+
     actions: {
-        onUpload: function (file) {
-            var self = this,
-                formData = new FormData();
+        onUpload(file) {
+            let formData = new FormData();
+            let notifications = this.get('notifications');
+            let currentUserId = this.get('session.user.id');
+            let dbUrl = this.get('ghostPaths.url').api('db');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
-            this.notifications.closePassive();
 
             formData.append('importfile', file);
 
-            ic.ajax.request(this.get('ghostPaths.url').api('db'), {
-                type: 'POST',
+            this.get('ajax').post(dbUrl, {
                 data: formData,
                 dataType: 'json',
                 cache: false,
                 contentType: false,
                 processData: false
-            }).then(function () {
+            }).then(() => {
                 // Clear the store, so that all the new data gets fetched correctly.
-                self.store.unloadAll('post');
-                self.store.unloadAll('tag');
-                self.store.unloadAll('user');
-                self.store.unloadAll('role');
-                self.store.unloadAll('setting');
-                self.store.unloadAll('notification');
-                self.notifications.showSuccess('Import successful.');
-            }).catch(function (response) {
-                if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
-                    self.set('importErrors', response.jqXHR.responseJSON.errors);
+                this.store.unloadAll();
+                // Reload currentUser and set session
+                this.set('session.user', this.store.findRecord('user', currentUserId));
+                // TODO: keep as notification, add link to view content
+                notifications.showNotification('Import successful.', {key: 'import.upload.success'});
+            }).catch((response) => {
+                if (response && response.errors && isArray(response.errors)) {
+                    this.set('importErrors', response.errors);
                 }
 
-                self.notifications.showError('Import Failed');
-            }).finally(function () {
-                self.set('uploadButtonText', 'Import');
-                self.trigger('reset');
+                notifications.showAlert('Import Failed', {type: 'error', key: 'import.upload.failed'});
+            }).finally(() => {
+                this.set('uploadButtonText', 'Import');
             });
         },
 
-        exportData: function () {
-            var iframe = $('#iframeDownload'),
-                downloadURL = this.get('ghostPaths.url').api('db') +
-                    '?access_token=' + this.get('session.access_token');
+        exportData() {
+            let dbUrl = this.get('ghostPaths.url').api('db');
+            let accessToken = this.get('session.data.authenticated.access_token');
+            let downloadURL = `${dbUrl}?access_token=${accessToken}`;
+            let iframe = $('#iframeDownload');
 
             if (iframe.length === 0) {
                 iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
@@ -74,22 +97,23 @@ var LabsController = Ember.Controller.extend(Ember.Evented, {
             iframe.attr('src', downloadURL);
         },
 
-        sendTestEmail: function () {
-            var self = this;
+        sendTestEmail() {
+            let notifications = this.get('notifications');
+            let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
 
-            ic.ajax.request(this.get('ghostPaths.url').api('mail', 'test'), {
-                type: 'POST'
-            }).then(function () {
-                self.notifications.showSuccess('Check your email for the test message.');
-            }).catch(function (error) {
-                if (typeof error.jqXHR !== 'undefined') {
-                    self.notifications.showAPIError(error);
-                } else {
-                    self.notifications.showErrors(error);
-                }
+            this.toggleProperty('submitting');
+
+            this.get('ajax').post(emailUrl).then(() => {
+                notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
+                this.toggleProperty('submitting');
+            }).catch((error) => {
+                notifications.showAPIError(error, {key: 'test-email:send'});
+                this.toggleProperty('submitting');
             });
+        },
+
+        toggleDeleteAllModal() {
+            this.toggleProperty('showDeleteAllModal');
         }
     }
 });
-
-export default LabsController;

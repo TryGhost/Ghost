@@ -1,9 +1,9 @@
-var slice = Array.prototype.slice;
+const {slice} = Array.prototype;
 
-function bind(/* func, args, thisArg */) {
-    var args = slice.call(arguments),
-        func = args.shift(),
-        thisArg = args.pop();
+export default function (/* func, args, thisArg */) {
+    let args = slice.call(arguments);
+    let func = args.shift();
+    let thisArg = args.pop();
 
     function bound() {
         return func.apply(thisArg, args);
@@ -11,5 +11,3 @@ function bind(/* func, args, thisArg */) {
 
     return bound;
 }
-
-export default bind;

@@ -1,40 +1,42 @@
 import Ember from 'ember';
 import ApplicationSerializer from 'ghost/serializers/application';
 
-var SettingSerializer = ApplicationSerializer.extend({
-    serializeIntoHash: function (hash, type, record, options) {
+export default ApplicationSerializer.extend({
+    serializeIntoHash(hash, type, record, options) {
         // Settings API does not want ids
         options = options || {};
         options.includeId = false;
 
-        var root = Ember.String.pluralize(type.typeKey),
-            data = this.serialize(record, options),
-            payload = [];
+        let root = Ember.String.pluralize(type.modelName);
+        let data = this.serialize(record, options);
+        let payload = [];
 
         delete data.id;
 
-        Object.keys(data).forEach(function (k) {
+        Object.keys(data).forEach((k) => {
             payload.push({key: k, value: data[k]});
         });
 
         hash[root] = payload;
     },
 
-    extractArray: function (store, type, _payload) {
-        var payload = {id: '0'};
+    normalizeArrayResponse(store, primaryModelClass, _payload, id, requestType) {
+        let payload = {settings: [this._extractObjectFromArrayPayload(_payload)]};
+        return this._super(store, primaryModelClass, payload, id, requestType);
+    },
 
-        _payload.settings.forEach(function (setting) {
+    normalizeSingleResponse(store, primaryModelClass, _payload, id, requestType) {
+        let payload = {setting: this._extractObjectFromArrayPayload(_payload)};
+        return this._super(store, primaryModelClass, payload, id, requestType);
+    },
+
+    _extractObjectFromArrayPayload(_payload) {
+        let payload = {id: '0'};
+
+        _payload.settings.forEach((setting) => {
             payload[setting.key] = setting.value;
         });
 
-        payload = this.normalize(type, payload);
-
-        return [payload];
-    },
-
-    extractSingle: function (store, type, payload) {
-        return this.extractArray(store, type, payload).pop();
+        return payload;
     }
 });
-
-export default SettingSerializer;

@@ -20,10 +20,7 @@ describe('Notifications API', function () {
         }).then(function (token) {
             accesstoken = token;
             done();
-        }).catch(function (e) {
-            console.log('Ghost Error: ', e);
-            console.log(e.stack);
-        });
+        }).catch(done);
     });
 
     after(function (done) {
@@ -43,7 +40,7 @@ describe('Notifications API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -58,7 +55,7 @@ describe('Notifications API', function () {
 
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
                     jsonResponse.notifications[0].message.should.equal(newNotification.message);
-                    jsonResponse.notifications[0].status.should.equal('persistent');
+                    jsonResponse.notifications[0].status.should.equal('alert');
 
                     done();
                 });
@@ -69,7 +66,7 @@ describe('Notifications API', function () {
         var newNotification = {
             type: 'info',
             message: 'test notification',
-            status: 'persistent'
+            status: 'alert'
         };
 
         it('deletes a notification', function (done) {
@@ -78,7 +75,7 @@ describe('Notifications API', function () {
                 .set('Authorization', 'Bearer ' + accesstoken)
                 .send({notifications: [newNotification]})
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {

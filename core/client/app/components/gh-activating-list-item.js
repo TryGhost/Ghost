@@ -1,12 +1,22 @@
 import Ember from 'ember';
-var ActivatingListItem = Ember.Component.extend({
+
+const {Component, run} = Ember;
+
+export default Component.extend({
     tagName: 'li',
     classNameBindings: ['active'],
     active: false,
+    linkClasses: null,
 
-    unfocusLink: function () {
+    click() {
         this.$('a').blur();
-    }.on('click')
-});
+    },
 
-export default ActivatingListItem;
+    actions: {
+        setActive(value) {
+            run.schedule('afterRender', this, function () {
+                this.set('active', value);
+            });
+        }
+    }
+});

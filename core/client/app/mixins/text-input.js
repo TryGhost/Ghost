@@ -1,15 +1,18 @@
 import Ember from 'ember';
-var BlurField = Ember.Mixin.create({
+
+const {Mixin} = Ember;
+
+export default Mixin.create({
     selectOnClick: false,
     stopEnterKeyDownPropagation: false,
 
-    click: function (event) {
+    click(event) {
         if (this.get('selectOnClick')) {
             event.currentTarget.select();
         }
     },
 
-    keyDown: function (event) {
+    keyDown(event) {
         // stop event propagation when pressing "enter"
         // most useful in the case when undesired (global) keyboard shortcuts are getting triggered while interacting
         // with this particular input element.
@@ -20,5 +23,3 @@ var BlurField = Ember.Mixin.create({
         }
     }
 });
-
-export default BlurField;

@@ -1,0 +1,149 @@
+/* Dropdowns
+/* ---------------------------------------------------------- */
+
+.dropdown {
+    position: relative;
+    z-index: 1000;
+}
+
+.dropdown-toggle:focus {
+    outline: 0;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    float: left;
+    margin: 2px 0 0;
+    padding: 10px;
+    min-width: 200px;
+    border: #dfe1e3 1px solid;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 4px;
+    box-shadow: rgba(0, 0, 0, 0.10) 0 2px 6px;
+    list-style: none;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1.4rem;
+    font-weight: normal;
+}
+
+.dropdown-menu.pull-right {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu .divider {
+    overflow: hidden;
+    margin: 8px 0;
+    height: 1px;
+    background: color(#dfe1e3 lightness(+5%));
+}
+
+.dropdown-menu > li > a,
+.dropdown-menu > li > button {
+    display: flex;
+    align-items: center;
+    clear: both;
+    padding: 6px 10px;
+    width: 100%;
+    border-radius: 3px;
+    color: color(var(--darkgrey) lightness(+20%));
+    text-align: left;
+    white-space: nowrap;
+    font-size: 1.3rem;
+    line-height: 1em;
+    font-weight: normal;
+    transition: none;
+}
+
+.dropdown-menu i {
+    margin-right: 10px;
+    font-size: 14px;
+    line-height: 1em;
+}
+
+@media (max-width: 500px) {
+    .dropdown-menu > li > a,
+    .dropdown-menu > li > button {
+        padding: 7px 8px;
+        font-size: 1.5rem;
+    }
+    .dropdown-menu i {
+        font-size: 16px;
+    }
+}
+
+
+/* States
+/* ---------------------------------------------------------- */
+
+/* Hover/Focus */
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus,
+.dropdown-menu > li > button:hover,
+.dropdown-menu > li > button:focus {
+    background: color(var(--blue) alpha(-85%));
+    color: var(--darkgrey);
+    text-decoration: none;
+}
+
+/* Active */
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus,
+.dropdown-menu > .active > button,
+.dropdown-menu > .active > button:hover,
+.dropdown-menu > .active > button:focus {
+    outline: 0;
+    background-color: #428bca;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Disabled */
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus,
+.dropdown-menu > .disabled > button,
+.dropdown-menu > .disabled > button:hover,
+.dropdown-menu > .disabled > button:focus {
+    color: #777;
+}
+
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus,
+.dropdown-menu > .disabled > button:hover,
+.dropdown-menu > .disabled > button:focus {
+    background-color: transparent;
+    background-image: none;
+    text-decoration: none;
+    cursor: not-allowed;
+}
+
+
+/* Open / Close
+/* ---------------------------------------------------------- */
+
+.open > .dropdown-menu {
+    display: block;
+}
+
+.open > a {
+    outline: 0;
+}
+
+.closed > .dropdown-menu {
+    display: none;
+}
+
+
+/* Selectize
+/* ---------------------------------------------------------- */
+
+.selectize-dropdown {
+    z-index: 200;
+}

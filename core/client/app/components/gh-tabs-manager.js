@@ -1,4 +1,7 @@
 import Ember from 'ember';
+
+const {Component} = Ember;
+
 /**
 Heavily inspired by ic-tabs (https://github.com/instructure/ic-tabs)
 
@@ -48,37 +51,35 @@ Both tab and tab-pane elements have an "active"
 class applied when they are active.
 
 */
-var TabsManager = Ember.Component.extend({
+export default Component.extend({
     activeTab: null,
     tabs: [],
     tabPanes: [],
 
+    // Used by children to find this tabsManager
+    isTabsManager: true,
+
     // Called when a gh-tab is clicked.
-    select: function (tab) {
+    select(tab) {
         this.set('activeTab', tab);
         this.sendAction('selected');
     },
 
-    // Used by children to find this tabsManager
-    isTabsManager: true,
-
     // Register tabs and their panes to allow for
     // interaction between components.
-    registerTab: function (tab) {
+    registerTab(tab) {
         this.get('tabs').addObject(tab);
     },
 
-    unregisterTab: function (tab) {
+    unregisterTab(tab) {
         this.get('tabs').removeObject(tab);
     },
 
-    registerTabPane: function (tabPane) {
+    registerTabPane(tabPane) {
         this.get('tabPanes').addObject(tabPane);
     },
 
-    unregisterTabPane: function (tabPane) {
+    unregisterTabPane(tabPane) {
         this.get('tabPanes').removeObject(tabPane);
     }
 });
-
-export default TabsManager;

@@ -1,55 +1,106 @@
+/* global key */
+import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
-import PaginationRouteMixin from 'ghost/mixins/pagination-route';
+import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import PaginationRoute from 'ghost/mixins/pagination-route';
 
-var TagsRoute,
-    paginationSettings;
+export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, ShortcutsRoute, {
+    titleToken: 'Settings - Tags',
 
-paginationSettings = {
-    page: 1,
-    include: 'post_count',
-    limit: 15
-};
-
-TagsRoute = AuthenticatedRoute.extend(CurrentUserSettings, PaginationRouteMixin, {
-    actions: {
-        willTransition: function () {
-            this.send('closeSettingsMenu');
-        }
+    paginationModel: 'tag',
+    paginationSettings: {
+        include: 'count.posts',
+        limit: 15
     },
 
-    titleToken: 'Tags',
+    shortcuts: {
+        'up, k': 'moveUp',
+        'down, j': 'moveDown',
+        left: 'focusList',
+        right: 'focusContent',
+        c: 'newTag'
+    },
 
-    beforeModel: function () {
+    beforeModel() {
+        this._super(...arguments);
+
         return this.get('session.user')
             .then(this.transitionAuthor());
     },
 
-    model: function () {
+    model() {
         this.store.unloadAll('tag');
 
-        return this.store.filter('tag', paginationSettings, function (tag) {
-            return !tag.get('isNew');
+        return this.loadFirstPage().then(() => {
+            return this.store.filter('tag', (tag) => {
+                return !tag.get('isNew');
+            });
         });
     },
 
-    setupController: function (controller, model) {
-        this._super(controller, model);
-        this.setupPagination(paginationSettings);
+    deactivate() {
+        this._super(...arguments);
+        this.send('resetShortcutsScope');
+        this.send('resetPagination');
     },
 
-    renderTemplate: function (controller, model) {
-        this._super(controller, model);
-        this.render('settings/tags/settings-menu', {
-            into: 'application',
-            outlet: 'settings-menu',
-            view: 'settings/tags/settings-menu'
-        });
+    stepThroughTags(step) {
+        let currentTag = this.modelFor('settings.tags.tag');
+        let tags = this.get('controller.tags');
+        let length = tags.get('length');
+
+        if (currentTag && length) {
+            let newPosition = tags.indexOf(currentTag) + step;
+
+            if (newPosition >= length) {
+                return;
+            } else if (newPosition < 0) {
+                return;
+            }
+
+            this.transitionTo('settings.tags.tag', tags.objectAt(newPosition));
+        }
     },
 
-    deactivate: function () {
-        this.controller.send('resetPagination');
+    scrollContent(amount) {
+        let content = Ember.$('.tag-settings-pane');
+        let scrolled = content.scrollTop();
+
+        content.scrollTop(scrolled + 50 * amount);
+    },
+
+    actions: {
+        moveUp() {
+            if (this.controller.get('tagContentFocused')) {
+                this.scrollContent(-1);
+            } else {
+                this.stepThroughTags(-1);
+            }
+        },
+
+        moveDown() {
+            if (this.controller.get('tagContentFocused')) {
+                this.scrollContent(1);
+            } else {
+                this.stepThroughTags(1);
+            }
+        },
+
+        focusList() {
+            this.set('controller.keyboardFocus', 'tagList');
+        },
+
+        focusContent() {
+            this.set('controller.keyboardFocus', 'tagContent');
+        },
+
+        newTag() {
+            this.transitionTo('settings.tags.new');
+        },
+
+        resetShortcutsScope() {
+            key.setScope('default');
+        }
     }
 });
-
-export default TagsRoute;

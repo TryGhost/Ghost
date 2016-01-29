@@ -1,19 +1,48 @@
-import Ember from 'ember';
-var SigninValidator = Ember.Object.create({
-    check: function (model) {
-        var data = model.getProperties('identification', 'password'),
-            validationErrors = [];
+import BaseValidator from './base';
 
-        if (!validator.isEmail(data.identification)) {
-            validationErrors.push('Invalid Email');
+export default BaseValidator.create({
+    properties: ['identification', 'signin', 'forgotPassword'],
+    invalidMessage: 'Email address is not valid',
+
+    identification(model) {
+        let id = model.get('identification');
+
+        if (!validator.empty(id) && !validator.isEmail(id)) {
+            model.get('errors').add('identification', this.get('invalidMessage'));
+            this.invalidate();
+        }
+    },
+
+    signin(model) {
+        let id = model.get('identification');
+        let password = model.get('password');
+
+        model.get('errors').clear();
+
+        if (validator.empty(id)) {
+            model.get('errors').add('identification', 'Please enter an email');
+            this.invalidate();
         }
 
-        if (!validator.isLength(data.password || '', 1)) {
-            validationErrors.push('Please enter a password');
+        if (!validator.empty(id) && !validator.isEmail(id)) {
+            model.get('errors').add('identification', this.get('invalidMessage'));
+            this.invalidate();
         }
 
-        return validationErrors;
+        if (validator.empty(password)) {
+            model.get('errors').add('password', 'Please enter a password');
+            this.invalidate();
+        }
+    },
+
+    forgotPassword(model) {
+        let id = model.get('identification');
+
+        model.get('errors').clear();
+
+        if (validator.empty(id) || !validator.isEmail(id)) {
+            model.get('errors').add('identification', this.get('invalidMessage'));
+            this.invalidate();
+        }
     }
 });
-
-export default SigninValidator;

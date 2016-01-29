@@ -19,10 +19,7 @@ describe('DB API', function () {
         }).then(function (token) {
             accesstoken = token;
             done();
-        }).catch(function (e) {
-            console.log('Ghost Error: ', e);
-            console.log(e.stack);
-        });
+        }).catch(done);
     });
 
     after(function (done) {
@@ -35,7 +32,7 @@ describe('DB API', function () {
         request.get(testUtils.API.getApiQuery('db/'))
             .set('Authorization', 'Bearer ' + accesstoken)
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules['private'])
+            .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .expect('Content-Disposition', /Attachment; filename="[A-Za-z0-9._-]+\.json"/)
             .end(function (err, res) {
@@ -44,6 +41,22 @@ describe('DB API', function () {
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
+                var jsonResponse = res.body;
+                should.exist(jsonResponse.db);
+                jsonResponse.db.should.have.length(1);
+                done();
+            });
+    });
+
+    it('should work with access token set as query parameter', function (done) {
+        request.get(testUtils.API.getApiQuery('db/?access_token=' + accesstoken))
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+
                 var jsonResponse = res.body;
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);

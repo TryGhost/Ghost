@@ -32,7 +32,7 @@ describe('Configuration API', function () {
     should.exist(ConfigurationAPI);
 
     it('can browse config', function (done) {
-        var updatedConfig = _.extend(config, newConfig);
+        var updatedConfig = _.extend({}, config, newConfig);
         config.set(updatedConfig);
         ConfigurationAPI.__set__('config', updatedConfig);
 
@@ -49,7 +49,7 @@ describe('Configuration API', function () {
     });
 
     it('can read config', function (done) {
-        var updatedConfig = _.extend(config, newConfig);
+        var updatedConfig = _.extend({}, config, newConfig);
         config.set(updatedConfig);
         ConfigurationAPI.__set__('config', updatedConfig);
 
@@ -59,6 +59,7 @@ describe('Configuration API', function () {
             testUtils.API.checkResponse(response.configuration[0], 'configuration');
             response.configuration[0].key.should.equal('database');
             response.configuration[0].value.should.equal('mysql');
+            response.configuration[0].type.should.be.null();
             /*jshint unused:false */
             done();
         }).catch(function (error) {

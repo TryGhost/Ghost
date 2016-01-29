@@ -1,18 +1,22 @@
-<section class="login-box js-login-box fade-in">
-    <form id="login" class="login-form" method="post" novalidate="novalidate" {{action 'validateAndAuthenticate' on='submit'}}>
-        <div class="email-wrap">
-            <span class="input-icon icon-mail">
-                {{gh-trim-focus-input class="email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" value=model.identification}}
-            </span>
-        </div>
-        <div class="password-wrap">
-            <span class="input-icon icon-lock">
-                {{input class="password" type="password" placeholder="Password" name="password" value=model.password}}
-            </span>
-        </div>
-        <button class="btn btn-blue" type="submit" {{action "validateAndAuthenticate"}} disabled={{submitting}}>Log in</button>
-        <section class="meta">
-            <button {{action 'forgotten'}} class="forgotten-link btn btn-link">Forgotten password?</button>
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            <form id="login" class="gh-signin" method="post" novalidate="novalidate">
+                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="identification"}}
+                    <span class="input-icon icon-mail">
+                        {{gh-trim-focus-input class="gh-input email" type="email" placeholder="Email Address" name="identification" autocapitalize="off" autocorrect="off" tabindex="1" focusOut=(action "validate" "identification") value=model.identification}}
+                    </span>
+                {{/gh-form-group}}
+                {{#gh-form-group errors=model.errors hasValidated=hasValidated property="password"}}
+                    <span class="input-icon icon-lock forgotten-wrap">
+                        {{gh-input class="password" type="password" placeholder="Password" name="password" tabindex="2" value=model.password autocorrect="off"}}
+                        {{#gh-spin-button class="forgotten-link btn btn-link" type="button" action="forgotten" tabindex="4" submitting=submitting autoWidth="true"}}Forgot?{{/gh-spin-button}}
+                    </span>
+                {{/gh-form-group}}
+                {{#gh-spin-button class="login btn btn-blue btn-block" type="submit" action="validateAndAuthenticate" tabindex="3" submitting=loggingIn autoWidth="false"}}Sign in{{/gh-spin-button}}
+            </form>
+
+            <p class="main-error">{{{flowErrors}}}</p>
         </section>
-    </form>
-</section>
+    </div>
+</div>

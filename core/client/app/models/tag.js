@@ -1,24 +1,23 @@
-import DS from 'ember-data';
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Tag = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+export default Model.extend(ValidationEngine, {
     validationType: 'tag',
 
-    uuid: DS.attr('string'),
-    name: DS.attr('string'),
-    slug: DS.attr('string'),
-    description: DS.attr('string'),
-    parent: DS.attr(),
-    meta_title: DS.attr('string'),
-    meta_description: DS.attr('string'),
-    image: DS.attr('string'),
-    hidden: DS.attr('boolean'),
-    created_at: DS.attr('moment-date'),
-    updated_at: DS.attr('moment-date'),
-    created_by: DS.attr(),
-    updated_by: DS.attr(),
-    post_count: DS.attr('number')
+    uuid: attr('string'),
+    name: attr('string'),
+    slug: attr('string'),
+    description: attr('string'),
+    parent: attr(),
+    meta_title: attr('string'),
+    meta_description: attr('string'),
+    image: attr('string'),
+    hidden: attr('boolean'),
+    created_at: attr('moment-date'),
+    updated_at: attr('moment-date'),
+    created_by: attr(),
+    updated_by: attr(),
+    count: attr('raw')
 });
-
-export default Tag;

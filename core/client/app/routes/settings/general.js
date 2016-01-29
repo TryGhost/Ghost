@@ -1,30 +1,28 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
 
-var SettingsGeneralRoute = AuthenticatedRoute.extend(styleBody, loadingIndicator, CurrentUserSettings, {
-    titleToken: 'General',
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+    titleToken: 'Settings - General',
 
     classNames: ['settings-view-general'],
 
-    beforeModel: function () {
+    beforeModel() {
+        this._super(...arguments);
         return this.get('session.user')
             .then(this.transitionAuthor())
             .then(this.transitionEditor());
     },
 
-    model: function () {
-        return this.store.find('setting', {type: 'blog,theme'}).then(function (records) {
+    model() {
+        return this.store.query('setting', {type: 'blog,theme,private'}).then((records) => {
             return records.get('firstObject');
         });
     },
 
     actions: {
-        save: function () {
+        save() {
             this.get('controller').send('save');
         }
     }
 });
-
-export default SettingsGeneralRoute;

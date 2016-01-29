@@ -1,20 +1,19 @@
 import Ember from 'ember';
-var SettingsCodeInjectionController = Ember.Controller.extend({
-    actions: {
-        save: function () {
-            var self = this;
+import SettingsSaveMixin from 'ghost/mixins/settings-save';
 
-            return this.get('model').save().then(function (model) {
-                self.notifications.closePassive();
-                self.notifications.showSuccess('Settings successfully saved.');
+const {
+    Controller,
+    inject: {service}
+} = Ember;
 
-                return model;
-            }).catch(function (errors) {
-                self.notifications.closePassive();
-                self.notifications.showErrors(errors);
-            });
-        }
+export default Controller.extend(SettingsSaveMixin, {
+    notifications: service(),
+
+    save() {
+        let notifications = this.get('notifications');
+
+        return this.get('model').save().catch((error) => {
+            notifications.showAPIError(error, {key: 'code-injection.save'});
+        });
     }
 });
-
-export default SettingsCodeInjectionController;

@@ -1,12 +1,12 @@
 /* jshint node: true */
-/* jscs:disable disallowEmptyBlocks */
+/* jscs:disable */
 
 module.exports = function (environment) {
     var ENV = {
         modulePrefix: 'ghost',
         environment: environment,
         baseURL: '/',
-        locationType: 'auto',
+        locationType: 'trailing-history',
         EmberENV: {
             FEATURES: {
                 // Here you can enable experimental features on an ember canary build
@@ -17,6 +17,12 @@ module.exports = function (environment) {
         APP: {
               // Here you can pass flags/options to your application instance
               // when it is created
+        },
+
+        'ember-simple-auth': {
+            authenticationRoute: 'signin',
+            routeAfterAuthentication: 'posts',
+            routeIfAlreadyAuthenticated: 'posts'
         }
     };
 
@@ -26,6 +32,9 @@ module.exports = function (environment) {
         ENV.APP.LOG_TRANSITIONS = true;
         ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
         ENV.APP.LOG_VIEW_LOOKUPS = true;
+        ENV['ember-cli-mirage'] = {
+            enabled: false
+        };
     }
 
     if (environment === 'test') {
@@ -38,12 +47,6 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = false;
 
         ENV.APP.rootElement = '#ember-testing';
-    }
-
-    if (environment === 'production') {
-        ENV.sassOptions = {
-            outputFile: 'ghost.min.css'
-        };
     }
 
     return ENV;

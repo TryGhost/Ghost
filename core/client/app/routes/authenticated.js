@@ -1,4 +1,6 @@
 import Ember from 'ember';
-var AuthenticatedRoute = Ember.Route.extend(SimpleAuth.AuthenticatedRouteMixin);
+import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 
-export default AuthenticatedRoute;
+const {Route} = Ember;
+
+export default Route.extend(AuthenticatedRouteMixin);

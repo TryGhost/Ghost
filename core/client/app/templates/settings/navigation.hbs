@@ -1,15 +1,16 @@
-<header class="settings-view-header">
-    {{#link-to "settings" class="btn btn-default btn-back"}}Back{{/link-to}}
-    <h2 class="page-title">Navigation</h2>
-    <section class="page-actions">
-        <button type="button" class="btn btn-blue" {{action "save"}}>Save</button>
-    </section>
-</header>
+{{#gh-navigation moveItem="moveItem"}}
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Navigation</span>{{/gh-view-title}}
+        <section class="view-actions">
+            {{#gh-spin-button class="btn btn-blue" action="save" submitting=submitting}}Save{{/gh-spin-button}}
+        </section>
+    </header>
 
-<section class="content settings-navigation">
-    <form id="settings-navigation" class="js-settings-navigation" novalidate="novalidate">
-        {{#each navItem in navigationItems}}
-            {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addItem" deleteItem="deleteItem" updateUrl="updateUrl"}}
-        {{/each}}
-    </form>
-</section>
+    <section class="view-container">
+        <form id="settings-navigation" class="gh-blognav js-gh-blognav" novalidate="novalidate">
+            {{#each navigationItems as |navItem|}}
+                {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addItem" deleteItem="deleteItem" updateUrl="updateUrl"}}
+            {{/each}}
+        </form>
+    </section>
+{{/gh-navigation}}

@@ -1,25 +1,25 @@
-import DS from 'ember-data';
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Setting = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+export default Model.extend(ValidationEngine, {
     validationType: 'setting',
 
-    title: DS.attr('string'),
-    description: DS.attr('string'),
-    email: DS.attr('string'),
-    logo: DS.attr('string'),
-    cover: DS.attr('string'),
-    defaultLang: DS.attr('string'),
-    postsPerPage: DS.attr('number'),
-    forceI18n: DS.attr('boolean'),
-    permalinks: DS.attr('string'),
-    activeTheme: DS.attr('string'),
-    availableThemes: DS.attr(),
-    ghost_head: DS.attr('string'),
-    ghost_foot: DS.attr('string'),
-    labs: DS.attr('string'),
-    navigation: DS.attr('string')
+    title: attr('string'),
+    description: attr('string'),
+    logo: attr('string'),
+    cover: attr('string'),
+    defaultLang: attr('string'),
+    postsPerPage: attr('number'),
+    forceI18n: attr('boolean'),
+    permalinks: attr('string'),
+    activeTheme: attr('string'),
+    availableThemes: attr(),
+    ghost_head: attr('string'),
+    ghost_foot: attr('string'),
+    labs: attr('string'),
+    navigation: attr('string'),
+    isPrivate: attr('boolean'),
+    password: attr('string')
 });
-
-export default Setting;

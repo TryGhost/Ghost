@@ -1,0 +1,129 @@
+/* Tag Management /ghost/settings/tags/
+/* ---------------------------------------------------------- */
+
+
+/* Tag
+/* ---------------------------------------------------------- */
+
+.settings-tag {
+    position: relative;
+    display: block;
+    padding: 0 45px 0 0;
+    border-bottom: 1px solid #dfe1e3;
+}
+
+.settings-tag .tag-edit-button {
+    display: block;
+    padding: 20px;
+    width: calc(100% + 45px);
+    text-align: left;
+}
+
+.settings-tag .tag-edit-button.active {
+    border-left: 3px solid;
+}
+
+.settings-tag .label {
+    display: inline-block;
+    overflow: hidden;
+    max-width: 100%;
+    vertical-align: middle;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-tag .label-alt {
+    text-transform: uppercase;
+}
+
+.settings-tag .tag-title {
+    color: var(--darkgrey);
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.settings-tag .tag-description {
+    margin: 0;
+    color: color(#dfe1e3 lightness(-10%));
+    word-wrap: break-word;
+    font-size: 13px;
+}
+
+.settings-tag .tags-count {
+    position: absolute;
+    top: 20px;
+    right: 12px;
+    color: color(#dfe1e3 lightness(-10%));
+    font-size: 16px;
+}
+
+/* Tag List (Left pane)
+/* ---------------------------------------------------------- */
+
+.tag-list {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    max-width: calc(100% - 350px);
+    width: 66%;
+    border-right: #dfe1e3 1px solid;
+    background: #fff;
+}
+
+@media (max-width: 600px) {
+    .tag-list {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .settings-tag .tag-edit-button.active {
+        border-left: none;
+    }
+}
+
+/* Tag Settings (Right pane)
+/* ---------------------------------------------------------- */
+
+.tag-settings {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 350px;
+    width: 34%;
+    border: none;
+    background: #fff;
+    transform: none;
+}
+
+.tag-settings .no-posts {
+    padding: 1em;
+}
+
+.tag-settings .no-posts h3 {
+    text-align: center;
+}
+
+.tag-settings .settings-menu-pane {
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+@media (max-width: 600px) {
+    .tag-settings {
+        min-width: 0;
+        width: 100%;
+        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+        transform: translate3d(100%, 0px, 0px);
+
+        transform-style: preserve-3d;
+    }
+
+    .tag-settings-in {
+        transform: translate3d(0px, 0px, 0px);
+    }
+}

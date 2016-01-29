@@ -1,38 +1,63 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { belongsTo, hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import NProgressSaveMixin from 'ghost/mixins/nprogress-save';
 
-var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
+const {
+    computed,
+    inject: {service}
+} = Ember;
+const {equal} = computed;
+
+export default Model.extend(ValidationEngine, {
     validationType: 'post',
 
-    uuid: DS.attr('string'),
-    title: DS.attr('string', {defaultValue: ''}),
-    slug: DS.attr('string'),
-    markdown: DS.attr('string', {defaultValue: ''}),
-    html: DS.attr('string'),
-    image: DS.attr('string'),
-    featured: DS.attr('boolean', {defaultValue: false}),
-    page: DS.attr('boolean', {defaultValue: false}),
-    status: DS.attr('string', {defaultValue: 'draft'}),
-    language: DS.attr('string', {defaultValue: 'en_US'}),
-    meta_title: DS.attr('string'),
-    meta_description: DS.attr('string'),
-    author: DS.belongsTo('user',  {async: true}),
-    author_id: DS.attr('number'),
-    updated_at: DS.attr('moment-date'),
-    updated_by: DS.attr(),
-    published_at: DS.attr('moment-date'),
-    published_by: DS.belongsTo('user', {async: true}),
-    created_at: DS.attr('moment-date'),
-    created_by: DS.attr(),
-    tags: DS.hasMany('tag', {embedded: 'always'}),
-    url: DS.attr('string'),
+    uuid: attr('string'),
+    title: attr('string', {defaultValue: ''}),
+    slug: attr('string'),
+    markdown: attr('string', {defaultValue: ''}),
+    html: attr('string'),
+    image: attr('string'),
+    featured: attr('boolean', {defaultValue: false}),
+    page: attr('boolean', {defaultValue: false}),
+    status: attr('string', {defaultValue: 'draft'}),
+    language: attr('string', {defaultValue: 'en_US'}),
+    meta_title: attr('string'),
+    meta_description: attr('string'),
+    author: belongsTo('user', {async: true}),
+    author_id: attr('number'),
+    updated_at: attr('moment-date'),
+    updated_by: attr(),
+    published_at: attr('moment-date'),
+    published_by: belongsTo('user', {async: true}),
+    created_at: attr('moment-date'),
+    created_by: attr(),
+    tags: hasMany('tag', {
+        embedded: 'always',
+        async: false
+    }),
+    url: attr('string'),
 
-    absoluteUrl: Ember.computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
-        var blogUrl = this.get('config.blogUrl'),
-            postUrl = this.get('url');
+    config: service(),
+    ghostPaths: service(),
+
+    absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
+        let blogUrl = this.get('config.blogUrl');
+        let postUrl = this.get('url');
         return this.get('ghostPaths.url').join(blogUrl, postUrl);
+    }),
+
+    previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', 'config.routeKeywords.preview', function () {
+        let blogUrl = this.get('config.blogUrl');
+        let uuid = this.get('uuid');
+        let previewKeyword = this.get('config.routeKeywords.preview');
+        // New posts don't have a preview
+        if (!uuid) {
+            return '';
+        }
+        return this.get('ghostPaths.url').join(blogUrl, previewKeyword, uuid);
     }),
 
     scratch: null,
@@ -40,24 +65,23 @@ var Post = DS.Model.extend(NProgressSaveMixin, ValidationEngine, {
 
     // Computed post properties
 
-    isPublished: Ember.computed.equal('status', 'published'),
-    isDraft: Ember.computed.equal('status', 'draft'),
+    isPublished: equal('status', 'published'),
+    isDraft: equal('status', 'draft'),
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
     // when returned from the server with ids.
-    updateTags: function () {
-        var tags = this.get('tags'),
-            oldTags = tags.filterBy('id', null);
+    // https://github.com/emberjs/data/issues/1829
+    updateTags() {
+        let tags = this.get('tags');
+        let oldTags = tags.filterBy('id', null);
 
         tags.removeObjects(oldTags);
         oldTags.invoke('deleteRecord');
     },
 
-    isAuthoredByUser: function (user) {
+    isAuthoredByUser(user) {
         return parseInt(user.get('id'), 10) === parseInt(this.get('author_id'), 10);
     }
 
 });
-
-export default Post;

@@ -1,14 +1,11 @@
 {
   "predef": [
+    "server",
     "document",
     "window",
     "-Promise",
     "-Notification",
-    "$",
     "validator",
-    "ic",
-    "SimpleAuth",
-    "NProgress",
     "moment"
   ],
   "browser": true,

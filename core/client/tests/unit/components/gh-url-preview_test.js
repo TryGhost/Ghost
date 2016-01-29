@@ -3,10 +3,15 @@ import {
     it
 } from 'ember-mocha';
 
-describeComponent('gh-url-preview',
+describeComponent(
+    'gh-url-preview',
+    'Unit: Component: gh-url-preview',
+    {
+        unit: true
+    },
     function () {
         it('generates the correct preview URL with a prefix', function () {
-            var component = this.subject({
+            let component = this.subject({
                 prefix: 'tag',
                 slug: 'test-slug',
                 tagName: 'p',
@@ -21,7 +26,7 @@ describeComponent('gh-url-preview',
         });
 
         it('generates the correct preview URL without a prefix', function () {
-            var component = this.subject({
+            let component = this.subject({
                 slug: 'test-slug',
                 tagName: 'p',
                 classNames: 'test-class',

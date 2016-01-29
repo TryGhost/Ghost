@@ -1,0 +1,82 @@
+<section class="gh-view">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Team</span>{{/gh-view-title}}
+        {{!-- Do not show Invite user button to authors --}}
+        {{#unless session.user.isAuthor}}
+            <section class="view-actions">
+                <button class="btn btn-green" {{action "toggleInviteUserModal"}} >Invite People</button>
+            </section>
+
+            {{#if showInviteUserModal}}
+                {{gh-fullscreen-modal "invite-new-user"
+                                      close=(action "toggleInviteUserModal")
+                                      modifier="action"}}
+            {{/if}}
+        {{/unless}}
+    </header>
+
+    {{#gh-infinite-scroll
+        fetch="loadNextPage"
+        isLoading=isLoading
+        tagName="section"
+        classNames="view-content team"
+    }}
+        {{!-- Do not show invited users to authors --}}
+        {{#unless session.user.isAuthor}}
+            {{#if invitedUsers}}
+                <section class="user-list invited-users">
+                    <h4 class="user-list-title">Invited users</h4>
+                    {{#each invitedUsers as |user|}}
+                        {{#gh-user-invited user=user reload="reload" as |component|}}
+                            <div class="user-list-item">
+                                <span class="user-list-item-icon icon-mail">ic</span>
+                                <div class="user-list-item-body">
+                                    <span class="name">{{user.email}}</span><br>
+                                    {{#if user.pending}}
+                                        <span class="description-error">
+                                            Invitation not sent - please try again
+                                        </span>
+                                    {{else}}
+                                        <span class="description">
+                                            Invitation sent: {{component.createdAt}}
+                                        </span>
+                                    {{/if}}
+                                </div>
+                                <aside class="user-list-item-aside">
+                                    {{#if component.isSending}}
+                                        <span>Sending Invite...</span>
+                                    {{else}}
+                                        <a class="user-list-action" href="#" {{action "revoke" target=component}}>
+                                            Revoke
+                                        </a>
+                                        <a class="user-list-action" href="#" {{action "resend" target=component}}>
+                                            Resend
+                                        </a>
+                                    {{/if}}
+                                </aside>
+                            </div>
+                        {{/gh-user-invited}}
+                    {{/each}}
+                </section>
+            {{/if}}
+        {{/unless}}
+
+        <section class="user-list active-users">
+            <h4 class="user-list-title">Active users</h4>
+            {{#each activeUsers key="id" as |user|}}
+                {{!-- For authors only shows users as a list, otherwise show users with links to user page --}}
+                {{#unless session.user.isAuthor}}
+                    {{#gh-user-active user=user as |component|}}
+                        {{#link-to 'team.user' user.slug class="user-list-item"}}
+                            {{partial 'user-list-item'}}
+                        {{/link-to}}
+                    {{/gh-user-active}}
+                {{else}}
+                    {{#gh-user-active user=user as |component|}}
+                        <li class="ember-view active user-list-item">{{partial 'user-list-item'}}</li>
+                    {{/gh-user-active}}
+                {{/unless}}
+            {{/each}}
+        </section>
+    {{/gh-infinite-scroll}}
+</section>

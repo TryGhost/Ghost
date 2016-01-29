@@ -1,17 +1,29 @@
-<a class="sr-only sr-only-focusable" href="#gh-main">Skip to main content</a>
+{{#gh-app showSettingsMenu=showSettingsMenu}}
+    {{#gh-skip-link anchor=".gh-main"}}Skip to main content{{/gh-skip-link}}
 
-{{#unless hideNav}}
-    {{partial "navbar"}}
-{{/unless}}
+    {{gh-alerts notify="topNotificationChange"}}
 
-{{gh-notifications location="top" notify="topNotificationChange"}}
+    <div class="gh-viewport {{if autoNav 'gh-autonav'}} {{if showSettingsMenu 'settings-menu-expanded'}} {{if showMobileMenu 'mobile-menu-expanded'}}">
+        {{#unless signedOut}}
+            {{gh-nav-menu open=autoNavOpen toggleMaximise="toggleAutoNav" openAutoNav="openAutoNav" showMarkdownHelp="toggleMarkdownHelpModal" closeMobileMenu="closeMobileMenu"}}
+        {{/unless}}
 
-<main id="gh-main" class="viewport" role="main" data-notification-count={{topNotificationCount}}>
-    {{outlet}}
-</main>
+        {{#gh-main onMouseEnter="closeAutoNav" data-notification-count=topNotificationCount}}
+            {{outlet}}
+        {{/gh-main}}
 
-{{gh-notifications location="bottom"}}
 
-{{outlet "modal"}}
+        {{gh-notifications}}
 
-{{outlet "settings-menu"}}
+        {{gh-content-cover onClick="closeMenus" onMouseEnter="closeAutoNav"}}
+
+        {{outlet "modal"}}
+        {{outlet "settings-menu"}}
+    </div>{{!gh-viewport}}
+{{/gh-app}}
+
+{{#if showMarkdownHelpModal}}
+    {{gh-fullscreen-modal "markdown-help"
+                          close=(route-action "toggleMarkdownHelpModal")
+                          modifier="wide"}}
+{{/if}}

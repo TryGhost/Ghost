@@ -1,39 +1,47 @@
-<header class="page-header">
-    <button class="menu-button js-menu-button" {{action "toggleGlobalMobileNav"}}><span class="sr-only">Menu</span></button>
-    <h2 class="page-title">Editor</h2>
-</header>
-
-<div class="page-content">
-    <header>
-        <section class="box entry-title">
-            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch
-            tabindex="1" focus=shouldFocusTitle}}
+<section class="gh-view">
+    <header class="view-header">
+        {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
+            {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle}}
+        {{/gh-view-title}}
+        <section class="view-actions">
+            <button type="button" class="post-settings" title="Post Settings" {{action "openSettingsMenu"}}>
+                <i class="icon-settings"></i>
+            </button>
+            {{gh-editor-save-button
+                isPublished=model.isPublished
+                willPublish=willPublish
+                postOrPage=postOrPage
+                isNew=model.isNew
+                save="save"
+                setSaveType="setSaveType"
+                delete="toggleDeletePostModal"
+                submitting=submitting
+            }}
         </section>
     </header>
 
-    <section class="entry-markdown js-entry-markdown {{unless isPreview 'active'}}">
-        <header {{action "togglePreview" false}} class="floatingheader">
-            <small>Markdown</small>
-            <a class="markdown-help" href="" {{action "openModal" "markdown"}}><span class="hidden">What is Markdown?</span></a>
-        </header>
-        <section id="entry-markdown-content" class="entry-markdown-content">
-            {{gh-ed-editor classNames="markdown-editor js-markdown-editor" tabindex="1" spellcheck="true" value=model.scratch
-            scrollInfo=view.editorScrollInfo focus=shouldFocusEditor focusCursorAtEnd=model.isDirty
-            setEditor="setEditor" openModal="openModal" onFocusIn="autoSaveNew"}}
-        </section>
-    </section>
+    {{gh-editor value=model.scratch
+                shouldFocusEditor=shouldFocusEditor
+                editorFocused=(action "autoSaveNew")
+                onTeardown=(action "cancelTimers")}}
+</section>
 
-    <section class="entry-preview js-entry-preview {{if isPreview 'active'}}">
-        <header {{action "togglePreview" true}} class="floatingheader">
-            <small>Preview <span class="entry-word-count js-entry-word-count">{{gh-count-words model.scratch}}</span></small>
-        </header>
-        <section class="entry-preview-content js-entry-preview-content">
-            {{gh-ed-preview classNames="rendered-markdown js-rendered-markdown"
-            markdown=model.scratch scrollPosition=view.scrollPosition height=view.height
-            uploadStarted="disableEditor" uploadFinished="enableEditor" uploadSuccess="handleImgUpload"}}
-        </section>
-    </section>
+{{#if showDeletePostModal}}
+    {{gh-fullscreen-modal "delete-post"
+                          model=model
+                          close=(action "toggleDeletePostModal")
+                          modifier="action wide"}}
+{{/if}}
 
-    {{partial "publish-bar"}}
+{{#if showLeaveEditorModal}}
+    {{gh-fullscreen-modal "leave-editor"
+                          confirm=(action "leaveEditor")
+                          close=(action "toggleLeaveEditorModal")
+                          modifier="action wide"}}
+{{/if}}
 
-</div>
+{{#if showReAuthenticateModal}}
+    {{gh-fullscreen-modal "re-authenticate"
+                          close=(action "toggleReAuthenticateModal")
+                          modifier="action wide"}}
+{{/if}}

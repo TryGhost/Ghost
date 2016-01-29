@@ -1,0 +1,123 @@
+/* About /ghost/settings/about/
+/* ---------------------------------------------------------- */
+
+.gh-logo {
+    position: relative;
+    width: 120px;
+    height: auto;
+}
+
+.gh-env-details {
+    display: flex;
+    align-items: center;
+    margin: 1em 0;
+}
+
+.gh-env-list {
+    margin: 0;
+    padding: 0 40px 0 0;
+    list-style: none;
+}
+
+.gh-env-help {
+    max-width: 200px;
+}
+
+.gh-env-help .btn {
+    display: block;
+    margin: 5px 0;
+}
+
+@media (max-width: 670px) {
+    .gh-env-details {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .gh-env-help {
+        margin: 1em 0;
+        max-width: none;
+    }
+    .gh-env-help .btn {
+        display: inline-block;
+    }
+}
+
+.gh-credits {
+    margin: 2em 0;
+    max-width: 650px;
+    color: var(--midgrey);
+    font-size: 1.8rem;
+    font-weight: 200;
+}
+
+@media (max-width: 890px) {
+    .gh-credits {
+        max-width: 460px;
+    }
+}
+
+.gh-credits h2 {
+    font-size: 2.4rem;
+}
+
+
+/* Contributors
+/* ---------------------------------------------------------- */
+
+.gh-contributors {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1em 0;
+}
+
+.gh-contributors a {
+    position: relative;
+    display: block;
+    margin: 0 10px 10px 0;
+    width: 60px;
+    height: 60px;
+}
+
+.gh-contributors img {
+    border-radius: 100%;
+}
+
+.gh-contributors a:before {
+    content: attr(title);
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    padding: 2px 6px;
+    background: var(--darkgrey);
+    border-radius: var(--border-radius);
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.3em;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.gh-contributors a:after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    transform: translateX(-50%);
+}
+
+.gh-contributors a:hover:before,
+.gh-contributors a:hover:after {
+    opacity: 1;
+}
+
+/* Copyright Info
+/* ---------------------------------------------------------- */
+
+.gh-copyright-info {
+    color: var(--midgrey);
+    font-size: 1.2rem;
+}

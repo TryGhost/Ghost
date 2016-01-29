@@ -1,41 +1,65 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-var Preview = Ember.Component.extend({
-    didInsertElement: function () {
-        this.set('scrollWrapper', this.$().closest('.entry-preview-content'));
-        Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);
+const {
+    $,
+    Component,
+    inject: {service},
+    run
+} = Ember;
+
+export default Component.extend({
+    config: service(),
+
+    _scrollWrapper: null,
+
+    didInsertElement() {
+        this._super(...arguments);
+        this._scrollWrapper = this.$().closest('.entry-preview-content');
+        this.adjustScrollPosition(this.get('scrollPosition'));
+        run.scheduleOnce('afterRender', this, this.dropzoneHandler);
     },
 
-    adjustScrollPosition: function () {
-        var scrollWrapper = this.get('scrollWrapper'),
-            scrollPosition = this.get('scrollPosition');
+    didReceiveAttrs(attrs) {
+        this._super(...arguments);
 
-        scrollWrapper.scrollTop(scrollPosition);
-    }.observes('scrollPosition'),
+        if (!attrs.oldAttrs) {
+            return;
+        }
 
-    dropzoneHandler: function () {
-        var dropzones = $('.js-drop-zone');
+        if (attrs.newAttrs.scrollPosition && attrs.newAttrs.scrollPosition.value !== attrs.oldAttrs.scrollPosition.value) {
+            this.adjustScrollPosition(attrs.newAttrs.scrollPosition.value);
+        }
 
-        uploader.call(dropzones, {
-            editor: true,
-            fileStorage: this.get('config.fileStorage')
-        });
-
-        dropzones.on('uploadstart', Ember.run.bind(this, 'sendAction', 'uploadStarted'));
-        dropzones.on('uploadfailure', Ember.run.bind(this, 'sendAction', 'uploadFinished'));
-        dropzones.on('uploadsuccess', Ember.run.bind(this, 'sendAction', 'uploadFinished'));
-        dropzones.on('uploadsuccess', Ember.run.bind(this, 'sendAction', 'uploadSuccess'));
-
-        // Set the current height so we can listen
-        this.set('height', this.$().height());
+        if (attrs.newAttrs.markdown.value !== attrs.oldAttrs.markdown.value) {
+            run.scheduleOnce('afterRender', this, this.dropzoneHandler);
+        }
     },
 
-    // fire off 'enable' API function from uploadManager
-    // might need to make sure markdown has been processed first
-    reInitDropzones: function () {
-        Ember.run.scheduleOnce('afterRender', this, this.dropzoneHandler);
-    }.observes('markdown')
+    adjustScrollPosition(scrollPosition) {
+        let scrollWrapper = this._scrollWrapper;
+
+        if (scrollWrapper) {
+            scrollWrapper.scrollTop(scrollPosition);
+        }
+    },
+
+    dropzoneHandler() {
+        let dropzones = $('.js-drop-zone[data-uploaderui!="true"]');
+
+        if (dropzones.length) {
+            uploader.call(dropzones, {
+                editor: true,
+                fileStorage: this.get('config.fileStorage')
+            });
+
+            dropzones.on('uploadstart', run.bind(this, 'sendAction', 'uploadStarted'));
+            dropzones.on('uploadfailure', run.bind(this, 'sendAction', 'uploadFinished'));
+            dropzones.on('uploadsuccess', run.bind(this, 'sendAction', 'uploadFinished'));
+            dropzones.on('uploadsuccess', run.bind(this, 'sendAction', 'uploadSuccess'));
+
+            // Set the current height so we can listen
+            this.sendAction('updateHeight', this.$().height());
+        }
+    }
 });
-
-export default Preview;

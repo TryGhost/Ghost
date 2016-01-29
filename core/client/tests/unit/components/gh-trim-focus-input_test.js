@@ -4,37 +4,44 @@ import {
     it
 } from 'ember-mocha';
 
-describeComponent('gh-trim-focus-input', function () {
-    it('trims value on focusOut', function () {
-        var component = this.subject({
-            value: 'some random stuff   '
+describeComponent(
+    'gh-trim-focus-input',
+    'Unit: Component: gh-trim-focus-input',
+    {
+        unit: true
+    },
+    function () {
+        it('trims value on focusOut', function () {
+            let component = this.subject({
+                value: 'some random stuff   '
+            });
+
+            this.render();
+
+            component.$().focusout();
+            expect(component.$().val()).to.equal('some random stuff');
         });
 
-        this.render();
+        it('does not have the autofocus attribute if not set to focus', function () {
+            let component = this.subject({
+                value: 'some text',
+                focus: false
+            });
 
-        component.$().focusout();
-        expect(component.$().val()).to.equal('some random stuff');
-    });
+            this.render();
 
-    it('does not have the autofocus attribute if not set to focus', function () {
-        var component = this.subject({
-            value: 'some text',
-            focus: false
+            expect(component.$().attr('autofocus')).to.not.be.ok;
         });
 
-        this.render();
+        it('has the autofocus attribute if set to focus', function () {
+            let component = this.subject({
+                value: 'some text',
+                focus: true
+            });
 
-        expect(component.$().attr('autofocus')).to.not.be.ok;
-    });
+            this.render();
 
-    it('has the autofocus attribute if set to focus', function () {
-        var component = this.subject({
-            value: 'some text',
-            focus: true
+            expect(component.$().attr('autofocus')).to.be.ok;
         });
-
-        this.render();
-
-        expect(component.$().attr('autofocus')).to.be.ok;
-    });
-});
+    }
+);

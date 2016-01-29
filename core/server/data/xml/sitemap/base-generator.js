@@ -1,11 +1,11 @@
-var _       = require('lodash'),
-    xml     = require('xml'),
-    moment  = require('moment'),
-    api     = require('../../../api'),
-    config  = require('../../../config'),
-    events  = require('../../../events'),
-    utils   = require('./utils'),
-    Promise = require('bluebird'),
+var _         = require('lodash'),
+    xml       = require('xml'),
+    moment    = require('moment'),
+    config    = require('../../../config'),
+    events    = require('../../../events'),
+    utils     = require('./utils'),
+    Promise   = require('bluebird'),
+    path      = require('path'),
     CHANGE_FREQ = 'weekly',
     XMLNS_DECLS;
 
@@ -52,40 +52,18 @@ _.extend(BaseSiteMapGenerator.prototype, {
     },
 
     generateXmlFromData: function (data) {
-        // This has to be async because of the permalinks retrieval
-        var self = this;
+        // Create all the url elements in JSON
+        var self = this,
+            nodes;
+        nodes = _.map(data, function (datum) {
+            var node = self.createUrlNodeFromDatum(datum);
+            self.updateLastModified(datum);
+            self.updateLookups(datum, node);
 
-        // Fetch the permalinks value only once for all the urlFor calls
-        return this.getPermalinksValue().then(function (permalinks) {
-            // Create all the url elements in JSON
-            return _.map(data, function (datum) {
-                var node = self.createUrlNodeFromDatum(datum, permalinks);
-                self.updateLastModified(datum);
-                self.updateLookups(datum, node);
-
-                return node;
-            });
-        }).then(this.generateXmlFromNodes.bind(this));
-    },
-
-    getPermalinksValue: function () {
-        var self = this;
-
-        if (this.permalinks) {
-            return Promise.resolve(this.permalinks);
-        }
-
-        return api.settings.read('permalinks').then(function (response) {
-            self.permalinks = response.settings[0];
-            return self.permalinks;
+            return node;
         });
-    },
 
-    updatePermalinksValue: function (permalinks) {
-        this.permalinks = permalinks;
-
-        // Re-generate xml with new permalinks values
-        this.updateXmlFromNodes();
+        return this.generateXmlFromNodes(nodes);
     },
 
     generateXmlFromNodes: function () {
@@ -121,21 +99,22 @@ _.extend(BaseSiteMapGenerator.prototype, {
     },
 
     addOrUpdateUrl: function (model) {
-        var self = this,
-            datum = model.toJSON();
+        var datum = model.toJSON(),
+            node = this.createUrlNodeFromDatum(datum);
 
-        return this.getPermalinksValue().then(function (permalinks) {
-            var node = self.createUrlNodeFromDatum(datum, permalinks);
-            self.updateLastModified(datum);
-            // TODO: Check if the node values changed, and if not don't regenerate
-            self.updateLookups(datum, node);
+        this.updateLastModified(datum);
+        // TODO: Check if the node values changed, and if not don't regenerate
+        this.updateLookups(datum, node);
 
-            return self.updateXmlFromNodes();
-        });
+        return this.updateXmlFromNodes();
     },
 
     removeUrl: function (model) {
         var datum = model.toJSON();
+        // When the model is destroyed we need to fetch previousAttributes
+        if (!datum.id) {
+            datum = model.previousAttributes();
+        }
         this.removeFromLookups(datum);
 
         this.lastModified = Date.now();
@@ -159,11 +138,13 @@ _.extend(BaseSiteMapGenerator.prototype, {
         return datum.updated_at || datum.published_at || datum.created_at;
     },
 
-    createUrlNodeFromDatum: function (datum, permalinks) {
-        var url = this.getUrlForDatum(datum, permalinks),
-            priority = this.getPriorityForDatum(datum);
+    createUrlNodeFromDatum: function (datum) {
+        var url = this.getUrlForDatum(datum),
+            priority = this.getPriorityForDatum(datum),
+            node,
+            imgNode;
 
-        return {
+        node = {
             url: [
                 {loc: url},
                 {lastmod: moment(this.getLastModifiedForDatum(datum)).toISOString()},
@@ -171,6 +152,48 @@ _.extend(BaseSiteMapGenerator.prototype, {
                 {priority: priority}
             ]
         };
+
+        imgNode = this.createImageNodeFromDatum(datum);
+
+        if (imgNode) {
+            node.url.push(imgNode);
+        }
+
+        return node;
+    },
+
+    createImageNodeFromDatum: function (datum) {
+        // Check for cover first because user has cover but the rest only have image
+        var image = datum.cover || datum.image,
+            imageUrl,
+            imageEl;
+
+        if (!image) {
+            return;
+        }
+
+        // Grab the image url
+        imageUrl = this.getUrlForImage(image);
+
+        // Verify the url structure
+        if (!this.validateImageUrl(imageUrl)) {
+            return;
+        }
+
+        // Create the weird xml node syntax structure that is expected
+        imageEl = [
+            {'image:loc': imageUrl},
+            {'image:caption': path.basename(imageUrl)}
+        ];
+
+        // Return the node to be added to the url xml node
+        return {
+            'image:image': imageEl
+        };
+    },
+
+    validateImageUrl: function (imageUrl) {
+        return !!imageUrl;
     },
 
     setSiteMapContent: function (content) {

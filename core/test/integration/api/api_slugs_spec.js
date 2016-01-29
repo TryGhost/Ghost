@@ -62,12 +62,22 @@ describe('Slug API', function () {
         }).catch(done);
     });
 
-    it('rejects unknown types', function (done) {
-        SlugAPI.generate({context: {user: 1}, type: 'unknown type', name: 'A fancy Title'})
+    it('rejects unknown types with BadRequestError', function (done) {
+        SlugAPI.generate({context: {user: 1}, type: 'unknown-type', name: 'A fancy Title'})
         .then(function () {
             done(new Error('Generate a slug for an unknown type is not rejected.'));
         }).catch(function (error) {
             error.errorType.should.equal('BadRequestError');
+            done();
+        }).catch(done);
+    });
+
+    it('rejects invalid types with ValidationError', function (done) {
+        SlugAPI.generate({context: {user: 1}, type: 'unknown type', name: 'A fancy Title'})
+        .then(function () {
+            done(new Error('Generate a slug for an unknown type is not rejected.'));
+        }).catch(function (errors) {
+            errors.should.have.property('errorType', 'ValidationError');
             done();
         }).catch(done);
     });

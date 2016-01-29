@@ -1,6 +1,7 @@
+// # Errors
 /*jslint regexp: true */
 var _                          = require('lodash'),
-    colors                     = require('colors'),
+    chalk                      = require('chalk'),
     path                       = require('path'),
     Promise                    = require('bluebird'),
     hbs                        = require('express-hbs'),
@@ -8,20 +9,20 @@ var _                          = require('lodash'),
     BadRequestError            = require('./bad-request-error'),
     InternalServerError        = require('./internal-server-error'),
     NoPermissionError          = require('./no-permission-error'),
+    MethodNotAllowedError      = require('./method-not-allowed-error'),
     RequestEntityTooLargeError = require('./request-too-large-error'),
     UnauthorizedError          = require('./unauthorized-error'),
     ValidationError            = require('./validation-error'),
     UnsupportedMediaTypeError  = require('./unsupported-media-type-error'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
+    TooManyRequestsError       = require('./too-many-requests-error'),
+    i18n                       = require('../i18n'),
     config,
     errors,
 
     // Paths for views
     userErrorTemplateExists   = false;
-
-// This is not useful but required for jshint
-colors.setTheme({silly: 'rainbow'});
 
 // Shim right now to deal with circular dependencies.
 // @TODO(hswolff): remove circular dependency and lazy require.
@@ -43,7 +44,7 @@ errors = {
 
     throwError: function (err) {
         if (!err) {
-            err = new Error('An error occurred');
+            err = new Error(i18n.t('errors.errors.anErrorOccurred'));
         }
 
         if (_.isString(err)) {
@@ -63,9 +64,7 @@ errors = {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
-            var msg = [component.cyan + ':'.cyan, info.cyan];
-
-            console.info.apply(console, msg);
+            console.info(chalk.cyan(component + ':', info));
         }
     },
 
@@ -73,15 +72,15 @@ errors = {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
-            warn = warn || 'no message supplied';
-            var msgs = ['\nWarning:'.yellow, warn.yellow, '\n'];
+            warn = warn || i18n.t('errors.errors.noMessageSupplied');
+            var msgs = [chalk.yellow(i18n.t('errors.errors.warning'), warn), '\n'];
 
             if (context) {
-                msgs.push(context.white, '\n');
+                msgs.push(chalk.white(context), '\n');
             }
 
             if (help) {
-                msgs.push(help.green);
+                msgs.push(chalk.green(help));
             }
 
             // add a new line
@@ -111,29 +110,29 @@ errors = {
             if (_.isObject(err) && _.isString(err.message)) {
                 err = err.message;
             } else {
-                err = 'An unknown error occurred.';
+                err = i18n.t('errors.errors.unknownErrorOccurred');
             }
         }
 
         // Overwrite error to provide information that this is probably a permission problem
         // TODO: https://github.com/TryGhost/Ghost/issues/3687
         if (err.indexOf('SQLITE_READONLY') !== -1) {
-            context = 'Your database is in read only mode. Visitors can read your blog, but you can\'t log in or add posts.';
-            help = 'Check your database file and make sure that file owner and permissions are correct.';
+            context = i18n.t('errors.errors.databaseIsReadOnly');
+            help = i18n.t('errors.errors.checkDatabase');
         }
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
-            msgs = ['\nERROR:'.red, err.red, '\n'];
+            msgs = [chalk.red(i18n.t('errors.errors.error'), err), '\n'];
 
             if (context) {
-                msgs.push(context.white, '\n');
+                msgs.push(chalk.white(context), '\n');
             }
 
             if (help) {
-                msgs.push(help.green);
+                msgs.push(chalk.green(help));
             }
 
             // add a new line
@@ -178,10 +177,41 @@ errors = {
         };
     },
 
-    handleAPIError: function (error, permsMessage) {
+    /**
+     * ### Format HTTP Errors
+     * Converts the error response from the API into a format which can be returned over HTTP
+     *
+     * @private
+     * @param {Array} error
+     * @return {{errors: Array, statusCode: number}}
+     */
+    formatHttpErrors: function formatHttpErrors(error) {
+        var statusCode = 500,
+            errors = [];
+
+        if (!_.isArray(error)) {
+            error = [].concat(error);
+        }
+
+        _.each(error, function each(errorItem) {
+            var errorContent = {};
+
+            // TODO: add logic to set the correct status code
+            statusCode = errorItem.code || 500;
+
+            errorContent.message = _.isString(errorItem) ? errorItem :
+                (_.isObject(errorItem) ? errorItem.message : i18n.t('errors.errors.unknownApiError'));
+            errorContent.errorType = errorItem.errorType || 'InternalServerError';
+            errors.push(errorContent);
+        });
+
+        return {errors: errors, statusCode: statusCode};
+    },
+
+    formatAndRejectAPIError: function (error, permsMessage) {
         if (!error) {
             return this.rejectError(
-                new this.NoPermissionError(permsMessage || 'You do not have permission to perform this action')
+                new this.NoPermissionError(permsMessage || i18n.t('errors.errors.notEnoughPermission'))
             );
         }
 
@@ -203,6 +233,14 @@ errors = {
         }
 
         return this.rejectError(new this.InternalServerError(error));
+    },
+
+    handleAPIError: function errorHandler(err, req, res, next) {
+        /*jshint unused:false */
+        var httpErrors = this.formatHttpErrors(err);
+        this.logError(err);
+        // Send a properly formatted HTTP response containing the errors
+        res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
     },
 
     renderErrorPage: function (code, err, req, res, next) {
@@ -243,7 +281,7 @@ errors = {
         function renderErrorInt(errorView) {
             var stack = null;
 
-            if (process.env.NODE_ENV !== 'production' && err.stack) {
+            if (code !== 404 && process.env.NODE_ENV !== 'production' && err.stack) {
                 stack = parseStack(err.stack);
             }
 
@@ -256,22 +294,22 @@ errors = {
                     return res.status(code).send(html);
                 }
                 // There was an error trying to render the error page, output the error
-                self.logError(templateErr, 'Error whilst rendering error page', 'Error template has an error');
+                self.logError(templateErr, i18n.t('errors.errors.errorWhilstRenderingError'), i18n.t('errors.errors.errorTemplateHasError'));
 
                 // And then try to explain things to the user...
                 // Cheat and output the error using handlebars escapeExpression
                 return res.status(500).send(
-                    '<h1>Oops, seems there is an error in the error template.</h1>' +
-                    '<p>Encountered the error: </p>' +
+                    '<h1>' + i18n.t('errors.errors.oopsErrorTemplateHasError') + '</h1>' +
+                    '<p>' + i18n.t('errors.errors.encounteredError') + '</p>' +
                     '<pre>' + hbs.handlebars.Utils.escapeExpression(templateErr.message || templateErr) + '</pre>' +
-                    '<br ><p>whilst trying to render an error page for the error: </p>' +
+                    '<br ><p>' + i18n.t('errors.errors.whilstTryingToRender') + '</p>' +
                     code + ' ' + '<pre>'  + hbs.handlebars.Utils.escapeExpression(err.message || err) + '</pre>'
                 );
             });
         }
 
         if (code >= 500) {
-            this.logError(err, 'Rendering Error Page', 'Ghost caught a processing error in the middleware layer.');
+            this.logError(err, i18n.t('errors.errors.renderingErrorPage'), i18n.t('errors.errors.caughtProcessingError'));
         }
 
         // Are we admin? If so, don't worry about the user template
@@ -284,7 +322,7 @@ errors = {
     },
 
     error404: function (req, res, next) {
-        var message = res.isAdmin && req.user ? 'No Ghost Found' : 'Page Not Found';
+        var message = i18n.t('errors.errors.pageNotFound');
 
         // do not cache 404 error
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
@@ -299,7 +337,7 @@ errors = {
         // 500 errors should never be cached
         res.set({'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'});
 
-        if (err.status === 404) {
+        if (err.status === 404 || err.code === 404) {
             return this.error404(req, res, next);
         }
 
@@ -307,7 +345,7 @@ errors = {
             if (!err || !(err instanceof Error)) {
                 next();
             }
-            errors.renderErrorPage(err.status || 500, err, req, res, next);
+            errors.renderErrorPage(err.status || err.code || 500, err, req, res, next);
         } else {
             var statusCode = 500,
                 returnErrors = [];
@@ -322,7 +360,7 @@ errors = {
                 statusCode = errorItem.code || 500;
 
                 errorContent.message = _.isString(errorItem) ? errorItem :
-                    (_.isObject(errorItem) ? errorItem.message : 'Unknown Error');
+                    (_.isObject(errorItem) ? errorItem.message : i18n.t('errors.errors.unknownError'));
                 errorContent.errorType = errorItem.errorType || 'InternalServerError';
                 returnErrors.push(errorContent);
             });
@@ -345,6 +383,8 @@ _.each([
     'logErrorAndExit',
     'logErrorWithRedirect',
     'handleAPIError',
+    'formatAndRejectAPIError',
+    'formatHttpErrors',
     'renderErrorPage',
     'error404',
     'error500'
@@ -363,3 +403,5 @@ module.exports.RequestEntityTooLargeError = RequestEntityTooLargeError;
 module.exports.UnsupportedMediaTypeError  = UnsupportedMediaTypeError;
 module.exports.EmailError                 = EmailError;
 module.exports.DataImportError            = DataImportError;
+module.exports.MethodNotAllowedError      = MethodNotAllowedError;
+module.exports.TooManyRequestsError       = TooManyRequestsError;

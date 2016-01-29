@@ -1,65 +1,81 @@
-import Ember from 'ember';
-var UserValidator = Ember.Object.create({
-    check: function (model) {
-        var validator = this.validators[model.get('status')];
+import BaseValidator from './base';
 
-        if (typeof validator !== 'function') {
-            return [];
-        }
+export default BaseValidator.create({
+    properties: ['name', 'bio', 'email', 'location', 'website', 'roles'],
 
-        return validator(model);
+    isActive(model) {
+        return (model.get('status') === 'active');
     },
 
-    validators: {
-        invited: function (model) {
-            var validationErrors = [],
-                email = model.get('email'),
-                roles = model.get('roles');
+    name(model) {
+        let name = model.get('name');
 
-            if (!validator.isEmail(email)) {
-                validationErrors.push({message: 'Please supply a valid email address'});
+        if (this.isActive(model)) {
+            if (validator.empty(name)) {
+                model.get('errors').add('name', 'Please enter a name.');
+                this.invalidate();
+            } else if (!validator.isLength(name, 0, 150)) {
+                model.get('errors').add('name', 'Name is too long');
+                this.invalidate();
             }
+        }
+    },
 
-            if (roles.length < 1) {
-                validationErrors.push({message: 'Please select a role'});
-            }
+    bio(model) {
+        let bio = model.get('bio');
 
-            return validationErrors;
-        },
-
-        active: function (model) {
-            var validationErrors = [],
-                name = model.get('name'),
-                bio = model.get('bio'),
-                email = model.get('email'),
-                location = model.get('location'),
-                website = model.get('website');
-
-            if (!validator.isLength(name, 0, 150)) {
-                validationErrors.push({message: 'Name is too long'});
-            }
-
+        if (this.isActive(model)) {
             if (!validator.isLength(bio, 0, 200)) {
-                validationErrors.push({message: 'Bio is too long'});
+                model.get('errors').add('bio', 'Bio is too long');
+                this.invalidate();
             }
+        }
+    },
 
-            if (!validator.isEmail(email)) {
-                validationErrors.push({message: 'Please supply a valid email address'});
-            }
+    email(model) {
+        let email = model.get('email');
 
+        if (!validator.isEmail(email)) {
+            model.get('errors').add('email', 'Please supply a valid email address');
+            this.invalidate();
+        }
+    },
+
+    location(model) {
+        let location = model.get('location');
+
+        if (this.isActive(model)) {
             if (!validator.isLength(location, 0, 150)) {
-                validationErrors.push({message: 'Location is too long'});
+                model.get('errors').add('location', 'Location is too long');
+                this.invalidate();
             }
+        }
+    },
 
-            if (!Ember.isEmpty(website) &&
+    website(model) {
+        let website = model.get('website');
+
+        /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+        if (this.isActive(model)) {
+            if (!validator.empty(website) &&
                 (!validator.isURL(website, {require_protocol: false}) ||
                 !validator.isLength(website, 0, 2000))) {
-                validationErrors.push({message: 'Website is not a valid url'});
-            }
 
-            return validationErrors;
+                model.get('errors').add('website', 'Website is not a valid url');
+                this.invalidate();
+            }
+        }
+        /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
+    },
+
+    roles(model) {
+        if (!this.isActive(model)) {
+            let roles = model.get('roles');
+
+            if (roles.length < 1) {
+                model.get('errors').add('role', 'Please select a role');
+                this.invalidate();
+            }
         }
     }
 });
-
-export default UserValidator;

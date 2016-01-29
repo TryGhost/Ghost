@@ -1,28 +1,14 @@
-<header class="post-preview-header clearfix">
-    {{#link-to "posts" tagName="button" class="btn btn-default btn-back"}}Back{{/link-to}}
-    <h2 class="page-title">Preview</h2>
-    <button type="button" class="{{if model.featured 'featured' 'unfeatured'}}" title="Feature this post" {{action "toggleFeatured"}}>
-        <span class="sr-only">Star</span>
-    </button>
-    <small class="post-published-by">
-        <span class="status">
-            {{#if isPublished}}
-                <a title="{{model.title}}" href="{{model.absoluteUrl}}">Published</a>
-            {{else}}
-                Written
-            {{/if}}
-        </span>
-        <span class="normal">by</span>
-        <span class="author">{{#if model.author.name}}{{model.author.name}}{{else}}{{model.author.email}}{{/if}}</span>
-    </small>
-    <section class="post-controls">
-        {{#link-to "editor.edit" model class="btn btn-default post-edit"}} Edit{{/link-to}}
-    </section>
-</header>
+<section class="post-controls">
+    {{#link-to "editor.edit" model.id class="btn btn-minor post-edit" title="Edit this post"}}<i class="icon-edit"></i>{{/link-to}}
+</section>
 
-{{#view "content-preview-content-view" tagName="section"}}
+{{#gh-content-preview-content tagName="section" content=model}}
     <div class="wrapper">
-        <h1>{{model.title}}</h1>
+        <h1 class="content-preview-title">
+            {{#link-to "editor.edit" model.id}}
+                {{model.title}}
+            {{/link-to}}
+        </h1>
         {{gh-format-html model.html}}
     </div>
-{{/view}}
+{{/gh-content-preview-content}}

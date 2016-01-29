@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
-var EditorAPI = Ember.Mixin.create({
+const {Mixin} = Ember;
+
+export default Mixin.create({
     /**
      * Get Value
      *
@@ -8,7 +10,7 @@ var EditorAPI = Ember.Mixin.create({
      *
      * @returns {String}
      */
-    getValue: function () {
+    getValue() {
         return this.$().val();
     },
 
@@ -19,7 +21,7 @@ var EditorAPI = Ember.Mixin.create({
      *
      * @returns {Selection}
      */
-    getSelection: function () {
+    getSelection() {
         return this.$().getSelection();
     },
 
@@ -29,10 +31,10 @@ var EditorAPI = Ember.Mixin.create({
      * Fetch the string of characters from the start of the given line up to the cursor
      * @returns {{text: string, start: number}}
      */
-    getLineToCursor: function () {
-        var selection = this.$().getSelection(),
-            value = this.getValue(),
-            lineStart;
+    getLineToCursor() {
+        let selection = this.$().getSelection();
+        let value = this.getValue();
+        let lineStart;
 
         // Normalise newlines
         value = value.replace('\r\n', '\n');
@@ -53,10 +55,10 @@ var EditorAPI = Ember.Mixin.create({
      *
      * @returns {{text: string, start: number, end: number}}
      */
-    getLine: function () {
-        var selection = this.$().getSelection(),
-            value = this.getValue(),
-            lineStart,
+    getLine() {
+        let selection = this.$().getSelection();
+        let value = this.getValue();
+        let lineStart,
             lineEnd;
 
         // Normalise newlines
@@ -84,8 +86,8 @@ var EditorAPI = Ember.Mixin.create({
      * @param {number} start
      * @param {number} end
      */
-    setSelection: function (start, end) {
-        var $textarea = this.$();
+    setSelection(start, end) {
+        let $textarea = this.$();
 
         if (start === 'end') {
             start = $textarea.val().length;
@@ -108,8 +110,8 @@ var EditorAPI = Ember.Mixin.create({
      * Providing selectionStart only will cause the cursor to be placed there, or alternatively a range can be selected
      * by providing selectionEnd.
      */
-    replaceSelection: function (replacement, replacementStart, replacementEnd, cursorPosition) {
-        var $textarea = this.$();
+    replaceSelection(replacement, replacementStart, replacementEnd, cursorPosition) {
+        let $textarea = this.$();
 
         cursorPosition = cursorPosition || 'collapseToEnd';
         replacementEnd = replacementEnd || replacementStart;
@@ -132,5 +134,3 @@ var EditorAPI = Ember.Mixin.create({
         this.sendAction('onChange');
     }
 });
-
-export default EditorAPI;

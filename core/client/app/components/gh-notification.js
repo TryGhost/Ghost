@@ -1,48 +1,56 @@
 import Ember from 'ember';
 
-var NotificationComponent = Ember.Component.extend({
-    classNames: ['js-bb-notification'],
+const {
+    Component,
+    computed,
+    inject: {service}
+} = Ember;
 
-    typeClass: Ember.computed(function () {
-        var classes = '',
-            message = this.get('message'),
-            type,
-            dismissible;
+export default Component.extend({
+    tagName: 'article',
+    classNames: ['gh-notification', 'gh-notification-passive'],
+    classNameBindings: ['typeClass'],
 
-        // Check to see if we're working with a DS.Model or a plain JS object
-        if (typeof message.toJSON === 'function') {
-            type = message.get('type');
-            dismissible = message.get('dismissible');
-        } else {
-            type = message.type;
-            dismissible = message.dismissible;
-        }
+    message: null,
 
-        classes += 'notification-' + type;
+    notifications: service(),
 
-        if (type === 'success' && dismissible !== false) {
-            classes += ' notification-passive';
+    typeClass: computed('message.type', function () {
+        let type = this.get('message.type');
+        let classes = '';
+        let typeMapping;
+
+        typeMapping = {
+            success: 'green',
+            error: 'red',
+            warn: 'yellow'
+        };
+
+        if (typeMapping[type] !== undefined) {
+            classes += `gh-notification-${typeMapping[type]}`;
         }
 
         return classes;
     }),
 
-    didInsertElement: function () {
-        var self = this;
+    didInsertElement() {
+        this._super(...arguments);
 
-        self.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function (event) {
+        this.$().on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', (event) => {
             if (event.originalEvent.animationName === 'fade-out') {
-                self.notifications.removeObject(self.get('message'));
+                this.get('notifications').closeNotification(this.get('message'));
             }
         });
     },
 
+    willDestroyElement() {
+        this._super(...arguments);
+        this.$().off('animationend webkitAnimationEnd oanimationend MSAnimationEnd');
+    },
+
     actions: {
-        closeNotification: function () {
-            var self = this;
-            self.notifications.closeNotification(self.get('message'));
+        closeNotification() {
+            this.get('notifications').closeNotification(this.get('message'));
         }
     }
 });
-
-export default NotificationComponent;

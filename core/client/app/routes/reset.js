@@ -1,26 +1,33 @@
 import Ember from 'ember';
+import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
-import loadingIndicator from 'ghost/mixins/loading-indicator';
 
-var ResetRoute = Ember.Route.extend(styleBody, loadingIndicator, {
+const {
+    Route,
+    inject: {service}
+} = Ember;
+
+export default Route.extend(styleBody, {
     classNames: ['ghost-reset'],
 
-    beforeModel: function () {
-        if (this.get('session').isAuthenticated) {
-            this.notifications.showWarn('You can\'t reset your password while you\'re signed in.', {delayed: true});
-            this.transitionTo(SimpleAuth.Configuration.routeAfterAuthentication);
+    notifications: service(),
+    session: service(),
+
+    beforeModel() {
+        this._super(...arguments);
+        if (this.get('session.isAuthenticated')) {
+            this.get('notifications').showAlert('You can\'t reset your password while you\'re signed in.', {type: 'warn', delayed: true, key: 'password.reset.signed-in'});
+            this.transitionTo(Configuration.routeAfterAuthentication);
         }
     },
 
-    setupController: function (controller, params) {
+    setupController(controller, params) {
         controller.token = params.token;
     },
 
     // Clear out any sensitive information
-    deactivate: function () {
-        this._super();
+    deactivate() {
+        this._super(...arguments);
         this.controller.clearData();
     }
 });
-
-export default ResetRoute;

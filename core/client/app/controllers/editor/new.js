@@ -1,22 +1,25 @@
 import Ember from 'ember';
 import EditorControllerMixin from 'ghost/mixins/editor-base-controller';
 
-var EditorNewController = Ember.Controller.extend(EditorControllerMixin, {
+const {Controller} = Ember;
+
+function K() {
+    return this;
+}
+
+export default Controller.extend(EditorControllerMixin, {
     // Overriding autoSave on the base controller, as the new controller shouldn't be autosaving
-    autoSave: Ember.K,
+    autoSave: K,
     actions: {
         /**
           * Redirect to editor after the first save
           */
-        save: function (options) {
-            var self = this;
-            return this._super(options).then(function (model) {
+        save(options) {
+            return this._super(options).then((model) => {
                 if (model.get('id')) {
-                    self.replaceRoute('editor.edit', model);
+                    this.replaceRoute('editor.edit', model);
                 }
             });
         }
     }
 });
-
-export default EditorNewController;

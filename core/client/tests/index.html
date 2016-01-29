@@ -10,21 +10,41 @@
     {{content-for 'head'}}
     {{content-for 'test-head'}}
 
+    <meta name="env-fileStorage" content="true" />
+    <meta name="env-apps" content="false" />
+    <meta name="env-blogUrl" content="http://localhost:7357/" />
+    <meta name="env-blogTitle" content="Test Blog" />
+    <meta name="env-routeKeywords" content="{&quot;tag&quot;:&quot;tag&quot;,&quot;author&quot;:&quot;author&quot;,&quot;page&quot;:&quot;page&quot;,&quot;preview&quot;:&quot;p&quot;,&quot;private&quot;:&quot;private&quot;}" />
+    <meta name="env-clientId" content="ghost-admin" />
+    <meta name="env-clientSecret" content="5076dc643873" />
+
     <link rel="stylesheet" href="assets/vendor.css">
     <link rel="stylesheet" href="assets/ghost.css">
     <link rel="stylesheet" href="assets/test-support.css">
 
     {{content-for 'head-footer'}}
     {{content-for 'test-head-footer'}}
+
+    <style>
+        /* fix to ensure we use full viewport height when testing */
+        #ember-testing {
+            height: 100%;
+        }
+        #ember-testing > div {
+            height: 100%;
+        }
+    </style>
   </head>
   <body>
 
     {{content-for 'body'}}
     {{content-for 'test-body'}}
+
     <script src="assets/vendor.js"></script>
     <script src="assets/test-support.js"></script>
     <script src="assets/ghost.js"></script>
-    <script src="testem.js"></script>
+    <script src="testem.js" integrity=""></script>
+    <script src="assets/tests.js"></script>
     <script src="assets/test-loader.js"></script>
 
     {{content-for 'body-footer'}}

@@ -7,8 +7,9 @@ var _               = require('lodash'),
     port            = config.server.port,
     schema          = 'http://',
     expectedProperties = {
-        configuration: ['key', 'value'],
+        configuration: ['key', 'value', 'type'],
         posts: ['posts', 'meta'],
+        tags: ['tags', 'meta'],
         users: ['users', 'meta'],
         roles: ['roles'],
         pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
@@ -23,7 +24,7 @@ var _               = require('lodash'),
         ],
         theme: ['uuid', 'name', 'version', 'active'],
         user: ['id', 'uuid', 'name', 'slug', 'email', 'image', 'cover', 'bio', 'website',
-            'location', 'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'last_login',
+            'location', 'accessibility', 'status', 'language', 'meta_title', 'meta_description', 'tour', 'last_login',
             'created_at', 'created_by',  'updated_at', 'updated_by'
         ],
         notification: ['type', 'message', 'status', 'id', 'dismissible', 'location'],
@@ -75,11 +76,16 @@ function isISO8601(date) {
     return moment(date).parsingFlags().iso;
 }
 
+function getURL() {
+    return schema + host;
+}
+
 module.exports = {
     getApiURL: getApiURL,
     getApiQuery: getApiQuery,
     getSigninURL: getSigninURL,
     getAdminURL: getAdminURL,
+    getURL: getURL,
     checkResponse: checkResponse,
     checkResponseValue: checkResponseValue,
     isISO8601: isISO8601

@@ -1,0 +1,44 @@
+<section class="gh-view js-settings-content">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>About Ghost</span>{{/gh-view-title}}
+    </header>
+    <section class="view-content">
+        <header class="gh-about-header">
+            <img class="gh-logo" src="{{gh-path 'admin' '/img/ghost-logo.png'}}" alt="Ghost" />
+            {{!-- TODO: fix about notifications --}}
+            {{gh-notifications location="about-upgrade" notify="updateNotificationChange"}}
+        </header>
+
+        <section class="gh-env-details">
+            <ul class="gh-env-list">
+                <li class="gh-env-list-version"><strong>Version</strong> {{model.version}}</li>
+                <li><strong>Environment</strong> {{model.environment}}</li>
+                <li class="gh-env-list-database-type"><strong>Database</strong> {{model.database}}</li>
+                <li><strong>Mail</strong> {{#if model.mail}}{{model.mail}}{{else}}Native{{/if}}</li>
+            </ul>
+            <div class="gh-env-help">
+                <a href="http://support.ghost.org" class="btn btn-minor" target="_blank">User Documentation</a>
+                <a href="https://ghost.org/slack/" class="btn btn-minor" target="_blank">Get Help With Ghost</a>
+            </div>
+        </section>
+
+        <section class="gh-credits">
+            <h2>The People Who Made it Possible</h2>
+
+            <section class="gh-contributors">
+                {{partial "contributors"}}
+            </section>
+
+            <p>Ghost is built by an incredible group of contributors from all over the world. Here are just a few of the people who helped create the version you’re using right now.</p>
+
+            <a href="https://ghost.org/about/contribute/" class="btn btn-blue btn-lg">Find out how you can get involved</a>
+
+        </section>
+
+        <footer class="gh-copyright-info">
+            Copyright 2013 - {{copyrightYear}} Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE">MIT license</a>.
+            <br>
+            <a href="https://ghost.org/">Ghost</a> is a trademark of the <a href="https://ghost.org/about/">Ghost Foundation</a>.
+        </footer>
+    </section>
+</section>

@@ -29,10 +29,10 @@ prevNext =  function (options) {
     options = options || {};
 
     var apiOptions = {
-        include: options.name === 'prev_post' ? 'previous' : 'next'
+        include: options.name === 'prev_post' ? 'previous,previous.author,previous.tags' : 'next,next.author,next.tags'
     };
 
-    if (schema.isPost(this)) {
+    if (schema.isPost(this) && this.status === 'published') {
         apiOptions.slug = this.slug;
         return fetch(apiOptions, options);
     } else {

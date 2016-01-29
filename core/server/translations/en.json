@@ -1,0 +1,594 @@
+{
+    "common": {
+        "mail": {
+            "title": "Ghost at {domain}"
+        },
+        "seeLinkForInstructions": "See {link} for instructions.",
+        "time": {
+            "seconds": "seconds"
+        },
+        "api": {
+            "authentication": {
+                "sampleBlogDescription": "Thoughts, stories and ideas.",
+                "mail": {
+                    "resetPassword": "Reset Password",
+                    "checkEmailForInstructions": "Check your email for further instructions.",
+                    "passwordChanged": "Password changed successfully.",
+                    "invitationAccepted": "Invitation accepted.",
+                    "yourNewGhostBlog": "Your New Ghost Blog"
+                }
+            },
+            "mail": {
+                "testGhostEmail": "Test Ghost Email"
+            },
+            "users": {
+                "mail": {
+                    "invitedByName": "{invitedByName} has invited you to join {blogName}"
+                }
+            }
+        }
+    },
+    "errors": {
+        "apps": {
+            "failedToParseActiveAppsSettings": {
+                "error": "Failed to parse activeApps setting value: {message}",
+                "context": "Your apps will not be loaded.",
+                "help": "Check your settings table for typos in the activeApps value. It should look like: [\"app-1\", \"app2\"] (double quotes required)."
+            },
+            "appWillNotBeLoaded": {
+                "error": "The app will not be loaded",
+                "help": "Check with the app creator, or read the app documentation for more details on app requirements"
+            },
+            "permissionsErrorLoadingApp": {
+                "error": "Error loading app named {name}; problem reading permissions: {message}"
+            },
+            "noInstallMethodLoadingApp": {
+                "error": "Error loading app named {name}; no install() method defined."
+            },
+            "noActivateMethodLoadingApp": {
+                "error": "Error loading app named {name}; no activate() method defined."
+            },
+            "accessResourceWithoutPermission": {
+                "error": "The App \"{name}\" attempted to perform an action or access a resource ({perm}.{method}) without permission."
+            },
+            "mustProvideAppName": {
+                "error": "Must provide an app name for api context"
+            },
+            "mustProvideAppPermissions": {
+                "error": "Must provide app permissions"
+            },
+            "unsafeAppRequire": {
+                "error": "Unsafe App require: {msg}"
+            }
+        },
+        "middleware": {
+            "auth": {
+                "clientAuthenticaionFailed": "Client Authentication Failed",
+                "clientCredentialsNotProvided": "Client credentials were not provided",
+                "clientCredentialsNotValid": "Client credentials were not valid",
+                "forInformationRead": "For information on how to fix this, please read {url}.",
+                "accessDenied": "Access denied.",
+                "accessDeniedFromUrl": "Access Denied from url: {origin}. Please use the url configured in config.js",
+                "pleaseSignIn": "Please Sign In",
+                "attemptedToAccessAdmin": "You have attempted to access your Ghost admin panel from a url that does not appear in config.js."
+            },
+            "ghostbusboy": {
+                "fileUploadingError": "Something went wrong uploading the file",
+                "somethingWentWrong": "Something went wrong parsing the form",
+                "couldNotParseUpload": "Could not parse upload completely."
+            },
+            "oauth": {
+                "invalidClient": "Invalid client.",
+                "invalidRefreshToken": "Invalid refresh token.",
+                "refreshTokenExpired": "Refresh token expired."
+            },
+            "privateblogging": {
+                "wrongPassword": "Wrong password"
+            },
+            "spamprevention": {
+                "tooManyAttempts": "Too many attempts.",
+                "noUsername": "No username.",
+                "noPassword": "No password entered",
+                "tooManySigninAttempts": {
+                    "error": "Only {rateSigninAttempts} tries per IP address every {rateSigninPeriod} seconds.",
+                    "context": "Too many login attempts."
+                },
+                "tryAgainLater": " Please try again later",
+                "waitOneHour": " Please wait 1 hour.",
+                "noEmail": "No email.",
+                "forgottenPasswordEmail": {
+                    "error": "Only {rfa} forgotten password attempts per email every {rfp} seconds.",
+                    "context": "Forgotten password reset attempt failed"
+                },
+                "forgottenPasswordIp": {
+                    "error": "Only {rfa} tries per IP address every {rfp} seconds.",
+                    "context": "Forgotten password reset attempt failed"
+                }
+            },
+            "themehandler": {
+                "missingTheme": "The currently active theme \"{theme}\" is missing."
+            }
+        },
+        "utils": {
+            "parsepackagejson": {
+                "couldNotReadPackage": "Could not read package.json file",
+                "nameOrVersionMissing": "\"name\" or \"version\" is missing from theme package.json file.",
+                "willBeRequired": "This will be required in future. Please see {url}",
+                "themeFileIsMalformed": "Theme package.json file is malformed"
+            },
+            "validatethemes": {
+                "themeWithNoPackage": {
+                    "message": "Found a theme with no package.json file",
+                    "context": "Theme name: {name}",
+                    "help": "This will be required in future. Please see {url}"
+                },
+                "malformedPackage": {
+                    "message": "Found a malformed package.json",
+                    "context": "Theme name: {name}",
+                    "help": "Valid package.json will be required in future. Please see {url}"
+                }
+            }
+        },
+        "config": {
+            "couldNotLocateConfigFile": {
+                "error": "Could not locate a configuration file.",
+                "help": "Please check your deployment for config.js or config.example.js."
+            },
+            "couldNotOpenForReading": {
+                "error": "Could not open {file} for read.",
+                "help": "Please check your deployment for config.js or config.example.js."
+            },
+            "couldNotOpenForWriting": {
+                "error": "Could not open {file} for write.",
+                "help": "Please check your deployment for config.js or config.example.js."
+            },
+            "invalidUrlInConfig": {
+                "error": "invalid site url",
+                "description": "Your site url in config.js is invalid.",
+                "help": "Please make sure this is a valid url before restarting"
+            },
+            "urlCannotContainGhostSubdir": {
+                "error": "ghost subdirectory not allowed",
+                "description": "Your site url in config.js cannot contain a subdirectory called ghost.",
+                "help": "Please rename the subdirectory before restarting"
+            },
+            "dbConfigInvalid": {
+                "error": "invalid database configuration",
+                "description": "Your database configuration in config.js is invalid.",
+                "help": "Please make sure this is a valid Bookshelf database configuration"
+            },
+            "deprecatedProperty": {
+                "error": "The configuration property [{property}] has been deprecated.",
+                "explanation": "This will be removed in a future version, please update your config.js file.",
+                "help": "Please check {url} for the most up-to-date example."
+            },
+            "invalidServerValues": {
+                "error": "invalid server configuration",
+                "description": "Your server values (socket, or host and port) in config.js are invalid.",
+                "help": "Please provide them before restarting."
+            }
+        },
+        "general": {
+            "moreInfo": "\nMore info: {info}",
+            "requiredOnFuture": "This will be required in future. Please see {link}"
+        },
+        "httpServer": {
+            "addressInUse": {
+                "error": "(EADDRINUSE) Cannot start Ghost.",
+                "context": "Port {port} is already in use by another program.",
+                "help": "Is another Ghost instance already running?"
+            },
+            "otherError": {
+                "error": "(Code: {errorNumber})",
+                "context": "There was an error starting your server.",
+                "help": "Please use the error code above to search for a solution."
+            }
+        },
+        "index": {
+            "javascriptFilesNotBuilt": {
+                "error": "Javascript files have not been built.",
+                "help": "\nPlease read the getting started instructions at: {link}"
+            }
+        },
+        "mail": {
+            "incompleteMessageData": {
+                "error": "Error: Incomplete message data."
+            },
+            "failedSendingEmail": {
+                "error": "Error: Failed to send email"
+            },
+            "noMailServerAtAddress": {
+                "error": " - no mail server found at {domain}"
+            },
+            "messageNotSent": {
+                "error": "Error: Message could not be sent"
+            }
+        },
+        "models": {
+            "post": {
+                "untitled": "(Untitled)",
+                "noUserFound": "No user found",
+                "notEnoughPermission": "You do not have permission to perform this action",
+                "tagUpdates": {
+                    "error": "Unable to save tags.",
+                    "help": "Your post was saved, but your tags were not updated."
+                }
+            },
+            "role": {
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
+            "settings": {
+                "valueCannotBeBlank": "Value in [settings.key] cannot be blank.",
+                "unableToFindSetting": "Unable to find setting to update: {key}",
+                "unableToFindDefaultSetting": "Unable to find default setting: {key}"
+            },
+            "user": {
+                "missingContext": "missing context",
+                "onlyOneRolePerUserSupported": "Only one role per user is supported at the moment.",
+                "methodDoesNotSupportOwnerRole": "This method does not support assigning the owner role",
+                "passwordDoesNotComplyLength": "Your password must be at least 8 characters long.",
+                "notEnoughPermission": "You do not have permission to perform this action",
+                "noUserWithEnteredEmailAddr": "There is no user with that email address.",
+                "userIsInactive": "The user with that email address is inactive.",
+                "incorrectPasswordAttempts": "Your password is incorrect. <br /> {remaining} attempt{s} remaining!",
+                "userUpdateError": {
+                    "context": "Error thrown from user update during login",
+                    "help": "Visit and save your profile after logging in to check for problems."
+                },
+                "incorrectPassword": "Your password is incorrect.",
+                "accountLocked": "Your account is locked. Please reset your password to log in again by clicking the \"Forgotten password?\" link!",
+                "newPasswordsDoNotMatch": "Your new passwords do not match",
+                "passwordRequiredForOperation": "Password is required for this operation",
+                "invalidTokenStructure": "Invalid token structure",
+                "invalidTokenExpiration": "Invalid token expiration",
+                "expiredToken": "Expired token",
+                "tokenLocked": "Token locked",
+                "invalidToken": "Invalid token",
+                "userNotFound": "User not found",
+                "onlyOwnerCanTransferOwnerRole": "Only owners are able to transfer the owner role.",
+                "onlyAdmCanBeAssignedOwnerRole": "Only administrators can be assigned the owner role."
+            },
+            "base": {
+                "index": {
+                    "missingContext": "missing context"
+                },
+                "token": {
+                    "noUserFound": "No user found",
+                    "tokenNotFound": "Token not found"
+                }
+            },
+            "plugins": {
+                "filter": {
+                    "errorParsing": "Error parsing filter",
+                    "forInformationRead": "For more information on how to use filter, see {url}"
+                }
+            }
+        },
+        "permissions": {
+            "noActionsMapFound": {
+                "error": "No actions map found, please call permissions.init() before use."
+            },
+            "applyStatusRules": {
+                "error": "You do not have permission to retrieve {docName} with that status"
+            },
+            "noPermissionToAction": "You do not have permission to perform this action"
+        },
+        "update-check": {
+            "checkingForUpdatesFailed": {
+                "error": "Checking for updates failed, your blog will continue to function.",
+                "help": "If you get this error repeatedly, please seek help from {url}."
+            },
+            "unableToDecodeUpdateResponse": {
+                "error": "Unable to decode update response"
+            }
+        },
+        "api": {
+            "authentication": {
+                "setupMustBeCompleted": "Setup must be completed before making this request.",
+                "noEmailProvided": "No email provided.",
+                "invalidEmailReceived": "The server did not receive a valid email",
+                "setupAlreadyCompleted": "Setup has already been completed.",
+                "unableToSendWelcomeEmail": "Unable to send welcome email, your blog will continue to function.",
+                "checkEmailConfigInstructions": "Please see {url} for instructions on configuring email.",
+                "notLoggedIn": "You are not logged in.",
+                "notTheBlogOwner": "You are not the blog owner.",
+                "invalidTokenTypeHint": "Invalid token_type_hint given.",
+                "invalidTokenProvided": "Invalid token provided"
+            },
+            "clients": {
+                "clientNotFound": "Client not found."
+            },
+            "configuration": {
+                "invalidKey": "Invalid key"
+            },
+            "db": {
+                "noPermissionToExportData": "You do not have permission to export data (no rights).",
+                "noPermissionToImportData": "You do not have permission to import data (no rights).",
+                "selectFileToImport": "Please select a file to import.",
+                "unsupportedFile": "Unsupported file. Please try any of the following formats: "
+            },
+            "mail": {
+                "noPermissionToSendEmail": "You do not have permission to send mail.",
+                "cannotFindCurrentUser": "Could not find the current user"
+            },
+            "notifications": {
+                "noPermissionToBrowseNotif": "You do not have permission to browse notifications.",
+                "noPermissionToAddNotif": "You do not have permission to add notifications.",
+                "noPermissionToDestroyNotif": "You do not have permission to destroy notifications.",
+                "noPermissionToDismissNotif": "You do not have permission to dismiss this notification.",
+                "notificationDoesNotExist": "Notification does not exist."
+            },
+            "posts": {
+                "postNotFound": "Post not found."
+            },
+            "settings": {
+                "problemFindingSetting": "Problem finding setting: {key}",
+                "accessCoreSettingFromExtReq": "Attempted to access core setting from external request",
+                "invalidJsonInLabs": "Error: Invalid JSON in settings.labs",
+                "labsColumnCouldNotBeParsed": "The column with key \"labs\" could not be parsed as JSON",
+                "tryUpdatingLabs": "Please try updating a setting on the labs page, or manually editing your DB",
+                "noPermissionToEditSettings": "You do not have permission to edit settings.",
+                "noPermissionToReadSettings": "You do not have permission to read settings."
+            },
+            "slugs": {
+                "couldNotGenerateSlug": "Could not generate slug.",
+                "unknownSlugType": "Unknown slug type '{type}'."
+            },
+            "tags": {
+                "tagNotFound": "Tag not found."
+            },
+            "themes": {
+                "noPermissionToBrowseThemes": "You do not have permission to browse themes.",
+                "noPermissionToEditThemes": "You do not have permission to edit themes.",
+                "themeDoesNotExist": "Theme does not exist.",
+                "invalidRequest": "Invalid request."
+            },
+            "upload": {
+                "pleaseSelectImage": "Please select an image.",
+                "pleaseSelectValidImage": "Please select a valid image."
+            },
+            "users": {
+                "userNotFound": "User not found.",
+                "cannotChangeOwnRole": "You cannot change your own role.",
+                "cannotChangeOwnersRole": "Cannot change Owner's role",
+                "noPermissionToEditUser": "You do not have permission to edit this user",
+                "notAllowedToCreateOwner": "Not allowed to create an owner user.",
+                "noPermissionToAddUser": "You do not have permission to add this user",
+                "noEmailProvided": "No email provided.",
+                "userAlreadyRegistered": "User is already registered.",
+                "errorSendingEmail": {
+                    "error": "Error sending email: {message}",
+                    "help": "Please check your email settings and resend the invitation."
+                },
+                "noPermissionToDestroyUser": "You do not have permission to destroy this user.",
+                "noPermissionToChangeUsersPwd": "You do not have permission to change the password for this user"
+            },
+            "utils": {
+                "noPermissionToCall": "You do not have permission to {method} {docName}",
+                "noRootKeyProvided": "No root key ('{docName}') provided.",
+                "invalidIdProvided": "Invalid id provided."
+            }
+        },
+        "data": {
+            "export": {
+                "errorExportingData": "Error exporting data"
+            },
+            "fixtures": {
+                "populatingPermissions": "Populating permissions",
+                "upgradingPermissions": "Upgrading permissions",
+                "removingOldPermissions": "Removing old permissions"
+            },
+            "import": {
+                "dataImporter": {
+                    "unableToFindOwner": "Unable to find an owner"
+                },
+                "index": {
+                    "duplicateEntryFound": "Duplicate entry found. Multiple values of '{value}' found for {offendingProperty}."
+                },
+                "utils": {
+                    "dataLinkedToUnknownUser": "Attempting to import data linked to unknown user id {userToMap}"
+                }
+            },
+            "importer": {
+                "index": {
+                    "couldNotCleanUpFile": {
+                        "error": "Import could not clean up file ",
+                        "context": "Your blog will continue to work as expected"
+                    },
+                    "unsupportedRoonExport": "Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.",
+                    "noContentToImport": "Zip did not include any content to import.",
+                    "invalidZipStructure": "Invalid zip file structure.",
+                    "invalidZipFileBaseDirectory": "Invalid zip file: base directory read failed",
+                    "zipContainsMultipleDataFormats": "Zip file contains multiple data formats. Please split up and import separately."
+                },
+                "handlers": {
+                    "json": {
+                        "invalidJsonFormat": "Invalid JSON format, expected `{ db: [exportedData] }`",
+                        "apiDbImportContent": "API DB import content",
+                        "checkImportJsonIsValid": "check that the import file is valid JSON.",
+                        "failedToParseImportJson": "Failed to parse the import JSON file."
+                    }
+                }
+            },
+            "versioning": {
+                "index": {
+                    "dbVersionNotRecognized": "Database version is not recognized",
+                    "settingsTableDoesNotExist": "Settings table does not exist"
+                }
+            },
+            "xml": {
+                "xmlrpc": {
+                    "pingUpdateFailed": {
+                        "error": "Pinging services for updates on your blog failed, your blog will continue to function.",
+                        "help": "If you get this error repeatedly, please seek help on {url}."
+                    }
+                }
+            }
+        },
+        "errors": {
+            "noMessageSupplied": "no message supplied",
+            "error": "\nERROR:",
+            "warning": "\nWarning:",
+            "anErrorOccurred": "An error occurred",
+            "unknownErrorOccurred": "An unknown error occurred.",
+            "unknownError": "Unknown Error",
+            "unknownApiError": "Unknown API Error",
+            "databaseIsReadOnly": "Your database is in read only mode. Visitors can read your blog, but you can't log in or add posts.",
+            "checkDatabase": "Check your database file and make sure that file owner and permissions are correct.",
+            "notEnoughPermission": "You do not have permission to perform this action",
+            "errorWhilstRenderingError": "Error whilst rendering error page",
+            "errorTemplateHasError": "Error template has an error",
+            "oopsErrorTemplateHasError": "Oops, seems there is an error in the error template.",
+            "encounteredError": "Encountered the error: ",
+            "whilstTryingToRender": "whilst trying to render an error page for the error: ",
+            "renderingErrorPage": "Rendering Error Page",
+            "caughtProcessingError": "Ghost caught a processing error in the middleware layer.",
+            "pageNotFound": "Page not found"
+        }
+    },
+    "warnings": {
+        "index": {
+            "usingDirectMethodToSendEmail": "Ghost is attempting to use a direct method to send email. \nIt is recommended that you explicitly configure an email service.",
+            "unableToSendEmail": "Ghost is currently unable to send email."
+        },
+        "helpers": {
+            "foreach": {
+                "iteratorNeeded": "Need to pass an iterator to #foreach"
+            },
+            "get": {
+                "mustBeCalledAsBlock": "Get helper must be called as a block",
+                "invalidResource": "Invalid resource given to get helper",
+                "helperNotAvailable": "The \\{\\{get\\}\\} helper is not available.",
+                "apiMustBeEnabled": "Public API access must be enabled if you wish to use the \\{\\{get\\}\\} helper.",
+                "seeLink": "See {url}"
+            },
+            "has": {
+                "invalidAttribute": "Invalid or no attribute given to has helper"
+            },
+            "index": {
+                "missingHelper": "Missing helper: '{arg}'"
+            },
+            "is": {
+                "invalidAttribute": "Invalid or no attribute given to is helper"
+            },
+            "navigation": {
+                "invalidData": "navigation data is not an object or is a function",
+                "valuesMustBeDefined": "All values must be defined for label, url and current",
+                "valuesMustBeString": "Invalid value, Url and Label must be strings"
+            },
+            "page_url": {
+                "isDeprecated": "Warning: pageUrl is deprecated, please use page_url instead\nThe helper pageUrl has been replaced with page_url in Ghost 0.4.2, and will be removed entirely in Ghost 0.6\nIn your theme's pagination.hbs file, pageUrl should be renamed to page_url"
+            },
+            "pagination": {
+                "invalidData": "pagination data is not an object or is a function",
+                "valuesMustBeDefined": "All values must be defined for page, pages, limit and total",
+                "nextPrevValuesMustBeNumeric": "Invalid value, Next/Prev must be a number",
+                "valuesMustBeNumeric": "Invalid value, check page, pages, limit and total are numbers"
+            },
+            "plural": {
+                "valuesMustBeDefined": "All values must be defined for empty, singular and plural"
+            },
+            "template": {
+                "templateNotFound": "Template {name} not found."
+            }
+        }
+    },
+    "notices": {
+        "controllers": {
+            "newVersionAvailable": "Ghost {version} is available! Hot Damn. {link} to upgrade."
+        },
+        "index": {
+            "welcomeToGhost": "Welcome to Ghost.",
+            "youAreRunningUnderEnvironment": "You're running under the <strong> {environment} </strong> environment.",
+            "yourURLisSetTo": "Your URL is set to <strong> {url} </strong>."
+        },
+        "httpServer": {
+            "cantTouchThis": "Can't touch this",
+            "ghostIsRunning": "Ghost is running...",
+            "yourBlogIsAvailableOn": "\nYour blog is now available on {url}",
+            "ctrlCToShutDown": "\nCtrl+C to shut down",
+            "ghostIsRunningIn": "Ghost is running in {env}...",
+            "listeningOn": "\nListening on",
+            "urlConfiguredAs": "\nUrl configured as: {url}",
+            "ghostHasShutdown": "\nGhost has shut down",
+            "yourBlogIsNowOffline": "\nYour blog is now offline",
+            "ghostWasRunningFor": "\nGhost was running for",
+            "ghostIsClosingConnections": "Ghost is closing connections"
+        },
+        "mail": {
+            "messageSent": "Message sent. Double check inbox and spam folder!"
+        },
+        "api": {
+            "users": {
+                "pwdChangedSuccessfully": "Password changed successfully."
+            }
+        },
+        "data": {
+            "fixtures": {
+                "migrations": "Migrations",
+                "convertingAdmToOwner": "Converting admin to owner",
+                "creatingOwner": "Creating owner",
+                "populatingFixtures": "Populating fixtures",
+                "upgradingFixturesTo": "Upgrading fixtures to {version}",
+                "addingClientFixture": "Adding ghost-admin client fixture",
+                "addingOwnerRoleFixture": "Adding owner role fixture",
+                "updatingFixtures": "Updating fixtures",
+                "canSafelyDelete": "<!-- You can safely delete this line if your theme does not require jQuery -->\n",
+                "jQueryRemoved": "jQuery has been removed from Ghost core and is now being loaded from the jQuery Foundation's CDN.",
+                "canBeChanged": "This can be changed or removed in your <strong>Code Injection</strong> settings area.",
+                "addingJquery": "Adding jQuery link to ghost_foot",
+                "updateIsPrivate": "Update isPrivate setting",
+                "updatePassword": "Update password setting",
+                "updateAdminClientFixture": "Update ghost-admin client fixture",
+                "addFrontendClientFixture": "Add ghost-frontend client fixture",
+                "cleaningTags": "Cleaning {length} malformed tags",
+                "collectingDataOnTagOrder": "Collecting data on tag order for posts...",
+                "updatingOrder": "Updating order on {length} tag relationships (could take a while)...",
+                "updatedOrder": "Tag order successfully updated",
+                "addingUpgrade": "Adding {version} upgrade post fixture"
+            },
+            "migration": {
+                "commands": {
+                    "migrations": "Migrations",
+                    "deletingTable": "Deleting table: {table}",
+                    "creatingTable": "Creating table: {table}",
+                    "addingColumn": "Adding column: {table}.{column}",
+                    "addingUnique": "Adding unique on: {table}.{column}",
+                    "droppingUnique": "Dropping unique on: {table}.{column}"
+                },
+                "index": {
+                    "migrations": "Migrations",
+                    "complete": "Complete",
+                    "populatingDefaultSettings": "Populating default settings",
+                    "creatingDatabaseBackup": "Creating database backup",
+                    "databaseBackupDestination": "Database backup written to: {filename}",
+                    "databaseUpgradeRequired": "Database upgrade required from version {dbVersion} to {defaultVersion}",
+                    "upToDateAtVersion": "Up to date at version {dbVersion}",
+                    "databaseNotCompatible": {
+                        "error": "Your database is not compatible with this version of Ghost",
+                        "help": "You will need to create a new database"
+                    },
+                    "dbInitialisationRequired": "Database initialisation required for version {version}",
+                    "problemWithDatabase": "There is a problem with the database",
+                    "creatingTable": "Creating table: {table}",
+                    "creatingTables": "Creating tables...",
+                    "runningMigrations": "Running migrations"
+                }
+            },
+            "utils": {
+                "index": {
+                    "noSupportForDatabase": "No support for database client {client}"
+                }
+            },
+            "validation": {
+                "index": {
+                    "valueCannotBeBlank": "Value in [{tableName}.{columnKey}] cannot be blank.",
+                    "valueExceedsMaxLength": "Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.",
+                    "valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
+                    "themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",
+                    "validationFailed": "Validation ({validationName}) failed for {key}"
+                }
+            }
+        }
+    }
+}

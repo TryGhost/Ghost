@@ -1,28 +1,25 @@
 import Ember from 'ember';
-var CurrentUserSettings = Ember.Mixin.create({
-    transitionAuthor: function () {
-        var self = this;
 
-        return function (user) {
+const {Mixin} = Ember;
+
+export default Mixin.create({
+    transitionAuthor() {
+        return (user) => {
             if (user.get('isAuthor')) {
-                return self.transitionTo('settings.users.user', user);
+                return this.transitionTo('team.user', user);
             }
 
             return user;
         };
     },
 
-    transitionEditor: function () {
-        var self = this;
-
-        return function (user) {
+    transitionEditor() {
+        return (user) => {
             if (user.get('isEditor')) {
-                return self.transitionTo('settings.users');
+                return this.transitionTo('team');
             }
 
             return user;
         };
     }
 });
-
-export default CurrentUserSettings;

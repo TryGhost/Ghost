@@ -1,0 +1,563 @@
+/* Global Layout
+/* ---------------------------------------------------------- */
+
+/*
+  Ember's app container, set height so that .gh-app and .gh-viewport
+  don't need to use 100vh where bottom of screen gets covered by iOS menus
+  http://nicolas-hoizey.com/2015/02/viewport-height-is-taller-than-the-visible-part-of-the-document-in-some-mobile-browsers.html
+
+  TODO: Once we have routable components it should be possible to remove this
+  by moving the gh-app component functionality into the application component
+  which would remove the extra div that this targets.
+*/
+body > .ember-view:not(.liquid-target-container) {
+    height: 100%;
+}
+
+/* Main viewport, contains main content, and alerts */
+.gh-app {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* Content viewport, contains everything else */
+.gh-viewport {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
+    max-height: 100%;
+}
+
+.gh-main {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    background: #fff;
+}
+
+/*  Flexbox fix. https://github.com/TryGhost/Ghost/issues/5804#issuecomment-141416812 */
+.gh-main > section {
+    width: 1px;
+}
+
+
+/* Global Nav
+/* ---------------------------------------------------------- */
+
+.gh-nav {
+    position: relative;
+    z-index: 800;
+    flex: 0 0 235px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* TODO: This is a bullshit Firefox hack */
+    border-right: #dfe1e3 1px solid;
+    background: #f5f7f8;
+    transform: translateX(0);
+}
+
+.gh-nav-menu {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+}
+
+.gh-nav-menu i {
+    margin-right: 8px;
+    width: 11px;
+    height: 11px;
+    font-size: 11px;
+    line-height: 11px;
+    transition: margin-top 0.2s ease;
+}
+
+.gh-nav-menu:hover i {
+    margin-top: 5px;
+}
+
+.gh-nav-menu-icon {
+    flex-shrink: 0;
+    margin-right: 10px;
+    width: 34px;
+    height: 34px;
+    background-color: #222;
+    background-size: 34px;
+    border-radius: 4px;
+}
+
+.gh-nav-menu-details {
+    flex-grow: 1;
+    padding-right: 10px;
+    min-width: 0; /* TODO: This is a bullshit Firefox hack */
+}
+
+.gh-nav-menu-details-blog {
+    overflow: hidden;
+    margin-bottom: 1px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.5rem;
+    line-height: 1.3em;
+    font-weight: 600;
+}
+
+.gh-nav-menu-details-user {
+    overflow: hidden;
+    color: var(--midgrey);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    line-height: 1.2em;
+}
+
+.gh-nav-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.gh-nav-search {
+    position: relative;
+    margin: 0 15px 10px;
+}
+
+.gh-nav-search .selectize-control {
+    display: flex;
+}
+
+.gh-nav-search-input .selectize-input {
+    padding: 4px 8px;
+    padding-right: 30px;
+    height: auto;
+}
+.gh-nav-search-input .selectize-input,
+.gh-nav-search-input .selectize-input input,
+.gh-nav-search-input .selectize-dropdown {
+    font-size: 1.3rem;
+}
+
+.gh-nav-search .selectize-input.dropdown-active {
+    border-bottom: #fff 1px solid;
+}
+
+.gh-nav-search .selectize-input.dropdown-active:before {
+    display: none;
+}
+
+.gh-nav-search .selectize-dropdown-content {
+    max-height: calc(100vh - 150px);
+}
+
+.gh-nav-search-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    padding: 0 8px 0 5px;
+}
+
+.gh-nav-search-button i {
+    width: 16px;
+    height: 16px;
+    color: var(--midgrey);
+    font-size: 13px;
+    line-height: 13px;
+    transition: color 0.2s ease;
+    transform: rotate(90deg);
+}
+
+.gh-nav-search-button:hover i {
+    color: var(--darkgrey);
+}
+
+.gh-nav-list {
+    margin: 0;
+    padding: 0 15px 0 0;
+    list-style: none;
+    font-size: 1.3rem;
+    line-height: 1.5em;
+}
+
+.gh-nav-list-h {
+    overflow: hidden;
+    margin-top: 15px;
+    padding: 5px 10px 5px 15px;
+    color: #808284;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 1px;
+    font-size: 1.2rem;
+    line-height: 1.1em;
+}
+
+.gh-nav-list a {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px 5px 15px;
+    border-radius: 0 4px 4px 0;
+    color: var(--darkgrey);
+    transition: none;
+}
+
+.gh-nav-list .active {
+    background: color(var(--blue) lightness(+10%));
+    color: #fff;
+}
+
+.gh-nav-list a:not(.active):hover {
+    background: color(var(--blue) alpha(-85%));
+    color: var(--darkgrey);
+}
+
+.gh-nav-list i {
+    margin-right: 8px;
+    width: 15px;
+    height: 15px;
+    color: rgba(0,0,0,0.6);
+    text-align: center;
+    font-size: 15px;
+}
+
+.gh-nav-list .active i {
+    color: #fff;
+}
+
+.gh-nav-list a:not(.active):hover i {
+    color: var(--darkgrey);
+}
+
+.gh-nav-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    border-top: #dfe1e3 1px solid;
+    color: var(--midgrey);
+}
+
+.gh-nav-footer-sitelink {
+    flex-grow: 1;
+    padding: 12px;
+    color: color(var(--midgrey) lightness(-10%));
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 1rem;
+    line-height: 1;
+    font-weight: 200;
+}
+
+.gh-nav-footer-sitelink i {
+    margin-left: 5px;
+    font-size: 1rem;
+}
+
+.gh-nav-footer-sitelink:hover {
+    color: var(--blue);
+}
+
+
+/* Mobile Nav
+/* ---------------------------------------------------------- */
+
+.gh-mobilemenu-button {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .view-header {
+        padding-left: 0 !important;
+    }
+
+    .gh-mobilemenu-button {
+        flex-shrink: 0;
+        display: block;
+        margin: 0;
+        padding: 24px;
+        font-size: 18px;
+        line-height: 18px;
+    }
+
+    .gh-mobilemenu-button .icon-gh {
+        margin: 0;
+    }
+
+    /* Hide the nav */
+    .gh-nav {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 270px;
+        height: 100%;
+        transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+        transform: translate3d(-270px, 0px, 0px);
+    }
+    .mobile-menu-expanded .gh-nav {
+        transform: translate3d(0,0,0);
+    }
+
+    .gh-nav-list a {
+        padding: 7px 10px 7px 15px;
+        border-radius: 0 4px 4px 0;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-mobilemenu-button {
+        padding: 24px 15px 24px 16px;
+    }
+
+    .gh-nav {
+        width: 80vw;
+        transform: translate3d(-80vw, 0px, 0px);
+    }
+    .mobile-menu-expanded .gh-nav {
+        transform: translate3d(0,0,0);
+    }
+    .mobile-menu-expanded .content-cover {
+        transform: translate3d(80vw, 0, 0);
+    }
+
+    .gh-nav-search-input .selectize-input,
+    .gh-nav-search-input .selectize-input input,
+    .gh-nav-search-input .selectize-dropdown {
+        font-size: 1.5rem;
+    }
+
+    .gh-nav-list {
+        font-size: 1.5rem;
+    }
+
+    .gh-nav-list-h {
+        font-size: 1.4rem;
+    }
+
+    .gh-nav-list i {
+        margin-right: 8px;
+        width: 17px;
+        height: 17px;
+        text-align: center;
+        font-size: 17px;
+    }
+}
+
+
+/* Auto Nav - Opens and closes like OSX dock
+/* ---------------------------------------------------------- */
+
+.gh-menu-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    width: 45px;
+    height: 27px;
+    border-right: #dfe1e3 1px solid;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gh-menu-toggle:hover {
+    cursor: pointer;
+}
+
+.gh-menu-toggle i {
+    transition: all 0.2s ease;
+}
+
+.gh-menu-toggle:hover i {
+    color: var(--blue);
+}
+
+/* Autonav is tricky, because hit areas of translated elements aren't in sync
+   with the visible element we need to add the hover behaviour to a small,
+   non-moving element. The following code positions our hit area and transitions
+   it in-sync with it's container so it always sticks to the left of the viewport
+   then hides off-canvas when required as display:none breaks transitions. */
+
+.gh-autonav-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+    width: 15px;
+    height: 100%;
+    transition: transform 0.20s;
+    transform: translate3d(0,0,0);
+}
+
+.gh-autonav .gh-autonav-toggle {
+    display: block;
+}
+
+.gh-nav.open .gh-autonav-toggle {
+    transition: transform 0.15s;
+    transform: translate3d(-235px,0,0);
+}
+
+@media (min-width: 801px) {
+    /* Hide the nav */
+    .gh-autonav .gh-nav {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        width: 235px;
+        height: 100%;
+        transition: transform 0.20s;
+        /* translate3d for GPU accelerated animation - http://bit.ly/1EY1Xhx */
+        transform: translate3d(-220px,0,0);
+    }
+
+    /* THE FUTURE: Super sexy background blur for Webkit - http://cl.ly/b1rG */
+    @supports (-webkit-backdrop-filter: none) or (backdrop-filter: none) {
+        .gh-autonav .gh-nav {
+            background: rgba(246,246,246, 0.7);
+
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+    }
+
+    /* Bring it back on hover */
+    .gh-autonav .gh-nav.open {
+        transition: transform 0.15s;
+        transform: translate3d(0,0,0);
+    }
+
+    /* Move main content over for the closed-nav trigger bar */
+    .gh-autonav .gh-main {
+        margin-left: 15px;
+    }
+}
+
+
+/* Help (?) Menu
+/* ---------------------------------------------------------- */
+
+.gh-help-menu {
+    display: flex;
+    align-items: center;
+    border-left: #dfe1e3 1px solid;
+    cursor: pointer;
+}
+
+.gh-help-button {
+    padding: 5px 15px;
+    color: var(--midgrey);
+    text-align: center;
+    font-size: 1.4rem;
+    line-height: 1.2em;
+    transition: all 0.5s;
+}
+
+.gh-help-menu:hover .gh-help-button {
+    color: var(--blue);
+    transition: all 0.3s;
+}
+
+.gh-help-menu .dropdown {
+    bottom: 215px;
+    left: -180px;
+}
+
+.gh-help-menu .dropdown.fade-in-scale {
+    animation-duration: 0.1s;
+}
+
+.gh-help-menu .dropdown.fade-out {
+    animation-duration: 0.01s;
+}
+
+
+/* Container for App View
+/* ---------------------------------------------------------- */
+
+.gh-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.view-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 65px;
+    border-bottom: #dfe1e3 1px solid;
+}
+
+.view-title {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 2rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.view-title a {
+    color: inherit;
+}
+
+.view-title a:hover {
+    color: var(--blue);
+}
+
+.view-title i {
+    margin: 0 10px;
+    color: #818181;
+    font-size: 14px;
+    line-height: 12px;
+}
+
+.view-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.view-actions .btn {
+    margin-left: 8px;
+}
+
+.view-container,
+.view-content {
+    position: relative;
+    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.view-content {
+    padding: 20px;
+}
+
+.view-content p,
+.view-content p * {
+    user-select: text;
+}
+
+@media (max-width: 400px) {
+    .view-header {
+        padding: 0 7px;
+        height: 50px;
+    }
+    .view-title {
+        font-size: 1.8rem;
+    }
+    .view-content {
+        padding: 15px;
+    }
+}

@@ -15,7 +15,6 @@ content/data/**
 node_modules/**
 **/*.db*
 *.db*
-.sass*
 .af*
 .git*
 .groc*
@@ -23,11 +22,13 @@ node_modules/**
 *.iml
 config.js
 core/built/**/*.map
+core/built/**/test-*
 core/client/**
 core/test/**
 CONTRIBUTING.md
 SECURITY.md
 .travis.yml
 *.html
-!core/server/email-templates/**
+!core/server/mail/templates/**
 bower_components/**
+.editorconfig
