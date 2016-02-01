@@ -194,7 +194,7 @@ Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://gith
 **What you'll need:**
 
 - Node version 0.10.x & npm
-- phantomjs 1.9.x and casperjs 1.1.x
+- phantomjs 1.9.x
 ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running tests
 
 
