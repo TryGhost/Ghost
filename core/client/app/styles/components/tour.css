@@ -3,10 +3,9 @@
 
     Styles for the popover component
     * Popovers
-    * Triangles placeholder styles
-    * Triangles classes
-    * Open/close
+    * Open/Close
     * Positioning
+    * Triangles classes
    ------------------------------------------------------------ */
 
 .tour-background {
@@ -55,6 +54,16 @@
 .tour-optout {
     align-self: flex-end;
 }
+
+/* Open/Close */
+.tour.open > .popover-item {
+    display: block;
+}
+
+.tour.closed > .popover-item {
+    display: none;
+}
+
 
 /* 'dat positioning '*/
 .tour .popover-item.popover-triangle-top,
