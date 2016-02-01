@@ -9,25 +9,14 @@
     * Positioning
    ------------------------------------------------------------ */
 
-.tour {
-    --popover-triangle-size: 14px;
-    --popover-trangle-modifier: 0.8;
-}
-
-.tour-cover {
+.tour-background {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 2000;
-    display: block;
+    z-index: 0;
     background: rgba(54,83,109,0.08);
-}
-
-.tour-wrapper {
-    position: absolute;
-    z-index: 2010;
 }
 
 .tour .popover-item {
@@ -70,17 +59,17 @@
 /* 'dat positioning '*/
 .tour .popover-item.popover-triangle-top,
 .tour .popover-item.popover-triangle-bottom {
-    left: calc(50% - 7px);
+    left: calc(50%);
 }
 
 .tour .popover-item.popover-triangle-top-left,
 .tour .popover-item.popover-triangle-bottom-left {
-    left: -29px;
+    left: -22px;
 }
 
 .tour .popover-item.popover-triangle-top-right,
 .tour .popover-item.popover-triangle-bottom-right {
-    right: -29px;
+    right: -36px;
 }
 
 .tour .popover-item.popover-triangle-bottom,
@@ -107,13 +96,13 @@
 .tour .popover-item.popover-triangle-right,
 .tour .popover-item.popover-triangle-right-top,
 .tour .popover-item.popover-triangle-right-bottom {
-    right: calc(100% + 36px);
+    right: calc(100% + 29px);
 }
 
 .tour .popover-item.popover-triangle-left,
 .tour .popover-item.popover-triangle-left-top,
 .tour .popover-item.popover-triangle-left-bottom {
-    left: calc(100% + 36px);
+    left: calc(100% + 43px);
 }
 
 /* 'dem Triangles */

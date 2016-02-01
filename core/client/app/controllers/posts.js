@@ -67,6 +67,7 @@ function publishedAtCompare(item1, item2) {
 }
 
 export default Controller.extend({
+    showPopover: false,
 
     showDeletePostModal: false,
 
@@ -83,6 +84,10 @@ export default Controller.extend({
     actions: {
         toggleDeletePostModal() {
             this.toggleProperty('showDeletePostModal');
+        },
+
+        togglePopover() {
+            this.toggleProperty('showPopover');
         }
     }
 });
