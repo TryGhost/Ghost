@@ -8,7 +8,7 @@ import hbs from 'htmlbars-inline-precompile';
 
 describeComponent(
     'gh-client-edit',
-    'Integration: GhClientEditComponent',
+    'Integration: GhEditClientComponent',
     {
         integration: true
     },

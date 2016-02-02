@@ -7,12 +7,12 @@ import {
     afterEach
 } from 'mocha';
 import { expect, assert} from 'chai';
-import startApp from '../../../helpers/start-app';
-import destroyApp from '../../../helpers/destroy-app';
+import startApp from '../../helpers/start-app';
+import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
 
-describe('Acceptance: Settings: Connections', function() {
+describe('Acceptance: Settings: Clients', function() {
   var application;
 
   beforeEach(function() {
