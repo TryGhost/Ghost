@@ -17,7 +17,7 @@ export default Component.extend({
     createdAt: computed('user.createdAt', function () {
         let createdAt = this.get('user.createdAt');
 
-        return createdAt ? createdAt.fromNow() : '';
+        return createdAt ? moment(createdAt).fromNow() : '';
     }),
 
     actions: {

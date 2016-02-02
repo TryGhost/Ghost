@@ -22,7 +22,7 @@ describeModule(
     'Unit: Controller: settings/navigation',
     {
         // Specify the other units that are required for this test.
-        needs: ['service:config', 'service:notifications', 'model:navigation-item']
+        needs: ['service:config', 'service:notifications', 'model:navigation-item', 'service:ajax', 'service:ghostPaths']
     },
     function () {
         it('blogUrl: captures config and ensures trailing slash', function () {

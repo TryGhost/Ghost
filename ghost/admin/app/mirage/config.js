@@ -207,6 +207,27 @@ export function testConfig() {
         return response;
     });
 
+    this.get('/posts/:id', function (db, request) {
+        let {id} = request.params;
+        let post = db.posts.find(id);
+
+        return {
+            posts: [post]
+        };
+    });
+
+    this.put('/posts/:id/', function (db, request) {
+        let {id} = request.params;
+        let [attrs] = JSON.parse(request.requestBody).posts;
+        delete attrs.id;
+
+        let post = db.posts.update(id, attrs);
+
+        return {
+            posts: [post]
+        };
+    });
+
     this.del('/posts/:id/', function (db, request) {
         db.posts.remove(request.params.id);
 
@@ -262,6 +283,16 @@ export function testConfig() {
 
     this.post('/slack/test', function () {
         return {};
+    });
+
+    /* Configuration -------------------------------------------------------- */
+
+    this.get('/configuration/timezones/', function (db) {
+        return {
+            configuration: [{
+                timezones: db.timezones
+            }]
+        };
     });
 
     /* Slugs ---------------------------------------------------------------- */

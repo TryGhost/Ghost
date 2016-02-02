@@ -27,7 +27,8 @@
     "currentPath",
     "currentRouteName",
     "expect",
-    "fileUpload"
+    "fileUpload",
+    "moment"
   ],
   "mocha": true,
   "node": false,

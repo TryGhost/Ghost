@@ -24,13 +24,18 @@ function verifyTimeStamp(dateString) {
 }
 
 // Parses a string to a Moment
-function parseDateString(value) {
+function parseDateString(value, offset) {
+    // We need the offset here, otherwise the date will be parsed
+    // in UTC timezone
+    moment.tz.setDefault(offset);
+
     return value ? moment(verifyTimeStamp(value), parseDateFormats, true) : undefined;
 }
 
 // Formats a Date or Moment
-function formatDate(value) {
-    return verifyTimeStamp(value ? moment(value).format(displayDateFormat) : '');
+function formatDate(value, offset) {
+    // we output the date adjusted by the offset of the timezone set in the blog setting
+    return verifyTimeStamp(value ? moment(value).tz(offset).format(displayDateFormat) : '');
 }
 
 export {
