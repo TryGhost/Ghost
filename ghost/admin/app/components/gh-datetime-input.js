@@ -4,7 +4,11 @@ import boundOneWay from 'ghost/utils/bound-one-way';
 import {formatDate} from 'ghost/utils/date-formatting';
 import {invokeAction} from 'ember-invoke-action';
 
-const {Component} = Ember;
+const {
+    Component,
+    RSVP,
+    inject: {service}
+} = Ember;
 
 export default Component.extend(TextInputMixin, {
     tagName: 'span',
@@ -14,15 +18,21 @@ export default Component.extend(TextInputMixin, {
     inputClass: null,
     inputId: null,
     inputName: null,
+    timeZone: service(),
 
     didReceiveAttrs() {
-        let datetime = this.get('datetime') || moment();
+        let promises = {
+            datetime: RSVP.resolve(this.get('datetime') || moment.utc()),
+            offset: RSVP.resolve(this.get('timeZone.offset'))
+        };
 
         if (!this.get('update')) {
             throw new Error(`You must provide an \`update\` action to \`{{${this.templateName}}}\`.`);
         }
 
-        this.set('datetime', formatDate(datetime));
+        RSVP.hash(promises).then((hash) => {
+            this.set('datetime', formatDate(hash.datetime || moment.utc(), hash.offset));
+        });
     },
 
     focusOut() {

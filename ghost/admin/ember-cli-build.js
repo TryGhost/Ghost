@@ -55,6 +55,7 @@ module.exports = function (defaults) {
     app.import('bower_components/showdown-ghost/src/extensions/footnotes.js');
     app.import('bower_components/showdown-ghost/src/extensions/highlight.js');
     app.import('bower_components/moment/moment.js');
+    app.import('bower_components/moment-timezone/builds/moment-timezone-with-data.js');
     app.import('bower_components/keymaster/keymaster.js');
     app.import('bower_components/devicejs/lib/device.js');
     app.import('bower_components/jquery-ui/jquery-ui.js');

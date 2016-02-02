@@ -13,9 +13,9 @@ export default Model.extend(ValidationEngine, {
     subscribedUrl: attr('string'),
     subscribedReferrer: attr('string'),
     unsubscribedUrl: attr('string'),
-    unsubscribedAt: attr('moment-date'),
-    createdAt: attr('moment-date'),
-    updatedAt: attr('moment-date'),
+    unsubscribedAt: attr('moment-utc'),
+    createdAt: attr('moment-utc'),
+    updatedAt: attr('moment-utc'),
     createdBy: attr('number'),
     updatedBy: attr('number'),
 
