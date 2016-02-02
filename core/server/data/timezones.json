@@ -1,7 +1,7 @@
 {
 	"timezones": [
 		{
-			"name": "Pacific/Samoa",
+			"name": "Pacific/Pago_Pago",
 			"label": "(GMT -11:00) Midway Island, Samoa",
 			"offset": -660
 		},
@@ -11,27 +11,27 @@
 			"offset": -600
 		},
 		{
-			"name": "US/Alaska",
+			"name": "America/Anchorage",
 			"label": "(GMT -9:00) Alaska",
 			"offset": -540
 		},
 		{
-			"name": "Mexico/BajaNorte",
+			"name": "America/Tijuana",
 			"label": "(GMT -8:00) Chihuahua, La Paz, Mazatlan",
 			"offset": -480
 		},
 		{
-			"name": "US/Pacific",
+			"name": "America/Los_Angeles",
 			"label": "(GMT -8:00) Pacific Time (US & Canada); Tijuana",
 			"offset": -480
 		},
 		{
-			"name": "US/Arizona",
+			"name": "America/Phoenix",
 			"label": "(GMT -7:00) Arizona",
 			"offset": -420
 		},
 		{
-			"name": "US/Mountain",
+			"name": "America/Denver",
 			"label": "(GMT -7:00) Mountain Time (US & Canada)",
 			"offset": -420
 		},
@@ -41,17 +41,17 @@
 			"offset": -360
 		},
 		{
-			"name": "US/Central",
+			"name": "America/Chicago",
 			"label": "(GMT -6:00) Central Time (US & Canada)",
 			"offset": -360
 		},
 		{
-			"name": "Mexico/General",
+			"name": "America/Mexico_City",
 			"label": "(GMT -6:00) Guadalajara, Mexico City, Monterrey",
 			"offset": -360
 		},
 		{
-			"name": "Canada/Saskatchewan",
+			"name": "America/Regina",
 			"label": "(GMT -6:00) Saskatchewan",
 			"offset": -360
 		},
@@ -61,12 +61,12 @@
 			"offset": -300
 		},
 		{
-			"name": "US/Eastern",
+			"name": "America/New_York",
 			"label": "(GMT -5:00) Eastern Time (US & Canada)",
 			"offset": -300
 		},
 		{
-			"name": "US/East-Indiana",
+			"name": "America/Fort_Wayne",
 			"label": "(GMT -5:00) Indiana (East)",
 			"offset": -300
 		},
@@ -76,17 +76,17 @@
 			"offset": -270
 		},
 		{
-			"name": "Canada/Atlantic",
+			"name": "America/Halifax",
 			"label": "(GMT -4:00) Atlantic Time (Canada); Brasilia, Greenland",
 			"offset": -240
 		},
 		{
-			"name": "Canada/Newfoundland",
+			"name": "America/St_Johns",
 			"label": "(GMT -3:30) Newfoundland",
 			"offset": -210
 		},
 		{
-			"name": "America/Buenos_Aires",
+			"name": "America/Argentina/Buenos_Aires",
 			"label": "(GMT -3:00) Buenos Aires, Georgetown",
 			"offset": -180
 		},
@@ -141,7 +141,7 @@
 			"offset": 60
 		},
 		{
-			"name": "Africa/Bangui",
+			"name": "Africa/Lagos",
 			"label": "(GMT +1:00) West Central Africa",
 			"offset": 60
 		},
@@ -156,7 +156,7 @@
 			"offset": 120
 		},
 		{
-			"name": "Africa/Harare",
+			"name": "Africa/Maputo",
 			"label": "(GMT +2:00) Harare",
 			"offset": 120
 		},
@@ -191,7 +191,7 @@
 			"offset": 210
 		},
 		{
-			"name": "Asia/Muscat",
+			"name": "Asia/Dubai",
 			"label": "(GMT +4:00) Abu Dhabi, Muscat",
 			"offset": 240
 		},
@@ -216,12 +216,12 @@
 			"offset": 300
 		},
 		{
-			"name": "Asia/Calcutta",
+			"name": "Asia/Kolkata",
 			"label": "(GMT +5:30) Chennai, Calcutta, Mumbai, New Delhi",
 			"offset": 330
 		},
 		{
-			"name": "Asia/Katmandu",
+			"name": "Asia/Kathmandu",
 			"label": "(GMT +5:45) Katmandu",
 			"offset": 345
 		},
@@ -301,7 +301,7 @@
 			"offset": 630
 		},
 		{
-			"name": "Australia/Canberra",
+			"name": "Australia/Sydney",
 			"label": "(GMT +11:00) Canberra, Hobart, Melbourne, Sydney, Vladivostok",
 			"offset": 660
 		},

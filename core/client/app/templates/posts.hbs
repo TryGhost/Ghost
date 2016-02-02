@@ -24,7 +24,7 @@
                                         {{#if post.page}}
                                             <span class="page">Page</span>
                                         {{else}}
-                                            <time datetime="{{post.publishedAt}}" class="date published">
+                                            <time datetime="{{post.publishedAtOffset}}" class="date published">
                                                 Published {{gh-format-timeago post.publishedAt}}
                                             </time>
                                         {{/if}}

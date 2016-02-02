@@ -40,6 +40,12 @@
                 "isLength": [1, 1000]
             }
         },
+        "activeTimezone": {
+            "defaultValue": "Europe/Dublin",
+            "validations": {
+                "isNull": false
+            }
+        },
         "forceI18n": {
             "defaultValue": "true",
             "validations": {

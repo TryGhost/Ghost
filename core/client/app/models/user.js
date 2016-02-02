@@ -28,10 +28,10 @@ export default Model.extend(ValidationEngine, {
     language: attr('string', {defaultValue: 'en_US'}),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
-    lastLogin: attr('moment-date'),
-    createdAt: attr('moment-date'),
+    lastLogin: attr('moment-utc'),
+    createdAt: attr('moment-utc'),
     createdBy: attr('number'),
-    updatedAt: attr('moment-date'),
+    updatedAt: attr('moment-utc'),
     updatedBy: attr('number'),
     roles: hasMany('role', {
         embedded: 'always',

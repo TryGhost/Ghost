@@ -25,11 +25,9 @@ export default Component.extend({
             let selectEl = this.$('select')[0];
             // jscs:enable requireArrayDestructuring
             let {selectedIndex} = selectEl;
-
             // decrement index by 1 if we have a prompt
             let hasPrompt = !!this.get('prompt');
             let contentIndex = hasPrompt ? selectedIndex - 1 : selectedIndex;
-
             let selection = this.get('content').objectAt(contentIndex);
 
             // set the local, shadowed selection to avoid leaking

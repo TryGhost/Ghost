@@ -51,6 +51,7 @@ describeComponent(
             'service:session',
             'service:ajax',
             'service:feature',
+            'service:ghostPaths',
             'component:x-file-input',
             'component:one-way-input'
         ],

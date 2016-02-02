@@ -28,11 +28,11 @@ export default Model.extend(ValidationEngine, {
     metaDescription: attr('string'),
     author: belongsTo('user', {async: true}),
     authorId: attr('number'),
-    updatedAt: attr('moment-date'),
+    updatedAt: attr('moment-utc'),
     updatedBy: attr(),
-    publishedAt: attr('moment-date'),
+    publishedAt: attr('moment-utc'),
     publishedBy: belongsTo('user', {async: true}),
-    createdAt: attr('moment-date'),
+    createdAt: attr('moment-utc'),
     createdBy: attr(),
     tags: hasMany('tag', {
         embedded: 'always',
@@ -42,6 +42,7 @@ export default Model.extend(ValidationEngine, {
 
     config: service(),
     ghostPaths: service(),
+    timeZone: service(),
 
     absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
@@ -62,6 +63,19 @@ export default Model.extend(ValidationEngine, {
 
     scratch: null,
     titleScratch: null,
+
+    // Computed Date properties
+    // timeZone.offset service returns the moment-timezone from the
+    // activeTimezone, set in the blogs settings
+
+    publishedAtOffset: computed('timeZone.offset', 'publishedAt', function() {
+        let publishedAt = this.get('publishedAt');
+        let momentPublishedAt = publishedAt ? moment(publishedAt) : moment.utc();
+
+        return this.get('timeZone.offset').then((offset) => {
+            return momentPublishedAt.tz(offset);
+        });
+    }),
 
     // Computed post properties
 
