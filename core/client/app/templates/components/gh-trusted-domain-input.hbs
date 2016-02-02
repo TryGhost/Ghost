@@ -1,12 +1,6 @@
-{{#gh-validation-status-container tagName="span" class="gh-blognav-url" errors=navItem.errors property="url" hasValidated=navItem.hasValidated}}
-    {{gh-navitem-url-input baseUrl="Random" url="url" last=true change="updateUrl"}}
-    {{gh-error-message errors=navItem.errors property="url"}}
-{{/gh-validation-status-container}}
-<span>
-        <button type="button" class="gh-blognav-add" {{action "addItem"}}>
-            <i class="icon-add2"><span class="sr-only">Add</span></i>
-        </button>
-        <button type="button" class="gh-blognav-delete" {{action "deleteItem" navItem}}>
-            <i class="icon-trash"><span class="sr-only">Delete</span></i>
-        </button>
-</span>
+<div class="gh-blognav-line">
+    {{input value=url class="gh-input"}}
+    <button type="button" class="gh-blognav-delete" {{action "deleteUrl" domain}}>
+        <i class="icon-trash"><span class="sr-only">Delete</span></i>
+    </button>
+</div>

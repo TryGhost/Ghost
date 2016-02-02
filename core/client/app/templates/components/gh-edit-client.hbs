@@ -29,7 +29,23 @@
   {{gh-error-message errors=errors property="description"}}
  {{/gh-form-group}}
 
-
+<div class="form-group">
+  <label for="client-redirection_uri">Trusted Domains</label>
+  <div class="gh-blognav-line">
+      {{input value=domain class="gh-input"}}
+      <button type="button" class="gh-blognav-delete" {{action "addUrl"}}>
+          <i class="icon-add2"><span class="sr-only">Add</span></i>
+      </button>
+  </div>
+  {{#each trustedDomains as |url|}}
+  <div data-test-selector="redirectiona_uri">
+    {{gh-trusted-domain-input
+        url=url
+        addUrl=(action 'addUrl' url)
+        deleteUrl=(action 'deleteUrl' url)}}
+  </div>
+    {{/each}}
+</div>
 
  {{#if isEditing}}
 <div class="form-group">

@@ -19,9 +19,9 @@ export default Ember.Component.extend({
     }),
 
     isSpecialClient: Ember.computed('name', function () {
-        let name = this.get('name');
+        let slug = this.get('slug');
 
-        return name.startsWith('Ghost');
+        return slug.startsWith('ghost-');
     }),
 
   actions: {
