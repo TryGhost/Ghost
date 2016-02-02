@@ -60,7 +60,8 @@ updateConfigCache = function () {
             postsPerPage: (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || 5,
             permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/',
             twitter: (settingsCache.twitter && settingsCache.twitter.value) || '',
-            facebook: (settingsCache.facebook && settingsCache.facebook.value) || ''
+            facebook: (settingsCache.facebook && settingsCache.facebook.value) || '',
+            timezone: (settingsCache.activeTimezone && settingsCache.activeTimezone.value) || 'Europe/Dublin'
         },
         labs: labsValue
     });
