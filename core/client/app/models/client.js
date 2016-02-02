@@ -2,7 +2,7 @@
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Model, attr} = DS;
+const {Model, attr, hasMany} = DS;
 
 export default Model.extend(ValidationEngine, {
   validationType: 'client',
@@ -10,6 +10,8 @@ export default Model.extend(ValidationEngine, {
   uuid: attr('string'),
   name: attr('string'),
   slug: attr('string'),
+  // trusted_domains: hasMany('trusted_domain'),
+  trusted_domains: attr(),
   type: attr('string', { defaultValue: 'ua' }),
   secret: attr('string'),
   redirection_uri: attr('string'),

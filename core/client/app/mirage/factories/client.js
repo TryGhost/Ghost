@@ -5,6 +5,7 @@ export default Mirage.Factory.extend({
   uuid() { return `c712cbcd-326d-4f85-a8e0`; },
   name: faker.list.cycle('Ghost Admin', 'Ghost Frontend', 'Twitter', 'Github', 'Facebook'),
   slug: faker.list.cycle('ghost-admin', 'ghost-frontend', 'twitter', 'github', 'facebook'),
+  trusted_domains() { return ['https://twitter.com/', 'https://www.facebook.com/']; },
   type() { return 'ua'; },
   secret() { return `2f5c4f6291e`; },
   redirection_uri() { return null; },

@@ -331,24 +331,38 @@ export default function () {
 
     this.get('/clients', 'client');
 
-    this.post('/clients', 'client');
-    
     this.del('/clients/:id', 'client');
 
-    this.put('/clients/:id', function (db, request) {
-        let [attrs] = JSON.parse(request.requestBody).clients;
-        let client;
-
-        client = db.clients.insert(attrs);
+    this.post('/clients', function(db, request){
+        var [attrs] = JSON.parse(request.requestBody).clients;
+        var client = db.clients.insert(attrs);
 
         return {
-            clients: [client]
+            client: client
+        };
+    });
+
+    this.put('/clients/:id', function (db, request) {
+        let {id} = request.params;
+        let [attrs] = JSON.parse(request.requestBody).clients;
+        let client = db.clients.update(id, attrs);
+
+        return {
+            clients: client
         };
     });
 
     this.get('/clients/slug/:slug/', function (db, request) {
         return {
             clients: db.clients.where({slug: request.params.slug})
+        };
+    });
+
+    this.get('/slugs/client/:slug/', function (db, request) {
+        return {
+            slugs: [
+                {slug: Ember.String.dasherize(decodeURIComponent(request.params.slug))}
+            ]
         };
     });
 
