@@ -3,13 +3,23 @@
         {{#gh-view-title classNames="gh-editor-title" openMobileMenu="openMobileMenu"}}
             {{gh-trim-focus-input type="text" id="entry-title" placeholder="Your Post Title" value=model.titleScratch tabindex="1" focus=shouldFocusTitle focus-out="updateTitle" }}
         {{/gh-view-title}}
+        {{#if scheduleCountdown}}
+            <time datetime="{{post.publishedAt}}" class="gh-notification gh-notification-schedule">
+                Post will be published {{scheduleCountdown}}.
+            </time>
+        {{/if}}
         <section class="view-actions">
             <button type="button" class="post-settings" title="Post Settings" {{action "openSettingsMenu"}}>
                 <i class="icon-settings"></i>
             </button>
             {{gh-editor-save-button
                 isPublished=model.isPublished
+                isScheduled=model.isScheduled
                 willPublish=willPublish
+                willSchedule=willSchedule
+                statusFreeze=statusFreeze
+                scheduledWillPublish=scheduledWillPublish
+                timeScheduled=model.timeScheduled
                 postOrPage=postOrPage
                 isNew=model.isNew
                 save="save"

@@ -23,19 +23,29 @@ describeModel(
             expect(model.validationType).to.equal('post');
         });
 
-        it('isPublished and isDraft are correct', function () {
+        it('isPublished, isDraft and isScheduled are correct', function () {
             let model = this.subject({
                 status: 'published'
             });
 
             expect(model.get('isPublished')).to.be.ok;
             expect(model.get('isDraft')).to.not.be.ok;
+            expect(model.get('isScheduled')).to.not.be.ok;
 
             run(function () {
                 model.set('status', 'draft');
 
                 expect(model.get('isPublished')).to.not.be.ok;
                 expect(model.get('isDraft')).to.be.ok;
+                expect(model.get('isScheduled')).to.not.be.ok;
+            });
+
+            run(function () {
+                model.set('status', 'scheduled');
+
+                expect(model.get('isScheduled')).to.be.ok;
+                expect(model.get('isPublished')).to.not.be.ok;
+                expect(model.get('isDraft')).to.not.be.ok;
             });
         });
 

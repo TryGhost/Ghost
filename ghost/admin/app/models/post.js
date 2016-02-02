@@ -43,6 +43,7 @@ export default Model.extend(ValidationEngine, {
     config: service(),
     ghostPaths: service(),
     timeZone: service(),
+    clock: service(),
 
     absoluteUrl: computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
@@ -69,6 +70,16 @@ export default Model.extend(ValidationEngine, {
     isPublished: equal('status', 'published'),
     isDraft: equal('status', 'draft'),
     internalTags: filterBy('tags', 'isInternal', true),
+    isScheduled: equal('status', 'scheduled'),
+
+    // TODO: move this into gh-posts-list-item component
+    // Checks every second, if we reached the scheduled date
+    timeScheduled: computed('publishedAt', 'clock.second', function () {
+        let publishedAt = this.get('publishedAt') || moment.utc(new Date());
+        this.get('clock.second');
+
+        return publishedAt.diff(moment.utc(new Date()), 'hours', true) > 0 ? true : false;
+    }),
 
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
@@ -85,5 +96,4 @@ export default Model.extend(ValidationEngine, {
     isAuthoredByUser(user) {
         return parseInt(user.get('id'), 10) === parseInt(this.get('authorId'), 10);
     }
-
 });
