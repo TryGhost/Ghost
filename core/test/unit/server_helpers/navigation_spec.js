@@ -117,6 +117,22 @@ describe('{{navigation}} helper', function () {
         rendered.string.should.containEql('nav-foo nav-current');
         rendered.string.should.containEql('nav-bar"');
     });
+
+    it('can annotate current url with trailing slash', function () {
+        var firstItem = {label: 'Foo', url: '/foo'},
+            secondItem = {label: 'Bar', url: '/qux'},
+            rendered;
+
+        optionsData.data.blog.navigation = [firstItem, secondItem];
+        optionsData.data.root.relativeUrl = '/foo/';
+        rendered = helpers.navigation(optionsData);
+
+        should.exist(rendered);
+        rendered.string.should.containEql('nav-foo');
+        rendered.string.should.containEql('nav-current');
+        rendered.string.should.containEql('nav-foo nav-current');
+        rendered.string.should.containEql('nav-bar"');
+    });
 });
 
 describe('{{navigation}} helper with custom template', function () {
