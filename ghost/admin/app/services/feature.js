@@ -48,7 +48,7 @@ export default Service.extend({
         }
     },
 
-    labs: computed(function () {
+    labs: computed('_settings', function () {
         return new Promise((resolve, reject) => {
             if (this.get('_settings')) { // So we don't query the backend every single time
                 resolve(this._parseLabs(this.get('_settings')));
@@ -72,8 +72,9 @@ export default Service.extend({
                 set(labs, key, value);
 
                 settings.set('labs', JSON.stringify(labs));
-                settings.save().then(() => {
-                    resolve(labs[key]);
+                settings.save().then((savedSettings) => {
+                    this.set('_settings', savedSettings);
+                    resolve(this._parseLabs(savedSettings).get(key));
                 }).catch((errors) => {
                     this.get('notifications').showErrors(errors);
                     settings.rollbackAttributes();
