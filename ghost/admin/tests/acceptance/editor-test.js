@@ -10,6 +10,7 @@ import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost-admin/tests/helpers/ember-simple-auth';
 import Mirage from 'ember-cli-mirage';
+import sinon from 'sinon';
 
 describe('Acceptance: Editor', function() {
     let application;
@@ -56,6 +57,7 @@ describe('Acceptance: Editor', function() {
     });
 
     describe('when logged in', function () {
+
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
             let user = server.create('user', {roles: [role]});
@@ -66,7 +68,9 @@ describe('Acceptance: Editor', function() {
         });
 
         it('renders the editor correctly, PSM Publish Date and Save Button', function () {
-            let posts = server.createList('post', 3);
+            let posts = server.createList('post', 2);
+            let plusTenMinPacific = moment().tz('Pacific/Kwajalein').add(10, 'minutes').format('DD MMM YY @ HH:mm').toString();
+            let plusTwoMinPacific = moment().tz('Pacific/Kwajalein').add(2, 'minutes').format('DD MMM YY @ HH:mm').toString();
 
             // post id 1 is a draft, checking for draft behaviour now
             visit('/editor/1');
@@ -87,6 +91,7 @@ describe('Acceptance: Editor', function() {
 
             // saves the post with the new date
             fillIn('input[name="post-setting-date"]', '10 May 16 @ 10:00');
+            // return pauseTest();
             triggerEvent('input[name="post-setting-date"]', 'blur');
             // saving
             click('.view-header .btn.btn-sm.js-publish-button');
@@ -175,23 +180,44 @@ describe('Acceptance: Editor', function() {
                     .to.equal('10 May 16 @ 10:00');
             });
 
+            // go to settings to change the timezone
+            visit('/settings/general');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL for settings')
+                    .to.equal('/settings/general');
+                expect(find('#activeTimezone option:selected').text().trim(), 'default timezone')
+                    .to.equal('(GMT) UTC');
+                // select a new timezone
+                find('#activeTimezone option[value="Pacific/Kwajalein"]').prop('selected', true);
+            });
+
+            triggerEvent('#activeTimezone select', 'change');
+            // save the settings
+            click('.view-header .btn.btn-blue');
+
+            andThen(() => {
+                expect(find('#activeTimezone option:selected').text().trim(), 'new timezone after saving')
+                    .to.equal('(GMT +12:00) International Date Line West');
+            });
+
+            // and now go back to the editor
+            visit('/editor/2');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL in editor')
+                    .to.equal('/editor/2');
+                expect(find('input[name="post-setting-date"]').val(), 'date with blog timezone')
+                    .to.equal('10 May 16 @ 22:00');
+            });
+
             // should not do anything if the input date is not different
-            fillIn('input[name="post-setting-date"]', '10 May 16 @ 10:00');
+            fillIn('input[name="post-setting-date"]', '10 May 16 @ 22:00');
             triggerEvent('input[name="post-setting-date"]', 'blur');
 
             andThen(() => {
                 expect(find('input[name="post-setting-date"]').val(), 'date didn\'t change')
-                    .to.equal('10 May 16 @ 10:00');
-            });
-
-            andThen(() => {
-                expect(currentURL(), 'currentURL').to.equal('/editor/2');
-                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
-                    .to.be.false;
-                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for published post')
-                    .to.equal('Update Post');
-                expect(find('.post-save-publish').hasClass('active'), 'highlights the default active button state for a published post')
-                    .to.be.true;
+                    .to.equal('10 May 16 @ 22:00');
             });
 
             // click on unpublish
@@ -218,36 +244,182 @@ describe('Acceptance: Editor', function() {
                     .to.be.false;
             });
 
-            // go to settings to change the timezone
-            visit('/settings/general');
+            // Set the publish date 2 minute to the future to find an error message
+            fillIn('input[name="post-setting-date"]', plusTwoMinPacific);
+            triggerEvent('input[name="post-setting-date"]', 'blur');
 
             andThen(() => {
-                expect(currentURL(), 'currentURL for settings')
-                    .to.equal('/settings/general');
-                expect(find('#activeTimezone option:selected').text().trim(), 'default timezone')
-                    .to.equal('(GMT) UTC');
-                // select a new timezone
-                find('#activeTimezone option[value="Pacific/Auckland"]').prop('selected', true);
+                andThen(() => {
+                    expect(find('.ember-view.response').text().trim(), 'inline error response for invalid date in future')
+                        .to.equal('Must be at least 2 minutes from now.');
+                });
             });
 
-            triggerEvent('#activeTimezone select', 'change');
-            // save the settings
-            click('.view-header .btn.btn-blue');
+            // Set the publish date into the future (best to have it 10 minutes from now in the future)
+            fillIn('input[name="post-setting-date"]', plusTenMinPacific);
+            triggerEvent('input[name="post-setting-date"]', 'blur');
 
             andThen(() => {
-                expect(find('#activeTimezone option:selected').text().trim(), 'new timezone after saving')
-                    .to.equal('(GMT +12:00) Auckland, Wellington');
+                expect(find('label[for="post-setting-date"]').text().trim(), 'label changes to \'Scheduled Date\'')
+                    .to.equal('Scheduled Date');
             });
 
-            // and now go back to the editor
-            visit('/editor/2');
+            // click on 'Schedule Post'
+            click('.post-save-schedule a');
+
+            // button should show 'schedule post'
+            andThen(() => {
+                expect(find('.post-save-schedule').hasClass('active'), 'highlights the active button state for a draft')
+                    .to.be.true;
+                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button to change from published to draft')
+                    .to.be.true;
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for post to schedule')
+                    .to.equal('Schedule Post');
+            });
+
+            // click on schedule post and save
+            click('.view-header .btn.btn-sm.js-publish-button');
 
             andThen(() => {
-                expect(currentURL(), 'currentURL in editor')
-                    .to.equal('/editor/2');
-                expect(find('input[name="post-setting-date"]').val(), 'date with timezone offset')
-                    .to.equal('10 May 16 @ 22:00');
+                // Dropdown menu should be 'Update Post' and 'Unschedule'
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post')
+                    .to.equal('Update Post');
+                expect(find('.post-save-schedule').hasClass('active'), 'highlights the default active button state for a scheduled post')
+                    .to.be.true;
+                expect(find('.post-save-draft').text().trim(), 'not active option should say \'Unschedule\'')
+                    .to.equal('Unschedule');
+                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                    .to.be.false;
+                // expect countdown to show warning, that post will be published in x minutes
+                expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
+                    .to.contain('Post will be published in');
+            });
+
+            // click on 'Unschedule'
+            click('.post-save-draft a');
+
+            andThen(() => {
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button to unscheduled post')
+                    .to.equal('Unschedule');
+                expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a scheduled post')
+                    .to.be.true;
+                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button expected due to status change')
+                    .to.be.true;
+            });
+
+            // click on unschedule post and save
+            click('.view-header .btn.btn-sm.js-publish-button');
+
+            andThen(() => {
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for a draft')
+                    .to.equal('Save Draft');
+                expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a draft post')
+                    .to.be.true;
+                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button expected due to status change')
+                    .to.be.false;
+                // expect no countdown notification after unscheduling
+                expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
+                    .to.equal('');
             });
         });
+
+        it('renders first countdown notification before scheduled time', function () {
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            let clock = sinon.useFakeTimers(moment().valueOf());
+            let post = server.create('post', {published_at: moment.utc().add(4, 'minutes'), status: 'scheduled'});
+            let compareDate = moment().tz('Etc/UTC').add(4, 'minutes').format('DD MMM YY @ HH:mm').toString();
+            let settings = server.create('setting', {activeTimezone: 'Europe/Dublin'});
+
+            visit('/editor/1');
+
+            andThen(() => {
+                expect(currentURL(), 'currentURL')
+                    .to.equal('/editor/1');
+                expect(find('input[name="post-setting-date"]').val(), 'scheduled date')
+                    .to.equal(compareDate);
+                // Dropdown menu should be 'Update Post' and 'Unschedule'
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post')
+                    .to.equal('Update Post');
+                expect(find('.post-save-schedule').hasClass('active'), 'highlights the default active button state for a scheduled post')
+                    .to.be.true;
+                expect(find('.post-save-draft').text().trim(), 'not active option should say \'Unschedule\'')
+                    .to.equal('Unschedule');
+                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'no red button expected')
+                    .to.be.false;
+                // expect countdown to show warning, that post will be published in x minutes
+                expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
+                    .to.contain('Post will be published in');
+            });
+            clock.restore();
+        });
+
+        it('only shows option to unschedule post 2 minutes before scheduled time', function () {
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            let clock = sinon.useFakeTimers(moment().valueOf());
+            let post = server.create('post', {published_at: moment.utc().add(2, 'minutes'), status: 'scheduled'});
+            let compareDate = moment().tz('Europe/Dublin').add(2, 'minutes').format('DD MMM YY @ HH:mm').toString();
+            let settings = server.create('setting', {activeTimezone: 'Europe/Dublin'});
+
+            visit('/editor/1');
+
+            andThen(() => {
+                // Save button should say 'Unschedule'
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post in status freeze mode')
+                    .to.equal('Unschedule');
+                // expect countdown to show warning, that post will be published in x minutes
+                expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
+                    .to.contain('Post will be published in');
+                // no dropdown menu
+                expect(find('.btn.btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
+                    .to.be.false;
+            });
+
+            clock.restore();
+        });
+
+        it('lets user unschedule the post shortly before scheduled date', function () {
+            /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+            let clock = sinon.useFakeTimers(moment().valueOf());
+            let post = server.create('post', {published_at: moment.utc().add(1, 'minute'), status: 'scheduled'});
+            let compareDate = moment().tz('Europe/Dublin').add(1, 'minute').format('DD MMM YY @ HH:mm').toString();
+            let settings = server.create('setting', {activeTimezone: 'Europe/Dublin'});
+
+            visit('/editor/1');
+
+            // change some text
+            fillIn('.markdown-editor', 'Let\'s make some markdown changes');
+
+            andThen(() => {
+                // Save button should say 'Unschedule'
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for scheduled post in status freeze mode')
+                    .to.equal('Unschedule');
+                // expect countdown to show warning, that post will be published in x minutes
+                expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
+                    .to.contain('Post will be published in');
+                // no dropdown menu
+                expect(find('.btn.btn-sm.dropdown-toggle').hasClass('active'), 'no dropdown menu')
+                    .to.be.false;
+            });
+
+            // click on Unschedule
+            click('.view-header .btn.btn-sm.js-publish-button');
+
+            andThen(() => {
+                expect(find('.markdown-editor').val(), 'changed text in markdown editor')
+                    .to.equal('Let\'s make some markdown changes');
+                expect(find('.view-header .btn.btn-sm.js-publish-button').text().trim(), 'text in save button for a draft')
+                    .to.equal('Save Draft');
+                expect(find('.post-save-draft').hasClass('active'), 'highlights the default active button state for a draft post')
+                    .to.be.true;
+                expect(find('.view-header .btn.btn-sm.js-publish-button').hasClass('btn-red'), 'red button expected due to status change')
+                    .to.be.false;
+                // expect no countdown notification after unscheduling
+                expect(find('.gh-notification.gh-notification-schedule').text().trim(), 'notification countdown')
+                    .to.equal('');
+            });
+
+            clock.restore();
+        });
+
     });
 });

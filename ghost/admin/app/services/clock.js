@@ -21,6 +21,7 @@ export default Service.extend({
 
     tick() {
         let now = moment().utc();
+
         this.setProperties({
             second: now.seconds(),
             minute: now.minutes(),

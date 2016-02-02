@@ -10,7 +10,7 @@ export default Mirage.Factory.extend({
     image(i) { return  `/content/images/2015/10/post-${i}.jpg`; },
     featured() { return  false; },
     page() { return  false; },
-    status(i) { return  faker.list.cycle('draft', 'published')(i); },
+    status(i) { return faker.list.cycle('draft', 'published', 'scheduled')(i); },
     meta_description(i) { return  `Meta description for post ${i}.`; },
     meta_title(i) { return  `Meta Title for post ${i}`; },
     author_id() { return  1; },
