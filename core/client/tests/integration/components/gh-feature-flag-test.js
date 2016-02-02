@@ -10,12 +10,21 @@ import wait from 'ember-test-helpers/wait';
 
 function stubSettings(server, labs) {
     server.get('/ghost/api/v0.1/settings/', function () {
-        return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings: [{
-            id: '1',
-            type: 'blog',
-            key: 'labs',
-            value: JSON.stringify(labs)
-        }]})];
+        return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings: [
+            {
+                id: '1',
+                type: 'blog',
+                key: 'labs',
+                value: JSON.stringify(labs)
+            },
+            // postsPerPage is needed to satisfy the validation
+            {
+                id: '2',
+                type: 'blog',
+                key: 'postsPerPage',
+                value: 1
+            }
+        ]})];
     });
 
     server.put('/ghost/api/v0.1/settings/', function (request) {
