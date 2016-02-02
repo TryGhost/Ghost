@@ -5,15 +5,27 @@ import {
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import FeatureService, {feature} from 'ghost/services/feature';
+import Ember from 'ember';
+
+const {merge, run} = Ember;
 
 function stubSettings(server, labs) {
     server.get('/ghost/api/v0.1/settings/', function () {
-        return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings: [{
-            id: '1',
-            type: 'blog',
-            key: 'labs',
-            value: JSON.stringify(labs)
-        }]})];
+        return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings: [
+            {
+                id: '1',
+                type: 'blog',
+                key: 'labs',
+                value: JSON.stringify(labs)
+            },
+            // postsPerPage is needed to satisfy the validation
+            {
+                id: '2',
+                type: 'blog',
+                key: 'postsPerPage',
+                value: 1
+            }
+        ]})];
     });
 
     server.put('/ghost/api/v0.1/settings/', function (request) {
@@ -49,8 +61,8 @@ describeModule(
 
             let service = this.subject();
 
-            return wait().then(() => {
-                expect(service.get('labs').testFlag).to.be.true;
+            service.get('labs').then((labs) => {
+                expect(labs.testFlag).to.be.true;
                 done();
             });
         });
@@ -62,9 +74,19 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', false);
 
+            let testFlag, labsTestFlag;
+
+            service.get('testFlag').then((result) => {
+                testFlag = result;
+            });
+
+            service.get('labs').then((labs) => {
+                labsTestFlag = labs.testFlag;
+            });
+
             return wait().then(() => {
-                expect(service.get('labs').testFlag).to.be.false;
-                expect(service.get('testFlag')).to.be.false;
+                expect(labsTestFlag).to.be.false;
+                expect(testFlag).to.be.false;
                 done();
             });
         });
@@ -76,9 +98,19 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', true);
 
+            let testFlag, labsTestFlag;
+
+            service.get('testFlag').then((result) => {
+                testFlag = result;
+            });
+
+            service.get('labs').then((labs) => {
+                labsTestFlag = labs.testFlag;
+            });
+
             return wait().then(() => {
-                expect(service.get('labs').testFlag).to.be.false;
-                expect(service.get('testFlag')).to.be.true;
+                expect(labsTestFlag).to.be.false;
+                expect(testFlag).to.be.true;
                 done();
             });
         });
@@ -90,9 +122,19 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', false);
 
+            let testFlag, labsTestFlag;
+
+            service.get('testFlag').then((result) => {
+                testFlag = result;
+            });
+
+            service.get('labs').then((labs) => {
+                labsTestFlag = labs.testFlag;
+            });
+
             return wait().then(() => {
-                expect(service.get('labs').testFlag).to.be.true;
-                expect(service.get('testFlag')).to.be.true;
+                expect(labsTestFlag).to.be.true;
+                expect(testFlag).to.be.true;
                 done();
             });
         });
@@ -104,9 +146,19 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', true);
 
+            let testFlag, labsTestFlag;
+
+            service.get('testFlag').then((result) => {
+                testFlag = result;
+            });
+
+            service.get('labs').then((labs) => {
+                labsTestFlag = labs.testFlag;
+            });
+
             return wait().then(() => {
-                expect(service.get('labs').testFlag).to.be.true;
-                expect(service.get('testFlag')).to.be.true;
+                expect(labsTestFlag).to.be.true;
+                expect(testFlag).to.be.true;
                 done();
             });
         });
@@ -117,17 +169,28 @@ describeModule(
 
             let service = this.subject();
 
-            return wait().then(() => {
-                expect(service.get('testFlag')).to.be.false;
+            run(() => {
+                service.get('testFlag').then((testFlag) => {
+                    expect(testFlag).to.be.false;
+                });
+            });
 
+            run(() => {
                 service.set('testFlag', true);
+            });
 
-                return wait().then(() => {
-                    expect(server.handlers[1].numberOfCalls).to.equal(1);
-                    expect(service.get('testFlag')).to.be.true;
+            return wait().then(() => {
+                expect(server.handlers[1].numberOfCalls).to.equal(1);
+
+                // TODO: failing because service.update only sets values on
+                service.get('testFlag').then((testFlag) => {
+                    expect(testFlag).to.be.true;
                     done();
                 });
             });
         });
+
+        it('notifies for server errors');
+        it('notifies for validation errors');
     }
 );
