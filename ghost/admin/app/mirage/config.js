@@ -1,5 +1,6 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
+import Mirage from 'ember-cli-mirage';
 
 const {$, isBlank} = Ember;
 
@@ -60,6 +61,30 @@ export default function () {
             refresh_token: 'XP13eDjwV5mxOcrq1jkIY9idhdvN3R1Br5vxYpYIub2P5Hdc8pdWMOGmwFyoUshiEB62JWHTl8H1kACJR18Z8aMXbnk5orG28br2kmVgtVZKqOSoiiWrQoeKTqrRV0t7ua8uY5HdDUaKpnYKyOdpagsSPn3WEj8op4vHctGL3svOWOjZhq6F2XeVPMR7YsbiwBE8fjT3VhTB3KRlBtWZd1rE0Qo2EtSplWyjGKv1liAEiL0ndQoLeeSOCH4rTP7',
             token_type: 'Bearer'
         };
+    });
+
+    this.post('/authentication/passwordreset', function (db, request) {
+        // jscs:disable requireObjectDestructuring
+        let {passwordreset} = $.deparam(request.requestBody);
+        let email = passwordreset[0].email;
+        // jscs:enable requireObjectDestructuring
+
+        if (email === 'unknown@example.com') {
+            return new Mirage.Response(404, {}, {
+                errors: [
+                    {
+                        message: 'There is no user with that email address.',
+                        errorType: 'NotFoundError'
+                    }
+                ]
+            });
+        } else {
+            return {
+                passwordreset: [
+                    {message: 'Check your email for further instructions.'}
+                ]
+            };
+        }
     });
 
     /* Download Count ------------------------------------------------------- */
