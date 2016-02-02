@@ -84,7 +84,7 @@ export default Controller.extend(ValidationEngine, {
                 let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
                 this.toggleProperty('submitting');
 
-                this.get('ajax').put(forgottenUrl, {
+                this.get('ajax').post(forgottenUrl, {
                     data: {
                         passwordreset: [{email}]
                     }
