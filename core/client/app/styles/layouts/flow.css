@@ -148,8 +148,6 @@
 
 
 .gh-flow-content {
-    display: flex;
-    flex-direction: column;
     max-width: 700px;
     width: 100%;
     color: var(--midgrey);
@@ -415,6 +413,11 @@
 
 .gh-flow-content .gh-flow-faces {
     margin-bottom: 2vw;
+}
+.gh-flow-faces {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 .gh-flow-content textarea {
