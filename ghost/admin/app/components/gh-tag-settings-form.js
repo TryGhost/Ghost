@@ -18,8 +18,8 @@ export default Component.extend({
     scratchName: boundOneWay('tag.name'),
     scratchSlug: boundOneWay('tag.slug'),
     scratchDescription: boundOneWay('tag.description'),
-    scratchMetaTitle: boundOneWay('tag.meta_title'),
-    scratchMetaDescription: boundOneWay('tag.meta_description'),
+    scratchMetaTitle: boundOneWay('tag.metaTitle'),
+    scratchMetaDescription: boundOneWay('tag.metaDescription'),
 
     isViewingSubview: false,
 
