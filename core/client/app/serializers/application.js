@@ -1,6 +1,10 @@
 import Ember from 'ember';
 import RESTSerializer from 'ember-data/serializers/rest';
 
+const {
+    decamelize
+} = Ember.String;
+
 export default RESTSerializer.extend({
     serializeIntoHash(hash, type, record, options) {
         // Our API expects an id on the posted object
@@ -15,5 +19,9 @@ export default RESTSerializer.extend({
         delete data.uuid;
 
         hash[root] = [data];
+    },
+
+    keyForAttribute(attr) {
+        return decamelize(attr);
     }
 });

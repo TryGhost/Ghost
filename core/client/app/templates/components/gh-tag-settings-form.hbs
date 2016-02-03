@@ -57,17 +57,17 @@
 
     <div class="settings-menu-content">
         <form>
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="meta_title"}}
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaTitle"}}
                 <label for="meta-title">Meta Title</label>
-                {{gh-input id="meta-title" name="meta_title" type="text" value=scratchMetaTitle focus-out=(action 'setProperty' 'meta_title')}}
-                {{gh-error-message errors=tag.errors property="meta_title"}}
+                {{gh-input id="meta-title" name="metaTitle" type="text" value=scratchMetaTitle focus-out=(action 'setProperty' 'metaTitle')}}
+                {{gh-error-message errors=tag.errors property="metaTitle"}}
                 <p>Recommended: <b>70</b> characters. You’ve used {{gh-count-down-characters scratchMetaTitle 70}}</p>
             {{/gh-form-group}}
 
-            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="meta_description"}}
+            {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="metaDescription"}}
                 <label for="meta-description">Meta Description</label>
-                {{gh-textarea id="meta-description" name="meta_description" value=scratchMetaDescription focus-out=(action 'setProperty' 'meta_description')}}
-                {{gh-error-message errors=tag.errors property="meta_description"}}
+                {{gh-textarea id="meta-description" name="metaDescription" value=scratchMetaDescription focus-out=(action 'setProperty' 'metaDescription')}}
+                {{gh-error-message errors=tag.errors property="metaDescription"}}
                 <p>Recommended: <b>156</b> characters. You’ve used {{gh-count-down-characters scratchMetaDescription 156}}</p>
             {{/gh-form-group}}
 

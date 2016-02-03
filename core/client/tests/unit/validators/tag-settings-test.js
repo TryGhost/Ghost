@@ -17,8 +17,8 @@ const Tag = Ember.Object.extend(ValidationEngine, {
 
     name: null,
     description: null,
-    meta_title: null,
-    meta_description: null
+    metaTitle: null,
+    metaDescription: null
 });
 
 // TODO: These tests have way too much duplication, consider creating test
@@ -224,14 +224,14 @@ describe('Unit: Validator: tag-settings', function () {
         expect(tag.get('hasValidated'), 'hasValidated').to.include('description');
     });
 
-    // TODO: we have both meta_title and metaTitle property names on the
+    // TODO: we have both metaTitle and metaTitle property names on the
     // model/validator respectively - this should be standardised
-    it('passes with a valid meta_title', function () {
-        // longest valid meta_title
-        const tag = Tag.create({meta_title: (new Array(151).join('x'))});
+    it('passes with a valid metaTitle', function () {
+        // longest valid metaTitle
+        const tag = Tag.create({metaTitle: (new Array(151).join('x'))});
         let passed = false;
 
-        expect(tag.get('meta_title').length, 'meta_title length').to.equal(150);
+        expect(tag.get('metaTitle').length, 'metaTitle length').to.equal(150);
 
         run(() => {
             tag.validate({property: 'metaTitle'}).then(() => {
@@ -243,13 +243,13 @@ describe('Unit: Validator: tag-settings', function () {
         expect(tag.get('hasValidated'), 'hasValidated').to.include('metaTitle');
     });
 
-    it('validates meta_title length', function () {
-        // shortest invalid meta_title
-        const tag = Tag.create({meta_title: (new Array(152).join('x'))});
+    it('validates metaTitle length', function () {
+        // shortest invalid metaTitle
+        const tag = Tag.create({metaTitle: (new Array(152).join('x'))});
         let passed = false;
         let errors;
 
-        expect(tag.get('meta_title').length, 'meta_title length').to.equal(151);
+        expect(tag.get('metaTitle').length, 'metaTitle length').to.equal(151);
 
         run(() => {
             tag.validate({property: 'metaTitle'}).then(() => {
@@ -257,22 +257,22 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        errors = tag.get('errors').errorsFor('meta_title')[0];
-        expect(errors.attribute, 'errors.meta_title.attribute').to.equal('meta_title');
-        expect(errors.message, 'errors.meta_title.message').to.equal('Meta Title cannot be longer than 150 characters.');
+        errors = tag.get('errors').errorsFor('metaTitle')[0];
+        expect(errors.attribute, 'errors.metaTitle.attribute').to.equal('metaTitle');
+        expect(errors.message, 'errors.metaTitle.message').to.equal('Meta Title cannot be longer than 150 characters.');
 
         expect(passed, 'passed').to.be.false;
         expect(tag.get('hasValidated'), 'hasValidated').to.include('metaTitle');
     });
 
-    // TODO: we have both meta_description and metaDescription property names on
+    // TODO: we have both metaDescription and metaDescription property names on
     // the model/validator respectively - this should be standardised
-    it('passes with a valid meta_description', function () {
+    it('passes with a valid metaDescription', function () {
         // longest valid description
-        const tag = Tag.create({meta_description: (new Array(201).join('x'))});
+        const tag = Tag.create({metaDescription: (new Array(201).join('x'))});
         let passed = false;
 
-        expect(tag.get('meta_description').length, 'meta_description length').to.equal(200);
+        expect(tag.get('metaDescription').length, 'metaDescription length').to.equal(200);
 
         run(() => {
             tag.validate({property: 'metaDescription'}).then(() => {
@@ -284,13 +284,13 @@ describe('Unit: Validator: tag-settings', function () {
         expect(tag.get('hasValidated'), 'hasValidated').to.include('metaDescription');
     });
 
-    it('validates meta_description length', function () {
-        // shortest invalid meta_description
-        const tag = Tag.create({meta_description: (new Array(202).join('x'))});
+    it('validates metaDescription length', function () {
+        // shortest invalid metaDescription
+        const tag = Tag.create({metaDescription: (new Array(202).join('x'))});
         let passed = false;
         let errors;
 
-        expect(tag.get('meta_description').length, 'meta_description length').to.equal(201);
+        expect(tag.get('metaDescription').length, 'metaDescription length').to.equal(201);
 
         run(() => {
             tag.validate({property: 'metaDescription'}).then(() => {
@@ -298,9 +298,9 @@ describe('Unit: Validator: tag-settings', function () {
             });
         });
 
-        errors = tag.get('errors').errorsFor('meta_description')[0];
-        expect(errors.attribute, 'errors.meta_description.attribute').to.equal('meta_description');
-        expect(errors.message, 'errors.meta_description.message').to.equal('Meta Description cannot be longer than 200 characters.');
+        errors = tag.get('errors').errorsFor('metaDescription')[0];
+        expect(errors.attribute, 'errors.metaDescription.attribute').to.equal('metaDescription');
+        expect(errors.message, 'errors.metaDescription.message').to.equal('Meta Description cannot be longer than 200 characters.');
 
         expect(passed, 'passed').to.be.false;
         expect(tag.get('hasValidated'), 'hasValidated').to.include('metaDescription');
