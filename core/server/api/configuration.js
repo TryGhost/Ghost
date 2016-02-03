@@ -4,24 +4,40 @@ var _                  = require('lodash'),
     config             = require('../config'),
     errors             = require('../errors'),
     Promise            = require('bluebird'),
+    i18n               = require('../i18n'),
 
     configuration;
 
+function labsFlag(key) {
+    return {
+        value: (config[key] === true),
+        type: 'bool'
+    };
+}
+
 function getValidKeys() {
     var validKeys = {
-            fileStorage: config.fileStorage === false ? false : true,
-            publicAPI: config.publicAPI === true ? true : false,
-            apps: config.apps === true ? true : false,
-            version: config.ghostVersion,
+            fileStorage: {value: (config.fileStorage !== false), type: 'bool'},
+            publicAPI: labsFlag('publicAPI'),
+            apps: {value: (config.apps === true), type: 'bool'},
+            version: {value: config.ghostVersion, type: 'string'},
             environment: process.env.NODE_ENV,
             database: config.database.client,
             mail: _.isObject(config.mail) ? config.mail.transport : '',
-            blogUrl: config.url.replace(/\/$/, ''),
-            blogTitle: config.theme.title,
-            routeKeywords: JSON.stringify(config.routeKeywords)
+            blogUrl: {value: config.url.replace(/\/$/, ''), type: 'string'},
+            blogTitle: {value: config.theme.title, type: 'string'},
+            routeKeywords: {value: JSON.stringify(config.routeKeywords), type: 'json'}
         };
 
     return validKeys;
+}
+
+function formatConfigurationObject(val, key) {
+    return {
+        key: key,
+        value: (_.isObject(val) && _.has(val, 'value')) ? val.value : val,
+        type: _.isObject(val) ? (val.type || null) : null
+    };
 }
 
 /**
@@ -37,12 +53,7 @@ configuration = {
      * @returns {Promise(Configurations)}
      */
     browse: function browse() {
-        return Promise.resolve({configuration: _.map(getValidKeys(), function (value, key) {
-            return {
-                key: key,
-                value: value
-            };
-        })});
+        return Promise.resolve({configuration: _.map(getValidKeys(), formatConfigurationObject)});
     },
 
     /**
@@ -53,12 +64,9 @@ configuration = {
         var data = getValidKeys();
 
         if (_.has(data, options.key)) {
-            return Promise.resolve({configuration: [{
-                key: options.key,
-                value: data[options.key]
-            }]});
+            return Promise.resolve({configuration: [formatConfigurationObject(data[options.key], options.key)]});
         } else {
-            return Promise.reject(new errors.NotFoundError('Invalid key'));
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.configuration.invalidKey')));
         }
     }
 };

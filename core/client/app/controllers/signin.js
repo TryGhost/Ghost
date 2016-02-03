@@ -1,18 +1,23 @@
 import Ember from 'ember';
 import ValidationEngine from 'ghost/mixins/validation-engine';
-import {request as ajax} from 'ic-ajax';
 
-const {$, Controller, inject} = Ember;
+const {
+    $,
+    Controller,
+    inject: {service, controller},
+    isArray
+} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     submitting: false,
     loggingIn: false,
     authProperties: ['identification', 'password'],
 
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    application: inject.controller(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    application: controller(),
+    ajax: service(),
     flowErrors: '',
 
     // ValidationEngine settings
@@ -76,11 +81,10 @@ export default Controller.extend(ValidationEngine, {
             // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
             this.get('hasValidated').addObject('identification');
             this.validate({property: 'forgotPassword'}).then(() => {
+                let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
                 this.toggleProperty('submitting');
 
-                ajax({
-                    url: this.get('ghostPaths.url').api('authentication', 'passwordreset'),
-                    type: 'POST',
+                this.get('ajax').post(forgottenUrl, {
                     data: {
                         passwordreset: [{email}]
                     }
@@ -89,9 +93,9 @@ export default Controller.extend(ValidationEngine, {
                     notifications.showAlert('Please check your email for instructions.', {type: 'info', key: 'forgot-password.send.success'});
                 }).catch((resp) => {
                     this.toggleProperty('submitting');
-                    if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-                        let [error] = resp.jqXHR.responseJSON.errors;
-                        let {message} = error;
+
+                    if (resp && resp.errors && isArray(resp.errors)) {
+                        let [{message}] = resp.errors;
 
                         this.set('flowErrors', message);
 

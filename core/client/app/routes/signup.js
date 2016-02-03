@@ -1,18 +1,22 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-import {request as ajax} from 'ic-ajax';
 import Configuration from 'ember-simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
 
-const {Route, RSVP, inject} = Ember;
+const {
+    Route,
+    RSVP: {Promise},
+    inject: {service}
+} = Ember;
 const {Errors} = DS;
 
 export default Route.extend(styleBody, {
     classNames: ['ghost-signup'],
 
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
+    ghostPaths: service('ghost-paths'),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
 
     beforeModel() {
         this._super(...arguments);
@@ -29,7 +33,7 @@ export default Route.extend(styleBody, {
         let email,
             tokenText;
 
-        return new RSVP.Promise((resolve) => {
+        return new Promise((resolve) => {
             if (!re.test(params.token)) {
                 this.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true, key: 'signup.create.invalid-token'});
 
@@ -43,9 +47,9 @@ export default Route.extend(styleBody, {
             model.set('token', params.token);
             model.set('errors', Errors.create());
 
-            return ajax({
-                url: this.get('ghostPaths.url').api('authentication', 'invitation'),
-                type: 'GET',
+            let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
+
+            return this.get('ajax').request(authUrl, {
                 dataType: 'json',
                 data: {
                     email

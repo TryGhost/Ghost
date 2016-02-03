@@ -65,4 +65,24 @@ describe('staticTheme', function () {
             done();
         });
     });
+
+    it('should not error if active theme is missing', function (done) {
+        var req = {
+                url: 'myvalidfile.css',
+                app: {
+                    get: function () { return undefined; }
+                }
+            },
+            activeThemeStub,
+            sandbox = sinon.sandbox.create();
+
+        activeThemeStub = sandbox.spy(req.app, 'get');
+
+        staticTheme(null)(req, null, function (reqArg, res, next2) {
+            /*jshint unused:false */
+            sandbox.restore();
+            next.called.should.be.false;
+            done();
+        });
+    });
 });

@@ -61,7 +61,7 @@ export default Mixin.create({
      */
     scrollHandler() {
         this.set('scrollThrottle', run.throttle(this, () => {
-            this.sendAction('updateScrollInfo', this.getScrollInfo());
+            this.attrs.updateScrollInfo(this.getScrollInfo());
         }, 10));
     },
 

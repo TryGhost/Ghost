@@ -15,6 +15,10 @@ let configStub = Ember.Service.extend({
     blogUrl: 'http://localhost:2368'
 });
 
+let mediaQueriesStub = Ember.Service.extend({
+    maxWidth600: false
+});
+
 describeComponent(
     'gh-tag-settings-form',
     'Integration: Component: gh-tag-settings-form',
@@ -44,18 +48,21 @@ describeComponent(
 
             this.register('service:config', configStub);
             this.inject.service('config', {as: 'config'});
+
+            this.register('service:media-queries', mediaQueriesStub);
+            this.inject.service('media-queries', {as: 'mediaQueries'});
         });
 
         it('renders', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
             expect(this.$()).to.have.length(1);
         });
 
         it('has the correct title', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
             expect(this.$('.tag-settings-pane h4').text(), 'existing tag title').to.equal('Tag Settings');
 
@@ -65,7 +72,7 @@ describeComponent(
 
         it('renders main settings', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
             expect(this.$('.image-uploader').length, 'displays image uploader').to.equal(1);
@@ -78,7 +85,7 @@ describeComponent(
 
         it('can switch between main/meta settings', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
             expect(this.$('.tag-settings-pane').hasClass('settings-menu-pane-in'), 'main settings are displayed by default').to.be.true;
@@ -105,7 +112,7 @@ describeComponent(
             });
 
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
             run(() => {
@@ -133,7 +140,7 @@ describeComponent(
             });
 
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
             expectedProperty = 'name';
@@ -187,7 +194,7 @@ describeComponent(
             hasValidated.push('meta_description');
 
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
             let nameFormGroup = this.$('input[name="name"]').closest('.form-group');
@@ -212,7 +219,7 @@ describeComponent(
 
         it('displays char count for text fields', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
             let descriptionFormGroup = this.$('textarea[name="description"]').closest('.form-group');
@@ -224,7 +231,7 @@ describeComponent(
 
         it('renders SEO title preview', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
             expect(this.$('.seo-preview-title').text(), 'displays meta title if present').to.equal('Meta Title');
 
@@ -242,7 +249,7 @@ describeComponent(
 
         it('renders SEO URL preview', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
             expect(this.$('.seo-preview-link').text(), 'adds url and tag prefix').to.equal('http://localhost:2368/tag/test/');
 
@@ -255,7 +262,7 @@ describeComponent(
 
         it('renders SEO description preview', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
             expect(this.$('.seo-preview-description').text(), 'displays meta description if present').to.equal('Meta description');
 
@@ -273,7 +280,7 @@ describeComponent(
 
         it('resets if a new tag is received', function () {
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
             run(() => {
                 this.$('.meta-data-button').click();
@@ -287,19 +294,29 @@ describeComponent(
         });
 
         it('triggers delete tag modal on delete click', function (done) {
-            this.set('actions.openModal', (modalName, model) => {
-                expect(modalName, 'passed modal name').to.equal('delete-tag');
-                expect(model, 'passed model').to.equal(this.get('tag'));
+            // TODO: will time out if this isn't hit, there's probably a better
+            // way of testing this
+            this.set('actions.openModal', () => {
                 done();
             });
 
             this.render(hbs`
-                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') openModal='openModal'}}
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty') showDeleteTagModal=(action 'openModal')}}
             `);
 
             run(() => {
                 this.$('.tag-delete-button').click();
             });
+        });
+
+        it('shows settings.tags arrow link on mobile', function () {
+            this.set('mediaQueries.maxWidth600', true);
+
+            this.render(hbs`
+                {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
+            `);
+
+            expect(this.$('.tag-settings-pane .settings-menu-header .settings-menu-header-action').length, 'settings.tags link is shown').to.equal(1);
         });
     }
 );

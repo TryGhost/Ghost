@@ -1,13 +1,20 @@
 import Ember from 'ember';
 
-const {Component, computed, inject, isBlank, observer, run} = Ember;
+const {
+    Component,
+    computed,
+    inject: {service},
+    isBlank,
+    observer,
+    run
+} = Ember;
 const {equal, reads} = computed;
 
 export default Component.extend({
     classNames: ['view-container'],
     classNameBindings: ['isMobile'],
 
-    mediaQueries: inject.service(),
+    mediaQueries: service(),
 
     tags: null,
     selectedTag: null,

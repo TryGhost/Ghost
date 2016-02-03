@@ -1,12 +1,15 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
-import {request as ajax} from 'ic-ajax';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { hasMany } from 'ember-data/relationships';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {computed, inject} = Ember;
+const {
+    computed,
+    inject: {service}
+} = Ember;
 const {equal, empty} = computed;
-const {Model, attr, hasMany} = DS;
 
 export default Model.extend(ValidationEngine, {
     validationType: 'user',
@@ -34,9 +37,10 @@ export default Model.extend(ValidationEngine, {
         embedded: 'always',
         async: false
     }),
-    count: DS.attr('raw'),
+    count: attr('raw'),
 
-    ghostPaths: inject.service('ghost-paths'),
+    ghostPaths: service(),
+    ajax: service(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.
@@ -87,8 +91,7 @@ export default Model.extend(ValidationEngine, {
     saveNewPassword() {
         let url = this.get('ghostPaths.url').api('users', 'password');
 
-        return ajax(url, {
-            type: 'PUT',
+        return this.get('ajax').put(url, {
             data: {
                 password: [{
                     user_id: this.get('id'),
@@ -106,9 +109,9 @@ export default Model.extend(ValidationEngine, {
             email: fullUserData.email,
             roles: fullUserData.roles
         };
+        let inviteUrl = this.get('ghostPaths.url').api('users');
 
-        return ajax(this.get('ghostPaths.url').api('users'), {
-            type: 'POST',
+        return this.get('ajax').post(inviteUrl, {
             data: JSON.stringify({users: [userData]}),
             contentType: 'application/json'
         });

@@ -3,6 +3,7 @@ var _             = require('lodash'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
     config        = require('../config'),
+    i18n          = require('../i18n'),
     adminControllers;
 
 adminControllers = {
@@ -19,8 +20,8 @@ adminControllers = {
             }).then(function getAPIClient() {
                 return api.clients.read({slug: 'ghost-admin'});
             }).then(function renderIndex(adminClient) {
-                configuration.push({key: 'clientId', value: adminClient.clients[0].slug});
-                configuration.push({key: 'clientSecret', value: adminClient.clients[0].secret});
+                configuration.push({key: 'clientId', value: adminClient.clients[0].slug, type: 'string'});
+                configuration.push({key: 'clientSecret', value: adminClient.clients[0].secret, type: 'string'});
 
                 var apiConfig = _.omit(configuration, function omit(value) {
                     return _.contains(['environment', 'database', 'mail', 'version'], value.key);
@@ -45,8 +46,8 @@ adminControllers = {
                 location: 'settings-about-upgrade',
                 dismissible: false,
                 status: 'alert',
-                message: 'Ghost ' + updateVersion + ' is available! Hot Damn. <a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a> to upgrade.'
-            };
+                message: i18n.t('notices.controllers.newVersionAvailable',
+                                {version: updateVersion, link: '<a href="http://support.ghost.org/how-to-upgrade/" target="_blank">Click here</a>'})};
 
             return api.notifications.browse({context: {internal: true}}).then(function then(results) {
                 if (!_.some(results.notifications, {message: notification.message})) {

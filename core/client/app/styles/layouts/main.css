@@ -5,8 +5,12 @@
   Ember's app container, set height so that .gh-app and .gh-viewport
   don't need to use 100vh where bottom of screen gets covered by iOS menus
   http://nicolas-hoizey.com/2015/02/viewport-height-is-taller-than-the-visible-part-of-the-document-in-some-mobile-browsers.html
+
+  TODO: Once we have routable components it should be possible to remove this
+  by moving the gh-app component functionality into the application component
+  which would remove the extra div that this targets.
 */
-body > .ember-view {
+body > .ember-view:not(.liquid-target-container) {
     height: 100%;
 }
 
@@ -59,6 +63,7 @@ body > .ember-view {
     display: flex;
     align-items: center;
     padding: 15px;
+    cursor: pointer;
 }
 
 .gh-nav-menu i {
@@ -67,10 +72,11 @@ body > .ember-view {
     height: 11px;
     font-size: 11px;
     line-height: 11px;
+    transition: margin-top 0.2s ease;
 }
 
-.gh-nav-menu:hover {
-    cursor: pointer;
+.gh-nav-menu:hover i {
+    margin-top: 5px;
 }
 
 .gh-nav-menu-icon {

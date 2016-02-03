@@ -2,7 +2,14 @@
 import Ember from 'ember';
 import boundOneWay from 'ghost/utils/bound-one-way';
 
-const {Component, Handlebars, computed, get, inject} = Ember;
+const {
+    Component,
+    Handlebars,
+    computed,
+    get,
+    inject: {service}
+} = Ember;
+const {reads} = computed;
 
 export default Component.extend({
 
@@ -16,10 +23,10 @@ export default Component.extend({
 
     isViewingSubview: false,
 
-    config: inject.service(),
+    config: service(),
+    mediaQueries: service(),
 
-    mediaQueries: Ember.inject.service(),
-    isMobile: Ember.computed.reads('mediaQueries.maxWidth600'),
+    isMobile: reads('mediaQueries.maxWidth600'),
 
     title: computed('tag.isNew', function () {
         if (this.get('tag.isNew')) {
@@ -125,7 +132,7 @@ export default Component.extend({
         },
 
         deleteTag() {
-            this.sendAction('openModal', 'delete-tag', this.get('tag'));
+            this.attrs.showDeleteTagModal();
         }
     }
 

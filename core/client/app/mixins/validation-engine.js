@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import Model from 'ember-data/model';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
 import ValidatorExtensions from 'ghost/utils/validator-extensions';
@@ -12,9 +13,10 @@ import ResetValidator from 'ghost/validators/reset';
 import UserValidator from 'ghost/validators/user';
 import TagSettingsValidator from 'ghost/validators/tag-settings';
 import NavItemValidator from 'ghost/validators/nav-item';
+import InviteUserValidator from 'ghost/validators/invite-user';
 
 const {Mixin, RSVP, isArray} = Ember;
-const {Errors, Model} = DS;
+const {Errors} = DS;
 const emberA = Ember.A;
 
 // our extensions to the validator library
@@ -41,7 +43,8 @@ export default Mixin.create({
         reset: ResetValidator,
         user: UserValidator,
         tag: TagSettingsValidator,
-        navItem: NavItemValidator
+        navItem: NavItemValidator,
+        inviteUser: InviteUserValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect

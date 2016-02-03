@@ -1,41 +1,50 @@
 import Ember from 'ember';
-import SlugGenerator from 'ghost/models/slug-generator';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, computed, inject} = Ember;
+const {
+    Controller,
+    RSVP,
+    computed,
+    inject: {service},
+    isArray
+} = Ember;
 const {alias, and, not, or, readOnly} = computed;
 
 export default Controller.extend(ValidationEngine, {
     // ValidationEngine settings
     validationType: 'user',
     submitting: false,
-
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-
     lastPromise: null,
+    showDeleteUserModal: false,
+    showTransferOwnerModal: false,
+    showUploadCoverModal: false,
+    showUplaodImageModal: false,
 
-    currentUser: alias('session.user'),
+    ajax: service(),
+    dropdown: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    slugGenerator: service(),
+
     user: alias('model'),
-    email: readOnly('user.email'),
-    slugValue: boundOneWay('user.slug'),
+    currentUser: alias('session.user'),
+
+    email: readOnly('model.email'),
+    slugValue: boundOneWay('model.slug'),
+
+    isNotOwnersProfile: not('user.isOwner'),
+    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
+    canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
+    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
+    rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
+    userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
 
     isNotOwnProfile: computed('user.id', 'currentUser.id', function () {
         return this.get('user.id') !== this.get('currentUser.id');
     }),
-
-    isNotOwnersProfile: not('user.isOwner'),
-
-    isAdminUserOnOwnerProfile: and('currentUser.isAdmin', 'user.isOwner'),
-
-    canAssignRoles: or('currentUser.isAdmin', 'currentUser.isOwner'),
-
-    canMakeOwner: and('currentUser.isOwner', 'isNotOwnProfile', 'user.isAdmin'),
-
-    rolesDropdownIsVisible: and('isNotOwnProfile', 'canAssignRoles', 'isNotOwnersProfile'),
 
     deleteUserActionIsVisible: computed('currentUser', 'canAssignRoles', 'user', function () {
         if ((this.get('canAssignRoles') && this.get('isNotOwnProfile') && !this.get('user.isOwner')) ||
@@ -45,11 +54,9 @@ export default Controller.extend(ValidationEngine, {
         }
     }),
 
-    userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
-
     // duplicated in gh-user-active -- find a better home and consolidate?
     userDefault: computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+        return `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
     }),
 
     userImageBackground: computed('user.image', 'userDefault', function () {
@@ -60,7 +67,7 @@ export default Controller.extend(ValidationEngine, {
     // end duplicated
 
     coverDefault: computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-cover.png');
+        return `${this.get('ghostPaths.subdir')}/ghost/img/user-cover.png`;
     }),
 
     coverImageBackground: computed('user.cover', 'coverDefault', function () {
@@ -73,17 +80,26 @@ export default Controller.extend(ValidationEngine, {
         return `${this.get('user.name')}'s Cover Image`;
     }),
 
-    // Lazy load the slug generator for slugPlaceholder
-    slugGenerator: computed(function () {
-        return SlugGenerator.create({
-            ghostPaths: this.get('ghostPaths'),
-            slugType: 'user'
-        });
-    }),
-
     roles: computed(function () {
         return this.store.query('role', {permissions: 'assign'});
     }),
+
+    _deleteUser() {
+        if (this.get('deleteUserActionIsVisible')) {
+            let user = this.get('user');
+            return user.destroyRecord();
+        }
+    },
+
+    _deleteUserSuccess() {
+        this.get('notifications').closeAlerts('user.delete');
+        this.store.unloadAll('post');
+        this.transitionToRoute('team');
+    },
+
+    _deleteUserFailure() {
+        this.get('notifications').showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
+    },
 
     actions: {
         changeRole(newRole) {
@@ -137,6 +153,20 @@ export default Controller.extend(ValidationEngine, {
             this.set('lastPromise', promise);
         },
 
+        deleteUser() {
+            return this._deleteUser().then(() => {
+                this._deleteUserSuccess();
+            }, () => {
+                this._deleteUserFailure();
+            });
+        },
+
+        toggleDeleteUserModal() {
+            if (this.get('deleteUserActionIsVisible')) {
+                this.toggleProperty('showDeleteUserModal');
+            }
+        },
+
         password() {
             let user = this.get('user');
 
@@ -178,7 +208,7 @@ export default Controller.extend(ValidationEngine, {
                     return;
                 }
 
-                return this.get('slugGenerator').generateSlug(newSlug).then((serverSlug) => {
+                return this.get('slugGenerator').generateSlug('user', newSlug).then((serverSlug) => {
                     // If after getting the sanitized and unique slug back from the API
                     // we end up with a slug that matches the existing slug, abort the change
                     if (serverSlug === slug) {
@@ -210,6 +240,50 @@ export default Controller.extend(ValidationEngine, {
             });
 
             this.set('lastPromise', promise);
+        },
+
+        transferOwnership() {
+            let user = this.get('user');
+            let url = this.get('ghostPaths.url').api('users', 'owner');
+
+            this.get('dropdown').closeDropdowns();
+
+            return this.get('ajax').put(url, {
+                data: {
+                    owner: [{
+                        id: user.get('id')
+                    }]
+                }
+            }).then((response) => {
+                // manually update the roles for the users that just changed roles
+                // because store.pushPayload is not working with embedded relations
+                if (response && isArray(response.users)) {
+                    response.users.forEach((userJSON) => {
+                        let user = this.store.peekRecord('user', userJSON.id);
+                        let role = this.store.peekRecord('role', userJSON.roles[0].id);
+
+                        user.set('role', role);
+                    });
+                }
+
+                this.get('notifications').showAlert(`Ownership successfully transferred to ${user.get('name')}`, {type: 'success', key: 'owner.transfer.success'});
+            }).catch((error) => {
+                this.get('notifications').showAPIError(error, {key: 'owner.transfer'});
+            });
+        },
+
+        toggleTransferOwnerModal() {
+            if (this.get('canMakeOwner')) {
+                this.toggleProperty('showTransferOwnerModal');
+            }
+        },
+
+        toggleUploadCoverModal() {
+            this.toggleProperty('showUploadCoverModal');
+        },
+
+        toggleUploadImageModal() {
+            this.toggleProperty('showUploadImageModal');
         }
     }
 });

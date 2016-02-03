@@ -1,12 +1,18 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
+import AjaxService from 'ember-ajax/services/ajax';
 
-const {Route, inject, run} = Ember;
+const {
+    Route,
+    inject: {service},
+    run
+} = Ember;
 
 let DownloadCountPoller = Ember.Object.extend({
     url: null,
     count: '',
     runId: null,
+
+    ajax: AjaxService.create(),
 
     init() {
         this._super(...arguments);
@@ -27,7 +33,7 @@ let DownloadCountPoller = Ember.Object.extend({
     },
 
     downloadCounter() {
-        ajax(this.get('url')).then((data) => {
+        this.get('ajax').request(this.get('url')).then((data) => {
             let pattern = /(-?\d+)(\d{3})/;
             let count = data.count.toString();
 
@@ -43,7 +49,7 @@ let DownloadCountPoller = Ember.Object.extend({
 });
 
 export default Route.extend({
-    ghostPaths: inject.service('ghost-paths'),
+    ghostPaths: service('ghost-paths'),
 
     model() {
         return DownloadCountPoller.create({url: this.get('ghostPaths.count')});

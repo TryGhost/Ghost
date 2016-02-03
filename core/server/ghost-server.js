@@ -4,7 +4,8 @@ var Promise = require('bluebird'),
     chalk = require('chalk'),
     fs = require('fs'),
     errors = require('./errors'),
-    config = require('./config');
+    config = require('./config'),
+    i18n   = require('./i18n');
 
 /**
  * ## GhostServer
@@ -59,15 +60,15 @@ GhostServer.prototype.start = function (externalApp) {
         self.httpServer.on('error', function (error) {
             if (error.errno === 'EADDRINUSE') {
                 errors.logError(
-                    '(EADDRINUSE) Cannot start Ghost.',
-                    'Port ' + config.server.port + ' is already in use by another program.',
-                    'Is another Ghost instance already running?'
+                    i18n.t('errors.httpServer.addressInUse.error'),
+                    i18n.t('errors.httpServer.addressInUse.context', {port: config.server.port}),
+                    i18n.t('errors.httpServer.addressInUse.help')
                 );
             } else {
                 errors.logError(
-                    '(Code: ' + error.errno + ')',
-                    'There was an error starting your server.',
-                    'Please use the error code above to search for a solution.'
+                    i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
+                    i18n.t('errors.httpServer.otherError.context'),
+                    i18n.t('errors.httpServer.otherError.help')
                 );
             }
             process.exit(-1);
@@ -118,7 +119,7 @@ GhostServer.prototype.restart = function () {
  * To be called after `stop`
  */
 GhostServer.prototype.hammertime = function () {
-    console.log(chalk.green('Can\'t touch this'));
+    console.log(chalk.green(i18n.t('notices.httpServer.cantTouchThis')));
 
     return Promise.resolve(this);
 };
@@ -166,33 +167,31 @@ GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
     if (process.env.NODE_ENV === 'production') {
         console.log(
-            chalk.green('Ghost is running in ' + process.env.NODE_ENV + '...'),
-            '\nYour blog is now available on',
-            config.url,
-            chalk.gray('\nCtrl+C to shut down')
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: config.url}),
+            chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     } else {
         console.log(
-            chalk.green('Ghost is running in ' + process.env.NODE_ENV + '...'),
-            '\nListening on',
-                config.getSocket() || config.server.host + ':' + config.server.port,
-            '\nUrl configured as:',
-            config.url,
-            chalk.gray('\nCtrl+C to shut down')
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            i18n.t('notices.httpServer.listeningOn'),
+            config.getSocket() || config.server.host + ':' + config.server.port,
+            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.url}),
+            chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
         );
     }
 
     function shutdown() {
-        console.log(chalk.red('\nGhost has shut down'));
+        console.log(chalk.red(i18n.t('notices.httpServer.ghostHasShutdown')));
         if (process.env.NODE_ENV === 'production') {
             console.log(
-                '\nYour blog is now offline'
+                i18n.t('notices.httpServer.yourBlogIsNowOffline')
             );
         } else {
             console.log(
-                '\nGhost was running for',
+                i18n.t('notices.httpServer.ghostWasRunningFor'),
                 Math.round(process.uptime()),
-                'seconds'
+                i18n.t('common.time.seconds')
             );
         }
         process.exit(0);
@@ -207,7 +206,7 @@ GhostServer.prototype.logStartMessages = function () {
  * ### Log Shutdown Messages
  */
 GhostServer.prototype.logShutdownMessages = function () {
-    console.log(chalk.red('Ghost is closing connections'));
+    console.log(chalk.red(i18n.t('notices.httpServer.ghostIsClosingConnections')));
 };
 
 module.exports = GhostServer;

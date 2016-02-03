@@ -32,7 +32,7 @@
     <meta name="msapplication-square310x310logo" content="{{asset "img/large.png" ghost="true"}}" />
 
     {{#each configuration}}
-        <meta name="env-{{this.key}}" content="{{this.value}}" />
+        <meta name="env-{{this.key}}" content="{{this.value}}" data-type="{{this.type}}" />
     {{/each}}
 
     {{#unless skip_google_fonts}}

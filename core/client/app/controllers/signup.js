@@ -1,8 +1,12 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-const {Controller, RSVP, inject} = Ember;
+const {
+    Controller,
+    RSVP: {Promise},
+    inject: {service},
+    isArray
+} = Ember;
 
 export default Controller.extend(ValidationEngine, {
     // ValidationEngine settings
@@ -12,23 +16,23 @@ export default Controller.extend(ValidationEngine, {
     flowErrors: '',
     image: null,
 
-    ghostPaths: inject.service('ghost-paths'),
-    config: inject.service(),
-    notifications: inject.service(),
-    session: inject.service(),
+    ghostPaths: service(),
+    config: service(),
+    notifications: service(),
+    session: service(),
+    ajax: service(),
 
     sendImage() {
         let image = this.get('image');
 
         this.get('session.user').then((user) => {
-            return new RSVP.Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => {
                 image.formData = {};
                 image.submit()
                     .success((response) => {
+                        let usersUrl = this.get('ghostPaths.url').api('users', user.id.toString());
                         user.image = response;
-                        ajax({
-                            url: this.get('ghostPaths.url').api('users', user.id.toString()),
-                            type: 'PUT',
+                        this.get('ajax').put(usersUrl, {
                             data: {
                                 users: [user]
                             }
@@ -51,10 +55,9 @@ export default Controller.extend(ValidationEngine, {
 
             this.get('hasValidated').addObjects(setupProperties);
             this.validate().then(() => {
+                let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
                 this.toggleProperty('submitting');
-                ajax({
-                    url: this.get('ghostPaths.url').api('authentication', 'invitation'),
-                    type: 'POST',
+                this.get('ajax').post(authUrl, {
                     dataType: 'json',
                     data: {
                         invitation: [{
@@ -74,8 +77,9 @@ export default Controller.extend(ValidationEngine, {
                     });
                 }).catch((resp) => {
                     this.toggleProperty('submitting');
-                    if (resp && resp.jqXHR && resp.jqXHR.responseJSON && resp.jqXHR.responseJSON.errors) {
-                        this.set('flowErrors', resp.jqXHR.responseJSON.errors[0].message);
+
+                    if (resp && resp.errors && isArray(resp.errors)) {
+                        this.set('flowErrors', resp.errors[0].message);
                     } else {
                         notifications.showAPIError(resp, {key: 'signup.complete'});
                     }

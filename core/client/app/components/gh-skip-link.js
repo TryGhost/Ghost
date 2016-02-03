@@ -1,7 +1,7 @@
 /*jshint scripturl:true*/
 import Ember from 'ember';
 
-const {$, Component, on} = Ember;
+const {$, Component} = Ember;
 
 export default Component.extend({
     tagName: 'a',
@@ -15,7 +15,7 @@ export default Component.extend({
     // anchor behaviors or ignored
     href: Ember.String.htmlSafe('javascript:;'),
 
-    scrollTo: on('click', function () {
+    click() {
         let anchor = this.get('anchor');
         let $el = Ember.$(anchor);
 
@@ -32,5 +32,5 @@ export default Component.extend({
                 $(this).removeAttr('tabindex');
             }).focus();
         }
-    })
+    }
 });

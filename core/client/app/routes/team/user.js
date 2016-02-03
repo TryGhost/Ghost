@@ -10,7 +10,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, NotFoun
     classNames: ['team-view-user'],
 
     model(params) {
-        return this.store.queryRecord('user', {slug: params.user_slug});
+        return this.store.queryRecord('user', {slug: params.user_slug, include: 'count.posts'});
     },
 
     serialize(model) {

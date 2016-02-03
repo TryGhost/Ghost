@@ -1,17 +1,24 @@
 import Ember from 'ember';
-import {request as ajax} from 'ic-ajax';
 
-const {$, Controller, computed, inject} = Ember;
+const {
+    $,
+    Controller,
+    computed,
+    inject: {service, controller},
+    isArray
+} = Ember;
 
 export default Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
     submitting: false,
+    showDeleteAllModal: false,
 
-    ghostPaths: inject.service('ghost-paths'),
-    notifications: inject.service(),
-    session: inject.service(),
-    feature: inject.controller(),
+    ghostPaths: service(),
+    notifications: service(),
+    session: service(),
+    feature: controller(),
+    ajax: service(),
 
     labsJSON: computed('model.labs', function () {
         return JSON.parse(this.get('model.labs') || {});
@@ -46,14 +53,14 @@ export default Controller.extend({
             let formData = new FormData();
             let notifications = this.get('notifications');
             let currentUserId = this.get('session.user.id');
+            let dbUrl = this.get('ghostPaths.url').api('db');
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
 
             formData.append('importfile', file);
 
-            ajax(this.get('ghostPaths.url').api('db'), {
-                type: 'POST',
+            this.get('ajax').post(dbUrl, {
                 data: formData,
                 dataType: 'json',
                 cache: false,
@@ -65,11 +72,10 @@ export default Controller.extend({
                 // Reload currentUser and set session
                 this.set('session.user', this.store.findRecord('user', currentUserId));
                 // TODO: keep as notification, add link to view content
-                notifications.showNotification('Import successful.');
-                notifications.closeAlerts('import.upload');
+                notifications.showNotification('Import successful.', {key: 'import.upload.success'});
             }).catch((response) => {
-                if (response && response.jqXHR && response.jqXHR.responseJSON && response.jqXHR.responseJSON.errors) {
-                    this.set('importErrors', response.jqXHR.responseJSON.errors);
+                if (response && response.errors && isArray(response.errors)) {
+                    this.set('importErrors', response.errors);
                 }
 
                 notifications.showAlert('Import Failed', {type: 'error', key: 'import.upload.failed'});
@@ -93,22 +99,21 @@ export default Controller.extend({
 
         sendTestEmail() {
             let notifications = this.get('notifications');
+            let emailUrl = this.get('ghostPaths.url').api('mail', 'test');
 
             this.toggleProperty('submitting');
 
-            ajax(this.get('ghostPaths.url').api('mail', 'test'), {
-                type: 'POST'
-            }).then(() => {
+            this.get('ajax').post(emailUrl).then(() => {
                 notifications.showAlert('Check your email for the test message.', {type: 'info', key: 'test-email.send.success'});
                 this.toggleProperty('submitting');
             }).catch((error) => {
-                if (typeof error.jqXHR !== 'undefined') {
-                    notifications.showAPIError(error, {key: 'test-email.send'});
-                } else {
-                    notifications.showErrors(error, {key: 'test-email.send'});
-                }
+                notifications.showAPIError(error, {key: 'test-email:send'});
                 this.toggleProperty('submitting');
             });
+        },
+
+        toggleDeleteAllModal() {
+            this.toggleProperty('showDeleteAllModal');
         }
     }
 });

@@ -1,12 +1,19 @@
 import Ember from 'ember';
 import uploader from 'ghost/assets/lib/uploader';
 
-const {Component, computed, get, inject, isEmpty, run} = Ember;
+const {
+    Component,
+    computed,
+    get,
+    inject: {service},
+    isEmpty,
+    run
+} = Ember;
 
 export default Component.extend({
     classNames: ['image-uploader', 'js-post-image-upload'],
 
-    config: inject.service(),
+    config: service(),
 
     imageSource: computed('image', function () {
         return this.get('image') || '';
@@ -36,13 +43,14 @@ export default Component.extend({
             this.$()[0].uploaderUi.reset();
         }
 
-        // re-init if we receive a new image but the uploader is blank
+        // re-init if we receive a new image
         // - handles back button navigating from blank image to populated image
+        // - handles navigating between populated images
+
         if (!isEmpty(newValue) && this.$()) {
-            if (this.$('.js-upload-target').attr('src') === '') {
-                this.$()[0].uploaderUi.reset();
-                this.$()[0].uploaderUi.initWithImage();
-            }
+            this.$('.js-upload-target').attr('src', '');
+            this.$()[0].uploaderUi.reset();
+            this.$()[0].uploaderUi.initWithImage();
         }
     },
 

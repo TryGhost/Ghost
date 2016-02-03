@@ -1,16 +1,20 @@
 import Ember from 'ember';
 
-const {Component, computed, inject} = Ember;
+const {
+    Component,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Component.extend({
     tagName: '',
 
     user: null,
 
-    ghostPaths: inject.service('ghost-paths'),
+    ghostPaths: service(),
 
     userDefault: computed('ghostPaths', function () {
-        return this.get('ghostPaths.url').asset('/shared/img/user-image.png');
+        return `${this.get('ghostPaths.subdir')}/ghost/img/user-image.png`;
     }),
 
     userImageBackground: computed('user.image', 'userDefault', function () {

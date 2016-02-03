@@ -243,13 +243,6 @@ describe('Frontend Routing', function () {
         });
 
         describe('Static assets', function () {
-            it('should retrieve shared assets', function (done) {
-                request.get('/shared/img/user-image.png')
-                    .expect('Cache-Control', testUtils.cacheRules.hour)
-                    .expect(200)
-                    .end(doEnd(done));
-            });
-
             it('should retrieve theme assets', function (done) {
                 request.get('/assets/css/screen.css')
                     .expect('Cache-Control', testUtils.cacheRules.year)
@@ -1055,6 +1048,7 @@ describe('Frontend Routing', function () {
         it('should serve sitemap.xml', function (done) {
             request.get('/sitemap.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
         });
@@ -1062,6 +1056,7 @@ describe('Frontend Routing', function () {
         it('should serve sitemap-posts.xml', function (done) {
             request.get('/sitemap-posts.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
         });
@@ -1069,6 +1064,7 @@ describe('Frontend Routing', function () {
         it('should serve sitemap-pages.xml', function (done) {
             request.get('/sitemap-posts.xml')
                 .expect(200)
+                .expect('Cache-Control', testUtils.cacheRules.hour)
                 .expect('Content-Type', 'text/xml; charset=utf-8')
                 .end(doEnd(done));
         });

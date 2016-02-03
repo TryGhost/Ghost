@@ -1,6 +1,10 @@
 import Ember from 'ember';
 
-const {Component, computed, inject} = Ember;
+const {
+    Component,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Component.extend({
     tagName: '',
@@ -8,7 +12,7 @@ export default Component.extend({
     user: null,
     isSending: false,
 
-    notifications: inject.service(),
+    notifications: service(),
 
     createdAt: computed('user.created_at', function () {
         let createdAt = this.get('user.created_at');
@@ -31,8 +35,7 @@ export default Component.extend({
                     notifications.showAlert('Invitation email was not sent.  Please try resending.', {type: 'error', key: 'invite.resend.not-sent'});
                 } else {
                     user.set('status', result.users[0].status);
-                    notifications.showNotification(notificationText);
-                    notifications.closeAlerts('invite.resend');
+                    notifications.showNotification(notificationText, {key: 'invite.resend.success'});
                 }
             }).catch((error) => {
                 notifications.showAPIError(error, {key: 'invite.resend'});
@@ -51,8 +54,7 @@ export default Component.extend({
                 if (user.get('invited')) {
                     user.destroyRecord().then(() => {
                         let notificationText = `Invitation revoked. (${email})`;
-                        notifications.showNotification(notificationText);
-                        notifications.closeAlerts('invite.revoke');
+                        notifications.showNotification(notificationText, {key: 'invite.revoke.success'});
                     }).catch((error) => {
                         notifications.showAPIError(error, {key: 'invite.revoke'});
                     });
