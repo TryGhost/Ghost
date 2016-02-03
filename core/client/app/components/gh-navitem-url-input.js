@@ -137,6 +137,10 @@ export default TextField.extend({
             if (!url.match(/^\//)) {
                 url = `/${url}`;
             }
+
+            if (!url.match(/\/$/) && !url.match(/[\.#\?]/)) {
+                url = `${url}/`;
+            }
         }
 
         this.sendAction('change', url);
