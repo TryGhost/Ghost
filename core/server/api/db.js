@@ -85,7 +85,9 @@ db = {
 
         function importContent(options) {
             return importer.importFromFile(options.importfile)
-                .then(api.settings.updateSettingsCache)
+                .then(function () {
+                    api.settings.updateSettingsCache();
+                })
                 .return({db: []});
         }
 
