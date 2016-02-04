@@ -108,6 +108,28 @@ describeModule(
             });
         });
 
+        it('save: ignores blank last item when saving', function (done) {
+            let ctrl = this.subject();
+
+            run(() => {
+                ctrl.set('model', Ember.Object.create({navigation: `[
+                    {"label":"First",   "url":"/"},
+                    {"label":"",        "url":""}
+                ]`}));
+
+                expect(ctrl.get('navigationItems.length')).to.equal(2);
+
+                ctrl.save().then(function passedValidation() {
+                    assert(false, 'navigationItems weren\'t validated on save');
+                    done();
+                }).catch(function failedValidation() {
+                    let navItems = ctrl.get('navigationItems');
+                    expect(navItems[0].get('errors').toArray()).to.be.empty;
+                    done();
+                });
+            });
+        });
+
         it('save: generates new navigation JSON', function (done) {
             let ctrl = this.subject();
             let model = Ember.Object.create({navigation: {}});
@@ -142,14 +164,19 @@ describeModule(
 
             run(() => {
                 ctrl.set('navigationItems', [NavItem.create({label: 'First', url: '/first', last: true})]);
-                expect(ctrl.get('navigationItems.length')).to.equal(1);
-                ctrl.send('addItem');
-                expect(ctrl.get('navigationItems.length')).to.equal(2);
-                expect(ctrl.get('navigationItems.firstObject.last')).to.be.false;
-                expect(ctrl.get('navigationItems.lastObject.label')).to.equal('');
-                expect(ctrl.get('navigationItems.lastObject.url')).to.equal('');
-                expect(ctrl.get('navigationItems.lastObject.last')).to.be.true;
             });
+
+            expect(ctrl.get('navigationItems.length')).to.equal(1);
+
+            run(() => {
+                ctrl.send('addItem');
+            });
+
+            expect(ctrl.get('navigationItems.length')).to.equal(2);
+            expect(ctrl.get('navigationItems.firstObject.last')).to.be.false;
+            expect(ctrl.get('navigationItems.lastObject.label')).to.equal('');
+            expect(ctrl.get('navigationItems.lastObject.url')).to.equal('');
+            expect(ctrl.get('navigationItems.lastObject.last')).to.be.true;
         });
 
         it('action - addItem: doesn\'t insert new item if last object is incomplete', function () {
