@@ -23,6 +23,7 @@ var hbs             = require('express-hbs'),
     tagsHelper          = require('./tags'),
     imageHelper         = require('./image'),
     labs                = require('../utils/labs'),
+    utils               = require('./utils'),
 
     blog,
     ghost_head;
@@ -370,7 +371,9 @@ ghost_head = function (options) {
         head.push(response.settings[0].value);
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
-        var headString = _.reduce(head, function (memo, item) { return memo + '\n    ' + item; }, '');
+        var headString = _.reduce(head, function (memo, item) {
+            return memo + '\n    ' + utils.stripHbsComments(item);
+        }, '');
         return new hbs.handlebars.SafeString(headString.trim());
     });
 };

@@ -30,7 +30,7 @@ describe('{{ghost_foot}} helper', function () {
     it('outputs correct injected code', function (done) {
         sandbox.stub(api.settings, 'read', function () {
             return Promise.resolve({
-                settings: [{value: '<script type="text/javascript">var test = \'I am a variable!\'</script>'}]
+                settings: [{value: '{{! Ignore\n me}}<script type="text/javascript">var test = \'I am a variable!\'</script>'}]
             });
         });
 

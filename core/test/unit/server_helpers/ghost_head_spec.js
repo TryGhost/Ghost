@@ -727,7 +727,7 @@ describe('{{ghost_head}} helper', function () {
     describe('with Code Injection', function () {
         beforeEach(function () {
             settingsReadStub.returns(new Promise.resolve({
-                settings: [{value: '<style>body {background: red;}</style>'}]
+                settings: [{value: '<style>body {background: red;}</style>{{! Ignore\n me}}{{!-- {{#if casper}}ghost{{/if}} here--}}'}]
             }));
 
             configUtils.set({

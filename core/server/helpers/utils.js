@@ -6,7 +6,13 @@ utils = {
     linkTemplate: _.template('<a href="<%= url %>"><%= text %></a>'),
     scriptTemplate: _.template('<script src="<%= source %>?v=<%= version %>"></script>'),
     inputTemplate: _.template('<input class="<%= className %>" type="<%= type %>" name="<%= name %>" <%= extras %> />'),
-    isProduction: process.env.NODE_ENV === 'production'
+    isProduction: process.env.NODE_ENV === 'production',
+    stripHbsComments: function (string) {
+        // Remove hbs block comment
+        string = string.replace(new RegExp('{{!--(?:(?!--}})[^])*--}}', 'g'), '');
+        // Remove standard hbs comment
+        return string.replace(new RegExp('{{!(?:(?!}})[^])*}}', 'g'), '');
+    }
 };
 
 module.exports = utils;
