@@ -35,7 +35,7 @@ validator.extend('isSlug', function isSlug(str) {
 // Validation against schema attributes
 // values are checked against the validation objects from schema.js
 validateSchema = function validateSchema(tableName, model) {
-    var columns = _.keys(schema[tableName]),
+    var columns = Object.keys(schema[tableName]),
         validationErrors = [];
 
     _.each(columns, function each(columnKey) {
@@ -149,7 +149,7 @@ validate = function validate(value, key, validations) {
         if (_.isBoolean(validationOptions)) {
             goodResult = validationOptions;
             validationOptions = [];
-        } else if (!_.isArray(validationOptions)) {
+        } else if (!Array.isArray(validationOptions)) {
             validationOptions = [validationOptions];
         }
 

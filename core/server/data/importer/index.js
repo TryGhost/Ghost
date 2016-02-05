@@ -71,7 +71,7 @@ _.extend(ImportManager.prototype, {
      * @returns {String}
      */
     getGlobPattern: function (items) {
-        return '+(' + _.reduce(items, function (memo, ext) {
+        return '+(' + items.reduce(function (memo, ext) {
             return memo !== '' ? memo + '|'  + ext : ext;
         }, '') + ')';
     },
@@ -187,7 +187,7 @@ _.extend(ImportManager.prototype, {
      */
     getFilesFromZip: function (handler, directory) {
         var globPattern = this.getExtensionGlob(handler.extensions, ALL_DIRS);
-        return _.map(glob.sync(globPattern, {cwd: directory}), function (file) {
+        return glob.sync(globPattern, {cwd: directory}).map(function (file) {
             return {name: file, path: path.join(directory, file)};
         });
     },

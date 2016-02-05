@@ -63,7 +63,7 @@ utils = {
         });
 
         // We now have a list of users we need to figure out what their email addresses are
-        _.each(_.keys(userMap), function (userToMap) {
+        _.each(Object.keys(userMap), function (userToMap) {
             userToMap = parseInt(userToMap, 10);
             var foundUser = _.find(tableData.users, function (tableDataUser) {
                 return tableDataUser.id === userToMap;
@@ -121,7 +121,7 @@ utils = {
             });
             if (post) {
                 tags = _.filter(tableData.tags, function (tag) {
-                    return _.indexOf(tagIds, tag.id) !== -1;
+                    return tagIds.indexOf(tag.id) !== -1;
                 });
                 post.tags = [];
                 _.each(tags, function (tag) {

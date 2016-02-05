@@ -75,8 +75,8 @@ updateSettingsCache = function (settings) {
     settings = settings || {};
 
     if (!_.isEmpty(settings)) {
-        _.map(settings, function (setting, key) {
-            settingsCache[key] = setting;
+        Object.keys(settings).map(function (key) {
+            settingsCache[key] = settings[key];
         });
 
         updateConfigCache();
@@ -150,7 +150,7 @@ filterPaths = function (paths, active) {
                 item.package = false;
             }
 
-            if (_.indexOf(active, key) !== -1) {
+            if (active.indexOf(key) !== -1) {
                 item.active = true;
             }
             res.push(item);
@@ -166,7 +166,7 @@ filterPaths = function (paths, active) {
  * @returns {Settings}
  */
 readSettingsResult = function (settingsModels) {
-    var settings = _.reduce(settingsModels, function (memo, member) {
+    var settings = settingsModels.reduce(function (memo, member) {
             if (!memo.hasOwnProperty(member.attributes.key)) {
                 memo[member.attributes.key] = member.attributes;
             }
@@ -269,7 +269,7 @@ canEditAllSettings = function (settingsInfo, options) {
                 return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.settings.noPermissionToEditSettings')));
             });
         },
-        checks = _.map(settingsInfo, function (settingInfo) {
+        checks = settingsInfo.map(function (settingInfo) {
             var setting = settingsCache[settingInfo.key];
 
             if (!setting) {

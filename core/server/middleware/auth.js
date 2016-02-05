@@ -52,7 +52,7 @@ function isValidOrigin(origin, client) {
     var configHostname = url.parse(config.url).hostname;
 
     if (origin && client && client.type === 'ua' && (
-        _.indexOf(getIPs(), origin) >= 0
+        getIPs().indexOf(origin) >= 0
         || _.some(client.trustedDomains, {trusted_domain: origin})
         || origin === configHostname
         || configHostname === 'my-ghost-blog.com'

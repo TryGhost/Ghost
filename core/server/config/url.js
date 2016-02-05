@@ -171,7 +171,7 @@ function urlFor(context, data, absolute) {
 
     if (_.isObject(context) && context.relativeUrl) {
         urlPath = context.relativeUrl;
-    } else if (_.isString(context) && _.indexOf(knownObjects, context) !== -1) {
+    } else if (_.isString(context) && knownObjects.indexOf(context) !== -1) {
         // trying to create a url for an object
         if (context === 'post' && data.post) {
             urlPath = data.post.url;
@@ -215,7 +215,7 @@ function urlFor(context, data, absolute) {
             }
         }
         // other objects are recognised but not yet supported
-    } else if (_.isString(context) && _.indexOf(_.keys(knownPaths), context) !== -1) {
+    } else if (_.isString(context) && Object.keys(knownPaths).indexOf(context) !== -1) {
         // trying to create a url for a named path
         urlPath = knownPaths[context] || '/';
     }

@@ -148,7 +148,7 @@ themes = {
         var tasks, themeName;
 
         // Check whether the request is properly formatted.
-        if (!_.isArray(object.themes)) {
+        if (!Array.isArray(object.themes)) {
             return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.themes.invalidRequest')));
         }
 

@@ -74,11 +74,11 @@ Filters.prototype.doFilter = function (name, args, context) {
             var callables;
 
             // Bug out if no handlers on this priority
-            if (!_.isArray(callbacks[priority])) {
+            if (!Array.isArray(callbacks[priority])) {
                 return Promise.resolve(currentArgs);
             }
 
-            callables = _.map(callbacks[priority], function (callback) {
+            callables = callbacks[priority].map(function (callback) {
                 return function (args) {
                     return callback(args, context);
                 };

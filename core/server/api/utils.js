@@ -227,7 +227,7 @@ utils = {
             params = params.split(',');
         }
 
-        return _.map(params, function (item) {
+        return params.map(function (item) {
             return item.trim().toLowerCase();
         });
     },

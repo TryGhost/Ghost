@@ -50,7 +50,7 @@ cleanError = function cleanError(error) {
 handleErrors = function handleErrors(errorList) {
     var processedErrors = [];
 
-    if (!_.isArray(errorList)) {
+    if (!Array.isArray(errorList)) {
         return Promise.reject(errorList);
     }
 
@@ -58,7 +58,7 @@ handleErrors = function handleErrors(errorList) {
         if (!error.raw) {
             // These are validation errors
             processedErrors.push(error);
-        } else if (_.isArray(error.raw)) {
+        } else if (Array.isArray(error.raw)) {
             processedErrors = processedErrors.concat(error.raw);
         } else {
             processedErrors.push(cleanError(error));
@@ -79,8 +79,8 @@ checkDuplicateAttributes = function checkDuplicateAttributes(data, comparedValue
 
 sanitize = function sanitize(data) {
     var allProblems = {},
-        tablesInData = _.keys(data.data),
-        tableNames = _.sortBy(_.keys(tables), function (tableName) {
+        tablesInData = Object.keys(data.data),
+        tableNames = _.sortBy(Object.keys(tables), function (tableName) {
             // We want to guarantee posts and tags go first
             if (tableName === 'posts') {
                 return 1;
@@ -168,7 +168,7 @@ sanitize = function sanitize(data) {
 validate = function validate(data) {
     var validateOps = [];
 
-    _.each(_.keys(data.data), function (tableName) {
+    _.each(Object.keys(data.data), function (tableName) {
         _.each(data.data[tableName], function (importValues) {
             validateOps.push(validation.validateSchema(tableName, importValues));
         });

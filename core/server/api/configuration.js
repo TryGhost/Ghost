@@ -53,7 +53,7 @@ configuration = {
      * @returns {Promise(Configurations)}
      */
     browse: function browse() {
-        return Promise.resolve({configuration: _.map(getValidKeys(), formatConfigurationObject)});
+        return Promise.resolve({configuration: getValidKeys().map(formatConfigurationObject)});
     },
 
     /**

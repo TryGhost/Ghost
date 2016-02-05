@@ -25,7 +25,7 @@ describe('Permissions', function () {
         });
 
         beforeEach(function () {
-            var permissions = _.map(testUtils.DataGenerator.Content.permissions, function (testPerm) {
+            var permissions = testUtils.DataGenerator.Content.permissions.map(function (testPerm) {
                 return testUtils.DataGenerator.forKnex.createPermission(testPerm);
             });
 

@@ -370,7 +370,7 @@ ghost_head = function (options) {
         head.push(response.settings[0].value);
         return filters.doFilter('ghost_head', head);
     }).then(function (head) {
-        var headString = _.reduce(head, function (memo, item) { return memo + '\n    ' + item; }, '');
+        var headString = head.reduce(function (memo, item) { return memo + '\n    ' + item; }, '');
         return new hbs.handlebars.SafeString(headString.trim());
     });
 };

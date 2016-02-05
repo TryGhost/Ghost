@@ -96,7 +96,7 @@ errors = {
             stack,
             msgs;
 
-        if (_.isArray(err)) {
+        if (Array.isArray(err)) {
             _.each(err, function (e) {
                 var newArgs = [e].concat(origArgs);
                 errors.logError.apply(self, newArgs);
@@ -189,7 +189,7 @@ errors = {
         var statusCode = 500,
             errors = [];
 
-        if (!_.isArray(error)) {
+        if (!Array.isArray(error)) {
             error = [].concat(error);
         }
 
@@ -350,7 +350,7 @@ errors = {
             var statusCode = 500,
                 returnErrors = [];
 
-            if (!_.isArray(err)) {
+            if (!Array.isArray(err)) {
                 err = [].concat(err);
             }
 

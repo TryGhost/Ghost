@@ -62,7 +62,7 @@ module.exports = {
 
                     return Promise.resolve(loadedApp);
                 },
-                loadPromises = _.map(appsToLoad, function (app) {
+                loadPromises = appsToLoad.map(function (app) {
                     // If already installed, just activate the app
                     if (_.contains(installedApps, app)) {
                         return loader.activateAppByName(app).then(function (loadedApp) {
@@ -80,7 +80,7 @@ module.exports = {
 
             return Promise.all(loadPromises).then(function () {
                 // Save our installed apps to settings
-                return saveInstalledApps(_.keys(loadedApps));
+                return saveInstalledApps(Object.keys(loadedApps));
             }).then(function () {
                 // Extend the loadedApps onto the available apps
                 _.extend(availableApps, loadedApps);

@@ -67,7 +67,7 @@ function updateCheckData() {
                 return errors.rejectError(e);
             }
 
-            return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
+            return apps.reduce(function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
         }).catch(errors.rejectError));
     ops.push(api.posts.browse().catch(errors.rejectError));
     ops.push(api.users.browse(internal).catch(errors.rejectError));
@@ -95,7 +95,7 @@ function updateCheckData() {
         data.post_count      = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
         data.user_count      = users && users.users && users.users.length ? users.users.length : 0;
         data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
-        data.npm_version     = _.isArray(npm) && npm[0] ? npm[0].toString().replace(/\n/, '') : '';
+        data.npm_version     = Array.isArray(npm) && npm[0] ? npm[0].toString().replace(/\n/, '') : '';
 
         return data;
     }).catch(updateCheckError);
@@ -183,7 +183,7 @@ function updateCheck() {
     // 2. we've already done a check this session
     // 3. we're not in production or development mode
     // TODO: need to remove config.updateCheck in favor of config.privacy.updateCheck in future version (it is now deprecated)
-    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || _.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
+    if (config.updateCheck === false || config.isPrivacyDisabled('useUpdateCheck') || allowedCheckEnvironments.indexOf(process.env.NODE_ENV) === -1) {
         // No update check
         return Promise.resolve();
     } else {

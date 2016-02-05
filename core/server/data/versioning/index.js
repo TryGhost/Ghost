@@ -35,7 +35,7 @@ function getDatabaseVersion() {
                 .orWhere('key', 'currentVersion')
                 .select('value')
                 .then(function (versions) {
-                    var databaseVersion = _.reduce(versions, function (memo, version) {
+                    var databaseVersion = versions.reduce(function (memo, version) {
                         if (isNaN(version.value)) {
                             errors.throwError(i18n.t('errors.data.versioning.index.dbVersionNotRecognized'));
                         }

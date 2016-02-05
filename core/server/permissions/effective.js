@@ -8,7 +8,7 @@ effective = {
         return Models.User.findOne({id: id, status: 'all'}, {include: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
                 var seenPerms = {},
-                    rolePerms = _.map(foundUser.related('roles').models, function (role) {
+                    rolePerms = foundUser.related('roles').models.map(function (role) {
                         return role.related('permissions').models;
                     }),
                     allPerms = [],

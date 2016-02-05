@@ -1,7 +1,6 @@
 // # DB API
 // API for DB operations
-var _                = require('lodash'),
-    Promise          = require('bluebird'),
+var Promise          = require('bluebird'),
     dataExport       = require('../data/export'),
     importer         = require('../data/importer'),
     models           = require('../models'),
@@ -74,7 +73,7 @@ db = {
             if (!utils.checkFileIsValid(options.importfile, importer.getTypes(), importer.getExtensions())) {
                 return Promise.reject(new errors.UnsupportedMediaTypeError(
                     i18n.t('errors.api.db.unsupportedFile') +
-                        _.reduce(importer.getExtensions(), function (memo, ext) {
+                        importer.getExtensions().reduce(function (memo, ext) {
                             return memo ? memo + ', ' + ext : ext;
                         })
                 ));

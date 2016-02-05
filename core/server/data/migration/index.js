@@ -15,7 +15,7 @@ var _               = require('lodash'),
     config          = require('../../config'),
     i18n            = require('../../i18n'),
 
-    schemaTables    = _.keys(schema),
+    schemaTables    = Object.keys(schema),
 
     // private
     logInfo,
@@ -123,7 +123,7 @@ init = function (tablesOnly) {
 // ### Reset
 // Delete all tables from the database in reverse order
 reset = function () {
-    var tables = _.map(schemaTables, function (table) {
+    var tables = schemaTables.map(function (table) {
         return function () {
             return utils.deleteTable(table);
         };
@@ -135,7 +135,7 @@ reset = function () {
 // Only do this if we have no database at all
 migrateUpFreshDb = function (tablesOnly) {
     var tableSequence,
-        tables = _.map(schemaTables, function (table) {
+        tables = schemaTables.map(function (table) {
             return function () {
                 logInfo(i18n.t('notices.data.migration.index.creatingTable', {table: table}));
                 return utils.createTable(table);
@@ -172,7 +172,7 @@ migrateUp = function (fromVersion, toVersion) {
         migrateOps = migrateOps.concat(commands.getDeleteCommands(oldTables, schemaTables));
         migrateOps = migrateOps.concat(commands.getAddCommands(oldTables, schemaTables));
         return Promise.all(
-            _.map(oldTables, function (table) {
+            oldTables.map(function (table) {
                 return utils.getIndexes(table).then(function (indexes) {
                     modifyUniCommands = modifyUniCommands.concat(commands.modifyUniqueCommands(table, indexes));
                 });
@@ -180,7 +180,7 @@ migrateUp = function (fromVersion, toVersion) {
         );
     }).then(function () {
         return Promise.all(
-            _.map(oldTables, function (table) {
+            oldTables.map(function (table) {
                 return utils.getColumns(table).then(function (columns) {
                     migrateOps = migrateOps.concat(commands.addColumnCommands(table, columns));
                 });

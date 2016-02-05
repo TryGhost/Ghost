@@ -7,7 +7,6 @@
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
 var hbs             = require('express-hbs'),
-    _               = require('lodash'),
     post_class;
 
 post_class = function (options) {
@@ -29,7 +28,7 @@ post_class = function (options) {
         classes.push('page');
     }
 
-    classes = _.reduce(classes, function (memo, item) { return memo + ' ' + item; }, '');
+    classes = classes.reduce(function (memo, item) { return memo + ' ' + item; }, '');
     return new hbs.handlebars.SafeString(classes.trim());
 };
 

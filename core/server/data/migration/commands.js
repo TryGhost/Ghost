@@ -1,4 +1,4 @@
-var  _               = require('lodash'),
+var _               = require('lodash'),
     errors          = require('../../errors'),
     utils           = require('../utils'),
     schema          = require('../schema').tables,
@@ -19,7 +19,7 @@ logInfo = function logInfo(message) {
 
 getDeleteCommands = function getDeleteCommands(oldTables, newTables) {
     var deleteTables = _.difference(oldTables, newTables);
-    return _.map(deleteTables, function (table) {
+    return deleteTables.map(function (table) {
         return function () {
             logInfo(i18n.t('notices.data.migration.commands.deletingTable', {table: table}));
             return utils.deleteTable(table);
@@ -28,7 +28,7 @@ getDeleteCommands = function getDeleteCommands(oldTables, newTables) {
 };
 getAddCommands = function getAddCommands(oldTables, newTables) {
     var addTables = _.difference(newTables, oldTables);
-    return _.map(addTables, function (table) {
+    return addTables.map(function (table) {
         return function () {
             logInfo(i18n.t('notices.data.migration.commands.creatingTable', {table: table}));
             return utils.createTable(table);
@@ -36,10 +36,10 @@ getAddCommands = function getAddCommands(oldTables, newTables) {
     });
 };
 addColumnCommands = function addColumnCommands(table, columns) {
-    var columnKeys = _.keys(schema[table]),
+    var columnKeys = Object.keys(schema[table]),
         addColumns = _.difference(columnKeys, columns);
 
-    return _.map(addColumns, function (column) {
+    return addColumns.map(function (column) {
         return function () {
             logInfo(i18n.t('notices.data.migration.commands.addingColumn', {table: table, column: column}));
             return utils.addColumn(table, column);
@@ -47,8 +47,8 @@ addColumnCommands = function addColumnCommands(table, columns) {
     });
 };
 modifyUniqueCommands = function modifyUniqueCommands(table, indexes) {
-    var columnKeys = _.keys(schema[table]);
-    return _.map(columnKeys, function (column) {
+    var columnKeys = Object.keys(schema[table]);
+    return columnKeys.map(function (column) {
         if (schema[table][column].unique === true) {
             if (!_.contains(indexes, table + '_' + column + '_unique')) {
                 return function () {

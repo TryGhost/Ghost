@@ -120,7 +120,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         setting:    Models.Settings
     };
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
-    return _.reduce(objTypes, function (objTypeHandlers, objType) {
+    return objTypes.reduce(function (objTypeHandlers, objType) {
         // Grab the TargetModel through the objectTypeModelMap
         var TargetModel = objectTypeModelMap[objType];
 

@@ -67,7 +67,7 @@ function dropUnique(table, column) {
 function createTable(table) {
     dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.createTable(table, function (t) {
-        var columnKeys = _.keys(schema[table]);
+        var columnKeys = Object.keys(schema[table]);
         _.each(columnKeys, function (column) {
             return addTableColumn(table, t, column);
         });
@@ -83,7 +83,7 @@ function getTables() {
     dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
-    if (_.contains(_.keys(clients), client)) {
+    if (_.contains(Object.keys(clients), client)) {
         return clients[client].getTables();
     }
 
@@ -94,7 +94,7 @@ function getIndexes(table) {
     dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
-    if (_.contains(_.keys(clients), client)) {
+    if (_.contains(Object.keys(clients), client)) {
         return clients[client].getIndexes(table);
     }
 
@@ -105,7 +105,7 @@ function getColumns(table) {
     dbConfig = dbConfig || config.database;
     var client = dbConfig.client;
 
-    if (_.contains(_.keys(clients), client)) {
+    if (_.contains(Object.keys(clients), client)) {
         return clients[client].getColumns(table);
     }
 

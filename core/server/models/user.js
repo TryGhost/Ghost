@@ -389,7 +389,7 @@ User = ghostBookshelf.Model.extend({
             userData = addedUser;
             // if we are given a "role" object, only pass in the role ID in place of the full object
             return Promise.resolve(roles).then(function then(roles) {
-                roles = _.map(roles, function mapper(role) {
+                roles = roles.map(function mapper(role) {
                     if (_.isString(role)) {
                         return parseInt(role, 10);
                     } else if (_.isNumber(role)) {

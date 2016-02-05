@@ -7,7 +7,6 @@
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
 var hbs             = require('express-hbs'),
-    _               = require('lodash'),
     filters         = require('../filters'),
     api             = require('../api'),
     ghost_foot;
@@ -20,7 +19,7 @@ ghost_foot = function (options) {
         foot.push(response.settings[0].value);
         return filters.doFilter('ghost_foot', foot);
     }).then(function (foot) {
-        var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
+        var footString = foot.reduce(function (memo, item) { return memo + ' ' + item; }, '');
         return new hbs.handlebars.SafeString(footString.trim());
     });
 };

@@ -54,7 +54,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
     permittedAttributes: function permittedAttributes() {
-        return _.keys(schema.tables[this.tableName]);
+        return Object.keys(schema.tables[this.tableName]);
     },
 
     // Bookshelf `defaults` - default values setup on every model creation
