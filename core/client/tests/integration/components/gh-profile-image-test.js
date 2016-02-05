@@ -56,7 +56,7 @@ describeComponent(
 
         it('immediately renders the gravatar if valid email supplied', function () {
             let email = 'test@example.com';
-            let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let expectedUrl = `//www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
 
             this.set('email', email);
 
@@ -70,7 +70,7 @@ describeComponent(
 
         it('throttles gravatar loading as email is changed', function (done) {
             let email = 'test@example.com';
-            let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let expectedUrl = `//www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
 
             this.set('email', 'test');
 
