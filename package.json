@@ -96,7 +96,7 @@
     "matchdep": "1.0.0",
     "nock": "7.1.0",
     "rewire": "2.5.1",
-    "rimraf-then": "^1.0.0",
+    "rimraf-then": "1.0.0",
     "should": "6.0.3",
     "sinon": "1.14.1",
     "supertest": "1.1.0",
