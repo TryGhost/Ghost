@@ -1,0 +1,13 @@
+{
+  "name": "bleak",
+  "devDependencies": {
+    "fitvids": "~1.1.0",
+    "highlightjs": "~8.8.0",
+    "history.js": "~1.8.0",
+    "imagesloaded": "~3.2.0",
+    "jquery": "~2.1.4",
+    "masonry": "~3.3.2",
+    "normalize.css": "~3.0.3",
+    "nprogress": "~0.2.0"
+  }
+}

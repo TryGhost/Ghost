@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>{{meta_title}}</title>
+	<meta name="description" content="{{meta_description}}" />
+
+	<meta name="HandheldFriendly" content="True" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<link rel="stylesheet" type="text/css" href="{{asset "css/dependencies.css"}}" />
+	<link rel="stylesheet" type="text/css" href="{{asset "css/style.css"}}" />
+
+	{{ghost_head}}
+</head>
+
+<body class="{{body_class}}">
+	<section id="wrapper">
+		<div id="ajax-container">
+			<nav id="nav" class="nav">
+				<div class="nav-logo">
+					<a href="{{@blog.url}}">
+						{{#if @blog.logo}}
+						<img src="{{@blog.logo}}" alt="Logo" />
+						{{else}}
+						<span class="name">{{@blog.title}}</span>
+						{{/if}}
+						
+					</a>
+				</div>
+				<div class="nav-menu">
+					<a class="rss" href="{{@blog.url}}/rss/"><i class="icon-rss"></i></a>
+					{{#if @blog.navigation}}
+					<a class="menu" data-action="menu" data-target="menu"><i class="icon-menu"></i></a>
+					{{/if}}
+				</div>
+			</nav>			
+			{{{body}}}
+			<div id="body-class" style="display: none;" class="{{body_class}}"></div>
+			<footer id="footer">
+				<section class="credits">
+					<span class="credits-theme"><a href="{{@blog.url}}">{{@blog.title}}</a> &copy; {{date format="YYYY"}}</span>
+					<span class="credits-software">Published with <a href="http://ghost.org">Ghost</a></span>
+				</section>
+			</footer>
+			{{#if @blog.navigation}}
+			{{navigation}}
+			{{/if}}
+		</div>
+	</section>
+	{{ghost_foot}}
+	
+	<script type="text/javascript" src="{{asset "js/dependencies.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/script.js"}}"></script>
+</body>
+</html>

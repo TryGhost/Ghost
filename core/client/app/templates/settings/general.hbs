@@ -63,6 +63,18 @@
             </div>
 
             <fieldset>
+                
+                <label>Social</label>
+
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitter"}}
+                    <p>Twitter: 
+                    {{gh-input id="blog-twitter" class="gh-input" name="general[twitter]" type="text" value=model.twitter focusOut=(action "validate" "twitter")}}
+                    {{gh-error-message errors=model.errors property="twitter"}}</p>
+                    <p>Blog's social links</p>
+                {{/gh-form-group}}
+            </fieldset>
+
+            <fieldset>
 
                 <div class="form-group">
                     <label for="postsPerPage">Posts per page</label>

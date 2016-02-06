@@ -133,6 +133,13 @@
                     <p>Where in the world do you live?</p>
                 {{/gh-form-group}}
 
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="twitter"}}
+                    <label for="user-twitter">Twitter</label>
+                    {{input type="text" value=user.twitter id="user-twitter" class="gh-input" focusOut=(action "validate" "twitter")}}
+                    {{gh-error-message errors=user.errors property="twitter"}}
+                    <p>Twitter user (https://twitter.com/{USER}).</p>
+                {{/gh-form-group}}
+
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
                     <label for="user-website">Website</label>
                     {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website")}}
