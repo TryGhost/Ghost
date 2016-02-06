@@ -100,7 +100,6 @@
     "should": "6.0.3",
     "sinon": "1.17.3",
     "supertest": "1.1.0",
-    "testem": "0.8.3",
     "top-gh-contribs": "2.0.2"
   },
   "greenkeeper": {
