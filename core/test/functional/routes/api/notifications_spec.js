@@ -2,7 +2,7 @@
 /*jshint expr:true*/
 var testUtils     = require('../../../utils'),
     supertest     = require('supertest'),
-
+    should        = require('should'),
     ghost         = require('../../../../../core'),
 
     request;
@@ -49,7 +49,7 @@ describe('Notifications API', function () {
 
                     var jsonResponse = res.body;
 
-                    jsonResponse.notifications.should.exist;
+                    should.exist(jsonResponse.notifications);
 
                     testUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
 
@@ -85,7 +85,7 @@ describe('Notifications API', function () {
                     var location = res.headers.location,
                         jsonResponse = res.body;
 
-                    jsonResponse.notifications.should.exist;
+                    should.exist(jsonResponse.notifications);
                     testUtils.API.checkResponse(jsonResponse.notifications[0], 'notification');
 
                     jsonResponse.notifications[0].type.should.equal(newNotification.type);
@@ -105,7 +105,7 @@ describe('Notifications API', function () {
                             // a delete returns a JSON object containing the notification
                             // we just deleted.
                             var deleteResponse = res.body;
-                            deleteResponse.notifications.should.exist;
+                            should.exist(deleteResponse.notifications);
                             deleteResponse.notifications[0].type.should.equal(newNotification.type);
                             deleteResponse.notifications[0].message.should.equal(newNotification.message);
                             deleteResponse.notifications[0].status.should.equal(newNotification.status);

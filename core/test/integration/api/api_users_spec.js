@@ -237,7 +237,7 @@ describe('Users API', function () {
             } else {
                 testUtils.API.checkResponse(response.users[0], 'user');
             }
-            response.users[0].created_at.should.be.a.Date;
+            response.users[0].created_at.should.be.an.instanceof(Date);
         }
 
         it('Owner can read', function (done) {
@@ -300,7 +300,7 @@ describe('Users API', function () {
             response.users.should.have.length(1);
             testUtils.API.checkResponse(response.users[0], 'user');
             response.users[0].name.should.equal(newName);
-            response.users[0].updated_at.should.be.a.Date;
+            response.users[0].updated_at.should.be.an.instanceof(Date);
         }
 
         it('throws an error if there is an id mismatch', function (done) {
@@ -515,7 +515,7 @@ describe('Users API', function () {
             should.not.exist(response.meta);
             response.users.should.have.length(1);
             testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
-            response.users[0].created_at.should.be.a.Date;
+            response.users[0].created_at.should.be.an.instanceof(Date);
         }
 
         describe('Owner', function () {
@@ -704,7 +704,7 @@ describe('Users API', function () {
             should.not.exist(response.meta);
             response.users.should.have.length(1);
             testUtils.API.checkResponse(response.users[0], 'user');
-            response.users[0].created_at.should.be.a.Date;
+            response.users[0].created_at.should.be.an.instanceof(Date);
         }
 
         describe('Owner', function () {
@@ -851,7 +851,7 @@ describe('Users API', function () {
             response.users.should.have.length(1);
             testUtils.API.checkResponse(response.users[0], 'user', ['roles']);
             response.users[0].name.should.equal(newName);
-            response.users[0].updated_at.should.be.a.Date;
+            response.users[0].updated_at.should.be.an.instanceof(Date);
         }
 
         it('throws an error if there is an id mismatch', function (done) {

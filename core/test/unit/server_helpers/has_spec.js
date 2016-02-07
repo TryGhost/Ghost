@@ -27,8 +27,8 @@ describe('{{#has}} helper', function () {
             {hash: {tag: 'invalid, bar, wat'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should handle tags with case-insensitivity', function () {
@@ -40,8 +40,8 @@ describe('{{#has}} helper', function () {
             {hash: {tag: 'GhoSt'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should match exact tags, not superstrings', function () {
@@ -53,8 +53,8 @@ describe('{{#has}} helper', function () {
             {hash: {tag: 'magic'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.true;
+        fn.called.should.be.false();
+        inverse.called.should.be.true();
     });
 
     it('should match exact tags, not substrings', function () {
@@ -66,8 +66,8 @@ describe('{{#has}} helper', function () {
             {hash: {tag: 'magical'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.true;
+        fn.called.should.be.false();
+        inverse.called.should.be.true();
     });
 
     it('should handle tag list that validates false', function () {
@@ -79,8 +79,8 @@ describe('{{#has}} helper', function () {
             {hash: {tag: 'much, such, wow'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.true;
+        fn.called.should.be.false();
+        inverse.called.should.be.true();
     });
 
     it('should not do anything if there are no attributes', function () {
@@ -92,8 +92,8 @@ describe('{{#has}} helper', function () {
             {fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.false;
+        fn.called.should.be.false();
+        inverse.called.should.be.false();
     });
 
     it('should not do anything when an invalid attribute is given', function () {
@@ -105,8 +105,8 @@ describe('{{#has}} helper', function () {
             {hash: {invalid: 'nonsense'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.false;
+        fn.called.should.be.false();
+        inverse.called.should.be.false();
     });
 
     it('should handle author list that evaluates to true', function () {
@@ -118,8 +118,8 @@ describe('{{#has}} helper', function () {
             {hash: {author: 'joe, sam, pat'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should handle author list that evaluates to false', function () {
@@ -131,8 +131,8 @@ describe('{{#has}} helper', function () {
             {hash: {author: 'joe, sam, pat'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.true;
+        fn.called.should.be.false();
+        inverse.called.should.be.true();
     });
 
     it('should handle authors with case-insensitivity', function () {
@@ -144,8 +144,8 @@ describe('{{#has}} helper', function () {
             {hash: {author: 'joe, sAm, pat'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should handle tags and authors like an OR query (pass)', function () {
@@ -157,8 +157,8 @@ describe('{{#has}} helper', function () {
             {hash: {author: 'joe, sam, pat', tag: 'much, such, wow'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should handle tags and authors like an OR query (pass)', function () {
@@ -170,8 +170,8 @@ describe('{{#has}} helper', function () {
             {hash: {author: 'joe, sam, pat', tag: 'much, such, wow'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.true;
-        inverse.called.should.be.false;
+        fn.called.should.be.true();
+        inverse.called.should.be.false();
     });
 
     it('should handle tags and authors like an OR query (fail)', function () {
@@ -183,7 +183,7 @@ describe('{{#has}} helper', function () {
             {hash: {author: 'joe, sam, pat', tag: 'much, such, wow'}, fn: fn, inverse: inverse}
         );
 
-        fn.called.should.be.false;
-        inverse.called.should.be.true;
+        fn.called.should.be.false();
+        inverse.called.should.be.true();
     });
 });

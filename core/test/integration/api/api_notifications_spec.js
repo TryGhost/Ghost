@@ -28,7 +28,7 @@ describe('Notifications API', function () {
             should.exist(result.notifications);
 
             notification = result.notifications[0];
-            notification.dismissible.should.be.true;
+            notification.dismissible.should.be.true();
             should.exist(notification.location);
             notification.location.should.equal('bottom');
 
@@ -49,7 +49,7 @@ describe('Notifications API', function () {
             should.exist(result.notifications);
 
             notification = result.notifications[0];
-            notification.dismissible.should.be.true;
+            notification.dismissible.should.be.true();
             should.exist(notification.location);
             notification.location.should.equal('bottom');
 
@@ -71,7 +71,7 @@ describe('Notifications API', function () {
             should.exist(result.notifications);
 
             notification = result.notifications[0];
-            notification.id.should.be.a.Number;
+            notification.id.should.be.a.Number();
             notification.id.should.not.equal(99);
             should.exist(notification.status);
             notification.status.should.equal('alert');

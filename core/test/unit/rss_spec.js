@@ -80,7 +80,7 @@ describe('RSS', function () {
 
             res.send = function send(xmlData) {
                 should.exist(xmlData);
-                res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true;
+                res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true();
 
                 // xml & rss tags
                 xmlData.should.match(/^<\?xml version="1.0" encoding="UTF-8"\?>/);
@@ -283,8 +283,8 @@ describe('RSS', function () {
 
         it('should process the data correctly for the index feed', function (done) {
             res.send = function send(xmlData) {
-                apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, include: 'author,tags,fields'}).should.be.true;
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: 1, include: 'author,tags,fields'}).should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Test\]\]><\/title>/);
                 done();
             };
@@ -303,9 +303,9 @@ describe('RSS', function () {
 
             // test
             res.send = function send(xmlData) {
-                apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags,fields'}).should.be.true;
-                apiTagStub.calledOnce.should.be.true;
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags,fields'}).should.be.true();
+                apiTagStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
                 done();
             };
@@ -321,9 +321,9 @@ describe('RSS', function () {
 
             // test
             res.send = function send(xmlData) {
-                apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags,fields'}).should.be.true;
-                apiUserStub.calledOnce.should.be.true;
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags,fields'}).should.be.true();
+                apiUserStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
                 done();
             };
@@ -418,8 +418,8 @@ describe('RSS', function () {
             rss(req, res, function (err) {
                 should.exist(err);
                 err.code.should.eql(404);
-                res.redirect.called.should.be.false;
-                res.render.called.should.be.false;
+                res.redirect.called.should.be.false();
+                res.render.called.should.be.false();
                 done();
             }).catch(done);
         });
@@ -435,8 +435,8 @@ describe('RSS', function () {
             rss(req, res, function (err) {
                 should.exist(err);
                 err.code.should.eql(404);
-                res.redirect.called.should.be.false;
-                res.render.called.should.be.false;
+                res.redirect.called.should.be.false();
+                res.render.called.should.be.false();
                 done();
             }).catch(done);
         });

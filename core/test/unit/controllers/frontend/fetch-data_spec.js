@@ -39,11 +39,11 @@ describe('fetchData', function () {
         it('should handle no post options', function (done) {
             fetchData({}).then(function (result) {
                 should.exist(result);
-                result.should.be.an.Object.with.properties('posts', 'meta');
+                result.should.be.an.Object().with.properties('posts', 'meta');
                 result.should.not.have.property('data');
 
-                apiPostsStub.calledOnce.should.be.true;
-                apiPostsStub.firstCall.args[0].should.be.an.Object;
+                apiPostsStub.calledOnce.should.be.true();
+                apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
 
@@ -54,11 +54,11 @@ describe('fetchData', function () {
         it('should handle post options with only page', function (done) {
             fetchData({postOptions: {page: 2}}).then(function (result) {
                 should.exist(result);
-                result.should.be.an.Object.with.properties('posts', 'meta');
+                result.should.be.an.Object().with.properties('posts', 'meta');
                 result.should.not.have.property('data');
 
-                apiPostsStub.calledOnce.should.be.true;
-                apiPostsStub.firstCall.args[0].should.be.an.Object;
+                apiPostsStub.calledOnce.should.be.true();
+                apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.firstCall.args[0].should.have.property('page', 2);
@@ -79,12 +79,12 @@ describe('fetchData', function () {
             };
             fetchData(channelOpts).then(function (result) {
                 should.exist(result);
-                result.should.be.an.Object.with.properties('posts', 'meta', 'data');
-                result.data.should.be.an.Object.with.properties('featured');
-                result.data.featured.should.be.an.Object.with.properties('posts', 'meta');
+                result.should.be.an.Object().with.properties('posts', 'meta', 'data');
+                result.data.should.be.an.Object().with.properties('featured');
+                result.data.featured.should.be.an.Object().with.properties('posts', 'meta');
                 result.data.featured.should.not.have.properties('data');
 
-                apiPostsStub.calledTwice.should.be.true;
+                apiPostsStub.calledTwice.should.be.true();
                 apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags,fields');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
@@ -107,12 +107,12 @@ describe('fetchData', function () {
             fetchData(channelOpts).then(function (result) {
                 should.exist(result);
 
-                result.should.be.an.Object.with.properties('posts', 'meta', 'data');
-                result.data.should.be.an.Object.with.properties('featured');
-                result.data.featured.should.be.an.Object.with.properties('posts', 'meta');
+                result.should.be.an.Object().with.properties('posts', 'meta', 'data');
+                result.data.should.be.an.Object().with.properties('featured');
+                result.data.featured.should.be.an.Object().with.properties('posts', 'meta');
                 result.data.featured.should.not.have.properties('data');
 
-                apiPostsStub.calledTwice.should.be.true;
+                apiPostsStub.calledTwice.should.be.true();
                 apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags,fields');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.firstCall.args[0].should.have.property('page', 2);
@@ -139,10 +139,10 @@ describe('fetchData', function () {
 
             fetchData(channelOpts).then(function (result) {
                 should.exist(result);
-                result.should.be.an.Object.with.properties('posts', 'meta', 'data');
-                result.data.should.be.an.Object.with.properties('tag');
+                result.should.be.an.Object().with.properties('posts', 'meta', 'data');
+                result.data.should.be.an.Object().with.properties('tag');
 
-                apiPostsStub.calledOnce.should.be.true;
+                apiPostsStub.calledOnce.should.be.true();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiTagStub.firstCall.args[0].should.have.property('slug', 'testing');
@@ -158,8 +158,8 @@ describe('fetchData', function () {
 
         it('Adds limit & includes to options by default', function (done) {
             fetchData({}).then(function () {
-                apiPostsStub.calledOnce.should.be.true;
-                apiPostsStub.firstCall.args[0].should.be.an.Object;
+                apiPostsStub.calledOnce.should.be.true();
+                apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 done();
@@ -174,8 +174,8 @@ describe('fetchData', function () {
 
         it('Will not add limit if postsPerPage is not valid', function (done) {
             fetchData({}).then(function () {
-                apiPostsStub.calledOnce.should.be.true;
-                apiPostsStub.firstCall.args[0].should.be.an.Object;
+                apiPostsStub.calledOnce.should.be.true();
+                apiPostsStub.firstCall.args[0].should.be.an.Object();
                 apiPostsStub.firstCall.args[0].should.have.property('include');
                 apiPostsStub.firstCall.args[0].should.not.have.property('limit');
 
