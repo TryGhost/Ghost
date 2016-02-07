@@ -1,20 +1,24 @@
 // # Mail API
 // API for sending Mail
-var _            = require('lodash').runInContext(),
-    Promise      = require('bluebird'),
-    pipeline     = require('../utils/pipeline'),
-    config       = require('../config'),
-    errors       = require('../errors'),
-    mailer       = require('../mail'),
-    Models       = require('../models'),
-    utils        = require('./utils'),
-    path         = require('path'),
-    fs           = require('fs'),
-    templatesDir = path.resolve(__dirname, '..', 'mail', 'templates'),
-    htmlToText   = require('html-to-text'),
-    readFile     = Promise.promisify(fs.readFile),
-    docName      = 'mail',
-    i18n         = require('../i18n'),
+var _             = require('lodash').runInContext(),
+    Promise       = require('bluebird'),
+    pipeline      = require('../utils/pipeline'),
+    config        = require('../config'),
+    errors        = require('../errors'),
+    GhostMail     = require('../mail'),
+    Models        = require('../models'),
+    utils         = require('./utils'),
+    notifications = require('./notifications'),
+    path          = require('path'),
+    fs            = require('fs'),
+    templatesDir  = path.resolve(__dirname, '..', 'mail', 'templates'),
+    htmlToText    = require('html-to-text'),
+    readFile      = Promise.promisify(fs.readFile),
+    docName       = 'mail',
+    i18n          = require('../i18n'),
+    mode          = process.env.NODE_ENV,
+    testing       = mode !== 'production' && mode !== 'development',
+    mailer,
     mail;
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
@@ -24,10 +28,23 @@ _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
  */
 
 function sendMail(object) {
-    return mailer.send(object.mail[0].message).catch(function (err) {
-        err = new errors.EmailError(err.message);
+    if (!(mailer instanceof GhostMail) || testing) {
+        mailer = new GhostMail();
+    }
 
-        return Promise.reject(err);
+    return mailer.send(object.mail[0].message).catch(function (err) {
+        if (mailer.state.usingDirect) {
+            notifications.add({notifications: [{
+                type: 'warn',
+                message: [
+                    i18n.t('warnings.index.unableToSendEmail'),
+                    i18n.t('common.seeLinkForInstructions',
+                    {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
+                ].join(' ')
+            }]}, {context: {internal: true}});
+        }
+
+        return Promise.reject(new errors.EmailError(err.message));
     });
 }
 

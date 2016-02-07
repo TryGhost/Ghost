@@ -14,7 +14,6 @@ var express     = require('express'),
     config      = require('./config'),
     errors      = require('./errors'),
     helpers     = require('./helpers'),
-    mailer      = require('./mail'),
     middleware  = require('./middleware'),
     migrations  = require('./data/migration'),
     models      = require('./models'),
@@ -91,34 +90,6 @@ function builtFilesExist() {
     return Promise.all(deferreds);
 }
 
-// This is run after every initialization is done, right before starting server.
-// Its main purpose is to move adding notifications here, so none of the submodules
-// should need to include api, which previously resulted in circular dependencies.
-// This is also a "one central repository" of adding startup notifications in case
-// in the future apps will want to hook into here
-function initNotifications() {
-    if (mailer.state && mailer.state.usingDirect) {
-        api.notifications.add({notifications: [{
-            type: 'info',
-            message: [
-                i18n.t('warnings.index.usingDirectMethodToSendEmail'),
-                i18n.t('common.seeLinkForInstructions',
-                       {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
-            ].join(' ')
-        }]}, {context: {internal: true}});
-    }
-    if (mailer.state && mailer.state.emailDisabled) {
-        api.notifications.add({notifications: [{
-            type: 'warn',
-            message: [
-                i18n.t('warnings.index.unableToSendEmail'),
-                i18n.t('common.seeLinkForInstructions',
-                       {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
-            ].join(' ')
-        }]}, {context: {internal: true}});
-    }
-}
-
 // ## Initialise Ghost
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
@@ -161,8 +132,6 @@ function init(options) {
         return Promise.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
-            // Initialize mail
-            mailer.init(),
             // Initialize apps
             apps.init(),
             // Initialize sitemaps
@@ -173,8 +142,6 @@ function init(options) {
     }).then(function () {
         var adminHbs = hbs.create();
 
-        // Output necessary notifications on init
-        initNotifications();
         // ##Configuration
 
         // return the correct mime type for woff files
