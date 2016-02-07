@@ -26,7 +26,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(0);
+            res.locals.context.should.be.an.Array().with.lengthOf(0);
         });
 
         it('should return empty array with no error with basic parameters', function () {
@@ -34,7 +34,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(0);
+            res.locals.context.should.be.an.Array().with.lengthOf(0);
         });
     });
 
@@ -46,7 +46,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(2);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
             res.locals.context[0].should.eql('home');
             res.locals.context[1].should.eql('index');
         });
@@ -58,7 +58,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(2);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
             res.locals.context[0].should.eql('home');
             res.locals.context[1].should.eql('index');
         });
@@ -70,7 +70,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('index');
         });
 
@@ -82,7 +82,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(2);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
             res.locals.context[0].should.eql('paged');
             res.locals.context[1].should.eql('index');
         });
@@ -96,7 +96,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('rss');
         });
 
@@ -107,7 +107,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('rss');
         });
 
@@ -119,7 +119,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(2);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
             res.locals.context[0].should.eql('paged');
             res.locals.context[1].should.eql('rss');
         });
@@ -133,7 +133,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('tag');
         });
 
@@ -144,7 +144,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('post');
         });
 
@@ -155,7 +155,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('tag');
         });
 
@@ -167,7 +167,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(2);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
             res.locals.context[0].should.eql('paged');
             res.locals.context[1].should.eql('tag');
         });
@@ -181,7 +181,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('author');
         });
 
@@ -192,7 +192,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('post');
         });
 
@@ -203,7 +203,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('author');
         });
 
@@ -215,7 +215,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(2);
+            res.locals.context.should.be.an.Array().with.lengthOf(2);
             res.locals.context[0].should.eql('paged');
             res.locals.context[1].should.eql('author');
         });
@@ -229,7 +229,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('post');
         });
 
@@ -241,7 +241,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('page');
         });
     });
@@ -254,7 +254,7 @@ describe('Contexts', function () {
             setResponseContext(req, res, data);
 
             should.exist(res.locals.context);
-            res.locals.context.should.be.an.Array.with.lengthOf(1);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
             res.locals.context[0].should.eql('private');
         });
     });

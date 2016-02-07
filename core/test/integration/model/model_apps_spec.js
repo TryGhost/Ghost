@@ -76,7 +76,7 @@ describe('App Model', function () {
 
             return AppModel.destroy(firstApp);
         }).then(function (response) {
-            response.toJSON().should.be.empty;
+            response.toJSON().should.be.empty();
 
             return AppModel.findOne(firstApp);
         }).then(function (newResults) {

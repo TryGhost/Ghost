@@ -287,7 +287,7 @@ describe('User Model', function run() {
                 .then(function (paginationResult) {
                     should.exist(paginationResult.meta);
 
-                    paginationResult.meta.pagination.page.should.be.a.Number;
+                    paginationResult.meta.pagination.page.should.be.a.Number();
 
                     done();
                 }).catch(done);
@@ -346,8 +346,8 @@ describe('User Model', function run() {
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 done();
             }).catch(done);
@@ -371,9 +371,9 @@ describe('User Model', function run() {
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
                 createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
-                eventSpy.secondCall.calledWith('user.activated').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
+                eventSpy.secondCall.calledWith('user.activated').should.be.true();
 
                 done();
             }).catch(done);
@@ -394,9 +394,9 @@ describe('User Model', function run() {
                 should.exist(edited);
                 edited.attributes.website.should.equal('http://some.newurl.com');
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.firstCall.calledWith('user.activated.edited').should.be.true;
-                eventSpy.secondCall.calledWith('user.edited').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('user.activated.edited').should.be.true();
+                eventSpy.secondCall.calledWith('user.edited').should.be.true();
 
                 done();
             }).catch(done);
@@ -419,15 +419,15 @@ describe('User Model', function run() {
 
                 userId = createdUser.attributes.id;
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: userId});
             }).then(function (createdUser) {
                 createdUser.attributes.status.should.equal('invited');
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.secondCall.calledWith('user.edited').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.secondCall.calledWith('user.edited').should.be.true();
                 done();
             }).catch(done);
         });
@@ -449,16 +449,16 @@ describe('User Model', function run() {
 
                 userId = createdUser.attributes.id;
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 return UserModel.edit({status: 'active'}, {id: userId});
             }).then(function (createdUser) {
                 createdUser.attributes.status.should.equal('active');
 
-                eventSpy.calledThrice.should.be.true;
-                eventSpy.secondCall.calledWith('user.activated').should.be.true;
-                eventSpy.thirdCall.calledWith('user.edited').should.be.true;
+                eventSpy.calledThrice.should.be.true();
+                eventSpy.secondCall.calledWith('user.activated').should.be.true();
+                eventSpy.thirdCall.calledWith('user.edited').should.be.true();
                 done();
             }).catch(done);
         });
@@ -476,11 +476,11 @@ describe('User Model', function run() {
                 // Destroy the user
                 return UserModel.destroy(firstUser);
             }).then(function (response) {
-                response.toJSON().should.be.empty;
+                response.toJSON().should.be.empty();
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.firstCall.calledWith('user.deactivated').should.be.true;
-                eventSpy.secondCall.calledWith('user.deleted').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('user.deactivated').should.be.true();
+                eventSpy.secondCall.calledWith('user.deleted').should.be.true();
 
                 // Double check we can't find the user again
                 return UserModel.findOne(firstUser);
@@ -508,16 +508,16 @@ describe('User Model', function run() {
 
                 userId = {id: createdUser.attributes.id};
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 // Destroy the user
                 return UserModel.destroy(userId);
             }).then(function (response) {
-                response.toJSON().should.be.empty;
+                response.toJSON().should.be.empty();
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.secondCall.calledWith('user.deleted').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.secondCall.calledWith('user.deleted').should.be.true();
 
                 // Double check we can't find the user again
                 return UserModel.findOne(userId);
