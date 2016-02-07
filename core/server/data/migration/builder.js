@@ -11,6 +11,7 @@ var  _              = require('lodash'),
     getDeleteCommands,
     getAddCommands,
     addColumnCommands,
+    dropColumnCommands,
     modifyUniqueCommands;
 
 logInfo = function logInfo(message) {
@@ -26,6 +27,7 @@ getDeleteCommands = function getDeleteCommands(oldTables, newTables) {
         };
     });
 };
+
 getAddCommands = function getAddCommands(oldTables, newTables) {
     var addTables = _.difference(newTables, oldTables);
     return _.map(addTables, function (table) {
@@ -35,6 +37,7 @@ getAddCommands = function getAddCommands(oldTables, newTables) {
         };
     });
 };
+
 addColumnCommands = function addColumnCommands(table, columns) {
     var columnKeys = _.keys(schema[table]),
         addColumns = _.difference(columnKeys, columns);
@@ -46,6 +49,19 @@ addColumnCommands = function addColumnCommands(table, columns) {
         };
     });
 };
+
+dropColumnCommands = function dropColumnCommands(table, columns) {
+    var columnKeys = _.keys(schema[table]),
+        dropColumns = _.difference(columns, columnKeys);
+
+    return _.map(dropColumns, function (column) {
+        return function () {
+            logInfo(i18n.t('notices.data.migration.commands.droppingColumn', {table: table, column: column}));
+            return commands.dropColumn(table, column);
+        };
+    });
+};
+
 modifyUniqueCommands = function modifyUniqueCommands(table, indexes) {
     var columnKeys = _.keys(schema[table]);
     return _.map(columnKeys, function (column) {
@@ -71,5 +87,6 @@ module.exports = {
     getDeleteCommands: getDeleteCommands,
     getAddCommands: getAddCommands,
     addColumnCommands: addColumnCommands,
+    dropColumnCommands: dropColumnCommands,
     modifyUniqueCommands: modifyUniqueCommands
 };
