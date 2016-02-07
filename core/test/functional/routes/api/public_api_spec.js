@@ -25,7 +25,7 @@ describe('Public API', function () {
             return testUtils.doAuth(request, 'posts', 'tags');
         }).then(function (token) {
             // enable public API
-            return request.put(testUtils.API.getApiQuery('settings/'))
+            request.put(testUtils.API.getApiQuery('settings/'))
                 .set('Authorization', 'Bearer ' + token)
                 .send(publicAPIaccessSetting)
                 .expect('Content-Type', /json/)
