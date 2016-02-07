@@ -12,6 +12,8 @@ var supertest     = require('supertest'),
     ghost         = require('../../../../../core'),
     request;
 
+require('should-http');
+
 describe('Unauthorized', function () {
     before(function (done) {
         ghost().then(function (ghostServer) {
@@ -38,9 +40,9 @@ describe('Unauthorized', function () {
                     }
 
                     should.not.exist(res.headers['x-cache-invalidate']);
-                    res.should.be.json;
+                    res.should.be.json();
                     var jsonResponse = res.body;
-                    jsonResponse.should.exist;
+                    should.exist(jsonResponse);
                     // TODO: testUtils.API.checkResponseValue(jsonResponse, ['error']);
                     done();
                 });

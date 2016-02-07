@@ -283,7 +283,7 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'title'}).then(function (results) {
                 should.exist(results.posts);
 
-                results.posts[0].title.should.exist;
+                should.exist(results.posts[0].title);
                 should.not.exist(results.posts[0].slug);
 
                 done();
@@ -294,8 +294,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'slug,published_at'}).then(function (results) {
                 should.exist(results.posts);
 
-                results.posts[0].published_at.should.exist;
-                results.posts[0].slug.should.exist;
+                should.exist(results.posts[0].published_at);
+                should.exist(results.posts[0].slug);
                 should.not.exist(results.posts[0].title);
 
                 done();
@@ -306,8 +306,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: 'Slug,Published_At'}).then(function (results) {
                 should.exist(results.posts);
 
-                results.posts[0].published_at.should.exist;
-                results.posts[0].slug.should.exist;
+                should.exist(results.posts[0].published_at);
+                should.exist(results.posts[0].slug);
                 should.not.exist(results.posts[0].title);
 
                 done();
@@ -318,8 +318,8 @@ describe('Post API', function () {
             PostAPI.browse({context: {user: 1}, status: 'all', limit: 5, fields: ' slug , published_at  '}).then(function (results) {
                 should.exist(results.posts);
 
-                results.posts[0].published_at.should.exist;
-                results.posts[0].slug.should.exist;
+                should.exist(results.posts[0].published_at);
+                should.exist(results.posts[0].slug);
                 should.not.exist(results.posts[0].title);
 
                 done();
@@ -331,7 +331,7 @@ describe('Post API', function () {
                 var objectKeys;
                 should.exist(results.posts);
 
-                results.posts[0].title.should.exist;
+                should.exist(results.posts[0].title);
                 should.not.exist(results.posts[0].foo);
                 objectKeys = _.keys(results.posts[0]);
                 objectKeys.length.should.eql(1);
@@ -492,8 +492,8 @@ describe('Post API', function () {
             PostAPI.read({context: {user: 1}, id: 3, include: 'next,next.tags,next.author'}).then(function (results) {
                 should.exist(results.posts[0].next.slug);
                 results.posts[0].next.slug.should.eql('not-so-short-bit-complex');
-                results.posts[0].next.author.should.be.an.Object;
-                results.posts[0].next.tags.should.be.an.Array;
+                results.posts[0].next.author.should.be.an.Object();
+                results.posts[0].next.tags.should.be.an.Array();
                 done();
             }).catch(done);
         });
@@ -503,7 +503,7 @@ describe('Post API', function () {
                 should.exist(results.posts[0].next.slug);
                 results.posts[0].next.slug.should.eql('short-and-sweet');
                 results.posts[0].next.author.should.eql(1);
-                results.posts[0].next.tags.should.be.an.Array;
+                results.posts[0].next.tags.should.be.an.Array();
                 results.posts[0].next.tags[0].name.should.eql('chorizo');
                 done();
             }).catch(done);
@@ -521,9 +521,9 @@ describe('Post API', function () {
             PostAPI.read({context: {user: 1}, id: 3, include: 'previous,previous.author,previous.tags'}).then(function (results) {
                 should.exist(results.posts[0].previous.slug);
                 results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
-                results.posts[0].previous.author.should.be.an.Object;
+                results.posts[0].previous.author.should.be.an.Object();
                 results.posts[0].previous.author.name.should.eql('Joe Bloggs');
-                results.posts[0].previous.tags.should.be.an.Array;
+                results.posts[0].previous.tags.should.be.an.Array();
                 results.posts[0].previous.tags.should.have.lengthOf(2);
                 results.posts[0].previous.tags[0].slug.should.eql('kitchen-sink');
                 done();
@@ -535,7 +535,7 @@ describe('Post API', function () {
                 should.exist(results.posts[0].previous.slug);
                 should.not.exist(results.posts[0].previous.tags);
                 results.posts[0].previous.slug.should.eql('ghostly-kitchen-sink');
-                results.posts[0].previous.author.should.be.an.Object;
+                results.posts[0].previous.author.should.be.an.Object();
                 results.posts[0].previous.author.name.should.eql('Joe Bloggs');
                 done();
             }).catch(done);

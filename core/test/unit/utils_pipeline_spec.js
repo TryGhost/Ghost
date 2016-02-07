@@ -57,7 +57,7 @@ describe('Pipeline', function () {
 
         return pipeline(tasks, 1, 2, 3).then(
             function () {
-                tasks[0].calledOnce.should.be.true;
+                tasks[0].calledOnce.should.be.true();
                 tasks[0].firstCall.args.should.eql(expected);
 
                 done();
@@ -72,7 +72,7 @@ describe('Pipeline', function () {
 
         return pipeline(tasks, new Resolver(1), new Resolver(2), new Resolver(3)).then(
             function () {
-                tasks[0].calledOnce.should.be.true;
+                tasks[0].calledOnce.should.be.true();
                 tasks[0].firstCall.args.should.eql(expected);
 
                 done();
@@ -91,12 +91,12 @@ describe('Pipeline', function () {
         return pipeline(tasks, 1, 2, 3).then(
             function (result) {
                 result.should.eql(6);
-                tasks[0].calledOnce.should.be.true;
+                tasks[0].calledOnce.should.be.true();
                 tasks[0].firstCall.args.should.eql(expected);
-                tasks[1].calledOnce.should.be.true;
-                tasks[1].firstCall.calledWith(4).should.be.true;
-                tasks[2].calledOnce.should.be.true;
-                tasks[2].firstCall.calledWith(5).should.be.true;
+                tasks[1].calledOnce.should.be.true();
+                tasks[1].firstCall.calledWith(4).should.be.true();
+                tasks[2].calledOnce.should.be.true();
+                tasks[2].firstCall.calledWith(5).should.be.true();
 
                 done();
             }
@@ -115,12 +115,12 @@ describe('Pipeline', function () {
         return pipeline(tasks, new Resolver(1), new Resolver(2), new Resolver(3)).then(
             function (result) {
                 result.should.eql(6);
-                tasks[0].calledOnce.should.be.true;
+                tasks[0].calledOnce.should.be.true();
                 tasks[0].firstCall.args.should.eql(expected);
-                tasks[1].calledOnce.should.be.true;
-                tasks[1].firstCall.calledWith(4).should.be.true;
-                tasks[2].calledOnce.should.be.true;
-                tasks[2].firstCall.calledWith(5).should.be.true;
+                tasks[1].calledOnce.should.be.true();
+                tasks[1].firstCall.calledWith(4).should.be.true();
+                tasks[2].calledOnce.should.be.true();
+                tasks[2].firstCall.calledWith(5).should.be.true();
 
                 done();
             }

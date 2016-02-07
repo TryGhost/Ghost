@@ -43,11 +43,11 @@ describe('Tag API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.tags.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.tags);
                 jsonResponse.tags.should.have.length(6);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
-                testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true;
+                testUtils.API.isISO8601(jsonResponse.tags[0].created_at).should.be.true();
 
                 done();
             });
