@@ -553,6 +553,7 @@
                     "deletingTable": "Deleting table: {table}",
                     "creatingTable": "Creating table: {table}",
                     "addingColumn": "Adding column: {table}.{column}",
+                    "droppingColumn": "Dropping column: {table}.{column}",
                     "addingUnique": "Adding unique on: {table}.{column}",
                     "droppingUnique": "Dropping unique on: {table}.{column}"
                 },
