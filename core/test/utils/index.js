@@ -537,13 +537,9 @@ login = function login(request) {
                 password: user.password,
                 client_id: 'ghost-admin',
                 client_secret: 'not_available'
-            }).end(function (err, res) {
-                if (err) {
-                    return reject(err);
-                }
-
+            }).then(function then(res) {
                 resolve(res.body.access_token);
-            });
+            }, reject);
     });
 };
 
