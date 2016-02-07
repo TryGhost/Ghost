@@ -67,7 +67,7 @@ describe('OAuth', function () {
 
             sandbox.stub(res, 'end', function (json) {
                 try {
-                    json.should.exist;
+                    should.exist(json);
                     json = JSON.parse(json);
                     json.should.have.property('access_token');
                     json.should.have.property('refresh_token');
@@ -176,7 +176,7 @@ describe('OAuth', function () {
 
             sandbox.stub(res, 'end', function (json) {
                 try {
-                    json.should.exist;
+                    should.exist(json);
                     json = JSON.parse(json);
                     json.should.have.property('access_token');
                     json.should.have.property('expires_in');

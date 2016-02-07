@@ -47,7 +47,7 @@ describe('Mail', function () {
         should.exist(mailer);
         mailer.should.have.property('init');
         mailer.should.have.property('transport');
-        mailer.should.have.property('send').and.be.a.function;
+        mailer.should.have.property('send').and.be.a.Function();
     });
 
     it('should setup SMTP transport on initialization', function (done) {
@@ -55,7 +55,7 @@ describe('Mail', function () {
         mailer.init().then(function () {
             mailer.should.have.property('transport');
             mailer.transport.transportType.should.eql('SMTP');
-            mailer.transport.sendMail.should.be.a.function;
+            mailer.transport.sendMail.should.be.a.Function();
             done();
         }).catch(done);
     });
@@ -105,7 +105,7 @@ describe('Mail', function () {
             mailer.send({subject: '', html: '123'})
         ]).then(function (descriptors) {
             descriptors.forEach(function (d) {
-                d.isRejected().should.be.true;
+                d.isRejected().should.be.true();
                 d.reason().should.be.an.instanceOf(Error);
                 d.reason().message.should.eql('Error: Incomplete message data.');
             });

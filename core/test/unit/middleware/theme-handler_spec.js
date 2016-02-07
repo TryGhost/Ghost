@@ -39,11 +39,11 @@ describe('Theme Handler', function () {
 
             themeHandler.ghostLocals(req, res, next);
 
-            res.locals.should.be.an.Object;
-            res.locals.version.should.exist;
-            res.locals.safeVersion.should.exist;
+            res.locals.should.be.an.Object();
+            should.exist(res.locals.version);
+            should.exist(res.locals.safeVersion);
             res.locals.relativeUrl.should.equal(req.path);
-            next.called.should.be.true;
+            next.called.should.be.true();
         });
     });
 
@@ -57,10 +57,10 @@ describe('Theme Handler', function () {
 
             themeHandler.activateTheme(blogApp, 'casper');
 
-            errorStub.calledWith('casper').should.be.true;
-            fsStub.calledOnce.should.be.true;
-            hbsStub.calledOnce.should.be.true;
-            hbsStub.firstCall.args[0].should.be.an.Object.and.have.property('partialsDir');
+            errorStub.calledWith('casper').should.be.true();
+            fsStub.calledOnce.should.be.true();
+            hbsStub.calledOnce.should.be.true();
+            hbsStub.firstCall.args[0].should.be.an.Object().and.have.property('partialsDir');
             hbsStub.firstCall.args[0].partialsDir.should.have.lengthOf(2);
             blogApp.get('activeTheme').should.equal('casper');
         });
@@ -74,10 +74,10 @@ describe('Theme Handler', function () {
 
             themeHandler.activateTheme(blogApp, 'casper');
 
-            errorStub.calledWith('casper').should.be.true;
-            fsStub.calledOnce.should.be.true;
-            hbsStub.calledOnce.should.be.true;
-            hbsStub.firstCall.args[0].should.be.an.Object.and.have.property('partialsDir');
+            errorStub.calledWith('casper').should.be.true();
+            fsStub.calledOnce.should.be.true();
+            hbsStub.calledOnce.should.be.true();
+            hbsStub.firstCall.args[0].should.be.an.Object().and.have.property('partialsDir');
             hbsStub.firstCall.args[0].partialsDir.should.have.lengthOf(1);
             blogApp.get('activeTheme').should.equal('casper');
         });
@@ -89,7 +89,7 @@ describe('Theme Handler', function () {
             themeHandler.configHbsForContext(req, res, next);
 
             should.not.exist(res.locals.secure);
-            next.called.should.be.true;
+            next.called.should.be.true();
         });
 
         it('handles secure context', function () {
@@ -100,13 +100,13 @@ describe('Theme Handler', function () {
 
             themeHandler.configHbsForContext(req, res, next);
 
-            themeOptSpy.calledOnce.should.be.true;
-            themeOptSpy.firstCall.args[0].should.be.an.Object.and.have.property('data');
-            themeOptSpy.firstCall.args[0].data.should.be.an.Object.and.have.property('blog');
-            themeOptSpy.firstCall.args[0].data.blog.should.be.an.Object.and.have.property('url');
+            themeOptSpy.calledOnce.should.be.true();
+            themeOptSpy.firstCall.args[0].should.be.an.Object().and.have.property('data');
+            themeOptSpy.firstCall.args[0].data.should.be.an.Object().and.have.property('blog');
+            themeOptSpy.firstCall.args[0].data.blog.should.be.an.Object().and.have.property('url');
             themeOptSpy.firstCall.args[0].data.blog.url.should.eql('https://secure.blog');
             res.locals.secure.should.equal(true);
-            next.called.should.be.true;
+            next.called.should.be.true();
         });
 
         it('sets view path', function () {
@@ -116,7 +116,7 @@ describe('Theme Handler', function () {
 
             themeHandler.configHbsForContext(req, res, next);
 
-            blogApp.get('views').should.not.be.undefined;
+            blogApp.get('views').should.not.be.undefined();
         });
 
         it('sets view path', function () {
@@ -126,7 +126,7 @@ describe('Theme Handler', function () {
 
             themeHandler.configHbsForContext(req, res, next);
 
-            blogApp.get('views').should.not.be.undefined;
+            blogApp.get('views').should.not.be.undefined();
         });
     });
 
@@ -143,7 +143,7 @@ describe('Theme Handler', function () {
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
-                activateThemeSpy.called.should.be.true;
+                activateThemeSpy.called.should.be.true();
                 done();
             });
         });
@@ -160,7 +160,7 @@ describe('Theme Handler', function () {
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
-                activateThemeSpy.called.should.be.false;
+                activateThemeSpy.called.should.be.false();
                 done();
             });
         });
@@ -180,8 +180,8 @@ describe('Theme Handler', function () {
 
             themeHandler.updateActiveTheme(req, res, function (err) {
                 should.exist(err);
-                errorSpy.called.should.be.true;
-                activateThemeSpy.called.should.be.false;
+                errorSpy.called.should.be.true();
+                activateThemeSpy.called.should.be.false();
                 err.message.should.eql('The currently active theme "rasper" is missing.');
                 done();
             });
@@ -203,10 +203,10 @@ describe('Theme Handler', function () {
             configUtils.set({paths: {availableThemes: {casper: {}}}});
 
             themeHandler.updateActiveTheme(req, res, function () {
-                errorSpy.called.should.be.false;
-                activateThemeSpy.called.should.be.false;
-                warnSpy.called.should.be.true;
-                warnSpy.calledWith('The currently active theme "rasper" is missing.').should.be.true;
+                errorSpy.called.should.be.false();
+                activateThemeSpy.called.should.be.false();
+                warnSpy.called.should.be.true();
+                warnSpy.calledWith('The currently active theme "rasper" is missing.').should.be.true();
                 done();
             });
         });

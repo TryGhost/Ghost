@@ -97,7 +97,9 @@
     "nock": "7.1.0",
     "rewire": "2.5.1",
     "rimraf-then": "1.0.0",
-    "should": "6.0.3",
+    "should": "8.2.1",
+    "should-http": "0.0.4",
+    "should-sinon": "0.0.5",
     "sinon": "1.17.3",
     "supertest": "1.1.0",
     "top-gh-contribs": "2.0.2"

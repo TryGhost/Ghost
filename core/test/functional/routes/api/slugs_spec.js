@@ -43,8 +43,8 @@ describe('Slug API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.slugs.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
                 testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('a-post-title');
@@ -66,8 +66,8 @@ describe('Slug API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.slugs.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
                 testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('atag');
@@ -89,8 +89,8 @@ describe('Slug API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.slugs.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
                 testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('user-name');
@@ -112,8 +112,8 @@ describe('Slug API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.slugs.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.slugs);
                 jsonResponse.slugs.should.have.length(1);
                 testUtils.API.checkResponse(jsonResponse.slugs[0], 'slug');
                 jsonResponse.slugs[0].slug.should.equal('cool-app');
@@ -134,7 +134,7 @@ describe('Slug API', function () {
                 }
 
                 var jsonResponse = res.body;
-                jsonResponse.should.not.exist;
+                should.exist(jsonResponse.errors);
 
                 done();
             });
