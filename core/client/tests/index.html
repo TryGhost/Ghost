@@ -33,6 +33,13 @@
         #ember-testing > div {
             height: 100%;
         }
+        /* fix firefox not supporting `zoom: 50%` */
+        _::-moz-range-track, body:last-child #ember-testing {
+            -moz-transform-origin: 0 0;
+            -moz-transform: scale(0.5);
+            width: 200%;
+            height: 200%;
+        }
     </style>
   </head>
   <body>
