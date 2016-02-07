@@ -41,12 +41,13 @@ describe('Acceptance: Posts - Post', function() {
             visit('/');
 
             andThen(() => {
-                // it redirects to first post
-                expect(currentURL(), 'currentURL').to.equal(`/${posts[0].id}`);
-
-                expect(find('.posts-list li').first().hasClass('active'), 'highlights latest post').to.be.true;
-
                 expect(find('.posts-list li').length, 'post list count').to.equal(3);
+
+                // if we're in "desktop" size, we should redirect and highlight
+                if (find('.content-preview:visible').length) {
+                    expect(currentURL(), 'currentURL').to.equal(`/${posts[0].id}`);
+                    expect(find('.posts-list li').first().hasClass('active'), 'highlights latest post').to.be.true;
+                }
             });
         });
 
