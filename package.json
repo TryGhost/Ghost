@@ -102,5 +102,8 @@
     "supertest": "1.0.1",
     "testem": "0.8.3",
     "top-gh-contribs": "2.0.2"
+  },
+  "greenkeeper": {
+    "ignore": ["bookshelf", "knex", "bluebird", "glob", "lodash", "nodemailer", "showdown-ghost", "should", "supertest"]
   }
 }
