@@ -50,7 +50,7 @@
     "jsonpath": "0.2.2",
     "knex": "0.9.0",
     "lodash": "3.10.1",
-    "moment": "2.11.1",
+    "moment": "2.11.2",
     "morgan": "1.6.1",
     "node-uuid": "1.4.7",
     "nodemailer": "0.7.1",
