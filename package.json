@@ -44,7 +44,7 @@
     "fs-extra": "0.26.5",
     "ghost-gql": "0.0.3",
     "glob": "5.0.15",
-    "html-to-text": "1.5.1",
+    "html-to-text": "1.6.0",
     "intl": "1.0.1",
     "intl-messageformat": "1.2.0",
     "jsonpath": "0.2.2",
