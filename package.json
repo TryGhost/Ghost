@@ -99,7 +99,7 @@
     "rimraf-then": "^1.0.0",
     "should": "6.0.3",
     "sinon": "1.14.1",
-    "supertest": "1.0.1",
+    "supertest": "1.1.0",
     "testem": "0.8.3",
     "top-gh-contribs": "2.0.2"
   },
