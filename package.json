@@ -41,7 +41,7 @@
     "express": "4.13.4",
     "express-hbs": "0.8.4",
     "extract-zip": "1.4.1",
-    "fs-extra": "0.26.4",
+    "fs-extra": "0.26.5",
     "ghost-gql": "0.0.3",
     "glob": "5.0.15",
     "html-to-text": "1.5.1",
