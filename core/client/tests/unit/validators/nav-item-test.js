@@ -43,14 +43,6 @@ describe('Unit: Validator: nav-item', function () {
         expect(navItem.get('hasValidated')).to.include('label');
     });
 
-    it('doesn\'t validate label if empty and last', function () {
-        let navItem = NavItem.create({last: true});
-
-        validator.check(navItem, 'label');
-
-        expect(validator.get('passed')).to.be.true;
-    });
-
     it('requires url presence', function () {
         let navItem = NavItem.create();
 
@@ -95,14 +87,6 @@ describe('Unit: Validator: nav-item', function () {
         validUrls.forEach(function (url) {
             testValidUrl(url);
         });
-    });
-
-    it('doesn\'t validate url if empty and last', function () {
-        let navItem = NavItem.create({last: true});
-
-        validator.check(navItem, 'url');
-
-        expect(validator.get('passed')).to.be.true;
     });
 
     it('validates url and label by default', function () {
