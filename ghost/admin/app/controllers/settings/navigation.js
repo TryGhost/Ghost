@@ -22,7 +22,15 @@ export const NavItem = Ember.Object.extend(ValidationEngine, {
     validationType: 'navItem',
 
     isComplete: computed('label', 'url', function () {
-        return !(isBlank(this.get('label').trim()) || isBlank(this.get('url')));
+        let {label, url} = this.getProperties('label', 'url');
+
+        return !isBlank(label) && !isBlank(url);
+    }),
+
+    isBlank: computed('label', 'url', function () {
+        let {label, url} = this.getProperties('label', 'url');
+
+        return isBlank(label) && isBlank(url);
     }),
 
     init() {
@@ -83,6 +91,10 @@ export default Controller.extend(SettingsSaveMixin, {
             validationPromises;
 
         validationPromises = navItems.map((item) => {
+            if (item.get('last') && item.get('isBlank')) {
+                return;
+            }
+
             return item.validate();
         });
 
@@ -117,9 +129,11 @@ export default Controller.extend(SettingsSaveMixin, {
             let navItems = this.get('navigationItems');
             let lastItem = navItems.get('lastObject');
 
-            if (lastItem && lastItem.get('isComplete')) {
-                // Add new blank navItem
-                navItems.addObject(NavItem.create({last: true}));
+            if (lastItem) {
+                lastItem.validate().then(() => {
+                    // Add new blank navItem
+                    navItems.addObject(NavItem.create({last: true}));
+                });
             }
         },
 
