@@ -15,7 +15,7 @@ var Settings,
 // It's much easier for us to work with it as a single level
 // instead of iterating those categories every time
 function parseDefaultSettings() {
-    var defaultSettingsInCategories = require('../data/default-settings.json'),
+    var defaultSettingsInCategories = require('../data/schema/').defaultSettings,
         defaultSettingsFlattened = {};
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
