@@ -267,7 +267,9 @@ describe('Acceptance: Settings - Tags', function () {
                 find('.tag-list').scrollTop(find('.tag-list-content').height());
             });
 
-            wait().then(() => {
+            triggerEvent('.tag-list', 'scroll');
+
+            andThen(() => {
                 // it loads the second page
                 expect(find('.settings-tags .settings-tag').length, 'tag list count on second load')
                     .to.equal(30);
@@ -275,7 +277,9 @@ describe('Acceptance: Settings - Tags', function () {
                 find('.tag-list').scrollTop(find('.tag-list-content').height());
             });
 
-            wait().then(() => {
+            triggerEvent('.tag-list', 'scroll');
+
+            andThen(() => {
                 // it loads the final page
                 expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
                     .to.equal(32);
