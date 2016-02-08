@@ -5,18 +5,18 @@
 // rather than abstracted into a migration system. The upgrade function checks that its changes are safe before
 // making them.
 
-var Promise     = require('bluebird'),
-    crypto      = require('crypto'),
-    sequence    = require('../../utils/sequence'),
-    _           = require('lodash'),
-    errors      = require('../../errors'),
-    config      = require('../../config'),
-    utils       = require('../../utils'),
-    models      = require('../../models'),
-    fixtures    = require('./fixtures'),
-    permissions = require('./permissions'),
-    notifications = require('../../api/notifications'),
-    i18n        = require('../../i18n'),
+var Promise       = require('bluebird'),
+    crypto        = require('crypto'),
+    _             = require('lodash'),
+    fixtures      = require('./fixtures'),
+    permissions   = require('./permissions/index'),
+    notifications = require('../../../api/notifications'),
+    config        = require('../../../config'),
+    errors        = require('../../../errors'),
+    i18n          = require('../../../i18n'),
+    models        = require('../../../models'),
+    utils         = require('../../../utils'),
+    sequence      = require('../../../utils/sequence'),
 
     // Private
     logInfo,

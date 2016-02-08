@@ -7,7 +7,7 @@ var testUtils   = require('../utils/index'),
     _           = require('lodash'),
 
     // Stuff we are testing
-    versioning  = require('../../server/data/versioning/index'),
+    versioning  = require('../../server/data/schema').versioning,
     exporter    = require('../../server/data/export/index'),
     sandbox = sinon.sandbox.create();
 
