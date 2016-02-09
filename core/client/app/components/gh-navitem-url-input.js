@@ -26,8 +26,8 @@ export default TextField.extend({
         return this.get('baseUrl') === this.get('value');
     }),
 
-    fakePlaceholder: computed('isBaseUrl', 'hasFocus', function () {
-        return this.get('isBaseUrl') && this.get('last') && !this.get('hasFocus');
+    fakePlaceholder: computed('isBaseUrl', 'hasFocus', 'isNew', function () {
+        return this.get('isBaseUrl') && this.get('isNew') && !this.get('hasFocus');
     }),
 
     didReceiveAttrs() {
@@ -72,9 +72,10 @@ export default TextField.extend({
     },
 
     keyPress(event) {
+        this.attrs.clearErrors();
+
         // enter key
         if (event.keyCode === 13) {
-            event.preventDefault();
             this.notifyUrlChanged();
         }
 

@@ -1,15 +1,18 @@
 import Ember from 'ember';
-import ValidationStateMixin from 'ghost/mixins/validation-state';
+import ValidationState from 'ghost/mixins/validation-state';
+import SortableItem from 'ember-sortable/mixins/sortable-item';
 
-const {Component, computed} = Ember;
-const {readOnly} = computed;
+const {Component, computed, run} = Ember;
+const {alias, readOnly} = computed;
 
-export default Component.extend(ValidationStateMixin, {
+export default Component.extend(ValidationState, SortableItem, {
     classNames: 'gh-blognav-item',
-    classNameBindings: ['errorClass'],
+    classNameBindings: ['errorClass', 'navItem.isNew::gh-blognav-item--sortable'],
 
-    attributeBindings: ['order:data-order'],
-    order: readOnly('navItem.order'),
+    new: false,
+    handle: '.gh-blognav-grab',
+
+    model: alias('navItem'),
     errors: readOnly('navItem.errors'),
 
     errorClass: computed('hasError', function () {
@@ -20,12 +23,12 @@ export default Component.extend(ValidationStateMixin, {
 
     keyPress(event) {
         // enter key
-        if (event.keyCode === 13) {
+        if (event.keyCode === 13 && this.get('navItem.isNew')) {
             event.preventDefault();
-            this.send('addItem');
+            run.scheduleOnce('actions', this, function () {
+                this.send('addItem');
+            });
         }
-
-        this.get('navItem.errors').clear();
     },
 
     actions: {
@@ -39,6 +42,14 @@ export default Component.extend(ValidationStateMixin, {
 
         updateUrl(value) {
             this.sendAction('updateUrl', value, this.get('navItem'));
+        },
+
+        clearLabelErrors() {
+            this.get('navItem.errors').remove('label');
+        },
+
+        clearUrlErrors() {
+            this.get('navItem.errors').remove('url');
         }
     }
 });
