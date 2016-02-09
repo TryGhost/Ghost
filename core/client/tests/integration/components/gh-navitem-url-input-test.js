@@ -23,12 +23,15 @@ describeComponent(
             // set defaults
             this.set('baseUrl', currentUrl);
             this.set('url', '');
-            this.set('isLast', false);
+            this.set('isNew', false);
+            this.on('clearErrors', function () {
+                return null;
+            });
         });
 
         it('renders correctly with blank url', function () {
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -40,7 +43,7 @@ describeComponent(
         it('renders correctly with relative urls', function () {
             this.set('url', '/about');
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -53,7 +56,7 @@ describeComponent(
         it('renders correctly with absolute urls', function () {
             this.set('url', 'https://example.com:2368/#test');
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -74,7 +77,7 @@ describeComponent(
 
         it('deletes base URL on backspace', function () {
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -90,7 +93,7 @@ describeComponent(
 
         it('deletes base URL on delete', function () {
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -109,7 +112,7 @@ describeComponent(
                 return null;
             });
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -128,7 +131,7 @@ describeComponent(
                 return null;
             });
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -153,7 +156,7 @@ describeComponent(
                 return null;
             });
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -175,7 +178,7 @@ describeComponent(
                 return null;
             });
             this.render(hbs`
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -187,9 +190,9 @@ describeComponent(
         });
 
         it('toggles .fake-placeholder on focus', function () {
-            this.set('isLast', true);
+            this.set('isNew', true);
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -208,7 +211,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -224,7 +227,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -245,7 +248,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -268,7 +271,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -301,7 +304,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -330,7 +333,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -349,7 +352,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -375,7 +378,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -403,7 +406,7 @@ describeComponent(
             });
 
             this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
             `);
             let $input = this.$('input');
 
@@ -436,7 +439,7 @@ describeComponent(
                 });
 
                 this.render(hbs `
-                    {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                    {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
                 `);
                 let $input = this.$('input');
 
@@ -463,7 +466,7 @@ describeComponent(
                 });
 
                 this.render(hbs `
-                    {{gh-navitem-url-input baseUrl=baseUrl url=url last=isLast change="updateUrl"}}
+                    {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
                 `);
                 let $input = this.$('input');
 
