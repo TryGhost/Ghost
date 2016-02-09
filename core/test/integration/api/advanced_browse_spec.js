@@ -31,7 +31,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 3 items according to the limit property
-                    result.posts.should.be.an.Array.with.lengthOf(3);
+                    result.posts.should.be.an.Array().with.lengthOf(3);
 
                     // None of the items returned should be the post with id 4, as that was excluded
                     ids = _.pluck(result.posts, 'id');
@@ -56,7 +56,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(3);
                     result.meta.pagination.pages.should.eql(3);
@@ -81,13 +81,13 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(9);
+                    result.posts.should.be.an.Array().with.lengthOf(9);
 
                     ids = _.pluck(result.posts, 'id');
                     ids.should.eql([14, 11, 9, 8, 7, 6, 5, 3, 2]);
 
                     _.each(result.posts, function (post) {
-                        post.page.should.be.false;
+                        post.page.should.be.false();
                         post.status.should.eql('published');
                     });
 
@@ -95,7 +95,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -119,14 +119,14 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 3 matching items
-                    result.tags.should.be.an.Array.with.lengthOf(3);
+                    result.tags.should.be.an.Array().with.lengthOf(3);
 
                     // TODO: add the ordering
                     // TODO: manage the count
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     // TODO complete meta data assertions
 
                     done();
@@ -146,7 +146,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 2 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(6);
+                    result.posts.should.be.an.Array().with.lengthOf(6);
 
                     // Each post must either have the author 'leslie' or 'pat'
                     authors = _.map(result.posts, function (post) {
@@ -159,7 +159,7 @@ describe('Filter Param Spec', function () {
                         var tags = _.pluck(post.tags, 'slug');
                         // This construct ensures we get an assertion or a failure
                         if (!_.isEmpty(post.image)) {
-                            post.image.should.not.be.empty;
+                            post.image.should.not.be.empty();
                         } else {
                             tags = _.pluck(post.tags, 'slug');
                             tags.should.containEql('audio');
@@ -171,7 +171,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -196,7 +196,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 2 matching items
-                    result.users.should.be.an.Array.with.lengthOf(2);
+                    result.users.should.be.an.Array().with.lengthOf(2);
 
                     ids = _.pluck(result.users, 'id');
                     ids.should.eql([1, 2]);
@@ -206,7 +206,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(3);
                     result.meta.pagination.pages.should.eql(1);
@@ -232,7 +232,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     // TODO complete meta data assertions
 
                     done();
@@ -251,7 +251,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 2 matching items
-                    result.users.should.be.an.Array.with.lengthOf(2);
+                    result.users.should.be.an.Array().with.lengthOf(2);
 
                     ids = _.pluck(result.users, 'id');
                     ids.should.eql([2, 1]);
@@ -261,7 +261,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -285,7 +285,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 3 matching items
-                    result.tags.should.be.an.Array.with.lengthOf(3);
+                    result.tags.should.be.an.Array().with.lengthOf(3);
 
                     ids = _.pluck(result.tags, 'id');
                     ids.should.containEql(4);
@@ -304,7 +304,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -328,7 +328,7 @@ describe('Filter Param Spec', function () {
 
                 // 2. The data part of the response should be correct
                 // We should have 5 matching items
-                result.tags.should.be.an.Array.with.lengthOf(6);
+                result.tags.should.be.an.Array().with.lengthOf(6);
 
                 // Each tag should have the correct count
                 _.find(result.tags, function (tag) {
@@ -357,7 +357,7 @@ describe('Filter Param Spec', function () {
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                 result.meta.pagination.page.should.eql(1);
                 result.meta.pagination.limit.should.eql(15);
                 result.meta.pagination.pages.should.eql(1);
@@ -380,7 +380,7 @@ describe('Filter Param Spec', function () {
 
                 // 2. The data part of the response should be correct
                 // We should have 5 matching items
-                result.tags.should.be.an.Array.with.lengthOf(6);
+                result.tags.should.be.an.Array().with.lengthOf(6);
 
                 // Each tag should have the correct count
                 _.find(result.tags, function (tag) {
@@ -412,7 +412,7 @@ describe('Filter Param Spec', function () {
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                 result.meta.pagination.page.should.eql(1);
                 result.meta.pagination.limit.should.eql(15);
                 result.meta.pagination.pages.should.eql(1);
@@ -439,7 +439,7 @@ describe('Filter Param Spec', function () {
 
                 // 2. The data part of the response should be correct
                 // We should have 5 matching items
-                result.users.should.be.an.Array.with.lengthOf(3);
+                result.users.should.be.an.Array().with.lengthOf(3);
 
                 // Each user should have the correct count
                 _.find(result.users, function (user) {
@@ -456,7 +456,7 @@ describe('Filter Param Spec', function () {
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                 result.meta.pagination.page.should.eql(1);
                 result.meta.pagination.limit.should.eql(15);
                 result.meta.pagination.pages.should.eql(1);
@@ -479,7 +479,7 @@ describe('Filter Param Spec', function () {
 
                 // 2. The data part of the response should be correct
                 // We should have 5 matching items
-                result.users.should.be.an.Array.with.lengthOf(3);
+                result.users.should.be.an.Array().with.lengthOf(3);
 
                 // Each user should have the correct count
                 _.find(result.users, function (user) {
@@ -499,7 +499,7 @@ describe('Filter Param Spec', function () {
 
                 // 3. The meta object should contain the right details
                 result.meta.should.have.property('pagination');
-                result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                 result.meta.pagination.page.should.eql(1);
                 result.meta.pagination.limit.should.eql(15);
                 result.meta.pagination.pages.should.eql(1);
@@ -533,14 +533,14 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 4 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(4);
+                    result.posts.should.be.an.Array().with.lengthOf(4);
 
                     ids = _.pluck(result.posts, 'id');
                     ids.should.eql([11, 9, 3, 2]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -565,14 +565,14 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(5);
+                    result.posts.should.be.an.Array().with.lengthOf(5);
 
                     ids = _.pluck(result.posts, 'id');
                     ids.should.eql([13, 12, 11, 10, 9]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(2);
                     result.meta.pagination.limit.should.eql(5);
                     result.meta.pagination.pages.should.eql(3);
@@ -599,14 +599,14 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(15);
+                    result.posts.should.be.an.Array().with.lengthOf(15);
 
                     ids = _.pluck(result.posts, 'id');
                     ids.should.eql([20, 18, 17, 16, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4]);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(2);
@@ -631,7 +631,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(3);
+                    result.posts.should.be.an.Array().with.lengthOf(3);
 
                     // All posts should be marked as featured 'true'
                     featured = _.pluck(result.posts, 'featured');
@@ -643,7 +643,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -668,7 +668,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(15);
+                    result.posts.should.be.an.Array().with.lengthOf(15);
 
                     // All posts should be marked as featured 'false'
                     featured = _.pluck(result.posts, 'featured');
@@ -680,7 +680,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -707,7 +707,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(18);
+                    result.posts.should.be.an.Array().with.lengthOf(18);
 
                     // All posts should be marked as page 'false'
                     page = _.pluck(result.posts, 'page');
@@ -719,7 +719,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql('all');
                     result.meta.pagination.pages.should.eql(1);
@@ -745,7 +745,7 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 5 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(2);
+                    result.posts.should.be.an.Array().with.lengthOf(2);
 
                     // All posts should be marked as page 'true'
                     page = _.pluck(result.posts, 'page');
@@ -757,7 +757,7 @@ describe('Filter Param Spec', function () {
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -787,11 +787,11 @@ describe('Filter Param Spec', function () {
 
                     // 2. The data part of the response should be correct
                     // We should have 4 matching items
-                    result.posts.should.be.an.Array.with.lengthOf(0);
+                    result.posts.should.be.an.Array().with.lengthOf(0);
 
                     // 3. The meta object should contain the right details
                     result.meta.should.have.property('pagination');
-                    result.meta.pagination.should.be.an.Object.with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
+                    result.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
                     result.meta.pagination.page.should.eql(1);
                     result.meta.pagination.limit.should.eql(15);
                     result.meta.pagination.pages.should.eql(1);
@@ -817,7 +817,7 @@ describe('Filter Param Spec', function () {
                 result.should.have.property('meta');
 
                 _.each(result.posts, function (post) {
-                    post.page.should.be.false;
+                    post.page.should.be.false();
                     post.status.should.eql('published');
                 });
 
@@ -833,7 +833,7 @@ describe('Filter Param Spec', function () {
                 result.should.have.property('meta');
 
                 _.each(result.posts, function (post) {
-                    post.page.should.be.false;
+                    post.page.should.be.false();
                     post.status.should.eql('published');
                 });
 
@@ -849,7 +849,7 @@ describe('Filter Param Spec', function () {
                 result.should.have.property('meta');
 
                 _.each(result.posts, function (post) {
-                    post.page.should.be.false;
+                    post.page.should.be.false();
                     post.status.should.eql('published');
                 });
 
@@ -865,7 +865,7 @@ describe('Filter Param Spec', function () {
                 result.should.have.property('meta');
 
                 _.each(result.posts, function (post) {
-                    post.page.should.be.false;
+                    post.page.should.be.false();
                     post.status.should.eql('published');
                 });
 

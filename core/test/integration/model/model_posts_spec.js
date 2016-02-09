@@ -42,16 +42,16 @@ describe('Post Model', function () {
 
         function checkFirstPostData(firstPost) {
             should.not.exist(firstPost.author_id);
-            firstPost.author.should.be.an.Object;
+            firstPost.author.should.be.an.Object();
             firstPost.url.should.equal('/html-ipsum/');
-            firstPost.fields.should.be.an.Array;
-            firstPost.tags.should.be.an.Array;
+            firstPost.fields.should.be.an.Array();
+            firstPost.tags.should.be.an.Array();
             firstPost.author.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.fields[0].key.should.equal(DataGenerator.Content.app_fields[0].key);
             firstPost.created_at.should.be.an.instanceof(Date);
-            firstPost.created_by.should.be.an.Object;
-            firstPost.updated_by.should.be.an.Object;
-            firstPost.published_by.should.be.an.Object;
+            firstPost.created_by.should.be.an.Object();
+            firstPost.updated_by.should.be.an.Object();
+            firstPost.published_by.should.be.an.Object();
             firstPost.created_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.updated_by.name.should.equal(DataGenerator.Content.users[0].name);
             firstPost.published_by.name.should.equal(DataGenerator.Content.users[0].name);
@@ -246,7 +246,7 @@ describe('Post Model', function () {
                     .then(function (paginationResult) {
                         should.exist(paginationResult.meta);
 
-                        paginationResult.meta.pagination.page.should.be.a.Number;
+                        paginationResult.meta.pagination.page.should.be.a.Number();
 
                         done();
                     }).catch(done);
@@ -343,9 +343,9 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.title.should.equal('new title');
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.published.edited').should.be.true;
-                    eventSpy.secondCall.calledWith('post.edited').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.published.edited').should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
 
                     done();
                 }).catch(done);
@@ -365,9 +365,9 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.published').should.be.true;
-                    eventSpy.secondCall.calledWith('post.edited').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.published').should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
 
                     done();
                 }).catch(done);
@@ -387,9 +387,9 @@ describe('Post Model', function () {
                 }).then(function (edited) {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true;
-                    eventSpy.secondCall.calledWith('post.edited').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
 
                     done();
                 }).catch(done);
@@ -410,9 +410,9 @@ describe('Post Model', function () {
                     should.exist(edited);
                     edited.attributes.status.should.equal('draft');
                     edited.attributes.page.should.equal(true);
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.deleted').should.be.true;
-                    eventSpy.secondCall.calledWith('page.added').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.deleted').should.be.true();
+                    eventSpy.secondCall.calledWith('page.added').should.be.true();
 
                     return PostModel.edit({page: 0}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
@@ -420,8 +420,8 @@ describe('Post Model', function () {
                     edited.attributes.status.should.equal('draft');
                     edited.attributes.page.should.equal(false);
                     eventSpy.callCount.should.equal(4);
-                    eventSpy.thirdCall.calledWith('page.deleted').should.be.true;
-                    eventSpy.lastCall.calledWith('post.added').should.be.true;
+                    eventSpy.thirdCall.calledWith('page.deleted').should.be.true();
+                    eventSpy.lastCall.calledWith('post.added').should.be.true();
                     done();
                 }).catch(done);
             });
@@ -443,10 +443,10 @@ describe('Post Model', function () {
                     edited.attributes.page.should.equal(true);
 
                     eventSpy.callCount.should.equal(4);
-                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true;
-                    eventSpy.secondCall.calledWith('post.deleted').should.be.true;
-                    eventSpy.thirdCall.calledWith('page.added').should.be.true;
-                    eventSpy.lastCall.calledWith('page.published').should.be.true;
+                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true();
+                    eventSpy.secondCall.calledWith('post.deleted').should.be.true();
+                    eventSpy.thirdCall.calledWith('page.added').should.be.true();
+                    eventSpy.lastCall.calledWith('page.published').should.be.true();
 
                     return PostModel.edit({page: 0}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
@@ -455,10 +455,10 @@ describe('Post Model', function () {
                     edited.attributes.page.should.equal(false);
 
                     eventSpy.callCount.should.equal(8);
-                    eventSpy.getCall(4).calledWith('page.unpublished').should.be.true;
-                    eventSpy.getCall(5).calledWith('page.deleted').should.be.true;
-                    eventSpy.getCall(6).calledWith('post.added').should.be.true;
-                    eventSpy.getCall(7).calledWith('post.published').should.be.true;
+                    eventSpy.getCall(4).calledWith('page.unpublished').should.be.true();
+                    eventSpy.getCall(5).calledWith('page.deleted').should.be.true();
+                    eventSpy.getCall(6).calledWith('post.added').should.be.true();
+                    eventSpy.getCall(7).calledWith('post.published').should.be.true();
                     done();
                 }).catch(done);
             });
@@ -478,10 +478,10 @@ describe('Post Model', function () {
                     should.exist(edited);
                     edited.attributes.status.should.equal('published');
                     edited.attributes.page.should.equal(true);
-                    eventSpy.calledThrice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.deleted').should.be.true;
-                    eventSpy.secondCall.calledWith('page.added').should.be.true;
-                    eventSpy.thirdCall.calledWith('page.published').should.be.true;
+                    eventSpy.calledThrice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.deleted').should.be.true();
+                    eventSpy.secondCall.calledWith('page.added').should.be.true();
+                    eventSpy.thirdCall.calledWith('page.published').should.be.true();
 
                     return PostModel.edit({page: 0, status: 'draft'}, _.extend({}, context, {id: postId}));
                 }).then(function (edited) {
@@ -489,9 +489,9 @@ describe('Post Model', function () {
                     edited.attributes.status.should.equal('draft');
                     edited.attributes.page.should.equal(false);
                     eventSpy.callCount.should.equal(6);
-                    eventSpy.getCall(3).calledWith('page.unpublished').should.be.true;
-                    eventSpy.getCall(4).calledWith('page.deleted').should.be.true;
-                    eventSpy.getCall(5).calledWith('post.added').should.be.true;
+                    eventSpy.getCall(3).calledWith('page.unpublished').should.be.true();
+                    eventSpy.getCall(4).calledWith('page.deleted').should.be.true();
+                    eventSpy.getCall(5).calledWith('post.added').should.be.true();
                     done();
                 }).catch(done);
             });
@@ -596,8 +596,8 @@ describe('Post Model', function () {
 
                     createdPostUpdatedDate = createdPost.get('updated_at');
 
-                    eventSpy.calledOnce.should.be.true;
-                    eventSpy.firstCall.calledWith('post.added').should.be.true;
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
 
                     // Set the status to published to check that `published_at` is set.
                     return createdPost.save({status: 'published'}, context);
@@ -608,9 +608,9 @@ describe('Post Model', function () {
                     publishedPost.get('updated_by').should.equal(1);
                     publishedPost.get('updated_at').should.not.equal(createdPostUpdatedDate);
 
-                    eventSpy.calledThrice.should.be.true;
-                    eventSpy.secondCall.calledWith('post.published').should.be.true;
-                    eventSpy.thirdCall.calledWith('post.edited').should.be.true;
+                    eventSpy.calledThrice.should.be.true();
+                    eventSpy.secondCall.calledWith('post.published').should.be.true();
+                    eventSpy.thirdCall.calledWith('post.edited').should.be.true();
 
                     done();
                 }).catch(done);
@@ -628,9 +628,9 @@ describe('Post Model', function () {
                     should.exist(newPost);
                     new Date(newPost.get('published_at')).getTime().should.equal(previousPublishedAtDate.getTime());
 
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.added').should.be.true;
-                    eventSpy.secondCall.calledWith('post.published').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
+                    eventSpy.secondCall.calledWith('post.published').should.be.true();
 
                     done();
                 }).catch(done);
@@ -661,15 +661,15 @@ describe('Post Model', function () {
                     should.exist(createdPost);
                     createdPost.get('title').should.equal(untrimmedCreateTitle.trim());
 
-                    eventSpy.calledOnce.should.be.true;
-                    eventSpy.firstCall.calledWith('post.added').should.be.true;
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
 
                     return createdPost.save({title: untrimmedUpdateTitle}, context);
                 }).then(function (updatedPost) {
                     updatedPost.get('title').should.equal(untrimmedUpdateTitle.trim());
 
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.secondCall.calledWith('post.edited').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
 
                     done();
                 }).catch(done);
@@ -701,7 +701,7 @@ describe('Post Model', function () {
 
                         post.get('slug').should.equal('test-title-' + num);
                         post.get('markdown').should.equal('Test Content ' + num);
-                        eventSpy.getCall(i).calledWith('post.added').should.be.true;
+                        eventSpy.getCall(i).calledWith('post.added').should.be.true();
                     });
 
                     done();
@@ -716,8 +716,8 @@ describe('Post Model', function () {
 
                 PostModel.add(newPost, context).then(function (createdPost) {
                     createdPost.get('slug').should.equal('apprehensive-titles-have-too-many-spaces-and-m-dashes-and-also-n-dashes');
-                    eventSpy.calledOnce.should.be.true;
-                    eventSpy.firstCall.calledWith('post.added').should.be.true;
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
 
                     done();
                 }).catch(done);
@@ -731,8 +731,8 @@ describe('Post Model', function () {
 
                 PostModel.add(newPost, context).then(function (createdPost) {
                     createdPost.get('slug').should.not.equal('rss');
-                    eventSpy.calledOnce.should.be.true;
-                    eventSpy.firstCall.calledWith('post.added').should.be.true;
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
 
                     done();
                 });
@@ -765,16 +765,16 @@ describe('Post Model', function () {
                     .then(function (createdFirstPost) {
                         // Store the slug for later
                         firstPost.slug = createdFirstPost.get('slug');
-                        eventSpy.calledOnce.should.be.true;
-                        eventSpy.firstCall.calledWith('post.added').should.be.true;
+                        eventSpy.calledOnce.should.be.true();
+                        eventSpy.firstCall.calledWith('post.added').should.be.true();
 
                         // Create the second post
                         return PostModel.add(secondPost, context);
                     }).then(function (createdSecondPost) {
                         // Store the slug for comparison later
                         secondPost.slug = createdSecondPost.get('slug');
-                        eventSpy.calledTwice.should.be.true;
-                        eventSpy.secondCall.calledWith('post.added').should.be.true;
+                        eventSpy.calledTwice.should.be.true();
+                        eventSpy.secondCall.calledWith('post.added').should.be.true();
 
                         // Update with a conflicting slug from the first post
                         return createdSecondPost.save({
@@ -787,7 +787,7 @@ describe('Post Model', function () {
                         updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
                         eventSpy.calledThrice.should.be.true;
-                        eventSpy.thirdCall.calledWith('post.edited').should.be.true;
+                        eventSpy.thirdCall.calledWith('post.edited').should.be.true();
 
                         return PostModel.findOne({
                             id: updatedSecondPost.id,
@@ -826,9 +826,9 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true;
-                    eventSpy.secondCall.calledWith('post.deleted').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true();
+                    eventSpy.secondCall.calledWith('post.deleted').should.be.true();
 
                     // Double check we can't find the post again
                     return PostModel.findOne(firstItemData);
@@ -838,7 +838,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty;
+                    postsTags.should.be.empty();
 
                     done();
                 }).catch(done);
@@ -864,8 +864,8 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    eventSpy.calledOnce.should.be.true;
-                    eventSpy.firstCall.calledWith('post.deleted').should.be.true;
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.deleted').should.be.true();
 
                     // Double check we can't find the post again
                     return PostModel.findOne(firstItemData);
@@ -875,7 +875,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty;
+                    postsTags.should.be.empty();
 
                     done();
                 }).catch(done);
@@ -892,7 +892,7 @@ describe('Post Model', function () {
                     page = results.toJSON();
                     page.id.should.equal(firstItemData.id);
                     page.status.should.equal('published');
-                    page.page.should.be.true;
+                    page.page.should.be.true();
 
                     // Destroy the page
                     return PostModel.destroy(firstItemData);
@@ -901,9 +901,9 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    eventSpy.calledTwice.should.be.true;
-                    eventSpy.firstCall.calledWith('page.unpublished').should.be.true;
-                    eventSpy.secondCall.calledWith('page.deleted').should.be.true;
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('page.unpublished').should.be.true();
+                    eventSpy.secondCall.calledWith('page.deleted').should.be.true();
 
                     // Double check we can't find the post again
                     return PostModel.findOne(firstItemData);
@@ -913,7 +913,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty;
+                    postsTags.should.be.empty();
 
                     done();
                 }).catch(done);
@@ -937,8 +937,8 @@ describe('Post Model', function () {
 
                     should.equal(deleted.author, undefined);
 
-                    eventSpy.calledOnce.should.be.true;
-                    eventSpy.firstCall.calledWith('page.deleted').should.be.true;
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('page.deleted').should.be.true();
 
                     // Double check we can't find the post again
                     return PostModel.findOne(firstItemData);
@@ -948,7 +948,7 @@ describe('Post Model', function () {
                     // Double check we can't find any related tags
                     return ghostBookshelf.knex.select().table('posts_tags').where('post_id', firstItemData.id);
                 }).then(function (postsTags) {
-                    postsTags.should.be.empty;
+                    postsTags.should.be.empty();
 
                     done();
                 }).catch(done);
