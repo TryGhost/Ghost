@@ -149,7 +149,7 @@ describe('Tag Model', function () {
         it('should create the test data correctly', function () {
             // creates two test tags
             should.exist(tagJSON);
-            tagJSON.should.be.an.Array.with.lengthOf(3);
+            tagJSON.should.be.an.Array().with.lengthOf(3);
             tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
             tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
             tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
@@ -358,7 +358,7 @@ describe('Tag Model', function () {
         it('should create the test data correctly', function () {
             // creates a test tag
             should.exist(tagJSON);
-            tagJSON.should.be.an.Array.with.lengthOf(3);
+            tagJSON.should.be.an.Array().with.lengthOf(3);
             tagJSON.should.have.enumerable(0).with.property('name', 'existing tag a');
             tagJSON.should.have.enumerable(1).with.property('name', 'existing-tag-b');
             tagJSON.should.have.enumerable(2).with.property('name', 'existing_tag_c');
@@ -367,7 +367,7 @@ describe('Tag Model', function () {
             should.exist(postJSON);
             postJSON.title.should.eql('HTML Ipsum');
             should.exist(postJSON.tags);
-            postJSON.tags.should.be.an.Array.and.have.lengthOf(3);
+            postJSON.tags.should.be.an.Array().and.have.lengthOf(3);
             postJSON.tags.should.have.enumerable(0).with.property('name', 'tag1');
             postJSON.tags.should.have.enumerable(1).with.property('name', 'tag2');
             postJSON.tags.should.have.enumerable(2).with.property('name', 'tag3');

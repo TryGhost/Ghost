@@ -29,8 +29,8 @@ describe('checkSSL', function () {
     it('should not require SSL (frontend)', function (done) {
         req.url = '/';
         checkSSL(req, res, next);
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
+        next.called.should.be.true();
+        next.calledWith().should.be.true();
         done();
     });
 
@@ -38,8 +38,8 @@ describe('checkSSL', function () {
         req.url = '/';
         req.secure = true;
         checkSSL(req, res, next);
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
+        next.called.should.be.true();
+        next.calledWith().should.be.true();
         done();
     });
 
@@ -47,8 +47,8 @@ describe('checkSSL', function () {
         req.url = '/ghost';
         res.isAdmin = true;
         checkSSL(req, res, next);
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
+        next.called.should.be.true();
+        next.calledWith().should.be.true();
         done();
     });
 
@@ -58,8 +58,8 @@ describe('checkSSL', function () {
         res.secure = true;
 
         checkSSL(req, res, next);
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
+        next.called.should.be.true();
+        next.calledWith().should.be.true();
         done();
     });
 
@@ -72,8 +72,8 @@ describe('checkSSL', function () {
             forceAdminSSL: true
         });
         checkSSL(req, res, next);
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
+        next.called.should.be.true();
+        next.calledWith().should.be.true();
         done();
     });
 
@@ -89,12 +89,12 @@ describe('checkSSL', function () {
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
-            url.should.not.be.empty;
+            url.should.not.be.empty();
             url.should.eql('https://default.com:2368/ghost/');
             return;
         });
         checkSSL(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 
@@ -110,12 +110,12 @@ describe('checkSSL', function () {
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
-            url.should.not.be.empty;
+            url.should.not.be.empty();
             url.should.eql('https://default.com:2368/blog/ghost/');
             return;
         });
         checkSSL(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 
@@ -134,12 +134,12 @@ describe('checkSSL', function () {
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
-            url.should.not.be.empty;
+            url.should.not.be.empty();
             url.should.eql('https://default.com:2368/ghost/?test=true');
             return;
         });
         checkSSL(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 
@@ -154,12 +154,12 @@ describe('checkSSL', function () {
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
-            url.should.not.be.empty;
+            url.should.not.be.empty();
             url.should.eql('https://default.com:2368/');
             return;
         });
         checkSSL(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 
@@ -175,12 +175,12 @@ describe('checkSSL', function () {
         });
         sandbox.stub(res, 'redirect', function (statusCode, url) {
             statusCode.should.eql(301);
-            url.should.not.be.empty;
+            url.should.not.be.empty();
             url.should.eql('https://ssl-domain.com:2368/ghost/');
             return;
         });
         checkSSL(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 
@@ -200,7 +200,7 @@ describe('checkSSL', function () {
             return;
         });
         checkSSL(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 });

@@ -104,8 +104,8 @@ describe('Auth', function () {
         req.user = {id: 1};
 
         auth.requiresAuthorizedUser(req, res, next);
-        next.called.should.be.true;
-        next.calledWith().should.be.true;
+        next.called.should.be.true();
+        next.calledWith().should.be.true();
         done();
     });
 
@@ -123,7 +123,7 @@ describe('Auth', function () {
         });
 
         auth.requiresAuthorizedUser(req, res, next);
-        next.called.should.be.false;
+        next.called.should.be.false();
         done();
     });
 
@@ -143,8 +143,8 @@ describe('Auth', function () {
             registerSuccessfulBearerStrategy();
             auth.authenticateUser(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, user, info).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, user, info).should.be.true();
             done();
         });
 
@@ -155,8 +155,8 @@ describe('Auth', function () {
 
             auth.authenticateUser(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith().should.be.true;
+            next.called.should.be.true();
+            next.calledWith().should.be.true();
             done();
         });
 
@@ -177,7 +177,7 @@ describe('Auth', function () {
             registerUnsuccessfulBearerStrategy();
             auth.authenticateUser(req, res, next);
 
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -197,7 +197,7 @@ describe('Auth', function () {
             registerUnsuccessfulBearerStrategy();
             auth.authenticateUser(req, res, next);
 
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -219,7 +219,7 @@ describe('Auth', function () {
             registerUnsuccessfulBearerStrategy();
             auth.authenticateUser(req, res, next);
 
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -230,8 +230,8 @@ describe('Auth', function () {
             registerFaultyBearerStrategy();
             auth.authenticateUser(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith('error').should.be.true;
+            next.called.should.be.true();
+            next.calledWith('error').should.be.true();
             done();
         });
     });
@@ -242,8 +242,8 @@ describe('Auth', function () {
             req.headers.authorization = 'Bearer ' + token;
 
             auth.authenticateClient(req, res, next);
-            next.called.should.be.true;
-            next.calledWith().should.be.true;
+            next.called.should.be.true();
+            next.calledWith().should.be.true();
             done();
         });
 
@@ -263,7 +263,7 @@ describe('Auth', function () {
             });
 
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -281,7 +281,7 @@ describe('Auth', function () {
             });
 
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -300,7 +300,7 @@ describe('Auth', function () {
             });
 
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -319,7 +319,7 @@ describe('Auth', function () {
             });
 
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -339,8 +339,8 @@ describe('Auth', function () {
 
             registerUnsuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
-            errorStub.calledTwice.should.be.true;
+            next.called.should.be.false();
+            errorStub.calledTwice.should.be.true();
             errorStub.getCall(0).args[1].should.eql('Client credentials were not provided');
 
             done();
@@ -363,8 +363,8 @@ describe('Auth', function () {
 
             registerUnsuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
-            errorStub.calledTwice.should.be.true;
+            next.called.should.be.false();
+            errorStub.calledTwice.should.be.true();
             errorStub.getCall(0).args[1].should.eql('Client credentials were not valid');
 
             done();
@@ -389,7 +389,7 @@ describe('Auth', function () {
 
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
-            next.called.should.be.false;
+            next.called.should.be.false();
             done();
         });
 
@@ -410,8 +410,8 @@ describe('Auth', function () {
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, client).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, client).should.be.true();
             done();
         });
 
@@ -430,8 +430,8 @@ describe('Auth', function () {
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, client).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, client).should.be.true();
             done();
         });
 
@@ -452,8 +452,8 @@ describe('Auth', function () {
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, client).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, client).should.be.true();
             done();
         });
 
@@ -474,8 +474,8 @@ describe('Auth', function () {
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, client).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, client).should.be.true();
             done();
         });
 
@@ -497,8 +497,8 @@ describe('Auth', function () {
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, client).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, client).should.be.true();
             done();
         });
 
@@ -520,8 +520,8 @@ describe('Auth', function () {
             registerSuccessfulClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith(null, client).should.be.true;
+            next.called.should.be.true();
+            next.calledWith(null, client).should.be.true();
             done();
         });
 
@@ -534,8 +534,8 @@ describe('Auth', function () {
             registerFaultyClientPasswordStrategy();
             auth.authenticateClient(req, res, next);
 
-            next.called.should.be.true;
-            next.calledWith('error').should.be.true;
+            next.called.should.be.true();
+            next.calledWith('error').should.be.true();
             done();
         });
     });

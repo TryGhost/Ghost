@@ -43,9 +43,9 @@ describe('Module', function () {
         it('should have start/stop/restart functions', function (done) {
             ghost().then(function (ghostServer) {
                 should.exist(ghostServer);
-                ghostServer.start.should.be.a.Function;
-                ghostServer.restart.should.be.a.Function;
-                ghostServer.stop.should.be.a.Function;
+                ghostServer.start.should.be.a.Function();
+                ghostServer.restart.should.be.a.Function();
+                ghostServer.stop.should.be.a.Function();
 
                 done();
             }).catch(done);

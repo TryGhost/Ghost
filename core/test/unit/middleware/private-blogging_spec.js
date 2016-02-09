@@ -49,8 +49,8 @@ describe('Private Blogging', function () {
             }));
 
             privateBlogging.checkIsPrivate(req, res, next).then(function () {
-                next.called.should.be.true;
-                res.isPrivateBlog.should.be.false;
+                next.called.should.be.true();
+                res.isPrivateBlog.should.be.false();
 
                 done();
             }).catch(done);
@@ -65,7 +65,7 @@ describe('Private Blogging', function () {
             }));
 
             privateBlogging.checkIsPrivate(req, res, next).then(function () {
-                res.isPrivateBlog.should.be.true;
+                res.isPrivateBlog.should.be.true();
 
                 done();
             }).catch(done);
@@ -78,7 +78,7 @@ describe('Private Blogging', function () {
 
             it('filterPrivateRoutes should call next if not private', function () {
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                next.called.should.be.true;
+                next.called.should.be.true();
             });
 
             it('isPrivateSessionAuth should redirect if blog is not private', function () {
@@ -87,7 +87,7 @@ describe('Private Blogging', function () {
                     isPrivateBlog: false
                 };
                 privateBlogging.isPrivateSessionAuth(req, res, next);
-                res.redirect.called.should.be.true;
+                res.redirect.called.should.be.true();
             });
         });
 
@@ -110,50 +110,50 @@ describe('Private Blogging', function () {
             it('filterPrivateRoutes should call next if admin', function () {
                 res.isAdmin = true;
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                next.called.should.be.true;
+                next.called.should.be.true();
             });
 
             it('filterPrivateRoutes should call next if is the "private" route', function () {
                 req.path = req.url = '/private/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                next.called.should.be.true;
+                next.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is sitemap', function () {
                 req.path = req.url = '/sitemap.xml';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true;
+                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is sitemap with param', function () {
                 req.url = '/sitemap.xml?weird=param';
                 req.path = '/sitemap.xml';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true;
+                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is rss', function () {
                 req.path = req.url = '/rss/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true;
+                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is author rss', function () {
                 req.path = req.url = '/author/halfdan/rss/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true;
+                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is tag rss', function () {
                 req.path = req.url = '/tag/slimer/rss/';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true;
+                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should throw 404 if url is rss plus something', function () {
                 req.path = req.url = '/rss/sometag';
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                errorSpy.called.should.be.true;
+                errorSpy.called.should.be.true();
             });
 
             it('filterPrivateRoutes should render custom robots.txt', function () {
@@ -164,14 +164,14 @@ describe('Private Blogging', function () {
                     cb(null, 'User-agent: * Disallow: /');
                 });
                 privateBlogging.filterPrivateRoutes(req, res, next);
-                res.writeHead.called.should.be.true;
-                res.end.called.should.be.true;
+                res.writeHead.called.should.be.true();
+                res.end.called.should.be.true();
             });
 
             it('authenticateProtection should call next if error', function () {
                 res.error = 'Test Error';
                 privateBlogging.authenticateProtection(req, res, next);
-                next.called.should.be.true;
+                next.called.should.be.true();
             });
 
             describe('with hash verification', function () {
@@ -193,7 +193,7 @@ describe('Private Blogging', function () {
                     };
 
                     privateBlogging.authenticatePrivateSession(req, res, next).then(function () {
-                        next.called.should.be.true;
+                        next.called.should.be.true();
 
                         done();
                     }).catch(done);
@@ -208,7 +208,7 @@ describe('Private Blogging', function () {
                     res.redirect = sinon.spy();
 
                     privateBlogging.authenticatePrivateSession(req, res, next).then(function () {
-                        res.redirect.called.should.be.true;
+                        res.redirect.called.should.be.true();
 
                         done();
                     }).catch(done);
@@ -224,7 +224,7 @@ describe('Private Blogging', function () {
                     res.redirect = sandbox.spy();
 
                     privateBlogging.isPrivateSessionAuth(req, res, next).then(function () {
-                        res.redirect.called.should.be.true;
+                        res.redirect.called.should.be.true();
 
                         done();
                     }).catch(done);
@@ -237,7 +237,7 @@ describe('Private Blogging', function () {
                     };
 
                     privateBlogging.isPrivateSessionAuth(req, res, next).then(function () {
-                        next.called.should.be.true;
+                        next.called.should.be.true();
 
                         done();
                     }).catch(done);
@@ -247,8 +247,8 @@ describe('Private Blogging', function () {
                     req.body = {password: 'wrongpassword'};
 
                     privateBlogging.authenticateProtection(req, res, next).then(function () {
-                        res.error.should.not.be.empty;
-                        next.called.should.be.true;
+                        res.error.should.not.be.empty();
+                        next.called.should.be.true();
 
                         done();
                     }).catch(done);
@@ -260,7 +260,7 @@ describe('Private Blogging', function () {
                     res.redirect = sandbox.spy();
 
                     privateBlogging.authenticateProtection(req, res, next).then(function () {
-                        res.redirect.called.should.be.true;
+                        res.redirect.called.should.be.true();
 
                         done();
                     }).catch(done);
