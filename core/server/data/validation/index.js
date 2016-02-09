@@ -17,19 +17,19 @@ var schema    = require('../schema').tables,
 // Provide a few custom validators
 //
 validator.extend('empty', function empty(str) {
-    return _.isEmpty(str);
+    return _.isEmpty(str + '');
 });
 
 validator.extend('notContains', function notContains(str, badString) {
-    return !_.contains(str, badString);
+    return !_.contains(str + '', badString + '');
 });
 
 validator.extend('isEmptyOrURL', function isEmptyOrURL(str) {
-    return (_.isEmpty(str) || validator.isURL(str, {require_protocol: false}));
+    return (_.isEmpty(str + '') || validator.isURL(str + '', {require_protocol: false}));
 });
 
 validator.extend('isSlug', function isSlug(str) {
-    return validator.matches(str, /^[a-z0-9\-_]+$/);
+    return validator.matches(str + '', /^[a-z0-9\-_]+$/);
 });
 
 // Validation against schema attributes
@@ -44,7 +44,7 @@ validateSchema = function validateSchema(tableName, model) {
         // check nullable
         if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('nullable')
                 && schema[tableName][columnKey].nullable !== true) {
-            if (validator.isNull(model[columnKey]) || validator.empty(model[columnKey])) {
+            if (validator.isNull(model[columnKey] + '') || validator.empty(model[columnKey] + '')) {
                 message = i18n.t('notices.data.validation.index.valueCannotBeBlank', {tableName: tableName, columnKey: columnKey});
                 validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
             }
@@ -54,7 +54,7 @@ validateSchema = function validateSchema(tableName, model) {
         if (model[columnKey] !== null && model[columnKey] !== undefined) {
             // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
-                if (!validator.isLength(model[columnKey], 0, schema[tableName][columnKey].maxlength)) {
+                if (!validator.isLength(model[columnKey] + '', 0, schema[tableName][columnKey].maxlength)) {
                     message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
                                      {tableName: tableName, columnKey: columnKey, maxlength: schema[tableName][columnKey].maxlength});
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
@@ -68,7 +68,7 @@ validateSchema = function validateSchema(tableName, model) {
 
             // check type
             if (schema[tableName][columnKey].hasOwnProperty('type')) {
-                if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(model[columnKey])) {
+                if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(model[columnKey] + '')) {
                     message = i18n.t('notices.data.validation.index.valueIsNotInteger', {tableName: tableName, columnKey: columnKey});
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
                 }
