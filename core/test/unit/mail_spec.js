@@ -98,14 +98,14 @@ describe('Mail', function () {
     });
 
     it('should fail to send messages when given insufficient data', function (done) {
-        Promise.settle([
-            mailer.send(),
-            mailer.send({}),
-            mailer.send({subject: '123'}),
-            mailer.send({subject: '', html: '123'})
+        Promise.all([
+            mailer.send().reflect(),
+            mailer.send({}).reflect(),
+            mailer.send({subject: '123'}).reflect(),
+            mailer.send({subject: '', html: '123'}).reflect()
         ]).then(function (descriptors) {
             descriptors.forEach(function (d) {
-                d.isRejected().should.be.true;
+                d.isFulfilled().should.be.false;
                 d.reason().should.be.an.instanceOf(Error);
                 d.reason().message.should.eql('Error: Incomplete message data.');
             });
