@@ -8,6 +8,8 @@ const {
     set
 } = Ember;
 
+const EmberError = Ember.Error;
+
 export function feature(name) {
     return computed(`config.${name}`, `labs.${name}`, {
         get() {
@@ -22,7 +24,7 @@ export function feature(name) {
             });
         },
         set(key, value) {
-            this.update(key, value).then((savedValue) => {
+            return this.update(key, value).then((savedValue) => {
                 return savedValue;
             });
         }
@@ -76,8 +78,13 @@ export default Service.extend({
                     this.set('_settings', savedSettings);
                     resolve(this._parseLabs(savedSettings).get(key));
                 }).catch((errors) => {
-                    this.get('notifications').showErrors(errors);
-                    settings.rollbackAttributes();
+                    if (errors) { // model.save errors, show notifications
+                        this.get('notifications').showErrors(errors);
+                        settings.rollbackAttributes();
+                    } else {
+                        settings.rollbackAttributes();
+                        throw new EmberError(`Validation of the feature service settings model failed when updating labs.`);
+                    }
                     resolve(this._parseLabs(settings)[key]);
                 });
             }).catch(reject);
