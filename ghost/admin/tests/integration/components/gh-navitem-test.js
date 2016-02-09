@@ -35,8 +35,8 @@ describeComponent(
             expect($item.find('.response:visible').length).to.equal(0);
         });
 
-        it('doesn\'t show drag handle for last item', function () {
-            this.set('navItem', NavItem.create({label: 'Test', url: '/url', last: true}));
+        it('doesn\'t show drag handle for new items', function () {
+            this.set('navItem', NavItem.create({label: 'Test', url: '/url', isNew: true}));
 
             this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
             let $item = this.$('.gh-blognav-item');
@@ -44,8 +44,8 @@ describeComponent(
             expect($item.find('.gh-blognav-grab').length).to.equal(0);
         });
 
-        it('shows add button for last item', function () {
-            this.set('navItem', NavItem.create({label: 'Test', url: '/url', last: true}));
+        it('shows add button for new items', function () {
+            this.set('navItem', NavItem.create({label: 'Test', url: '/url', isNew: true}));
 
             this.render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
             let $item = this.$('.gh-blognav-item');
@@ -70,7 +70,7 @@ describeComponent(
         });
 
         it('triggers add action', function () {
-            this.set('navItem', NavItem.create({label: 'Test', url: '/url', last: true}));
+            this.set('navItem', NavItem.create({label: 'Test', url: '/url', isNew: true}));
 
             let addActionCallCount = 0;
             this.on('add', () => {

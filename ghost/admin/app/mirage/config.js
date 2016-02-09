@@ -159,7 +159,7 @@ export default function () {
     });
 
     this.put('/settings/', function (db, request) {
-        let newSettings = JSON.parse(request.requestBody);
+        let newSettings = JSON.parse(request.requestBody).settings;
 
         db.settings.remove();
         db.settings.insert(newSettings);
