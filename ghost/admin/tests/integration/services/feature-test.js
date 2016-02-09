@@ -6,30 +6,43 @@ import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 import FeatureService, {feature} from 'ghost/services/feature';
 import Ember from 'ember';
+import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
 
 const {merge, run} = Ember;
+const EmberError = Ember.Error;
 
-function stubSettings(server, labs) {
+function stubSettings(server, labs, validSave = true, validSettings = true) {
+    let settings = [
+        {
+            id: '1',
+            type: 'blog',
+            key: 'labs',
+            value: JSON.stringify(labs)
+        }
+    ];
+
+    if (validSettings) {
+        settings.push({
+            id: '2',
+            type: 'blog',
+            key: 'postsPerPage',
+            value: 1
+        });
+    }
+
     server.get('/ghost/api/v0.1/settings/', function () {
-        return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings: [
-            {
-                id: '1',
-                type: 'blog',
-                key: 'labs',
-                value: JSON.stringify(labs)
-            },
-            // postsPerPage is needed to satisfy the validation
-            {
-                id: '2',
-                type: 'blog',
-                key: 'postsPerPage',
-                value: 1
-            }
-        ]})];
+        return [200, {'Content-Type': 'application/json'}, JSON.stringify({settings})];
     });
 
     server.put('/ghost/api/v0.1/settings/', function (request) {
-        return [200, {'Content-Type': 'application/json'}, request.requestBody];
+        let statusCode = (validSave) ? 200 : 400;
+        let response = (validSave) ? request.requestBody : JSON.stringify({
+            errors: [{
+                message: 'Test Error'
+            }]
+        });
+
+        return [statusCode, {'Content-Type': 'application/json'}, response];
     });
 }
 
@@ -182,7 +195,6 @@ describeModule(
             return wait().then(() => {
                 expect(server.handlers[1].numberOfCalls).to.equal(1);
 
-                // TODO: failing because service.update only sets values on
                 service.get('testFlag').then((testFlag) => {
                     expect(testFlag).to.be.true;
                     done();
@@ -190,7 +202,56 @@ describeModule(
             });
         });
 
-        it('notifies for server errors');
-        it('notifies for validation errors');
+        it('notifies for server errors', function (done) {
+            stubSettings(server, {testFlag: false}, false);
+            addTestFlag();
+
+            let service = this.subject();
+
+            run(() => {
+                service.get('testFlag').then((testFlag) => {
+                    expect(testFlag).to.be.false;
+                });
+            });
+
+            run(() => {
+                service.set('testFlag', true);
+            });
+
+            return wait().then(() => {
+                expect(server.handlers[1].numberOfCalls).to.equal(1);
+
+                expect(service.get('notifications.notifications').length).to.equal(1);
+
+                service.get('testFlag').then((testFlag) => {
+                    expect(testFlag).to.be.false;
+                    done();
+                });
+            });
+        });
+
+        it('notifies for validation errors', function (done) {
+            stubSettings(server, {testFlag: false}, true, false);
+            addTestFlag();
+
+            let service = this.subject();
+
+            run(() => {
+                service.get('testFlag').then((testFlag) => {
+                    expect(testFlag).to.be.false;
+                });
+            });
+
+            run(() => {
+                expect(() => {
+                    service.set('testFlag', true);
+                }, EmberError, 'Threw validation error');
+            });
+
+            service.get('testFlag').then((testFlag) => {
+                expect(testFlag).to.be.false;
+                done();
+            });
+        });
     }
 );
