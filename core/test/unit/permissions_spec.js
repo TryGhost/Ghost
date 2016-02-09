@@ -168,7 +168,7 @@ describe('Permissions', function () {
             permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                err.should.be.a.String;
+                err.should.be.a.String();
                 done();
             });
         });
@@ -179,7 +179,7 @@ describe('Permissions', function () {
             permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                err.should.be.a.String;
+                err.should.be.a.String();
                 done();
             });
         });
@@ -208,7 +208,7 @@ describe('Permissions', function () {
             permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                err.should.be.a.String;
+                err.should.be.a.String();
                 done();
             });
         });
@@ -219,7 +219,7 @@ describe('Permissions', function () {
             permissions.applyPublicRules('posts', 'browse', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                err.should.be.a.String;
+                err.should.be.a.String();
                 done();
             });
         });
@@ -230,13 +230,13 @@ describe('Permissions', function () {
             permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                 done('Did not throw an error for draft');
             }).catch(function (err) {
-                err.should.be.a.String;
+                err.should.be.a.String();
                 draft = {context: {},  data: {status: 'draft', uuid: '1234-abcd', slug: 'abcd'}};
 
                 return permissions.applyPublicRules('posts', 'read', _.cloneDeep(draft)).then(function () {
                     done('Did not throw an error for draft');
                 }).catch(function (err) {
-                    err.should.be.a.String;
+                    err.should.be.a.String();
                     done();
                 });
             });
@@ -269,7 +269,7 @@ describe('Permissions', function () {
             permissions.applyPublicRules('users', 'browse', _.cloneDeep(inactive)).then(function () {
                 done('Did not throw an error for inactive');
             }).catch(function (err) {
-                err.should.be.a.String;
+                err.should.be.a.String();
                 done();
             });
         });

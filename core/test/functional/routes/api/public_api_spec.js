@@ -59,7 +59,7 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.posts.should.exist;
+                should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(5);
                 testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -83,7 +83,7 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.posts.should.exist;
+                should.exist(jsonResponse.posts);
                 testUtils.API.checkResponse(jsonResponse, 'posts');
                 jsonResponse.posts.should.have.length(5);
                 testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
@@ -107,7 +107,7 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.tags.should.exist;
+                should.exist(jsonResponse.tags);
                 testUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(15);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
@@ -128,7 +128,7 @@ describe('Public API', function () {
                 }
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.tags.should.exist;
+                should.exist(jsonResponse.tags);
                 testUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(56);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
@@ -150,7 +150,7 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.tags.should.exist;
+                should.exist(jsonResponse.tags);
                 testUtils.API.checkResponse(jsonResponse, 'tags');
                 jsonResponse.tags.should.have.length(4);
                 testUtils.API.checkResponse(jsonResponse.tags[0], 'tag');
@@ -172,8 +172,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.errors.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                 done();
             });
@@ -192,8 +192,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.errors.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                 done();
             });
@@ -212,8 +212,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.errors.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                 done();
             });
@@ -232,8 +232,8 @@ describe('Public API', function () {
 
                 should.not.exist(res.headers['x-cache-invalidate']);
                 var jsonResponse = res.body;
-                jsonResponse.should.exist;
-                jsonResponse.errors.should.exist;
+                should.exist(jsonResponse);
+                should.exist(jsonResponse.errors);
                 testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
                 done();
             });

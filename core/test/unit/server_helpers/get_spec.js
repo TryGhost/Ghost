@@ -66,11 +66,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.eql(testPostsArr);
                 fn.firstCall.args[0].posts.should.have.lengthOf(4);
-                inverse.called.should.be.false;
+                inverse.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -82,10 +82,10 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.firstCall.args[0].pagination.should.be.an.Object;
-                fn.firstCall.args[0].meta.should.be.an.Object;
-                fn.firstCall.args[0].meta.pagination.should.be.an.Object;
-                inverse.called.should.be.false;
+                fn.firstCall.args[0].pagination.should.be.an.Object();
+                fn.firstCall.args[0].meta.should.be.an.Object();
+                fn.firstCall.args[0].meta.pagination.should.be.an.Object();
+                inverse.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -99,7 +99,7 @@ describe('{{#get}} helper', function () {
             ).then(function () {
                 should.not.exist(fn.firstCall.args[0].pagination);
                 should.not.exist(fn.firstCall.args[0].meta);
-                inverse.called.should.be.false;
+                inverse.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -111,11 +111,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: '3'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    fn.calledOnce.should.be.true;
-                    fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                    fn.calledOnce.should.be.true();
+                    fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                     fn.firstCall.args[0].posts.should.have.lengthOf(3);
                     fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 3));
-                    inverse.called.should.be.false;
+                    inverse.called.should.be.false();
 
                     done();
                 }).catch(done);
@@ -127,11 +127,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: '1'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    fn.calledOnce.should.be.true;
-                    fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                    fn.calledOnce.should.be.true();
+                    fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                     fn.firstCall.args[0].posts.should.have.lengthOf(1);
                     fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
-                    inverse.called.should.be.false;
+                    inverse.called.should.be.false();
 
                     done();
                 }).catch(done);
@@ -143,11 +143,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {limit: '1'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    fn.calledOnce.should.be.true;
-                    fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                    fn.calledOnce.should.be.true();
+                    fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                     fn.firstCall.args[0].posts.should.have.lengthOf(1);
                     fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 1));
-                    inverse.called.should.be.false;
+                    inverse.called.should.be.false();
 
                     done();
                 }).catch(done);
@@ -159,11 +159,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:test'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.calledOnce.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.have.lengthOf(1);
                 fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(2, 3));
-                inverse.called.should.be.false;
+                inverse.called.should.be.false();
                 done();
             }).catch(done);
         });
@@ -174,11 +174,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'author:cameron'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.calledOnce.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.have.lengthOf(2);
                 fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(0, 2));
-                inverse.called.should.be.false;
+                inverse.called.should.be.false();
                 done();
             }).catch(done);
         });
@@ -189,11 +189,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'featured:true'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.calledOnce.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.have.lengthOf(1);
                 fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(2, 3));
-                inverse.called.should.be.false;
+                inverse.called.should.be.false();
                 done();
             }).catch(done);
         });
@@ -204,11 +204,11 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {id: '2'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.calledOnce.should.be.true;
-                fn.firstCall.args[0].should.be.an.Object.with.property('posts');
+                fn.calledOnce.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
                 fn.firstCall.args[0].posts.should.have.lengthOf(1);
                 fn.firstCall.args[0].posts.should.eql(testPostsArr.slice(1, 2));
-                inverse.called.should.be.false;
+                inverse.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -220,10 +220,10 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:none'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.false;
-                inverse.calledOnce.should.be.true;
-                inverse.firstCall.args[1].should.be.an.Object.and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object.and.not.have.property('error');
+                fn.called.should.be.false();
+                inverse.calledOnce.should.be.true();
+                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
+                inverse.firstCall.args[1].data.should.be.an.Object().and.not.have.property('error');
 
                 done();
             }).catch(done);
@@ -237,10 +237,10 @@ describe('{{#get}} helper', function () {
                 'magic',
                 {hash: {}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.false;
-                inverse.calledOnce.should.be.true;
-                inverse.firstCall.args[1].should.be.an.Object.and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object.and.have.property('error');
+                fn.called.should.be.false();
+                inverse.calledOnce.should.be.true();
+                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
+                inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
                 inverse.firstCall.args[1].data.error.should.eql('Invalid resource given to get helper');
 
                 done();
@@ -253,10 +253,10 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {status: 'thing!'}, fn: fn, inverse: inverse}
             ).then(function () {
-                fn.called.should.be.false;
-                inverse.calledOnce.should.be.true;
-                inverse.firstCall.args[1].should.be.an.Object.and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object.and.have.property('error');
+                fn.called.should.be.false();
+                inverse.calledOnce.should.be.true();
+                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
+                inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
                 inverse.firstCall.args[1].data.error.should.match(/^Validation/);
 
                 done();
@@ -268,8 +268,8 @@ describe('{{#get}} helper', function () {
                 {},
                 'posts'
             ).then(function () {
-                fn.called.should.be.false;
-                inverse.called.should.be.false;
+                fn.called.should.be.false();
+                inverse.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -292,8 +292,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:[{{post.tags}}]'}, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array.with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object.with.property('filter');
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql('tags:[test,magic]');
 
                 done();
@@ -306,8 +306,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'author:{{post.author}}'}, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array.with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object.with.property('filter');
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql('author:cameron');
 
                 done();
@@ -320,8 +320,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    browseStub.firstCall.args.should.be.an.Array.with.lengthOf(1);
-                    browseStub.firstCall.args[0].should.be.an.Object.with.property('filter');
+                    browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                    browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                     browseStub.firstCall.args[0].filter.should.eql('id:-3');
 
                     done();
@@ -337,8 +337,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, fn: fn, inverse: inverse}
             ).then(function () {
-                browseStub.firstCall.args.should.be.an.Array.with.lengthOf(1);
-                browseStub.firstCall.args[0].should.be.an.Object.with.property('filter');
+                browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                 browseStub.firstCall.args[0].filter.should.eql('tags:' + output);
 
                 done();
@@ -351,8 +351,8 @@ describe('{{#get}} helper', function () {
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, fn: fn, inverse: inverse}
             ).then(function () {
-                    browseStub.firstCall.args.should.be.an.Array.with.lengthOf(1);
-                    browseStub.firstCall.args[0].should.be.an.Object.with.property('filter');
+                    browseStub.firstCall.args.should.be.an.Array().with.lengthOf(1);
+                    browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
                     browseStub.firstCall.args[0].filter.should.eql('id:');
 
                     done();

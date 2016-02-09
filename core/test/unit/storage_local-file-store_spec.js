@@ -72,7 +72,7 @@ describe('Local File System Storage', function () {
     it('should create month and year directory', function (done) {
         localFileStore.save(image).then(function (url) {
             /*jshint unused:false*/
-            fs.mkdirs.calledOnce.should.be.true;
+            fs.mkdirs.calledOnce.should.be.true();
             fs.mkdirs.args[0][0].should.equal(path.resolve('./content/images/2013/09'));
             done();
         }).catch(done);
@@ -81,7 +81,7 @@ describe('Local File System Storage', function () {
     it('should copy temp file to new location', function (done) {
         localFileStore.save(image).then(function (url) {
             /*jshint unused:false*/
-            fs.copy.calledOnce.should.be.true;
+            fs.copy.calledOnce.should.be.true();
             fs.copy.args[0][0].should.equal('tmp/123456.jpg');
             fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
             done();

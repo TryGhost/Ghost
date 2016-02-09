@@ -565,9 +565,9 @@ describe('Config', function () {
                 validateStub = sandbox.stub(config, 'validate').returns(Promise.resolve());
 
             config.load().then(function () {
-                existsStub.calledOnce.should.be.true;
-                writeFileStub.calledOnce.should.be.true;
-                validateStub.calledOnce.should.be.true;
+                existsStub.calledOnce.should.be.true();
+                writeFileStub.calledOnce.should.be.true();
+                validateStub.calledOnce.should.be.true();
                 done();
             }).catch(done);
         });
@@ -608,7 +608,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -621,7 +621,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -634,7 +634,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -647,7 +647,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -660,7 +660,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -673,7 +673,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -686,7 +686,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -699,7 +699,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -713,7 +713,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -727,7 +727,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -741,7 +741,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -753,7 +753,7 @@ describe('Config', function () {
             config.load().then(function () {
                 var socketConfig = config.getSocket();
 
-                socketConfig.should.be.an.Object;
+                socketConfig.should.be.an.Object();
                 socketConfig.path.should.equal('test');
                 socketConfig.permissions.should.equal('660');
 
@@ -774,7 +774,7 @@ describe('Config', function () {
             config.load().then(function () {
                 var socketConfig = config.getSocket();
 
-                socketConfig.should.be.an.Object;
+                socketConfig.should.be.an.Object();
                 socketConfig.path.should.equal('test');
                 socketConfig.permissions.should.equal('666');
 
@@ -801,7 +801,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -814,7 +814,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -827,7 +827,7 @@ describe('Config', function () {
                 done(expectedError);
             }).catch(function (err) {
                 should.exist(err);
-                err.should.be.an.Error;
+                err.should.be.an.Error();
 
                 done();
             }).catch(done);
@@ -854,7 +854,7 @@ describe('Config', function () {
 
         it('doesn\'t display warning when deprecated options not set', function () {
             configUtils.config.checkDeprecated();
-            logStub.calledOnce.should.be.false;
+            logStub.calledOnce.should.be.false();
         });
 
         it('displays warning when updateCheck exists and is truthy', function () {
@@ -864,9 +864,9 @@ describe('Config', function () {
             // Run the test code
             configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('updateCheck').should.be.true;
+            logStub.calledWithMatch('updateCheck').should.be.true();
         });
 
         it('displays warning when updateCheck exists and is falsy', function () {
@@ -876,9 +876,9 @@ describe('Config', function () {
             // Run the test code
             configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('updateCheck').should.be.true;
+            logStub.calledWithMatch('updateCheck').should.be.true();
         });
 
         it('displays warning when mail.fromaddress exists and is truthy', function () {
@@ -890,9 +890,9 @@ describe('Config', function () {
             // Run the test code
             configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('mail.fromaddress').should.be.true;
+            logStub.calledWithMatch('mail.fromaddress').should.be.true();
         });
 
         it('displays warning when mail.fromaddress exists and is falsy', function () {
@@ -904,9 +904,9 @@ describe('Config', function () {
             // Run the test code
             configUtils.config.checkDeprecated();
 
-            logStub.calledOnce.should.be.true;
+            logStub.calledOnce.should.be.true();
 
-            logStub.calledWithMatch('mail.fromaddress').should.be.true;
+            logStub.calledWithMatch('mail.fromaddress').should.be.true();
         });
 
         it('doesn\'t display warning when only part of a deprecated option is set', function () {
@@ -917,7 +917,7 @@ describe('Config', function () {
             });
 
             configUtils.config.checkDeprecated();
-            logStub.calledOnce.should.be.false;
+            logStub.calledOnce.should.be.false();
         });
 
         it('can not modify the deprecatedItems on the config object', function () {
