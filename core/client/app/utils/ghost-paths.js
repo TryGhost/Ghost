@@ -28,7 +28,7 @@ export default function () {
         apiRoot,
         subdir,
         blogRoot: `${subdir}/`,
-        count: 'https://ghost.org/count/',
+        count: 'https://count.ghost.org/',
 
         url: {
             admin() {
