@@ -90,7 +90,7 @@ export default function () {
     /* Download Count ------------------------------------------------------- */
 
     let downloadCount = 0;
-    this.get('http://ghost.org/count/', function () {
+    this.get('https://count.ghost.org/', function () {
         downloadCount++;
         return {
             count: downloadCount
