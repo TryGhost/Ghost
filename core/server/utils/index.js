@@ -94,6 +94,10 @@ utils = {
             base64String += '=';
         }
         return base64String;
+    },
+    // Get the token from a complete Bearer header
+    getBearerToken: function (header) {
+        return header.substring(7);
     }
 };
 

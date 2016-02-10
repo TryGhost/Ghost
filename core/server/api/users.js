@@ -457,8 +457,17 @@ users = {
         function doQuery(options) {
             return dataProvider.User.changePassword(
                 options.data.password[0],
-                _.omit(options, ['data'])
-            );
+                _.pick(options, ['context'])
+            )
+            .then(function logoutOtherSessions() {
+                var opt = {
+                    id: options.data.password[0].user_id,
+                    token: globalUtils.getBearerToken(options.headers.authorization),
+                    context: options.context
+                };
+
+                return dataProvider.Accesstoken.destroyOtherSessions(opt);
+            });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
