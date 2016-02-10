@@ -78,7 +78,7 @@ simplemde.value("This text will appear in the editor");
   - **code** Can be set to  ```` ``` ```` or `~~~`.  Defaults to ```` ``` ````.
   - **italic** Can be set to `*` or `_`. Defaults to `*`.
 - **element**: The DOM element for the textarea to use. Defaults to the first textarea on the page.
-- **forceSynch**: If set to `true`, force changes made in editor to be saved back to original textarea.
+- **forceSync**: If set to `true`, force text changes made in SimpleMDE to be immediately stored in original textarea. Defaults to `false`.
 - **hideIcons**: An array of icon names to hide. Can be used to hide specific icons shown by default without completely customizing the toolbar.
 - **indentWithTabs**: If set to `false`, indent using spaces instead of tabs. Defaults to `true`.
 - **initialValue**: If set, will customize the initial value of the editor.
