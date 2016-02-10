@@ -112,7 +112,6 @@ describe('Unit: Validator: tag-settings', function () {
         nameErrors = tag.get('errors').errorsFor('name').get(0);
         expect(nameErrors.attribute, 'errors.name.attribute').to.equal('name');
         expect(nameErrors.message, 'errors.name.message').to.equal('Tag names can\'t start with commas.');
-        expect(tag.get('errors.length')).to.equal(1);
 
         expect(passed, 'passed').to.be.false;
         expect(tag.get('hasValidated'), 'hasValidated').to.include('name');

@@ -47,11 +47,9 @@
             <fieldset>
                 <div class="form-group for-checkbox">
                     <h3>Enable Beta Features</h3>
-                    <label class="checkbox" for="labs-publicAPI">
-                        {{input id="labs-publicAPI" name="labs[publicAPI]" type="checkbox" checked=usePublicAPI}}
-                        <span class="input-toggle-component"></span>
-                        <p>Public API - For full instructions, read the <a href="http://support.ghost.org/public-api-beta/">developer guide</a>.</p>
-                    </label>
+                    {{#gh-feature-flag "publicAPI"}}
+                        Public API - For full instructions, read the <a href="http://support.ghost.org/public-api-beta/">developer guide</a>.
+                    {{/gh-feature-flag}}
                 </div>
             </fieldset>
         </form>
