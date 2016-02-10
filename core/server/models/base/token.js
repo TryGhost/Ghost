@@ -87,8 +87,7 @@ Basetoken = ghostBookshelf.Model.extend({
     destroyOtherSessions: function destroyOtherSessions(options) {
         var userId = options.id,
             token = options.token;
-        console.log('destroyOtherSessions');
-        console.log(arguments);
+
         options = this.filterOptions(options, 'destroyByUser');
         if (token && userId) {
             return ghostBookshelf.Collection.forge([], {model: this})
@@ -101,6 +100,7 @@ Basetoken = ghostBookshelf.Model.extend({
                     collection.invokeThen('destroy', options);
                 });
         }
+        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.base.token.tokenOrUserNotFound')));
     }
 });
 

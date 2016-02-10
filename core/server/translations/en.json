@@ -254,7 +254,8 @@
                 },
                 "token": {
                     "noUserFound": "No user found",
-                    "tokenNotFound": "Token not found"
+                    "tokenNotFound": "Token not found",
+                    "tokenOrUserNotFound": "Token or user id not found"
                 }
             },
             "plugins": {
