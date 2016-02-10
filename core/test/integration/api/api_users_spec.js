@@ -1130,7 +1130,7 @@ describe('Users API', function () {
                     ne2Password: 'newSl1m3rson'
                 }]
             };
-            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}, {headers:{authorization: 'Bearer anytokenisvalid'}}))
                 .then(function (response) {
                     response.password[0].message.should.eql('Password changed successfully.');
                     done();
@@ -1203,7 +1203,7 @@ describe('Users API', function () {
                     ne2Password: 'newSl1m3rson'
                 }]
             };
-            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}, {headers:{authorization: 'Bearer anytokenisvalid'}}))
                 .then(function (response) {
                     response.password[0].message.should.eql('Password changed successfully.');
                     done();
