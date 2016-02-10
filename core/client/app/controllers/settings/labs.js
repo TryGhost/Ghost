@@ -3,8 +3,7 @@ import Ember from 'ember';
 const {
     $,
     Controller,
-    computed,
-    inject: {service, controller},
+    inject: {service},
     isArray
 } = Ember;
 
@@ -17,36 +16,6 @@ export default Controller.extend({
     ghostPaths: service(),
     notifications: service(),
     session: service(),
-    feature: controller(),
-    ajax: service(),
-
-    labsJSON: computed('model.labs', function () {
-        return JSON.parse(this.get('model.labs') || {});
-    }),
-
-    saveLabs(optionName, optionValue) {
-        let labsJSON =  this.get('labsJSON');
-
-        // Set new value in the JSON object
-        labsJSON[optionName] = optionValue;
-
-        this.set('model.labs', JSON.stringify(labsJSON));
-
-        this.get('model').save().catch((errors) => {
-            this.showErrors(errors);
-            this.get('model').rollbackAttributes();
-        });
-    },
-
-    usePublicAPI: computed('feature.publicAPI', {
-        get() {
-            return this.get('feature.publicAPI');
-        },
-        set(key, value) {
-            this.saveLabs('publicAPI', value);
-            return value;
-        }
-    }),
 
     actions: {
         onUpload(file) {
