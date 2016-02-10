@@ -50,6 +50,14 @@ function addColumn(table, column) {
     });
 }
 
+function dropColumn(table, column) {
+    dbConfig = dbConfig || config.database;
+
+    return dbConfig.knex.schema.table(table, function (table) {
+        table.dropColumn(column);
+    });
+}
+
 function addUnique(table, column) {
     dbConfig = dbConfig || config.database;
     return dbConfig.knex.schema.table(table, function (table) {
@@ -130,5 +138,6 @@ module.exports = {
     addUnique: addUnique,
     dropUnique: dropUnique,
     addColumn: addColumn,
+    dropColumn: dropColumn,
     getColumns: getColumns
 };

@@ -182,6 +182,7 @@ migrateUp = function (fromVersion, toVersion) {
         return Promise.all(
             _.map(oldTables, function (table) {
                 return commands.getColumns(table).then(function (columns) {
+                    migrateOps = migrateOps.concat(builder.dropColumnCommands(table, columns));
                     migrateOps = migrateOps.concat(builder.addColumnCommands(table, columns));
                 });
             })
