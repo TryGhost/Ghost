@@ -119,7 +119,7 @@ utils = {
                 name: {}
             },
             // these values are sanitised/validated separately
-            noValidation = ['data', 'context', 'include', 'filter'],
+            noValidation = ['data', 'context', 'include', 'filter', 'headers'],
             errors = [];
 
         _.each(options, function (value, key) {

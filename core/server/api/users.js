@@ -463,7 +463,7 @@ users = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate('password'),
+            utils.validate('password',{opts: ['headers']}),
             handlePermissions,
             utils.convertOptions(allowedIncludes),
             doQuery

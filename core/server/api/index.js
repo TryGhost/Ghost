@@ -192,7 +192,7 @@ http = function http(apiMethod) {
     return function apiHandler(req, res, next) {
         // We define 2 properties for using as arguments in API calls:
         var object = req.body,
-            options = _.extend({}, req.files, req.query, req.params, {
+            options = _.extend({}, req.files, req.query, req.params, {headers: req.headers}, {
                 context: {
                     user: (req.user && req.user.id) ? req.user.id : null
                 }
