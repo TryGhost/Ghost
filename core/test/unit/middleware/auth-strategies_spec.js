@@ -17,6 +17,7 @@ var should           = require('should'),
     },
 
     fakeValidToken = {
+        id: 1,
         user_id: 3,
         token: 'valid-token',
         client_id: 1,
@@ -136,7 +137,8 @@ describe('Auth Strategies', function () {
 
         it('should find user with valid token', function (done) {
             var accessToken = 'valid-token',
-                userId = 3;
+                userId = 3,
+                tokenId = 1;
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
                 tokenStub.calledOnce.should.be.true();
@@ -145,7 +147,7 @@ describe('Auth Strategies', function () {
                 userStub.calledWith({id: userId}).should.be.true();
                 next.calledOnce.should.be.true();
                 next.firstCall.args.length.should.eql(3);
-                next.calledWith(null, {id: userId}, {scope: '*'}).should.be.true();
+                next.calledWith(null, {id: userId, token_id: tokenId}, {scope: '*'}).should.be.true();
                 done();
             }).catch(done);
         });

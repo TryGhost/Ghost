@@ -1121,6 +1121,8 @@ describe('Users API', function () {
     });
 
     describe('Change Password', function () {
+        beforeEach(testUtils.fixtures.createMoreTokens);
+
         it('Owner can change own password', function (done) {
             var payload = {
                 password: [{
@@ -1133,8 +1135,16 @@ describe('Users API', function () {
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function (response) {
                     response.password[0].message.should.eql('Password changed successfully.');
+                    return true;
+                })
+                .then(function () {
+                    return ModelUser.Accesstoken.where({user_id: userIdFor.owner}).count('id');
+                })
+                .then(function (tokenCount) {
+                    tokenCount.should.eql(1);
                     done();
-                }).catch(done);
+                })
+                .catch(done);
         });
 
         it('Owner can\'t change password with wrong oldPassword', function (done) {
@@ -1205,9 +1215,16 @@ describe('Users API', function () {
             };
             UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
                 .then(function (response) {
-                    response.password[0].message.should.eql('Password changed successfully.');
+                    return response.password[0].message.should.eql('Password changed successfully.');
+                })
+                .then(function () {
+                    return ModelUser.Accesstoken.where({user_id: userIdFor.editor}).count('id');
+                })
+                .then(function (tokenCount) {
+                    tokenCount.should.eql(0);
                     done();
-                }).catch(done);
+                })
+                .catch(done);
         });
 
         it('Editor can\'t change password for admin', function (done) {

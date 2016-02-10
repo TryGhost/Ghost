@@ -44,7 +44,7 @@ strategies = {
                                 if (model) {
                                     var user = model.toJSON(),
                                         info = {scope: '*'};
-                                    return done(null, {id: user.id}, info);
+                                    return done(null, {id: user.id, token_id: token.id}, info);
                                 }
                                 return done(null, false);
                             });

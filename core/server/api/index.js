@@ -194,7 +194,8 @@ http = function http(apiMethod) {
         var object = req.body,
             options = _.extend({}, req.files, req.query, req.params, {
                 context: {
-                    user: (req.user && req.user.id) ? req.user.id : null
+                    user: (req.user && req.user.id) ? req.user.id : null,
+                    token: (req.user && req.user.token_id) ? req.user.token_id : null
                 }
             });
 

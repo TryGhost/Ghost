@@ -458,7 +458,18 @@ users = {
             return dataProvider.User.changePassword(
                 options.data.password[0],
                 _.omit(options, ['data'])
-            );
+            )
+            .then(function logoutOtherSessions() {
+                var opt = {
+                    id: options.data.password[0].user_id,
+                    context: options.context
+                };
+                if (options.context.user === options.data.password[0].user_id) {
+                    return dataProvider.Accesstoken.destroyOtherSessions(opt);
+                }else {
+                    return dataProvider.Accesstoken.destroyByUser(opt);
+                }
+            });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
