@@ -108,7 +108,7 @@ frontendControllers = {
         var params = {
                 uuid: req.params.uuid,
                 status: 'all',
-                include: 'author,tags,fields'
+                include: 'author,tags'
             };
 
         api.posts.read(params).then(function then(result) {
@@ -160,8 +160,8 @@ frontendControllers = {
 
         // Sanitize params we're going to use to lookup the post.
         postLookup = _.pick(params, 'slug', 'id');
-        // Add author, tag and fields
-        postLookup.include = 'author,tags,fields';
+        // Add author & tag
+        postLookup.include = 'author,tags';
 
         // Query database to find post
         return api.posts.read(postLookup).then(function then(result) {
