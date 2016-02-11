@@ -85,7 +85,7 @@ describe('fetchData', function () {
                 result.data.featured.should.not.have.properties('data');
 
                 apiPostsStub.calledTwice.should.be.true();
-                apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags,fields');
+                apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
                 apiPostsStub.secondCall.args[0].should.have.property('limit', 3);
@@ -113,7 +113,7 @@ describe('fetchData', function () {
                 result.data.featured.should.not.have.properties('data');
 
                 apiPostsStub.calledTwice.should.be.true();
-                apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags,fields');
+                apiPostsStub.firstCall.args[0].should.have.property('include', 'author,tags');
                 apiPostsStub.firstCall.args[0].should.have.property('limit', 10);
                 apiPostsStub.firstCall.args[0].should.have.property('page', 2);
                 apiPostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
