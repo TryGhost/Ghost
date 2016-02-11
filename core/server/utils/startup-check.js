@@ -21,6 +21,7 @@ checks = {
         this.nodeEnv();
         this.packages();
         this.contentPath();
+        this.mail();
         this.sqlite();
     },
 
@@ -208,6 +209,23 @@ checks = {
             console.error('Help and documentation can be found at http://support.ghost.org.\033[0m');
 
             process.exit(exitCodes.SQLITE_DB_NOT_WRITABLE);
+        }
+    },
+
+    mail: function checkMail() {
+        var configFile,
+            config;
+
+        try {
+            configFile = require(configFilePath);
+            config = configFile[mode];
+        } catch (e) {
+            configFilePath = path.join(appRoot, 'config.example.js');
+        }
+
+        if (!config.mail || !config.mail.transport) {
+            console.error('\x1B[31mWARNING: Ghost is attempting to use a direct method to send email. \nIt is recommended that you explicitly configure an email service.\033[0m');
+            console.error('\x1B[32mHelp and documentation can be found at http://support.ghost.org/mail.\033[0m\n');
         }
     }
 };
