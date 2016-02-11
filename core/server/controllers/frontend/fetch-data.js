@@ -19,7 +19,7 @@ queryDefaults = {
 // Default post query needs to always include author & tags
 _.extend(defaultPostQuery, queryDefaults, {
     options: {
-        include: 'author,tags,fields'
+        include: 'author,tags'
     }
 });
 
