@@ -284,7 +284,7 @@ describe('RSS', function () {
         it('should process the data correctly for the index feed', function (done) {
             res.send = function send(xmlData) {
                 apiBrowseStub.calledOnce.should.be.true();
-                apiBrowseStub.calledWith({page: 1, include: 'author,tags,fields'}).should.be.true();
+                apiBrowseStub.calledWith({page: 1, include: 'author,tags'}).should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Test\]\]><\/title>/);
                 done();
             };
@@ -304,7 +304,7 @@ describe('RSS', function () {
             // test
             res.send = function send(xmlData) {
                 apiBrowseStub.calledOnce.should.be.true();
-                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags,fields'}).should.be.true();
+                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags'}).should.be.true();
                 apiTagStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
                 done();
@@ -322,7 +322,7 @@ describe('RSS', function () {
             // test
             res.send = function send(xmlData) {
                 apiBrowseStub.calledOnce.should.be.true();
-                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags,fields'}).should.be.true();
+                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags'}).should.be.true();
                 apiUserStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
                 done();
