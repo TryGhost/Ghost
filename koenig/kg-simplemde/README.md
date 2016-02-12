@@ -121,6 +121,7 @@ var simplemde = new SimpleMDE({
 		italic: "_"
 	},
 	element: document.getElementById("MyID"),
+	forceSync: true,
 	hideIcons: ["guide", "heading"],
 	indentWithTabs: false,
 	initialValue: "Hello world!",
