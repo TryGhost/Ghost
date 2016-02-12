@@ -40,7 +40,7 @@ Install Node.js.
 
 ```bash
 # Node v0.10.x - recommended
-# Node v0.12.x and v4.2.x - supported
+# Node v0.12.x and v4.2.x / v4.3.x - supported
 #
 # Choose wisely
 ```
