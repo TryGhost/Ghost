@@ -7,7 +7,7 @@ var testUtils       = require('../../utils'),
     _               = require('lodash'),
 
 // Stuff we are testing
-    ModelUser       = require('../../../server/models'),
+    models          = require('../../../server/models'),
     UserAPI         = require('../../../server/api/users'),
     mail            = require('../../../server/api/mail'),
 
@@ -39,7 +39,7 @@ describe('Users API', function () {
     it('dateTime fields are returned as Date objects', function (done) {
         var userData = testUtils.DataGenerator.forModel.users[0];
 
-        ModelUser.User.check({email: userData.email, password: userData.password}).then(function (user) {
+        models.User.check({email: userData.email, password: userData.password}).then(function (user) {
             return UserAPI.read({id: user.id});
         }).then(function (response) {
             response.users[0].created_at.should.be.an.instanceof(Date);
@@ -482,7 +482,7 @@ describe('Users API', function () {
             UserAPI.edit(
                 {users: [{name: 'newname', password: 'newpassword'}]}, _.extend({}, context.author, {id: userIdFor.author})
             ).then(function () {
-                return ModelUser.User.findOne({id: userIdFor.author}).then(function (response) {
+                return models.User.findOne({id: userIdFor.author}).then(function (response) {
                     response.get('name').should.eql('newname');
                     response.get('password').should.not.eql('newpassword');
                     done();
@@ -496,10 +496,6 @@ describe('Users API', function () {
 
         beforeEach(function () {
             newUser = _.clone(testUtils.DataGenerator.forKnex.createUser(testUtils.DataGenerator.Content.users[4]));
-
-            sandbox.stub(ModelUser.User, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             sandbox.stub(mail, 'send', function () {
                 return Promise.resolve();
