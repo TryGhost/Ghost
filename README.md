@@ -36,11 +36,11 @@ More [install docs](http://support.ghost.org/installation/) here in case you got
 <a name="getting-started"></a>
 # Developer Install (from git)
 
-Install Node.js.
+Install Node.js. (See [Supported Node.js versions](http://support.ghost.org/supported-node-versions/))
 
 ```bash
 # Node v0.10.x - recommended
-# Node v0.12.x and v4.2.x / v4.3.x - supported
+# Node v0.12.x and v4.2+ LTS - supported
 #
 # Choose wisely
 ```
