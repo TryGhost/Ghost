@@ -6,7 +6,7 @@ var testUtils       = require('../../utils'),
 
     // Stuff we are testing
     SettingsModel   = require('../../../server/models/settings').Settings,
-    config          = require('../../../server/config'),
+    db              = require('../../../server/data/db'),
     events          = require('../../../server/events'),
     sandbox         = sinon.sandbox.create(),
     context         = testUtils.context.admin;
@@ -176,7 +176,7 @@ describe('Settings Model', function () {
 
     describe('populating defaults from settings.json', function () {
         beforeEach(function (done) {
-            config.database.knex('settings').truncate().then(function () {
+            db.knex('settings').truncate().then(function () {
                 done();
             });
         });

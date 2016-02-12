@@ -1,8 +1,8 @@
 /**
  * These fixtures are just for testing the filter spec
  */
-var _ = require('lodash'),
-    config = require('../../../../server/config'),
+var _    = require('lodash'),
+    db   = require('../../../../server/data/db'),
     data = {};
 
 data.tags = [
@@ -313,17 +313,16 @@ function createPosts(knex, DataGenerator, created) {
 }
 
 module.exports = function (DataGenerator) {
-    var knex = config.database.knex,
-       created = {};
+    var created = {};
     // Create users first
-    return createUsers(knex, DataGenerator).then(function (createdUsers) {
+    return createUsers(db.knex, DataGenerator).then(function (createdUsers) {
         created.users = createdUsers;
         // Next create tags
-        return createTags(knex, DataGenerator, created);
+        return createTags(db.knex, DataGenerator, created);
     }).then(function (createdTags) {
         created.tags = createdTags;
         // Finally, setup posts with the right authors and tags
-        return createPosts(knex, DataGenerator, created);
+        return createPosts(db.knex, DataGenerator, created);
     }).then(function (createdPosts) {
         created.posts = createdPosts;
         return created;
