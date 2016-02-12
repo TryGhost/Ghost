@@ -1,5 +1,5 @@
-var _       = require('lodash'),
-    config  = require('../../../config/index'),
+var _  = require('lodash'),
+    db = require('../../../data/db'),
 
     // private
     doRaw,
@@ -10,7 +10,7 @@ var _       = require('lodash'),
     getColumns;
 
 doRaw = function doRaw(query, fn) {
-    return config.database.knex.raw(query).then(function (response) {
+    return db.knex.raw(query).then(function (response) {
         return fn(response);
     });
 };
