@@ -8,6 +8,7 @@
 var _          = require('lodash'),
     bookshelf  = require('bookshelf'),
     config     = require('../../config'),
+    db         = require('../../data/db'),
     errors     = require('../../errors'),
     filters    = require('../../filters'),
     moment     = require('moment'),
@@ -25,7 +26,7 @@ var _          = require('lodash'),
 
 // ### ghostBookshelf
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
-ghostBookshelf = bookshelf(config.database.knex);
+ghostBookshelf = bookshelf(db.knex);
 
 // Load the Bookshelf registry plugin, which helps us avoid circular dependencies
 ghostBookshelf.plugin('registry');

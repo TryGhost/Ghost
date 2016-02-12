@@ -9,7 +9,6 @@ var express     = require('express'),
     uuid        = require('node-uuid'),
     Promise     = require('bluebird'),
     i18n        = require('./i18n'),
-
     api         = require('./api'),
     config      = require('./config'),
     errors      = require('./errors'),

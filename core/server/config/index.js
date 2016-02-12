@@ -7,7 +7,7 @@ var path          = require('path'),
     fs            = require('fs'),
     url           = require('url'),
     _             = require('lodash'),
-    knex          = require('knex'),
+
     validator     = require('validator'),
     readDirectory = require('../utils/read-directory'),
     readThemes    = require('../utils/read-themes'),
@@ -18,8 +18,7 @@ var path          = require('path'),
     appRoot       = path.resolve(__dirname, '../../../'),
     corePath      = path.resolve(appRoot, 'core/'),
     testingEnvs   = ['testing', 'testing-mysql', 'testing-pg'],
-    defaultConfig = {},
-    knexInstance;
+    defaultConfig = {};
 
 function ConfigManager(config) {
     /**
@@ -86,25 +85,6 @@ ConfigManager.prototype.init = function (rawConfig) {
     });
 };
 
-function configureDriver(client) {
-    var pg;
-
-    if (client === 'pg' || client === 'postgres' || client === 'postgresql') {
-        try {
-            pg = require('pg');
-        } catch (e) {
-            pg = require('pg.js');
-        }
-
-        // By default PostgreSQL returns data as strings along with an OID that identifies
-        // its type.  We're setting the parser to convert OID 20 (int8) into a javascript
-        // integer.
-        pg.types.setTypeParser(20, function (val) {
-            return val === null ? null : parseInt(val, 10);
-        });
-    }
-}
-
 /**
  * Allows you to set the config object.
  * @param {Object} config Only accepts an object at the moment.
@@ -156,12 +136,7 @@ ConfigManager.prototype.set = function (config) {
     assetHash = this._config.assetHash ||
         (crypto.createHash('md5').update(packageInfo.version + Date.now()).digest('hex')).substring(0, 10);
 
-    if (!knexInstance && this._config.database && this._config.database.client) {
-        configureDriver(this._config.database.client);
-        knexInstance = knex(this._config.database);
-    }
-
-    // Protect against accessing a non-existant object.
+    // Protect against accessing a non-existent object.
     // This ensures there's always at least a storage object
     // because it's referenced in multiple places.
     this._config.storage = this._config.storage || {};
@@ -174,9 +149,6 @@ ConfigManager.prototype.set = function (config) {
     }
 
     _.merge(this._config, {
-        database: {
-            knex: knexInstance
-        },
         ghostVersion: packageInfo.version,
         paths: {
             appRoot:          appRoot,
