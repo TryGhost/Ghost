@@ -5,7 +5,6 @@
 var express     = require('express'),
     hbs         = require('express-hbs'),
     compress    = require('compression'),
-    fs          = require('fs'),
     uuid        = require('node-uuid'),
     Promise     = require('bluebird'),
     i18n        = require('./i18n'),
@@ -46,49 +45,6 @@ function initDbHashAndFirstRun() {
     });
 }
 
-// Checks for the existence of the "built" javascript files from grunt concat.
-// Returns a promise that will be resolved if all files exist or rejected if
-// any are missing.
-function builtFilesExist() {
-    var deferreds = [],
-        location = config.paths.clientAssets,
-        fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
-
-    if (process.env.NODE_ENV === 'production') {
-        // Production uses `.min` files
-        fileNames = fileNames.map(function (file) {
-            return file.replace('.', '.min.');
-        });
-    }
-
-    function checkExist(fileName) {
-        var errorMessage = i18n.t('errors.index.javascriptFilesNotBuilt.error'),
-            errorHelp = i18n.t('errors.index.javascriptFilesNotBuilt.help', {link: '\nhttps://github.com/TryGhost/Ghost#getting-started'});
-
-        return new Promise(function (resolve, reject) {
-            fs.stat(fileName, function (statErr) {
-                var exists = (statErr) ? false : true,
-                    err;
-
-                if (exists) {
-                    resolve(true);
-                } else {
-                    err = new Error(errorMessage);
-
-                    err.help = errorHelp;
-                    reject(err);
-                }
-            });
-        });
-    }
-
-    fileNames.forEach(function (fileName) {
-        deferreds.push(checkExist(location + fileName));
-    });
-
-    return Promise.all(deferreds);
-}
-
 // ## Initialise Ghost
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
@@ -108,9 +64,6 @@ function init(options) {
     // Load our config.js file from the local file system.
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
-    }).then(function () {
-        // Make sure javascript files have been built via grunt concat
-        return builtFilesExist();
     }).then(function () {
         // Initialise the models
         return models.init();
