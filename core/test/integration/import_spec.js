@@ -10,6 +10,7 @@ var testUtils   = require('../utils/index'),
     validator   = require('validator'),
 
     // Stuff we are testing
+    db              = require('../../server/data/db'),
     config          = require('../../server/config'),
     defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
     migration       = rewire('../../server/data/migration'),
@@ -17,7 +18,7 @@ var testUtils   = require('../utils/index'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
 
-    knex = config.database.knex,
+    knex = db.knex,
     sandbox = sinon.sandbox.create();
 
 // Tests in here do an import for each test
