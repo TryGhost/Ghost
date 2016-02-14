@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var fs          = require('fs-extra'),
     should      = require('should'),
     sinon       = require('sinon'),
@@ -9,9 +8,6 @@ var fs          = require('fs-extra'),
     // Stuff we are testing
     UploadAPI   = require('../../../server/api/upload'),
     store;
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Upload API', function () {
     // Doesn't test the DB

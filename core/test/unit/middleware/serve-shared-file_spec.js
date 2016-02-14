@@ -1,5 +1,4 @@
 /*globals describe, it, beforeEach, afterEach */
-/*jshint expr:true*/
 var fs              = require('fs'),
     sinon           = require('sinon'),
     serveSharedFile = require('../../../server/middleware/serve-shared-file'),

@@ -1,5 +1,4 @@
 /*globals describe, it, before, beforeEach, afterEach */
-/*jshint expr:true*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
 

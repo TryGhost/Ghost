@@ -1,5 +1,4 @@
 /*globals describe, before, after, it */
-/*jshint expr:true*/
 var testUtils = require('../../utils'),
     should    = require('should'),
     _         = require('lodash'),

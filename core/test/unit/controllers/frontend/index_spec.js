@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var moment   = require('moment'),
     should   = require('should'),
     sinon    = require('sinon'),
@@ -13,9 +12,6 @@ var moment   = require('moment'),
 
     configUtils = require('../../../utils/configUtils'),
     sandbox = sinon.sandbox.create();
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Frontend Controller', function () {
     var adminEditPagePath = '/ghost/editor/';

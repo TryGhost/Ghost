@@ -1,5 +1,4 @@
 /*globals describe, before, afterEach, beforeEach, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     _              = require('lodash'),

@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     hbs            = require('express-hbs'),
     utils          = require('./utils'),
