@@ -367,11 +367,6 @@
             "export": {
                 "errorExportingData": "Error exporting data"
             },
-            "fixtures": {
-                "populatingPermissions": "Populating permissions",
-                "upgradingPermissions": "Upgrading permissions",
-                "removingOldPermissions": "Removing old permissions"
-            },
             "import": {
                 "dataImporter": {
                     "unableToFindOwner": "Unable to find an owner"
@@ -519,56 +514,9 @@
         },
         "data": {
             "fixtures": {
-                "migrations": "Migrations",
-                "convertingAdmToOwner": "Converting admin to owner",
-                "creatingOwner": "Creating owner",
-                "populatingFixtures": "Populating fixtures",
-                "upgradingFixturesTo": "Upgrading fixtures to {version}",
-                "addingClientFixture": "Adding ghost-admin client fixture",
-                "addingOwnerRoleFixture": "Adding owner role fixture",
-                "updatingFixtures": "Updating fixtures",
                 "canSafelyDelete": "<!-- You can safely delete this line if your theme does not require jQuery -->\n",
                 "jQueryRemoved": "jQuery has been removed from Ghost core and is now being loaded from the jQuery Foundation's CDN.",
-                "canBeChanged": "This can be changed or removed in your <strong>Code Injection</strong> settings area.",
-                "addingJquery": "Adding jQuery link to ghost_foot",
-                "updateIsPrivate": "Update isPrivate setting",
-                "updatePassword": "Update password setting",
-                "updateAdminClientFixture": "Update ghost-admin client fixture",
-                "addFrontendClientFixture": "Add ghost-frontend client fixture",
-                "cleaningTags": "Cleaning {length} malformed tags",
-                "collectingDataOnTagOrder": "Collecting data on tag order for posts...",
-                "updatingOrder": "Updating order on {length} tag relationships (could take a while)...",
-                "updatedOrder": "Tag order successfully updated",
-                "addingUpgrade": "Adding {version} upgrade post fixture"
-            },
-            "migration": {
-                "commands": {
-                    "migrations": "Migrations",
-                    "deletingTable": "Deleting table: {table}",
-                    "creatingTable": "Creating table: {table}",
-                    "addingColumn": "Adding column: {table}.{column}",
-                    "droppingColumn": "Dropping column: {table}.{column}",
-                    "addingUnique": "Adding unique on: {table}.{column}",
-                    "droppingUnique": "Dropping unique on: {table}.{column}"
-                },
-                "index": {
-                    "migrations": "Migrations",
-                    "complete": "Complete",
-                    "populatingDefaultSettings": "Populating default settings",
-                    "creatingDatabaseBackup": "Creating database backup",
-                    "databaseBackupDestination": "Database backup written to: {filename}",
-                    "databaseUpgradeRequired": "Database upgrade required from version {dbVersion} to {defaultVersion}",
-                    "upToDateAtVersion": "Up to date at version {dbVersion}",
-                    "databaseNotCompatible": {
-                        "error": "Your database is not compatible with this version of Ghost",
-                        "help": "You will need to create a new database"
-                    },
-                    "dbInitialisationRequired": "Database initialisation required for version {version}",
-                    "problemWithDatabase": "There is a problem with the database",
-                    "creatingTable": "Creating table: {table}",
-                    "creatingTables": "Creating tables...",
-                    "runningMigrations": "Running migrations"
-                }
+                "canBeChanged": "This can be changed or removed in your <strong>Code Injection</strong> settings area."
             },
             "utils": {
                 "index": {
