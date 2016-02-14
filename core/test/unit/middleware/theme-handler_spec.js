@@ -1,5 +1,4 @@
 /*globals describe, it, beforeEach, afterEach */
-/*jshint expr:true*/
 var sinon        = require('sinon'),
     should       = require('should'),
     express      = require('express'),
@@ -14,8 +13,6 @@ var sinon        = require('sinon'),
 
     configUtils  = require('../../utils/configUtils'),
     sandbox      = sinon.sandbox.create();
-
-should.equal(true, true);
 
 describe('Theme Handler', function () {
     var req, res, next, blogApp;

@@ -1,5 +1,4 @@
 /*globals describe, it, before, beforeEach, afterEach */
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     Promise        = require('bluebird'),
@@ -16,8 +15,6 @@ var should         = require('should'),
     // storing current environment
     currentEnv     = process.env.NODE_ENV;
 i18n.init();
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Config', function () {
     afterEach(function () {

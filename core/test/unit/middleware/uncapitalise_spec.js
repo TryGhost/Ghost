@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var sinon           = require('sinon'),
     should       = require('should'),
     uncapitalise    = require('../../../server/middleware/uncapitalise');

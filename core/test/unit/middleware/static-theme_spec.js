@@ -1,12 +1,9 @@
 /*globals describe, it, beforeEach */
-/*jshint expr:true*/
 var sinon        = require('sinon'),
     should       = require('should'),
 
     express      = require('express'),
     staticTheme  = require('../../../server/middleware/static-theme');
-
-should.equal(true, true);
 
 describe('staticTheme', function () {
     var next;

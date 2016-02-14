@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var crypto          = require('crypto'),
     should          = require('should'),
     sinon           = require('sinon'),
@@ -35,7 +34,8 @@ describe('Private Blogging', function () {
         var req, res, next;
 
         beforeEach(function () {
-            req = {}, res = {};
+            req = {};
+            res = {};
             apiSettingsStub = sandbox.stub(api.settings, 'read');
             next = sinon.spy();
         });

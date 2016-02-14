@@ -1,5 +1,4 @@
 /*globals describe, it, before, beforeEach, afterEach */
-/*jshint expr:true*/
 var should = require('should'),
     sinon = require('sinon'),
     rewire = require('rewire'),
@@ -10,9 +9,6 @@ var should = require('should'),
     ghostBookshelf,
 
     sandbox = sinon.sandbox.create();
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Filter', function () {
     before(function () {

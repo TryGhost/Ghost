@@ -1,5 +1,4 @@
 /*global describe, it, before, after */
-/*jshint expr:true*/
 var testUtils     = require('../../../utils'),
     should        = require('should'),
     supertest     = require('supertest'),
@@ -192,7 +191,7 @@ describe('Post API', function () {
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
                     _.isBoolean(jsonResponse.posts[0].page).should.eql(true);
                     jsonResponse.posts[0].author.should.be.a.Number();
-                    testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true;
+                    testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
                     jsonResponse.posts[0].created_by.should.be.a.Number();
                     // Tags aren't included by default
                     should.not.exist(jsonResponse.posts[0].tags);
@@ -815,7 +814,7 @@ describe('Post API', function () {
 
                     var jsonResponse = res.body,
                         changedValue = 'My new Title';
-                    jsonResponse.posts[0].title.exist;
+                    should.exist(jsonResponse.posts[0].title);
                     jsonResponse.posts[0].testvalue = changedValue;
                     jsonResponse.posts[0].id = 99;
                     request.put(testUtils.API.getApiQuery('posts/99/'))
