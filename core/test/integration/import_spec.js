@@ -12,12 +12,14 @@ var testUtils   = require('../utils/index'),
     // Stuff we are testing
     db              = require('../../server/data/db'),
     config          = require('../../server/config'),
+    versioning      = require('../../server/data/schema').versioning,
     defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
     migration       = rewire('../../server/data/migration'),
     exporter        = require('../../server/data/export'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
 
+    DEF_DB_VERSION  = versioning.getDefaultDatabaseVersion(),
     knex = db.knex,
     sandbox = sinon.sandbox.create();
 
@@ -155,7 +157,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 // test tags
                 tags.length.should.equal(exportData.data.tags.length, 'no new tags');
@@ -211,7 +213,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
@@ -272,7 +274,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -317,7 +319,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -375,7 +377,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 // activeTheme should NOT have been overridden
                 _.findWhere(settings, {key: 'activeTheme'}).value.should.equal('casper', 'Wrong theme');
@@ -435,7 +437,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -479,7 +481,7 @@ describe('Import', function () {
 
                     // test settings
                     settings.length.should.be.above(0, 'Wrong number of settings');
-                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                    _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                     done();
                 });
@@ -529,7 +531,7 @@ describe('Import', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -719,7 +721,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -944,7 +946,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
@@ -1181,7 +1183,7 @@ describe('Import (new test structure)', function () {
 
                 // test settings
                 settings.length.should.be.above(0, 'Wrong number of settings');
-                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal('004', 'Wrong database version');
+                _.findWhere(settings, {key: 'databaseVersion'}).value.should.equal(DEF_DB_VERSION, 'Wrong database version');
 
                 done();
             }).catch(done);
