@@ -184,12 +184,6 @@
                 "help": "Please use the error code above to search for a solution."
             }
         },
-        "index": {
-            "javascriptFilesNotBuilt": {
-                "error": "Javascript files have not been built.",
-                "help": "\nPlease read the getting started instructions at: {link}"
-            }
-        },
         "mail": {
             "incompleteMessageData": {
                 "error": "Error: Incomplete message data."
