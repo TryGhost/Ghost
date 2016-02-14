@@ -22,6 +22,11 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
         });
     },
 
+    setupController() {
+        this._super(...arguments);
+        this.get('controller').send('reset');
+    },
+
     actions: {
         save() {
             // since shortcuts are run on the route, we have to signal to the components

@@ -8,8 +8,7 @@ const {
     RSVP,
     computed,
     inject: {service},
-    isBlank,
-    observer
+    isBlank
 } = Ember;
 const {Errors} = DS;
 const emberA = Ember.A;
@@ -17,7 +16,7 @@ const emberA = Ember.A;
 export const NavItem = Ember.Object.extend(ValidationEngine, {
     label: '',
     url: '',
-    last: false,
+    isNew: false,
 
     validationType: 'navItem',
 
@@ -44,6 +43,8 @@ export default Controller.extend(SettingsSaveMixin, {
     config: service(),
     notifications: service(),
 
+    newNavItem: null,
+
     blogUrl: computed('config.blogUrl', function () {
         let url = this.get('config.blogUrl');
 
@@ -51,8 +52,7 @@ export default Controller.extend(SettingsSaveMixin, {
     }),
 
     navigationItems: computed('model.navigation', function () {
-        let lastItem,
-            navItems;
+        let navItems;
 
         try {
             navItems = JSON.parse(this.get('model.navigation') || [{}]);
@@ -64,48 +64,33 @@ export default Controller.extend(SettingsSaveMixin, {
             return NavItem.create(item);
         });
 
-        lastItem = navItems.get('lastObject');
-        if (!lastItem || lastItem.get('isComplete')) {
-            navItems.addObject(NavItem.create({last: true}));
-        }
-
         return navItems;
     }),
 
-    updateLastNavItem: observer('navigationItems.[]', function () {
-        let navItems = this.get('navigationItems');
-
-        navItems.forEach((item, index, items) => {
-            if (index === (items.length - 1)) {
-                item.set('last', true);
-            } else {
-                item.set('last', false);
-            }
-        });
-    }),
+    init() {
+        this._super(...arguments);
+        this.set('newNavItem', NavItem.create({isNew: true}));
+    },
 
     save() {
         let navItems = this.get('navigationItems');
+        let newNavItem = this.get('newNavItem');
         let notifications = this.get('notifications');
-        let navSetting,
-            validationPromises;
+        let validationPromises = [];
+        let navSetting;
 
-        validationPromises = navItems.map((item) => {
-            if (item.get('last') && item.get('isBlank')) {
-                return;
-            }
+        if (!newNavItem.get('isBlank')) {
+            validationPromises.pushObject(this.send('addItem'));
+        }
 
-            return item.validate();
+        navItems.map((item) => {
+            validationPromises.pushObject(item.validate());
         });
 
         return RSVP.all(validationPromises).then(() => {
             navSetting = navItems.map((item) => {
                 let label = item.get('label').trim();
                 let url = item.get('url').trim();
-
-                if (item.get('last') && !item.get('isComplete')) {
-                    return null;
-                }
 
                 return {label, url};
             }).compact();
@@ -124,17 +109,22 @@ export default Controller.extend(SettingsSaveMixin, {
         });
     },
 
+    addNewNavItem() {
+        let navItems = this.get('navigationItems');
+        let newNavItem = this.get('newNavItem');
+
+        newNavItem.set('isNew', false);
+        navItems.pushObject(newNavItem);
+        this.set('newNavItem', NavItem.create({isNew: true}));
+    },
+
     actions: {
         addItem() {
-            let navItems = this.get('navigationItems');
-            let lastItem = navItems.get('lastObject');
+            let newNavItem = this.get('newNavItem');
 
-            if (lastItem) {
-                lastItem.validate().then(() => {
-                    // Add new blank navItem
-                    navItems.addObject(NavItem.create({last: true}));
-                });
-            }
+            return newNavItem.validate().then(() => {
+                this.addNewNavItem();
+            });
         },
 
         deleteItem(item) {
@@ -147,12 +137,8 @@ export default Controller.extend(SettingsSaveMixin, {
             navItems.removeObject(item);
         },
 
-        moveItem(index, newIndex) {
-            let navItems = this.get('navigationItems');
-            let item = navItems.objectAt(index);
-
-            navItems.removeAt(index);
-            navItems.insertAt(newIndex, item);
+        reorderItems(navItems) {
+            this.set('navigationItems', navItems);
         },
 
         updateUrl(url, navItem) {
@@ -161,6 +147,10 @@ export default Controller.extend(SettingsSaveMixin, {
             }
 
             navItem.set('url', url);
+        },
+
+        reset() {
+            this.set('newNavItem', NavItem.create({isNew: true}));
         }
     }
 });
