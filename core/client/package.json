@@ -45,6 +45,7 @@
     "ember-route-action-helper": "0.3.0",
     "ember-simple-auth": "1.0.1",
     "ember-sinon": "0.3.0",
+    "ember-sortable": "1.7.0",
     "ember-suave": "1.2.3",
     "ember-watson": "0.7.0",
     "fs-extra": "0.16.3",
