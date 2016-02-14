@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it */
-/*jshint expr:true*/
 var _             = require('lodash'),
     testUtils     = require('../../utils'),
     rewire        = require('rewire'),
