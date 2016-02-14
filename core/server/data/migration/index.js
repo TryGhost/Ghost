@@ -20,14 +20,14 @@ var _               = require('lodash'),
     // private
     logInfo,
     populateDefaultSettings,
-    backupDatabase,
     fixClientSecret,
 
     // public
     init,
     reset,
     migrateUp,
-    migrateUpFreshDb;
+    migrateUpFreshDb,
+    backupDatabase;
 
 logInfo = function logInfo(message) {
     errors.logInfo(i18n.t('notices.data.migration.index.migrations'), message);
@@ -208,6 +208,7 @@ migrateUp = function (fromVersion, toVersion) {
 module.exports = {
     init: init,
     reset: reset,
+    backupDatabase: backupDatabase,
     migrateUp: migrateUp,
     migrateUpFreshDb: migrateUpFreshDb
 };
