@@ -94,6 +94,11 @@ utils = {
             base64String += '=';
         }
         return base64String;
+    },
+    redirect301: function redirect301(res, path) {
+        /*jslint unparam:true*/
+        res.set({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S});
+        res.redirect(301, path);
     }
 };
 
