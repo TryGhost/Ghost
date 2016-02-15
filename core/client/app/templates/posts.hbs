@@ -1,4 +1,4 @@
-{{#gh-content-view-container as |container|}}
+{{#gh-content-view-container as |previewIsHidden|}}
 <header class="view-header">
     {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Content</span>{{/gh-view-title}}
     <section class="view-actions">
@@ -8,11 +8,11 @@
 
 <div class="view-container">
     <section class="content-list js-content-list {{if postListFocused 'keyboard-focused'}}">
-        {{#gh-infinite-scroll-box tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage"}}
+        {{#gh-infinite-scroll tagName="section" classNames="content-list-content js-content-scrollbox" fetch="loadNextPage" as |checkScroll|}}
             <ol class="posts-list">
                 {{#each sortedPosts key="id" as |post|}}
-                    {{#gh-posts-list-item post=post onDoubleClick="openEditor" previewIsHidden=container.previewIsHidden as |component|}}
-                        {{#link-to component.viewOrEdit post.id class="permalink" title="Edit this post"}}
+                    {{#gh-posts-list-item post=post onDoubleClick="openEditor" onDelete=(action checkScroll) as |component|}}
+                        {{#link-to (if previewIsHidden 'editor.edit' 'posts.post') post.id class="permalink" title="Edit this post"}}
                             <h3 class="entry-title">{{post.title}}</h3>
                             <section class="entry-meta">
                                 <span class="avatar" style={{component.authorAvatarBackground}}>
@@ -37,7 +37,7 @@
                     {{/gh-posts-list-item}}
                 {{/each}}
             </ol>
-        {{/gh-infinite-scroll-box}}
+        {{/gh-infinite-scroll}}
     </section>
     <section class="content-preview js-content-preview {{if postContentFocused 'keyboard-focused'}}">
         {{outlet}}
