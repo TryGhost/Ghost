@@ -1,0 +1,8 @@
+<div class="settings-tag">
+    {{#link-to 'settings.tags.tag' tag class="tag-edit-button"}}
+        <span class="tag-title">{{tag.name}}</span>
+        <span class="label label-default">/{{tag.slug}}</span>
+        <p class="tag-description">{{tag.description}}</p>
+        <span class="tags-count">{{tag.count.posts}}</span>
+    {{/link-to}}
+</div>
