@@ -57,6 +57,14 @@ utils = {
         // Handle the £ symbol separately, since it needs to be removed before the unicode conversion.
         string = string.replace(/£/g, '-');
 
+        // Replace all known non ascii characters
+        string = string
+            .replace(/ä/gi, 'ae')
+            .replace(/ö/gi, 'oe')
+            .replace(/ü/gi, 'ue')
+            .replace(/ß/gi, 'ss')
+        ;
+
         // Remove non ascii characters
         string = unidecode(string);
 

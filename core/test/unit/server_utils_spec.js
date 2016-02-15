@@ -19,6 +19,13 @@ describe('Server Utilities', function () {
         var safeString = utils.safeString,
             options = {};
 
+        it('should replace known non ascii characters', function () {
+            safeString('äÄ', options).should.equal('aeae');
+            safeString('öÖ', options).should.equal('oeoe');
+            safeString('üÜ', options).should.equal('ueue');
+            safeString('ß', options).should.equal('ss');
+        });
+
         it('should remove beginning and ending whitespace', function () {
             var result = safeString(' stringwithspace ', options);
             result.should.equal('stringwithspace');
@@ -47,8 +54,8 @@ describe('Server Utilities', function () {
         });
 
         it('should replace all of the foreign chars in ascii', function () {
-            var result = safeString('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ');
-            result.should.equal('aaaaaaaeceeeeiiiidnoooooxouuuuuthssaaaaaaaeceeeeiiiidnooooo-ouuuuythy');
+            var result = safeString('ÀÁÂÃÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕ×ØÙÚÛÝÞßàáâãåæçèéêëìíîïðñòóôõ÷øùúûýþÿ');
+            result.should.equal('aaaaaaeceeeeiiiidnooooxouuuuthssaaaaaaeceeeeiiiidnoooo-ouuuythy');
         });
 
         it('should remove special characters at the beginning of a string', function () {
