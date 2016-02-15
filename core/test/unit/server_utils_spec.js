@@ -1,6 +1,7 @@
 /*globals describe, it*/
 /*jshint expr:true*/
 var should          = require('should'),
+    sinon           = require('sinon'),
     parsePackageJson = require('../../server/utils/parse-package-json'),
     validateThemes  = require('../../server/utils/validate-themes'),
     readDirectory   = require('../../server/utils/read-directory'),
@@ -453,6 +454,24 @@ describe('Server Utilities', function () {
                 .finally(function () {
                     return rm(themesPath);
                 });
+        });
+    });
+
+    describe('redirect301', function () {
+        it('performs a 301 correctly', function (done) {
+            var res = {};
+
+            res.set = sinon.spy();
+
+            res.redirect = function (code, path) {
+                code.should.equal(301);
+                path.should.eql('my/awesome/path');
+                res.set.calledWith({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}).should.be.true();
+
+                done();
+            };
+
+            utils.redirect301(res, 'my/awesome/path');
         });
     });
 });
