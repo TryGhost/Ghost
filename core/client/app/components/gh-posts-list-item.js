@@ -34,10 +34,6 @@ export default Component.extend(ActiveLinkWrapper, {
         return Ember.String.htmlSafe(`background-image: url(${this.get('authorAvatar')})`);
     }),
 
-    viewOrEdit: computed('previewIsHidden', function () {
-        return this.get('previewIsHidden') ? 'editor.edit' : 'posts.post';
-    }),
-
     click() {
         this.sendAction('onClick', this.get('post'));
     },
@@ -54,6 +50,9 @@ export default Component.extend(ActiveLinkWrapper, {
     willDestroyElement() {
         this._super(...arguments);
         this.removeObserver('active', this, this.scrollIntoView);
+        if (this.get('post.isDeleted') && this.attrs.onDelete) {
+            this.attrs.onDelete();
+        }
     },
 
     scrollIntoView() {
