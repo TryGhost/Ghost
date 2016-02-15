@@ -1,9 +1,10 @@
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
+import NotFoundHandler from 'ghost/mixins/404-handler';
 import isNumber from 'ghost/utils/isNumber';
 import isFinite from 'ghost/utils/isFinite';
 
-export default AuthenticatedRoute.extend(ShortcutsRoute, {
+export default AuthenticatedRoute.extend(ShortcutsRoute, NotFoundHandler, {
     model(params) {
         let post,
             postId,
@@ -28,14 +29,14 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             staticPages: 'all'
         };
 
-        return this.store.queryRecord('post', query).then((records) => {
+        return this.store.query('post', query).then((records) => {
             let post = records.get('firstObject');
 
             if (post) {
                 return post;
             }
 
-            this.transitionTo('error404', postId);
+            return this.replaceWith('posts.index');
         });
     },
 
