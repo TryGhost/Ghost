@@ -11,6 +11,7 @@ import startApp from '../../helpers/start-app';
 import destroyApp from '../../helpers/destroy-app';
 import { invalidateSession, authenticateSession } from 'ghost/tests/helpers/ember-simple-auth';
 import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
+import Mirage from 'ember-cli-mirage';
 
 describe('Acceptance: Posts - Post', function() {
     let application;
@@ -51,17 +52,19 @@ describe('Acceptance: Posts - Post', function() {
             });
         });
 
-        describe('with 404', function () {
-            it('redirects to 404 when post does not exist', function () {
-                let posts = server.createList('post', 3);
+        it('redirects to 404 when post does not exist', function () {
+            server.get('/posts/200/', function () {
+                return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Post not found.', errorType: 'NotFoundError'}]});
+            });
 
-                visit('/4');
+            errorOverride();
 
-                andThen(() => {
-                    // it redirects to 404 error page
-                    expect(currentPath()).to.equal('error404');
-                    expect(currentURL()).to.equal('/4');
-                });
+            visit('/200');
+
+            andThen(() => {
+                errorReset();
+                expect(currentPath()).to.equal('error404');
+                expect(currentURL()).to.equal('/200');
             });
         });
     });
