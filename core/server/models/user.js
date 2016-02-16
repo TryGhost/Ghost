@@ -2,13 +2,12 @@ var _              = require('lodash'),
     Promise        = require('bluebird'),
     errors         = require('../errors'),
     utils          = require('../utils'),
+    gravatar       = require('../utils/gravatar'),
     bcrypt         = require('bcryptjs'),
     ghostBookshelf = require('./base'),
     crypto         = require('crypto'),
     validator      = require('validator'),
-    request        = require('request'),
     validation     = require('../data/validation'),
-    config         = require('../config'),
     events         = require('../events'),
     i18n           = require('../i18n'),
 
@@ -380,7 +379,7 @@ User = ghostBookshelf.Model.extend({
             // Assign the hashed password
             userData.password = hash;
             // LookupGravatar
-            return self.gravatarLookup(userData);
+            return gravatar.lookup(userData);
         }).then(function then(userData) {
             // Save the user with the hashed password
             return ghostBookshelf.Model.add.call(self, userData, options);
@@ -423,8 +422,10 @@ User = ghostBookshelf.Model.extend({
             // Assign the hashed password
             userData.password = hash;
 
-            return Promise.join(self.gravatarLookup(userData),
-                                ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options));
+            return Promise.join(
+                gravatar.lookup(userData),
+                ghostBookshelf.Model.generateSlug.call(this, User, userData.name, options)
+            );
         }).then(function then(results) {
             userData = results[0];
             userData.slug = results[1];
@@ -776,31 +777,6 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    gravatarLookup: function gravatarLookup(userData) {
-        var gravatarUrl = '//www.gravatar.com/avatar/' +
-                crypto.createHash('md5').update(userData.email.toLowerCase().trim()).digest('hex') +
-                '?s=250';
-
-        return new Promise(function gravatarRequest(resolve) {
-            if (config.isPrivacyDisabled('useGravatar')) {
-                return resolve(userData);
-            }
-
-            request({url: 'http:' + gravatarUrl + '&d=404&r=x', timeout: 2000}, function handler(err, response) {
-                if (err) {
-                    // just resolve with no image url
-                    return resolve(userData);
-                }
-
-                if (response.statusCode !== 404) {
-                    gravatarUrl += '&d=mm&r=x';
-                    userData.image = gravatarUrl;
-                }
-
-                resolve(userData);
-            });
-        });
-    },
     // Get the user by email address, enforces case insensitivity rejects if the user is not found
     // When multi-user support is added, email addresses must be deduplicated with case insensitivity, so that
     // joe@bloggs.com and JOE@BLOGGS.COM cannot be created as two separate users.
