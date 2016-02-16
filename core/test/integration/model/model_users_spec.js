@@ -9,6 +9,7 @@ var testUtils   = require('../../utils'),
 
     // Stuff we are testing
     utils       = require('../../../server/utils'),
+    gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
     RoleModel   = require('../../../server/models/role').Role,
     events      = require('../../../server/events'),
@@ -38,10 +39,6 @@ describe('User Model', function run() {
         it('can add first', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -55,10 +52,6 @@ describe('User Model', function run() {
         it('shortens slug if possible', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('slug').should.equal(true);
@@ -69,10 +62,6 @@ describe('User Model', function run() {
 
         it('does not short slug if not possible', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
-
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -99,10 +88,6 @@ describe('User Model', function run() {
         it('does NOT lowercase email', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -114,7 +99,7 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+            sandbox.stub(gravatar, 'lookup', function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                 return Promise.resolve(userData);
             });
@@ -132,7 +117,7 @@ describe('User Model', function run() {
         it('can handle no gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+            sandbox.stub(gravatar, 'lookup', function (userData) {
                 return Promise.resolve(userData);
             });
 
@@ -336,10 +321,6 @@ describe('User Model', function run() {
         it('can invite user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -355,10 +336,6 @@ describe('User Model', function run() {
 
         it('can add active user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
-
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
@@ -406,10 +383,6 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -435,10 +408,6 @@ describe('User Model', function run() {
         it('can activate invited user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
-
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -494,10 +463,6 @@ describe('User Model', function run() {
         it('can destroy invited user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
-
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
