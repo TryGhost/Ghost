@@ -97,7 +97,7 @@ describe('Channels', function () {
     function testChannel404(props, done) {
         testChannelError(props, function (error) {
             error.errorType.should.eql('NotFoundError');
-            error.code.should.eql(404);
+            error.statusCode.should.eql(404);
         }, done);
     }
 
