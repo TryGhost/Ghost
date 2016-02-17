@@ -4,7 +4,7 @@
 function UnsupportedMediaTypeError(message) {
     this.message = message;
     this.stack = new Error().stack;
-    this.code = 415;
+    this.statusCode = 415;
     this.errorType = this.name;
 }
 

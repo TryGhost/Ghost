@@ -4,7 +4,7 @@
 function InternalServerError(message) {
     this.message = message;
     this.stack = new Error().stack;
-    this.code = 500;
+    this.statusCode = 500;
     this.errorType = this.name;
 }
 

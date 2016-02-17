@@ -97,7 +97,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -110,7 +110,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -123,7 +123,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -156,7 +156,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -169,7 +169,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('UnauthorizedError');
-                    err.code.should.equal(401);
+                    err.statusCode.should.equal(401);
                     err.message.should.equal('Invalid token structure');
                     done();
                 });
@@ -191,7 +191,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('UnauthorizedError');
-                    err.code.should.equal(401);
+                    err.statusCode.should.equal(401);
                     err.message.should.equal('Invalid token structure');
                     done();
                 });
@@ -226,7 +226,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -259,7 +259,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
