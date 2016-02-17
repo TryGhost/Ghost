@@ -4,7 +4,7 @@
 function MethodNotAllowedError(message) {
     this.message = message;
     this.stack = new Error().stack;
-    this.code = 405;
+    this.statusCode = 405;
     this.errorType = this.name;
 }
 

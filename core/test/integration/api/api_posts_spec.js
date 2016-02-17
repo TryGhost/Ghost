@@ -263,7 +263,7 @@ describe('Post API', function () {
             }).catch(function (err) {
                 should.exist(err);
                 err.message.should.eql('Validation (isSlug) failed for tag');
-                err.code.should.eql(422);
+                err.statusCode.should.eql(422);
                 done();
             });
         });
@@ -274,7 +274,7 @@ describe('Post API', function () {
             }).catch(function (err) {
                 should.exist(err);
                 err.message.should.eql('Validation (isSlug) failed for author');
-                err.code.should.eql(422);
+                err.statusCode.should.eql(422);
                 done();
             });
         });
