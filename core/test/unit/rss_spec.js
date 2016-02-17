@@ -417,7 +417,7 @@ describe('RSS', function () {
 
             rss(req, res, function (err) {
                 should.exist(err);
-                err.code.should.eql(404);
+                err.statusCode.should.eql(404);
                 res.redirect.called.should.be.false();
                 res.render.called.should.be.false();
                 done();
@@ -434,7 +434,7 @@ describe('RSS', function () {
 
             rss(req, res, function (err) {
                 should.exist(err);
-                err.code.should.eql(404);
+                err.statusCode.should.eql(404);
                 res.redirect.called.should.be.false();
                 res.render.called.should.be.false();
                 done();
