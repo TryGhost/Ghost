@@ -9,6 +9,7 @@
 var hbs             = require('express-hbs'),
     _               = require('lodash'),
     config          = require('../config'),
+    labs            = require('../utils/labs'),
     utils           = require('./utils'),
     tags;
 
@@ -26,23 +27,31 @@ tags = function (options) {
         output = '';
 
     function createTagList(tags) {
-        if (autolink) {
-            return _.map(tags, function (tag) {
-                return utils.linkTemplate({
-                    url: config.urlFor('tag', {tag: tag}),
-                    text: _.escape(tag.name)
-                });
-            });
-        }
-        return _(tags).pluck('name').each(_.escape);
+        return _.reduce(tags, function (tagArray, tag) {
+            // If labs.hashtags is set, and the tag is hidden, ignore it
+            if (labs.isSet('hashtags') && tag.visibility === 'internal') {
+                return tagArray;
+            }
+
+            var tagOutput = autolink ? utils.linkTemplate({
+                url: config.urlFor('tag', {tag: tag}),
+                text: _.escape(tag.name)
+            }) : _.escape(tag.name);
+            tagArray.push(tagOutput);
+
+            return tagArray;
+        }, []);
     }
 
     if (this.tags && this.tags.length) {
         output = createTagList(this.tags);
         from -= 1; // From uses 1-indexed, but array uses 0-indexed.
         to = to || limit + from || this.tags.length;
+        output = output.slice(from, to).join(separator)
+    }
 
-        output = prefix + output.slice(from, to).join(separator) + suffix;
+    if (output) {
+        output = prefix + output + suffix;
     }
 
     return new hbs.handlebars.SafeString(output);

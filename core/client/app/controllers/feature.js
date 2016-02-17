@@ -25,6 +25,10 @@ export default Controller.extend(PromiseProxyMixin, {
         return this.get('config.publicAPI') || this.get('labs.publicAPI');
     }),
 
+    hashtags: computed('config.hashtags', 'labs.hashtags', function () {
+        return this.get('config.hashtags') || this.get('labs.hashtags');
+    }),
+
     init() {
         this._super(...arguments);
 
