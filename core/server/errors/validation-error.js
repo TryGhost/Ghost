@@ -4,7 +4,7 @@
 function ValidationError(message, offendingProperty) {
     this.message = message;
     this.stack = new Error().stack;
-    this.code = 422;
+    this.statusCode = 422;
     if (offendingProperty) {
         this.property = offendingProperty;
     }

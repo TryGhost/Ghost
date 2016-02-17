@@ -42,7 +42,7 @@ describe('Upload API', function () {
             UploadAPI.add({uploadimage: uploadimage}).then(function () {
                 done(new Error('Upload suceeded with invalid file.'));
             }, function (result) {
-                result.code.should.equal(415);
+                result.statusCode.should.equal(415);
                 result.errorType.should.equal('UnsupportedMediaTypeError');
                 done();
             });
@@ -59,7 +59,7 @@ describe('Upload API', function () {
             UploadAPI.add({uploadimage: uploadimage}).then(function () {
                 done(new Error('Upload suceeded with invalid file.'));
             }, function (result) {
-                result.code.should.equal(415);
+                result.statusCode.should.equal(415);
                 result.errorType.should.equal('UnsupportedMediaTypeError');
                 done();
             });
@@ -88,7 +88,7 @@ describe('Upload API', function () {
             UploadAPI.add({uploadimage: uploadimage}).then(function () {
                 done(new Error('Upload suceeded with invalid file.'));
             }, function (result) {
-                result.code.should.equal(415);
+                result.statusCode.should.equal(415);
                 result.errorType.should.equal('UnsupportedMediaTypeError');
                 done();
             });
