@@ -358,6 +358,7 @@ describe('Error handling', function () {
 
                 // Test that the message is correct
                 options.message.should.equal('Page not found');
+                // Template variable
                 options.code.should.equal(404);
                 this.statusCode.should.equal(404);
 
@@ -389,6 +390,7 @@ describe('Error handling', function () {
 
                 // Test that the message is correct
                 options.message.should.equal('Page not found');
+                // Template variable
                 options.code.should.equal(404);
                 this.statusCode.should.equal(404);
 
@@ -421,6 +423,7 @@ describe('Error handling', function () {
 
                 // Test that the message is correct
                 options.message.should.equal('I am a big bad error');
+                // Template variable
                 options.code.should.equal(500);
                 this.statusCode.should.equal(500);
 
@@ -452,6 +455,7 @@ describe('Error handling', function () {
 
                 // Test that the message is correct
                 options.message.should.equal('I am a big bad error');
+                // Template variable
                 options.code.should.equal(500);
                 this.statusCode.should.equal(500);
 
@@ -469,18 +473,18 @@ describe('Error handling', function () {
                 return res;
             });
 
-            err.code = 500;
+            err.statusCode = 500;
             errors.error500(err, req, res, null);
         });
 
         it('Renders custom error template if one exists', function (done) {
-            var code = 404,
+            var statusCode = 404,
                 error = {message: 'Custom view test'},
                 req = {
                     session: null
                 },
                 res = {
-                    status: function (code) {
+                    status: function (statusCode) {
                         /*jshint unused:false*/
                         return this;
                     },
@@ -493,7 +497,7 @@ describe('Error handling', function () {
                 },
                 next = null;
             errors.updateActiveTheme('theme-with-error');
-            errors.renderErrorPage(code, error, req, res, next);
+            errors.renderErrorPage(statusCode, error, req, res, next);
         });
     });
 });

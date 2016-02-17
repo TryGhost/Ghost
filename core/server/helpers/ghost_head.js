@@ -73,7 +73,7 @@ function getAjaxHelper(clientId, clientSecret) {
 
 function ghost_head(options) {
     // if error page do nothing
-    if (this.code >= 400) {
+    if (this.statusCode >= 400) {
         return;
     }
     var metaData = getMetaData(this, options.data.root),
