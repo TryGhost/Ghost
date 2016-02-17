@@ -16,6 +16,7 @@ export default Controller.extend({
     ghostPaths: service(),
     notifications: service(),
     session: service(),
+    ajax: service(),
 
     actions: {
         onUpload(file) {
