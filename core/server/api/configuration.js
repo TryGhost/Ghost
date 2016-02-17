@@ -13,6 +13,11 @@ function labsFlag(key) {
     };
 }
 
+function fetchAvailableTimezones() {
+    var timezones = require('../data/timezones.json');
+    return timezones;
+}
+
 function getAboutConfig() {
     return {
         version: config.ghostVersion,
@@ -56,6 +61,11 @@ configuration = {
 
         if (options.key === 'about') {
             return Promise.resolve({configuration: [getAboutConfig()]});
+        }
+
+        // Timezone endpoint
+        if (options.key === 'timezones') {
+            return Promise.resolve({configuration: [fetchAvailableTimezones()]});
         }
 
         return Promise.resolve({configuration: []});
