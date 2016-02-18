@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it */
-/*jshint expr:true*/
 var testUtils       = require('../../utils'),
     should          = require('should'),
     sequence        = require('../../../server/utils/sequence'),
@@ -786,7 +785,7 @@ describe('Post Model', function () {
                         // Should not have a conflicted slug from the first
                         updatedSecondPost.get('slug').should.not.equal(firstPost.slug);
 
-                        eventSpy.calledThrice.should.be.true;
+                        eventSpy.calledThrice.should.be.true();
                         eventSpy.thirdCall.calledWith('post.edited').should.be.true();
 
                         return PostModel.findOne({

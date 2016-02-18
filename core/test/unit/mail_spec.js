@@ -1,5 +1,4 @@
 /*globals describe, afterEach, beforeEach, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     Promise         = require('bluebird'),
 

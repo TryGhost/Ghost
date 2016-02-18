@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var fs              = require('fs-extra'),
     path            = require('path'),
     should          = require('should'),

@@ -1,5 +1,4 @@
 /*globals describe, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     _               = require('lodash'),
     crypto          = require('crypto'),

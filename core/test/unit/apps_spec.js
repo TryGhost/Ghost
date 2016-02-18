@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var path         = require('path'),
     EventEmitter = require('events').EventEmitter,
     should       = require('should'),

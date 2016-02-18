@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     sinon           = require('sinon'),
     decideIsAdmin   = require('../../../server/middleware/decide-is-admin');
