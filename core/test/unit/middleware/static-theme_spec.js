@@ -14,7 +14,7 @@ describe('staticTheme', function () {
 
     it('should call next if hbs file type', function () {
         var req = {
-            url: 'mytemplate.hbs'
+            path: 'mytemplate.hbs'
         };
 
         staticTheme(null)(req, null, next);
@@ -23,7 +23,7 @@ describe('staticTheme', function () {
 
     it('should call next if md file type', function () {
         var req = {
-            url: 'README.md'
+            path: 'README.md'
         };
 
         staticTheme(null)(req, null, next);
@@ -32,7 +32,7 @@ describe('staticTheme', function () {
 
     it('should call next if json file type', function () {
         var req = {
-            url: 'sample.json'
+            path: 'sample.json'
         };
 
         staticTheme(null)(req, null, next);
@@ -41,7 +41,7 @@ describe('staticTheme', function () {
 
     it('should call express.static if valid file type', function (done) {
         var req = {
-                url: 'myvalidfile.css',
+                path: 'myvalidfile.css',
                 app: {
                     get: function () { return 'casper'; }
                 }
@@ -65,7 +65,7 @@ describe('staticTheme', function () {
 
     it('should not error if active theme is missing', function (done) {
         var req = {
-                url: 'myvalidfile.css',
+                path: 'myvalidfile.css',
                 app: {
                     get: function () { return undefined; }
                 }
