@@ -161,6 +161,15 @@ migrateUp = function (fromVersion, toVersion) {
         modifyUniCommands = [],
         migrateOps = [];
 
+    // Are we migrating from before 003?
+    if (fromVersion < '003') {
+        return errors.logAndRejectError(
+            'Unable to upgrade from version 0.4.2 or earlier',
+            'Please upgrade to 0.7.1 first',
+            'See http://support.ghost.org/how-to-upgrade/ for more information'
+        );
+    }
+
     return backupDatabase().then(function () {
         return commands.getTables();
     }).then(function (tables) {
