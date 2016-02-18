@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var testUtils   = require('../utils/index'),
     should      = require('should'),
     sinon       = require('sinon'),
@@ -7,8 +6,10 @@ var testUtils   = require('../utils/index'),
     _           = require('lodash'),
 
     // Stuff we are testing
-    versioning  = require('../../server/data/versioning/index'),
+    versioning  = require('../../server/data/schema').versioning,
     exporter    = require('../../server/data/export/index'),
+
+    DEF_DB_VERSION  = versioning.getDefaultDatabaseVersion(),
     sandbox = sinon.sandbox.create();
 
 describe('Exporter', function () {
@@ -22,9 +23,9 @@ describe('Exporter', function () {
     should.exist(exporter);
 
     it('exports data', function (done) {
-        // Stub migrations to return 000 as the current database version
+        // Stub migrations to return DEF_DB_VERSION as the current database version
         var versioningStub = sandbox.stub(versioning, 'getDatabaseVersion', function () {
-            return Promise.resolve('004');
+            return Promise.resolve(DEF_DB_VERSION);
         });
 
         exporter().then(function (exportData) {
@@ -37,13 +38,13 @@ describe('Exporter', function () {
             should.exist(exportData.meta);
             should.exist(exportData.data);
 
-            exportData.meta.version.should.equal('004');
+            exportData.meta.version.should.equal(DEF_DB_VERSION);
 
             dbVersionSetting = _.findWhere(exportData.data.settings, {key: 'databaseVersion'});
 
             should.exist(dbVersionSetting);
 
-            dbVersionSetting.value.should.equal('004');
+            dbVersionSetting.value.should.equal(DEF_DB_VERSION);
 
             _.each(tables, function (name) {
                 should.exist(exportData.data[name]);

@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     sinon           = require('sinon'),
     rewire          = require('rewire'),
@@ -14,9 +13,6 @@ var should          = require('should'),
     rss             = rewire('../../server/data/xml/rss'),
 
     configUtils     = require('../utils/configUtils');
-
-// To stop jshint complaining
-should.equal(true, true);
 
 // Helper function to prevent unit tests
 // from failing via timeout when they
@@ -80,7 +76,7 @@ describe('RSS', function () {
 
             res.send = function send(xmlData) {
                 should.exist(xmlData);
-                res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true;
+                res.set.calledWith('Content-Type', 'text/xml; charset=UTF-8').should.be.true();
 
                 // xml & rss tags
                 xmlData.should.match(/^<\?xml version="1.0" encoding="UTF-8"\?>/);
@@ -104,7 +100,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -146,7 +142,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -175,7 +171,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -209,7 +205,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -241,7 +237,7 @@ describe('RSS', function () {
                 done();
             };
 
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -283,13 +279,13 @@ describe('RSS', function () {
 
         it('should process the data correctly for the index feed', function (done) {
             res.send = function send(xmlData) {
-                apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, include: 'author,tags,fields'}).should.be.true;
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: 1, include: 'author,tags'}).should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Test\]\]><\/title>/);
                 done();
             };
 
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
             rss(req, res, failTest(done));
         });
@@ -298,14 +294,14 @@ describe('RSS', function () {
             // setup
             req.originalUrl = '/tag/magic/rss/';
             req.params.slug = 'magic';
-            req.channelConfig = channelConfig('tag');
+            req.channelConfig = channelConfig.get('tag');
             req.channelConfig.isRSS = true;
 
             // test
             res.send = function send(xmlData) {
-                apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags,fields'}).should.be.true;
-                apiTagStub.calledOnce.should.be.true;
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: 1, filter: 'tags:\'magic\'', include: 'author,tags'}).should.be.true();
+                apiTagStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Magic - Test\]\]><\/title>/);
                 done();
             };
@@ -316,14 +312,14 @@ describe('RSS', function () {
         it('should process the data correctly for an author feed', function (done) {
             req.originalUrl = '/author/joe/rss/';
             req.params.slug = 'joe';
-            req.channelConfig = channelConfig('author');
+            req.channelConfig = channelConfig.get('author');
             req.channelConfig.isRSS = true;
 
             // test
             res.send = function send(xmlData) {
-                apiBrowseStub.calledOnce.should.be.true;
-                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags,fields'}).should.be.true;
-                apiUserStub.calledOnce.should.be.true;
+                apiBrowseStub.calledOnce.should.be.true();
+                apiBrowseStub.calledWith({page: 1, filter: 'author:\'joe\'', include: 'author,tags'}).should.be.true();
+                apiUserStub.calledOnce.should.be.true();
                 xmlData.should.match(/<channel><title><!\[CDATA\[Joe Blogs - Test\]\]><\/title>/);
                 done();
             };
@@ -359,7 +355,7 @@ describe('RSS', function () {
                     results: {posts: [], meta: {pagination: {pages: 1}}}
                 });
             });
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
 
             function secondCall() {
@@ -412,14 +408,14 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, function (err) {
                 should.exist(err);
-                err.code.should.eql(404);
-                res.redirect.called.should.be.false;
-                res.render.called.should.be.false;
+                err.statusCode.should.eql(404);
+                res.redirect.called.should.be.false();
+                res.render.called.should.be.false();
                 done();
             }).catch(done);
         });
@@ -429,14 +425,14 @@ describe('RSS', function () {
 
             req = {params: {page: 4}, route: {path: '/rss/:page/'}};
             req.originalUrl = req.route.path.replace(':page', req.params.page);
-            req.channelConfig = channelConfig('index');
+            req.channelConfig = channelConfig.get('index');
             req.channelConfig.isRSS = true;
 
             rss(req, res, function (err) {
                 should.exist(err);
-                err.code.should.eql(404);
-                res.redirect.called.should.be.false;
-                res.render.called.should.be.false;
+                err.statusCode.should.eql(404);
+                res.redirect.called.should.be.false();
+                res.render.called.should.be.false();
                 done();
             }).catch(done);
         });

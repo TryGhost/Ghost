@@ -1,7 +1,6 @@
 /*globals describe, it*/
-/*jshint expr:true*/
 var should          = require('should'),
-    request         = require('request'),
+    http            = require('http'),
     config          = require('../../../config');
 
 describe('Server', function () {
@@ -10,11 +9,12 @@ describe('Server', function () {
         url = 'http://' + host + ':' + port;
 
     it('should not start a connect server when required', function (done) {
-        request(url, function (error, response, body) {
-            should(response).equal(undefined);
-            should(body).equal(undefined);
+        http.get(url, function () {
+            done('This request should not have worked');
+        }).on('error', function (error) {
             should(error).not.equal(undefined);
             should(error.code).equal('ECONNREFUSED');
+
             done();
         });
     });

@@ -1,14 +1,10 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var sinon            = require('sinon'),
     should           = require('should'),
     Promise          = require('bluebird'),
 
     oAuth            = require('../../../server/middleware/oauth'),
     Models           = require('../../../server/models');
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('OAuth', function () {
     var next, req, res, sandbox;
@@ -67,7 +63,7 @@ describe('OAuth', function () {
 
             sandbox.stub(res, 'end', function (json) {
                 try {
-                    json.should.exist;
+                    should.exist(json);
                     json = JSON.parse(json);
                     json.should.have.property('access_token');
                     json.should.have.property('refresh_token');
@@ -176,7 +172,7 @@ describe('OAuth', function () {
 
             sandbox.stub(res, 'end', function (json) {
                 try {
-                    json.should.exist;
+                    should.exist(json);
                     json = JSON.parse(json);
                     json.should.have.property('access_token');
                     json.should.have.property('expires_in');

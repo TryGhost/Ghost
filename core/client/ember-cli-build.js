@@ -17,6 +17,10 @@ assetLocation = function (fileName) {
 
 module.exports = function (defaults) {
     var app = new EmberApp(defaults, {
+        babel: {
+            optional: ['es6.spec.symbols'],
+            includePolyfill: true
+        },
         outputPaths: {
             app: {
                 js: assetLocation('ghost.js')

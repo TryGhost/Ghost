@@ -1,5 +1,4 @@
 /*globals describe, it, beforeEach, afterEach */
-/*jshint expr:true*/
 var sinon           = require('sinon'),
     should          = require('should'),
     Promise         = require('bluebird'),
@@ -30,8 +29,8 @@ describe('redirectToSetup', function () {
 
         req.path = '/';
         res.redirect = sinon.spy(function () {
-            next.called.should.be.false;
-            res.redirect.called.should.be.true;
+            next.called.should.be.false();
+            res.redirect.called.should.be.true();
             done();
         });
 
@@ -47,8 +46,8 @@ describe('redirectToSetup', function () {
         req.path = '/';
 
         next = sinon.spy(function () {
-            next.called.should.be.true;
-            res.redirect.called.should.be.false;
+            next.called.should.be.true();
+            res.redirect.called.should.be.false();
             done();
         });
 
@@ -64,8 +63,8 @@ describe('redirectToSetup', function () {
         req.path = '/ghost/setup/';
 
         next = sinon.spy(function () {
-            next.called.should.be.true;
-            res.redirect.called.should.be.false;
+            next.called.should.be.true();
+            res.redirect.called.should.be.false();
             done();
         });
 

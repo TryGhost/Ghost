@@ -267,7 +267,9 @@ describe('Acceptance: Settings - Tags', function () {
                 find('.tag-list').scrollTop(find('.tag-list-content').height());
             });
 
-            wait().then(() => {
+            triggerEvent('.tag-list', 'scroll');
+
+            andThen(() => {
                 // it loads the second page
                 expect(find('.settings-tags .settings-tag').length, 'tag list count on second load')
                     .to.equal(30);
@@ -275,33 +277,28 @@ describe('Acceptance: Settings - Tags', function () {
                 find('.tag-list').scrollTop(find('.tag-list-content').height());
             });
 
-            wait().then(() => {
+            triggerEvent('.tag-list', 'scroll');
+
+            andThen(() => {
                 // it loads the final page
                 expect(find('.settings-tags .settings-tag').length, 'tag list count on third load')
                     .to.equal(32);
             });
         });
 
-        describe('with 404', function () {
-            beforeEach(function () {
-                errorOverride();
+        it('redirects to 404 when tag does not exist', function () {
+            server.get('/tags/slug/unknown/', function () {
+                return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
             });
 
-            afterEach(function () {
+            errorOverride();
+
+            visit('settings/tags/unknown');
+
+            andThen(() => {
                 errorReset();
-            });
-
-            it('redirects to 404 when tag does not exist', function () {
-                server.get('/tags/slug/unknown/', function () {
-                    return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'Tag not found.', errorType: 'NotFoundError'}]});
-                });
-
-                visit('settings/tags/unknown');
-
-                andThen(() => {
-                    expect(currentPath()).to.equal('error404');
-                    expect(currentURL()).to.equal('/settings/tags/unknown');
-                });
+                expect(currentPath()).to.equal('error404');
+                expect(currentURL()).to.equal('/settings/tags/unknown');
             });
         });
     });

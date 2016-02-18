@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should   = require('should'),
     sinon    = require('sinon'),
     errors   = require('../../../../server/errors'),
@@ -26,8 +25,8 @@ describe('handleError', function () {
         var notFoundError = new errors.NotFoundError('Something wasn\'t found');
         handleError(next)(notFoundError);
 
-        next.calledOnce.should.be.true;
-        next.firstCall.args.should.be.empty;
+        next.calledOnce.should.be.true();
+        next.firstCall.args.should.be.empty();
     });
 
     it('should call next with error for other errors', function () {
@@ -35,9 +34,9 @@ describe('handleError', function () {
 
         handleError(next)(otherError);
 
-        next.calledOnce.should.be.true;
+        next.calledOnce.should.be.true();
         next.firstCall.args.should.have.lengthOf(1);
-        next.firstCall.args[0].should.be.an.Object;
+        next.firstCall.args[0].should.be.an.Object();
         next.firstCall.args[0].should.be.instanceof(Error);
     });
 });

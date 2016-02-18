@@ -50,18 +50,18 @@ describeModule(
             });
         });
 
-        it('metaTitleScratch is one-way bound to model.meta_title', function () {
+        it('metaTitleScratch is one-way bound to model.metaTitle', function () {
             let controller = this.subject({
                 model: Ember.Object.create({
-                    meta_title: 'a title'
+                    metaTitle: 'a title'
                 })
             });
 
-            expect(controller.get('model.meta_title')).to.equal('a title');
+            expect(controller.get('model.metaTitle')).to.equal('a title');
             expect(controller.get('metaTitleScratch')).to.equal('a title');
 
             run(function () {
-                controller.set('model.meta_title', 'a different title');
+                controller.set('model.metaTitle', 'a different title');
 
                 expect(controller.get('metaTitleScratch')).to.equal('a different title');
             });
@@ -69,30 +69,30 @@ describeModule(
             run(function () {
                 controller.set('metaTitleScratch', 'changed directly');
 
-                expect(controller.get('model.meta_title')).to.equal('a different title');
+                expect(controller.get('model.metaTitle')).to.equal('a different title');
                 expect(controller.get('metaTitleScratch')).to.equal('changed directly');
             });
 
             run(function () {
                 // test that the one-way binding is still in place
-                controller.set('model.meta_title', 'should update');
+                controller.set('model.metaTitle', 'should update');
 
                 expect(controller.get('metaTitleScratch')).to.equal('should update');
             });
         });
 
-        it('metaDescriptionScratch is one-way bound to model.meta_description', function () {
+        it('metaDescriptionScratch is one-way bound to model.metaDescription', function () {
             let controller = this.subject({
                 model: Ember.Object.create({
-                    meta_description: 'a description'
+                    metaDescription: 'a description'
                 })
             });
 
-            expect(controller.get('model.meta_description')).to.equal('a description');
+            expect(controller.get('model.metaDescription')).to.equal('a description');
             expect(controller.get('metaDescriptionScratch')).to.equal('a description');
 
             run(function () {
-                controller.set('model.meta_description', 'a different description');
+                controller.set('model.metaDescription', 'a different description');
 
                 expect(controller.get('metaDescriptionScratch')).to.equal('a different description');
             });
@@ -100,23 +100,23 @@ describeModule(
             run(function () {
                 controller.set('metaDescriptionScratch', 'changed directly');
 
-                expect(controller.get('model.meta_description')).to.equal('a different description');
+                expect(controller.get('model.metaDescription')).to.equal('a different description');
                 expect(controller.get('metaDescriptionScratch')).to.equal('changed directly');
             });
 
             run(function () {
                 // test that the one-way binding is still in place
-                controller.set('model.meta_description', 'should update');
+                controller.set('model.metaDescription', 'should update');
 
                 expect(controller.get('metaDescriptionScratch')).to.equal('should update');
             });
         });
 
         describe('seoTitle', function () {
-            it('should be the meta_title if one exists', function () {
+            it('should be the metaTitle if one exists', function () {
                 let controller = this.subject({
                     model: Ember.Object.create({
-                        meta_title: 'a meta-title',
+                        metaTitle: 'a meta-title',
                         titleScratch: 'should not be used'
                     })
                 });
@@ -134,10 +134,10 @@ describeModule(
                 expect(controller.get('seoTitle')).to.equal('should be the meta-title');
             });
 
-            it('should be the meta_title if both title and meta_title exist', function () {
+            it('should be the metaTitle if both title and metaTitle exist', function () {
                 let controller = this.subject({
                     model: Ember.Object.create({
-                        meta_title: 'a meta-title',
+                        metaTitle: 'a meta-title',
                         titleScratch: 'a title'
                     })
                 });
@@ -145,10 +145,10 @@ describeModule(
                 expect(controller.get('seoTitle')).to.equal('a meta-title');
             });
 
-            it('should revert to the title if explicit meta_title is removed', function () {
+            it('should revert to the title if explicit metaTitle is removed', function () {
                 let controller = this.subject({
                     model: Ember.Object.create({
-                        meta_title: 'a meta-title',
+                        metaTitle: 'a meta-title',
                         titleScratch: 'a title'
                     })
                 });
@@ -156,7 +156,7 @@ describeModule(
                 expect(controller.get('seoTitle')).to.equal('a meta-title');
 
                 run(function () {
-                    controller.set('model.meta_title', '');
+                    controller.set('model.metaTitle', '');
 
                     expect(controller.get('seoTitle')).to.equal('a title');
                 });
@@ -182,10 +182,10 @@ describeModule(
         });
 
         describe('seoDescription', function () {
-            it('should be the meta_description if one exists', function () {
+            it('should be the metaDescription if one exists', function () {
                 let controller = this.subject({
                     model: Ember.Object.create({
-                        meta_description: 'a description'
+                        metaDescription: 'a description'
                     })
                 });
 

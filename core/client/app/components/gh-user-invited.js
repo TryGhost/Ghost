@@ -14,8 +14,8 @@ export default Component.extend({
 
     notifications: service(),
 
-    createdAt: computed('user.created_at', function () {
-        let createdAt = this.get('user.created_at');
+    createdAt: computed('user.createdAt', function () {
+        let createdAt = this.get('user.createdAt');
 
         return createdAt ? createdAt.fromNow() : '';
     }),

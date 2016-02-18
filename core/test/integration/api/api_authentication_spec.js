@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it */
-/*jshint expr:true*/
 var testUtils   = require('../../utils'),
     should      = require('should'),
     sinon       = require('sinon'),
@@ -59,7 +58,7 @@ describe('Authentication API', function () {
             it('should report that setup has not been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
-                    result.setup[0].status.should.be.false;
+                    result.setup[0].status.should.be.false();
 
                     done();
                 }).catch(done);
@@ -97,7 +96,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -110,7 +109,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -123,7 +122,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -136,7 +135,7 @@ describe('Authentication API', function () {
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
-                    result.setup[0].status.should.be.true;
+                    result.setup[0].status.should.be.true();
 
                     done();
                 }).catch(done);
@@ -156,7 +155,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -169,7 +168,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('UnauthorizedError');
-                    err.code.should.equal(401);
+                    err.statusCode.should.equal(401);
                     err.message.should.equal('Invalid token structure');
                     done();
                 });
@@ -177,8 +176,8 @@ describe('Authentication API', function () {
 
             it('should generate a password reset token', function (done) {
                 AuthAPI.generateResetToken(testGenerateReset).then(function (result) {
-                    result.should.exist;
-                    result.passwordreset.should.be.an.Array.with.lengthOf(1);
+                    should.exist(result);
+                    result.passwordreset.should.be.an.Array().with.lengthOf(1);
                     result.passwordreset[0].should.have.property('message', 'Check your email for further instructions.');
                     done();
                 }).catch(done);
@@ -191,7 +190,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('UnauthorizedError');
-                    err.code.should.equal(401);
+                    err.statusCode.should.equal(401);
                     err.message.should.equal('Invalid token structure');
                     done();
                 });
@@ -206,7 +205,7 @@ describe('Authentication API', function () {
             it('should report that setup has not been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
-                    result.setup[0].status.should.be.false;
+                    result.setup[0].status.should.be.false();
 
                     done();
                 }).catch(done);
@@ -226,7 +225,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -239,7 +238,7 @@ describe('Authentication API', function () {
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
-                    result.setup[0].status.should.be.true;
+                    result.setup[0].status.should.be.true();
 
                     done();
                 }).catch(done);
@@ -259,7 +258,7 @@ describe('Authentication API', function () {
                     should.exist(err);
 
                     err.name.should.equal('NoPermissionError');
-                    err.code.should.equal(403);
+                    err.statusCode.should.equal(403);
 
                     done();
                 });
@@ -272,7 +271,7 @@ describe('Authentication API', function () {
             it('should report that setup has been completed', function (done) {
                 AuthAPI.isSetup().then(function (result) {
                     should.exist(result);
-                    result.setup[0].status.should.be.true;
+                    result.setup[0].status.should.be.true();
 
                     done();
                 }).catch(done);

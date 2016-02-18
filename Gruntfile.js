@@ -8,11 +8,11 @@
 var _              = require('lodash'),
     chalk          = require('chalk'),
     fs             = require('fs-extra'),
+    https          = require('https'),
     moment         = require('moment'),
     getTopContribs = require('top-gh-contribs'),
     path           = require('path'),
     Promise        = require('bluebird'),
-    request        = require('request'),
 
     escapeChar     = process.platform.match(/^win/) ? '^' : '\\',
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
@@ -834,15 +834,20 @@ var _              = require('lodash'),
             ).then(function (results) {
                 var contributors = results[1],
                     contributorTemplate = '<article>\n    <a href="<%githubUrl%>" title="<%name%>">\n' +
-                    '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>" />\n' +
-                    '    </a>\n</article>',
+                        '        <img src="{{gh-path "admin" "/img/contributors"}}/<%name%>" alt="<%name%>" />\n' +
+                        '    </a>\n</article>',
 
                     downloadImagePromise = function (url, name) {
                         return new Promise(function (resolve, reject) {
-                            request(url)
-                            .pipe(fs.createWriteStream(imagePath + name))
-                            .on('close', resolve)
-                            .on('error', reject);
+                            var file = fs.createWriteStream(path.join(__dirname, imagePath, name));
+                            https.get(url, function (response) {
+                                    response.pipe(file);
+                                    file.on('finish', function () {
+                                        file.close();
+                                        resolve();
+                                    });
+                                })
+                                .on('error', reject);
                         });
                     };
 

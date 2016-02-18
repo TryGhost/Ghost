@@ -90,7 +90,7 @@ export default function () {
     /* Download Count ------------------------------------------------------- */
 
     let downloadCount = 0;
-    this.get('http://ghost.org/count/', function () {
+    this.get('https://count.ghost.org/', function () {
         downloadCount++;
         return {
             count: downloadCount
@@ -159,7 +159,7 @@ export default function () {
     });
 
     this.put('/settings/', function (db, request) {
-        let newSettings = JSON.parse(request.requestBody);
+        let newSettings = JSON.parse(request.requestBody).settings;
 
         db.settings.remove();
         db.settings.insert(newSettings);

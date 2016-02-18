@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var nock            = require('nock'),
     should          = require('should'),
     sinon           = require('sinon'),
@@ -38,7 +37,7 @@ describe('XMLRPC', function () {
 
         xmlrpc.init();
         events.emit('post.published', testPost);
-        ping1.isDone().should.be.true;
-        ping2.isDone().should.be.true;
+        ping1.isDone().should.be.true();
+        ping2.isDone().should.be.true();
     });
 });

@@ -122,10 +122,14 @@ select {
     font-size: 1.4rem;
     font-weight: normal;
     user-select: text;
-    cursor: pointer;
     transition: border-color 0.15s linear;
 
     -webkit-appearance: none;
+}
+
+.gh-select,
+select {
+    cursor: pointer;
 }
 
 .gh-input.error,

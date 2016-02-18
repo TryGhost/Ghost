@@ -4,7 +4,7 @@
 function TooManyRequestsError(message) {
     this.message = message;
     this.stack = new Error().stack;
-    this.code = 429;
+    this.statusCode = 429;
     this.errorType = this.name;
 }
 

@@ -5,16 +5,13 @@
 var express     = require('express'),
     hbs         = require('express-hbs'),
     compress    = require('compression'),
-    fs          = require('fs'),
     uuid        = require('node-uuid'),
     Promise     = require('bluebird'),
     i18n        = require('./i18n'),
-
     api         = require('./api'),
     config      = require('./config'),
     errors      = require('./errors'),
     helpers     = require('./helpers'),
-    mailer      = require('./mail'),
     middleware  = require('./middleware'),
     migrations  = require('./data/migration'),
     models      = require('./models'),
@@ -48,77 +45,6 @@ function initDbHashAndFirstRun() {
     });
 }
 
-// Checks for the existence of the "built" javascript files from grunt concat.
-// Returns a promise that will be resolved if all files exist or rejected if
-// any are missing.
-function builtFilesExist() {
-    var deferreds = [],
-        location = config.paths.clientAssets,
-        fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
-
-    if (process.env.NODE_ENV === 'production') {
-        // Production uses `.min` files
-        fileNames = fileNames.map(function (file) {
-            return file.replace('.', '.min.');
-        });
-    }
-
-    function checkExist(fileName) {
-        var errorMessage = i18n.t('errors.index.javascriptFilesNotBuilt.error'),
-            errorHelp = i18n.t('errors.index.javascriptFilesNotBuilt.help', {link: '\nhttps://github.com/TryGhost/Ghost#getting-started'});
-
-        return new Promise(function (resolve, reject) {
-            fs.stat(fileName, function (statErr) {
-                var exists = (statErr) ? false : true,
-                    err;
-
-                if (exists) {
-                    resolve(true);
-                } else {
-                    err = new Error(errorMessage);
-
-                    err.help = errorHelp;
-                    reject(err);
-                }
-            });
-        });
-    }
-
-    fileNames.forEach(function (fileName) {
-        deferreds.push(checkExist(location + fileName));
-    });
-
-    return Promise.all(deferreds);
-}
-
-// This is run after every initialization is done, right before starting server.
-// Its main purpose is to move adding notifications here, so none of the submodules
-// should need to include api, which previously resulted in circular dependencies.
-// This is also a "one central repository" of adding startup notifications in case
-// in the future apps will want to hook into here
-function initNotifications() {
-    if (mailer.state && mailer.state.usingDirect) {
-        api.notifications.add({notifications: [{
-            type: 'info',
-            message: [
-                i18n.t('warnings.index.usingDirectMethodToSendEmail'),
-                i18n.t('common.seeLinkForInstructions',
-                       {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
-            ].join(' ')
-        }]}, {context: {internal: true}});
-    }
-    if (mailer.state && mailer.state.emailDisabled) {
-        api.notifications.add({notifications: [{
-            type: 'warn',
-            message: [
-                i18n.t('warnings.index.unableToSendEmail'),
-                i18n.t('common.seeLinkForInstructions',
-                       {link: '<a href=\'http://support.ghost.org/mail\' target=\'_blank\'>http://support.ghost.org/mail</a>'})
-            ].join(' ')
-        }]}, {context: {internal: true}});
-    }
-}
-
 // ## Initialise Ghost
 // Sets up the express server instances, runs init on a bunch of stuff, configures views, helpers, routes and more
 // Finally it returns an instance of GhostServer
@@ -139,9 +65,6 @@ function init(options) {
     return config.load(options.config).then(function () {
         return config.checkDeprecated();
     }).then(function () {
-        // Make sure javascript files have been built via grunt concat
-        return builtFilesExist();
-    }).then(function () {
         // Initialise the models
         return models.init();
     }).then(function () {
@@ -161,8 +84,6 @@ function init(options) {
         return Promise.join(
             // Check for or initialise a dbHash.
             initDbHashAndFirstRun(),
-            // Initialize mail
-            mailer.init(),
             // Initialize apps
             apps.init(),
             // Initialize sitemaps
@@ -173,8 +94,6 @@ function init(options) {
     }).then(function () {
         var adminHbs = hbs.create();
 
-        // Output necessary notifications on init
-        initNotifications();
         // ##Configuration
 
         // return the correct mime type for woff files

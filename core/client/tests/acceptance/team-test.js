@@ -321,26 +321,19 @@ describe('Acceptance: Team', function () {
             });
         });
 
-        describe('with 404', function () {
-            beforeEach(function () {
-                errorOverride();
+        it('redirects to 404 when tag does not exist', function () {
+            server.get('/users/slug/unknown/', function () {
+                return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
             });
 
-            afterEach(function () {
+            errorOverride();
+
+            visit('/team/unknown');
+
+            andThen(() => {
                 errorReset();
-            });
-
-            it('redirects to 404 when tag does not exist', function () {
-                server.get('/users/slug/unknown/', function () {
-                    return new Mirage.Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', errorType: 'NotFoundError'}]});
-                });
-
-                visit('/team/unknown');
-
-                andThen(() => {
-                    expect(currentPath()).to.equal('error404');
-                    expect(currentURL()).to.equal('/team/unknown');
-                });
+                expect(currentPath()).to.equal('error404');
+                expect(currentURL()).to.equal('/team/unknown');
             });
         });
     });

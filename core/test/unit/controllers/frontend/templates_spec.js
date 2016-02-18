@@ -1,5 +1,4 @@
 /*globals describe, it, afterEach, beforeEach*/
-/*jshint expr:true*/
 var should   = require('should'),
     rewire   = require('rewire'),
 
@@ -7,9 +6,6 @@ var should   = require('should'),
     templates = rewire('../../../../server/controllers/frontend/templates'),
 
     configUtils = require('../../../utils/configUtils');
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('templates', function () {
     afterEach(function () {
@@ -75,7 +71,7 @@ describe('templates', function () {
                     page: 0,
                     slug: 'test-post'
                 });
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('post');
             });
 
@@ -84,7 +80,7 @@ describe('templates', function () {
                     page: 0,
                     slug: 'welcome-to-ghost'
                 });
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('post-welcome-to-ghost', 'post');
             });
 
@@ -93,7 +89,7 @@ describe('templates', function () {
                     page: 1,
                     slug: 'contact'
                 });
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('page');
             });
 
@@ -102,7 +98,7 @@ describe('templates', function () {
                     page: 1,
                     slug: 'about'
                 });
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('page-about');
             });
         });
@@ -114,7 +110,7 @@ describe('templates', function () {
             }}}});
 
             var view = templates.single('casper', {page: 1});
-            view.should.exist;
+            should.exist(view);
             view.should.eql('post');
         });
     });
@@ -131,7 +127,7 @@ describe('templates', function () {
 
             it('will return correct view for a tag', function () {
                 var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('index');
             });
         });
@@ -149,13 +145,13 @@ describe('templates', function () {
 
             it('will return correct view for a tag', function () {
                 var view = templates.channel('casper', {name: 'tag', slugParam: 'design', slugTemplate: true});
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('tag-design');
             });
 
             it('will return correct view for a tag', function () {
                 var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
-                view.should.exist;
+                should.exist(view);
                 view.should.eql('tag');
             });
         });
@@ -167,7 +163,7 @@ describe('templates', function () {
             }}}});
 
             var view = templates.channel('casper', {name: 'tag', slugParam: 'development', slugTemplate: true});
-            view.should.exist;
+            should.exist(view);
             view.should.eql('index');
         });
     });

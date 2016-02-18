@@ -1,10 +1,12 @@
-/*globals describe, it*/
-/*jshint expr:true*/
+/*globals describe, it, beforeEach, afterEach*/
 var should          = require('should'),
+    sinon           = require('sinon'),
+    nock            = require('nock'),
     parsePackageJson = require('../../server/utils/parse-package-json'),
     validateThemes  = require('../../server/utils/validate-themes'),
     readDirectory   = require('../../server/utils/read-directory'),
     readThemes      = require('../../server/utils/read-themes'),
+    gravatar        = require('../../server/utils/gravatar'),
     tempfile        = require('../utils/tempfile'),
     utils           = require('../../server/utils'),
     join            = require('path').join,
@@ -453,6 +455,79 @@ describe('Server Utilities', function () {
                 .finally(function () {
                     return rm(themesPath);
                 });
+        });
+    });
+
+    describe('gravatar-lookup', function () {
+        var currentEnv = process.env.NODE_ENV;
+
+        beforeEach(function () {
+            // give environment a value that will call gravatar
+            process.env.NODE_ENV = 'production';
+        });
+
+        afterEach(function () {
+            // reset the environment
+            process.env.NODE_ENV = currentEnv;
+        });
+
+        it('can successfully lookup a gravatar url', function (done) {
+            nock('https://www.gravatar.com')
+                .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=404&r=x')
+                .reply(200);
+
+            gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
+                should.exist(result);
+                should.exist(result.image);
+                result.image.should.eql('//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x');
+
+                done();
+            }).catch(done);
+        });
+
+        it('can handle a non existant gravatar', function (done) {
+            nock('https://www.gravatar.com')
+                .get('/avatar/3a2963a39ebba98fb0724a1db2f13d63?s=250&d=404&r=x')
+                .reply(404);
+
+            gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
+                should.exist(result);
+                should.not.exist(result.image);
+
+                done();
+            }).catch(done);
+        });
+
+        it('will timeout', function (done) {
+            nock('https://www.gravatar.com')
+                .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=404&r=x')
+                .delay(11)
+                .reply(200);
+
+            gravatar.lookup({email: 'exists@example.com'}, 10).then(function (result) {
+                should.exist(result);
+                should.not.exist(result.image);
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('redirect301', function () {
+        it('performs a 301 correctly', function (done) {
+            var res = {};
+
+            res.set = sinon.spy();
+
+            res.redirect = function (code, path) {
+                code.should.equal(301);
+                path.should.eql('my/awesome/path');
+                res.set.calledWith({'Cache-Control': 'public, max-age=' + utils.ONE_YEAR_S}).should.be.true();
+
+                done();
+            };
+
+            utils.redirect301(res, 'my/awesome/path');
         });
     });
 });

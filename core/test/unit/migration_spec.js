@@ -1,22 +1,21 @@
 /*globals describe, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     _               = require('lodash'),
     crypto          = require('crypto'),
 
     // Stuff we are testing
-    defaultSettings = require('../../server/data/default-settings'),
     schema          = require('../../server/data/schema'),
-    permissions     = require('../../server/data/fixtures/permissions/permissions');
+    permissions     = require('../../server/data/migration/fixtures/permissions/permissions'),
+    defaultSettings = schema.defaultSettings;
 
 // To stop jshint complaining
 should.equal(true, true);
 
 describe('Migrations', function () {
+    // Check version integrity
     // These tests exist to ensure that developers are not able to modify the database schema, or permissions fixtures
     // without knowing that they also need to update the default database version,
     // both of which are required for migrations to work properly.
-
     describe('DB version integrity', function () {
         // Only these variables should need updating
         var currentDbVersion = '004',

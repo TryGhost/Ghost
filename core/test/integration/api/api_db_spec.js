@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it */
-/*jshint expr:true*/
 var testUtils = require('../../utils'),
     should    = require('should'),
     _         = require('lodash'),
@@ -21,7 +20,7 @@ describe('DB API', function () {
         return dbAPI.deleteAllContent(testUtils.context.owner).then(function (result) {
             should.exist(result.db);
             result.db.should.be.instanceof(Array);
-            result.db.should.be.empty;
+            result.db.should.be.empty();
         }).then(function () {
             return ModelTag.Tag.findAll(testUtils.context.owner).then(function (results) {
                 should.exist(results);
@@ -40,7 +39,7 @@ describe('DB API', function () {
         return dbAPI.deleteAllContent(testUtils.context.admin).then(function (result) {
             should.exist(result.db);
             result.db.should.be.instanceof(Array);
-            result.db.should.be.empty;
+            result.db.should.be.empty();
         }).then(function () {
             return ModelTag.Tag.findAll(testUtils.context.admin).then(function (results) {
                 should.exist(results);

@@ -6,21 +6,17 @@
 
 var _           = require('lodash'),
     api         = require('../../api'),
-    rss         = require('../../data/xml/rss'),
     path        = require('path'),
     config      = require('../../config'),
     errors      = require('../../errors'),
     filters     = require('../../filters'),
     Promise     = require('bluebird'),
-    templates    = require('./templates'),
+    templates   = require('./templates'),
     routeMatch  = require('path-match')(),
-    safeString  = require('../../utils/index').safeString,
     handleError = require('./error'),
-    fetchData   = require('./fetch-data'),
     formatResponse = require('./format-response'),
-    channelConfig  = require('./channel-config'),
     setResponseContext = require('./context'),
-    setRequestIsSecure   = require('./secure'),
+    setRequestIsSecure = require('./secure'),
 
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
@@ -41,74 +37,12 @@ function renderPost(req, res) {
     };
 }
 
-function renderChannel(name) {
-    return function renderChannel(req, res, next) {
-        // Parse the parameters we need from the URL
-        var channelOpts = channelConfig(name),
-            pageParam = req.params.page !== undefined ? req.params.page : 1,
-            slugParam = req.params.slug ? safeString(req.params.slug) : undefined;
-
-        // Ensure we at least have an empty object for postOptions
-        channelOpts.postOptions = channelOpts.postOptions || {};
-        // Set page on postOptions for the query made later
-        channelOpts.postOptions.page = pageParam;
-        channelOpts.slugParam = slugParam;
-
-        // Call fetchData to get everything we need from the API
-        return fetchData(channelOpts).then(function handleResult(result) {
-            // If page is greater than number of pages we have, go straight to 404
-            if (pageParam > result.meta.pagination.pages) {
-                return next(new errors.NotFoundError());
-            }
-
-            // @TODO: figure out if this can be removed, it's supposed to ensure that absolutely URLs get generated
-            // correctly for the various objects, but I believe it doesn't work and a different approach is needed.
-            setRequestIsSecure(req, result.posts);
-            _.each(result.data, function (data) {
-                setRequestIsSecure(req, data);
-            });
-
-            // @TODO: properly design these filters
-            filters.doFilter('prePostsRender', result.posts, res.locals).then(function then(posts) {
-                var view = templates.channel(req.app.get('activeTheme'), channelOpts);
-
-                // Do final data formatting and then render
-                result.posts = posts;
-                result = formatResponse.channel(result);
-                setResponseContext(req, res);
-                res.render(view, result);
-            });
-        }).catch(handleError(next));
-    };
-}
-
 frontendControllers = {
-    index: renderChannel('index'),
-    tag: renderChannel('tag'),
-    author: renderChannel('author'),
-    rss: function (req, res, next) {
-        // Temporary hack, channels will allow us to resolve this better eventually
-        var tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/.+'),
-            authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/.+');
-
-        if (tagPattern.test(res.locals.relativeUrl)) {
-            req.channelConfig = channelConfig('tag');
-        } else if (authorPattern.test(res.locals.relativeUrl)) {
-            req.channelConfig = channelConfig('author');
-        } else {
-            req.channelConfig = channelConfig('index');
-        }
-
-        req.channelConfig.isRSS = true;
-
-        return rss(req, res, next);
-    },
-
     preview: function preview(req, res, next) {
         var params = {
                 uuid: req.params.uuid,
                 status: 'all',
-                include: 'author,tags,fields'
+                include: 'author,tags'
             };
 
         api.posts.read(params).then(function then(result) {
@@ -160,8 +94,8 @@ frontendControllers = {
 
         // Sanitize params we're going to use to lookup the post.
         postLookup = _.pick(params, 'slug', 'id');
-        // Add author, tag and fields
-        postLookup.include = 'author,tags,fields';
+        // Add author & tag
+        postLookup.include = 'author,tags';
 
         // Query database to find post
         return api.posts.read(postLookup).then(function then(result) {

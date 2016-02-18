@@ -4,6 +4,7 @@ var _                = require('lodash'),
     Promise          = require('bluebird'),
     dataExport       = require('../data/export'),
     importer         = require('../data/importer'),
+    backupDatabase   = require('../data/migration').backupDatabase,
     models           = require('../models'),
     errors           = require('../errors'),
     utils            = require('./utils'),
@@ -85,7 +86,9 @@ db = {
 
         function importContent(options) {
             return importer.importFromFile(options.importfile)
-                .then(api.settings.updateSettingsCache)
+                .then(function () {
+                    api.settings.updateSettingsCache();
+                })
                 .return({db: []});
         }
 
@@ -120,6 +123,7 @@ db = {
 
         tasks = [
             utils.handlePermissions(docName, 'deleteAllContent'),
+            backupDatabase,
             deleteContent
         ];
 

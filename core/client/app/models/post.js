@@ -24,16 +24,16 @@ export default Model.extend(ValidationEngine, {
     page: attr('boolean', {defaultValue: false}),
     status: attr('string', {defaultValue: 'draft'}),
     language: attr('string', {defaultValue: 'en_US'}),
-    meta_title: attr('string'),
-    meta_description: attr('string'),
+    metaTitle: attr('string'),
+    metaDescription: attr('string'),
     author: belongsTo('user', {async: true}),
-    author_id: attr('number'),
-    updated_at: attr('moment-date'),
-    updated_by: attr(),
-    published_at: attr('moment-date'),
-    published_by: belongsTo('user', {async: true}),
-    created_at: attr('moment-date'),
-    created_by: attr(),
+    authorId: attr('number'),
+    updatedAt: attr('moment-date'),
+    updatedBy: attr(),
+    publishedAt: attr('moment-date'),
+    publishedBy: belongsTo('user', {async: true}),
+    createdAt: attr('moment-date'),
+    createdBy: attr(),
     tags: hasMany('tag', {
         embedded: 'always',
         async: false
@@ -81,7 +81,7 @@ export default Model.extend(ValidationEngine, {
     },
 
     isAuthoredByUser(user) {
-        return parseInt(user.get('id'), 10) === parseInt(this.get('author_id'), 10);
+        return parseInt(user.get('id'), 10) === parseInt(this.get('authorId'), 10);
     }
 
 });

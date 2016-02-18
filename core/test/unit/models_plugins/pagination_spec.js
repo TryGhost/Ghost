@@ -1,5 +1,4 @@
 /*globals describe, it, before, beforeEach, afterEach */
-/*jshint expr:true*/
 var should = require('should'),
     sinon = require('sinon'),
     Promise = require('bluebird'),
@@ -161,15 +160,15 @@ describe('pagination', function () {
             it('should add query options if limit is set', function () {
                 addLimitAndOffset(collection, {limit: 5, page: 1});
 
-                collection.query.calledTwice.should.be.true;
-                collection.query.firstCall.calledWith('limit', 5).should.be.true;
-                collection.query.secondCall.calledWith('offset', 0).should.be.true;
+                collection.query.calledTwice.should.be.true();
+                collection.query.firstCall.calledWith('limit', 5).should.be.true();
+                collection.query.secondCall.calledWith('offset', 0).should.be.true();
             });
 
             it('should not add query options if limit is not set', function () {
                 addLimitAndOffset(collection, {page: 1});
 
-                collection.query.called.should.be.false;
+                collection.query.called.should.be.false();
             });
         });
     });
@@ -211,7 +210,7 @@ describe('pagination', function () {
 
         it('extends Model with fetchPage', function () {
             bookshelf.Model.prototype.should.have.ownProperty('fetchPage');
-            bookshelf.Model.prototype.fetchPage.should.be.a.Function;
+            bookshelf.Model.prototype.fetchPage.should.be.a.Function();
         });
 
         it('calls all paginationUtils and methods', function (done) {
@@ -228,23 +227,23 @@ describe('pagination', function () {
                     paginationUtils.formatResponse
                 );
 
-                paginationUtils.parseOptions.calledOnce.should.be.true;
-                paginationUtils.parseOptions.calledWith(undefined).should.be.true;
+                paginationUtils.parseOptions.calledOnce.should.be.true();
+                paginationUtils.parseOptions.calledWith(undefined).should.be.true();
 
-                paginationUtils.addLimitAndOffset.calledOnce.should.be.true;
-                paginationUtils.formatResponse.calledOnce.should.be.true;
+                paginationUtils.addLimitAndOffset.calledOnce.should.be.true();
+                paginationUtils.formatResponse.calledOnce.should.be.true();
 
-                model.prototype.query.calledOnce.should.be.true;
-                model.prototype.query.firstCall.calledWith().should.be.true;
+                model.prototype.query.calledOnce.should.be.true();
+                model.prototype.query.firstCall.calledWith().should.be.true();
 
-                mockQuery.clone.calledOnce.should.be.true;
-                mockQuery.clone.firstCall.calledWith().should.be.true;
+                mockQuery.clone.calledOnce.should.be.true();
+                mockQuery.clone.firstCall.calledWith().should.be.true();
 
-                mockQuery.select.calledOnce.should.be.true;
-                mockQuery.select.calledWith().should.be.true;
+                mockQuery.select.calledOnce.should.be.true();
+                mockQuery.select.calledWith().should.be.true();
 
-                model.prototype.fetchAll.calledOnce.should.be.true;
-                model.prototype.fetchAll.calledWith({}).should.be.true;
+                model.prototype.fetchAll.calledOnce.should.be.true();
+                model.prototype.fetchAll.calledWith({}).should.be.true();
 
                 done();
             }).catch(done);
@@ -266,24 +265,24 @@ describe('pagination', function () {
                     paginationUtils.formatResponse
                 );
 
-                paginationUtils.parseOptions.calledOnce.should.be.true;
-                paginationUtils.parseOptions.calledWith(orderOptions).should.be.true;
+                paginationUtils.parseOptions.calledOnce.should.be.true();
+                paginationUtils.parseOptions.calledWith(orderOptions).should.be.true();
 
-                paginationUtils.addLimitAndOffset.calledOnce.should.be.true;
-                paginationUtils.formatResponse.calledOnce.should.be.true;
+                paginationUtils.addLimitAndOffset.calledOnce.should.be.true();
+                paginationUtils.formatResponse.calledOnce.should.be.true();
 
-                model.prototype.query.calledTwice.should.be.true;
-                model.prototype.query.firstCall.calledWith().should.be.true;
-                model.prototype.query.secondCall.calledWith('orderBy', 'undefined.id', 'DESC').should.be.true;
+                model.prototype.query.calledTwice.should.be.true();
+                model.prototype.query.firstCall.calledWith().should.be.true();
+                model.prototype.query.secondCall.calledWith('orderBy', 'undefined.id', 'DESC').should.be.true();
 
-                mockQuery.clone.calledOnce.should.be.true;
-                mockQuery.clone.firstCall.calledWith().should.be.true;
+                mockQuery.clone.calledOnce.should.be.true();
+                mockQuery.clone.firstCall.calledWith().should.be.true();
 
-                mockQuery.select.calledOnce.should.be.true;
-                mockQuery.select.calledWith().should.be.true;
+                mockQuery.select.calledOnce.should.be.true();
+                mockQuery.select.calledWith().should.be.true();
 
-                model.prototype.fetchAll.calledOnce.should.be.true;
-                model.prototype.fetchAll.calledWith(orderOptions).should.be.true;
+                model.prototype.fetchAll.calledOnce.should.be.true();
+                model.prototype.fetchAll.calledWith(orderOptions).should.be.true();
 
                 done();
             }).catch(done);
@@ -305,24 +304,24 @@ describe('pagination', function () {
                     paginationUtils.formatResponse
                 );
 
-                paginationUtils.parseOptions.calledOnce.should.be.true;
-                paginationUtils.parseOptions.calledWith(groupOptions).should.be.true;
+                paginationUtils.parseOptions.calledOnce.should.be.true();
+                paginationUtils.parseOptions.calledWith(groupOptions).should.be.true();
 
-                paginationUtils.addLimitAndOffset.calledOnce.should.be.true;
-                paginationUtils.formatResponse.calledOnce.should.be.true;
+                paginationUtils.addLimitAndOffset.calledOnce.should.be.true();
+                paginationUtils.formatResponse.calledOnce.should.be.true();
 
-                model.prototype.query.calledTwice.should.be.true;
-                model.prototype.query.firstCall.calledWith().should.be.true;
-                model.prototype.query.secondCall.calledWith('groupBy', 'posts.id').should.be.true;
+                model.prototype.query.calledTwice.should.be.true();
+                model.prototype.query.firstCall.calledWith().should.be.true();
+                model.prototype.query.secondCall.calledWith('groupBy', 'posts.id').should.be.true();
 
-                mockQuery.clone.calledOnce.should.be.true;
-                mockQuery.clone.firstCall.calledWith().should.be.true;
+                mockQuery.clone.calledOnce.should.be.true();
+                mockQuery.clone.firstCall.calledWith().should.be.true();
 
-                mockQuery.select.calledOnce.should.be.true;
-                mockQuery.select.calledWith().should.be.true;
+                mockQuery.select.calledOnce.should.be.true();
+                mockQuery.select.calledWith().should.be.true();
 
-                model.prototype.fetchAll.calledOnce.should.be.true;
-                model.prototype.fetchAll.calledWith(groupOptions).should.be.true;
+                model.prototype.fetchAll.calledOnce.should.be.true();
+                model.prototype.fetchAll.calledWith(groupOptions).should.be.true();
 
                 done();
             }).catch(done);
@@ -333,8 +332,8 @@ describe('pagination', function () {
             bookshelf.Model.prototype.fetchPage().then(function (result) {
                 result.should.have.ownProperty('collection');
                 result.should.have.ownProperty('pagination');
-                result.collection.should.be.an.Object;
-                result.pagination.should.be.an.Object;
+                result.collection.should.be.an.Object();
+                result.pagination.should.be.an.Object();
 
                 done();
             });
@@ -348,8 +347,8 @@ describe('pagination', function () {
             bookshelf.Model.prototype.fetchPage().then(function (result) {
                 result.should.have.ownProperty('collection');
                 result.should.have.ownProperty('pagination');
-                result.collection.should.be.an.Object;
-                result.pagination.should.be.an.Object;
+                result.collection.should.be.an.Object();
+                result.pagination.should.be.an.Object();
 
                 done();
             });
@@ -363,7 +362,7 @@ describe('pagination', function () {
             var consoleSpy = sandbox.spy(console, 'log');
 
             bookshelf.Model.prototype.fetchPage().then(function () {
-                consoleSpy.calledOnce.should.be.true;
+                consoleSpy.calledOnce.should.be.true();
                 done();
             });
         });

@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should           = require('should'),
     sinon            = require('sinon'),
     Promise          = require('bluebird'),
@@ -28,9 +27,6 @@ var should           = require('should'),
         client_id: 1,
         expires: Date.now() - globalUtils.ONE_DAY_MS
     };
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Auth Strategies', function () {
     var next;
@@ -64,9 +60,9 @@ describe('Auth Strategies', function () {
                 clientSecret = 'not_available';
 
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
-                clientStub.calledOnce.should.be.true;
-                clientStub.calledWith({slug: clientId}).should.be.true;
-                next.called.should.be.true;
+                clientStub.calledOnce.should.be.true();
+                clientStub.calledWith({slug: clientId}).should.be.true();
+                next.called.should.be.true();
                 next.firstCall.args.length.should.eql(2);
                 should.equal(next.firstCall.args[0], null);
                 next.firstCall.args[1].slug.should.eql(clientId);
@@ -78,10 +74,10 @@ describe('Auth Strategies', function () {
             var clientId = 'invalid_id',
                 clientSecret = 'not_available';
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
-                clientStub.calledOnce.should.be.true;
-                clientStub.calledWith({slug: clientId}).should.be.true;
-                next.called.should.be.true;
-                next.calledWith(null, false).should.be.true;
+                clientStub.calledOnce.should.be.true();
+                clientStub.calledWith({slug: clientId}).should.be.true();
+                next.called.should.be.true();
+                next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
         });
@@ -90,10 +86,10 @@ describe('Auth Strategies', function () {
             var clientId = 'ghost-admin',
                 clientSecret = 'invalid_secret';
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
-                clientStub.calledOnce.should.be.true;
-                clientStub.calledWith({slug: clientId}).should.be.true;
-                next.called.should.be.true;
-                next.calledWith(null, false).should.be.true;
+                clientStub.calledOnce.should.be.true();
+                clientStub.calledWith({slug: clientId}).should.be.true();
+                next.called.should.be.true();
+                next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
         });
@@ -105,10 +101,10 @@ describe('Auth Strategies', function () {
             fakeClient.status = 'disabled';
 
             authStrategies.clientPasswordStrategy(clientId, clientSecret, next).then(function () {
-                clientStub.calledOnce.should.be.true;
-                clientStub.calledWith({slug: clientId}).should.be.true;
-                next.called.should.be.true;
-                next.calledWith(null, false).should.be.true;
+                clientStub.calledOnce.should.be.true();
+                clientStub.calledWith({slug: clientId}).should.be.true();
+                next.called.should.be.true();
+                next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
         });
@@ -139,13 +135,13 @@ describe('Auth Strategies', function () {
                 userId = 3;
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
-                tokenStub.calledOnce.should.be.true;
-                tokenStub.calledWith({token: accessToken}).should.be.true;
-                userStub.calledOnce.should.be.true;
-                userStub.calledWith({id: userId}).should.be.true;
-                next.calledOnce.should.be.true;
+                tokenStub.calledOnce.should.be.true();
+                tokenStub.calledWith({token: accessToken}).should.be.true();
+                userStub.calledOnce.should.be.true();
+                userStub.calledWith({id: userId}).should.be.true();
+                next.calledOnce.should.be.true();
                 next.firstCall.args.length.should.eql(3);
-                next.calledWith(null, {id: userId}, {scope: '*'}).should.be.true;
+                next.calledWith(null, {id: userId}, {scope: '*'}).should.be.true();
                 done();
             }).catch(done);
         });
@@ -154,11 +150,11 @@ describe('Auth Strategies', function () {
             var accessToken = 'invalid_token';
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
-                tokenStub.calledOnce.should.be.true;
-                tokenStub.calledWith({token: accessToken}).should.be.true;
-                userStub.called.should.be.false;
-                next.called.should.be.true;
-                next.calledWith(null, false).should.be.true;
+                tokenStub.calledOnce.should.be.true();
+                tokenStub.calledWith({token: accessToken}).should.be.true();
+                userStub.called.should.be.false();
+                next.called.should.be.true();
+                next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
         });
@@ -171,12 +167,12 @@ describe('Auth Strategies', function () {
             fakeValidToken.user_id = userId;
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
-                tokenStub.calledOnce.should.be.true;
-                tokenStub.calledWith({token: accessToken}).should.be.true;
-                userStub.calledOnce.should.be.true;
-                userStub.calledWith({id: userId}).should.be.true;
-                next.called.should.be.true;
-                next.calledWith(null, false).should.be.true;
+                tokenStub.calledOnce.should.be.true();
+                tokenStub.calledWith({token: accessToken}).should.be.true();
+                userStub.calledOnce.should.be.true();
+                userStub.calledWith({id: userId}).should.be.true();
+                next.called.should.be.true();
+                next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
         });
@@ -185,11 +181,11 @@ describe('Auth Strategies', function () {
             var accessToken = 'expired-token';
 
             authStrategies.bearerStrategy(accessToken, next).then(function () {
-                tokenStub.calledOnce.should.be.true;
-                tokenStub.calledWith({token: accessToken}).should.be.true;
-                userStub.calledOnce.should.be.false;
-                next.called.should.be.true;
-                next.calledWith(null, false).should.be.true;
+                tokenStub.calledOnce.should.be.true();
+                tokenStub.calledWith({token: accessToken}).should.be.true();
+                userStub.calledOnce.should.be.false();
+                next.called.should.be.true();
+                next.calledWith(null, false).should.be.true();
                 done();
             }).catch(done);
         });

@@ -308,8 +308,8 @@ export default Mixin.create({
             }
 
             this.set('model.title', this.get('model.titleScratch'));
-            this.set('model.meta_title', psmController.get('metaTitleScratch'));
-            this.set('model.meta_description', psmController.get('metaDescriptionScratch'));
+            this.set('model.metaTitle', psmController.get('metaTitleScratch'));
+            this.set('model.metaDescription', psmController.get('metaDescriptionScratch'));
 
             if (!this.get('model.slug')) {
                 // Cancel any pending slug generation that may still be queued in the

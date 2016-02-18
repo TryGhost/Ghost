@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     _              = require('lodash'),
@@ -57,12 +56,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true;
+            options.fn.called.should.be.true();
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).be.undefined;
+                should(options.fn.getCall(index).args[1].data).be.undefined();
             });
         });
 
@@ -82,12 +81,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true;
+            options.fn.called.should.be.true();
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).be.undefined;
+                should(options.fn.getCall(index).args[1].data).be.undefined();
             });
         });
 
@@ -108,12 +107,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true;
+            options.fn.called.should.be.true();
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+                should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
                 resultData[index].data.should.containEql(expected[index]);
@@ -150,12 +149,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true;
+            options.fn.called.should.be.true();
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+                should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
                 resultData[index].data.should.containEql(expected[index]);
@@ -185,12 +184,12 @@ describe('{{#foreach}} helper', function () {
             context = 'hello world this is ghost'.split(' ');
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true;
+            options.fn.called.should.be.true();
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+                should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
                 resultData[index].data.should.containEql(expected[index]);
@@ -227,12 +226,12 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.true;
+            options.fn.called.should.be.true();
             options.fn.getCalls().length.should.eql(_.size(context));
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+                should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
                 resultData[index].data.should.containEql(expected[index]);
@@ -254,9 +253,9 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            options.fn.called.should.be.false;
-            options.inverse.called.should.be.true;
-            options.inverse.calledOnce.should.be.true;
+            options.fn.called.should.be.false();
+            options.inverse.called.should.be.true();
+            options.inverse.calledOnce.should.be.true();
         });
     });
 

@@ -12,7 +12,8 @@ var packages = require('../../../package.json'),
         DEPENDENCIES_MISSING: 233,
         CONTENT_PATH_NOT_ACCESSIBLE: 234,
         CONTENT_PATH_NOT_WRITABLE: 235,
-        SQLITE_DB_NOT_WRITABLE: 236
+        SQLITE_DB_NOT_WRITABLE: 236,
+        BUILT_FILES_DO_NOT_EXIST: 237
     };
 
 checks = {
@@ -21,7 +22,9 @@ checks = {
         this.nodeEnv();
         this.packages();
         this.contentPath();
+        this.mail();
         this.sqlite();
+        this.builtFilesExist();
     },
 
     // Make sure the node version is supported
@@ -209,6 +212,65 @@ checks = {
 
             process.exit(exitCodes.SQLITE_DB_NOT_WRITABLE);
         }
+    },
+
+    mail: function checkMail() {
+        var configFile,
+            config;
+
+        try {
+            configFile = require(configFilePath);
+            config = configFile[mode];
+        } catch (e) {
+            configFilePath = path.join(appRoot, 'config.example.js');
+        }
+
+        if (!config.mail || !config.mail.transport) {
+            console.error('\x1B[31mWARNING: Ghost is attempting to use a direct method to send email. \nIt is recommended that you explicitly configure an email service.\033[0m');
+            console.error('\x1B[32mHelp and documentation can be found at http://support.ghost.org/mail.\033[0m\n');
+        }
+    },
+
+    builtFilesExist: function builtFilesExist() {
+        var configFile,
+            config,
+            location,
+            fileNames = ['ghost.js', 'vendor.js', 'ghost.css', 'vendor.css'];
+
+        try {
+            configFile = require(configFilePath);
+            config = configFile[mode];
+
+            if (config.paths && config.paths.clientAssets) {
+                location = config.paths.clientAssets;
+            } else {
+                location = path.join(appRoot, '/core/built/assets/');
+            }
+        } catch (e) {
+            location = path.join(appRoot, '/core/built/assets/');
+        }
+
+        if (process.env.NODE_ENV === 'production') {
+            // Production uses `.min` files
+            fileNames = fileNames.map(function (file) {
+                return file.replace('.', '.min.');
+            });
+        }
+
+        function checkExist(fileName) {
+            try {
+                fs.statSync(fileName);
+            } catch (e) {
+                console.error('\x1B[31mERROR: Javascript files have not been built.\033[0m');
+                console.error('\n\x1B[32mPlease read the getting started instructions at:');
+                console.error('https://github.com/TryGhost/Ghost#getting-started\033[0m');
+                process.exit(exitCodes.BUILT_FILES_DO_NOT_EXIST);
+            }
+        }
+
+        fileNames.forEach(function (fileName) {
+            checkExist(location + fileName);
+        });
     }
 };
 

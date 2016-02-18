@@ -64,7 +64,7 @@ export default Component.extend({
 
         let style = '';
         if (email) {
-            let url = `http://www.gravatar.com/avatar/${window.md5(email)}?s=${size}&d=blank`;
+            let url = `//www.gravatar.com/avatar/${window.md5(email)}?s=${size}&d=blank`;
             style = `background-image: url(${url})`;
         }
         return Ember.String.htmlSafe(style);

@@ -37,7 +37,7 @@ describeModel(
         it('isAuthoredByUser is correct', function () {
             /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
             let model = this.subject({
-                author_id: 15
+                authorId: 15
             });
             /* jscs:enable requireCamelCaseOrUpperCaseIdentifiers */
             let user = Ember.Object.create({id: '15'});
@@ -45,7 +45,7 @@ describeModel(
             expect(model.isAuthoredByUser(user)).to.be.ok;
 
             Ember.run(function () {
-                model.set('author_id', 1);
+                model.set('authorId', 1);
 
                 expect(model.isAuthoredByUser(user)).to.not.be.ok;
             });

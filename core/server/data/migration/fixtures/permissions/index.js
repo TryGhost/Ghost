@@ -1,12 +1,12 @@
 // # Permissions Fixtures
 // Sets up the permissions, and the default permissions_roles relationships
 var Promise     = require('bluebird'),
-    sequence    = require('../../../utils/sequence'),
     _           = require('lodash'),
-    errors      = require('../../../errors'),
-    models      = require('../../../models'),
+    errors      = require('../../../../errors'),
+    i18n        = require('../../../../i18n'),
+    models      = require('../../../../models'),
+    sequence    = require('../../../../utils/sequence'),
     fixtures    = require('./permissions'),
-    i18n        = require('../../../i18n'),
 
     // private
     logInfo,

@@ -11,13 +11,14 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         tags: {embedded: 'always'}
     },
 
-    normalize(typeClass, hash, prop) {
-        // this is to enable us to still access the raw author_id
+    normalizeHash: {
+        // this is to enable us to still access the raw authorId
         // without requiring an extra get request (since it is an
         // async relationship).
-        hash.author_id = hash.author;
-
-        return this._super(typeClass, hash, prop);
+        posts(hash) {
+            hash.author_id = hash.author;
+            return hash;
+        }
     },
 
     normalizeSingleResponse(store, primaryModelClass, payload) {

@@ -1,11 +1,9 @@
 var _       = require('lodash'),
     Promise = require('bluebird'),
-    config  = require('../../config'),
-    schema  = require('../schema').tables,
-    clients = require('./clients'),
     i18n    = require('../../i18n'),
-
-    dbConfig;
+    db      = require('../db'),
+    schema  = require('./schema'),
+    clients = require('./clients');
 
 function addTableColumn(tablename, table, columnname) {
     var column,
@@ -44,29 +42,31 @@ function addTableColumn(tablename, table, columnname) {
 }
 
 function addColumn(table, column) {
-    dbConfig = dbConfig || config.database;
-    return dbConfig.knex.schema.table(table, function (t) {
+    return db.knex.schema.table(table, function (t) {
         addTableColumn(table, t, column);
     });
 }
 
+function dropColumn(table, column) {
+    return db.knex.schema.table(table, function (table) {
+        table.dropColumn(column);
+    });
+}
+
 function addUnique(table, column) {
-    dbConfig = dbConfig || config.database;
-    return dbConfig.knex.schema.table(table, function (table) {
+    return db.knex.schema.table(table, function (table) {
         table.unique(column);
     });
 }
 
 function dropUnique(table, column) {
-    dbConfig = dbConfig || config.database;
-    return dbConfig.knex.schema.table(table, function (table) {
+    return db.knex.schema.table(table, function (table) {
         table.dropUnique(column);
     });
 }
 
 function createTable(table) {
-    dbConfig = dbConfig || config.database;
-    return dbConfig.knex.schema.createTable(table, function (t) {
+    return db.knex.schema.createTable(table, function (t) {
         var columnKeys = _.keys(schema[table]);
         _.each(columnKeys, function (column) {
             return addTableColumn(table, t, column);
@@ -75,13 +75,11 @@ function createTable(table) {
 }
 
 function deleteTable(table) {
-    dbConfig = dbConfig || config.database;
-    return dbConfig.knex.schema.dropTableIfExists(table);
+    return db.knex.schema.dropTableIfExists(table);
 }
 
 function getTables() {
-    dbConfig = dbConfig || config.database;
-    var client = dbConfig.client;
+    var client = db.knex.client.config.client;
 
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getTables();
@@ -91,8 +89,7 @@ function getTables() {
 }
 
 function getIndexes(table) {
-    dbConfig = dbConfig || config.database;
-    var client = dbConfig.client;
+    var client = db.knex.client.config.client;
 
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getIndexes(table);
@@ -102,8 +99,7 @@ function getIndexes(table) {
 }
 
 function getColumns(table) {
-    dbConfig = dbConfig || config.database;
-    var client = dbConfig.client;
+    var client = db.knex.client.config.client;
 
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getColumns(table);
@@ -113,8 +109,7 @@ function getColumns(table) {
 }
 
 function checkTables() {
-    dbConfig = dbConfig || config.database;
-    var client = dbConfig.client;
+    var client = db.knex.client.config.client;
 
     if (client === 'mysql') {
         return clients[client].checkPostTable();
@@ -130,5 +125,6 @@ module.exports = {
     addUnique: addUnique,
     dropUnique: dropUnique,
     addColumn: addColumn,
+    dropColumn: dropColumn,
     getColumns: getColumns
 };

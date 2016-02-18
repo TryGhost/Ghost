@@ -23,8 +23,8 @@ export default Component.extend({
         return Ember.String.htmlSafe(`background-image: url(${url})`);
     }),
 
-    lastLogin: computed('user.last_login', function () {
-        let lastLogin = this.get('user.last_login');
+    lastLogin: computed('user.lastLogin', function () {
+        let lastLogin = this.get('user.lastLogin');
 
         return lastLogin ? lastLogin.fromNow() : '(Never)';
     })

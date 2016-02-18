@@ -45,7 +45,7 @@ requests](#pull-requests), but please respect the following restrictions:
 * Please **search for existing issues**. Help us keep duplicate issues to a minimum by checking to see if someone
 has already reported your problem or requested your idea.
 
-* Please **do not** use the issue tracker for personal support requests (use [slack](http://ghost.org/slack) or 
+* Please **do not** use the issue tracker for personal support requests (use [slack](http://ghost.org/slack) or
 [stackoverflow](http://stackoverflow.com/questions/tagged/ghost-blog) if you prefer).
 
 * Please **do not** derail or troll issues. Keep the discussion on topic and respect the opinions of others.
@@ -86,25 +86,20 @@ Short and descriptive example bug report title
 
 ### Issue Summary
 
-A summary of the issue and the browser/OS environment in which it occurs. If
-suitable, include the steps required to reproduce the bug.
+A summary of the issue and the browser/OS environment in which it occurs. 
 
 ### Steps to Reproduce
 
 1. This is the first step
-2. This is the second step
-3. Further steps, etc.
+2. This is the second step, etc.
 
-Any other information you want to share that is relevant to the issue being
-reported. Especially, why do you consider this to be a bug? What do you expect to happen instead?
+Any other info e.g. Why do you consider this to be a bug? What did you expect to happen instead?
 
 ### Technical details:
 
 * Ghost Version: master (latest commit: a761de2079dca4df49567b1bddac492f25033985)
-* Client OS: Mac OS X 10.10.1
-* Server OS: CentOS 6.4
 * Node Version: 0.10.16
-* Browser: Chrome 39.0.2171.71
+* Browser: Chrome 48.0.2564.109 on Mac OS X 10.10.4
 * Database: SQLite / MySQL / postgres
 ```
 
@@ -194,7 +189,7 @@ Looking to get setup to work on Ghost? AWESOME! The [Ghost-Vagrant](https://gith
 **What you'll need:**
 
 - Node version 0.10.x & npm
-- phantomjs 1.9.x
+- phantomjs 2.1.x
 ([instructions](https://github.com/TryGhost/Ghost/wiki/Functional-testing-with-PhantomJS-and-CasperJS)) for running tests
 
 
