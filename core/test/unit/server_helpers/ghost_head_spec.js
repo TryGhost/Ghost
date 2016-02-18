@@ -595,6 +595,27 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
+        it('returns twitter and facebook descriptions if no meta description available', function (done) {
+            var post = {
+                title: 'Welcome to Ghost',
+                html: '<p>This is a short post</p>',
+                author: {
+                    name: 'Author name'
+                }
+            };
+
+            helpers.ghost_head.call(
+                {relativeUrl: '/post/', safeVersion: '0.3', context: ['post'], post: post},
+                {data: {root: {context: ['post']}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<meta property="og:description" content="This is a short post" \/>/);
+                rendered.string.should.match(/<meta name="twitter:description" content="This is a short post" \/>/);
+
+                done();
+            }).catch(done);
+        });
+
         it('returns canonical URL', function (done) {
             helpers.ghost_head.call(
                 {safeVersion: '0.3', relativeUrl: '/about/', context: ['page']},
