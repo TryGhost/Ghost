@@ -11,13 +11,14 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         tags: {embedded: 'always'}
     },
 
-    normalize(typeClass, hash, prop) {
+    normalizeHash: {
         // this is to enable us to still access the raw authorId
         // without requiring an extra get request (since it is an
         // async relationship).
-        hash.authorId = hash.author;
-
-        return this._super(typeClass, hash, prop);
+        posts(hash) {
+            hash.author_id = hash.author;
+            return hash;
+        }
     },
 
     normalizeSingleResponse(store, primaryModelClass, payload) {
@@ -47,7 +48,7 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
         delete data.uuid;
         delete data.html;
         // Inserted locally as a convenience.
-        delete data.authorId;
+        delete data.author_id;
         // Read-only virtual property.
         delete data.url;
 
