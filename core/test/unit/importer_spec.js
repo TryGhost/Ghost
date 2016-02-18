@@ -1,5 +1,4 @@
 /*globals describe, afterEach, it*/
-/*jshint expr:true*/
 var should    = require('should'),
     sinon     = require('sinon'),
     Promise   = require('bluebird'),
@@ -21,9 +20,6 @@ var should    = require('should'),
 
     configUtils     = require('../utils/configUtils'),
     sandbox         = sinon.sandbox.create();
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Importer', function () {
     afterEach(function () {

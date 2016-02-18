@@ -1,5 +1,4 @@
 /*global describe, it, before, after */
-/*jshint expr:true*/
 var supertest     = require('supertest'),
     should        = require('should'),
     testUtils     = require('../../../utils'),

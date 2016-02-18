@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should           = require('should'),
     sinon            = require('sinon'),
     Promise          = require('bluebird'),
@@ -28,9 +27,6 @@ var should           = require('should'),
         client_id: 1,
         expires: Date.now() - globalUtils.ONE_DAY_MS
     };
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('Auth Strategies', function () {
     var next;

@@ -105,6 +105,6 @@
     "top-gh-contribs": "2.0.2"
   },
   "greenkeeper": {
-    "ignore": ["bower", "bluebird", "glob", "lodash", "mysql", "nodemailer", "pg", "showdown-ghost", "should", "validator"]
+    "ignore": ["bower", "bluebird", "glob", "lodash", "mysql", "nodemailer", "pg", "showdown-ghost", "validator"]
   }
 }

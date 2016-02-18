@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     Promise        = require('bluebird'),
@@ -48,10 +47,10 @@ describe('{{next_post}} helper', function () {
                 slug: 'current',
                 created_at: new Date(0),
                 url: '/current/'}, optionsData).then(function () {
-                fn.calledOnce.should.be.true;
-                inverse.calledOnce.should.be.false;
+                fn.calledOnce.should.be.true();
+                inverse.calledOnce.should.be.false();
 
-                readPostStub.calledOnce.should.be.true;
+                readPostStub.calledOnce.should.be.true();
                 readPostStub.firstCall.args[0].include.should.eql('next,next.author,next.tags');
                 done();
             }).catch(function (err) {
@@ -82,8 +81,8 @@ describe('{{next_post}} helper', function () {
                 slug: 'current',
                 created_at: new Date(0),
                 url: '/current/'}, optionsData).then(function () {
-                fn.called.should.be.false;
-                inverse.called.should.be.true;
+                fn.called.should.be.false();
+                inverse.called.should.be.true();
                 done();
             }).catch(function (err) {
                 done(err);
@@ -107,9 +106,9 @@ describe('{{next_post}} helper', function () {
                 optionsData = {name: 'next_post', fn: fn, inverse: inverse};
 
             helpers.prev_post.call({}, optionsData).then(function () {
-                fn.called.should.be.false;
-                inverse.called.should.be.true;
-                readPostStub.called.should.be.false;
+                fn.called.should.be.false();
+                inverse.called.should.be.true();
+                readPostStub.called.should.be.false();
                 done();
             }).catch(function (err) {
                 done(err);
@@ -142,8 +141,8 @@ describe('{{next_post}} helper', function () {
                 created_at: new Date(0),
                 url: '/current/'}, optionsData)
             .then(function () {
-                fn.called.should.be.true;
-                inverse.called.should.be.false;
+                fn.called.should.be.true();
+                inverse.called.should.be.false();
                 done();
             }).catch(function (err) {
                 done(err);

@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var nock            = require('nock'),
     should          = require('should'),
     sinon           = require('sinon'),

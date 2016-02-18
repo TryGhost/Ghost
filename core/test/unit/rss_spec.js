@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     sinon           = require('sinon'),
     rewire          = require('rewire'),
@@ -14,9 +13,6 @@ var should          = require('should'),
     rss             = rewire('../../server/data/xml/rss'),
 
     configUtils     = require('../utils/configUtils');
-
-// To stop jshint complaining
-should.equal(true, true);
 
 // Helper function to prevent unit tests
 // from failing via timeout when they

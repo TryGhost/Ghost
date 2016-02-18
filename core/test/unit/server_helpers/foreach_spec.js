@@ -1,5 +1,4 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should         = require('should'),
     sinon          = require('sinon'),
     _              = require('lodash'),
@@ -62,7 +61,7 @@ describe('{{#foreach}} helper', function () {
 
             _.each(context, function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(value);
-                should(options.fn.getCall(index).args[1].data).be.undefined;
+                should(options.fn.getCall(index).args[1].data).be.undefined();
             });
         });
 
@@ -155,7 +154,7 @@ describe('{{#foreach}} helper', function () {
 
             _.each(_.keys(context), function (value, index) {
                 options.fn.getCall(index).args[0].should.eql(context[value]);
-                should(options.fn.getCall(index).args[1].data).not.be.undefined;
+                should(options.fn.getCall(index).args[1].data).not.be.undefined();
 
                 // Expected properties
                 resultData[index].data.should.containEql(expected[index]);

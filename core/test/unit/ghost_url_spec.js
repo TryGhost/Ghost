@@ -1,5 +1,4 @@
 /* globals describe, beforeEach, afterEach, it */
-/*jshint expr:true*/
 var should     = require('should'),
     ghostUrl   = require('../../shared/ghost-url'),
 

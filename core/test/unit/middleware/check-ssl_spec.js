@@ -1,5 +1,4 @@
 /*globals describe, it, beforeEach, afterEach */
-/*jshint expr:true*/
 var sinon    = require('sinon'),
     should   = require('should'),
     configUtils = require('../../utils/configUtils'),

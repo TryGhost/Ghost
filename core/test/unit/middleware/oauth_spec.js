@@ -1,14 +1,10 @@
 /*globals describe, before, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var sinon            = require('sinon'),
     should           = require('should'),
     Promise          = require('bluebird'),
 
     oAuth            = require('../../../server/middleware/oauth'),
     Models           = require('../../../server/models');
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('OAuth', function () {
     var next, req, res, sandbox;
