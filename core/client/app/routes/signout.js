@@ -18,7 +18,6 @@ export default AuthenticatedRoute.extend(styleBody, {
         this.get('notifications').clearAll();
         if (canInvoke(transition, 'send')) {
             transition.send('invalidateSession');
-            transition.abort();
         } else {
             this.send('invalidateSession');
         }
