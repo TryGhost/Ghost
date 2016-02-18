@@ -355,6 +355,22 @@ describe('User Model', function run() {
             }).catch(done);
         });
 
+        it('can NOT add active user with invalid email address', function (done) {
+            var userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
+
+            userData.email = 'invalidemailaddress';
+
+            RoleModel.findOne().then(function (role) {
+                userData.roles = [role.toJSON()];
+
+                return UserModel.add(userData, _.extend({}, context, {include: ['roles']}));
+            }).then(function () {
+                done(new Error('User was created with an invalid email address'));
+            }).catch(function () {
+                done();
+            });
+        });
+
         it('can edit active user', function (done) {
             var firstUser = 1;
 
@@ -376,6 +392,18 @@ describe('User Model', function run() {
 
                 done();
             }).catch(done);
+        });
+
+        it('can NOT set an invalid email address', function (done) {
+            var firstUser = 1;
+
+            UserModel.findOne({id: firstUser}).then(function (user) {
+                return user.edit({email: 'notanemailaddress'});
+            }).then(function () {
+                done(new Error('Invalid email address was accepted'));
+            }).catch(function () {
+                done();
+            });
         });
 
         it('can edit invited user', function (done) {
