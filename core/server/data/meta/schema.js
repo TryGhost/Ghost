@@ -16,7 +16,11 @@ function trimSchema(schema) {
 }
 
 function getPostSchema(metaData, data) {
-    var schema = {
+    var description = metaData.metaDescription ? escapeExpression(metaData.metaDescription) :
+        (metaData.excerpt ? escapeExpression(metaData.excerpt) : null),
+        schema;
+
+    schema = {
         '@context': 'http://schema.org',
         '@type': 'Article',
         publisher: metaData.blog.title,
@@ -37,9 +41,7 @@ function getPostSchema(metaData, data) {
         image: metaData.coverImage,
         keywords: metaData.keywords && metaData.keywords.length > 0 ?
             metaData.keywords.join(', ') : null,
-        description: metaData.metaDescription ?
-        escapeExpression(metaData.metaDescription) :
-        null
+        description: description
     };
     schema.author = trimSchema(schema.author);
     return trimSchema(schema);
