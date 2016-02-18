@@ -174,11 +174,6 @@ export default Controller.extend(SettingsMenuMixin, {
         this.set('debounceId', debounceId);
     },
 
-    // this exists because selectize throws errors on transition if it doesn't
-    existingTags: computed('model.tags.[]', function () {
-        return this.get('model.tags').toArray();
-    }),
-
     // live-query of all tags for tag input autocomplete
     availableTags: computed(function () {
         return this.get('store').filter('tag', {limit: 'all'}, () => {
