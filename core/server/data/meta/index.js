@@ -14,7 +14,8 @@ var config = require('../../config'),
     getModifiedDate = require('./modified_date'),
     getOgType = require('./og_type'),
     getStructuredData = require('./structured_data'),
-    getPostSchema = require('./schema');
+    getPostSchema = require('./schema'),
+    getExcerpt = require('./excerpt');
 
 function getMetaData(data, root) {
     var blog = config.theme, metaData;
@@ -36,6 +37,10 @@ function getMetaData(data, root) {
         ogType: getOgType(data),
         blog: blog
     };
+
+    if (data.post && data.post.html) {
+        metaData.excerpt = getExcerpt(data.post.html, {words: 50});
+    }
 
     metaData.structuredData = getStructuredData(metaData);
     metaData.schema = getPostSchema(metaData, data);
