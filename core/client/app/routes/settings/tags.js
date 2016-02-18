@@ -30,8 +30,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
     },
 
     model() {
-        this.store.unloadAll('tag');
-
         return this.loadFirstPage().then(() => {
             return this.store.filter('tag', (tag) => {
                 return !tag.get('isNew');
