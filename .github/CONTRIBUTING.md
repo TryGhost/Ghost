@@ -86,25 +86,20 @@ Short and descriptive example bug report title
 
 ### Issue Summary
 
-A summary of the issue and the browser/OS environment in which it occurs. If
-suitable, include the steps required to reproduce the bug.
+A summary of the issue and the browser/OS environment in which it occurs. 
 
 ### Steps to Reproduce
 
 1. This is the first step
-2. This is the second step
-3. Further steps, etc.
+2. This is the second step, etc.
 
-Any other information you want to share that is relevant to the issue being
-reported. Especially, why do you consider this to be a bug? What do you expect to happen instead?
+Any other info e.g. Why do you consider this to be a bug? What did you expect to happen instead?
 
 ### Technical details:
 
 * Ghost Version: master (latest commit: a761de2079dca4df49567b1bddac492f25033985)
-* Client OS: Mac OS X 10.10.1
-* Server OS: CentOS 6.4
 * Node Version: 0.10.16
-* Browser: Chrome 39.0.2171.71
+* Browser: Chrome 48.0.2564.109 on Mac OS X 10.10.4
 * Database: SQLite / MySQL / postgres
 ```
 
