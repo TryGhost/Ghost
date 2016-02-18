@@ -23,7 +23,7 @@ function forwardToExpressStatic(req, res, next) {
 
 function staticTheme() {
     return function blackListStatic(req, res, next) {
-        if (isBlackListedFileType(req.url)) {
+        if (isBlackListedFileType(req.path)) {
             return next();
         }
         return forwardToExpressStatic(req, res, next);
