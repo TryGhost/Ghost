@@ -1,5 +1,4 @@
 /*globals describe, beforeEach, afterEach, it*/
-/*jshint expr:true*/
 var should      = require('should'),
     sinon       = require('sinon'),
     middleware  = require('../../../server/middleware').middleware;
@@ -92,7 +91,7 @@ describe('Middleware: spamPrevention', function () {
 
             middleware.spamPrevention.signin(req, null, spyNext);
             should(error).equal(undefined);
-            spyNext.should.be.calledOnce;
+            spyNext.should.be.called();
 
             process.hrtime.restore();
             done();

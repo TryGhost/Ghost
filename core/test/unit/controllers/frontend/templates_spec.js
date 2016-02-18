@@ -1,5 +1,4 @@
 /*globals describe, it, afterEach, beforeEach*/
-/*jshint expr:true*/
 var should   = require('should'),
     rewire   = require('rewire'),
 
@@ -7,9 +6,6 @@ var should   = require('should'),
     templates = rewire('../../../../server/controllers/frontend/templates'),
 
     configUtils = require('../../../utils/configUtils');
-
-// To stop jshint complaining
-should.equal(true, true);
 
 describe('templates', function () {
     afterEach(function () {

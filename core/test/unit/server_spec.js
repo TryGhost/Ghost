@@ -1,5 +1,4 @@
 /*globals describe, it*/
-/*jshint expr:true*/
 var should          = require('should'),
     http            = require('http'),
     config          = require('../../../config');

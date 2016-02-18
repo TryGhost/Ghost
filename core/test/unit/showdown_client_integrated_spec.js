@@ -5,10 +5,9 @@
  */
 
 /*globals describe, it */
-/*jshint expr:true*/
 var should      = require('should'),
 
-// Stuff we are testing
+    // Stuff we are testing
     Showdown    = require('showdown-ghost'),
     converter   = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
