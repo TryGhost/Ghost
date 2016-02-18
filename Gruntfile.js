@@ -839,8 +839,11 @@ var _              = require('lodash'),
 
                     downloadImagePromise = function (url, name) {
                         return new Promise(function (resolve, reject) {
-                            https.get(url, function (res) {
-                                    fs.writeFile(imagePath + name, res, function () {
+                            var file = fs.createWriteStream(path.join(__dirname, imagePath, name));
+                            https.get(url, function (response) {
+                                    response.pipe(file);
+                                    file.on('finish', function () {
+                                        file.close();
                                         resolve();
                                     });
                                 })
