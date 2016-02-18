@@ -539,7 +539,7 @@ User = ghostBookshelf.Model.extend({
             if (user.get('status') === 'invited' || user.get('status') === 'invited-pending' ||
                     user.get('status') === 'inactive'
                 ) {
-                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.user.userisInactive')));
+                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.user.userIsInactive')));
             }
             if (user.get('status') !== 'locked') {
                 return bcryptCompare(object.password, user.get('password')).then(function then(matched) {
