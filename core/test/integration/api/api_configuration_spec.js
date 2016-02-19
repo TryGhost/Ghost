@@ -1,68 +1,63 @@
 /*globals describe, before, afterEach, it */
 var testUtils         = require('../../utils'),
     should            = require('should'),
-
     rewire            = require('rewire'),
-    _                 = require('lodash'),
-    config            = rewire('../../../server/config'),
 
     // Stuff we are testing
     ConfigurationAPI  = rewire('../../../server/api/configuration');
 
 describe('Configuration API', function () {
-    var newConfig = {
-        fileStorage: true,
-        apps: true,
-        version: '0.5.0',
-        environment: process.env.NODE_ENV,
-        database: {
-            client: 'mysql'
-        },
-        mail: {
-            transport: 'SMTP'
-        },
-        blogUrl: 'http://local.tryghost.org'
-    };
-
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
 
     should.exist(ConfigurationAPI);
 
-    it('can browse config', function (done) {
-        var updatedConfig = _.extend({}, config, newConfig);
-        config.set(updatedConfig);
-        ConfigurationAPI.__set__('config', updatedConfig);
+    it('can read basic config and get all expected properties', function (done) {
+        ConfigurationAPI.read().then(function (response) {
+            var props;
 
-        ConfigurationAPI.browse(testUtils.context.owner).then(function (response) {
             should.exist(response);
             should.exist(response.configuration);
-            testUtils.API.checkResponse(response.configuration[0], 'configuration');
-            /*jshint unused:false */
-            done();
-        }).catch(function (error) {
-            console.log(JSON.stringify(error));
+            response.configuration.should.be.an.Array().with.lengthOf(1);
+            props = response.configuration[0];
+
+            // Check the structure
+            props.should.have.property('blogUrl').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('blogTitle').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('routeKeywords').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('fileStorage').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('useGoogleFonts').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('useGravatar').which.is.an.Object().with.properties('type', 'value');
+            props.should.have.property('publicAPI').which.is.an.Object().with.properties('type', 'value');
+
+            // Check a few values
+            props.blogUrl.should.have.property('value', 'http://127.0.0.1:2369');
+            props.fileStorage.should.have.property('value', true);
+
             done();
         }).catch(done);
     });
 
-    it('can read config', function (done) {
-        var updatedConfig = _.extend({}, config, newConfig);
-        config.set(updatedConfig);
-        ConfigurationAPI.__set__('config', updatedConfig);
+    it('can read about config and get all expected properties', function (done) {
+        ConfigurationAPI.read({key: 'about'}).then(function (response) {
+            var props;
 
-        ConfigurationAPI.read(_.extend({}, testUtils.context.owner, {key: 'database'})).then(function (response) {
             should.exist(response);
             should.exist(response.configuration);
-            testUtils.API.checkResponse(response.configuration[0], 'configuration');
-            response.configuration[0].key.should.equal('database');
-            response.configuration[0].value.should.equal('mysql');
-            response.configuration[0].type.should.be.null();
-            /*jshint unused:false */
-            done();
-        }).catch(function (error) {
-            console.log(JSON.stringify(error));
+            response.configuration.should.be.an.Array().with.lengthOf(1);
+            props = response.configuration[0];
+
+            // Check the structure
+            props.should.have.property('version').which.is.a.String();
+            props.should.have.property('environment').which.is.a.String();
+            props.should.have.property('database').which.is.a.String();
+            props.should.have.property('mail').which.is.a.String();
+
+            // Check a few values
+            props.environment.should.match(/^testing/);
+            props.version.should.eql(require('../../../../package.json').version);
+
             done();
         }).catch(done);
     });
