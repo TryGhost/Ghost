@@ -2,9 +2,7 @@
 // RESTful API for browsing the configuration
 var _                  = require('lodash'),
     config             = require('../config'),
-    errors             = require('../errors'),
     Promise            = require('bluebird'),
-    i18n               = require('../i18n'),
 
     configuration;
 
@@ -15,28 +13,24 @@ function labsFlag(key) {
     };
 }
 
-function getValidKeys() {
-    var validKeys = {
-            fileStorage: {value: (config.fileStorage !== false), type: 'bool'},
-            publicAPI: labsFlag('publicAPI'),
-            apps: {value: (config.apps === true), type: 'bool'},
-            version: {value: config.ghostVersion, type: 'string'},
-            environment: process.env.NODE_ENV,
-            database: config.database.client,
-            mail: _.isObject(config.mail) ? config.mail.transport : '',
-            blogUrl: {value: config.url.replace(/\/$/, ''), type: 'string'},
-            blogTitle: {value: config.theme.title, type: 'string'},
-            routeKeywords: {value: JSON.stringify(config.routeKeywords), type: 'json'}
-        };
-
-    return validKeys;
+function getAboutConfig() {
+    return {
+        version: config.ghostVersion,
+        environment: process.env.NODE_ENV,
+        database: config.database.client,
+        mail: _.isObject(config.mail) ? config.mail.transport : ''
+    };
 }
 
-function formatConfigurationObject(val, key) {
+function getBaseConfig() {
     return {
-        key: key,
-        value: (_.isObject(val) && _.has(val, 'value')) ? val.value : val,
-        type: _.isObject(val) ? (val.type || null) : null
+        fileStorage:    {value: (config.fileStorage !== false), type: 'bool'},
+        useGoogleFonts: {value: !config.isPrivacyDisabled('useGoogleFonts'), type: 'bool'},
+        useGravatar:    {value: !config.isPrivacyDisabled('useGravatar'), type: 'bool'},
+        publicAPI:      labsFlag('publicAPI'),
+        blogUrl:        {value: config.url.replace(/\/$/, ''), type: 'string'},
+        blogTitle:      {value: config.theme.title, type: 'string'},
+        routeKeywords:  {value: JSON.stringify(config.routeKeywords), type: 'json'}
     };
 }
 
@@ -48,26 +42,23 @@ function formatConfigurationObject(val, key) {
 configuration = {
 
     /**
-     * ### Browse
-     * Fetch all configuration keys
-     * @returns {Promise(Configurations)}
-     */
-    browse: function browse() {
-        return Promise.resolve({configuration: _.map(getValidKeys(), formatConfigurationObject)});
-    },
-
-    /**
-     * ### Read
-     *
+     * Always returns {configuration: []}
+     * Sometimes the array contains configuration items
+     * @param {Object} options
+     * @returns {Promise<Object>}
      */
     read: function read(options) {
-        var data = getValidKeys();
+        options = options || {};
 
-        if (_.has(data, options.key)) {
-            return Promise.resolve({configuration: [formatConfigurationObject(data[options.key], options.key)]});
-        } else {
-            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.configuration.invalidKey')));
+        if (!options.key) {
+            return Promise.resolve({configuration: [getBaseConfig()]});
         }
+
+        if (options.key === 'about') {
+            return Promise.resolve({configuration: [getAboutConfig()]});
+        }
+
+        return Promise.resolve({configuration: []});
     }
 };
 

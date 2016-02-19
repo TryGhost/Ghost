@@ -1,8 +1,8 @@
 var _             = require('lodash'),
+    Promise       = require('bluebird'),
     api           = require('../api'),
     errors        = require('../errors'),
     updateCheck   = require('../update-check'),
-    config        = require('../config'),
     i18n          = require('../i18n'),
     adminControllers;
 
@@ -14,22 +14,20 @@ adminControllers = {
         /*jslint unparam:true*/
 
         function renderIndex() {
-            var configuration;
-            return api.configuration.browse().then(function then(data) {
-                configuration = data.configuration;
-            }).then(function getAPIClient() {
-                return api.clients.read({slug: 'ghost-admin'});
-            }).then(function renderIndex(adminClient) {
-                configuration.push({key: 'clientId', value: adminClient.clients[0].slug, type: 'string'});
-                configuration.push({key: 'clientSecret', value: adminClient.clients[0].secret, type: 'string'});
+            var configuration,
+                fetch = {
+                    configuration: api.configuration.read().then(function (res) { return res.configuration[0]; }),
+                    client: api.clients.read({slug: 'ghost-admin'}).then(function (res) { return res.clients[0]; })
+                };
 
-                var apiConfig = _.omit(configuration, function omit(value) {
-                    return _.contains(['environment', 'database', 'mail', 'version'], value.key);
-                });
+            return Promise.props(fetch).then(function renderIndex(result) {
+                configuration = result.configuration;
+
+                configuration.clientId = {value: result.client.slug, type: 'string'};
+                configuration.clientSecret = {value: result.client.secret, type: 'string'};
 
                 res.render('default', {
-                    skip_google_fonts: config.isPrivacyDisabled('useGoogleFonts'),
-                    configuration: apiConfig
+                    configuration: configuration
                 });
             });
         }
