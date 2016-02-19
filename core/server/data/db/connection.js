@@ -25,6 +25,7 @@ function configureDriver(client) {
 if (!knexInstance && dbConfig && dbConfig.client) {
     configureDriver(dbConfig.client);
     knexInstance = knex(dbConfig);
+    knexInstance.client.config = dbConfig
 }
 
 module.exports = knexInstance;

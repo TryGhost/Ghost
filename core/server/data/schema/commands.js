@@ -79,8 +79,9 @@ function deleteTable(table) {
 }
 
 function getTables() {
+    // maybe this is better?
+    // var client = db.knex.client.dialect;
     var client = db.knex.client.config.client;
-
     if (_.contains(_.keys(clients), client)) {
         return clients[client].getTables();
     }
