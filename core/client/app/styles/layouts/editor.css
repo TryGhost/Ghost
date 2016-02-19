@@ -337,6 +337,7 @@
 }
 
 .post-view-link i {
+    display: inline;
     font-size: 10px;
 }
 
