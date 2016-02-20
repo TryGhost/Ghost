@@ -53,7 +53,7 @@ function isValidOrigin(origin, client) {
 
     if (origin && client && client.type === 'ua' && (
         _.indexOf(getIPs(), origin) >= 0
-        || _.some(client.trustedDomains, {trusted_domain: origin})
+        || _.some(client.trusted_domains, {trusted_domain: origin})
         || origin === configHostname
         || configHostname === 'my-ghost-blog.com'
         || origin === url.parse(config.urlSSL ? config.urlSSL : '').hostname

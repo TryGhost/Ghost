@@ -1,4 +1,4 @@
-// # Not found error
+// # Method Not Allowed error
 // Custom error class with status code and type prefilled.
 
 function MethodNotAllowedError(message) {

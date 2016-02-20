@@ -9,6 +9,7 @@ var Promise      = require('bluebird'),
     i18n         = require('../i18n'),
 
     docName      = 'clients',
+    allowedIncludes = ['trusted_domains'],
     clients;
 
 /**
@@ -17,6 +18,36 @@ var Promise      = require('bluebird'),
  * **See:** [API Methods](index.js.html#api%20methods)
  */
 clients = {
+    /**
+     * ## Browse
+     * @param {{context}} options
+     * @returns {Promise<Clients>} Clients Collection
+     */
+    browse: function browse(options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Client.findPage(options);
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.browseDefaultOptions}),
+            // TODO: add permissions
+            // utils.handlePublicPermissions(docName, 'browse'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
+    },
 
     /**
      * ## Read
@@ -44,6 +75,7 @@ clients = {
             utils.validate(docName, {attrs: attrs}),
             // TODO: add permissions
             // utils.handlePublicPermissions(docName, 'read'),
+            utils.convertOptions(allowedIncludes),
             doQuery
         ];
 
@@ -55,6 +87,119 @@ clients = {
 
             return Promise.reject(new errors.NotFoundError(i18n.t('common.api.clients.clientNotFound')));
         });
+    },
+
+    /**
+     * ## Add
+     * @param {Client} object the client to create
+     * @returns {Promise(Client)} Newly created Client
+     */
+    add: function add(object, options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Client.add(options.data.clients[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName),
+            // TODO: add permissions
+            // utils.handlePermissions(docName, 'add'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            var client = result.toJSON(options);
+
+            return {clients: [client]};
+        });
+    },
+
+    /**
+     * ## Edit
+     *
+     * @public
+     * @param {Client} object Client or specific properties to update
+     * @param {{id, context, include}} options
+     * @return {Promise<Client>} Edited Client
+     */
+    edit: function edit(object, options) {
+        var tasks;
+
+        /**
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return dataProvider.Client.edit(options.data.clients[0], _.omit(options, ['data']));
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            // TODO: add permissions
+            // utils.handlePermissions(docName, 'edit'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, object, options).then(function formatResponse(result) {
+            if (result) {
+                var client = result.toJSON(options);
+
+                return {clients: [client]};
+            }
+
+            return Promise.reject(new errors.NotFoundError('Client not found.'));
+        });
+    },
+
+    /**
+     * ## Destroy
+     *
+     * @public
+     * @param {{id, context}} options
+     * @return {Promise<Client>} Deleted Client
+     */
+    destroy: function destroy(options) {
+        var tasks;
+
+        /**
+         * ### Model Query
+         * Make the call to the Model layer
+         * @param {Object} options
+         * @returns {Object} options
+         */
+        function doQuery(options) {
+            return clients.read(options).then(function (result) {
+                return dataProvider.Client.destroy(options).then(function () {
+                    return result;
+                });
+            });
+        }
+
+        // Push all of our tasks into a `tasks` array in the correct order
+        tasks = [
+            utils.validate(docName, {opts: utils.idDefaultOptions}),
+            // TODO: add permissions
+            // utils.handlePermissions(docName, 'destroy'),
+            utils.convertOptions(allowedIncludes),
+            doQuery
+        ];
+
+        // Pipeline calls each task passing the result of one to be the arguments for the next
+        return pipeline(tasks, options);
     }
 };
 
