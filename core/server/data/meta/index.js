@@ -14,7 +14,7 @@ var config = require('../../config'),
     getModifiedDate = require('./modified_date'),
     getOgType = require('./og_type'),
     getStructuredData = require('./structured_data'),
-    getPostSchema = require('./schema'),
+    getSchema = require('./schema'),
     getExcerpt = require('./excerpt');
 
 function getMetaData(data, root) {
@@ -38,12 +38,17 @@ function getMetaData(data, root) {
         blog: blog
     };
 
+    // TODO: cleanup these if statements
     if (data.post && data.post.html) {
         metaData.excerpt = getExcerpt(data.post.html, {words: 50});
     }
 
+    if (data.post && data.post.author && data.post.author.name) {
+        metaData.authorName = data.post.author.name;
+    }
+
     metaData.structuredData = getStructuredData(metaData);
-    metaData.schema = getPostSchema(metaData, data);
+    metaData.schema = getSchema(metaData, data);
 
     return metaData;
 }

@@ -20,10 +20,14 @@ function getStructuredData(metaData) {
         'twitter:title': metaData.metaTitle,
         'twitter:description': metaData.metaDescription || metaData.excerpt,
         'twitter:url': metaData.canonicalUrl,
-        'twitter:image:src': metaData.coverImage
+        'twitter:image:src': metaData.coverImage,
+        'twitter:label1': metaData.authorName ? 'Written by' : undefined,
+        'twitter:data1': metaData.authorName,
+        'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
+        'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined
     };
 
-    // return structored data removing null or undefined keys
+    // return structured data removing null or undefined keys
     return Object.keys(structuredData).reduce(function (data, key) {
         var content = structuredData[key];
         if (content !== null && typeof content !== 'undefined') {
