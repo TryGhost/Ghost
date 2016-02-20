@@ -3,11 +3,12 @@ var getStructuredData = require('../../../server/data/meta/structured_data'),
     should = require('should');
 
 describe('getStructuredData', function () {
-    it('should return structored data from metadata', function () {
+    it('should return structured data from metadata', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title'
             },
+            authorName: 'Test User',
             ogType: 'article',
             metaTitle: 'Post Title',
             canonicalUrl: 'http://mysite.com/post/my-post-slug/',
@@ -29,22 +30,26 @@ describe('getStructuredData', function () {
             'og:type': 'article',
             'og:url': 'http://mysite.com/post/my-post-slug/',
             'twitter:card': 'summary_large_image',
+            'twitter:data1': 'Test User',
+            'twitter:data2': ['one', 'two', 'tag'].join(', '),
             'twitter:description': 'Post meta description',
             'twitter:image:src': 'http://mysite.com/content/image/mypostcoverimage.jpg',
+            'twitter:label1': 'Written by',
+            'twitter:label2': 'Filed under',
             'twitter:title': 'Post Title',
             'twitter:url': 'http://mysite.com/post/my-post-slug/'
         });
     });
 
-    it('should return structored data from metadata with no nulls', function () {
+    it('should return structured data from metadata with no nulls', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title'
             },
+            authorName: 'Test User',
             ogType: 'article',
             metaTitle: 'Post Title',
             canonicalUrl: 'http://mysite.com/post/my-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
             modifiedDate: '2016-01-21T22:13:05.412Z',
             coverImage: undefined,
             keywords: null,
@@ -53,12 +58,13 @@ describe('getStructuredData', function () {
 
         should.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
-            'article:published_time': '2015-12-25T05:35:01.234Z',
             'og:site_name': 'Blog Title',
             'og:title': 'Post Title',
             'og:type': 'article',
             'og:url': 'http://mysite.com/post/my-post-slug/',
             'twitter:card': 'summary',
+            'twitter:data1': 'Test User',
+            'twitter:label1': 'Written by',
             'twitter:title': 'Post Title',
             'twitter:url': 'http://mysite.com/post/my-post-slug/'
         });
