@@ -15,7 +15,7 @@ var config          = require('../config'),
     page_url,
     pageUrl;
 
-page_url = function (context, block) {
+page_url = function (pageNum, options) {
     /*jshint unused:false*/
     var url = config.paths.subdir;
 
@@ -27,8 +27,8 @@ page_url = function (context, block) {
         url += '/' + config.routeKeywords.author + '/' + this.authorSlug;
     }
 
-    if (context > 1) {
-        url += '/' + config.routeKeywords.page + '/' + context;
+    if (pageNum > 1) {
+        url += '/' + config.routeKeywords.page + '/' + pageNum;
     }
 
     url += '/';
@@ -44,13 +44,13 @@ page_url = function (context, block) {
 // Returns the URL for the page specified in the current object
 // context. This helper is deprecated and will be removed in future versions.
 //
-pageUrl = function (context, block) {
+pageUrl = function (pageNum, options) {
     errors.logWarn(i18n.t('warnings.helpers.page_url.isDeprecated'));
 
     /*jshint unused:false*/
     var self = this;
 
-    return page_url.call(self, context, block);
+    return page_url.call(self, pageNum, options);
 };
 
 module.exports = page_url;

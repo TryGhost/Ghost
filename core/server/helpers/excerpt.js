@@ -6,7 +6,7 @@
 // Defaults to words="50"
 
 var hbs = require('express-hbs'),
-    _ = require('lodash'),
+    _   = require('lodash'),
     getMetaDataExcerpt = require('../data/meta/excerpt');
 
 function excerpt(options) {
