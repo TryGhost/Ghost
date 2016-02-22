@@ -2,7 +2,6 @@ var  _              = require('lodash'),
     errors          = require('../../errors'),
     commands        = require('../schema').commands,
     schema          = require('../schema').tables,
-    i18n            = require('../../i18n'),
 
     // private
     logInfo,
@@ -15,14 +14,14 @@ var  _              = require('lodash'),
     modifyUniqueCommands;
 
 logInfo = function logInfo(message) {
-    errors.logInfo(i18n.t('notices.data.migration.commands.migrations'), message);
+    errors.logInfo('Migrations', message);
 };
 
 getDeleteCommands = function getDeleteCommands(oldTables, newTables) {
     var deleteTables = _.difference(oldTables, newTables);
     return _.map(deleteTables, function (table) {
         return function () {
-            logInfo(i18n.t('notices.data.migration.commands.deletingTable', {table: table}));
+            logInfo('Deleting table: ' + table);
             return commands.deleteTable(table);
         };
     });
@@ -32,7 +31,7 @@ getAddCommands = function getAddCommands(oldTables, newTables) {
     var addTables = _.difference(newTables, oldTables);
     return _.map(addTables, function (table) {
         return function () {
-            logInfo(i18n.t('notices.data.migration.commands.creatingTable', {table: table}));
+            logInfo('Creating table: ' + table);
             return commands.createTable(table);
         };
     });
@@ -44,7 +43,7 @@ addColumnCommands = function addColumnCommands(table, columns) {
 
     return _.map(addColumns, function (column) {
         return function () {
-            logInfo(i18n.t('notices.data.migration.commands.addingColumn', {table: table, column: column}));
+            logInfo('Adding column: ' + table + '.' + column);
             return commands.addColumn(table, column);
         };
     });
@@ -56,7 +55,7 @@ dropColumnCommands = function dropColumnCommands(table, columns) {
 
     return _.map(dropColumns, function (column) {
         return function () {
-            logInfo(i18n.t('notices.data.migration.commands.droppingColumn', {table: table, column: column}));
+            logInfo('Dropping column: ' + table + '.' + column);
             return commands.dropColumn(table, column);
         };
     });
@@ -68,14 +67,14 @@ modifyUniqueCommands = function modifyUniqueCommands(table, indexes) {
         if (schema[table][column].unique === true) {
             if (!_.contains(indexes, table + '_' + column + '_unique')) {
                 return function () {
-                    logInfo(i18n.t('notices.data.migration.commands.addingUnique', {table: table, column: column}));
+                    logInfo('Adding unique on: ' + table + '.' + column);
                     return commands.addUnique(table, column);
                 };
             }
         } else if (!schema[table][column].unique) {
             if (_.contains(indexes, table + '_' + column + '_unique')) {
                 return function () {
-                    logInfo(i18n.t('notices.data.migration.commands.droppingUnique', {table: table, column: column}));
+                    logInfo('Dropping unique on: ' + table + '.' + column);
                     return commands.dropUnique(table, column);
                 };
             }

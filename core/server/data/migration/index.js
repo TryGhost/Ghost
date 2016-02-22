@@ -11,7 +11,6 @@ var _               = require('lodash'),
     dataExport      = require('../export'),
     config          = require('../../config'),
     errors          = require('../../errors'),
-    i18n            = require('../../i18n'),
     models          = require('../../models'),
     sequence        = require('../../utils/sequence'),
 
@@ -30,26 +29,26 @@ var _               = require('lodash'),
     backupDatabase;
 
 logInfo = function logInfo(message) {
-    errors.logInfo(i18n.t('notices.data.migration.index.migrations'), message);
+    errors.logInfo('Migrations', message);
 };
 
 populateDefaultSettings = function populateDefaultSettings() {
     // Initialise the default settings
-    logInfo(i18n.t('notices.data.migration.index.populatingDefaultSettings'));
+    logInfo('Populating default settings');
     return models.Settings.populateDefaults().then(function () {
-        logInfo(i18n.t('notices.data.migration.index.complete'));
+        logInfo('Complete');
     });
 };
 
 backupDatabase = function backupDatabase() {
-    logInfo(i18n.t('notices.data.migration.index.creatingDatabaseBackup'));
+    logInfo('Creating database backup');
     return dataExport().then(function (exportedData) {
         // Save the exported data to the file system for download
         return dataExport.fileName().then(function (fileName) {
             fileName = path.resolve(config.paths.contentPath + '/data/' + fileName);
 
             return Promise.promisify(fs.writeFile)(fileName, JSON.stringify(exportedData)).then(function () {
-                logInfo(i18n.t('notices.data.migration.index.databaseBackupDestination', {filename: fileName}));
+                logInfo('Database backup written to: ' + fileName);
             });
         });
     });
@@ -84,8 +83,7 @@ init = function (tablesOnly) {
         if (databaseVersion < defaultVersion || process.env.FORCE_MIGRATION) {
             // 2. The database exists but is out of date
             // Migrate to latest version
-            logInfo(i18n.t('notices.data.migration.index.databaseUpgradeRequired',
-                           {dbVersion: databaseVersion, defaultVersion: defaultVersion}));
+            logInfo('Database upgrade required from version ' + databaseVersion + ' to ' +  defaultVersion);
             return self.migrateUp(databaseVersion, defaultVersion).then(function () {
                 // Finally update the databases current version
                 return versioning.setDatabaseVersion();
@@ -94,7 +92,7 @@ init = function (tablesOnly) {
 
         if (databaseVersion === defaultVersion) {
             // 1. The database exists and is up-to-date
-            logInfo(i18n.t('notices.data.migration.index.upToDateAtVersion', {dbVersion: databaseVersion}));
+            logInfo('Up to date at version ' + databaseVersion);
             // TODO: temporary fix for missing client.secret
             return fixClientSecret();
         }
@@ -103,20 +101,20 @@ init = function (tablesOnly) {
             // 3. The database exists but the currentVersion setting does not or cannot be understood
             // In this case we don't understand the version because it is too high
             errors.logErrorAndExit(
-                i18n.t('notices.data.migration.index.databaseNotCompatible.error'),
-                i18n.t('notices.data.migration.index.databaseNotCompatible.help')
+                'Your database is not compatible with this version of Ghost',
+                'You will need to create a new database'
             );
         }
     }, function (err) {
         if (err.message || err === 'Settings table does not exist') {
             // 4. The database has not yet been created
             // Bring everything up from initial version.
-            logInfo(i18n.t('notices.data.migration.index.dbInitialisationRequired', {version: versioning.getDefaultDatabaseVersion()}));
+            logInfo('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
             return self.migrateUpFreshDb(tablesOnly);
         }
         // 3. The database exists but the currentVersion setting does not or cannot be understood
         // In this case the setting was missing or there was some other problem
-        errors.logErrorAndExit(i18n.t('notices.data.migration.index.problemWithDatabase'), err.message || err);
+        errors.logErrorAndExit('There is a problem with the database', err.message || err);
     });
 };
 
@@ -137,11 +135,11 @@ migrateUpFreshDb = function (tablesOnly) {
     var tableSequence,
         tables = _.map(schemaTables, function (table) {
             return function () {
-                logInfo(i18n.t('notices.data.migration.index.creatingTable', {table: table}));
+                logInfo('Creating table: ' + table);
                 return commands.createTable(table);
             };
         });
-    logInfo(i18n.t('notices.data.migration.index.creatingTables'));
+    logInfo('Creating tables...');
     tableSequence = sequence(tables);
 
     if (tablesOnly) {
@@ -192,7 +190,7 @@ migrateUp = function (fromVersion, toVersion) {
 
         // execute the commands in sequence
         if (!_.isEmpty(migrateOps)) {
-            logInfo(i18n.t('notices.data.migration.index.runningMigrations'));
+            logInfo('Running migrations');
 
             return sequence(migrateOps);
         }
