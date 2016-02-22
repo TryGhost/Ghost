@@ -20,9 +20,7 @@ var Promise       = require('bluebird'),
 
     // Private
     logInfo,
-    to003,
     to004,
-    convertAdminToOwner,
     createOwner,
     options = {context: {internal: true}},
 
@@ -32,25 +30,6 @@ var Promise       = require('bluebird'),
 
 logInfo = function logInfo(message) {
     errors.logInfo(i18n.t('notices.data.fixtures.migrations'), message);
-};
-
-/**
- * Convert admin to Owner
- * Changes an admin user to have the owner role
- * @returns {Promise|*}
- */
-convertAdminToOwner = function convertAdminToOwner() {
-    var adminUser;
-
-    return models.User.findOne({role: 'Administrator'}).then(function (user) {
-        adminUser = user;
-        return models.Role.findOne({name: 'Owner'});
-    }).then(function (ownerRole) {
-        if (adminUser) {
-            logInfo(i18n.t('notices.data.fixtures.convertingAdmToOwner'));
-            return adminUser.roles().updatePivot({role_id: ownerRole.id});
-        }
-    });
 };
 
 /**
@@ -117,49 +96,6 @@ populate = function populate() {
         return createOwner();
     }).catch(function (errs) {
         errors.logError(errs);
-    });
-};
-
-/**
- * ### Update fixtures to 003
- * Need to add client & owner role, then update permissions to 003 as well
- * By doing this in a way that checks before adding, we can ensure that it's possible to force a migration safely.
- *
- * Note: At the moment this is pretty adhoc & untestable, in future it would be better to have a config based system.
- * @returns {Promise|*}
- */
-to003 = function to003() {
-    var ops = [],
-        upgradeOp,
-        Role = models.Role,
-        Client = models.Client;
-
-    logInfo(i18n.t('notices.data.fixtures.upgradingFixturesTo', {version: '003'}));
-
-    // Add the client fixture if missing
-    upgradeOp = Client.findOne({slug: fixtures.clients[0].slug}).then(function (client) {
-        if (!client) {
-            logInfo(i18n.t('notices.data.fixtures.addingClientFixture'));
-            return Client.add(fixtures.clients[0], options);
-        }
-    });
-    ops.push(upgradeOp);
-
-    // Add the owner role if missing
-    upgradeOp = Role.findOne({name: fixtures.roles[3].name}).then(function (owner) {
-        if (!owner) {
-            logInfo(i18n.t('notices.data.fixtures.addingOwnerRoleFixture'));
-            _.each(fixtures.roles.slice(3), function (role) {
-                return Role.add(role, options);
-            });
-        }
-    });
-    ops.push(upgradeOp);
-
-    return Promise.all(ops).then(function () {
-        return permissions.to003(options);
-    }).then(function () {
-        return convertAdminToOwner();
     });
 };
 
@@ -344,12 +280,7 @@ to004 = function to004() {
 update = function update(fromVersion, toVersion) {
     var ops = [];
 
-    logInfo(i18n.t('notices.data.fixtures.updatingFixtures'));
-    // Are we migrating to, or past 003?
-    if ((fromVersion < '003' && toVersion >= '003') ||
-        fromVersion === '003' && toVersion === '003' && process.env.FORCE_MIGRATION) {
-        ops.push(to003);
-    }
+    logInfo('Updating fixtures');
 
     if (fromVersion < '004' && toVersion === '004' ||
         fromVersion === '004' && toVersion === '004' && process.env.FORCE_MIGRATION) {

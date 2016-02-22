@@ -15,8 +15,7 @@ var Promise     = require('bluebird'),
     addRolesPermissionsForRole,
 
     // public
-    populate,
-    to003;
+    populate;
 
 logInfo = function logInfo(message) {
     errors.logInfo('Migrations', message);
@@ -80,32 +79,6 @@ populate = function (options) {
     });
 };
 
-// ## Update
-// Update permissions to 003
-// Need to rename old permissions, and then add all of the missing ones
-to003 = function (options) {
-    var ops = [];
-
-    logInfo(i18n.t('errors.data.fixtures.upgradingPermissions'));
-
-    // To safely upgrade, we need to clear up the existing permissions and permissions_roles before recreating the new
-    // full set of permissions defined as of version 003
-    return models.Permissions.forge().fetch().then(function (permissions) {
-        logInfo(i18n.t('errors.data.fixtures.removingOldPermissions'));
-        permissions.each(function (permission) {
-            ops.push(permission.related('roles').detach().then(function () {
-                return permission.destroy();
-            }));
-        });
-
-        // Now we can perform the normal populate
-        return Promise.all(ops).then(function () {
-            return populate(options);
-        });
-    });
-};
-
 module.exports = {
-    populate: populate,
-    to003: to003
+    populate: populate
 };
