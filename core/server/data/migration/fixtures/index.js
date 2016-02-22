@@ -93,10 +93,6 @@ populate = function populate() {
     });
 
     _.each(fixtures.clients, function (client) {
-        // no random secrets during testing
-        if (process.env.NODE_ENV.indexOf('testing') !== 0) {
-            client.secret = crypto.randomBytes(6).toString('hex');
-        }
         ops.push(Client.add(client, options));
     });
 
@@ -252,7 +248,6 @@ to004 = function to004() {
             if (!client) {
                 logInfo(i18n.t('notices.data.fixtures.addFrontendClientFixture'));
                 var frontendClient = fixtures.clients[1];
-                frontendClient.secret = crypto.randomBytes(6).toString('hex');
                 return models.Client.add(frontendClient, options);
             }
             return Promise.resolve();
