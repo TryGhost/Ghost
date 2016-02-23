@@ -1,12 +1,14 @@
 import Ember from 'ember';
 
 const {
+    RSVP,
     Service,
     computed,
     inject: {service},
-    RSVP: {Promise},
     set
 } = Ember;
+
+const {Promise} = RSVP;
 
 const EmberError = Ember.Error;
 
@@ -36,9 +38,19 @@ export default Service.extend({
     config: service(),
     notifications: service(),
 
-    _settings: null,
-
     publicAPI: feature('publicAPI'),
+
+    labs: computed('_settings', function () {
+        return this.get('_settings').then((settings) => {
+            return this._parseLabs(settings);
+        });
+    }),
+
+    _settings: computed(function () {
+        let store = this.get('store');
+
+        return store.queryRecord('setting', {type: 'blog'});
+    }),
 
     _parseLabs(settings) {
         let labs = settings.get('labs');
@@ -50,41 +62,37 @@ export default Service.extend({
         }
     },
 
-    labs: computed('_settings', function () {
-        return new Promise((resolve, reject) => {
-            if (this.get('_settings')) { // So we don't query the backend every single time
-                resolve(this._parseLabs(this.get('_settings')));
-            }
-            let store = this.get('store');
-
-            store.query('setting', {type: 'blog'}).then((settings) => {
-                let setting = settings.get('firstObject');
-
-                this.set('_settings', setting);
-                resolve(this._parseLabs(setting));
-            }).catch(reject);
-        });
-    }),
-
     update(key, value) {
         return new Promise((resolve, reject) => {
-            this.get('labs').then((labs) => {
-                let settings = this.get('_settings');
+            let promises = {
+                settings: this.get('_settings'),
+                labs: this.get('labs')
+            };
 
+            RSVP.hash(promises).then(({labs, settings}) => {
+                // set the new labs key value
                 set(labs, key, value);
-
+                // update the 'labs' key of the settings model
                 settings.set('labs', JSON.stringify(labs));
+
                 settings.save().then((savedSettings) => {
-                    this.set('_settings', savedSettings);
+                    // replace the cached _settings promise
+                    this.set('_settings', RSVP.resolve(savedSettings));
+
+                    // return the labs key value that we get from the server
                     resolve(this._parseLabs(savedSettings).get(key));
+
                 }).catch((errors) => {
-                    if (errors) { // model.save errors, show notifications
-                        this.get('notifications').showErrors(errors);
-                        settings.rollbackAttributes();
-                    } else {
-                        settings.rollbackAttributes();
+                    settings.rollbackAttributes();
+
+                    // we'll always have an errors object unless we hit a
+                    // validation error
+                    if (!errors) {
                         throw new EmberError(`Validation of the feature service settings model failed when updating labs.`);
                     }
+
+                    this.get('notifications').showErrors(errors);
+
                     resolve(this._parseLabs(settings)[key]);
                 });
             }).catch(reject);
