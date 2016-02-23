@@ -86,6 +86,14 @@ describe('Frontend Routing', function () {
                     .expect(/Page not found/)
                     .end(doEnd(done));
             });
+
+            it('should 404 for unknown file', function (done) {
+                request.get('/content/images/some/file/that/doesnt-exist.jpg')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
         });
 
         describe('Single post', function () {
