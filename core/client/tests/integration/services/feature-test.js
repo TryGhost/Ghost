@@ -8,7 +8,7 @@ import FeatureService, {feature} from 'ghost/services/feature';
 import Ember from 'ember';
 import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
 
-const {merge, run} = Ember;
+const {RSVP, merge, run} = Ember;
 const EmberError = Ember.Error;
 
 function stubSettings(server, labs, validSave = true, validSettings = true) {
@@ -76,6 +76,24 @@ describeModule(
 
             service.get('labs').then((labs) => {
                 expect(labs.testFlag).to.be.true;
+                done();
+            });
+        });
+
+        it('caches the labs promise', function (done) {
+            stubSettings(server, {testFlag: true});
+
+            let service = this.subject();
+            let calls = [
+                service.get('labs'),
+                service.get('labs'),
+                service.get('labs')
+            ];
+
+            RSVP.all(calls).then(() => {
+                expect(server.handledRequests.length, 'requests after 3 calls')
+                    .to.equal(1);
+
                 done();
             });
         });
