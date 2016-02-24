@@ -128,6 +128,11 @@ export default Mixin.create({
     hasDirtyAttributes: computed.apply(Ember, watchedProps.concat({
         get() {
             let model = this.get('model');
+
+            if (!model) {
+                return false;
+            }
+
             let markdown = model.get('markdown');
             let title = model.get('title');
             let titleScratch = model.get('titleScratch');
