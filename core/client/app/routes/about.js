@@ -18,7 +18,7 @@ export default AuthenticatedRoute.extend(styleBody, {
 
     model() {
         let cachedConfig = this.get('cachedConfig');
-        let configUrl = this.get('ghostPaths.url').api('configuration');
+        let configUrl = this.get('ghostPaths.url').api('configuration', 'about');
 
         if (cachedConfig) {
             return cachedConfig;
@@ -26,12 +26,8 @@ export default AuthenticatedRoute.extend(styleBody, {
 
         return this.get('ajax').request(configUrl)
             .then((configurationResponse) => {
-                let configKeyValues = configurationResponse.configuration;
+                let [cachedConfig] = configurationResponse.configuration;
 
-                cachedConfig = {};
-                configKeyValues.forEach((configKeyValue) => {
-                    cachedConfig[configKeyValue.key] = configKeyValue.value;
-                });
                 this.set('cachedConfig', cachedConfig);
 
                 return cachedConfig;
