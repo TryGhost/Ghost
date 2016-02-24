@@ -9,7 +9,6 @@ var _               = require('lodash'),
     protocol        = 'http://',
     expectedProperties = {
         // API top level
-        configuration: ['key', 'value', 'type'],
         posts:         ['posts', 'meta'],
         tags:          ['tags', 'meta'],
         users:         ['users', 'meta'],
