@@ -7,7 +7,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SimpleMDE = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-; Typo = global.Typo = require("/Users/laci/Documents/Sites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js");
+; Typo = global.Typo = require("/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js");
 CodeMirror = global.CodeMirror = require("codemirror");
 ; var __browserify_shim_require__=require;(function browserifyShim(module, define, require) {
 // Initialize data globally to reduce memory consumption
@@ -105,7 +105,7 @@ if(!String.prototype.includes) {
 }).call(global, module, undefined, undefined);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"/Users/laci/Documents/Sites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js":2,"codemirror":7}],2:[function(require,module,exports){
+},{"/Users/wescossick/Documents/Websites/simplemde-markdown-editor/node_modules/codemirror-spell-checker/src/js/typo.js":2,"codemirror":7}],2:[function(require,module,exports){
 (function (global){
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 'use strict';
@@ -1670,6 +1670,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
     d.sizer.style.paddingRight = (d.barWidth = sizes.right) + "px";
     d.sizer.style.paddingBottom = (d.barHeight = sizes.bottom) + "px";
+    d.heightForcer.style.borderBottom = sizes.bottom + "px solid transparent"
 
     if (sizes.right && sizes.bottom) {
       d.scrollbarFiller.style.display = "block";
@@ -1914,9 +1915,9 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
   function setDocumentHeight(cm, measure) {
     cm.display.sizer.style.minHeight = measure.docHeight + "px";
-    var total = measure.docHeight + cm.display.barHeight;
-    cm.display.heightForcer.style.top = total + "px";
-    cm.display.gutters.style.height = Math.max(total + scrollGap(cm), measure.clientHeight) + "px";
+    cm.display.heightForcer.style.top = measure.docHeight + "px";
+    cm.display.gutters.style.height = Math.max(measure.docHeight + cm.display.barHeight + scrollGap(cm),
+                                               measure.clientHeight) + "px";
   }
 
   // Read the actual heights of the rendered lines, and update their
@@ -2609,10 +2610,11 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
       if (reset && cm.doc.sel.contains(pos) == -1)
         operation(cm, setSelection)(cm.doc, simpleSelection(pos), sel_dontScroll);
 
-      var oldCSS = te.style.cssText;
-      input.wrapper.style.position = "absolute";
-      te.style.cssText = "position: fixed; width: 30px; height: 30px; top: " + (e.clientY - 5) +
-        "px; left: " + (e.clientX - 5) + "px; z-index: 1000; background: " +
+      var oldCSS = te.style.cssText, oldWrapperCSS = input.wrapper.style.cssText;
+      input.wrapper.style.cssText = "position: absolute"
+      var wrapperBox = input.wrapper.getBoundingClientRect()
+      te.style.cssText = "position: absolute; width: 30px; height: 30px; top: " + (e.clientY - wrapperBox.top - 5) +
+        "px; left: " + (e.clientX - wrapperBox.left - 5) + "px; z-index: 1000; background: " +
         (ie ? "rgba(255, 255, 255, .05)" : "transparent") +
         "; outline: none; border-width: 0; outline: none; overflow: hidden; opacity: .05; filter: alpha(opacity=5);";
       if (webkit) var oldScrollY = window.scrollY; // Work around Chrome issue (#2712)
@@ -2643,7 +2645,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
       }
       function rehide() {
         input.contextMenuPending = false;
-        input.wrapper.style.position = "relative";
+        input.wrapper.style.cssText = oldWrapperCSS
         te.style.cssText = oldCSS;
         if (ie && ie_version < 9) display.scrollbars.setScrollTop(display.scroller.scrollTop = scrollPos);
 
@@ -8747,9 +8749,9 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
         var spans = line.markedSpans;
         if (spans) for (var i = 0; i < spans.length; i++) {
           var span = spans[i];
-          if (!(lineNo == from.line && from.ch > span.to ||
-                span.from == null && lineNo != from.line||
-                lineNo == to.line && span.from > to.ch) &&
+          if (!(span.to != null && lineNo == from.line && from.ch > span.to ||
+                span.from == null && lineNo != from.line ||
+                span.from != null && lineNo == to.line && span.from > to.ch) &&
               (!filter || filter(span.marker)))
             found.push(span.marker.parent || span.marker);
         }
@@ -10011,7 +10013,7 @@ CodeMirror.overlayMode = function(base, overlay, combine) {
 
   // THE END
 
-  CodeMirror.version = "5.11.1";
+  CodeMirror.version = "5.12.1";
 
   return CodeMirror;
 });
@@ -10164,8 +10166,8 @@ CodeMirror.defineMode("gfm", function(config, modeConfig) {
 
 CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 
-  var htmlFound = CodeMirror.modes.hasOwnProperty("xml");
-  var htmlMode = CodeMirror.getMode(cmCfg, htmlFound ? {name: "xml", htmlMode: true} : "text/plain");
+  var htmlMode = CodeMirror.getMode(cmCfg, "text/html");
+  var htmlModeMissing = htmlMode.name == "null"
 
   function getMode(name) {
     if (CodeMirror.findModeByName) {
@@ -10270,7 +10272,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
     state.quote = 0;
     // Reset state.indentedCode
     state.indentedCode = false;
-    if (!htmlFound && state.f == htmlBlock) {
+    if (htmlModeMissing && state.f == htmlBlock) {
       state.f = inlineNormal;
       state.block = blockNormal;
     }
@@ -10373,12 +10375,15 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 
   function htmlBlock(stream, state) {
     var style = htmlMode.token(stream, state.htmlState);
-    if ((htmlFound && state.htmlState.tagStart === null &&
-         (!state.htmlState.context && state.htmlState.tokenize.isInText)) ||
-        (state.md_inside && stream.current().indexOf(">") > -1)) {
-      state.f = inlineNormal;
-      state.block = blockNormal;
-      state.htmlState = null;
+    if (!htmlModeMissing) {
+      var inner = CodeMirror.innerMode(htmlMode, state.htmlState)
+      if ((inner.mode.name == "xml" && inner.state.tagStart === null &&
+           (!inner.state.context && inner.state.tokenize.isInText)) ||
+          (state.md_inside && stream.current().indexOf(">") > -1)) {
+        state.f = inlineNormal;
+        state.block = blockNormal;
+        state.htmlState = null;
+      }
     }
     return style;
   }
@@ -10527,15 +10532,6 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 
     var ch = stream.next();
 
-    if (ch === '\\') {
-      stream.next();
-      if (modeCfg.highlightFormatting) {
-        var type = getType(state);
-        var formattingEscape = tokenTypes.formatting + "-escape";
-        return type ? type + " " + formattingEscape : formattingEscape;
-      }
-    }
-
     // Matches link titles present on next line
     if (state.linkTitle) {
       state.linkTitle = false;
@@ -10569,6 +10565,15 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       }
     } else if (state.code) {
       return getType(state);
+    }
+
+    if (ch === '\\') {
+      stream.next();
+      if (modeCfg.highlightFormatting) {
+        var type = getType(state);
+        var formattingEscape = tokenTypes.formatting + "-escape";
+        return type ? type + " " + formattingEscape : formattingEscape;
+      }
     }
 
     if (ch === '!' && stream.match(/\[[^\]]*\] ?(?:\(|\[)/, false)) {
@@ -10999,6 +11004,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Embedded Ruby", mime: "application/x-erb", mode: "htmlembedded", ext: ["erb"]},
     {name: "Erlang", mime: "text/x-erlang", mode: "erlang", ext: ["erl"]},
     {name: "Factor", mime: "text/x-factor", mode: "factor", ext: ["factor"]},
+    {name: "FCL", mime: "text/x-fcl", mode: "fcl"},
     {name: "Forth", mime: "text/x-forth", mode: "forth", ext: ["forth", "fth", "4th"]},
     {name: "Fortran", mime: "text/x-fortran", mode: "fortran", ext: ["f", "for", "f77", "f90"]},
     {name: "F#", mime: "text/x-fsharp", mode: "mllike", ext: ["fs"], alias: ["fsharp"]},
@@ -11006,7 +11012,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "Gherkin", mime: "text/x-feature", mode: "gherkin", ext: ["feature"]},
     {name: "GitHub Flavored Markdown", mime: "text/x-gfm", mode: "gfm", file: /^(readme|contributing|history).md$/i},
     {name: "Go", mime: "text/x-go", mode: "go", ext: ["go"]},
-    {name: "Groovy", mime: "text/x-groovy", mode: "groovy", ext: ["groovy"]},
+    {name: "Groovy", mime: "text/x-groovy", mode: "groovy", ext: ["groovy", "gradle"]},
     {name: "HAML", mime: "text/x-haml", mode: "haml", ext: ["haml"]},
     {name: "Haskell", mime: "text/x-haskell", mode: "haskell", ext: ["hs"]},
     {name: "Haskell (Literate)", mime: "text/x-literate-haskell", mode: "haskell-literate", ext: ["lhs"]},
@@ -11035,7 +11041,7 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "MariaDB SQL", mime: "text/x-mariadb", mode: "sql"},
     {name: "Mathematica", mime: "text/x-mathematica", mode: "mathematica", ext: ["m", "nb"]},
     {name: "Modelica", mime: "text/x-modelica", mode: "modelica", ext: ["mo"]},
-    {name: "MUMPS", mime: "text/x-mumps", mode: "mumps"},
+    {name: "MUMPS", mime: "text/x-mumps", mode: "mumps", ext: ["mps"]},
     {name: "MS SQL", mime: "text/x-mssql", mode: "sql"},
     {name: "MySQL", mime: "text/x-mysql", mode: "sql"},
     {name: "Nginx", mime: "text/x-nginx-conf", mode: "nginx", file: /nginx.*\.conf$/i},
@@ -11078,7 +11084,6 @@ CodeMirror.defineMIME("text/x-markdown", "markdown");
     {name: "SQL", mime: "text/x-sql", mode: "sql", ext: ["sql"]},
     {name: "Squirrel", mime: "text/x-squirrel", mode: "clike", ext: ["nut"]},
     {name: "Swift", mime: "text/x-swift", mode: "swift", ext: ["swift"]},
-    {name: "MariaDB", mime: "text/x-mariadb", mode: "sql"},
     {name: "sTeX", mime: "text/x-stex", mode: "stex"},
     {name: "LaTeX", mime: "text/x-latex", mode: "stex", ext: ["text", "ltx"], alias: ["tex"]},
     {name: "SystemVerilog", mime: "text/x-systemverilog", mode: "verilog", ext: ["v"]},
@@ -11392,7 +11397,7 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
       if (state.context && state.context.tagName != tagName &&
           config.implicitlyClosed.hasOwnProperty(state.context.tagName))
         popContext(state);
-      if (state.context && state.context.tagName == tagName) {
+      if ((state.context && state.context.tagName == tagName) || config.matchClosing === false) {
         setStyle = "tag";
         return closeState;
       } else {
@@ -14100,7 +14105,7 @@ var toolbarBuiltInButtons = {
 	},
 	"guide": {
 		name: "guide",
-		action: "http://nextstepwebs.github.io/simplemde-markdown-editor/markdown-guide",
+		action: "https://simplemde.com/markdown-guide",
 		className: "fa fa-question-circle",
 		title: "Markdown Guide",
 		default: true
@@ -14278,7 +14283,9 @@ SimpleMDE.prototype.markdown = function(text) {
 
 
 		// Update options
-		if(this.options && this.options.renderingConfig && this.options.renderingConfig.singleLineBreaks !== false) {
+		if(this.options && this.options.renderingConfig && this.options.renderingConfig.singleLineBreaks === false) {
+			markedOptions.breaks = false;
+		} else {
 			markedOptions.breaks = true;
 		}
 
