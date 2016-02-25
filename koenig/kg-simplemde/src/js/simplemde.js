@@ -1486,6 +1486,13 @@ SimpleMDE.prototype.render = function(el) {
 		placeholder: options.placeholder || el.getAttribute("placeholder") || ""
 	});
 
+	if(options.forceSync === true) {
+		var cm = this.codemirror;
+		cm.on("change", function() {
+			cm.save();
+		});
+	}
+
 	this.gui = {};
 
 	if(options.toolbar !== false) {
