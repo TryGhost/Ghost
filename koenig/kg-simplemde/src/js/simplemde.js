@@ -1392,7 +1392,9 @@ SimpleMDE.prototype.markdown = function(text) {
 
 
 		// Update options
-		if(this.options && this.options.renderingConfig && this.options.renderingConfig.singleLineBreaks !== false) {
+		if(this.options && this.options.renderingConfig && this.options.renderingConfig.singleLineBreaks === false) {
+			markedOptions.breaks = false;
+		} else {
 			markedOptions.breaks = true;
 		}
 
