@@ -5,10 +5,10 @@ var Promise       = require('bluebird'),
     uuid          = require('node-uuid'),
     db            = require('../../server/data/db'),
     migration     = require('../../server/data/migration/'),
+    mainFixtures = require('../../server/data/migration/fixtures').fixtures,
     Models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
-    permsFixtures = require('../../server/data/migration/fixtures/permissions/permissions.json'),
     sequence      = require('../../server/utils/sequence'),
     DataGenerator = require('./fixtures/data-generator'),
     filterData    = require('./fixtures/filter-param'),
@@ -316,8 +316,8 @@ fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        var permsToInsert = permsFixtures.permissions[obj],
-            permsRolesToInsert = permsFixtures.permissions_roles,
+        var permsToInsert = _.filter(mainFixtures.models.Permission, function (perm) { return perm.object_type === obj; }),
+            permsRolesToInsert = mainFixtures.relations[0].entries,
             actions = [],
             permissionsRoles = [],
             roles = {
