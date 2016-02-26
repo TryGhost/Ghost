@@ -61,8 +61,7 @@
 /* The modal
 /* ---------------------------------------------------------- */
 
-.fullscreen-modal .image-uploader,
-.fullscreen-modal .pre-image-uploader {
+.fullscreen-modal .gh-image-uploader {
     margin: 0;
 }
 

@@ -102,16 +102,23 @@
     padding: 0 24px 24px;
 }
 
-.settings-menu-content .image-uploader {
+.settings-menu-content .gh-image-uploader {
     margin: 0 0 1.6rem 0;
 }
 
-.settings-menu-content .image-uploader .description {
+.settings-menu-content .gh-image-uploader .description {
     font-size: 1.4rem;
 }
 
-.settings-menu-content .image-uploader.image-uploader-url {
+.settings-menu-content .gh-image-uploader form {
     padding: 35px 45px;
+}
+
+.settings-menu-content .gh-image-uploader.--with-image {
+    margin-top: 0;
+    min-height: 50px;
+    max-height: 250px;
+    width: auto;
 }
 
 .settings-menu-content textarea {
@@ -136,13 +143,6 @@
 
 .settings-menu-content .nav-list {
     margin-top: 3rem;
-}
-
-.settings-menu-content .pre-image-uploader {
-    margin-top: 0;
-    min-height: 50px;
-    max-height: 250px;
-    width: auto;
 }
 
 .settings-menu-content .word-count {
