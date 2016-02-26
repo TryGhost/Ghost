@@ -75,7 +75,7 @@ describeComponent(
                 {{gh-tag-settings-form tag=tag setProperty=(action 'setProperty')}}
             `);
 
-            expect(this.$('.image-uploader').length, 'displays image uploader').to.equal(1);
+            expect(this.$('.gh-image-uploader').length, 'displays image uploader').to.equal(1);
             expect(this.$('input[name="name"]').val(), 'name field value').to.equal('Test');
             expect(this.$('input[name="slug"]').val(), 'slug field value').to.equal('test');
             expect(this.$('textarea[name="description"]').val(), 'description field value').to.equal('Description.');
