@@ -92,13 +92,13 @@ describe('Acceptance: Settings - General', function () {
             click('.blog-logo');
 
             andThen(() => {
-                expect(find('.fullscreen-modal .modal-content .js-drop-zone').length, 'modal selector').to.equal(1);
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
             });
 
-            click('.fullscreen-modal .modal-content .js-drop-zone .js-cancel');
+            click('.fullscreen-modal .modal-content .gh-image-uploader .image-cancel');
 
             andThen(() => {
-                expect(find('.fullscreen-modal .modal-content .js-drop-zone .description').text()).to.equal('Add image');
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader .description').text()).to.equal('Upload an image');
             });
 
             // click cancel button
@@ -111,7 +111,7 @@ describe('Acceptance: Settings - General', function () {
             click('.blog-cover');
 
             andThen(() => {
-                expect(find('.fullscreen-modal .modal-content .js-drop-zone').length, 'modal selector').to.equal(1);
+                expect(find('.fullscreen-modal .modal-content .gh-image-uploader').length, 'modal selector').to.equal(1);
             });
 
             click('.fullscreen-modal .modal-footer .js-button-accept');

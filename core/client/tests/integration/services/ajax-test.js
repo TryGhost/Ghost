@@ -5,11 +5,12 @@ import {
 } from 'ember-mocha';
 import Pretender from 'pretender';
 import {AjaxError, UnauthorizedError} from 'ember-ajax/errors';
+import {RequestEntityTooLargeError, UnsupportedMediaTypeError} from 'ghost/services/ajax';
 
-function stubAjaxEndpoint(server, response) {
+function stubAjaxEndpoint(server, response = {}, code = 500) {
     server.get('/test/', function () {
         return [
-            500,
+            code,
             {'Content-Type': 'application/json'},
             JSON.stringify(response)
         ];
@@ -89,13 +90,7 @@ describeModule(
         });
 
         it('returns known error object for built-in errors', function (done) {
-            server.get('/test/', function () {
-                return [
-                    401,
-                    {'Content-Type': 'application/json'},
-                    ''
-                ];
-            });
+            stubAjaxEndpoint(server, '', 401);
 
             let ajax = this.subject();
 
@@ -103,6 +98,32 @@ describeModule(
                 expect(false).to.be.true;
             }).catch((error) => {
                 expect(error).to.be.instanceOf(UnauthorizedError);
+                done();
+            });
+        });
+
+        it('returns RequestEntityTooLargeError object for 413 errors', function (done) {
+            stubAjaxEndpoint(server, {}, 413);
+
+            let ajax = this.subject();
+
+            ajax.request('/test/').then(() => {
+                expect(false).to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.instanceOf(RequestEntityTooLargeError);
+                done();
+            });
+        });
+
+        it('returns UnsupportedMediaTypeError object for 415 errors', function (done) {
+            stubAjaxEndpoint(server, {}, 415);
+
+            let ajax = this.subject();
+
+            ajax.request('/test/').then(() => {
+                expect(false).to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.instanceOf(UnsupportedMediaTypeError);
                 done();
             });
         });
