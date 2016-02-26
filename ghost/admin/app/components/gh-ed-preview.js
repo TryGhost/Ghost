@@ -1,23 +1,25 @@
 import Ember from 'ember';
-import uploader from 'ghost/assets/lib/uploader';
 
 const {
     $,
     Component,
-    inject: {service},
-    run
+    run,
+    uuid
 } = Ember;
 
 export default Component.extend({
-    config: service(),
-
     _scrollWrapper: null,
+
+    init() {
+        this._super(...arguments);
+        this.set('imageUploadComponents', Ember.A([]));
+    },
 
     didInsertElement() {
         this._super(...arguments);
         this._scrollWrapper = this.$().closest('.entry-preview-content');
         this.adjustScrollPosition(this.get('scrollPosition'));
-        run.scheduleOnce('afterRender', this, this.dropzoneHandler);
+        run.scheduleOnce('afterRender', this, this.registerImageUploadComponents);
     },
 
     didReceiveAttrs(attrs) {
@@ -32,7 +34,14 @@ export default Component.extend({
         }
 
         if (attrs.newAttrs.markdown.value !== attrs.oldAttrs.markdown.value) {
-            run.scheduleOnce('afterRender', this, this.dropzoneHandler);
+            // we need to clear the rendered components as we are unable to
+            // retain a reliable reference for the component's position in the
+            // document
+            // TODO: it may be possible to extract the dropzones and use the
+            // image src as a key, re-connecting any that match and
+            // dropping/re-rendering any unknown/no-source instances
+            this.set('imageUploadComponents', Ember.A([]));
+            run.scheduleOnce('afterRender', this, this.registerImageUploadComponents);
         }
     },
 
@@ -44,22 +53,38 @@ export default Component.extend({
         }
     },
 
-    dropzoneHandler() {
-        let dropzones = $('.js-drop-zone[data-uploaderui!="true"]');
+    registerImageUploadComponents() {
+        let dropzones = $('.js-drop-zone');
 
-        if (dropzones.length) {
-            uploader.call(dropzones, {
-                editor: true,
-                fileStorage: this.get('config.fileStorage')
+        dropzones.each((i, el) => {
+            let id = uuid();
+            let destinationElementId = `image-uploader-${id}`;
+            let src = $(el).find('.js-upload-target').attr('src');
+
+            let imageUpload = Ember.Object.create({
+                destinationElementId,
+                id,
+                src,
+                index: i
             });
 
-            dropzones.on('uploadstart', run.bind(this, 'sendAction', 'uploadStarted'));
-            dropzones.on('uploadfailure', run.bind(this, 'sendAction', 'uploadFinished'));
-            dropzones.on('uploadsuccess', run.bind(this, 'sendAction', 'uploadFinished'));
-            dropzones.on('uploadsuccess', run.bind(this, 'sendAction', 'uploadSuccess'));
+            el.id = destinationElementId;
+            $(el).empty();
+            $(el).removeClass('image-uploader');
 
-            // Set the current height so we can listen
-            this.sendAction('updateHeight', this.$().height());
+            run.schedule('afterRender', () => {
+                this.get('imageUploadComponents').pushObject(imageUpload);
+            });
+        });
+    },
+
+    actions: {
+        updateImageSrc(index, url) {
+            this.attrs.updateImageSrc(index, url);
+        },
+
+        updateHeight() {
+            this.attrs.updateHeight(this.$().height());
         }
     }
 });
