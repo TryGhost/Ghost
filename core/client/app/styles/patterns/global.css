@@ -340,14 +340,19 @@ img {
     border: 0;
 }
 
-.sr-only:active,
-.sr-only:focus {
-    position: static;
+.sr-only-focusable:focus {
+    z-index: 900;
     overflow: visible;
     clip: auto;
     margin: 0;
+    padding: 0 10px;
     width: auto;
     height: auto;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    line-height: 49px;
+    font-weight: bold;
 }
 
 .right {
