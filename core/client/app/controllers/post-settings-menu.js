@@ -290,10 +290,6 @@ export default Controller.extend(SettingsMenuMixin, {
          * (#1351)
          */
         setPublishedAt(userInput) {
-            let newPublishedAt = parseDateString(userInput);
-            let publishedAt = moment(this.get('model.publishedAt'));
-            let errMessage = '';
-
             if (!userInput) {
                 // Clear out the publishedAt field for a draft
                 if (this.get('model.isDraft')) {
@@ -303,12 +299,18 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
+            let newPublishedAt = parseDateString(userInput);
+            let publishedAt = moment(this.get('model.publishedAt'));
+            let errMessage = '';
+
+            // Clear previous errors
+            this.get('model.errors').remove('post-setting-date');
+
             // Validate new Published date
             if (!newPublishedAt.isValid()) {
                 errMessage = 'Published Date must be a valid date with format: ' +
                     'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
-            }
-            if (newPublishedAt.diff(new Date(), 'h') > 0) {
+            } else if (newPublishedAt.diff(new Date(), 'h') > 0) {
                 errMessage = 'Published Date cannot currently be in the future.';
             }
 
@@ -318,13 +320,13 @@ export default Controller.extend(SettingsMenuMixin, {
                 return;
             }
 
-            // Do nothing if the user didn't actually change the date
+            // Validation complete, update the view
+            this.set('model.publishedAt', newPublishedAt);
+
+            // Don't save the date if the user didn't actually changed the date
             if (publishedAt && publishedAt.isSame(newPublishedAt)) {
                 return;
             }
-
-            // Validation complete
-            this.set('model.publishedAt', newPublishedAt);
 
             // If this is a new post.  Don't save the model.  Defer the save
             // to the user pressing the save button
