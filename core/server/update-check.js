@@ -42,7 +42,7 @@ function updateCheckError(error) {
     api.settings.edit(
         {settings: [{key: 'nextUpdateCheck', value: Math.round(Date.now() / 1000 + 24 * 3600)}]},
         internal
-    ).catch(errors.rejectError);
+    );
 
     errors.logError(
         error,
@@ -65,22 +65,19 @@ function updateCheckData() {
         mailConfig.transport);
 
     return Promise.props({
-        hash: api.settings.read(_.extend({key: 'dbHash'}, internal)).catch(errors.rejectError).reflect(),
-        theme: api.settings.read(_.extend({key: 'activeTheme'}, internal)).catch(errors.rejectError).reflect(),
+        hash: api.settings.read(_.extend({key: 'dbHash'}, internal)).reflect(),
+        theme: api.settings.read(_.extend({key: 'activeTheme'}, internal)).reflect(),
         apps: api.settings.read(_.extend({key: 'activeApps'}, internal))
             .then(function (response) {
                 var apps = response.settings[0];
-                try {
-                    apps = JSON.parse(apps.value);
-                } catch (e) {
-                    return errors.rejectError(e);
-                }
+
+                apps = JSON.parse(apps.value);
 
                 return _.reduce(apps, function (memo, item) { return memo === '' ? memo + item : memo + ', ' + item; }, '');
-            }).catch(errors.rejectError).reflect(),
-        posts: api.posts.browse().catch(errors.rejectError).reflect(),
-        users: api.users.browse(internal).catch(errors.rejectError).reflect(),
-        npm: Promise.promisify(exec)('npm -v').catch(errors.rejectError).reflect()
+            }).reflect(),
+        posts: api.posts.browse().reflect(),
+        users: api.users.browse(internal).reflect(),
+        npm: Promise.promisify(exec)('npm -v').reflect()
     }).then(function (descriptors) {
         var hash             = descriptors.hash.value().settings[0],
             theme            = descriptors.theme.value().settings[0],
@@ -163,20 +160,14 @@ function updateCheckResponse(response) {
         api.settings.edit(
             {settings: [{key: 'nextUpdateCheck', value: response.next_check}]},
             internal
-        ).catch(errors.rejectError).reflect(),
+        ),
         api.settings.edit(
             {settings: [{key: 'displayUpdateNotification', value: response.version}]},
             internal
-        ).catch(errors.rejectError).reflect()
+        )
     );
 
-    return Promise.map(ops).then(function then(descriptors) {
-        descriptors.forEach(function forEach(d) {
-            if (!d.isFulfilled()) {
-                errors.rejectError(d.reason());
-            }
-        });
-    });
+    return Promise.all(ops);
 }
 
 function updateCheck() {
