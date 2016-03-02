@@ -471,9 +471,9 @@ setup = function setup() {
         args = arguments;
 
     return function (done) {
-        return Models.init().then(function () {
-            return initFixtures.apply(self, args);
-        }).then(function () {
+        Models.init();
+
+        return initFixtures.apply(self, args).then(function () {
             done();
         }).catch(done);
     };
