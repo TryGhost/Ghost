@@ -31,9 +31,9 @@ var should           = require('should'),
 describe('Auth Strategies', function () {
     var next;
 
-    before(function (done) {
+    before(function () {
         // Loads all the models
-        Models.init().then(done).catch(done);
+        Models.init();
     });
 
     beforeEach(function () {
