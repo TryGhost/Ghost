@@ -22,8 +22,9 @@ apiRoutes = function apiRoutes(middleware) {
     router.del = router.delete;
 
     // ## Configuration
-    router.get('/configuration', authenticatePrivate, api.http(api.configuration.browse));
+    router.get('/configuration', authenticatePrivate, api.http(api.configuration.read));
     router.get('/configuration/:key', authenticatePrivate, api.http(api.configuration.read));
+    router.get('/configuration/timezones', authenticatePrivate, api.http(api.configuration.read));
 
     // ## Posts
     router.get('/posts', authenticatePublic, api.http(api.posts.browse));

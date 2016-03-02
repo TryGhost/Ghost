@@ -10,7 +10,7 @@ var hbs             = require('express-hbs'),
     hbsUtils        = hbs.handlebars.Utils,
     foreach;
 
-foreach = function (context, options) {
+foreach = function (itemType, options) {
     if (!options) {
         errors.logWarn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
     }
@@ -18,7 +18,7 @@ foreach = function (context, options) {
     var fn = options.fn,
         inverse = options.inverse,
         columns = options.hash.columns,
-        length = _.size(context),
+        length = _.size(itemType),
         limit = parseInt(options.hash.limit, 10) || length,
         from = parseInt(options.hash.from, 10) || 1,
         to = parseInt(options.hash.to, 10) || (from - 1) + limit,
@@ -30,8 +30,8 @@ foreach = function (context, options) {
         contextPath = hbsUtils.appendContextPath(options.data.contextPath, options.ids[0]) + '.';
     }
 
-    if (hbsUtils.isFunction(context)) {
-        context = context.call(this);
+    if (hbsUtils.isFunction(itemType)) {
+        itemType = itemType.call(this);
     }
 
     if (options.data) {
@@ -55,9 +55,9 @@ foreach = function (context, options) {
             }
         }
 
-        output = output + fn(context[field], {
+        output = output + fn(itemType[field], {
             data: data,
-            blockParams: hbsUtils.blockParams([context[field], field], [contextPath + field, null])
+            blockParams: hbsUtils.blockParams([itemType[field], field], [contextPath + field, null])
         });
     }
 
@@ -79,8 +79,8 @@ foreach = function (context, options) {
         });
     }
 
-    if (context && typeof context === 'object') {
-        iterateCollection(context);
+    if (itemType && typeof itemType === 'object') {
+        iterateCollection(itemType);
     }
 
     if (length === 0) {
