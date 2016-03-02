@@ -170,15 +170,16 @@ validate = function validate(data) {
 
     _.each(_.keys(data.data), function (tableName) {
         _.each(data.data[tableName], function (importValues) {
-            validateOps.push(validation.validateSchema(tableName, importValues));
+            validateOps.push(validation.
+                validateSchema(tableName, importValues).reflect());
         });
     });
 
-    return Promise.settle(validateOps).then(function (descriptors) {
+    return Promise.all(validateOps).then(function (descriptors) {
         var errorList = [];
 
         _.each(descriptors, function (d) {
-            if (d.isRejected()) {
+            if (!d.isFulfilled()) {
                 errorList = errorList.concat(d.reason());
             }
         });
