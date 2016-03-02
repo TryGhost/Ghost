@@ -12,9 +12,8 @@ var should = require('should'),
 
 describe('Filter', function () {
     before(function () {
-        return models.init().then(function () {
-            ghostBookshelf = models.Base;
-        });
+        models.init();
+        ghostBookshelf = models.Base;
     });
 
     beforeEach(function () {

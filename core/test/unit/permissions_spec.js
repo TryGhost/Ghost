@@ -19,8 +19,8 @@ describe('Permissions', function () {
     });
 
     describe('actions map', function () {
-        before(function (done) {
-            Models.init().then(done).catch(done);
+        before(function () {
+            Models.init();
         });
 
         beforeEach(function () {

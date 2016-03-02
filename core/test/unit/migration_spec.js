@@ -976,20 +976,18 @@ describe('Migrations', function () {
     describe('FixClientSecret', function () {
         var fixClientSecret, queryStub, clientForgeStub, clientEditStub, toStringStub, cryptoStub;
 
-        beforeEach(function (done) {
+        beforeEach(function () {
             fixClientSecret = migration.__get__('fixClientSecret');
             queryStub = {
                 query: sandbox.stub().returnsThis(),
                 fetch: sandbox.stub()
             };
 
-            models.init().then(function () {
-                toStringStub = {toString: sandbox.stub().returns('TEST')};
-                cryptoStub = sandbox.stub(crypto, 'randomBytes').returns(toStringStub);
-                clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
-                clientEditStub = sandbox.stub(models.Client, 'edit');
-                done();
-            }).catch(done);
+            models.init();
+            toStringStub = {toString: sandbox.stub().returns('TEST')};
+            cryptoStub = sandbox.stub(crypto, 'randomBytes').returns(toStringStub);
+            clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
+            clientEditStub = sandbox.stub(models.Client, 'edit');
         });
 
         it('should do nothing if there are no incorrect secrets', function (done) {
