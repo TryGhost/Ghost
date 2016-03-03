@@ -347,4 +347,14 @@ export function testConfig() {
             users: [db.users.find(request.params.id)]
         };
     });
+
+    this.put('/users/:id/', function (db, request) {
+        let {id} = request.params;
+        let [attrs] = JSON.parse(request.requestBody).users;
+        let record = db.users.update(id, attrs);
+
+        return {
+            user: record
+        };
+    });
 }
