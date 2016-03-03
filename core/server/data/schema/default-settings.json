@@ -61,6 +61,12 @@
         "ghost_foot": {
             "defaultValue" : ""
         },
+        "facebook": {
+            "defaultValue" : ""
+        },
+        "twitter": {
+            "defaultValue" : ""
+        },
         "labs": {
             "defaultValue": "{}"
         },

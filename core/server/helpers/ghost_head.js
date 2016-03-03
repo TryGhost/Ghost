@@ -75,6 +75,7 @@ function ghost_head(options) {
     if (this.statusCode >= 400) {
         return;
     }
+
     var metaData = getMetaData(this, options.data.root),
         head = [],
         context = this.context ? this.context[0] : null,
