@@ -6,7 +6,9 @@ describe('getStructuredData', function () {
     it('should return structured data from metadata', function () {
         var metadata = {
             blog: {
-                title: 'Blog Title'
+                title: 'Blog Title',
+                facebook: 'https://www.facebook.com/testuser',
+                twitter: 'https://twitter.com/testuser'
             },
             authorName: 'Test User',
             ogType: 'article',
@@ -23,6 +25,7 @@ describe('getStructuredData', function () {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'article:published_time': '2015-12-25T05:35:01.234Z',
             'article:tag': ['one', 'two', 'tag'],
+            'article:publisher': 'https://www.facebook.com/testuser',
             'og:description': 'Post meta description',
             'og:image': 'http://mysite.com/content/image/mypostcoverimage.jpg',
             'og:site_name': 'Blog Title',
@@ -37,14 +40,17 @@ describe('getStructuredData', function () {
             'twitter:label1': 'Written by',
             'twitter:label2': 'Filed under',
             'twitter:title': 'Post Title',
-            'twitter:url': 'http://mysite.com/post/my-post-slug/'
+            'twitter:url': 'http://mysite.com/post/my-post-slug/',
+            'twitter:site': 'https://twitter.com/testuser'
         });
     });
 
     it('should return structured data from metadata with no nulls', function () {
         var metadata = {
             blog: {
-                title: 'Blog Title'
+                title: 'Blog Title',
+                facebook: 'https://www.facebook.com/testuser',
+                twitter: 'https://twitter.com/testuser'
             },
             authorName: 'Test User',
             ogType: 'article',
@@ -58,6 +64,7 @@ describe('getStructuredData', function () {
 
         should.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
+            'article:publisher': 'https://www.facebook.com/testuser',
             'og:site_name': 'Blog Title',
             'og:title': 'Post Title',
             'og:type': 'article',
@@ -66,7 +73,8 @@ describe('getStructuredData', function () {
             'twitter:data1': 'Test User',
             'twitter:label1': 'Written by',
             'twitter:title': 'Post Title',
-            'twitter:url': 'http://mysite.com/post/my-post-slug/'
+            'twitter:url': 'http://mysite.com/post/my-post-slug/',
+            'twitter:site': 'https://twitter.com/testuser'
         });
     });
 });

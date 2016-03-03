@@ -169,6 +169,28 @@ export default [
         value: ''
     },
     {
+        created_at: '2015-09-11T09:44:30.810Z',
+        created_by: 1,
+        id: 16,
+        key: 'facebook',
+        type: 'blog',
+        updated_at: '2015-09-23T13:32:49.868Z',
+        updated_by: 1,
+        uuid: 'f8e8cbda-d079-11e5-ab30-625662870761',
+        value: ''
+    },
+    {
+        created_at: '2015-09-11T09:44:30.810Z',
+        created_by: 1,
+        id: 17,
+        key: 'twitter',
+        type: 'blog',
+        updated_at: '2015-09-23T13:32:49.868Z',
+        updated_by: 1,
+        uuid: 'f8e8cbda-d079-11e5-ab30-625662870761',
+        value: ''
+    },
+    {
         key: 'availableThemes',
         value: [
             {

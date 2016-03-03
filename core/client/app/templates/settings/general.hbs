@@ -114,6 +114,28 @@
                     {{/gh-form-group}}
                 {{/if}}
             </fieldset>
+
+            <fieldset>
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="facebook"}}
+                    <label for="facebook">Facebook</label>
+                    {{gh-input class="gh-input" id="facebook" value=facebookUrl name="general[facebook]" focus-out="validateFacebookUrl" placeholder="https://www.facebook.com/<your username>" autocorrect="off"}}
+                    {{#unless model.errors.facebook}}
+                        <p>The URL of your Facebook account</p>
+                    {{else}}
+                        {{gh-error-message errors=model.errors property="facebook"}}
+                    {{/unless}}
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitter"}}
+                    <label for="twitter">Twitter</label>
+                    {{gh-input class="gh-input" id="twitter" value=twitterUrl name="general[twitter]" focus-out="validateTwitterUrl" placeholder="https://twitter.com/<your username>" autocorrect="off"}}
+                    {{#unless model.errors.twitter}}
+                        <p>The URL of your Twitter account</p>
+                    {{else}}
+                        {{gh-error-message errors=model.errors property="twitter"}}
+                    {{/unless}}
+                {{/gh-form-group}}
+            </fieldset>
         </form>
     </section>
 </section>
