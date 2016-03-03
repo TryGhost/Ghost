@@ -180,6 +180,28 @@ export default [
         value: '[{"url":""}]'
     },
     {
+        created_at: '2016-05-05T15:40:12.133Z',
+        created_by: 1,
+        id: 23,
+        key: 'facebook',
+        type: 'blog',
+        updated_at: '2016-05-08T15:20:25.953Z',
+        updated_by: 1,
+        uuid: 'd4387e5c-3230-46dd-a89b-0d8a40365c35',
+        value: ''
+    },
+    {
+        created_at: '2016-05-05T15:40:12.134Z',
+        created_by: 1,
+        id: 24,
+        key: 'twitter',
+        type: 'blog',
+        updated_at: '2016-05-08T15:20:25.954Z',
+        updated_by: 1,
+        uuid: '5130441f-e4c7-4750-9692-a22d841ab049',
+        value: ''
+    },
+    {
         key: 'availableThemes',
         value: [
             {

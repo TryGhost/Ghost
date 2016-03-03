@@ -140,6 +140,20 @@
                     <p>Have a website or blog other than this one? Link it!</p>
                 {{/gh-form-group}}
 
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="facebook"}}
+                    <label for="user-facebook">Facebook Profile</label>
+                    <input value={{user.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="user-facebook" name="user[facebook]"  placeholder="https://www.facebook.com/username" autocorrect="off" />
+                    {{gh-error-message errors=user.errors property="facebook"}}
+                    <p>URL of your personal Facebook Profile</p>
+                {{/gh-form-group}}
+
+                {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="twitter"}}
+                    <label for="user-twitter">Twitter Profile</label>
+                    <input value={{user.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="user-twitter" name="user[twitter]"  placeholder="https://twitter.com/username" autocorrect="off" />
+                    {{gh-error-message errors=user.errors property="twitter"}}
+                    <p>URL of your personal Twitter profile</p>
+                {{/gh-form-group}}
+
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
                     <label for="user-bio">Bio</label>
                     {{textarea id="user-bio" class="gh-input" value=user.bio focusOut=(action "validate" "bio" target=user)}}
