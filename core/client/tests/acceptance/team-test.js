@@ -240,6 +240,8 @@ describe('Acceptance: Team', function () {
 
             beforeEach(function () {
                 server.create('user', {slug: 'test-1', name: 'Test User'});
+
+                server.loadFixtures();
             });
 
             it('input fields reset and validate correctly', function () {
@@ -311,12 +313,80 @@ describe('Acceptance: Team', function () {
                     expect(find('.user-details-bottom .form-group:nth-of-type(4)').hasClass('error'), 'website input should be in error state').to.be.true;
                 });
 
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', ')(*&%^%)');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'name');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/name');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'http://twitter.com/user');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'facebook.com/user');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/user');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', ')(*&%^%)');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', 'name');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/name');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', 'http://github.com/user');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', 'twitter.com/user');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                });
+
                 fillIn('#user-website', '');
                 fillIn('#user-bio', new Array(210).join('a'));
                 triggerEvent('#user-bio', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'bio input should be in error state').to.be.true;
+                    expect(find('.user-details-bottom .form-group:nth-of-type(7)').hasClass('error'), 'bio input should be in error state').to.be.true;
                 });
             });
         });

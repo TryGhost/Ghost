@@ -29,7 +29,11 @@ function getPostSchema(metaData, data) {
             name: escapeExpression(data.post.author.name),
             image: metaData.authorImage,
             url: metaData.authorUrl,
-            sameAs: data.post.author.website || null,
+            sameAs: [
+                data.post.author.website || null,
+                data.post.author.facebook || null,
+                data.post.author.twitter || null
+            ],
             description: data.post.author.bio ?
             escapeExpression(data.post.author.bio) :
             null
@@ -81,7 +85,11 @@ function getAuthorSchema(metaData, data) {
     var schema = {
         '@context': 'http://schema.org',
         '@type': 'Person',
-        sameAs: data.author.website || null,
+        sameAs: [
+            data.author.website || null,
+            data.author.facebook || null,
+            data.author.twitter || null
+        ],
         publisher: escapeExpression(metaData.blog.title),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
