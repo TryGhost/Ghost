@@ -18,8 +18,8 @@ describe('Migrations', function () {
     // both of which are required for migrations to work properly.
     describe('DB version integrity', function () {
         // Only these variables should need updating
-        var currentDbVersion = '004',
-            currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
+        var currentDbVersion = '005',
+            currentSchemaHash = '4ae166ee14946fd617fcbe51b40daa7a',
             currentPermissionsHash = '42e486732270cda623fc5efc04808c0c';
 
         // If this test is failing, then it is likely a change has been made that requires a DB version bump,
@@ -44,4 +44,6 @@ describe('Migrations', function () {
             permissionsHash.should.eql(currentPermissionsHash);
         });
     });
+
+    describe('Builder', function () {});
 });
