@@ -278,6 +278,7 @@
         },
         "api": {
             "authentication": {
+                "setupUnableToRun": "Database missing fixture data. Please reset database and try again.",
                 "setupMustBeCompleted": "Setup must be completed before making this request.",
                 "noEmailProvided": "No email provided.",
                 "invalidEmailReceived": "The server did not receive a valid email",
@@ -287,7 +288,8 @@
                 "notLoggedIn": "You are not logged in.",
                 "notTheBlogOwner": "You are not the blog owner.",
                 "invalidTokenTypeHint": "Invalid token_type_hint given.",
-                "invalidTokenProvided": "Invalid token provided"
+                "invalidTokenProvided": "Invalid token provided",
+                "tokenRevocationFailed": "Token revocation failed"
             },
             "clients": {
                 "clientNotFound": "Client not found."
