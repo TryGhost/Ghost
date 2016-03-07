@@ -251,10 +251,18 @@ fixtures = {
     // Creates a client, and access and refresh tokens for user 3 (author)
     createTokensForUser: function createTokensForUser() {
         return db.knex('clients').insert(DataGenerator.forKnex.clients).then(function () {
-            return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken({user_id: 3}));
+            return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken({id:1, user_id: 3}));
         }).then(function () {
-            return db.knex('refreshtokens').insert(DataGenerator.forKnex.createToken({user_id: 3}));
+            return db.knex('refreshtokens').insert(DataGenerator.forKnex.createToken({id:2, user_id: 3}));
         });
+    },
+
+    createMoreTokens: function createMoreTokens() {
+        return db.knex('accesstokens').insert([
+                DataGenerator.forKnex.createToken({id: 3, user_id: 1}),
+                DataGenerator.forKnex.createToken({id: 4, user_id: 1})
+            ]
+        );
     },
 
     createInvitedUsers: function createInvitedUser() {
@@ -398,6 +406,7 @@ toDoList = {
     'users:roles': function createUsersWithRoles() { return fixtures.createUsersWithRoles(); },
     users: function createExtraUsers() { return fixtures.createExtraUsers(); },
     'user:token': function createTokensForUser() { return fixtures.createTokensForUser(); },
+    tokens: function createMoreTokens() { return fixtures.createMoreTokens(); },
     owner: function insertOwnerUser() { return fixtures.insertOwnerUser(); },
     'owner:pre': function initOwnerUser() { return fixtures.initOwnerUser(); },
     'owner:post': function overrideOwnerUser() { return fixtures.overrideOwnerUser(); },
@@ -582,10 +591,10 @@ module.exports = {
     // Helpers to make it easier to write tests which are easy to read
     context: {
         internal:   {context: {internal: true}},
-        owner:      {context: {user: 1}},
-        admin:      {context: {user: 2}},
-        editor:     {context: {user: 3}},
-        author:     {context: {user: 4}}
+        owner:      {context: {user: 1, token: 3}},
+        admin:      {context: {user: 2, token: 99}},
+        editor:     {context: {user: 3, token: 1}},
+        author:     {context: {user: 4, token: 100}}
     },
     users: {
         ids: {

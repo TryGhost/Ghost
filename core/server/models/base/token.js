@@ -53,7 +53,7 @@ Basetoken = ghostBookshelf.Model.extend({
                 .query('where', 'user_id', '=', userId)
                 .fetch(options)
                 .then(function then(collection) {
-                    collection.invokeThen('destroy', options);
+                    return collection.invokeThen('destroy', options);
                 });
         }
 
@@ -79,6 +79,27 @@ Basetoken = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.base.token.tokenNotFound')));
+    },
+    /**
+     * ### destroyOtherSessions
+     * @param  {[type]} options has token and id where token is the token to preserve and id is the user id which tokens (except one) will be destroyed
+     */
+    destroyOtherSessions: function destroyOtherSessions(options) {
+        var userId = options.id,
+            token = options.context.token;
+        options = this.filterOptions(options, 'destroyByUser');
+        if (token && userId) {
+            return ghostBookshelf.Collection.forge([], {model: this})
+                .query(function (qb) {
+                    qb.where('user_id', userId)
+                      .whereNot('id',token);
+                })
+                .fetch(options)
+                .then(function then(collection) {
+                    return collection.invokeThen('destroy', options);
+                });
+        }
+        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.base.token.tokenOrUserNotFound')));
     }
 });
 
