@@ -402,7 +402,11 @@
             "versioning": {
                 "index": {
                     "dbVersionNotRecognized": "Database version is not recognized",
-                    "settingsTableDoesNotExist": "Settings table does not exist"
+                    "settingsTableDoesNotExist": "Settings table does not exist",
+                    "cannotMigrate": {
+                        "error": "Unable to upgrade from version 0.4.2 or earlier",
+                        "context": "Please upgrade to 0.7.1 first"
+                    }
                 }
             },
             "xml": {
