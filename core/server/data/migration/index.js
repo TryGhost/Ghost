@@ -17,6 +17,7 @@ var _               = require('lodash'),
     schemaTables    = _.keys(schema),
 
     // private
+    modelOptions,
     logInfo,
     populateDefaultSettings,
     fixClientSecret,
@@ -27,6 +28,9 @@ var _               = require('lodash'),
     migrateUp,
     migrateUpFreshDb,
     backupDatabase;
+
+// modelOptions & logInfo are passed through to migration/fixture actions
+modelOptions = {context: {internal: true}};
 
 logInfo = function logInfo(message) {
     errors.logInfo('Migrations', message);
@@ -147,7 +151,7 @@ migrateUpFreshDb = function (tablesOnly) {
     }
     return tableSequence.then(function () {
         // Load the fixtures
-        return fixtures.populate();
+        return fixtures.populate(modelOptions, logInfo);
     }).then(function () {
         return populateDefaultSettings();
     });
@@ -158,6 +162,12 @@ migrateUp = function (fromVersion, toVersion) {
     var oldTables,
         modifyUniCommands = [],
         migrateOps = [];
+
+    // Is the current version lower than the version we can migrate from?
+    // E.g. is this blog's DB older than 003?
+    if (fromVersion < versioning.canMigrateFromVersion) {
+        return versioning.showCannotMigrateError();
+    }
 
     return backupDatabase().then(function () {
         return commands.getTables();
@@ -198,8 +208,11 @@ migrateUp = function (fromVersion, toVersion) {
         // Ensure all of the current default settings are created (these are fixtures, so should be inserted first)
         return populateDefaultSettings();
     }).then(function () {
-        // Finally, run any updates to the fixtures, including default settings
-        return fixtures.update(fromVersion, toVersion);
+        fromVersion = process.env.FORCE_MIGRATION ? versioning.canMigrateFromVersion : fromVersion;
+        var versions = versioning.getMigrationVersions(fromVersion, toVersion);
+        // Finally, run any updates to the fixtures, including default settings, that are required
+        // for anything other than the from/current version (which we're already on)
+        return fixtures.update(versions.slice(1), modelOptions, logInfo);
     });
 };
 

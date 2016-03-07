@@ -57,8 +57,33 @@ function setDatabaseVersion() {
         .update({value: defaultDatabaseVersion});
 }
 
+function pad(num, width) {
+    return Array(Math.max(width - String(num).length + 1, 0)).join(0) + num;
+}
+
+function getMigrationVersions(fromVersion, toVersion) {
+    var versions = [],
+        i;
+    for (i = parseInt(fromVersion, 10); i <= toVersion; i += 1) {
+        versions.push(pad(i, 3));
+    }
+
+    return versions;
+}
+
+function showCannotMigrateError() {
+    return errors.logAndRejectError(
+        i18n.t('errors.data.versioning.index.cannotMigrate.error'),
+        i18n.t('errors.data.versioning.index.cannotMigrate.context'),
+        i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
+    );
+}
+
 module.exports = {
+    canMigrateFromVersion: '003',
+    showCannotMigrateError: showCannotMigrateError,
     getDefaultDatabaseVersion: getDefaultDatabaseVersion,
     getDatabaseVersion: getDatabaseVersion,
-    setDatabaseVersion: setDatabaseVersion
+    setDatabaseVersion: setDatabaseVersion,
+    getMigrationVersions: getMigrationVersions
 };
