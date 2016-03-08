@@ -42,7 +42,18 @@
 
             <div class="form-group">
                 <label for="tag-input">Tags</label>
-                {{gh-selectize
+                {{#power-select-sortable
+                    id="tag-input"
+                    options=availableTags
+                    selected=model.tags
+                    searchField="name"
+                    onchange=(action (mut model.tags))
+                    onkeydown=(action 'createOnEnter')
+                    as |tag|
+                }}
+                    {{tag.name}}
+                {{/power-select-sortable}}
+                {{!-- {{gh-selectize
                     id="tag-input"
                     multiple=true
                     selection=model.tags
@@ -52,7 +63,7 @@
                     openOnFocus=false
                     create-item="addTag"
                     remove-item="removeTag"
-                    plugins="remove_button, drag_drop"}}
+                    plugins="remove_button, drag_drop"}} --}}
             </div>
 
             {{#unless session.user.isAuthor}}

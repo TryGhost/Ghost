@@ -186,6 +186,14 @@ export default Controller.extend(SettingsMenuMixin, {
     },
 
     actions: {
+        // @TODO: fix , and tab handling
+        createOnEnter(select, e) {
+            if ((e.keyCode === 13 || e.keyCode === 9 || e.keyCode === 188) && select.isOpen && !select.highlighted && !Ember.isBlank(select.searchText)) {
+                e.stopPropagation();
+                this.send('addTag', select.searchText, this.get('model.tags.length'));
+            }
+        },
+
         discardEnter() {
             return false;
         },
