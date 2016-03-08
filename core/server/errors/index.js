@@ -17,6 +17,7 @@ var _                          = require('lodash'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
     TooManyRequestsError       = require('./too-many-requests-error'),
+    TokenRevocationError       = require('./token-revocation-error'),
     i18n                       = require('../i18n'),
     config,
     errors,
@@ -431,3 +432,4 @@ module.exports.EmailError                 = EmailError;
 module.exports.DataImportError            = DataImportError;
 module.exports.MethodNotAllowedError      = MethodNotAllowedError;
 module.exports.TooManyRequestsError       = TooManyRequestsError;
+module.exports.TokenRevocationError       = TokenRevocationError;
