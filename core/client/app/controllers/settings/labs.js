@@ -19,6 +19,41 @@ export default Controller.extend({
     ajax: service(),
 
     actions: {
+        onUploadTheme(file) {
+            let formData = new FormData();
+            let notifications = this.get('notifications');
+            let currentUserId = this.get('session.user.id');
+            let dbUrl = this.get('ghostPaths.url').api('themes');
+
+            this.set('uploadButtonText', 'Importing');  
+            this.set('importErrors', '');
+
+            formData.append('importfile', file);
+
+            this.get('ajax').post(dbUrl, {
+                data: formData,
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false
+            }).then(() => {
+                // Clear the store, so that all the new data gets fetched correctly.
+                this.store.unloadAll();
+                // Reload currentUser and set session
+                this.set('session.user', this.store.findRecord('user', currentUserId));
+                // TODO: keep as notification, add link to view content
+                notifications.showNotification('Import successful.', {key: 'import.upload.success'});
+            }).catch((response) => {
+                if (response && response.errors && isArray(response.errors)) {
+                    this.set('importErrors', response.errors);
+                }
+
+                notifications.showAlert('Import Failed', {type: 'error', key: 'import.upload.failed'});
+            }).finally(() => {
+                this.set('uploadButtonText', 'Import');
+            });
+        },
+        
         onUpload(file) {
             let formData = new FormData();
             let notifications = this.get('notifications');

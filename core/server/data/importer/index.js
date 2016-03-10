@@ -12,6 +12,8 @@ var _            = require('lodash'),
     ImageHandler    = require('./handlers/image'),
     JSONHandler     = require('./handlers/json'),
     MarkdownHandler = require('./handlers/markdown'),
+    ThemeHandler = require('./handlers/theme'),
+    ThemeImporter   = require('./importers/theme'),
     ImageImporter   = require('./importers/image'),
     DataImporter    = require('./importers/data'),
     i18n            = require('../../i18n'),
@@ -30,7 +32,7 @@ defaults = {
 };
 
 function ImportManager() {
-    this.importers = [ImageImporter, DataImporter];
+    this.importers = [ImageImporter, DataImporter, ThemeImporter];
     this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
     // Keep track of files to cleanup at the end
     this.filesToDelete = [];
@@ -215,6 +217,58 @@ _.extend(ImportManager.prototype, {
         }
         return extMatchesAll[0].split('/')[0];
     },
+    
+    /**
+     * Process Theme Zip file
+     * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
+     * returns an object in the importData format: {contents within the theme folder}
+     * The data key contains JSON representing any data that should be imported
+     * The image key contains references to images that will be stored (and where they will be stored)
+     * @param {File} file
+     * @returns {Promise(ImportData)}
+     */
+    processThemeZip: function (file) {
+        var self = this;
+
+        return this.extractZip(file.path).then(function (zipDirectory) {
+            var ops = [],
+                importData = {},
+                baseDir;
+
+            self.isValidZip(zipDirectory);
+            baseDir = self.getBaseDirectory(zipDirectory);
+
+            _.each([ThemeHandler], function (handler) {
+                if (importData.hasOwnProperty(handler.type)) {
+                    // This limitation is here to reduce the complexity of the importer for now
+                    return Promise.reject(new errors.UnsupportedMediaTypeError(
+                        i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
+                    ));
+                }
+
+                var files = self.getFilesFromZip(handler, zipDirectory);
+
+                if (files.length > 0) {
+                    ops.push(function () {
+                        return handler.loadFile(files, baseDir).then(function (data) {
+                            importData[handler.type] = data;
+                        });
+                    });
+                }
+            });
+
+            if (ops.length === 0) {
+                return Promise.reject(new errors.UnsupportedMediaTypeError(
+                    i18n.t('errors.data.importer.index.noContentToImport')
+                ));
+            }
+
+            return sequence(ops).then(function () {
+                return importData;
+            });
+        });
+    },
+        
     /**
      * Process Zip
      * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
@@ -286,6 +340,19 @@ _.extend(ImportManager.prototype, {
             return importData;
         });
     },
+
+    /**
+     * Import Step 1:
+     * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
+     * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
+     * @param {File} file
+     * @returns {Promise}
+     */
+    loadThemeFile: function (file) {
+        this.filesToDelete.push(file.path);
+        return this.processThemeZip(file);
+    },    
+    
     /**
      * Import Step 1:
      * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
@@ -348,6 +415,32 @@ _.extend(ImportManager.prototype, {
     generateReport: function (importData) {
         return Promise.resolve(importData);
     },
+
+    /**
+     * Import From File
+     * The main method of the ImportManager, call this to kick everything off!
+     * @param {File} file
+     * @returns {Promise}
+     */
+    importThemeFromFile: function (file) {
+        var self = this;
+
+        // Step 1: Handle converting the file to usable data
+        return this.loadThemeFile(file).then(function (importData) {
+            // Step 2: Let the importers pre-process the data
+            return self.preProcess(importData);
+        }).then(function (importData) {
+            // Step 3: Actually do the import
+            // @TODO: It would be cool to have some sort of dry run flag here
+            return self.doImport(importData);
+        }).then(function (importData) {
+            // Step 4: Report on the import
+            return self.generateReport(importData)
+                // Step 5: Cleanup any files
+                .finally(self.cleanUp());
+        });
+    },
+    
     /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!

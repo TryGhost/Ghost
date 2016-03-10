@@ -161,6 +161,7 @@ ConfigManager.prototype.set = function (config) {
 
             contentPath:      contentPath,
             themePath:        path.resolve(contentPath, 'themes'),
+            themeRelPath:     'content/themes',
             appPath:          path.resolve(contentPath, 'apps'),
             imagesPath:       path.resolve(contentPath, 'images'),
             imagesRelPath:    'content/images',

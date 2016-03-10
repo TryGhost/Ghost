@@ -42,6 +42,16 @@
                 </div>
             </fieldset>
         </form>
+        <form id="settings-import-theme" enctype="multipart/form-data">
+            <fieldset>
+                <div class="form-group">
+                    <label>Import custom theme</label>
+                    {{partial "import-errors"}}
+                    {{gh-file-upload id="importtheme" classNames="flex" uploadButtonText=uploadButtonText onUpload="onUploadTheme"}}
+                    <p>Imports a theme from local device. (custom-theme.zip)</p>
+                </div>
+            </fieldset>
+        </form>
         <hr>
         <form>
             <fieldset>
