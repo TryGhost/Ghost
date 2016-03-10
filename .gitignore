@@ -10,6 +10,7 @@ b-cov
 pids
 logs
 results
+.vscode
 
 npm-debug.log
 node_modules
@@ -21,7 +22,6 @@ bower_components
 projectFilesBackup
 
 .DS_Store
-
 # vim-related
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
