@@ -217,7 +217,6 @@ _.extend(ImportManager.prototype, {
         }
         return extMatchesAll[0].split('/')[0];
     },
-    
     /**
      * Process Theme Zip file
      * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
@@ -268,7 +267,6 @@ _.extend(ImportManager.prototype, {
             });
         });
     },
-        
     /**
      * Process Zip
      * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
@@ -351,8 +349,8 @@ _.extend(ImportManager.prototype, {
     loadThemeFile: function (file) {
         this.filesToDelete.push(file.path);
         return this.processThemeZip(file);
-    },    
-    
+    },
+
     /**
      * Import Step 1:
      * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
@@ -440,7 +438,7 @@ _.extend(ImportManager.prototype, {
                 .finally(self.cleanUp());
         });
     },
-    
+
     /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!

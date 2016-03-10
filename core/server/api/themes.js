@@ -16,12 +16,10 @@ var Promise            = require('bluebird'),
 
 api.settings         = require('./settings');
 
-
 /**
  * ### Fetch Active Theme
  * @returns {Theme} theme
  */
-
 function fetchActiveTheme() {
     return settings.read({
         key: 'activeTheme',
@@ -192,9 +190,9 @@ themes = {
 
         return pipeline(tasks, options || {});
     },
-    
+
     /**
-     * ### Imports a theme 
+     * ### Imports a theme
      * @param {{context}} options
      * @returns {Promise} Success
      */
@@ -228,23 +226,17 @@ themes = {
                     api.settings.updateSettingsCache();
                 })
                 .return({db: []});
-            
-            // return importer.importFromFile(options.importfile)
-            //     .then(function () {
-            //         api.settings.updateSettingsCache();
-            //     })
-            //     .return({db: []});
         }
 
         tasks = [
             validate,
-            //TODO: Need to create a seperate permission model for importTheme
+            // TODO: Need to create a seperate permission model for importTheme
             utils.handlePermissions(docName, 'edit'),
             importTheme
         ];
 
         return pipeline(tasks, options);
-    }    
+    }
 
 };
 
