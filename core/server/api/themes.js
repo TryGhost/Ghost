@@ -162,7 +162,6 @@ themes = {
          * @param {Object} options
          * @returns {Theme} theme
          */
-
         function modelQuery(options) {
             return themes.browse(options).then(function (response) {
                 var theme = _.find(response.themes, function (theme) {
@@ -190,7 +189,6 @@ themes = {
 
         return pipeline(tasks, options || {});
     },
-
     /**
      * ### Imports a theme
      * @param {{context}} options
