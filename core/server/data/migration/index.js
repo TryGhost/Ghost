@@ -110,7 +110,7 @@ init = function (tablesOnly) {
             );
         }
     }, function (err) {
-        if (err.message || err === 'Settings table does not exist') {
+        if (err && err.message === 'Settings table does not exist') {
             // 4. The database has not yet been created
             // Bring everything up from initial version.
             logInfo('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
