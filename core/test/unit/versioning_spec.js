@@ -1,9 +1,11 @@
-/*globals describe, it, afterEach */
-var should = require('should'),
-    sinon  = require('sinon'),
+/*globals describe, it, afterEach, beforeEach */
+var should  = require('should'),
+    sinon   = require('sinon'),
+    Promise = require('bluebird'),
 
     // Stuff we are testing
     versioning = require('../../server/data/schema').versioning,
+    db         = require('../../server/data/db'),
     errors     = require('../../server/errors'),
 
     sandbox    = sinon.sandbox.create();
@@ -40,6 +42,149 @@ describe('Versioning', function () {
             versioning.getDefaultDatabaseVersion().should.eql(currentVersion);
             // Second, to check that it returns the same value from the cache.
             versioning.getDefaultDatabaseVersion().should.eql(currentVersion);
+        });
+    });
+
+    describe('getDatabaseVersion', function () {
+        var errorSpy, knexStub, knexMock, queryMock;
+
+        beforeEach(function () {
+            errorSpy = sandbox.spy(errors, 'rejectError');
+
+            queryMock = {
+                where: sandbox.stub().returnsThis(),
+                first: sandbox.stub()
+            };
+
+            knexMock = sandbox.stub().returns(queryMock);
+            knexMock.schema = {
+                hasTable: sandbox.stub()
+            };
+
+            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+        });
+
+        afterEach(function () {
+            knexStub.restore();
+        });
+
+        it('should throw error if settings table does not exist', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(false));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if the settings table does not exist');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Settings table does not exist');
+                errorSpy.calledOnce.should.be.true();
+
+                knexStub.get.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.false();
+                queryMock.first.called.should.be.false();
+                done();
+            }).catch(done);
+        });
+
+        it('should lookup & return version, if settings table exists', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve({value: '001'}));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function (version) {
+                should.exist(version);
+                version.should.eql('001');
+                errorSpy.called.should.be.false();
+
+                knexStub.get.calledTwice.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.first.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw error if version does not exist', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve());
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if version does not exist');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Database version is not recognized');
+                errorSpy.calledOnce.should.be.true();
+
+                knexStub.get.calledTwice.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.first.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw error if version is not a number', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve('Eyjafjallajökull'));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if version is not a number');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Database version is not recognized');
+                errorSpy.calledOnce.should.be.true();
+
+                knexStub.get.calledTwice.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.first.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('setDatabaseVersion', function () {
+        var knexStub, knexMock, queryMock;
+
+        beforeEach(function () {
+            queryMock = {
+                where: sandbox.stub().returnsThis(),
+                update: sandbox.stub().returns(new Promise.resolve())
+            };
+
+            knexMock = sandbox.stub().returns(queryMock);
+
+            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+        });
+
+        afterEach(function () {
+            knexStub.restore();
+        });
+
+        it('should try to update the databaseVersion', function (done) {
+            versioning.setDatabaseVersion().then(function () {
+                knexStub.get.calledOnce.should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.update.called.should.be.true();
+
+                done();
+            }).catch(done);
         });
     });
 
