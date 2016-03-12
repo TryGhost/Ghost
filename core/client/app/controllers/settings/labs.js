@@ -25,7 +25,7 @@ export default Controller.extend({
             let currentUserId = this.get('session.user.id');
             let dbUrl = this.get('ghostPaths.url').api('themes');
 
-            this.set('uploadButtonText', 'Importing');  
+            this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
 
             formData.append('importfile', file);
