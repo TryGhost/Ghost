@@ -25,7 +25,11 @@ export default Controller.extend({
             let currentUserId = this.get('session.user.id');
             let dbUrl = this.get('ghostPaths.url').api('themes');
 
+<<<<<<< HEAD
             this.set('uploadButtonText', 'Importing');
+=======
+            this.set('uploadButtonText', 'Importing');  
+>>>>>>> 471db51... Added import theme function as an experimental feature under labs
             this.set('importErrors', '');
 
             formData.append('importfile', file);
@@ -53,7 +57,11 @@ export default Controller.extend({
                 this.set('uploadButtonText', 'Import');
             });
         },
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 471db51... Added import theme function as an experimental feature under labs
         onUpload(file) {
             let formData = new FormData();
             let notifications = this.get('notifications');
