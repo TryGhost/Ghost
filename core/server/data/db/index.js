@@ -2,7 +2,7 @@ var connection;
 
 Object.defineProperty(exports, 'knex', {
     enumerable: true,
-    configurable: false,
+    configurable: true,
     get: function get() {
         connection = connection || require('./connection');
         return connection;
