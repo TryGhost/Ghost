@@ -167,8 +167,6 @@ ConfigManager.prototype.set = function (config) {
 
             adminViews:       path.join(corePath, '/server/views/'),
             helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
-            exportPath:       path.join(corePath, '/server/data/export/'),
-            lang:             path.join(corePath, '/shared/lang/'),
 
             availableThemes:  this._config.paths.availableThemes || {},
             availableApps:    this._config.paths.availableApps || {},
