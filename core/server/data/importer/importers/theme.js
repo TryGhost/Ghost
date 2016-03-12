@@ -19,8 +19,4 @@ ThemeImporter = {
     }
 };
 
-<<<<<<< HEAD
 module.exports = ThemeImporter;
-=======
-module.exports = ThemeImporter;
->>>>>>> 471db51... Added import theme function as an experimental feature under labs

@@ -217,7 +217,7 @@ _.extend(ImportManager.prototype, {
         }
         return extMatchesAll[0].split('/')[0];
     },
-    
+
     /**
      * Process Theme Zip file
      * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
@@ -268,57 +268,7 @@ _.extend(ImportManager.prototype, {
             });
         });
     },
-        
-    /**
-     * Process Theme Zip file
-     * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
-     * returns an object in the importData format: {contents within the theme folder}
-     * The data key contains JSON representing any data that should be imported
-     * The image key contains references to images that will be stored (and where they will be stored)
-     * @param {File} file
-     * @returns {Promise(ImportData)}
-     */
-    processThemeZip: function (file) {
-        var self = this;
 
-        return this.extractZip(file.path).then(function (zipDirectory) {
-            var ops = [],
-                importData = {},
-                baseDir;
-
-            self.isValidZip(zipDirectory);
-            baseDir = self.getBaseDirectory(zipDirectory);
-
-            _.each([ThemeHandler], function (handler) {
-                if (importData.hasOwnProperty(handler.type)) {
-                    // This limitation is here to reduce the complexity of the importer for now
-                    return Promise.reject(new errors.UnsupportedMediaTypeError(
-                        i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
-                    ));
-                }
-
-                var files = self.getFilesFromZip(handler, zipDirectory);
-
-                if (files.length > 0) {
-                    ops.push(function () {
-                        return handler.loadFile(files, baseDir).then(function (data) {
-                            importData[handler.type] = data;
-                        });
-                    });
-                }
-            });
-
-            if (ops.length === 0) {
-                return Promise.reject(new errors.UnsupportedMediaTypeError(
-                    i18n.t('errors.data.importer.index.noContentToImport')
-                ));
-            }
-
-            return sequence(ops).then(function () {
-                return importData;
-            });
-        });
-    },
     /**
      * Process Zip
      * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
@@ -401,13 +351,8 @@ _.extend(ImportManager.prototype, {
     loadThemeFile: function (file) {
         this.filesToDelete.push(file.path);
         return this.processThemeZip(file);
-<<<<<<< HEAD
     },
 
-=======
-    },    
-    
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
     /**
      * Import Step 1:
      * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
@@ -495,11 +440,7 @@ _.extend(ImportManager.prototype, {
                 .finally(self.cleanUp());
         });
     },
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
     /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!

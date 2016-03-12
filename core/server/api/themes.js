@@ -16,10 +16,6 @@ var Promise            = require('bluebird'),
 
 api.settings         = require('./settings');
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
 /**
  * ### Fetch Active Theme
  * @returns {Theme} theme
@@ -194,15 +190,9 @@ themes = {
 
         return pipeline(tasks, options || {});
     },
-<<<<<<< HEAD
 
     /**
      * ### Imports a theme
-=======
-    
-    /**
-     * ### Imports a theme 
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
      * @param {{context}} options
      * @returns {Promise} Success
      */
@@ -236,34 +226,17 @@ themes = {
                     api.settings.updateSettingsCache();
                 })
                 .return({db: []});
-<<<<<<< HEAD
-=======
-            
-            // return importer.importFromFile(options.importfile)
-            //     .then(function () {
-            //         api.settings.updateSettingsCache();
-            //     })
-            //     .return({db: []});
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
         }
 
         tasks = [
             validate,
-<<<<<<< HEAD
             // TODO: Need to create a seperate permission model for importTheme
-=======
-            //TODO: Need to create a seperate permission model for importTheme
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
             utils.handlePermissions(docName, 'edit'),
             importTheme
         ];
 
         return pipeline(tasks, options);
-<<<<<<< HEAD
     }
-=======
-    }    
->>>>>>> 471db51... Added import theme function as an experimental feature under labs
 
 };
 
