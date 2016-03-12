@@ -30,7 +30,7 @@ describe('Importer', function () {
     describe('ImportManager', function () {
         it('has the correct interface', function () {
             ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(3);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(2);
+            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(3);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
             ImportManager.doImport.should.be.instanceof(Function);
