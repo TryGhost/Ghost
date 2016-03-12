@@ -72,8 +72,6 @@ describe('Config', function () {
                 'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
-                'exportPath',
-                'lang',
                 'availableThemes',
                 'availableApps',
                 'clientAssets'
