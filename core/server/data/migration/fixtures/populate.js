@@ -16,6 +16,7 @@ var Promise     = require('bluebird'),
     fetchRelationData,
     matchFunc,
     createOwner,
+    modelOptions = {context: {internal: true}},
 
     // public
     populate;
@@ -24,10 +25,9 @@ var Promise     = require('bluebird'),
  * ### Add All Models
  * Sequentially calls add on all the models specified in fixtures.json
  *
- * @param {Object} modelOptions
  * @returns {Promise<*>}
  */
-addAllModels = function addAllModels(modelOptions) {
+addAllModels = function addAllModels() {
     var ops = [];
 
     _.each(fixtures.models, function (items, modelName) {
@@ -47,10 +47,9 @@ addAllModels = function addAllModels(modelOptions) {
  * use filter and find to quickly locate the correct models.
  *
  * @param {Object} relation
- * @param {Object} modelOptions
  * @returns {Promise<*>}
  */
-fetchRelationData = function fetchRelationData(relation, modelOptions) {
+fetchRelationData = function fetchRelationData(relation) {
     var props = {
         from: models[relation.from.model].findAll(modelOptions),
         to: models[relation.to.model].findAll(modelOptions)
@@ -96,12 +95,11 @@ matchFunc = function matchFunc(match, key, value) {
  * ### Add All Relations
  * Sequentially calls add on all the relations specified in fixtures.json
  *
- * @param {Object} modelOptions
  * @returns {Promise|Array}
  */
-addAllRelations = function addAllRelations(modelOptions) {
+addAllRelations = function addAllRelations() {
     return Promise.map(fixtures.relations, function (relation) {
-        return fetchRelationData(relation, modelOptions).then(function (data) {
+        return fetchRelationData(relation).then(function (data) {
             var ops = [];
 
             _.each(relation.entries, function (entry, key) {
@@ -127,11 +125,10 @@ addAllRelations = function addAllRelations(modelOptions) {
  * Creates the user fixture and gives it the owner role.
  * By default, users are given the Author role, making it hard to do this using the fixture system
  *
- * @param {Object} modelOptions
  * @param {Function} logInfo
  * @returns {Promise<*>}
  */
-createOwner = function createOwner(modelOptions, logInfo) {
+createOwner = function createOwner(logInfo) {
     var user = {
         name:             'Ghost Owner',
         email:            'ghost@ghost.org',
@@ -154,19 +151,18 @@ createOwner = function createOwner(modelOptions, logInfo) {
  * Sequentially creates all models, in the order they are specified, and then
  * creates all the relationships, also maintaining order.
  *
- * @param {Object} modelOptions
  * @param {Function} logInfo
  * @returns {Promise<*>}
  */
-populate = function populate(modelOptions, logInfo) {
+populate = function populate(logInfo) {
     logInfo('Populating fixtures');
 
     // ### Ensure all models are added
-    return addAllModels(modelOptions).then(function () {
+    return addAllModels().then(function () {
         // ### Ensure all relations are added
-        return addAllRelations(modelOptions);
+        return addAllRelations();
     }).then(function () {
-        return createOwner(modelOptions, logInfo);
+        return createOwner(logInfo);
     });
 };
 
