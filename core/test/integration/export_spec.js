@@ -7,7 +7,7 @@ var testUtils   = require('../utils/index'),
 
     // Stuff we are testing
     versioning  = require('../../server/data/schema').versioning,
-    exporter    = require('../../server/data/export/index'),
+    exporter    = require('../../server/data/export'),
 
     DEF_DB_VERSION  = versioning.getDefaultDatabaseVersion(),
     sandbox = sinon.sandbox.create();
@@ -28,7 +28,7 @@ describe('Exporter', function () {
             return Promise.resolve(DEF_DB_VERSION);
         });
 
-        exporter().then(function (exportData) {
+        exporter.doExport().then(function (exportData) {
             var tables = ['posts', 'users', 'roles', 'roles_users', 'permissions', 'permissions_roles',
                 'permissions_users', 'settings', 'tags', 'posts_tags'],
                 dbVersionSetting;

@@ -21,7 +21,7 @@ var _              = require('lodash'),
     slugs          = require('./slugs'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
-    dataExport     = require('../data/export'),
+    exporter       = require('../data/export'),
 
     http,
     addHeaders,
@@ -138,7 +138,7 @@ locationHeader = function locationHeader(req, result) {
  * @return {string}
  */
 contentDispositionHeader = function contentDispositionHeader() {
-    return dataExport.fileName().then(function then(filename) {
+    return exporter.fileName().then(function then(filename) {
         return 'Attachment; filename="' + filename + '"';
     });
 };
