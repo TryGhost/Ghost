@@ -1,12 +1,16 @@
-/*globals describe, it, afterEach */
-var should = require('should'),
-    sinon  = require('sinon'),
+/*globals describe, it, afterEach, beforeEach */
+var should  = require('should'),
+    sinon   = require('sinon'),
+    Promise = require('bluebird'),
 
     // Stuff we are testing
     versioning = require('../../server/data/schema').versioning,
+    db         = require('../../server/data/db'),
     errors     = require('../../server/errors'),
 
     sandbox    = sinon.sandbox.create();
+
+require('should-sinon');
 
 describe('Versioning', function () {
     afterEach(function () {
@@ -43,16 +47,169 @@ describe('Versioning', function () {
         });
     });
 
+    describe('getDatabaseVersion', function () {
+        var errorSpy, knexStub, knexMock, queryMock;
+
+        beforeEach(function () {
+            errorSpy = sandbox.spy(errors, 'rejectError');
+
+            queryMock = {
+                where: sandbox.stub().returnsThis(),
+                first: sandbox.stub()
+            };
+
+            knexMock = sandbox.stub().returns(queryMock);
+            knexMock.schema = {
+                hasTable: sandbox.stub()
+            };
+
+            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+        });
+
+        afterEach(function () {
+            knexStub.restore();
+        });
+
+        it('should throw error if settings table does not exist', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(false));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if the settings table does not exist');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Settings table does not exist');
+                errorSpy.should.be.calledOnce();
+
+                // This is written without the should-sinon helpers, due to an issue with getters
+                knexStub.get.calledOnce.should.be.true();
+                // Everything else here is written with should-sinon...
+                knexMock.schema.hasTable.should.be.calledOnce();
+                knexMock.schema.hasTable.should.be.calledWith('settings');
+                queryMock.where.should.not.be.called();
+                queryMock.first.should.not.be.called();
+                done();
+            }).catch(done);
+        });
+
+        it('should lookup & return version, if settings table exists', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve({value: '001'}));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function (version) {
+                should.exist(version);
+                version.should.eql('001');
+                errorSpy.should.not.be.called();
+
+                // This is written without the should-sinon helpers, due to an issue with getters
+                knexStub.get.calledTwice.should.be.true();
+                // Everything else here is written with should-sinon...
+                knexMock.schema.hasTable.should.be.calledOnce();
+                knexMock.schema.hasTable.should.be.calledWith('settings');
+                queryMock.where.should.be.called();
+                queryMock.first.should.be.called();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw error if version does not exist', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve());
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if version does not exist');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Database version is not recognized');
+                errorSpy.should.be.calledOnce();
+
+                // This is written without the should-sinon helpers, due to an issue with getters
+                knexStub.get.calledTwice.should.be.true();
+                // Everything else here is written with should-sinon...
+                knexMock.schema.hasTable.should.be.calledOnce();
+                knexMock.schema.hasTable.should.be.calledWith('settings');
+                queryMock.where.should.be.called();
+                queryMock.first.should.be.called();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw error if version is not a number', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve('Eyjafjallajökull'));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if version is not a number');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Database version is not recognized');
+                errorSpy.should.be.calledOnce();
+
+                // This is written without the should-sinon helpers, due to an issue with getters
+                knexStub.get.calledTwice.should.be.true();
+                // Everything else here is written with should-sinon...
+                knexMock.schema.hasTable.should.be.calledOnce();
+                knexMock.schema.hasTable.should.be.calledWith('settings');
+                queryMock.where.should.be.called();
+                queryMock.first.should.be.called();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('setDatabaseVersion', function () {
+        var knexStub, knexMock, queryMock;
+
+        beforeEach(function () {
+            queryMock = {
+                where: sandbox.stub().returnsThis(),
+                update: sandbox.stub().returns(new Promise.resolve())
+            };
+
+            knexMock = sandbox.stub().returns(queryMock);
+
+            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+        });
+
+        afterEach(function () {
+            knexStub.restore();
+        });
+
+        it('should try to update the databaseVersion', function (done) {
+            versioning.setDatabaseVersion().then(function () {
+                // This is written without the should-sinon helpers, due to an issue with getters
+                knexStub.get.calledOnce.should.be.true();
+                // Everything else here is written with should-sinon...
+                queryMock.where.should.be.called();
+                queryMock.update.should.be.called();
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('showCannotMigrateError', function () {
         it('should output a detailed error message', function () {
             var errorStub = sandbox.stub(errors, 'logAndRejectError');
             versioning.showCannotMigrateError();
-            errorStub.calledOnce.should.be.true();
-            errorStub.calledWith(
+            errorStub.should.be.calledOnce();
+            errorStub.should.be.calledWith(
                 'Unable to upgrade from version 0.4.2 or earlier',
                 'Please upgrade to 0.7.1 first',
                 'See http://support.ghost.org/how-to-upgrade/ for instructions.'
-            ).should.be.true();
+            );
         });
     });
 });

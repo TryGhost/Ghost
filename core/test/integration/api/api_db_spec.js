@@ -12,7 +12,7 @@ describe('DB API', function () {
     // Keep the DB clean
     before(testUtils.teardown);
     afterEach(testUtils.teardown);
-    beforeEach(testUtils.setup('users:roles', 'posts', 'perms:db', 'perms:init'));
+    beforeEach(testUtils.setup('users:roles', 'settings', 'posts', 'perms:db', 'perms:init'));
 
     should.exist(dbAPI);
 
