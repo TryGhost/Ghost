@@ -8,7 +8,7 @@ var _               = require('lodash'),
     schema          = require('../schema').tables,
     commands        = require('../schema').commands,
     versioning      = require('../schema').versioning,
-    dataExport      = require('../export'),
+    exporter        = require('../export'),
     config          = require('../../config'),
     errors          = require('../../errors'),
     models          = require('../../models'),
@@ -46,9 +46,9 @@ populateDefaultSettings = function populateDefaultSettings() {
 
 backupDatabase = function backupDatabase() {
     logInfo('Creating database backup');
-    return dataExport().then(function (exportedData) {
+    return exporter.doExport().then(function (exportedData) {
         // Save the exported data to the file system for download
-        return dataExport.fileName().then(function (fileName) {
+        return exporter.fileName().then(function (fileName) {
             fileName = path.resolve(config.paths.contentPath + '/data/' + fileName);
 
             return Promise.promisify(fs.writeFile)(fileName, JSON.stringify(exportedData)).then(function () {
