@@ -66,7 +66,7 @@ function dropUnique(table, column) {
 }
 
 function createTable(table) {
-    return db.knex.schema.createTable(table, function (t) {
+    return db.knex.schema.createTableIfNotExists(table, function (t) {
         var columnKeys = _.keys(schema[table]);
         _.each(columnKeys, function (column) {
             return addTableColumn(table, t, column);

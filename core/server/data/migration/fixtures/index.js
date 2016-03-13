@@ -1,9 +1,11 @@
 var populate = require('./populate'),
     update   = require('./update'),
-    fixtures = require('./fixtures');
+    fixtures = require('./fixtures'),
+    settings = require('./settings');
 
 module.exports = {
     populate: populate,
     update: update,
-    fixtures: fixtures
+    fixtures: fixtures,
+    ensureDefaultSettings: settings
 };

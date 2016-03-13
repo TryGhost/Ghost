@@ -5,15 +5,11 @@ var testUtils   = require('../utils/index'),
     Promise     = require('bluebird'),
     assert      = require('assert'),
     _           = require('lodash'),
-    rewire      = require('rewire'),
     validator   = require('validator'),
 
     // Stuff we are testing
     db              = require('../../server/data/db'),
-    config          = require('../../server/config'),
     versioning      = require('../../server/data/schema').versioning,
-    defaultConfig   = rewire('../../../config.example')[process.env.NODE_ENV],
-    migration       = rewire('../../server/data/migration'),
     exporter        = require('../../server/data/export'),
     importer        = require('../../server/data/import'),
     DataImporter    = require('../../server/data/import/data-importer'),
@@ -35,12 +31,6 @@ describe('Import', function () {
 
     describe('Resolves', function () {
         beforeEach(testUtils.setup());
-        beforeEach(function () {
-            var newConfig = _.extend({}, config, defaultConfig);
-
-            migration.__get__('config', newConfig);
-            config.set(newConfig);
-        });
 
         it('resolves DataImporter', function (done) {
             var importStub = sandbox.stub(DataImporter, 'importData', function () {
