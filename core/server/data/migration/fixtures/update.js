@@ -7,6 +7,7 @@ var sequence = require('../../../utils/sequence'),
 
     // Private
     getVersionTasks,
+    modelOptions = {context: {internal: true}},
 
     // Public
     update;
@@ -38,11 +39,10 @@ getVersionTasks = function getVersionTasks(version, logInfo) {
  * Handles doing subsequent updates for versions
  *
  * @param {Array} versions
- * @param {Object} modelOptions
  * @param {Function} logInfo
  * @returns {Promise<*>}
  */
-update = function update(versions, modelOptions, logInfo) {
+update = function update(versions, logInfo) {
     var ops = [];
 
     logInfo('Updating fixtures');
