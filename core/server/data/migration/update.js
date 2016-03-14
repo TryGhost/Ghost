@@ -1,67 +1,44 @@
 // # Update Database
 // Handles migrating a database between two different database versions
 var _          = require('lodash'),
-    Promise    = require('bluebird'),
     backup     = require('./backup'),
-    builder    = require('./builder'),
-    commands   = require('../schema').commands,
     fixtures   = require('./fixtures'),
-    schema     = require('../schema').tables,
     sequence   = require('../../utils/sequence'),
     versioning = require('../schema').versioning,
 
-    schemaTables = Object.keys(schema),
-
     updateDatabaseSchema,
+
+    // Public
     update;
 
 /**
  * ### Update Database Schema
- * Automatically detect differences between the current DB and the schema, and fix them
- * TODO refactor to use explicit instructions, as this has the potential to destroy data
+ * Fetch the update tasks for each version, and iterate through them in order
  *
+ * @param {Array} versions
  * @param {Function} logInfo
  * @returns {Promise<*>}
  */
-updateDatabaseSchema = function updateDatabaseSchema(logInfo) {
-    var oldTables,
-        modifyUniCommands = [],
-        migrateOps = [];
+updateDatabaseSchema = function updateDatabaseSchema(versions, logInfo) {
+    var migrateOps = versions.reduce(function updateToVersion(migrateOps, version) {
+        var tasks = versioning.getUpdateDatabaseTasks(version, logInfo);
 
-    return commands.getTables().then(function (tables) {
-        oldTables = tables;
-        if (!_.isEmpty(oldTables)) {
-            return commands.checkTables();
+        if (tasks && tasks.length > 0) {
+            migrateOps.push(function runVersionTasks() {
+                logInfo('Updating database to ', version);
+                return sequence(tasks, logInfo);
+            });
         }
-    }).then(function () {
-        migrateOps = migrateOps.concat(builder.getDeleteCommands(oldTables, schemaTables));
-        migrateOps = migrateOps.concat(builder.getAddCommands(oldTables, schemaTables));
-        return Promise.all(
-            _.map(oldTables, function (table) {
-                return commands.getIndexes(table).then(function (indexes) {
-                    modifyUniCommands = modifyUniCommands.concat(builder.modifyUniqueCommands(table, indexes));
-                });
-            })
-        );
-    }).then(function () {
-        return Promise.all(
-            _.map(oldTables, function (table) {
-                return commands.getColumns(table).then(function (columns) {
-                    migrateOps = migrateOps.concat(builder.dropColumnCommands(table, columns));
-                    migrateOps = migrateOps.concat(builder.addColumnCommands(table, columns));
-                });
-            })
-        );
-    }).then(function () {
-        migrateOps = migrateOps.concat(_.compact(modifyUniCommands));
 
-        // execute the commands in sequence
-        if (!_.isEmpty(migrateOps)) {
-            logInfo('Running migrations');
+        return migrateOps;
+    }, []);
 
-            return sequence(migrateOps);
-        }
-    });
+    // execute the commands in sequence
+    if (!_.isEmpty(migrateOps)) {
+        logInfo('Running migrations');
+    }
+
+    return sequence(migrateOps, logInfo);
 };
 
 /**
@@ -80,19 +57,22 @@ update = function update(fromVersion, toVersion, logInfo) {
         return versioning.showCannotMigrateError();
     }
 
+    fromVersion = process.env.FORCE_MIGRATION ? versioning.canMigrateFromVersion : fromVersion;
+
+    // Figure out which versions we're updating through.
+    // This shouldn't include the from/current version (which we're already on)
+    var versionsToUpdate = versioning.getMigrationVersions(fromVersion, toVersion).slice(1);
+
     return backup(logInfo).then(function () {
-        return updateDatabaseSchema(logInfo);
+        return updateDatabaseSchema(versionsToUpdate, logInfo);
     }).then(function () {
         // Ensure all of the current default settings are created (these are fixtures, so should be inserted first)
         return fixtures.ensureDefaultSettings(logInfo);
     }).then(function () {
-        fromVersion = process.env.FORCE_MIGRATION ? versioning.canMigrateFromVersion : fromVersion;
-        var versions = versioning.getMigrationVersions(fromVersion, toVersion);
-        // Finally, run any updates to the fixtures, including default settings, that are required
-        // for anything other than the from/current version (which we're already on)
-        return fixtures.update(versions.slice(1), logInfo);
+        // Next, run any updates to the fixtures, including default settings, that are required
+        return fixtures.update(versionsToUpdate, logInfo);
     }).then(function () {
-        // Finally update the databases current version
+        // Finally update the database's current version
         return versioning.setDatabaseVersion();
     });
 };
