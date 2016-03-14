@@ -46,6 +46,7 @@ describe('Frontend Routing', function () {
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
+            done(e);
         });
     });
 
