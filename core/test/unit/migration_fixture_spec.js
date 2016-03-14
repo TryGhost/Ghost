@@ -8,6 +8,7 @@ var should  = require('should'),
     configUtils   = require('../utils/configUtils'),
     models        = require('../../server/models'),
     notifications = require('../../server/api/notifications'),
+    versioning    = require('../../server/data/schema/versioning'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
@@ -28,37 +29,41 @@ describe('Fixtures', function () {
     });
 
     describe('Update fixtures', function () {
-        it('should call `getVersionTasks` when upgrading from 003 -> 004', function (done) {
+        it('should call `getUpdateFixturesTasks` when upgrading from 003 -> 004', function (done) {
             var logStub = sandbox.stub(),
-                getVersionTasksStub = sandbox.stub().returns([]),
-                reset = update.__set__('getVersionTasks', getVersionTasksStub);
+                getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([]);
 
             update(['004'], logStub).then(function () {
                 logStub.calledOnce.should.be.true();
                 getVersionTasksStub.calledOnce.should.be.true();
-                reset();
                 done();
             }).catch(done);
         });
 
-        it('should NOT call `getVersionTasks` when upgrading from 004 -> 004', function (done) {
+        it('should NOT call `getUpdateFixturesTasks` when upgrading from 004 -> 004', function (done) {
             var logStub = sandbox.stub(),
-                getVersionTasksStub = sandbox.stub().returns(Promise.resolve()),
-                reset = update.__set__('getVersionTasks', getVersionTasksStub);
+                getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([]);
 
             update([], logStub).then(function () {
                 logStub.calledOnce.should.be.true();
                 getVersionTasksStub.calledOnce.should.be.false();
-                reset();
                 done();
             }).catch(done);
         });
 
-        it('`getVersionTasks` returns empty array if no tasks are found', function () {
-            var logStub = sandbox.stub();
+        it('should call tasks in correct order if provided', function (done) {
+            var logStub = sandbox.stub(),
+                task1Stub = sandbox.stub().returns(Promise.resolve()),
+                task2Stub = sandbox.stub().returns(Promise.resolve()),
+                getVersionTasksStub = sandbox.stub(versioning, 'getUpdateFixturesTasks').returns([task1Stub, task2Stub]);
 
-            update.__get__('getVersionTasks')('999', logStub).should.eql([]);
-            logStub.calledOnce.should.be.true();
+            update(['000'], logStub).then(function () {
+                logStub.calledTwice.should.be.true();
+                getVersionTasksStub.calledOnce.should.be.true();
+                task1Stub.calledOnce.should.be.true();
+                task2Stub.calledOnce.should.be.true();
+                done();
+            }).catch(done);
         });
 
         describe('Update to 004', function () {
@@ -101,275 +106,277 @@ describe('Fixtures', function () {
                 }).catch(done);
             });
 
-            describe('01-move-jquery-with-alert', function () {
-                it('tries to move jQuery to ghost_foot', function (done) {
-                    var logStub = sandbox.stub(),
-                        settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({
-                        attributes: {value: ''}
-                    })),
-                        settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
+            describe('Tasks:', function () {
+                describe('01-move-jquery-with-alert', function () {
+                    it('tries to move jQuery to ghost_foot', function (done) {
+                        var logStub = sandbox.stub(),
+                            settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({
+                            attributes: {value: ''}
+                        })),
+                            settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
 
-                    fixtures004[0]({}, logStub).then(function () {
-                        settingsOneStub.calledOnce.should.be.true();
-                        settingsOneStub.calledWith('ghost_foot').should.be.true();
-                        settingsEditStub.calledOnce.should.be.true();
-                        logStub.calledOnce.should.be.true();
+                        fixtures004[0]({}, logStub).then(function () {
+                            settingsOneStub.calledOnce.should.be.true();
+                            settingsOneStub.calledWith('ghost_foot').should.be.true();
+                            settingsEditStub.calledOnce.should.be.true();
+                            logStub.calledOnce.should.be.true();
 
-                        done();
+                            done();
+                        });
+                    });
+
+                    it('does not move jQuery to ghost_foot if it is already there', function (done) {
+                        var logStub = sandbox.stub(),
+                            settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({
+                                attributes: {
+                                    value: '<!-- You can safely delete this line if your theme does not require jQuery -->\n'
+                                        + '<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>\n\n'
+                                }
+                            })),
+                            settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
+
+                        fixtures004[0]({}, logStub).then(function () {
+                            settingsOneStub.calledOnce.should.be.true();
+                            settingsOneStub.calledWith('ghost_foot').should.be.true();
+                            settingsEditStub.calledOnce.should.be.false();
+                            logStub.called.should.be.false();
+
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('tried to move jQuery AND add a privacy message if any privacy settings are on', function (done) {
+                        configUtils.set({privacy: {useGoogleFonts: false}});
+                        var logStub = sandbox.stub(),
+                            settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({
+                                attributes: {value: ''}
+                            })),
+                            settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve()),
+                            notificationsAddStub = sandbox.stub(notifications, 'add').returns(Promise.resolve());
+
+                        fixtures004[0]({}, logStub).then(function () {
+                            settingsOneStub.calledOnce.should.be.true();
+                            settingsOneStub.calledWith('ghost_foot').should.be.true();
+                            settingsEditStub.calledOnce.should.be.true();
+                            notificationsAddStub.calledOnce.should.be.true();
+                            logStub.calledTwice.should.be.true();
+
+                            done();
+                        }).catch(done);
                     });
                 });
 
-                it('does not move jQuery to ghost_foot if it is already there', function (done) {
-                    var logStub = sandbox.stub(),
-                        settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({
-                            attributes: {
-                                value: '<!-- You can safely delete this line if your theme does not require jQuery -->\n'
-                                    + '<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>\n\n'
-                            }
-                        })),
-                        settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
+                describe('02-update-private-setting-type', function () {
+                    it('tries to update setting type correctly', function (done) {
+                        var logStub = sandbox.stub(),
+                            settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({})),
+                            settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
 
-                    fixtures004[0]({}, logStub).then(function () {
-                        settingsOneStub.calledOnce.should.be.true();
-                        settingsOneStub.calledWith('ghost_foot').should.be.true();
-                        settingsEditStub.calledOnce.should.be.false();
-                        logStub.called.should.be.false();
+                        fixtures004[1]({}, logStub).then(function () {
+                            settingsOneStub.calledOnce.should.be.true();
+                            settingsOneStub.calledWith('isPrivate').should.be.true();
+                            settingsEditStub.calledOnce.should.be.true();
+                            settingsEditStub.calledWith({key: 'isPrivate', type: 'private'}).should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(settingsOneStub, logStub, settingsEditStub);
 
-                        done();
-                    }).catch(done);
+                            done();
+                        }).catch(done);
+                    });
                 });
 
-                it('tried to move jQuery AND add a privacy message if any privacy settings are on', function (done) {
-                    configUtils.set({privacy: {useGoogleFonts: false}});
-                    var logStub = sandbox.stub(),
-                        settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({
-                            attributes: {value: ''}
-                        })),
-                        settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve()),
-                        notificationsAddStub = sandbox.stub(notifications, 'add').returns(Promise.resolve());
+                describe('03-update-password-setting-type', function () {
+                    it('tries to update setting type correctly', function (done) {
+                        var logStub = sandbox.stub(),
+                            settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({})),
+                            settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
 
-                    fixtures004[0]({}, logStub).then(function () {
-                        settingsOneStub.calledOnce.should.be.true();
-                        settingsOneStub.calledWith('ghost_foot').should.be.true();
-                        settingsEditStub.calledOnce.should.be.true();
-                        notificationsAddStub.calledOnce.should.be.true();
-                        logStub.calledTwice.should.be.true();
+                        fixtures004[2]({}, logStub).then(function () {
+                            settingsOneStub.calledOnce.should.be.true();
+                            settingsOneStub.calledWith('password').should.be.true();
+                            settingsEditStub.calledOnce.should.be.true();
+                            settingsEditStub.calledWith({key: 'password', type: 'private'}).should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(settingsOneStub, logStub, settingsEditStub);
 
-                        done();
-                    }).catch(done);
-                });
-            });
-
-            describe('02-update-private-setting-type', function () {
-                it('tries to update setting type correctly', function (done) {
-                    var logStub = sandbox.stub(),
-                        settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({})),
-                        settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
-
-                    fixtures004[1]({}, logStub).then(function () {
-                        settingsOneStub.calledOnce.should.be.true();
-                        settingsOneStub.calledWith('isPrivate').should.be.true();
-                        settingsEditStub.calledOnce.should.be.true();
-                        settingsEditStub.calledWith({key: 'isPrivate', type: 'private'}).should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(settingsOneStub, logStub, settingsEditStub);
-
-                        done();
-                    }).catch(done);
-                });
-            });
-
-            describe('03-update-password-setting-type', function () {
-                it('tries to update setting type correctly', function (done) {
-                    var logStub = sandbox.stub(),
-                        settingsOneStub = sandbox.stub(models.Settings, 'findOne').returns(Promise.resolve({})),
-                        settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
-
-                    fixtures004[2]({}, logStub).then(function () {
-                        settingsOneStub.calledOnce.should.be.true();
-                        settingsOneStub.calledWith('password').should.be.true();
-                        settingsEditStub.calledOnce.should.be.true();
-                        settingsEditStub.calledWith({key: 'password', type: 'private'}).should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(settingsOneStub, logStub, settingsEditStub);
-
-                        done();
-                    }).catch(done);
-                });
-            });
-
-            describe('04-update-ghost-admin-client', function () {
-                it('tries to update client correctly', function (done) {
-                    var logStub = sandbox.stub(),
-                        clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve({})),
-                        clientEditStub = sandbox.stub(models.Client, 'edit').returns(Promise.resolve());
-
-                    fixtures004[3]({}, logStub).then(function () {
-                        clientOneStub.calledOnce.should.be.true();
-                        clientOneStub.calledWith({slug: 'ghost-admin'}).should.be.true();
-                        clientEditStub.calledOnce.should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(clientOneStub, logStub, clientEditStub);
-
-                        done();
-                    }).catch(done);
-                });
-            });
-
-            describe('05-add-ghost-frontend-client', function () {
-                it('tries to add client correctly', function (done) {
-                    var logStub = sandbox.stub(),
-                        clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve()),
-                        clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve());
-
-                    fixtures004[4]({}, logStub).then(function () {
-                        clientOneStub.calledOnce.should.be.true();
-                        clientOneStub.calledWith({slug: 'ghost-frontend'}).should.be.true();
-                        clientAddStub.calledOnce.should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(clientOneStub, logStub, clientAddStub);
-
-                        done();
-                    }).catch(done);
-                });
-            });
-
-            describe('06-clean-broken-tags', function () {
-                it('tries to clean broken tags correctly', function (done) {
-                    var logStub = sandbox.stub(),
-                        tagObjStub = {
-                            get: sandbox.stub().returns(',hello'),
-                            save: sandbox.stub().returns(Promise.resolve)
-                        },
-                        tagCollStub = {each: sandbox.stub().callsArgWith(0, tagObjStub)},
-                        tagAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(tagCollStub));
-
-                    fixtures004[5]({}, logStub).then(function () {
-                        tagAllStub.calledOnce.should.be.true();
-                        tagCollStub.each.calledOnce.should.be.true();
-                        tagObjStub.get.calledOnce.should.be.true();
-                        tagObjStub.get.calledWith('name').should.be.true();
-                        tagObjStub.save.calledOnce.should.be.true();
-                        tagObjStub.save.calledWith({name: 'hello'}).should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(tagAllStub, tagCollStub.each, tagObjStub.get, tagObjStub.save, logStub);
-
-                        done();
-                    }).catch(done);
+                            done();
+                        }).catch(done);
+                    });
                 });
 
-                it('tries can handle tags which end up empty', function (done) {
-                    var logStub = sandbox.stub(),
-                        tagObjStub = {
-                            get: sandbox.stub().returns(','),
-                            save: sandbox.stub().returns(Promise.resolve)
-                        },
-                        tagCollStub = {each: sandbox.stub().callsArgWith(0, tagObjStub)},
-                        tagAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(tagCollStub));
+                describe('04-update-ghost-admin-client', function () {
+                    it('tries to update client correctly', function (done) {
+                        var logStub = sandbox.stub(),
+                            clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve({})),
+                            clientEditStub = sandbox.stub(models.Client, 'edit').returns(Promise.resolve());
 
-                    fixtures004[5]({}, logStub).then(function () {
-                        tagAllStub.calledOnce.should.be.true();
-                        tagCollStub.each.calledOnce.should.be.true();
-                        tagObjStub.get.calledOnce.should.be.true();
-                        tagObjStub.get.calledWith('name').should.be.true();
-                        tagObjStub.save.calledOnce.should.be.true();
-                        tagObjStub.save.calledWith({name: 'tag'}).should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(tagAllStub, tagCollStub.each, tagObjStub.get, tagObjStub.save, logStub);
+                        fixtures004[3]({}, logStub).then(function () {
+                            clientOneStub.calledOnce.should.be.true();
+                            clientOneStub.calledWith({slug: 'ghost-admin'}).should.be.true();
+                            clientEditStub.calledOnce.should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(clientOneStub, logStub, clientEditStub);
 
-                        done();
-                    }).catch(done);
+                            done();
+                        }).catch(done);
+                    });
                 });
 
-                it('tries only changes a tag if necessary', function (done) {
-                    var logStub = sandbox.stub(),
-                        tagObjStub = {
-                            get: sandbox.stub().returns('hello'),
-                            save: sandbox.stub().returns(Promise.resolve)
-                        },
-                        tagCollStub = {each: sandbox.stub().callsArgWith(0, tagObjStub)},
-                        tagAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(tagCollStub));
+                describe('05-add-ghost-frontend-client', function () {
+                    it('tries to add client correctly', function (done) {
+                        var logStub = sandbox.stub(),
+                            clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve()),
+                            clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve());
 
-                    fixtures004[5]({}, logStub).then(function () {
-                        tagAllStub.calledOnce.should.be.true();
-                        tagCollStub.each.calledOnce.should.be.true();
-                        tagObjStub.get.calledOnce.should.be.true();
-                        tagObjStub.get.calledWith('name').should.be.true();
-                        tagObjStub.save.called.should.be.false();
-                        logStub.calledOnce.should.be.false();
-                        sinon.assert.callOrder(tagAllStub, tagCollStub.each, tagObjStub.get);
+                        fixtures004[4]({}, logStub).then(function () {
+                            clientOneStub.calledOnce.should.be.true();
+                            clientOneStub.calledWith({slug: 'ghost-frontend'}).should.be.true();
+                            clientAddStub.calledOnce.should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(clientOneStub, logStub, clientAddStub);
 
-                        done();
-                    }).catch(done);
-                });
-            });
-
-            describe('07-add-post-tag-order', function () {
-                it('calls load on each post', function (done) {
-                    var logStub = sandbox.stub(),
-                        postObjStub = {
-                            load: sandbox.stub().returnsThis()
-                        },
-                        postCollStub = {mapThen: sandbox.stub().callsArgWith(0, postObjStub)},
-                        postAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(postCollStub));
-
-                    fixtures004[6]({}, logStub).then(function () {
-                        postAllStub.calledOnce.should.be.true();
-                        postCollStub.mapThen.calledOnce.should.be.true();
-                        postObjStub.load.calledOnce.should.be.true();
-                        postObjStub.load.calledWith(['tags']).should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(logStub, postAllStub, postCollStub.mapThen,  postObjStub.load);
-
-                        done();
-                    }).catch(done);
+                            done();
+                        }).catch(done);
+                    });
                 });
 
-                it('tries to add order to posts_tags', function (done) {
-                    var logStub = sandbox.stub(),
-                        postObjStub = {
-                            load: sandbox.stub().returnsThis(),
-                            related: sandbox.stub().returnsThis(),
-                            tags: sandbox.stub().returnsThis(),
-                            each: sandbox.stub().callsArgWith(0, {id: 5}),
-                            updatePivot: sandbox.stub().returns(Promise.resolve())
-                        },
-                        postCollStub = {mapThen: sandbox.stub().returns([postObjStub])},
-                        postAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(postCollStub));
+                describe('06-clean-broken-tags', function () {
+                    it('tries to clean broken tags correctly', function (done) {
+                        var logStub = sandbox.stub(),
+                            tagObjStub = {
+                                get: sandbox.stub().returns(',hello'),
+                                save: sandbox.stub().returns(Promise.resolve)
+                            },
+                            tagCollStub = {each: sandbox.stub().callsArgWith(0, tagObjStub)},
+                            tagAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(tagCollStub));
 
-                    fixtures004[6]({}, logStub).then(function () {
-                        postAllStub.calledOnce.should.be.true();
-                        postCollStub.mapThen.calledOnce.should.be.true();
-                        postObjStub.load.called.should.be.false();
-                        postObjStub.related.calledOnce.should.be.true();
-                        postObjStub.each.calledOnce.should.be.true();
-                        postObjStub.tags.calledOnce.should.be.true();
-                        postObjStub.updatePivot.calledOnce.should.be.true();
-                        logStub.calledThrice.should.be.true();
-                        sinon.assert.callOrder(
-                            logStub, postAllStub, postCollStub.mapThen, postObjStub.related, postObjStub.each,
-                            logStub, postObjStub.tags, postObjStub.updatePivot, logStub
-                        );
+                        fixtures004[5]({}, logStub).then(function () {
+                            tagAllStub.calledOnce.should.be.true();
+                            tagCollStub.each.calledOnce.should.be.true();
+                            tagObjStub.get.calledOnce.should.be.true();
+                            tagObjStub.get.calledWith('name').should.be.true();
+                            tagObjStub.save.calledOnce.should.be.true();
+                            tagObjStub.save.calledWith({name: 'hello'}).should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(tagAllStub, tagCollStub.each, tagObjStub.get, tagObjStub.save, logStub);
 
-                        done();
-                    }).catch(done);
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('tries can handle tags which end up empty', function (done) {
+                        var logStub = sandbox.stub(),
+                            tagObjStub = {
+                                get: sandbox.stub().returns(','),
+                                save: sandbox.stub().returns(Promise.resolve)
+                            },
+                            tagCollStub = {each: sandbox.stub().callsArgWith(0, tagObjStub)},
+                            tagAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(tagCollStub));
+
+                        fixtures004[5]({}, logStub).then(function () {
+                            tagAllStub.calledOnce.should.be.true();
+                            tagCollStub.each.calledOnce.should.be.true();
+                            tagObjStub.get.calledOnce.should.be.true();
+                            tagObjStub.get.calledWith('name').should.be.true();
+                            tagObjStub.save.calledOnce.should.be.true();
+                            tagObjStub.save.calledWith({name: 'tag'}).should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(tagAllStub, tagCollStub.each, tagObjStub.get, tagObjStub.save, logStub);
+
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('tries only changes a tag if necessary', function (done) {
+                        var logStub = sandbox.stub(),
+                            tagObjStub = {
+                                get: sandbox.stub().returns('hello'),
+                                save: sandbox.stub().returns(Promise.resolve)
+                            },
+                            tagCollStub = {each: sandbox.stub().callsArgWith(0, tagObjStub)},
+                            tagAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(tagCollStub));
+
+                        fixtures004[5]({}, logStub).then(function () {
+                            tagAllStub.calledOnce.should.be.true();
+                            tagCollStub.each.calledOnce.should.be.true();
+                            tagObjStub.get.calledOnce.should.be.true();
+                            tagObjStub.get.calledWith('name').should.be.true();
+                            tagObjStub.save.called.should.be.false();
+                            logStub.calledOnce.should.be.false();
+                            sinon.assert.callOrder(tagAllStub, tagCollStub.each, tagObjStub.get);
+
+                            done();
+                        }).catch(done);
+                    });
                 });
-            });
 
-            describe('08-add-post-fixture', function () {
-                it('tries to add a new post fixture correctly', function (done) {
-                    var logStub = sandbox.stub(),
-                        postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
-                        postAddStub = sandbox.stub(models.Post, 'add').returns(Promise.resolve());
+                describe('07-add-post-tag-order', function () {
+                    it('calls load on each post', function (done) {
+                        var logStub = sandbox.stub(),
+                            postObjStub = {
+                                load: sandbox.stub().returnsThis()
+                            },
+                            postCollStub = {mapThen: sandbox.stub().callsArgWith(0, postObjStub)},
+                            postAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(postCollStub));
 
-                    fixtures004[7]({}, logStub).then(function () {
-                        postOneStub.calledOnce.should.be.true();
-                        logStub.calledOnce.should.be.true();
-                        postAddStub.calledOnce.should.be.true();
-                        sinon.assert.callOrder(postOneStub, logStub, postAddStub);
+                        fixtures004[6]({}, logStub).then(function () {
+                            postAllStub.calledOnce.should.be.true();
+                            postCollStub.mapThen.calledOnce.should.be.true();
+                            postObjStub.load.calledOnce.should.be.true();
+                            postObjStub.load.calledWith(['tags']).should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(logStub, postAllStub, postCollStub.mapThen,  postObjStub.load);
 
-                        done();
-                    }).catch(done);
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('tries to add order to posts_tags', function (done) {
+                        var logStub = sandbox.stub(),
+                            postObjStub = {
+                                load: sandbox.stub().returnsThis(),
+                                related: sandbox.stub().returnsThis(),
+                                tags: sandbox.stub().returnsThis(),
+                                each: sandbox.stub().callsArgWith(0, {id: 5}),
+                                updatePivot: sandbox.stub().returns(Promise.resolve())
+                            },
+                            postCollStub = {mapThen: sandbox.stub().returns([postObjStub])},
+                            postAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(postCollStub));
+
+                        fixtures004[6]({}, logStub).then(function () {
+                            postAllStub.calledOnce.should.be.true();
+                            postCollStub.mapThen.calledOnce.should.be.true();
+                            postObjStub.load.called.should.be.false();
+                            postObjStub.related.calledOnce.should.be.true();
+                            postObjStub.each.calledOnce.should.be.true();
+                            postObjStub.tags.calledOnce.should.be.true();
+                            postObjStub.updatePivot.calledOnce.should.be.true();
+                            logStub.calledThrice.should.be.true();
+                            sinon.assert.callOrder(
+                                logStub, postAllStub, postCollStub.mapThen, postObjStub.related, postObjStub.each,
+                                logStub, postObjStub.tags, postObjStub.updatePivot, logStub
+                            );
+
+                            done();
+                        }).catch(done);
+                    });
+                });
+
+                describe('08-add-post-fixture', function () {
+                    it('tries to add a new post fixture correctly', function (done) {
+                        var logStub = sandbox.stub(),
+                            postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
+                            postAddStub = sandbox.stub(models.Post, 'add').returns(Promise.resolve());
+
+                        fixtures004[7]({}, logStub).then(function () {
+                            postOneStub.calledOnce.should.be.true();
+                            logStub.calledOnce.should.be.true();
+                            postAddStub.calledOnce.should.be.true();
+                            sinon.assert.callOrder(postOneStub, logStub, postAddStub);
+
+                            done();
+                        }).catch(done);
+                    });
                 });
             });
         });
