@@ -14,8 +14,6 @@ var should    = require('should'),
 
     sandbox = sinon.sandbox.create();
 
-require('should-sinon');
-
 describe('Exporter', function () {
     var versionStub, tablesStub, queryMock, knexMock, knexStub;
 
@@ -50,34 +48,34 @@ describe('Exporter', function () {
 
                 should.exist(exportData);
 
-                versionStub.should.be.calledOnce();
-                tablesStub.should.be.calledOnce();
-                knexStub.get.should.be.called();
-                knexMock.should.be.called();
-                queryMock.select.should.be.called();
+                versionStub.calledOnce.should.be.true();
+                tablesStub.calledOnce.should.be.true();
+                knexStub.get.called.should.be.true();
+                knexMock.called.should.be.true();
+                queryMock.select.called.should.be.true();
 
-                knexMock.should.have.callCount(expectedCallCount);
-                queryMock.select.should.have.callCount(expectedCallCount);
+                knexMock.callCount.should.eql(expectedCallCount);
+                queryMock.select.callCount.should.have.eql(expectedCallCount);
 
-                knexMock.getCall(0).should.be.calledWith('posts');
-                knexMock.getCall(1).should.be.calledWith('users');
-                knexMock.getCall(2).should.be.calledWith('roles');
-                knexMock.getCall(3).should.be.calledWith('roles_users');
-                knexMock.getCall(4).should.be.calledWith('permissions');
-                knexMock.getCall(5).should.be.calledWith('permissions_users');
-                knexMock.getCall(6).should.be.calledWith('permissions_roles');
-                knexMock.getCall(7).should.be.calledWith('permissions_apps');
-                knexMock.getCall(8).should.be.calledWith('settings');
-                knexMock.getCall(9).should.be.calledWith('tags');
-                knexMock.getCall(10).should.be.calledWith('posts_tags');
-                knexMock.getCall(11).should.be.calledWith('apps');
-                knexMock.getCall(12).should.be.calledWith('app_settings');
-                knexMock.getCall(13).should.be.calledWith('app_fields');
+                knexMock.getCall(0).args[0].should.eql('posts');
+                knexMock.getCall(1).args[0].should.eql('users');
+                knexMock.getCall(2).args[0].should.eql('roles');
+                knexMock.getCall(3).args[0].should.eql('roles_users');
+                knexMock.getCall(4).args[0].should.eql('permissions');
+                knexMock.getCall(5).args[0].should.eql('permissions_users');
+                knexMock.getCall(6).args[0].should.eql('permissions_roles');
+                knexMock.getCall(7).args[0].should.eql('permissions_apps');
+                knexMock.getCall(8).args[0].should.eql('settings');
+                knexMock.getCall(9).args[0].should.eql('tags');
+                knexMock.getCall(10).args[0].should.eql('posts_tags');
+                knexMock.getCall(11).args[0].should.eql('apps');
+                knexMock.getCall(12).args[0].should.eql('app_settings');
+                knexMock.getCall(13).args[0].should.eql('app_fields');
 
-                knexMock.should.not.be.calledWith('clients');
-                knexMock.should.not.be.calledWith('client_trusted_domains');
-                knexMock.should.not.be.calledWith('refreshtokens');
-                knexMock.should.not.be.calledWith('accesstokens');
+                knexMock.calledWith('clients').should.be.false();
+                knexMock.calledWith('client_trusted_domains').should.be.false();
+                knexMock.calledWith('refreshtokens').should.be.false();
+                knexMock.calledWith('accesstokens').should.be.false();
 
                 done();
             }).catch(done);
@@ -91,7 +89,7 @@ describe('Exporter', function () {
             // Execute
             exporter.doExport().then(function (exportData) {
                 should.not.exist(exportData);
-                errorStub.should.be.calledOnce();
+                errorStub.calledOnce.should.be.true();
                 done();
             }).catch(done);
         });
@@ -105,7 +103,7 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
-                settingsStub.should.be.calledOnce();
+                settingsStub.calledOnce.should.be.true();
                 result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
@@ -119,7 +117,7 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
-                settingsStub.should.be.calledOnce();
+                settingsStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
@@ -133,7 +131,7 @@ describe('Exporter', function () {
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
-                settingsStub.should.be.calledOnce();
+                settingsStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();

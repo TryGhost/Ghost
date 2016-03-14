@@ -2,7 +2,6 @@
 var should      = require('should'),
     sinon       = require('sinon'),
     middleware  = require('../../../server/middleware').middleware;
-require('should-sinon');
 
 describe('Middleware: spamPrevention', function () {
     var sandbox,
@@ -91,7 +90,7 @@ describe('Middleware: spamPrevention', function () {
 
             middleware.spamPrevention.signin(req, null, spyNext);
             should(error).equal(undefined);
-            spyNext.should.be.called();
+            spyNext.called.should.be.true();
 
             process.hrtime.restore();
             done();
@@ -173,7 +172,7 @@ describe('Middleware: spamPrevention', function () {
 
             middleware.spamPrevention.protected(req, res, spyNext);
             res.error.message.should.equal('No password entered');
-            spyNext.should.be.calledOnce();
+            spyNext.calledOnce.should.be.true();
 
             done();
         });
