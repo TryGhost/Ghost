@@ -1,8 +1,7 @@
 /*globals describe, beforeEach, afterEach, it*/
-var sinon           = require('sinon'),
+var sinon        = require('sinon'),
     should       = require('should'),
-    uncapitalise    = require('../../../server/middleware/uncapitalise');
-require('should-sinon');
+    uncapitalise = require('../../../server/middleware/uncapitalise');
 
 should.equal(true, true);
 
@@ -29,7 +28,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '/ghost/signup';
             uncapitalise(req, res, next);
 
-            next.should.be.calledOnce();
+            next.calledOnce.should.be.true();
             done();
         });
 
@@ -43,8 +42,8 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.should.not.be.called();
-            res.redirect.should.be.calledOnce();
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
             res.redirect.calledWith(301, 'http://localhost/ghost/signup').should.be.true();
             done();
         });
@@ -55,7 +54,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '/ghost/api/v0.1';
             uncapitalise(req, res, next);
 
-            next.should.be.calledOnce();
+            next.calledOnce.should.be.true();
             done();
         });
 
@@ -69,8 +68,8 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.should.not.be.called();
-            res.redirect.should.be.calledOnce();
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
             res.redirect.calledWith(301, 'http://localhost/ghost/api/v0.1/asdfj').should.be.true();
             done();
         });
@@ -81,7 +80,7 @@ describe('Middleware: uncapitalise', function () {
             req.path = '/this-is-my-blog-post';
             uncapitalise(req, res, next);
 
-            next.should.be.calledOnce();
+            next.calledOnce.should.be.true();
             done();
         });
 
@@ -95,8 +94,8 @@ describe('Middleware: uncapitalise', function () {
 
             uncapitalise(req, res, next);
 
-            next.should.not.be.called();
-            res.redirect.should.be.calledOnce();
+            next.called.should.be.false();
+            res.redirect.calledOnce.should.be.true();
             res.redirect.calledWith(301, 'http://localhost/this-is-my-blog-post').should.be.true();
             done();
         });
