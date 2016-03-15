@@ -18,6 +18,8 @@ describe('Database Migration (special functions)', function () {
     });
 
     describe('Fixtures', function () {
+        beforeEach(testUtils.setup());
+
         // Custom assertion for detection that a permissions is assigned to the correct roles
         should.Assertion.add('AssignedToRoles', function (roles) {
             var roleNames;
@@ -27,7 +29,9 @@ describe('Database Migration (special functions)', function () {
 
             this.obj.should.be.an.Object().with.property(['roles']);
             this.obj.roles.should.be.an.Array();
-            roleNames = _.pluck(this.obj.roles, 'name');
+
+            // Ensure the roles are in id order
+            roleNames = _(this.obj.roles).sortBy('id').pluck('name').value();
             roleNames.should.eql(roles);
         });
 
@@ -116,8 +120,6 @@ describe('Database Migration (special functions)', function () {
             permissions[29].name.should.eql('Browse roles');
             permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
         });
-
-        beforeEach(testUtils.setup());
 
         it('should populate all fixtures correctly', function (done) {
             var logStub = sandbox.stub();
