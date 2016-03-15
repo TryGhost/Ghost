@@ -24,7 +24,7 @@ var banner = ["/**",
 
 gulp.task("prettify-js", [], function() {
 	return gulp.src("./src/js/simplemde.js")
-		.pipe(prettify({js: {braceStyle: "collapse", indentChar: "\t", indentSize: 1, maxPreserveNewlines: 3, spaceBeforeConditional: false}}))
+		.pipe(prettify({js: {brace_style: "collapse", indent_char: "\t", indent_size: 1, max_preserve_newlines: 3, space_before_conditional: false}}))
 		.pipe(gulp.dest("./src/js"));
 });
  
