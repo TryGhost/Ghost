@@ -1510,8 +1510,24 @@ SimpleMDE.prototype.render = function(el) {
 	this._rendered = this.element;
 };
 
+// Safari, in Private Browsing Mode, looks like it supports localStorage but all calls to setItem throw QuotaExceededError. We're going to detect this and set a variable accordingly.
+function isLocalStorageAvailable() {
+	if(typeof localStorage === "object") {
+		try {
+			localStorage.setItem("smde_localStorage", 1);
+			localStorage.removeItem("smde_localStorage");
+		} catch (e) {
+			return false;
+		}
+	} else {
+		return false;
+	}
+	
+	return true;
+}
+
 SimpleMDE.prototype.autosave = function() {
-	if(localStorage) {
+	if(isLocalStorageAvailable()) {
 		var simplemde = this;
 
 		if(this.options.autosave.uniqueId == undefined || this.options.autosave.uniqueId == "") {
@@ -1564,7 +1580,7 @@ SimpleMDE.prototype.autosave = function() {
 };
 
 SimpleMDE.prototype.clearAutosavedValue = function() {
-	if(localStorage) {
+	if(isLocalStorageAvailable()) {
 		if(this.options.autosave == undefined || this.options.autosave.uniqueId == undefined || this.options.autosave.uniqueId == "") {
 			console.log("SimpleMDE: You must set a uniqueId to clear the autosave value");
 			return;
