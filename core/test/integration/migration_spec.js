@@ -122,7 +122,7 @@ describe('Database Migration (special functions)', function () {
         it('should populate all fixtures correctly', function (done) {
             var logStub = sandbox.stub();
 
-            fixtures.populate({context: {internal: true}}, logStub).then(function () {
+            fixtures.populate(logStub).then(function () {
                 var props = {
                     posts: Models.Post.findAll({include: ['tags']}),
                     tags: Models.Tag.findAll(),

@@ -11,6 +11,7 @@ var should  = require('should'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
+    ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
 
     sandbox       = sinon.sandbox.create();
 
@@ -32,7 +33,7 @@ describe('Fixtures', function () {
                 getVersionTasksStub = sandbox.stub().returns([]),
                 reset = update.__set__('getVersionTasks', getVersionTasksStub);
 
-            update(['004'], {}, logStub).then(function () {
+            update(['004'], logStub).then(function () {
                 logStub.calledOnce.should.be.true();
                 getVersionTasksStub.calledOnce.should.be.true();
                 reset();
@@ -45,7 +46,7 @@ describe('Fixtures', function () {
                 getVersionTasksStub = sandbox.stub().returns(Promise.resolve()),
                 reset = update.__set__('getVersionTasks', getVersionTasksStub);
 
-            update([], {}, logStub).then(function () {
+            update([], logStub).then(function () {
                 logStub.calledOnce.should.be.true();
                 getVersionTasksStub.calledOnce.should.be.false();
                 reset();
@@ -77,7 +78,7 @@ describe('Fixtures', function () {
                 clientOneStub.withArgs({slug: 'ghost-admin'}).returns(Promise.resolve());
                 clientOneStub.withArgs({slug: 'ghost-frontend'}).returns(Promise.resolve({}));
 
-                update(['004'], {}, logStub).then(function (result) {
+                update(['004'], logStub).then(function (result) {
                     should.exist(result);
 
                     logStub.called.should.be.true();
@@ -396,7 +397,7 @@ describe('Fixtures', function () {
                 roleOneStub = sandbox.stub(models.Role, 'findOne').returns(Promise.resolve({id: 1})),
                 userAddStub = sandbox.stub(models.User, 'add').returns(Promise.resolve({}));
 
-            populate({}, logStub).then(function () {
+            populate(logStub).then(function () {
                 logStub.called.should.be.true();
 
                 postAddStub.calledOnce.should.be.true();
@@ -475,7 +476,7 @@ describe('Fixtures', function () {
                     roleOneStub = sandbox.stub(models.Role, 'findOne').returns(Promise.resolve({id: 1})),
                     userAddStub = sandbox.stub(models.User, 'add').returns(Promise.resolve({}));
 
-                createOwner({}, logStub).then(function () {
+                createOwner(logStub).then(function () {
                     logStub.called.should.be.true();
                     roleOneStub.calledOnce.should.be.true();
                     userAddStub.called.should.be.true();
@@ -580,6 +581,20 @@ describe('Fixtures', function () {
                 getStub.callCount.should.eql(4);
                 getStub.getCall(2).calledWith('fun').should.be.true();
                 getStub.getCall(3).calledWith('foo').should.be.true();
+            });
+        });
+    });
+
+    describe('Ensure default settings', function () {
+        it('should call populate settings and provide messaging', function (done) {
+            var settingsStub = sandbox.stub(models.Settings, 'populateDefaults').returns(new Promise.resolve()),
+                logStub = sandbox.stub();
+
+            ensureDefaultSettings(logStub).then(function () {
+                settingsStub.calledOnce.should.be.true();
+                logStub.calledTwice.should.be.true();
+
+                done();
             });
         });
     });
