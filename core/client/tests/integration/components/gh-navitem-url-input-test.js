@@ -189,21 +189,6 @@ describeComponent(
             expect($input.val()).to.equal(`${currentUrl} /test`);
         });
 
-        it('toggles .fake-placeholder on focus', function () {
-            this.set('isNew', true);
-            this.render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew change="updateUrl" clearErrors=(action "clearErrors")}}
-            `);
-            let $input = this.$('input');
-
-            expect($input.hasClass('fake-placeholder')).to.be.true;
-
-            run(() => {
-                $input.trigger('focus');
-            });
-            expect($input.hasClass('fake-placeholder')).to.be.false;
-        });
-
         it('triggers "change" action on blur', function () {
             let changeActionCallCount = 0;
             this.on('updateUrl', () => {
