@@ -90,19 +90,19 @@
     padding-bottom: 0;
 }
 
-.ember-power-select-group .ember-power-select-option {
+.ember-power-select-option {
     overflow: hidden;
     padding: 7px 8px;
     line-height: 1.35em;
     cursor: pointer;
 }
 
-.ember-power-select-group .ember-power-select-option .highlight {
+.ember-power-select-option .highlight {
     background: #fff3b8;
     border-radius: 1px;
 }
 
-.ember-power-select-group .ember-power-select-option[aria-current="true"] {
+.ember-power-select-option[aria-current="true"] {
     background: color(var(--blue) alpha(-85%));
     color: var(--darkgrey);
 }

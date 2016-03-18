@@ -49,6 +49,7 @@
                     searchField="name"
                     onchange=(action (mut model.tags))
                     onkeydown=(action 'createOnEnter')
+                    renderInPlace=true
                     as |tag|
                 }}
                     {{tag.name}}
