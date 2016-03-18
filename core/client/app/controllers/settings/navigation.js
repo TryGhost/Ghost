@@ -122,6 +122,11 @@ export default Controller.extend(SettingsSaveMixin, {
         addItem() {
             let newNavItem = this.get('newNavItem');
 
+            // If the url sent through is blank (user never edited the url)
+            if (newNavItem.get('url') === '') {
+                newNavItem.set('url', '/');
+            }
+
             return newNavItem.validate().then(() => {
                 this.addNewNavItem();
             });
