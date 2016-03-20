@@ -126,9 +126,8 @@ describe('Tags API', function () {
         it('can destroy Tag', function (done) {
             TagAPI.destroy(_.extend({}, testUtils.context.admin, {id: firstTag}))
                 .then(function (results) {
-                    should.exist(results);
-                    should.exist(results.tags);
-                    results.tags.length.should.be.above(0);
+                    should.not.exist(results);
+
                     done();
                 }).catch(done);
         });
