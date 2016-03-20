@@ -552,4 +552,36 @@ describe('Post API', function () {
             });
         });
     });
+
+    describe('Destroy', function () {
+        it('can delete a post', function (done) {
+            var options = {context: {user: 1}, id: 1};
+
+            PostAPI.read(options).then(function (results) {
+                should.exist(results.posts[0]);
+
+                return PostAPI.destroy(options);
+            }).then(function (results) {
+                should.not.exist(results);
+
+                return PostAPI.read(options);
+            }).then(function () {
+                done(new Error('Post still exists when it should have been deleted'));
+            }).catch(function () {
+                done();
+            });
+        });
+
+        it('returns an error when attempting to delete a non-existent post', function (done) {
+            var options = {context: {user: 1}, id: 123456788};
+
+            PostAPI.destroy(options).then(function () {
+                done(new Error('No error was thrown'));
+            }).catch(function (error) {
+                error.errorType.should.eql('NotFoundError');
+
+                done();
+            });
+        });
+    });
 });

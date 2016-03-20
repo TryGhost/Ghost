@@ -844,20 +844,16 @@ describe('Post API', function () {
             var deletePostId = 1;
             request.del(testUtils.API.getApiQuery('posts/' + deletePostId + '/'))
                 .set('Authorization', 'Bearer ' + accesstoken)
-                .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
+                .expect(204)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
 
-                    var jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.posts);
+                    res.body.should.be.empty();
                     res.headers['x-cache-invalidate'].should.eql('/*');
-                    testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-                    jsonResponse.posts[0].id.should.eql(deletePostId);
+
                     done();
                 });
         });
@@ -907,18 +903,15 @@ describe('Post API', function () {
 
                     request.del(testUtils.API.getApiQuery('posts/' + draftPost.posts[0].id + '/'))
                         .set('Authorization', 'Bearer ' + accesstoken)
-                        .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
+                        .expect(204)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
 
-                            var jsonResponse = res.body;
-                            should.exist(jsonResponse);
-                            should.exist(jsonResponse.posts);
-                            testUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+                            res.body.should.be.empty();
+
                             done();
                         });
                 });

@@ -125,6 +125,12 @@ export default function () {
         return response;
     });
 
+    this.del('/posts/:id/', function (db, request) {
+        db.posts.remove(request.params.id);
+
+        return new Mirage.Response(204, {}, {});
+    });
+
     /* Roles ---------------------------------------------------------------- */
 
     this.get('/roles/', function (db, request) {
@@ -267,7 +273,11 @@ export default function () {
         };
     });
 
-    this.del('/tags/:id/', 'tag');
+    this.del('/tags/:id/', function (db, request) {
+        db.tags.remove(request.params.id);
+
+        return new Mirage.Response(204, {}, {});
+    });
 
     /* Users ---------------------------------------------------------------- */
 
@@ -304,7 +314,11 @@ export default function () {
         };
     });
 
-    this.del('/users/:id/', 'user');
+    this.del('/users/:id/', function (db, request) {
+        db.users.remove(request.params.id);
+
+        return new Mirage.Response(204, {}, {});
+    });
 
     this.get('/users/:id', function (db, request) {
         return {
