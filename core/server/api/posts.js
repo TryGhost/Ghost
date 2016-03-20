@@ -206,7 +206,7 @@ posts = {
      *
      * @public
      * @param {{id (required), context,...}} options
-     * @return {Promise(Post)} Deleted Post
+     * @return {Promise}
      */
     destroy: function destroy(options) {
         var tasks;
@@ -214,15 +214,14 @@ posts = {
         /**
          * @function deletePost
          * @param  {Object} options
-         * @return {Object} JSON representation of the deleted post
          */
         function deletePost(options) {
             var Post = dataProvider.Post,
                 data = _.defaults({status: 'all'}, options),
-                fetchOpts = _.defaults({require: true}, options);
+                fetchOpts = _.defaults({require: true, columns: 'id'}, options);
 
             return Post.findOne(data, fetchOpts).then(function (post) {
-                return post.destroy(options).return({posts: [post.toJSON()]});
+                return post.destroy(options).return(null);
             }).catch(Post.NotFoundError, function () {
                 throw new errors.NotFoundError(i18n.t('errors.api.posts.postNotFound'));
             });
@@ -237,9 +236,7 @@ posts = {
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
-        return pipeline(tasks, options).tap(function formatResponse(response) {
-            response.posts[0].statusChanged = true;
-        });
+        return pipeline(tasks, options);
     }
 };
 
