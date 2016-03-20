@@ -595,6 +595,26 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
+        it('outputs structured data but not schema for custom channel', function (done) {
+            helpers.ghost_head.call(
+                {safeVersion: '0.3', relativeUrl: '/featured/', context: ['featured']},
+                {data: {root: {context: ['featured']}}}
+            ).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.match(/<link rel="canonical" href="http:\/\/testurl.com\/featured\/" \/>/);
+                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
+                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/testurl.com\/rss\/" \/>/);
+                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
+                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
+                rendered.string.should.match(/<meta property="og:title" content="Ghost" \/>/);
+                rendered.string.should.match(/<meta property="og:url" content="http:\/\/testurl.com\/featured\/" \/>/);
+
+                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
+
+                done();
+            }).catch(done);
+        });
+
         it('returns twitter and facebook descriptions if no meta description available', function (done) {
             var post = {
                 title: 'Welcome to Ghost',
