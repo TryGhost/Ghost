@@ -1,9 +1,7 @@
 /* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
-import DS from 'ember-data';
 import ApplicationSerializer from 'ghost/serializers/application';
-
-const {EmbeddedRecordsMixin} = DS;
+import EmbeddedRecordsMixin from 'ember-data/serializers/embedded-records-mixin';
 
 export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
     // settings for the EmbeddedRecordsMixin.
