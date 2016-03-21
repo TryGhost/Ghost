@@ -1,4 +1,5 @@
-var db              = require('../db'),
+var path            = require('path'),
+    db              = require('../db'),
     errors          = require('../../errors'),
     i18n            = require('../../i18n'),
     defaultSettings = require('./default-settings'),
@@ -72,11 +73,44 @@ function showCannotMigrateError() {
     );
 }
 
+/**
+ * ### Get Version Tasks
+ * Tries to require a directory matching the version number
+ *
+ * This was split from update to make testing easier
+ *
+ * @param {String} version
+ * @param {String} relPath
+ * @param {Function} logInfo
+ * @returns {Array}
+ */
+function getVersionTasks(version, relPath, logInfo) {
+    var tasks = [];
+
+    try {
+        tasks = require(path.join(relPath, version));
+    } catch (e) {
+        logInfo('No tasks found for version', version);
+    }
+
+    return tasks;
+}
+
+function getUpdateDatabaseTasks(version, logInfo) {
+    return getVersionTasks(version, '../migration/', logInfo);
+}
+
+function getUpdateFixturesTasks(version, logInfo) {
+    return getVersionTasks(version, '../migration/fixtures/', logInfo);
+}
+
 module.exports = {
     canMigrateFromVersion: '003',
     showCannotMigrateError: showCannotMigrateError,
     getDefaultDatabaseVersion: getDefaultDatabaseVersion,
     getDatabaseVersion: getDatabaseVersion,
     setDatabaseVersion: setDatabaseVersion,
-    getMigrationVersions: getMigrationVersions
+    getMigrationVersions: getMigrationVersions,
+    getUpdateDatabaseTasks: getUpdateDatabaseTasks,
+    getUpdateFixturesTasks: getUpdateFixturesTasks
 };
