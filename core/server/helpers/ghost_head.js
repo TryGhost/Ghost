@@ -103,9 +103,11 @@ function ghost_head(options) {
                 head.push.apply(head, finaliseStructuredData(metaData));
                 head.push('');
 
-                head.push('<script type="application/ld+json">\n' +
-                JSON.stringify(metaData.schema, null, '    ') +
-                '\n    </script>\n');
+                if (metaData.schema) {
+                    head.push('<script type="application/ld+json">\n' +
+                        JSON.stringify(metaData.schema, null, '    ') +
+                        '\n    </script>\n');
+                }
             }
 
             if (client && client.id && client.secret) {
