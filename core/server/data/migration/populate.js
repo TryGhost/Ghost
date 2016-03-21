@@ -13,15 +13,15 @@ var Promise  = require('bluebird'),
  * Uses the schema to determine table structures, and automatically creates each table in order
  * TODO: use this directly in tests, so migration.init() can forget about tablesOnly as an option
  *
- * @param {Function} logInfo
+ * @param {{info: logger.info, warn: logger.warn}} logger
  * @param {Boolean} [tablesOnly] - used by tests
  * @returns {Promise<*>}
  */
-populate = function populate(logInfo, tablesOnly) {
-    logInfo('Creating tables...');
+populate = function populate(logger, tablesOnly) {
+    logger.info('Creating tables...');
 
     var tableSequence = Promise.mapSeries(schemaTables, function createTable(table) {
-        logInfo('Creating table: ' + table);
+        logger.info('Creating table: ' + table);
         return commands.createTable(table);
     });
 
@@ -31,9 +31,9 @@ populate = function populate(logInfo, tablesOnly) {
 
     return tableSequence.then(function () {
         // Load the fixtures
-        return fixtures.populate(logInfo);
+        return fixtures.populate(logger);
     }).then(function () {
-        return fixtures.ensureDefaultSettings(logInfo);
+        return fixtures.ensureDefaultSettings(logger);
     });
 };
 

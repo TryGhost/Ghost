@@ -43,20 +43,22 @@ function processPostsArray(postsArray) {
     return postsArray.reduce(buildTagOpsArray, []);
 }
 
-module.exports = function addPostTagOrder(options, logInfo) {
+module.exports = function addPostTagOrder(options, logger) {
     modelOptions = options;
     migrationHasRunFlag = false;
 
-    logInfo('Collecting data on tag order for posts...');
+    logger.info('Collecting data on tag order for posts...');
     return models.Post.findAll(_.extend({}, modelOptions))
         .then(loadTagsForEachPost)
         .then(processPostsArray)
         .then(function (tagOps) {
             if (tagOps.length > 0 && !migrationHasRunFlag) {
-                logInfo('Updating order on ' + tagOps.length + ' tag relationships (could take a while)...');
+                logger.info('Updating order on ' + tagOps.length + ' tag relationships (could take a while)...');
                 return sequence(tagOps).then(function () {
-                    logInfo('Tag order successfully updated');
+                    logger.info('Tag order successfully updated');
                 });
+            } else {
+                logger.warn('Updating order on tag relationships');
             }
         });
 };

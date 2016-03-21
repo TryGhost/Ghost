@@ -122,9 +122,12 @@ describe('Database Migration (special functions)', function () {
         });
 
         it('should populate all fixtures correctly', function (done) {
-            var logStub = sandbox.stub();
+            var loggerStub = {
+                info: sandbox.stub(),
+                warn: sandbox.stub()
+            };
 
-            fixtures.populate(logStub).then(function () {
+            fixtures.populate(loggerStub).then(function () {
                 var props = {
                     posts: Models.Post.findAll({include: ['tags']}),
                     tags: Models.Tag.findAll(),
@@ -134,7 +137,8 @@ describe('Database Migration (special functions)', function () {
                     permissions: Models.Permission.findAll({include: ['roles']})
                 };
 
-                logStub.called.should.be.true();
+                loggerStub.info.called.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 return Promise.props(props).then(function (result) {
                     should.exist(result);
