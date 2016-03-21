@@ -14,10 +14,7 @@
 var config = require('../../config'),
 
     // Context patterns, should eventually come from Channel configuration
-    tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/.+'),
-    authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/.+'),
     privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/'),
-    indexPattern = new RegExp('^\\/' + config.routeKeywords.page + '\\/'),
     rssPattern = new RegExp('^\\/rss\\/'),
     homePattern = new RegExp('^\\/$');
 
@@ -32,27 +29,29 @@ function setResponseContext(req, res, data) {
         return;
     }
 
-    // paged context
+    // Paged context - special rule
     if (!isNaN(pageParam) && pageParam > 1) {
         res.locals.context.push('paged');
     }
 
-    if (indexPattern.test(res.locals.relativeUrl)) {
-        res.locals.context.push('index');
-    } else if (homePattern.test(res.locals.relativeUrl)) {
+    // Home context - special rule
+    if (homePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('home');
-        res.locals.context.push('index');
-    } else if (rssPattern.test(res.locals.relativeUrl)) {
+    }
+
+    // This is not currently used, as setRequestContext is not called for RSS feeds
+    if (rssPattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('rss');
+    }
+
+    // Each page can only have at most one of these
+    if (req.channelConfig) {
+        res.locals.context.push(req.channelConfig.name);
     } else if (privatePattern.test(res.locals.relativeUrl)) {
         res.locals.context.push('private');
-    } else if (tagPattern.test(res.locals.relativeUrl)) {
-        res.locals.context.push('tag');
-    } else if (authorPattern.test(res.locals.relativeUrl)) {
-        res.locals.context.push('author');
     } else if (data && data.post && data.post.page) {
         res.locals.context.push('page');
-    } else {
+    } else if (data && data.post) {
         res.locals.context.push('post');
     }
 }
