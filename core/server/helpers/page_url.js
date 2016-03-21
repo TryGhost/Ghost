@@ -8,32 +8,14 @@
 //
 // We use the name page_url to match the helper for consistency:
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-
-var config          = require('../config'),
-    errors          = require('../errors'),
+var errors          = require('../errors'),
     i18n            = require('../i18n'),
+    getPaginatedUrl = require('../data/meta/paginated_url'),
     page_url,
     pageUrl;
 
-page_url = function (pageNum, options) {
-    /*jshint unused:false*/
-    var url = config.paths.subdir;
-
-    if (this.tagSlug !== undefined) {
-        url += '/' + config.routeKeywords.tag + '/' + this.tagSlug;
-    }
-
-    if (this.authorSlug !== undefined) {
-        url += '/' + config.routeKeywords.author + '/' + this.authorSlug;
-    }
-
-    if (pageNum > 1) {
-        url += '/' + config.routeKeywords.page + '/' + pageNum;
-    }
-
-    url += '/';
-
-    return url;
+page_url = function (page, options) {
+    return getPaginatedUrl(page, options.data.root);
 };
 
 // ### Page URL Helper: DEPRECATED
