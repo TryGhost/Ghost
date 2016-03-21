@@ -4,7 +4,7 @@ var models  = require('../../../../models'),
 
 module.exports = function updatePrivateSetting(options, logInfo) {
     return models.Settings.findOne('isPrivate').then(function (setting) {
-        if (setting) {
+        if (setting && setting.get('type') !== 'private') {
             logInfo('Update isPrivate setting');
             return models.Settings.edit({key: 'isPrivate', type: 'private'}, options);
         }
