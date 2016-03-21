@@ -15,9 +15,11 @@ var _             = require('lodash'),
     privacyMessage = [
         i18n.t('notices.data.fixtures.jQueryRemoved'),
         i18n.t('notices.data.fixtures.canBeChanged')
-    ];
+    ],
 
-module.exports = function moveJQuery(options, logInfo) {
+    message = 'Adding jQuery link to ghost_foot';
+
+module.exports = function moveJQuery(options, logger) {
     var value;
 
     return models.Settings.findOne('ghost_foot').then(function (setting) {
@@ -25,14 +27,14 @@ module.exports = function moveJQuery(options, logInfo) {
             value = setting.attributes.value;
             // Only add jQuery if it's not already in there
             if (value.indexOf(jquery.join('')) === -1) {
-                logInfo('Adding jQuery link to ghost_foot');
+                logger.info(message);
                 value = jquery.join('') + value;
 
                 return models.Settings.edit({key: 'ghost_foot', value: value}, options).then(function () {
                     if (_.isEmpty(config.privacy)) {
                         return Promise.resolve();
                     }
-                    logInfo(privacyMessage.join(' ').replace(/<\/?strong>/g, ''));
+                    logger.info(privacyMessage.join(' ').replace(/<\/?strong>/g, ''));
                     return notifications.add({
                         notifications: [{
                             type: 'info',
@@ -40,7 +42,11 @@ module.exports = function moveJQuery(options, logInfo) {
                         }]
                     }, options);
                 });
+            } else {
+                logger.warn(message);
             }
+        } else {
+            logger.warn(message);
         }
     });
 };

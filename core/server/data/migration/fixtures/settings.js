@@ -1,12 +1,16 @@
 var models = require('../../../models'),
     ensureDefaultSettings;
 
-ensureDefaultSettings = function ensureDefaultSettings(logInfo) {
+/**
+ * ## Ensure Default Settings
+ * Wrapper around model.Settings.populateDefault, with logger
+ * @param {{info: logger.info, warn: logger.warn}} logger
+ * @returns {*}
+ */
+ensureDefaultSettings = function ensureDefaultSettings(logger) {
     // Initialise the default settings
-    logInfo('Populating default settings');
-    return models.Settings.populateDefaults().then(function () {
-        logInfo('Complete');
-    });
+    logger.info('Ensuring default settings');
+    return models.Settings.populateDefaults();
 };
 
 module.exports = ensureDefaultSettings;
