@@ -41,20 +41,6 @@ export default RESTAdapter.extend(DataAdapterMixin, {
         return url;
     },
 
-    // Override deleteRecord to disregard the response body on 2xx responses.
-    // This is currently needed because the API is returning status 200 along
-    // with the JSON object for the deleted entity and Ember expects an empty
-    // response body for successful DELETEs.
-    // Non-2xx (failure) responses will still work correctly as Ember will turn
-    // them into rejected promises.
-    deleteRecord() {
-        let response = this._super(...arguments);
-
-        return response.then(() => {
-            return null;
-        });
-    },
-
     handleResponse(status) {
         if (status === 401) {
             if (this.get('session.isAuthenticated')) {
