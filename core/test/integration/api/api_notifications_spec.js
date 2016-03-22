@@ -123,9 +123,7 @@ describe('Notifications API', function () {
             NotificationsAPI.destroy(
                 _.extend({}, testUtils.context.internal, {id: notification.id})
             ).then(function (result) {
-                should.exist(result);
-                should.exist(result.notifications);
-                result.notifications[0].id.should.equal(notification.id);
+                should.not.exist(result);
 
                 done();
             }).catch(done);
@@ -144,9 +142,7 @@ describe('Notifications API', function () {
             NotificationsAPI.destroy(
                 _.extend({}, testUtils.context.owner, {id: notification.id})
             ).then(function (result) {
-                should.exist(result);
-                should.exist(result.notifications);
-                result.notifications[0].id.should.equal(notification.id);
+                should.not.exist(result);
 
                 done();
             }).catch(done);
