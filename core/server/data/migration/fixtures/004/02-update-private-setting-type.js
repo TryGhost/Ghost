@@ -1,12 +1,16 @@
 // Update the `isPrivate` setting, so that it has a type of `private` rather than `blog`
 var models  = require('../../../../models'),
-    Promise = require('bluebird');
+    Promise = require('bluebird'),
 
-module.exports = function updatePrivateSetting(options, logInfo) {
+    message = 'Update isPrivate setting';
+
+module.exports = function updatePrivateSetting(options, logger) {
     return models.Settings.findOne('isPrivate').then(function (setting) {
         if (setting && setting.get('type') !== 'private') {
-            logInfo('Update isPrivate setting');
+            logger.info(message);
             return models.Settings.edit({key: 'isPrivate', type: 'private'}, options);
+        } else {
+            logger.warn(message);
         }
         return Promise.resolve();
     });

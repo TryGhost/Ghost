@@ -17,26 +17,26 @@ var sequence = require('../../../utils/sequence'),
  * Handles doing subsequent updates for versions
  *
  * @param {Array} versions
- * @param {Function} logInfo
+ * @param {{info: logger.info, warn: logger.warn}} logger
  * @returns {Promise<*>}
  */
-update = function update(versions, logInfo) {
-    logInfo('Updating fixtures');
+update = function update(versions, logger) {
+    logger.info('Running fixture updates');
 
     var ops = versions.reduce(function updateToVersion(ops, version) {
-        var tasks = versioning.getUpdateFixturesTasks(version, logInfo);
+        var tasks = versioning.getUpdateFixturesTasks(version, logger);
 
         if (tasks && tasks.length > 0) {
             ops.push(function runVersionTasks() {
-                logInfo('Updating fixtures to ', version);
-                return sequence(tasks, modelOptions, logInfo);
+                logger.info('Updating fixtures to ' + version);
+                return sequence(tasks, modelOptions, logger);
             });
         }
 
         return ops;
     }, []);
 
-    return sequence(ops, modelOptions, logInfo);
+    return sequence(ops, modelOptions, logger);
 };
 
 module.exports = update;

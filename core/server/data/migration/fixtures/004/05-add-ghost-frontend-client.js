@@ -2,13 +2,16 @@
 var models  = require('../../../../models'),
     Promise = require('bluebird'),
 
-    frontendClient  = require('../fixtures').models.Client[1];
+    frontendClient  = require('../fixtures').models.Client[1],
+    message = 'Add ghost-frontend client fixture';
 
-module.exports = function addGhostFrontendClient(options, logInfo) {
+module.exports = function addGhostFrontendClient(options, logger) {
     return models.Client.findOne({slug: frontendClient.slug}).then(function (client) {
         if (!client) {
-            logInfo('Add ghost-frontend client fixture');
+            logger.info(message);
             return models.Client.add(frontendClient, options);
+        } else {
+            logger.warn(message);
         }
         return Promise.resolve();
     });

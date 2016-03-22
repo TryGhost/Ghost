@@ -5,7 +5,7 @@ var Promise         = require('bluebird'),
     models          = require('../../models'),
 
     // private
-    logInfo,
+    logger,
     fixClientSecret,
     populate = require('./populate'),
     update   = require('./update'),
@@ -15,8 +15,17 @@ var Promise         = require('bluebird'),
     reset    = require('./reset'),
     backup   = require('./backup');
 
-logInfo = function logInfo(message) {
-    errors.logInfo('Migrations', message);
+/**
+ *
+ * @type {{info: logger.info, warn: logger.warn}}
+ */
+logger = {
+    info: function info(message) {
+        errors.logComponentInfo('Migrations', message);
+    },
+    warn: function warn(message) {
+        errors.logComponentWarn('Skipping Migrations', message);
+    }
 };
 
 // TODO: move to migration.to005() for next DB version
@@ -24,7 +33,7 @@ fixClientSecret = function () {
     return models.Clients.forge().query('where', 'secret', '=', 'not_available').fetch().then(function updateClients(results) {
         return Promise.map(results.models, function mapper(client) {
             if (process.env.NODE_ENV.indexOf('testing') !== 0) {
-                logInfo('Updating client secret');
+                logger.info('Updating client secret');
                 client.secret = crypto.randomBytes(6).toString('hex');
             }
             return models.Client.edit(client, {context: {internal: true}, id: client.id});
@@ -48,12 +57,12 @@ init = function (tablesOnly) {
         // 2. The database exists but is out of date
         if (databaseVersion < defaultVersion || process.env.FORCE_MIGRATION) {
             // Migrate to latest version
-            logInfo('Database upgrade required from version ' + databaseVersion + ' to ' +  defaultVersion);
-            return update(databaseVersion, defaultVersion, logInfo);
+            logger.info('Database upgrade required from version ' + databaseVersion + ' to ' +  defaultVersion);
+            return update(databaseVersion, defaultVersion, logger);
 
             // 1. The database exists and is up-to-date
         } else if (databaseVersion === defaultVersion) {
-            logInfo('Up to date at version ' + databaseVersion);
+            logger.info('Up-to-date at version ' + databaseVersion);
             // TODO: temporary fix for missing client.secret
             return fixClientSecret();
 
@@ -69,8 +78,8 @@ init = function (tablesOnly) {
         if (err && err.message === 'Settings table does not exist') {
             // 4. The database has not yet been created
             // Bring everything up from initial version.
-            logInfo('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
-            return populate(logInfo, tablesOnly);
+            logger.info('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
+            return populate(logger, tablesOnly);
         }
         // 3. The database exists but the currentVersion setting does not or cannot be understood
         // In this case the setting was missing or there was some other problem

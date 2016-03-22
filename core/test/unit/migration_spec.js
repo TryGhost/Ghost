@@ -27,57 +27,65 @@ var should          = require('should'),
 
     sandbox = sinon.sandbox.create();
 
+// Check version integrity
+// These tests exist to ensure that developers are not able to modify the database schema, or permissions fixtures
+// without knowing that they also need to update the default database version,
+// both of which are required for migrations to work properly.
+describe('DB version integrity', function () {
+    // Only these variables should need updating
+    var currentDbVersion = '004',
+        currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
+        currentFixturesHash = '17d6aa36a6ba904adca90279eb929381';
+
+    // If this test is failing, then it is likely a change has been made that requires a DB version bump,
+    // and the values above will need updating as confirmation
+    it('should not change without fixing this test', function () {
+        var tablesNoValidation = _.cloneDeep(schema.tables),
+            schemaHash,
+            fixturesHash;
+
+        _.each(tablesNoValidation, function (table) {
+            return _.each(table, function (column, name) {
+                table[name] = _.omit(column, 'validations');
+            });
+        });
+
+        schemaHash = crypto.createHash('md5').update(JSON.stringify(tablesNoValidation)).digest('hex');
+        fixturesHash = crypto.createHash('md5').update(JSON.stringify(fixtures.fixtures)).digest('hex');
+
+        // Test!
+        defaultSettings.core.databaseVersion.defaultValue.should.eql(currentDbVersion);
+        schemaHash.should.eql(currentSchemaHash);
+        fixturesHash.should.eql(currentFixturesHash);
+        schema.versioning.canMigrateFromVersion.should.eql('003');
+    });
+});
+
 describe('Migrations', function () {
+    var loggerStub;
+
     afterEach(function () {
         sandbox.restore();
     });
 
-    // Check version integrity
-    // These tests exist to ensure that developers are not able to modify the database schema, or permissions fixtures
-    // without knowing that they also need to update the default database version,
-    // both of which are required for migrations to work properly.
-    describe('DB version integrity', function () {
-        // Only these variables should need updating
-        var currentDbVersion = '004',
-            currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
-            currentFixturesHash = '17d6aa36a6ba904adca90279eb929381';
-
-        // If this test is failing, then it is likely a change has been made that requires a DB version bump,
-        // and the values above will need updating as confirmation
-        it('should not change without fixing this test', function () {
-            var tablesNoValidation = _.cloneDeep(schema.tables),
-                schemaHash,
-                fixturesHash;
-
-            _.each(tablesNoValidation, function (table) {
-                return _.each(table, function (column, name) {
-                    table[name] = _.omit(column, 'validations');
-                });
-            });
-
-            schemaHash = crypto.createHash('md5').update(JSON.stringify(tablesNoValidation)).digest('hex');
-            fixturesHash = crypto.createHash('md5').update(JSON.stringify(fixtures.fixtures)).digest('hex');
-
-            // Test!
-            defaultSettings.core.databaseVersion.defaultValue.should.eql(currentDbVersion);
-            schemaHash.should.eql(currentSchemaHash);
-            fixturesHash.should.eql(currentFixturesHash);
-            schema.versioning.canMigrateFromVersion.should.eql('003');
-        });
+    beforeEach(function () {
+        loggerStub = {
+            info: sandbox.stub(),
+            warn: sandbox.stub()
+        };
     });
 
     describe('Backup', function () {
         it('should create a backup JSON file', function (done) {
             var exportStub = sandbox.stub(exporter, 'doExport').returns(new Promise.resolve()),
                 filenameStub = sandbox.stub(exporter, 'fileName').returns(new Promise.resolve('test')),
-                logStub = sandbox.stub(),
                 fsStub = sandbox.stub(fs, 'writeFile').yields();
 
-            migration.backupDatabase(logStub).then(function () {
+            migration.backupDatabase(loggerStub).then(function () {
                 exportStub.calledOnce.should.be.true();
                 filenameStub.calledOnce.should.be.true();
                 fsStub.calledOnce.should.be.true();
-                logStub.calledTwice.should.be.true();
+                loggerStub.info.calledTwice.should.be.true();
 
                 done();
             }).catch(done);
@@ -161,10 +169,9 @@ describe('Migrations', function () {
             // Setup
             var createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve()),
                 fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve()),
-                settingsStub = sandbox.stub(fixtures, 'ensureDefaultSettings').returns(new Promise.resolve()),
-                logStub = sandbox.stub();
+                settingsStub = sandbox.stub(fixtures, 'ensureDefaultSettings').returns(new Promise.resolve());
 
-            populate(logStub).then(function (result) {
+            populate(loggerStub).then(function (result) {
                 should.not.exist(result);
 
                 createStub.called.should.be.true();
@@ -175,6 +182,9 @@ describe('Migrations', function () {
                 fixturesStub.calledOnce.should.be.true();
                 settingsStub.calledOnce.should.be.true();
 
+                loggerStub.info.called.should.be.true();
+                loggerStub.warn.called.should.be.false();
+
                 done();
             }).catch(done);
         });
@@ -183,10 +193,9 @@ describe('Migrations', function () {
             // Setup
             var createStub = sandbox.stub(schema.commands, 'createTable').returns(new Promise.resolve()),
                 fixturesStub = sandbox.stub(fixtures, 'populate').returns(new Promise.resolve()),
-                settingsStub = sandbox.stub(fixtures, 'ensureDefaultSettings').returns(new Promise.resolve()),
-                logStub = sandbox.stub();
+                settingsStub = sandbox.stub(fixtures, 'ensureDefaultSettings').returns(new Promise.resolve());
 
-            populate(logStub, true).then(function (result) {
+            populate(loggerStub, true).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Array().with.lengthOf(schemaTables.length);
 
@@ -198,6 +207,9 @@ describe('Migrations', function () {
                 fixturesStub.called.should.be.false();
                 settingsStub.called.should.be.false();
 
+                loggerStub.info.called.should.be.true();
+                loggerStub.warn.called.should.be.false();
+
                 done();
             }).catch(done);
         });
@@ -205,7 +217,7 @@ describe('Migrations', function () {
 
     describe('Update', function () {
         describe('Update function', function () {
-            var reset, backupStub, settingsStub, fixturesStub, setDbStub, errorStub, logStub, versionsSpy;
+            var reset, backupStub, settingsStub, fixturesStub, setDbStub, errorStub, versionsSpy;
 
             beforeEach(function () {
                 // Stubs
@@ -214,8 +226,6 @@ describe('Migrations', function () {
                 fixturesStub = sandbox.stub(fixtures, 'update').returns(new Promise.resolve());
                 setDbStub = sandbox.stub(schema.versioning, 'setDatabaseVersion').returns(new Promise.resolve());
                 errorStub = sandbox.stub(schema.versioning, 'showCannotMigrateError').returns(new Promise.resolve());
-                logStub = sandbox.stub();
-
                 // Spys
                 versionsSpy = sandbox.spy(schema.versioning, 'getMigrationVersions');
 
@@ -242,7 +252,7 @@ describe('Migrations', function () {
 
                 it('should attempt to run the pre & post update tasks correctly', function (done) {
                     // Execute
-                    update('100', '102', logStub).then(function () {
+                    update('100', '102', loggerStub).then(function () {
                         // Before the update, it does some tasks...
                         // It should not show an error for these versions
                         errorStub.called.should.be.false();
@@ -254,7 +264,7 @@ describe('Migrations', function () {
 
                         // Now it's going to try to actually do the update...
                         updateStub.calledOnce.should.be.true();
-                        updateStub.calledWith(['101', '102'], logStub).should.be.true();
+                        updateStub.calledWith(['101', '102'], loggerStub).should.be.true();
 
                         // And now there are some final tasks to wrap up...
                         // First, the ensure default settings task
@@ -264,8 +274,9 @@ describe('Migrations', function () {
                         // And finally, set the new DB version
                         setDbStub.calledOnce.should.be.true();
 
-                        // Because we stubbed everything, logStub didn't get called
-                        logStub.called.should.be.false();
+                        // Because we stubbed everything, loggerStub didn't get called
+                        loggerStub.info.called.should.be.false();
+                        loggerStub.warn.called.should.be.false();
 
                         // Just to be sure, lets assert the call order
                         sinon.assert.callOrder(
@@ -278,15 +289,16 @@ describe('Migrations', function () {
 
                 it('should throw error if versions are too old', function (done) {
                     // Execute
-                    update('000', '002', logStub).then(function () {
+                    update('000', '002', loggerStub).then(function () {
                         // It should show an error for these versions
                         errorStub.called.should.be.true();
 
                         // And so should not do the update...
                         updateStub.calledOnce.should.be.false();
 
-                        // Because we stubbed everything, logStub didn't get called
-                        logStub.called.should.be.false();
+                        // Because we stubbed everything, loggerStub didn't get called
+                        loggerStub.info.called.should.be.false();
+                        loggerStub.warn.called.should.be.false();
 
                         done();
                     }).catch(done);
@@ -297,7 +309,7 @@ describe('Migrations', function () {
                     process.env.FORCE_MIGRATION = true;
 
                     // Execute
-                    update('005', '006', logStub).then(function () {
+                    update('005', '006', loggerStub).then(function () {
                         // It should not show an error for these versions
                         errorStub.called.should.be.false();
 
@@ -310,8 +322,9 @@ describe('Migrations', function () {
                         updateStub.calledOnce.should.be.true();
                         updateStub.calledWith(['004', '005', '006']).should.be.true();
 
-                        // Because we stubbed everything, logStub didn't get called
-                        logStub.called.should.be.false();
+                        // Because we stubbed everything, loggerStub didn't get called
+                        loggerStub.info.called.should.be.false();
+                        loggerStub.warn.called.should.be.false();
 
                         // Restore
                         delete process.env.FORCE_MIGRATION;
@@ -340,7 +353,6 @@ describe('Migrations', function () {
 
                 it('should call all the 004 database upgrades', function (done) {
                     // Setup
-                    var logStub = sandbox.stub();
                     // stub has table, so that the next action won't happen
                     knexMock.schema.hasTable.withArgs('users').returns(new Promise.resolve(false));
                     knexMock.schema.hasTable.withArgs('posts_tags').returns(new Promise.resolve(false));
@@ -348,9 +360,9 @@ describe('Migrations', function () {
                     knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(true));
 
                     // Execute
-                    update('003', '004', logStub).then(function () {
+                    update('003', '004', loggerStub).then(function () {
                         errorStub.called.should.be.false();
-                        logStub.calledTwice.should.be.true();
+                        loggerStub.info.calledTwice.should.be.true();
 
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('003', '004').should.be.true();
@@ -368,13 +380,12 @@ describe('Migrations', function () {
                     describe('01-add-tour-column-to-users', function () {
                         it('does not try to add a new column if the column already exists', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('users').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[0](logStub).then(function () {
+                            updates004[0](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -383,21 +394,21 @@ describe('Migrations', function () {
 
                                 addColumnStub.called.should.be.false();
 
-                                logStub.called.should.be.false();
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('tries to add a new column if table is present but column is not', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('users').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[0](logStub).then(function () {
+                            updates004[0](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -407,23 +418,23 @@ describe('Migrations', function () {
                                 addColumnStub.calledOnce.should.be.true();
                                 addColumnStub.calledWith('users', 'tour').should.be.true();
 
-                                logStub.calledOnce.should.be.true();
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
                     });
 
                     describe('02-add-sortorder-column-to-poststags', function () {
                         it('does not try to add a new column if the column already exists', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('posts_tags').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[1](logStub).then(function () {
+                            updates004[1](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -432,21 +443,21 @@ describe('Migrations', function () {
 
                                 addColumnStub.called.should.be.false();
 
-                                logStub.called.should.be.false();
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('tries to add a new column if table is present but column is not', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('posts_tags').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[1](logStub).then(function () {
+                            updates004[1](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -456,18 +467,18 @@ describe('Migrations', function () {
                                 addColumnStub.calledOnce.should.be.true();
                                 addColumnStub.calledWith('posts_tags', 'sort_order').should.be.true();
 
-                                logStub.calledOnce.should.be.true();
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
                     });
 
                     describe('03-add-many-columns-to-clients', function () {
                         it('does not try to add new columns if the columns already exist', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('clients', 'redirection_uri').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('clients', 'logo').returns(new Promise.resolve(true));
@@ -476,7 +487,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[2](logStub).then(function () {
+                            updates004[2](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -489,16 +500,16 @@ describe('Migrations', function () {
 
                                 addColumnStub.called.should.be.false();
 
-                                logStub.called.should.be.false();
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.callCount.should.eql(5);
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('tries to add new columns if table is present but columns are not', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('clients', 'redirection_uri').returns(new Promise.resolve(false));
                             knexMock.schema.hasColumn.withArgs('clients', 'logo').returns(new Promise.resolve(false));
@@ -507,7 +518,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[2](logStub).then(function () {
+                            updates004[2](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -525,16 +536,16 @@ describe('Migrations', function () {
                                 addColumnStub.calledWith('clients', 'type').should.be.true();
                                 addColumnStub.calledWith('clients', 'description').should.be.true();
 
-                                logStub.callCount.should.eql(5);
+                                loggerStub.info.callCount.should.eql(5);
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('will only try to add columns that do not exist', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                            var addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('clients', 'redirection_uri').returns(new Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('clients', 'logo').returns(new Promise.resolve(false));
@@ -543,7 +554,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[2](logStub).then(function () {
+                            updates004[2](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -558,61 +569,61 @@ describe('Migrations', function () {
                                 addColumnStub.calledWith('clients', 'logo').should.be.true();
                                 addColumnStub.calledWith('clients', 'type').should.be.true();
 
-                                logStub.callCount.should.eql(2);
+                                loggerStub.info.callCount.should.eql(2);
+                                loggerStub.warn.callCount.should.eql(3);
 
                                 done();
-                            });
+                            }).catch(done);
                         });
                     });
 
                     describe('04-add-clienttrusteddomains-table', function () {
                         it('does not try to add a new table if the table already exists', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                createTableStub = sandbox.stub(schema.commands, 'createTable');
+                            var createTableStub = sandbox.stub(schema.commands, 'createTable');
 
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[3](logStub).then(function () {
+                            updates004[3](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
                                 createTableStub.called.should.be.false();
 
-                                logStub.called.should.be.false();
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('tries to add a new table if the table does not exist', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                createTableStub = sandbox.stub(schema.commands, 'createTable');
+                            var createTableStub = sandbox.stub(schema.commands, 'createTable');
 
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[3](logStub).then(function () {
+                            updates004[3](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
                                 createTableStub.calledOnce.should.be.true();
                                 createTableStub.calledWith('client_trusted_domains').should.be.true();
 
-                                logStub.calledOnce.should.be.true();
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
                     });
 
                     describe('05-drop-unique-on-clients-secret', function () {
                         it('does not try to drop unique if the table does not exist', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                getIndexesStub = sandbox.stub(schema.commands, 'getIndexes'),
+                            var getIndexesStub = sandbox.stub(schema.commands, 'getIndexes'),
                                 dropUniqueStub = sandbox.stub(schema.commands, 'dropUnique');
 
                             getIndexesStub.withArgs('clients').returns(new Promise.resolve(
@@ -621,7 +632,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[4](logStub).then(function () {
+                            updates004[4](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -629,16 +640,16 @@ describe('Migrations', function () {
 
                                 dropUniqueStub.called.should.be.false();
 
-                                logStub.called.should.be.false();
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('does not try to drop unique if the index does not exist', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                getIndexesStub = sandbox.stub(schema.commands, 'getIndexes'),
+                            var getIndexesStub = sandbox.stub(schema.commands, 'getIndexes'),
                                 dropUniqueStub = sandbox.stub(schema.commands, 'dropUnique');
 
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(true));
@@ -648,7 +659,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            updates004[4](logStub).then(function () {
+                            updates004[4](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -657,16 +668,16 @@ describe('Migrations', function () {
 
                                 dropUniqueStub.called.should.be.false();
 
-                                logStub.called.should.be.false();
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
 
                         it('tries to add a drop unique if table and index both exist', function (done) {
                             // Setup
-                            var logStub = sandbox.stub(),
-                                getIndexesStub = sandbox.stub(schema.commands, 'getIndexes'),
+                            var getIndexesStub = sandbox.stub(schema.commands, 'getIndexes'),
                                 dropUniqueStub = sandbox.stub(schema.commands, 'dropUnique');
 
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(true));
@@ -676,7 +687,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            updates004[4](logStub).then(function () {
+                            updates004[4](loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -686,10 +697,11 @@ describe('Migrations', function () {
                                 dropUniqueStub.calledOnce.should.be.true();
                                 dropUniqueStub.calledWith('clients', 'secret').should.be.true();
 
-                                logStub.calledOnce.should.be.true();
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
-                            });
+                            }).catch(done);
                         });
                     });
                 });
@@ -699,12 +711,12 @@ describe('Migrations', function () {
         describe('Update Database Schema', function () {
             it('should not do anything if there are no tasks', function (done) {
                 var updateDatabaseSchema = update.__get__('updateDatabaseSchema'),
-                    getVersionTasksStub = sandbox.stub(schema.versioning, 'getUpdateDatabaseTasks').returns([]),
-                    logStub = sandbox.stub();
+                    getVersionTasksStub = sandbox.stub(schema.versioning, 'getUpdateDatabaseTasks').returns([]);
 
-                updateDatabaseSchema(['001'], logStub).then(function () {
+                updateDatabaseSchema(['001'], loggerStub).then(function () {
                     getVersionTasksStub.calledOnce.should.be.true();
-                    logStub.called.should.be.false();
+                    loggerStub.info.called.should.be.false();
+                    loggerStub.warn.called.should.be.false();
                     done();
                 }).catch(done);
             });
@@ -713,14 +725,13 @@ describe('Migrations', function () {
                 var updateDatabaseSchema = update.__get__('updateDatabaseSchema'),
                     task1Stub = sandbox.stub().returns(new Promise.resolve()),
                     task2Stub = sandbox.stub().returns(new Promise.resolve()),
-                    getVersionTasksStub = sandbox.stub(schema.versioning, 'getUpdateDatabaseTasks').returns([task1Stub, task2Stub]),
-                    logStub = sandbox.stub();
+                    getVersionTasksStub = sandbox.stub(schema.versioning, 'getUpdateDatabaseTasks').returns([task1Stub, task2Stub]);
 
-                updateDatabaseSchema(['001'], logStub).then(function () {
+                updateDatabaseSchema(['001'], loggerStub).then(function () {
                     getVersionTasksStub.calledOnce.should.be.true();
                     task1Stub.calledOnce.should.be.true();
                     task2Stub.calledOnce.should.be.true();
-                    logStub.calledTwice.should.be.true();
+                    loggerStub.info.calledTwice.should.be.true();
 
                     done();
                 }).catch(done);
@@ -729,7 +740,7 @@ describe('Migrations', function () {
     });
 
     describe('Init', function () {
-        var defaultVersionStub, databaseVersionStub, logStub, errorStub, updateStub, populateStub, fixSecretStub,
+        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub, fixSecretStub,
             resetLog, resetUpdate, resetPopulate, resetFixSecret;
 
         beforeEach(function () {
@@ -739,9 +750,8 @@ describe('Migrations', function () {
             updateStub = sandbox.stub();
             populateStub = sandbox.stub();
             fixSecretStub = sandbox.stub();
-            logStub = sandbox.stub();
 
-            resetLog = migration.__set__('logInfo', logStub);
+            resetLog = migration.__set__('logger', loggerStub);
             resetUpdate = migration.__set__('update', updateStub);
             resetPopulate = migration.__set__('populate', populateStub);
             resetFixSecret = migration.__set__('fixClientSecret', fixSecretStub);
@@ -763,10 +773,11 @@ describe('Migrations', function () {
             migration.init().then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.true();
+                loggerStub.info.calledOnce.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '005', logStub).should.be.true();
+                updateStub.calledWith('004', '005', loggerStub).should.be.true();
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
@@ -785,10 +796,11 @@ describe('Migrations', function () {
             migration.init().then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.true();
+                loggerStub.info.calledOnce.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '010', logStub).should.be.true();
+                updateStub.calledWith('004', '010', loggerStub).should.be.true();
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
@@ -807,7 +819,8 @@ describe('Migrations', function () {
             migration.init().then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.true();
+                loggerStub.info.calledOnce.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 fixSecretStub.called.should.be.true();
 
@@ -829,10 +842,11 @@ describe('Migrations', function () {
             migration.init().then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.true();
+                loggerStub.info.calledOnce.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 updateStub.calledOnce.should.be.true();
-                updateStub.calledWith('004', '004', logStub).should.be.true();
+                updateStub.calledWith('004', '004', loggerStub).should.be.true();
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
@@ -852,10 +866,11 @@ describe('Migrations', function () {
             migration.init().then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.true();
+                loggerStub.info.calledOnce.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 populateStub.called.should.be.true();
-                populateStub.calledWith(logStub, false).should.be.true();
+                populateStub.calledWith(loggerStub, false).should.be.true();
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
@@ -874,10 +889,11 @@ describe('Migrations', function () {
             migration.init(true).then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.true();
+                loggerStub.info.calledOnce.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 populateStub.called.should.be.true();
-                populateStub.calledWith(logStub, true).should.be.true();
+                populateStub.calledWith(loggerStub, true).should.be.true();
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
@@ -896,7 +912,8 @@ describe('Migrations', function () {
             migration.init().then(function () {
                 defaultVersionStub.calledOnce.should.be.true();
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.false();
+                loggerStub.info.called.should.be.false();
+                loggerStub.warn.called.should.be.false();
                 errorStub.calledOnce.should.be.true();
 
                 populateStub.called.should.be.false();
@@ -915,7 +932,8 @@ describe('Migrations', function () {
             // Execute
             migration.init().then(function () {
                 databaseVersionStub.calledOnce.should.be.true();
-                logStub.calledOnce.should.be.false();
+                loggerStub.info.called.should.be.false();
+                loggerStub.warn.called.should.be.false();
                 errorStub.calledOnce.should.be.true();
 
                 defaultVersionStub.calledOnce.should.be.false();
@@ -928,15 +946,29 @@ describe('Migrations', function () {
         });
     });
 
-    describe('LogInfo', function () {
+    describe('Logger', function () {
         it('should output an info message prefixed with "Migrations"', function () {
-            var logInfo = migration.__get__('logInfo'),
-                errorsStub = sandbox.stub(errors, 'logInfo');
+            var logger = migration.__get__('logger'),
+                errorsInfoStub = sandbox.stub(errors, 'logComponentInfo'),
+                errorsWarnStub = sandbox.stub(errors, 'logComponentWarn');
 
-            logInfo('Stuff');
+            logger.info('Stuff');
 
-            errorsStub.calledOnce.should.be.true();
-            errorsStub.calledWith('Migrations', 'Stuff').should.be.true();
+            errorsInfoStub.calledOnce.should.be.true();
+            errorsInfoStub.calledWith('Migrations', 'Stuff').should.be.true();
+            errorsWarnStub.called.should.be.false();
+        });
+
+        it('should output a warn message prefixed with "Skipped Migrations"', function () {
+            var logger = migration.__get__('logger'),
+                errorsInfoStub = sandbox.stub(errors, 'logComponentInfo'),
+                errorsWarnStub = sandbox.stub(errors, 'logComponentWarn');
+
+            logger.warn('Stuff');
+
+            errorsWarnStub.calledOnce.should.be.true();
+            errorsWarnStub.calledWith('Skipping Migrations', 'Stuff').should.be.true();
+            errorsInfoStub.called.should.be.false();
         });
     });
 
@@ -957,7 +989,7 @@ describe('Migrations', function () {
                 clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
                 clientEditStub = sandbox.stub(models.Client, 'edit');
                 done();
-            });
+            }).catch(done);
         });
 
         it('should do nothing if there are no incorrect secrets', function (done) {
