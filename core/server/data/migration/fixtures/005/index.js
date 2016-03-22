@@ -1,3 +1,4 @@
 module.exports = [
-    // Nothing to do yet
+    // add jquery setting and privacy info
+    require('./01-update-ghost-client-secrets')
 ];

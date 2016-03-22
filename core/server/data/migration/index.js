@@ -1,12 +1,8 @@
-var Promise         = require('bluebird'),
-    crypto          = require('crypto'),
-    versioning      = require('../schema').versioning,
+var versioning      = require('../schema').versioning,
     errors          = require('../../errors'),
-    models          = require('../../models'),
 
     // private
     logger,
-    fixClientSecret,
     populate = require('./populate'),
     update   = require('./update'),
 
@@ -28,21 +24,8 @@ logger = {
     }
 };
 
-// TODO: move to migration.to005() for next DB version
-fixClientSecret = function () {
-    return models.Clients.forge().query('where', 'secret', '=', 'not_available').fetch().then(function updateClients(results) {
-        return Promise.map(results.models, function mapper(client) {
-            if (process.env.NODE_ENV.indexOf('testing') !== 0) {
-                logger.info('Updating client secret');
-                client.secret = crypto.randomBytes(6).toString('hex');
-            }
-            return models.Client.edit(client, {context: {internal: true}, id: client.id});
-        });
-    });
-};
-
 // Check for whether data is needed to be bootstrapped or not
-init = function (tablesOnly) {
+init = function init(tablesOnly) {
     tablesOnly = tablesOnly || false;
 
     // There are 4 possibilities:
@@ -63,8 +46,7 @@ init = function (tablesOnly) {
             // 1. The database exists and is up-to-date
         } else if (databaseVersion === defaultVersion) {
             logger.info('Up-to-date at version ' + databaseVersion);
-            // TODO: temporary fix for missing client.secret
-            return fixClientSecret();
+            return;
 
             // 3. The database exists but the currentVersion setting does not or cannot be understood
         } else {

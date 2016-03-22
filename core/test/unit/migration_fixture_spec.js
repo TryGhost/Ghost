@@ -703,21 +703,23 @@ describe('Fixtures', function () {
                 // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
                 // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
                 // again with the array of tasks to execute for 005, which is what we want to check
-
-                // Can't yield until we have at least one task
-                // sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
-                sequenceStub.returns(Promise.resolve([]));
+                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
 
                 update(['005'], loggerStub).then(function (result) {
                     should.exist(result);
 
-                    loggerStub.info.calledOnce.should.be.true();
+                    loggerStub.info.calledTwice.should.be.true();
                     loggerStub.warn.called.should.be.false();
 
-                    sequenceStub.calledOnce.should.be.true();
+                    sequenceStub.calledTwice.should.be.true();
 
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(0);
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
+
+                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
 
                     // Reset
                     sequenceReset();
@@ -728,7 +730,49 @@ describe('Fixtures', function () {
             describe('Tasks:', function () {
                 it('should have tasks for 005', function () {
                     should.exist(fixtures005);
-                    fixtures005.should.be.an.Array().with.lengthOf(0);
+                    fixtures005.should.be.an.Array().with.lengthOf(1);
+                });
+
+                describe('01-update-ghost-client-secrets', function () {
+                    var queryStub, clientForgeStub, clientEditStub;
+
+                    beforeEach(function () {
+                        queryStub = {
+                            query: sandbox.stub().returnsThis(),
+                            fetch: sandbox.stub()
+                        };
+
+                        clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
+                        clientEditStub = sandbox.stub(models.Client, 'edit');
+                    });
+
+                    it('should do nothing if there are no incorrect secrets', function (done) {
+                        // Setup
+                        queryStub.fetch.returns(new Promise.resolve({models: []}));
+
+                        // Execute
+                        fixtures005[0]({}, loggerStub).then(function () {
+                            clientForgeStub.calledOnce.should.be.true();
+                            clientEditStub.called.should.be.false();
+                            loggerStub.info.called.should.be.false();
+                            loggerStub.warn.calledOnce.should.be.true();
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('should try to fix any incorrect secrets', function (done) {
+                        // Setup
+                        queryStub.fetch.returns(new Promise.resolve({models: [{id: 1}]}));
+
+                        // Execute
+                        fixtures005[0]({}, loggerStub).then(function () {
+                            clientForgeStub.calledOnce.should.be.true();
+                            clientEditStub.called.should.be.true();
+                            loggerStub.info.calledOnce.should.be.true();
+                            loggerStub.warn.called.should.be.false();
+                            done();
+                        }).catch(done);
+                    });
                 });
             });
         });
