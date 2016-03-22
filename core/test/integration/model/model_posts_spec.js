@@ -819,7 +819,7 @@ describe('Post Model', function () {
                     post.tags[0].id.should.equal(firstItemData.id);
 
                     // Destroy the post
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy();
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
@@ -857,7 +857,7 @@ describe('Post Model', function () {
                     post.tags[0].id.should.equal(firstItemData.id);
 
                     // Destroy the post
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy(firstItemData);
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
@@ -894,7 +894,7 @@ describe('Post Model', function () {
                     page.page.should.be.true();
 
                     // Destroy the page
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy(firstItemData);
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
@@ -930,7 +930,7 @@ describe('Post Model', function () {
                     page.id.should.equal(firstItemData.id);
 
                     // Destroy the page
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy(firstItemData);
                 }).then(function (response) {
                     var deleted = response.toJSON();
 

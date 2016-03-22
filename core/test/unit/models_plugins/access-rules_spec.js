@@ -14,9 +14,8 @@ should.equal(true, true);
 
 describe('Access Rules', function () {
     beforeEach(function () {
-        return models.init().then(function () {
-            ghostBookshelf = models.Base;
-        });
+        models.init();
+        ghostBookshelf = models.Base;
     });
 
     afterEach(function () {
