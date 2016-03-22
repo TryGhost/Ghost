@@ -12,6 +12,7 @@ var should  = require('should'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
+    fixtures005   = require('../../server/data/migration/fixtures/005'),
     ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
 
     sandbox       = sinon.sandbox.create();
@@ -122,6 +123,11 @@ describe('Fixtures', function () {
                     settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
                     clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve(getObjStub));
                     clientEditStub = sandbox.stub(models.Client, 'edit').returns(Promise.resolve());
+                });
+
+                it('should have tasks for 004', function () {
+                    should.exist(fixtures004);
+                    fixtures004.should.be.an.Array().with.lengthOf(8);
                 });
 
                 describe('01-move-jquery-with-alert', function () {
@@ -682,6 +688,47 @@ describe('Fixtures', function () {
                             done();
                         }).catch(done);
                     });
+                });
+            });
+        });
+
+        describe('Update to 005', function () {
+            it('should call all the 005 fixture upgrades', function (done) {
+                // Setup
+                // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                var sequenceStub = sandbox.stub(),
+                    sequenceReset = update.__set__('sequence', sequenceStub);
+
+                // The first time we call sequence, it should be to execute a top level version, e.g 005
+                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
+                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
+                // again with the array of tasks to execute for 005, which is what we want to check
+
+                // Can't yield until we have at least one task
+                // sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                sequenceStub.returns(Promise.resolve([]));
+
+                update(['005'], loggerStub).then(function (result) {
+                    should.exist(result);
+
+                    loggerStub.info.calledOnce.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    sequenceStub.calledOnce.should.be.true();
+
+                    sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(0);
+
+                    // Reset
+                    sequenceReset();
+                    done();
+                }).catch(done);
+            });
+
+            describe('Tasks:', function () {
+                it('should have tasks for 005', function () {
+                    should.exist(fixtures005);
+                    fixtures005.should.be.an.Array().with.lengthOf(0);
                 });
             });
         });

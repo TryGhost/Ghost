@@ -21,6 +21,7 @@ var should          = require('should'),
     populate        = require('../../server/data/migration/populate'),
     update          = rewire('../../server/data/migration/update'),
     updates004      = require('../../server/data/migration/004'),
+    updates005      = require('../../server/data/migration/005'),
 
     defaultSettings = schema.defaultSettings,
     schemaTables    = Object.keys(schema.tables),
@@ -33,7 +34,7 @@ var should          = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '004',
+    var currentDbVersion = '005',
         currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
         currentFixturesHash = '77ebb081539f9e0c49f487faf7fd929e';
 
@@ -343,7 +344,7 @@ describe('Migrations', function () {
                     // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
                     // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
                     // again with the array of tasks to execute for 004, which is what we want to check
-                    sequenceStub.onFirstCall().yieldsTo('0');
+                    sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
 
                     // Execute
                     update('003', '004', loggerStub).then(function () {
@@ -359,14 +360,13 @@ describe('Migrations', function () {
                         tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(5);
 
                         sequenceStub.calledTwice.should.be.true();
+
                         sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-
                         sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
-
                         sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
+                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
                         sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'addTourColumnToUsers');
                         sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addSortOrderColumnToPostsTags');
                         sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addManyColumnsToClients');
@@ -400,6 +400,11 @@ describe('Migrations', function () {
 
                     afterEach(function () {
                         knexStub.restore();
+                    });
+
+                    it('should have tasks for 004', function () {
+                        should.exist(updates004);
+                        updates004.should.be.an.Array().with.lengthOf(5);
                     });
 
                     describe('01-add-tour-column-to-users', function () {
@@ -768,6 +773,53 @@ describe('Migrations', function () {
                                 done();
                             }).catch(done);
                         });
+                    });
+                });
+            });
+
+            describe('Update to 005', function () {
+                it('should call all the 005 database upgrade tasks', function (done) {
+                    // Setup
+                    // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                    var sequenceStub = sandbox.stub(),
+                        sequenceReset = update.__set__('sequence', sequenceStub);
+
+                    // The first time we call sequence, it should be to execute a top level version, e.g 005
+                    // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
+                    // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
+                    // again with the array of tasks to execute for 005, which is what we want to check
+
+                    // Can't yield until we have at least one task
+                    // sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+
+                    // Execute
+                    update('004', '005', loggerStub).then(function () {
+                        errorStub.called.should.be.false();
+                        loggerStub.info.called.should.be.false();
+
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('004', '005').should.be.true();
+                        versionsSpy.returned(['004', '005']).should.be.true();
+
+                        tasksSpy.calledOnce.should.be.true();
+                        tasksSpy.calledWith('005', loggerStub).should.be.true();
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(0);
+
+                        sequenceStub.calledOnce.should.be.true();
+
+                        sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
+                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(0);
+
+                        // Reset sequence
+                        sequenceReset();
+                        done();
+                    }).catch(done);
+                });
+
+                describe('Tasks:', function () {
+                    it('should have tasks for 005', function () {
+                        should.exist(updates005);
+                        updates005.should.be.an.Array().with.lengthOf(0);
                     });
                 });
             });
