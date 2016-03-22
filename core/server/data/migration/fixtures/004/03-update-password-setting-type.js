@@ -4,7 +4,7 @@ var models  = require('../../../../models'),
 
 module.exports = function updatePasswordSetting(options, logInfo) {
     return models.Settings.findOne('password').then(function (setting) {
-        if (setting) {
+        if (setting && setting.get('type') !== 'private') {
             logInfo('Update password setting');
             return models.Settings.edit({key: 'password', type: 'private'}, options);
         }
