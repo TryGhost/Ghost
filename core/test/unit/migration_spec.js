@@ -13,9 +13,6 @@ var should          = require('should'),
     exporter        = require('../../server/data/export'),
     schema          = require('../../server/data/schema'),
 
-    // TODO: can go when fixClientSecret is moved
-    models          = require('../../server/models'),
-
     migration       = rewire('../../server/data/migration'),
     fixtures        = require('../../server/data/migration/fixtures'),
     populate        = require('../../server/data/migration/populate'),
@@ -865,8 +862,8 @@ describe('Migrations', function () {
     });
 
     describe('Init', function () {
-        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub, fixSecretStub,
-            resetLog, resetUpdate, resetPopulate, resetFixSecret;
+        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub,
+            resetLog, resetUpdate, resetPopulate;
 
         beforeEach(function () {
             defaultVersionStub = sandbox.stub(schema.versioning, 'getDefaultDatabaseVersion');
@@ -874,19 +871,16 @@ describe('Migrations', function () {
             errorStub = sandbox.stub(errors, 'logErrorAndExit');
             updateStub = sandbox.stub();
             populateStub = sandbox.stub();
-            fixSecretStub = sandbox.stub();
 
             resetLog = migration.__set__('logger', loggerStub);
             resetUpdate = migration.__set__('update', updateStub);
             resetPopulate = migration.__set__('populate', populateStub);
-            resetFixSecret = migration.__set__('fixClientSecret', fixSecretStub);
         });
 
         afterEach(function () {
             resetLog();
             resetUpdate();
             resetPopulate();
-            resetFixSecret();
         });
 
         it('should do an UPDATE if default version is higher', function (done) {
@@ -906,7 +900,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -929,13 +922,12 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
         });
 
-        it('should do FIX SECRET if versions are the same', function (done) {
+        it('should just return if versions are the same', function (done) {
             // Setup
             defaultVersionStub.returns('004');
             databaseVersionStub.returns(new Promise.resolve('004'));
@@ -946,8 +938,6 @@ describe('Migrations', function () {
                 databaseVersionStub.calledOnce.should.be.true();
                 loggerStub.info.calledOnce.should.be.true();
                 loggerStub.warn.called.should.be.false();
-
-                fixSecretStub.called.should.be.true();
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
@@ -975,7 +965,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 delete process.env.FORCE_MIGRATION;
                 done();
@@ -999,7 +988,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -1022,7 +1010,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -1043,7 +1030,6 @@ describe('Migrations', function () {
 
                 populateStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -1064,7 +1050,6 @@ describe('Migrations', function () {
                 defaultVersionStub.calledOnce.should.be.false();
                 populateStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -1094,72 +1079,6 @@ describe('Migrations', function () {
             errorsWarnStub.calledOnce.should.be.true();
             errorsWarnStub.calledWith('Skipping Migrations', 'Stuff').should.be.true();
             errorsInfoStub.called.should.be.false();
-        });
-    });
-
-    // TODO: move this to 005!!
-    describe('FixClientSecret', function () {
-        var fixClientSecret, queryStub, clientForgeStub, clientEditStub, toStringStub, cryptoStub;
-
-        beforeEach(function () {
-            fixClientSecret = migration.__get__('fixClientSecret');
-            queryStub = {
-                query: sandbox.stub().returnsThis(),
-                fetch: sandbox.stub()
-            };
-
-            models.init();
-            toStringStub = {toString: sandbox.stub().returns('TEST')};
-            cryptoStub = sandbox.stub(crypto, 'randomBytes').returns(toStringStub);
-            clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
-            clientEditStub = sandbox.stub(models.Client, 'edit');
-        });
-
-        it('should do nothing if there are no incorrect secrets', function (done) {
-            // Setup
-            queryStub.fetch.returns(new Promise.resolve({models: []}));
-
-            // Execute
-            fixClientSecret().then(function () {
-                clientForgeStub.calledOnce.should.be.true();
-                clientEditStub.called.should.be.false();
-                toStringStub.toString.called.should.be.false();
-                cryptoStub.called.should.be.false();
-                done();
-            }).catch(done);
-        });
-
-        it('should try to fix any incorrect secrets', function (done) {
-            // Setup
-            queryStub.fetch.returns(new Promise.resolve({models: [{id: 1}]}));
-
-            // Execute
-            fixClientSecret().then(function () {
-                clientForgeStub.calledOnce.should.be.true();
-                clientEditStub.called.should.be.true();
-                toStringStub.toString.called.should.be.false();
-                cryptoStub.called.should.be.false();
-                done();
-            }).catch(done);
-        });
-
-        it('should try to create a new secret, if the mode is not testing', function (done) {
-            // Setup
-            var envTemp = process.env.NODE_ENV;
-            process.env.NODE_ENV = 'development';
-            queryStub.fetch.returns(new Promise.resolve({models: [{id: 1}]}));
-
-            // Execute
-            fixClientSecret().then(function () {
-                clientForgeStub.calledOnce.should.be.true();
-                clientEditStub.called.should.be.true();
-                toStringStub.toString.called.should.be.true();
-                cryptoStub.calledOnce.should.be.true();
-
-                // reset
-                process.env.NODE_ENV = envTemp;
-                done();
-            }).catch(done);
         });
     });
 });
