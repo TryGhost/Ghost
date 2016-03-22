@@ -9,7 +9,7 @@ var models  = require('../../../../models'),
 module.exports = function updateGhostAdminClient(options, logInfo) {
     // ghost-admin should already exist from 003 version
     return models.Client.findOne({slug: adminClient.slug}).then(function (client) {
-        if (client) {
+        if (client && (client.get('secret') === 'not_available' || client.get('status') !== 'enabled')) {
             logInfo('Update ghost-admin client fixture');
             return models.Client.edit(
                 _.extend({}, adminClient, {secret: crypto.randomBytes(6).toString('hex')}),
