@@ -1,5 +1,6 @@
 // Adds a new draft post with information about the new design
 var models  = require('../../../../models'),
+
     newPost = {
         title:            'You\'ve been upgraded to the latest version of Ghost',
         slug:             'ghost-0-7',
@@ -11,17 +12,20 @@ var models  = require('../../../../models'),
         language:         'en_US',
         meta_title:       null,
         meta_description: null
-    };
+    },
+    message = 'Adding 0.7 upgrade post fixture';
 
-module.exports = function addNewPostFixture(options, logInfo) {
+module.exports = function addNewPostFixture(options, logger) {
     return models.Post.findOne({slug: newPost.slug, status: 'all'}, options).then(function (post) {
         if (!post) {
-            logInfo('Adding 0.7 upgrade post fixture');
+            logger.info(message);
             // Set the published_at timestamp, but keep the post as a draft so doesn't appear on the frontend
             // This is a hack to ensure that this post appears at the very top of the drafts list, because
             // unpublished posts always appear first
             newPost.published_at = Date.now();
             return models.Post.add(newPost, options);
+        } else {
+            logger.warn(message);
         }
     });
 };

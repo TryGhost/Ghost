@@ -84,11 +84,19 @@ errors = {
         return Promise.reject(err);
     },
 
-    logInfo: function (component, info) {
+    logComponentInfo: function (component, info) {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
             console.info(chalk.cyan(component + ':', info));
+        }
+    },
+
+    logComponentWarn: function (component, warning) {
+        if ((process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'staging' ||
+            process.env.NODE_ENV === 'production')) {
+            console.info(chalk.yellow(component + ':', warning));
         }
     },
 
@@ -401,7 +409,8 @@ errors = {
 // using Function#bind for expressjs
 _.each([
     'logWarn',
-    'logInfo',
+    'logComponentInfo',
+    'logComponentWarn',
     'rejectError',
     'throwError',
     'logError',

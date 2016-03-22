@@ -125,10 +125,10 @@ addAllRelations = function addAllRelations() {
  * Creates the user fixture and gives it the owner role.
  * By default, users are given the Author role, making it hard to do this using the fixture system
  *
- * @param {Function} logInfo
+ * @param {{info: logger.info, warn: logger.warn}} logger
  * @returns {Promise<*>}
  */
-createOwner = function createOwner(logInfo) {
+createOwner = function createOwner(logger) {
     var user = {
         name:             'Ghost Owner',
         email:            'ghost@ghost.org',
@@ -140,7 +140,7 @@ createOwner = function createOwner(logInfo) {
         if (ownerRole) {
             user.roles = [ownerRole.id];
 
-            logInfo('Creating owner');
+            logger.info('Creating owner');
             return models.User.add(user, modelOptions);
         }
     });
@@ -151,18 +151,18 @@ createOwner = function createOwner(logInfo) {
  * Sequentially creates all models, in the order they are specified, and then
  * creates all the relationships, also maintaining order.
  *
- * @param {Function} logInfo
+ * @param {{info: logger.info, warn: logger.warn}} logger
  * @returns {Promise<*>}
  */
-populate = function populate(logInfo) {
-    logInfo('Populating fixtures');
+populate = function populate(logger) {
+    logger.info('Running fixture populations');
 
     // ### Ensure all models are added
     return addAllModels().then(function () {
         // ### Ensure all relations are added
         return addAllRelations();
     }).then(function () {
-        return createOwner(logInfo);
+        return createOwner(logger);
     });
 };
 

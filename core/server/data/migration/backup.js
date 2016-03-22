@@ -20,14 +20,14 @@ writeExportFile = function writeExportFile(exportResult) {
  * ## Backup
  * does an export, and stores this in a local file
  *
- * @param {Function} [logInfo]
+ * @param {{info: logger.info, warn: logger.warn}} [logger]
  * @returns {Promise<*>}
  */
-backup = function backup(logInfo) {
-    // If we get passed a function, use it to output noticies, else don't do anything
-    logInfo = _.isFunction(logInfo) ? logInfo : _.noop;
+backup = function backup(logger) {
+    // If we get passed a function, use it to output notices, else don't do anything
+    logger = logger && _.isFunction(logger.info) ? logger : {info: _.noop};
 
-    logInfo('Creating database backup');
+    logger.info('Creating database backup');
 
     var props = {
         data: exporter.doExport(),
@@ -37,7 +37,7 @@ backup = function backup(logInfo) {
     return Promise.props(props)
         .then(writeExportFile)
         .then(function successMessage(filename) {
-            logInfo('Database backup written to: ' + filename);
+            logger.info('Database backup written to: ' + filename);
         });
 };
 
