@@ -19,15 +19,13 @@ var should  = require('should'),
 describe('Fixtures', function () {
     var loggerStub;
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         loggerStub = {
             info: sandbox.stub(),
             warn: sandbox.stub()
         };
 
-        models.init().then(function () {
-            done();
-        }).catch(done);
+        models.init();
     });
 
     afterEach(function () {
