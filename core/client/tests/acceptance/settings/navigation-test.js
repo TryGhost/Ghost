@@ -150,11 +150,6 @@ describe('Acceptance: Settings - Navigation', function () {
                     find('.gh-blognav-label:last .response').is(':visible'),
                     'blank label has validation error'
                 ).to.be.true;
-
-                expect(
-                    find('.gh-blognav-url:last .response').is(':visible'),
-                    'blank url has validation error'
-                ).to.be.true;
             });
 
             fillIn('.gh-blognav-label:last input', 'New');
@@ -165,11 +160,6 @@ describe('Acceptance: Settings - Navigation', function () {
                     find('.gh-blognav-label:last .response').is(':visible'),
                     'label validation is visible after typing'
                 ).to.be.false;
-
-                expect(
-                    find('.gh-blognav-url:last .response').is(':visible'),
-                    'blank url still has validation error'
-                ).to.be.true;
             });
 
             fillIn('.gh-blognav-url:last input', '/new');
