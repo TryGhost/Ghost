@@ -1,7 +1,6 @@
 // Update the `ghost-admin` client so that it has a proper secret
 var models  = require('../../../../models'),
     _       = require('lodash'),
-    Promise = require('bluebird'),
     crypto  = require('crypto'),
 
     adminClient = require('../fixtures').models.Client[0],
@@ -19,6 +18,5 @@ module.exports = function updateGhostAdminClient(options, logger) {
         } else {
             logger.warn(message);
         }
-        return Promise.resolve();
     });
 };
