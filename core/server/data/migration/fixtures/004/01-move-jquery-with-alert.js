@@ -24,7 +24,7 @@ module.exports = function moveJQuery(options, logger) {
 
     return models.Settings.findOne('ghost_foot').then(function (setting) {
         if (setting) {
-            value = setting.attributes.value;
+            value = setting.get('value');
             // Only add jQuery if it's not already in there
             if (value.indexOf(jquery.join('')) === -1) {
                 logger.info(message);
