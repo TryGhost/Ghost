@@ -15,7 +15,6 @@
     "jquery": "2.1.4",
     "jquery-deparam": "~0.5.0",
     "jquery-file-upload": "9.5.6",
-    "jquery-hammerjs": "1.0.1",
     "jquery-ui": "1.11.4",
     "jqueryui-touch-punch": "furf/jquery-ui-touch-punch#4bc009145202d9c7483ba85f3a236a8f3470354d",
     "jquery.simulate.drag-sortable": "0.1.0",
