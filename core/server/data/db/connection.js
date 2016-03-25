@@ -23,7 +23,7 @@ function configure(dbConfig) {
     }
 
     if (client === 'sqlite3') {
-        dbConfig.useNullAsDefault = false;
+        dbConfig.useNullAsDefault = dbConfig.useNullAsDefault || false;
     }
 
     return dbConfig;
