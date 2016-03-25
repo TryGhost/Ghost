@@ -32,7 +32,7 @@ var should          = require('should'),
 describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentDbVersion = '005',
-        currentSchemaHash = 'cc249220eb57b2249fc82f8494ad3912',
+        currentSchemaHash = '2b823f290d2ffa02ad5a10e31b77dab4',
         currentFixturesHash = '77ebb081539f9e0c49f487faf7fd929e';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
@@ -798,7 +798,7 @@ describe('Migrations', function () {
 
                         tasksSpy.calledOnce.should.be.true();
                         tasksSpy.calledWith('005', loggerStub).should.be.true();
-                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(1);
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(2);
 
                         sequenceStub.calledTwice.should.be.true();
 
@@ -807,8 +807,9 @@ describe('Migrations', function () {
                         sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
                         sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(1);
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(2);
                         sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
+                        sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addVisibilityColumnToKeyTables');
 
                         // Reset sequence
                         sequenceReset();
@@ -817,7 +818,7 @@ describe('Migrations', function () {
                 });
 
                 describe('Tasks:', function () {
-                    var dropColumnStub,
+                    var dropColumnStub, addColumnStub,
                         knexStub, knexMock;
 
                     beforeEach(function () {
@@ -830,6 +831,7 @@ describe('Migrations', function () {
                         knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
 
                         dropColumnStub = sandbox.stub(schema.commands, 'dropColumn');
+                        addColumnStub = sandbox.stub(schema.commands, 'addColumn');
                     });
 
                     afterEach(function () {
@@ -838,7 +840,7 @@ describe('Migrations', function () {
 
                     it('should have tasks for 005', function () {
                         should.exist(updates005);
-                        updates005.should.be.an.Array().with.lengthOf(1);
+                        updates005.should.be.an.Array().with.lengthOf(2);
                     });
 
                     describe('01-drop-hidden-column-from-tags', function () {
@@ -902,6 +904,130 @@ describe('Migrations', function () {
 
                                 loggerStub.info.calledOnce.should.be.true();
                                 loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('02-add-visibility-column-to-key-tables', function () {
+                        it('does not try to add new column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(false));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
+
+                            // Execute
+                            updates005[1](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledThrice.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to add new columns if the columns already exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+
+                            knexMock.schema.hasColumn.withArgs('posts', 'visibility').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(true));
+
+                            // Execute
+                            updates005[1](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledThrice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'visibility').should.be.true();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledThrice.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add new columns if table is present but columns are not', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+
+                            knexMock.schema.hasColumn.withArgs('posts', 'visibility').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
+
+                            // Execute
+                            updates005[1](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledThrice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'visibility').should.be.true();
+
+                                addColumnStub.calledThrice.should.be.true();
+                                addColumnStub.calledWith('posts', 'visibility').should.be.true();
+                                addColumnStub.calledWith('tags', 'visibility').should.be.true();
+                                addColumnStub.calledWith('users', 'visibility').should.be.true();
+
+                                loggerStub.info.calledThrice.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('will only try to add columns that do not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+
+                            knexMock.schema.hasColumn.withArgs('posts', 'visibility').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
+                            // Execute
+                            updates005[1](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledThrice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'visibility').should.be.true();
+
+                                addColumnStub.calledTwice.should.be.true();
+                                addColumnStub.calledWith('posts', 'visibility').should.be.true();
+                                addColumnStub.calledWith('tags', 'visibility').should.be.false();
+                                addColumnStub.calledWith('users', 'visibility').should.be.true();
+
+                                loggerStub.info.calledTwice.should.be.true();
+                                loggerStub.warn.calledOnce.should.be.true();
 
                                 done();
                             }).catch(done);
