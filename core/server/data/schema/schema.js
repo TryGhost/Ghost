@@ -105,7 +105,6 @@ module.exports = {
         slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
         description: {type: 'string', maxlength: 200, nullable: true},
         image: {type: 'text', maxlength: 2000, nullable: true},
-        hidden: {type: 'bool', nullable: false, defaultTo: false, validations: {isIn: [[0, 1, false, true]]}},
         parent_id: {type: 'integer', nullable: true},
         meta_title: {type: 'string', maxlength: 150, nullable: true},
         meta_description: {type: 'string', maxlength: 200, nullable: true},

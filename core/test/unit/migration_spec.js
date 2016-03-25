@@ -32,7 +32,7 @@ var should          = require('should'),
 describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentDbVersion = '005',
-        currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
+        currentSchemaHash = 'cc249220eb57b2249fc82f8494ad3912',
         currentFixturesHash = '77ebb081539f9e0c49f487faf7fd929e';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
@@ -785,14 +785,12 @@ describe('Migrations', function () {
                     // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
                     // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
                     // again with the array of tasks to execute for 005, which is what we want to check
-
-                    // Can't yield until we have at least one task
-                    // sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+                    sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
 
                     // Execute
                     update('004', '005', loggerStub).then(function () {
                         errorStub.called.should.be.false();
-                        loggerStub.info.called.should.be.false();
+                        loggerStub.info.calledTwice.should.be.true();
 
                         versionsSpy.calledOnce.should.be.true();
                         versionsSpy.calledWith('004', '005').should.be.true();
@@ -800,12 +798,17 @@ describe('Migrations', function () {
 
                         tasksSpy.calledOnce.should.be.true();
                         tasksSpy.calledWith('005', loggerStub).should.be.true();
-                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(0);
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(1);
 
-                        sequenceStub.calledOnce.should.be.true();
+                        sequenceStub.calledTwice.should.be.true();
 
                         sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(0);
+                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
+
+                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(1);
+                        sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
 
                         // Reset sequence
                         sequenceReset();
@@ -814,9 +817,95 @@ describe('Migrations', function () {
                 });
 
                 describe('Tasks:', function () {
+                    var dropColumnStub,
+                        knexStub, knexMock;
+
+                    beforeEach(function () {
+                        knexMock = sandbox.stub().returns({});
+                        knexMock.schema = {
+                            hasTable: sandbox.stub(),
+                            hasColumn: sandbox.stub()
+                        };
+                        // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+                        knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+
+                        dropColumnStub = sandbox.stub(schema.commands, 'dropColumn');
+                    });
+
+                    afterEach(function () {
+                        knexStub.restore();
+                    });
+
                     it('should have tasks for 005', function () {
                         should.exist(updates005);
-                        updates005.should.be.an.Array().with.lengthOf(0);
+                        updates005.should.be.an.Array().with.lengthOf(1);
+                    });
+
+                    describe('01-drop-hidden-column-from-tags', function () {
+                        it('does not try to drop column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(false));
+
+                            // Execute
+                            updates005[0](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                dropColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to drop column if the column does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(false));
+
+                            // Execute
+                            updates005[0](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'hidden').should.be.true();
+
+                                dropColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add drop column if table and column are both present', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(true));
+
+                            // Execute
+                            updates005[0](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'hidden').should.be.true();
+
+                                dropColumnStub.calledOnce.should.be.true();
+                                dropColumnStub.calledWith('tags', 'hidden').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
                     });
                 });
             });
