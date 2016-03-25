@@ -1,6 +1,5 @@
 // Create a new `ghost-frontend` client for use in themes
 var models  = require('../../../../models'),
-    Promise = require('bluebird'),
 
     frontendClient  = require('../fixtures').models.Client[1],
     message = 'Add ghost-frontend client fixture';
@@ -13,6 +12,5 @@ module.exports = function addGhostFrontendClient(options, logger) {
         } else {
             logger.warn(message);
         }
-        return Promise.resolve();
     });
 };

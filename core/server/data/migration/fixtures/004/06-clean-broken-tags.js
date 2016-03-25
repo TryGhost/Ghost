@@ -27,6 +27,5 @@ module.exports = function cleanBrokenTags(options, logger) {
         } else {
             logger.warn(message);
         }
-        return Promise.resolve();
     });
 };

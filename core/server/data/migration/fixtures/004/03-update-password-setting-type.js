@@ -1,6 +1,5 @@
 // Update the `password` setting, so that it has a type of `private` rather than `blog`
 var models  = require('../../../../models'),
-    Promise = require('bluebird'),
 
     message = 'Update password setting';
 
@@ -12,6 +11,5 @@ module.exports = function updatePasswordSetting(options, logger) {
         } else {
             logger.warn(message);
         }
-        return Promise.resolve();
     });
 };
