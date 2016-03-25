@@ -357,4 +357,6 @@ export function testConfig() {
             user: record
         };
     });
+
+    this.passthrough('http://www.gravatar.com/avatar/**');
 }
