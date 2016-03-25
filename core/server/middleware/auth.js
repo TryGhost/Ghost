@@ -59,6 +59,7 @@ function isValidOrigin(origin, client) {
         || origin === url.parse(config.urlSSL ? config.urlSSL : '').hostname
         // @TODO do this in dev mode only, once we can auto-configure the url #2240
         || (origin === 'localhost')
+        || (process.env.NODE_ENV === 'development' && /\.ngrok\./.test(origin))
     )) {
         return true;
     } else {
