@@ -56,7 +56,7 @@ describeComponent(
 
         it('immediately renders the gravatar if valid email supplied', function () {
             let email = 'test@example.com';
-            let expectedUrl = `//www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let expectedUrl = `//www.gravatar.com/avatar/${md5(email)}?s=100&d=404`;
 
             this.set('email', email);
 
@@ -66,38 +66,6 @@ describeComponent(
 
             expect(this.$('.gravatar-img').attr('style'), 'gravatar image style')
                 .to.equal(`background-image: url(${expectedUrl})`);
-        });
-
-        it('throttles gravatar loading as email is changed', function (done) {
-            let email = 'test@example.com';
-            let expectedUrl = `//www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
-
-            this.set('email', 'test');
-
-            this.render(hbs`
-                {{gh-profile-image email=email size=100 debounce=300}}
-            `);
-
-            expect(this.$('.gravatar-img').length, '.gravatar-img not shown for invalid email')
-                .to.equal(0);
-
-            run(() => {
-                this.set('email', email);
-            });
-
-            expect(this.$('.gravatar-img').length, '.gravatar-img not immediately changed on email change')
-                .to.equal(0);
-
-            Ember.run.later(this, function () {
-                expect(this.$('.gravatar-img').length, '.gravatar-img still not shown before throttle timeout')
-                    .to.equal(0);
-            }, 250);
-
-            Ember.run.later(this, function () {
-                expect(this.$('.gravatar-img').attr('style'), '.gravatar-img style after timeout')
-                    .to.equal(`background-image: url(${expectedUrl})`);
-                done();
-            }, 400);
         });
     }
 );
