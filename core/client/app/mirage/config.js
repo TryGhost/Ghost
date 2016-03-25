@@ -325,6 +325,8 @@ export default function () {
             users: [db.users.find(request.params.id)]
         };
     });
+
+    this.passthrough('http://www.gravatar.com/avatar/**');
 }
 
 /*
