@@ -369,29 +369,6 @@ describe('Auth', function () {
             done();
         });
 
-        it('shouldn\'t authenticate client with invalid origin', function (done) {
-            req.body = {};
-            req.body.client_id = testClient;
-            req.body.client_secret = testSecret;
-            req.headers = {};
-            req.headers.origin = 'http://invalid.origin.com';
-            res.status = {};
-
-            sandbox.stub(res, 'status', function (statusCode) {
-                statusCode.should.eql(401);
-                return {
-                    json: function (err) {
-                        err.errors[0].errorType.should.eql('UnauthorizedError');
-                    }
-                };
-            });
-
-            registerSuccessfulClientPasswordStrategy();
-            auth.authenticateClient(req, res, next);
-            next.called.should.be.false();
-            done();
-        });
-
         it('should authenticate valid/known client', function (done) {
             req.body = {};
             req.body.client_id = testClient;
