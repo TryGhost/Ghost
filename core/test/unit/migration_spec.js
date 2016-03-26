@@ -32,7 +32,7 @@ var should          = require('should'),
 describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentDbVersion = '005',
-        currentSchemaHash = '2b823f290d2ffa02ad5a10e31b77dab4',
+        currentSchemaHash = '4ae166ee14946fd617fcbe51b40daa7a',
         currentFixturesHash = '77ebb081539f9e0c49f487faf7fd929e';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
@@ -798,7 +798,7 @@ describe('Migrations', function () {
 
                         tasksSpy.calledOnce.should.be.true();
                         tasksSpy.calledWith('005', loggerStub).should.be.true();
-                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(2);
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(3);
 
                         sequenceStub.calledTwice.should.be.true();
 
@@ -807,9 +807,10 @@ describe('Migrations', function () {
                         sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
                         sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(2);
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(3);
                         sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
                         sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addVisibilityColumnToKeyTables');
+                        sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addMobiledocColumnToPosts');
 
                         // Reset sequence
                         sequenceReset();
@@ -840,7 +841,7 @@ describe('Migrations', function () {
 
                     it('should have tasks for 005', function () {
                         should.exist(updates005);
-                        updates005.should.be.an.Array().with.lengthOf(2);
+                        updates005.should.be.an.Array().with.lengthOf(3);
                     });
 
                     describe('01-drop-hidden-column-from-tags', function () {
@@ -1028,6 +1029,73 @@ describe('Migrations', function () {
 
                                 loggerStub.info.calledTwice.should.be.true();
                                 loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('03-add-mobiledoc-column-to-posts', function () {
+                        it('does not try to add a new column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
+
+                            // Execute
+                            updates005[2](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to add a new column if the column already exists', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(new Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(true));
+
+                            // Execute
+                            updates005[2](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'mobiledoc').should.be.true();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add a new column if table is present but column is not', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(false));
+
+                            // Execute
+                            updates005[2](loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'mobiledoc').should.be.true();
+
+                                addColumnStub.calledOnce.should.be.true();
+                                addColumnStub.calledWith('posts', 'mobiledoc').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
                             }).catch(done);
