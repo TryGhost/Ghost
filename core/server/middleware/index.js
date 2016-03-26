@@ -25,6 +25,7 @@ var bodyParser      = require('body-parser'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
+    cors             = require('./cors'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -43,7 +44,8 @@ middleware = {
         authenticateUser: auth.authenticateUser,
         requiresAuthorizedUser: auth.requiresAuthorizedUser,
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
-        errorHandler: errors.handleAPIError
+        errorHandler: errors.handleAPIError,
+        cors: cors
     }
 };
 
