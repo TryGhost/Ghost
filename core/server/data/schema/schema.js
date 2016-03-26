@@ -5,6 +5,7 @@ module.exports = {
         title: {type: 'string', maxlength: 150, nullable: false},
         slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
         markdown: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
+        mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
         image: {type: 'text', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false, validations: {isIn: [[0, 1, false, true]]}},
