@@ -1138,6 +1138,21 @@ describe('Users API', function () {
                 }).catch(checkForErrorType('ValidationError', done));
         });
 
+        it('Owner can\'t change password without old password', function (done) {
+            var payload = {
+                password: [{
+                    user_id: userIdFor.owner,
+                    oldPassword: '',
+                    newPassword: 'Sl1m3rson1',
+                    ne2Password: 'Sl1m3rson1'
+                }]
+            };
+            UserAPI.changePassword(payload, _.extend({}, context.owner, {id: userIdFor.owner}))
+                .then(function () {
+                    done(new Error('Password change is not denied.'));
+                }).catch(checkForErrorType('ValidationError', done));
+        });
+
         it('Owner can\'t change password without matching passwords', function (done) {
             var payload = {
                 password: [{
