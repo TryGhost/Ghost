@@ -36,6 +36,7 @@
     "compression": "1.6.1",
     "connect-slashes": "1.3.1",
     "cookie-session": "1.2.0",
+    "cors": "2.7.1",
     "downsize": "0.0.8",
     "express": "4.13.4",
     "express-hbs": "0.8.4",
@@ -103,6 +104,16 @@
     "top-gh-contribs": "2.0.2"
   },
   "greenkeeper": {
-    "ignore": ["bower", "bluebird", "glob", "lodash", "mysql", "nodemailer", "pg", "showdown-ghost", "validator"]
+    "ignore": [
+      "bower",
+      "bluebird",
+      "glob",
+      "lodash",
+      "mysql",
+      "nodemailer",
+      "pg",
+      "showdown-ghost",
+      "validator"
+    ]
   }
 }

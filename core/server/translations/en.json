@@ -68,9 +68,7 @@
                 "clientCredentialsNotValid": "Client credentials were not valid",
                 "forInformationRead": "For information on how to fix this, please read {url}.",
                 "accessDenied": "Access denied.",
-                "accessDeniedFromUrl": "Access Denied from url: {origin}. Please use the url configured in config.js",
-                "pleaseSignIn": "Please Sign In",
-                "attemptedToAccessAdmin": "You have attempted to access your Ghost admin panel from a url that does not appear in config.js."
+                "pleaseSignIn": "Please Sign In"
             },
             "ghostbusboy": {
                 "fileUploadingError": "Something went wrong uploading the file",
