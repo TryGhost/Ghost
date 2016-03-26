@@ -94,8 +94,8 @@ auth = {
 
         return passport.authenticate(['oauth2-client-password'], {session: false, failWithError: false},
             function authenticate(err, client) {
-                var origin = null,
-                    error;
+                var origin = null;
+
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
@@ -119,22 +119,12 @@ auth = {
 
                 if (!origin && client && client.type === 'ua') {
                     res.header('Access-Control-Allow-Origin', config.url);
-                    req.client = client;
-                    return next(null, client);
+                } else if (isValidOrigin(origin, client)) {
+                    res.header('Access-Control-Allow-Origin', req.headers.origin);
                 }
 
-                if (isValidOrigin(origin, client)) {
-                    res.header('Access-Control-Allow-Origin', req.headers.origin);
-                    req.client = client;
-                    return next(null, client);
-                } else {
-                    error = new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDeniedFromUrl', {origin: origin}));
-                    errors.logError(error,
-                        i18n.t('errors.middleware.auth.attemptedToAccessAdmin'),
-                        i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://support.ghost.org/config/#url'})
-                    );
-                    return errors.handleAPIError(error, req, res, next);
-                }
+                req.client = client;
+                return next(null, client);
             }
         )(req, res, next);
     },
