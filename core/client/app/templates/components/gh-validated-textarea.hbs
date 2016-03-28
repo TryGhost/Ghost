@@ -1,0 +1,11 @@
+{{#if label}}
+    <label for="{{inputId}}">{{label}}</label>
+{{/if}}
+{{gh-textarea value=value placeholder=placeholder name=name disabled=disabled focus-out="focusOut"}}
+{{#if showErrorMessage}}
+    <p class="response">{{v-get model valuePath 'message'}}</p>
+{{else if hasBlock}}
+    {{yield}}
+{{else if helpText}}
+    <p>{{helpText}}</p>
+{{/if}}

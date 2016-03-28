@@ -1,0 +1,26 @@
+{{#if label}}
+    <label for="{{inputId}}">{{label}}</label>
+{{/if}}
+{{gh-input
+    value=value
+    type=type
+    placeholder=placeholder
+    name=name
+    disabled=disabled
+    readonly=readonly
+    size=size
+    maxlength=maxlength
+    autocomplete=autocomplete
+    autofocus=autofocus
+    novalidate=novalidate
+    min=min
+    max=max
+    pattern=pattern
+    focus-out="focusOut"}}
+{{#if showErrorMessage}}
+    <p class="response">{{v-get model valuePath 'message'}}</p>
+{{else if hasBlock}}
+    {{yield}}
+{{else if helpText}}
+    <p>{{helpText}}</p>
+{{/if}}
