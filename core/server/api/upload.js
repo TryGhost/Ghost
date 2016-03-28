@@ -1,10 +1,11 @@
-var config  = require('../config'),
-    Promise = require('bluebird'),
-    fs      = require('fs-extra'),
-    storage = require('../storage'),
-    errors  = require('../errors'),
-    utils   = require('./utils'),
-    i18n    = require('../i18n'),
+var config   = require('../config'),
+    Promise  = require('bluebird'),
+    fs       = require('fs-extra'),
+    storage  = require('../storage'),
+    errors   = require('../errors'),
+    utils    = require('./utils'),
+    i18n     = require('../i18n'),
+    pipeline = require('../utils/pipeline'),
 
     upload;
 
@@ -23,27 +24,42 @@ upload = {
      * @returns {Promise} Success
      */
     add: function (options) {
-        var store = storage.getStorage(),
-            filepath;
+        var tasks,
+            attrs = ['uploadimage'];
 
-        // Check if a file was provided
-        if (!utils.checkFileExists(options, 'uploadimage')) {
-            return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.upload.pleaseSelectImage')));
+        function validate(options) {
+            // Check if a file was provided
+            if (!utils.checkFileExists(options.data, 'uploadimage')) {
+                return Promise.reject(new errors.NoPermissionError(i18n.t('errors.api.upload.pleaseSelectImage')));
+            }
+
+            // Check if the file is valid
+            if (!utils.checkFileIsValid(options.data.uploadimage, config.uploads.contentTypes, config.uploads.extensions)) {
+                return Promise.reject(new errors.UnsupportedMediaTypeError(i18n.t('errors.api.upload.pleaseSelectValidImage')));
+            }
+
+            return options;
         }
 
-        // Check if the file is valid
-        if (!utils.checkFileIsValid(options.uploadimage, config.uploads.contentTypes, config.uploads.extensions)) {
-            return Promise.reject(new errors.UnsupportedMediaTypeError(i18n.t('errors.api.upload.pleaseSelectValidImage')));
+        function storeUpload(options) {
+            var store = storage.getStorage(),
+                filepath = options.data.uploadimage.path;
+
+            return store.save(options.data.uploadimage).then(function (url) {
+                return url;
+            }).finally(function () {
+                // Remove uploaded file from tmp location
+                return Promise.promisify(fs.unlink)(filepath);
+            });
         }
 
-        filepath = options.uploadimage.path;
+        tasks = [
+            utils.validate('upload', {attrs: attrs}),
+            validate,
+            storeUpload
+        ];
 
-        return store.save(options.uploadimage).then(function (url) {
-            return url;
-        }).finally(function () {
-            // Remove uploaded file from tmp location
-            return Promise.promisify(fs.unlink)(filepath);
-        });
+        return pipeline(tasks, options);
     }
 };
 
