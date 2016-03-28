@@ -412,7 +412,7 @@ describe('{{#foreach}} helper', function () {
 
         it('foreach with from 2, to 5 and limit 3', function () {
             var templateString = '<ul>{{#foreach posts from="2" to="5" limit="3"}}<li>{{title}}</li>{{else}}not this{{/foreach}}</ul>',
-                expected = '<ul><li>second</li><li>third</li><li>fourth</li><li>fifth</li></ul>';
+                expected = '<ul><li>second</li><li>third</li><li>fourth</li></ul>';
 
             shouldCompileToExpected(templateString, arrayHash, expected);
             shouldCompileToExpected(templateString, objectHash, expected);
@@ -425,10 +425,73 @@ describe('{{#foreach}} helper', function () {
             shouldCompileToExpected(templateString, arrayHash, expected);
             shouldCompileToExpected(templateString, objectHash, expected);
         });
-
         it('@last in foreach with from 2 and to 4', function () {
             var templateString = '<ul>{{#foreach posts from="2" to="4"}}{{#if @last}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
                 expected = '<ul><li>fourth</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@last in foreach with from 4', function () {
+            var templateString = '<ul>{{#foreach posts from="4"}}{{#if @last}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>fifth</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@first in foreach with from 4', function () {
+            var templateString = '<ul>{{#foreach posts from="4"}}{{#if @first}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>fourth</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@last in foreach with to 4', function () {
+            var templateString = '<ul>{{#foreach posts to="4"}}{{#if @last}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>fourth</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@first in foreach with to 4', function () {
+            var templateString = '<ul>{{#foreach posts to="4"}}{{#if @first}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>first</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@last in foreach with from 4 and limit 3', function () {
+            var templateString = '<ul>{{#foreach posts from="4" limit="3"}}{{#if @last}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>fifth</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@first in foreach with from 4 and limit 3', function () {
+            var templateString = '<ul>{{#foreach posts from="4" limit="3"}}{{#if @first}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>fourth</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@last in foreach with to 4 and limit 3', function () {
+            var templateString = '<ul>{{#foreach posts to="4" limit="3"}}{{#if @last}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>third</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@first in foreach with to 4 and limit 3', function () {
+            var templateString = '<ul>{{#foreach posts to="4" limit="3"}}{{#if @first}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>',
+                expected = '<ul><li>first</li></ul>';
 
             shouldCompileToExpected(templateString, arrayHash, expected);
             shouldCompileToExpected(templateString, objectHash, expected);
