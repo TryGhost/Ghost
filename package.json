@@ -95,7 +95,6 @@
     "mocha": "2.4.5",
     "nock": "7.1.0",
     "rewire": "2.5.1",
-    "rimraf-then": "1.0.0",
     "should": "8.2.1",
     "should-http": "0.0.4",
     "sinon": "1.17.3",
