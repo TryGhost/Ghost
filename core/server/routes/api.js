@@ -72,6 +72,7 @@ apiRoutes = function apiRoutes(middleware) {
     // ## Themes
     router.get('/themes', authenticatePrivate, api.http(api.themes.browse));
     router.put('/themes/:name', authenticatePrivate, api.http(api.themes.edit));
+    router.post('/themes', authenticatePrivate, middleware.busboy, api.http(api.themes.import));
 
     // ## Notifications
     router.get('/notifications', authenticatePrivate, api.http(api.notifications.browse));

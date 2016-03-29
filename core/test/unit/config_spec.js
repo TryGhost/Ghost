@@ -67,6 +67,7 @@ describe('Config', function () {
                 'contentPath',
                 'corePath',
                 'themePath',
+                'themeRelPath',
                 'appPath',
                 'imagesPath',
                 'imagesRelPath',
