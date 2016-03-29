@@ -19,6 +19,7 @@ var express     = require('express'),
     apps        = require('./apps'),
     sitemap     = require('./data/xml/sitemap'),
     xmlrpc      = require('./data/xml/xmlrpc'),
+    slack       = require('./data/slack'),
     GhostServer = require('./ghost-server'),
     validateThemes = require('./utils/validate-themes'),
 
@@ -89,7 +90,9 @@ function init(options) {
             // Initialize sitemaps
             sitemap.init(),
             // Initialize xmrpc ping
-            xmlrpc.init()
+            xmlrpc.init(),
+            // Initialize slack ping
+            slack.init()
         );
     }).then(function () {
         var adminHbs = hbs.create();

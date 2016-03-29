@@ -4,6 +4,10 @@
     color: #666;
 }
 
+.ember-power-select-search {
+    padding: 2px 0 3px 0 !important;
+}
+
 .ember-basic-dropdown--opened > .ember-power-select-trigger,
 .ember-power-select-trigger[aria-expanded="true"],
 .ember-power-select-search input {
@@ -105,4 +109,15 @@
 .ember-power-select-group .ember-power-select-option[aria-current="true"] {
     background: color(var(--blue) alpha(-85%));
     color: var(--darkgrey);
+}
+
+/*
+    HACK: ember-power-select has no separate class for the loading message
+    Issue: https://github.com/cibernox/ember-power-select/issues/479
+ */
+.ember-power-select-dropdown > .ember-power-select-options > .ember-power-select-option:first-of-type,
+.ember-power-select-option--no-matches-message {
+    padding: 7px 8px;
+    color: var(--midgrey);
+    font-size: 0.9em;
 }
