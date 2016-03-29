@@ -100,9 +100,20 @@
     "should-http": "0.0.4",
     "sinon": "1.17.3",
     "supertest": "1.1.0",
+    "tmp": "0.0.28",
     "top-gh-contribs": "2.0.2"
   },
   "greenkeeper": {
-    "ignore": ["bower", "bluebird", "glob", "lodash", "mysql", "nodemailer", "pg", "showdown-ghost", "validator"]
+    "ignore": [
+      "bower",
+      "bluebird",
+      "glob",
+      "lodash",
+      "mysql",
+      "nodemailer",
+      "pg",
+      "showdown-ghost",
+      "validator"
+    ]
   }
 }
