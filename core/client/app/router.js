@@ -55,6 +55,9 @@ Router.map(function () {
     this.route('settings.labs', {path: '/settings/labs'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.navigation', {path: '/settings/navigation'});
+    this.route('settings.apps', {path: '/settings/apps'}, function () {
+        this.route('slack', {path: 'slack'});
+    });
 
     this.route('error404', {path: '/*path'});
 });
