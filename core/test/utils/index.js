@@ -5,7 +5,7 @@ var Promise       = require('bluebird'),
     uuid          = require('node-uuid'),
     db            = require('../../server/data/db'),
     migration     = require('../../server/data/migration/'),
-    mainFixtures = require('../../server/data/migration/fixtures').fixtures,
+    fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     Models        = require('../../server/models'),
     SettingsAPI   = require('../../server/api/settings'),
     permissions   = require('../../server/permissions'),
@@ -316,8 +316,8 @@ fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        var permsToInsert = _.filter(mainFixtures.models.Permission, function (perm) { return perm.object_type === obj; }),
-            permsRolesToInsert = mainFixtures.relations[0].entries,
+        var permsToInsert = fixtureUtils.findPermissionModelForObject('Permission', {object_type: obj}).entries,
+            permsRolesToInsert = fixtureUtils.findPermissionRelationsForObject(obj).entries,
             actions = [],
             permissionsRoles = [],
             roles = {
@@ -328,7 +328,6 @@ fixtures = {
             };
 
         permsToInsert = _.map(permsToInsert, function (perms) {
-            perms.object_type = obj;
             actions.push(perms.action_type);
             return DataGenerator.forKnex.createBasic(perms);
         });
