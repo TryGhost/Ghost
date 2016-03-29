@@ -30,7 +30,7 @@
 /* 2 col themes */
 @media (max-width: 1240px) {
     .package-grid-themes .package-grid-cell {
-        flex: 0 0 50%;
+        flex: 0 0 100%;
     }
 }
 
@@ -43,7 +43,7 @@
 
 /* 2 col apps */
 .package-grid-apps .package-grid-cell {
-    flex: 0 0 50%;
+    flex: 0 0 100%;
 }
 
 /* 1 col apps */
@@ -126,8 +126,9 @@
 .package-card-app {
     overflow: hidden;
     margin: 10px;
-    padding: 20px;
-    max-width: 700px;
+    padding: 14px;
+    height: 75px;
+    /*max-width: 700px;*/
     border: rgba(0,0,0,0.1) 1px solid;
     border-radius: 5px;
     transition: background 0.3s ease;
@@ -140,14 +141,20 @@
 }
 
 .package-card-content {
+    position: relative;
     display: flex;
 }
 
+.package-card-content .btn {
+    position: absolute;
+    right: 20px;
+}
+
 .package-card-app-icon {
-    flex: 0 0 60px;
+    flex: 0 0 47px;
     margin: 0 15px 0 0;
-    width: 60px;
-    height: 60px;
+    width: 47px;
+    height: 47px;
     background-position: center center;
     background-size: cover;
     border-radius: 15%;
@@ -165,7 +172,7 @@
     padding: 0 70px 0 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1.9rem;
+    font-size: 1.7rem;
     font-weight: normal;
 }
 
@@ -211,7 +218,6 @@
     margin: 0;
     padding: 0;
     max-height: 4.2rem;
-    height: 38px;
     color: var(--midgrey);
     text-overflow: ellipsis;
     font-size: 1.4rem;
