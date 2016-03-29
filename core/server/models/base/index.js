@@ -275,7 +275,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         var self = this,
             itemCollection = this.forge(null, {context: options.context}),
-            tableName      = _.result(this.prototype, 'tableName');
+            tableName      = _.result(this.prototype, 'tableName'),
+            allColumns = options.columns;
 
         // Set this to true or pass ?debug=true as an API option to get output
         itemCollection.debug = options.debug && process.env.NODE_ENV !== 'production';
@@ -308,6 +309,9 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
             var data = {};
+
+            // re-add any computed properties that were stripped out before the call to fetchPage
+            options.columns = allColumns;
             data[tableName] = response.collection.toJSON(options);
             data.meta = {pagination: response.pagination};
 
