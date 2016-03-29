@@ -35,7 +35,7 @@ describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentDbVersion = '004',
         currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
-        currentFixturesHash = '17d6aa36a6ba904adca90279eb929381';
+        currentFixturesHash = '77ebb081539f9e0c49f487faf7fd929e';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
