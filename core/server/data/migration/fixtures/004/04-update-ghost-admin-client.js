@@ -3,7 +3,7 @@ var models  = require('../../../../models'),
     _       = require('lodash'),
     crypto  = require('crypto'),
 
-    adminClient = require('../fixtures').models.Client[0],
+    adminClient = require('../utils').findModelFixtureEntry('Client', {slug: 'ghost-admin'}),
     message = 'Update ghost-admin client fixture';
 
 module.exports = function updateGhostAdminClient(options, logger) {
