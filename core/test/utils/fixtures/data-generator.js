@@ -59,6 +59,11 @@ DataGenerator.Content = {
             slug: "scheduled-post",
             markdown: "<h1>Welcome to my invisible post!</h1>",
             status: "scheduled"
+        },
+        {
+            title: "This is a welcome post!",
+            slug: "welcome-to-ghost",
+            markdown: "<h1>Welcome to my invisible post!</h1>"
         }
     ],
 
