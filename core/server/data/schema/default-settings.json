@@ -66,6 +66,9 @@
         },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
+        },
+        "slack": {
+            "defaultValue": "[{\"url\":\"/\", \"channel\":\"#general\", \"username\":\"ghost_bot\", \"icon_emoji\":\":ghost:\", \"isActive\":\"false\"}]"
         }
     },
     "theme": {
