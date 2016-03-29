@@ -96,7 +96,13 @@ Post = ghostBookshelf.Model.extend({
         var self = this,
             tagsToCheck,
             title,
-            i;
+            i,
+            // Variables to make the slug checking more readable
+            newTitle    = this.get('title'),
+            prevTitle   = this._previousAttributes.title,
+            prevSlug    = this._previousAttributes.slug,
+            postStatus  = this.get('status'),
+            publishedAt = this.get('published_at');
 
         options = options || {};
         // keep tags for 'saved' event and deduplicate upper/lowercase tags
@@ -141,13 +147,31 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        if (this.hasChanged('slug') || !this.get('slug')) {
+        // If a title is set, not the same as the old title, a draft post, and has never been published
+        if (prevTitle !== undefined && newTitle !== prevTitle && postStatus === 'draft' && !publishedAt) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+            return ghostBookshelf.Model.generateSlug(Post, this.get('title'),
                     {status: 'all', transacting: options.transacting, importing: options.importing})
                 .then(function then(slug) {
-                    self.set({slug: slug});
+                    // After the new slug is found, do another generate for the old title to compare it to the old slug
+                    return ghostBookshelf.Model.generateSlug(Post, prevTitle).then(function then(prevTitleSlug) {
+                        // If the old slug is the same as the slug that was generated from the old title
+                        // then set a new slug. If it is not the same, means was set by the user
+                        if (prevTitleSlug === prevSlug) {
+                            self.set({slug: slug});
+                        }
+                    });
                 });
+        } else {
+            // If any of the attributes above were false, set initial slug and check to see if slug was changed by the user
+            if (this.hasChanged('slug') || !this.get('slug')) {
+                // Pass the new slug through the generator to strip illegal characters, detect duplicates
+                return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                    .then(function then(slug) {
+                        self.set({slug: slug});
+                    });
+            }
         }
     },
 
