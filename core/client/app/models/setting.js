@@ -21,5 +21,6 @@ export default Model.extend(ValidationEngine, {
     labs: attr('string'),
     navigation: attr('string'),
     isPrivate: attr('boolean'),
-    password: attr('string')
+    password: attr('string'),
+    slack: attr('string')
 });

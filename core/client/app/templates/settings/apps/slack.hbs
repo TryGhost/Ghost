@@ -1,0 +1,52 @@
+<header class="view-header">
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Apps <i class="icon-arrow-right" style="display:inline"></i> Slack</span>{{/gh-view-title}}
+    <section class="view-actions">
+        {{#if newSlackObject.isActive}}
+            {{#link-to "settings.apps.slack" class="btn btn-red" title="Disable" click=(action "toggleActiveProperty")}}Disable{{/link-to}}
+        {{else}}
+            {{#link-to "settings.apps.slack" class="btn btn-green" title="Activate" click=(action "toggleActiveProperty")}}Activate{{/link-to}}
+        {{/if}}
+    </section>
+
+</header>
+<section class="view-container">
+    <section class="view-content">
+        <section class="slack-grid">
+            <div class="slack-cell">
+                <img class="slack-icon" style="background-image:url({{gh-path 'admin' '/img/slackicon.png'}})"/>
+            </div>
+            <div class="slack-cell">
+                <h3>Slack</h3>
+                <p>A team communication tool</p>
+            </div>
+        </section>
+        <section class="slack-subtitle">
+            <p>The Slack app for Ghost allows you to automatically send newly published posts to a channel in your Slack team.</p>
+        </section>
+
+        <form class="slack-config-form" novalidate="novalidate">
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
+                <label for="url">Authentification</label>
+                {{one-way-input value=newSlackObject.url class="gh-input" update=(action "updateProperty" "url") focusOut=(action "save" target=appsController)}}
+                {{gh-error-message errors=model.errors property="url"}}
+                <p>Your slack webhook URL or whatever</p>
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="channel"}}
+                <label for="channel">Channel</label>
+                {{one-way-input value=newSlackObject.channel class="gh-input" update=(action "updateProperty" "channel") focusOut=(action "save" target=appsController)}}
+                {{gh-error-message errors=model.errors property="channel"}}
+                <p>Specify the channel name to send message to. Example: #general. Can be a public channel, private group or DM channel. Use your own @username to send to yourself via the slackbot channel, or someone else's @username to send to the DM between the slackbot and that user.</p>
+            {{/gh-form-group}}
+
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="username"}}
+                <label for="username">Username</label>
+                {{one-way-input value=newSlackObject.name class="gh-input" update=(action "updateProperty" "name") focusOut=(action "save" target=appsController)}}
+                {{gh-error-message errors=model.errors property="username"}}
+                <p>What name should messages be posted under</p>
+            {{/gh-form-group}}
+
+            {{#link-to "settings.apps.slack" class="btn btn-grey" title="Send Test Notification" click=(action "sendTestMail" target=appsController)}}Send Test Notification{{/link-to}}
+        </form>
+    </section>
+</section>
