@@ -41,6 +41,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, S
         this._super(...arguments);
         this.send('resetShortcutsScope');
         this.send('resetPagination');
+        this.send('resetShortcutsScope');
     },
 
     stepThroughTags(step) {

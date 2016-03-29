@@ -14,7 +14,7 @@
             classNames="tag-list"
             as |checkScroll|
         }}
-            <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}">
+            <section class="tag-list-content settings-tags {{if tagListFocused 'keyboard-focused'}}" {{action "resetShortcutsScope" on="touchStart" preventDefault=false}}>
                 {{#each tags as |tag|}}
                     {{gh-tag tag=tag onDelete=(action checkScroll)}}
                 {{/each}}
