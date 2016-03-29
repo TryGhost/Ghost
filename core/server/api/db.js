@@ -2,7 +2,7 @@
 // API for DB operations
 var _                = require('lodash'),
     Promise          = require('bluebird'),
-    dataExport       = require('../data/export'),
+    exporter         = require('../data/export'),
     importer         = require('../data/importer'),
     backupDatabase   = require('../data/migration').backupDatabase,
     models           = require('../models'),
@@ -38,7 +38,7 @@ db = {
 
         // Export data, otherwise send error 500
         function exportContent() {
-            return dataExport().then(function (exportedData) {
+            return exporter.doExport().then(function (exportedData) {
                 return {db: [exportedData]};
             }).catch(function (error) {
                 return Promise.reject(new errors.InternalServerError(error.message || error));
@@ -109,16 +109,23 @@ db = {
      * @returns {Promise} Success
      */
     deleteAllContent: function (options) {
-        var tasks;
+        var tasks,
+            queryOpts = {columns: 'id'};
 
         options = options || {};
 
         function deleteContent() {
-            return Promise.resolve(models.deleteAllContent())
-                .return({db: []})
-                .catch(function (error) {
-                    return Promise.reject(new errors.InternalServerError(error.message || error));
-                });
+            var collections = [
+                models.Post.findAll(queryOpts),
+                models.Tag.findAll(queryOpts)
+            ];
+
+            return Promise.each(collections, function then(Collection) {
+                return Collection.invokeThen('destroy');
+            }).return({db: []})
+            .catch(function (error) {
+                throw new errors.InternalServerError(error.message || error);
+            });
         }
 
         tasks = [

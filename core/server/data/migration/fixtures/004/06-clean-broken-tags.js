@@ -1,8 +1,9 @@
 // Clean tags which start with commas, the only illegal char in tags
 var models  = require('../../../../models'),
-    Promise = require('bluebird');
+    Promise = require('bluebird'),
+    message = 'Cleaning malformed tags';
 
-module.exports = function cleanBrokenTags(options, logInfo) {
+module.exports = function cleanBrokenTags(options, logger) {
     return models.Tag.findAll(options).then(function (tags) {
         var tagOps = [];
         if (tags) {
@@ -18,10 +19,13 @@ module.exports = function cleanBrokenTags(options, logInfo) {
                 }
             });
             if (tagOps.length > 0) {
-                logInfo('Cleaning ' + tagOps.length + ' malformed tags');
+                logger.info(message + '(' + tagOps.length + ')');
                 return Promise.all(tagOps);
+            } else {
+                logger.warn(message);
             }
+        } else {
+            logger.warn(message);
         }
-        return Promise.resolve();
     });
 };

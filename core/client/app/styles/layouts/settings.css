@@ -34,10 +34,6 @@
     cursor: move;
 }
 
-.gh-blognav-url .fake-placeholder {
-    color: #c1c1c1;
-}
-
 .gh-blognav-line {
     display: flex;
     width: 100%;

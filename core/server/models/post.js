@@ -82,11 +82,13 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
-        this.on('destroying', function onDestroying(model) {
-            if (model.previous('status') === 'published') {
-                model.emitChange('unpublished');
-            }
-            model.emitChange('deleted');
+        this.on('destroying', function (model/*, attr, options*/) {
+            return model.load('tags').call('related', 'tags').call('detach').then(function then() {
+                if (model.previous('status') === 'published') {
+                    model.emitChange('unpublished');
+                }
+                model.emitChange('deleted');
+            });
         });
     },
 
@@ -373,8 +375,9 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['importing', 'withRelated'],
+                findOne: ['columns', 'importing', 'withRelated', 'require'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
+                findAll: ['columns'],
                 add: ['importing']
             };
 
@@ -521,43 +524,26 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
-     * ### Destroy
-     * @extends ghostBookshelf.Model.destroy to clean up tag relations
-     * **See:** [ghostBookshelf.Model.destroy](base.js.html#destroy)
-     */
-    destroy: function destroy(options) {
-        var id = options.id;
-        options = this.filterOptions(options, 'destroy');
-
-        return this.forge({id: id}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
-            return post.related('tags').detach().then(function destroyPosts() {
-                return post.destroy(options);
-            });
-        });
-    },
-
-    /**
      * ### destroyByAuthor
      * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
      */
-    destroyByAuthor: function destroyByAuthor(options) {
+    destroyByAuthor: Promise.method(function destroyByAuthor(options) {
         var postCollection = Posts.forge(),
             authorId = options.id;
 
         options = this.filterOptions(options, 'destroyByAuthor');
-        if (authorId) {
-            return postCollection.query('where', 'author_id', '=', authorId).fetch(options).then(function destroyTags(results) {
-                return Promise.map(results.models, function mapper(post) {
-                    return post.related('tags').detach(null, options).then(function destroyPosts() {
-                        return post.destroy(options);
-                    });
-                });
-            }, function (error) {
-                return Promise.reject(new errors.InternalServerError(error.message || error));
-            });
+
+        if (!authorId) {
+            throw new errors.NotFoundError(i18n.t('errors.models.post.noUserFound'));
         }
-        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.post.noUserFound')));
-    },
+
+        return postCollection.query('where', 'author_id', '=', authorId)
+            .fetch(options)
+            .call('invokeThen', 'destroy', options)
+            .catch(function (error) {
+                throw new errors.InternalServerError(error.message || error);
+            });
+    }),
 
     permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,

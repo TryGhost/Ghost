@@ -1,9 +1,11 @@
-/*globals describe, it, afterEach */
-var should = require('should'),
-    sinon  = require('sinon'),
+/*globals describe, it, afterEach, beforeEach */
+var should  = require('should'),
+    sinon   = require('sinon'),
+    Promise = require('bluebird'),
 
     // Stuff we are testing
     versioning = require('../../server/data/schema').versioning,
+    db         = require('../../server/data/db'),
     errors     = require('../../server/errors'),
 
     sandbox    = sinon.sandbox.create();
@@ -43,6 +45,149 @@ describe('Versioning', function () {
         });
     });
 
+    describe('getDatabaseVersion', function () {
+        var errorSpy, knexStub, knexMock, queryMock;
+
+        beforeEach(function () {
+            errorSpy = sandbox.spy(errors, 'rejectError');
+
+            queryMock = {
+                where: sandbox.stub().returnsThis(),
+                first: sandbox.stub()
+            };
+
+            knexMock = sandbox.stub().returns(queryMock);
+            knexMock.schema = {
+                hasTable: sandbox.stub()
+            };
+
+            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+        });
+
+        afterEach(function () {
+            knexStub.restore();
+        });
+
+        it('should throw error if settings table does not exist', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(false));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if the settings table does not exist');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Settings table does not exist');
+                errorSpy.calledOnce.should.be.true();
+
+                knexStub.get.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.false();
+                queryMock.first.called.should.be.false();
+                done();
+            }).catch(done);
+        });
+
+        it('should lookup & return version, if settings table exists', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve({value: '001'}));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function (version) {
+                should.exist(version);
+                version.should.eql('001');
+                errorSpy.called.should.be.false();
+
+                knexStub.get.calledTwice.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.first.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw error if version does not exist', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve());
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if version does not exist');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Database version is not recognized');
+                errorSpy.calledOnce.should.be.true();
+
+                knexStub.get.calledTwice.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.first.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+
+        it('should throw error if version is not a number', function (done) {
+            // Setup
+            knexMock.schema.hasTable.returns(new Promise.resolve(true));
+            queryMock.first.returns(new Promise.resolve('Eyjafjallajökull'));
+
+            // Execute
+            versioning.getDatabaseVersion().then(function () {
+                done('Should throw an error if version is not a number');
+            }).catch(function (err) {
+                should.exist(err);
+                err.message.should.eql('Database version is not recognized');
+                errorSpy.calledOnce.should.be.true();
+
+                knexStub.get.calledTwice.should.be.true();
+                knexMock.schema.hasTable.calledOnce.should.be.true();
+                knexMock.schema.hasTable.calledWith('settings').should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.first.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('setDatabaseVersion', function () {
+        var knexStub, knexMock, queryMock;
+
+        beforeEach(function () {
+            queryMock = {
+                where: sandbox.stub().returnsThis(),
+                update: sandbox.stub().returns(new Promise.resolve())
+            };
+
+            knexMock = sandbox.stub().returns(queryMock);
+
+            // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+            knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+        });
+
+        afterEach(function () {
+            knexStub.restore();
+        });
+
+        it('should try to update the databaseVersion', function (done) {
+            versioning.setDatabaseVersion().then(function () {
+                knexStub.get.calledOnce.should.be.true();
+                queryMock.where.called.should.be.true();
+                queryMock.update.called.should.be.true();
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('showCannotMigrateError', function () {
         it('should output a detailed error message', function () {
             var errorStub = sandbox.stub(errors, 'logAndRejectError');
@@ -53,6 +198,36 @@ describe('Versioning', function () {
                 'Please upgrade to 0.7.1 first',
                 'See http://support.ghost.org/how-to-upgrade/ for instructions.'
             ).should.be.true();
+        });
+    });
+
+    describe('getUpdateTasks', function () {
+        it('`getUpdateFixturesTasks` returns empty array if no tasks are found', function () {
+            var logStub = sandbox.stub();
+
+            versioning.getUpdateFixturesTasks('999', logStub).should.eql([]);
+            logStub.calledOnce.should.be.true();
+        });
+
+        it('`getUpdateFixturesTasks` returns 8 items for 004', function () {
+            var logStub = sandbox.stub();
+
+            versioning.getUpdateFixturesTasks('004', logStub).should.be.an.Array().with.lengthOf(8);
+            logStub.calledOnce.should.be.false();
+        });
+
+        it('`getUpdateDatabaseTasks` returns empty array if no tasks are found', function () {
+            var logStub = sandbox.stub();
+
+            versioning.getUpdateDatabaseTasks('999', logStub).should.eql([]);
+            logStub.calledOnce.should.be.true();
+        });
+
+        it('`getUpdateDatabaseTasks` returns 5 items for 004', function () {
+            var logStub = sandbox.stub();
+
+            versioning.getUpdateDatabaseTasks('004', logStub).should.be.an.Array().with.lengthOf(5);
+            logStub.calledOnce.should.be.false();
         });
     });
 });

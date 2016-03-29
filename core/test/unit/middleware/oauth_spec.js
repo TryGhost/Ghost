@@ -9,9 +9,9 @@ var sinon            = require('sinon'),
 describe('OAuth', function () {
     var next, req, res, sandbox;
 
-    before(function (done) {
+    before(function () {
         // Loads all the models
-        Models.init().then(done).catch(done);
+        Models.init();
     });
 
     beforeEach(function () {

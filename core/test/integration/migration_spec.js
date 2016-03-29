@@ -18,6 +18,8 @@ describe('Database Migration (special functions)', function () {
     });
 
     describe('Fixtures', function () {
+        beforeEach(testUtils.setup());
+
         // Custom assertion for detection that a permissions is assigned to the correct roles
         should.Assertion.add('AssignedToRoles', function (roles) {
             var roleNames;
@@ -27,7 +29,9 @@ describe('Database Migration (special functions)', function () {
 
             this.obj.should.be.an.Object().with.property(['roles']);
             this.obj.roles.should.be.an.Array();
-            roleNames = _.pluck(this.obj.roles, 'name');
+
+            // Ensure the roles are in id order
+            roleNames = _(this.obj.roles).sortBy('id').pluck('name').value();
             roleNames.should.eql(roles);
         });
 
@@ -117,12 +121,13 @@ describe('Database Migration (special functions)', function () {
             permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
         });
 
-        beforeEach(testUtils.setup());
-
         it('should populate all fixtures correctly', function (done) {
-            var logStub = sandbox.stub();
+            var loggerStub = {
+                info: sandbox.stub(),
+                warn: sandbox.stub()
+            };
 
-            fixtures.populate({context: {internal: true}}, logStub).then(function () {
+            fixtures.populate(loggerStub).then(function () {
                 var props = {
                     posts: Models.Post.findAll({include: ['tags']}),
                     tags: Models.Tag.findAll(),
@@ -132,7 +137,8 @@ describe('Database Migration (special functions)', function () {
                     permissions: Models.Permission.findAll({include: ['roles']})
                 };
 
-                logStub.called.should.be.true();
+                loggerStub.info.called.should.be.true();
+                loggerStub.warn.called.should.be.false();
 
                 return Promise.props(props).then(function (result) {
                     should.exist(result);

@@ -22,6 +22,7 @@
 
     {{gh-editor value=model.scratch
                 shouldFocusEditor=shouldFocusEditor
+                previewUrl=model.previewUrl
                 editorFocused=(action "autoSaveNew")
                 onTeardown=(action "cancelTimers")}}
 </section>

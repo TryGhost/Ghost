@@ -4,61 +4,39 @@
 // E.g. if we update to version 004, all the tasks in /004/ are executed
 
 var sequence = require('../../../utils/sequence'),
+    versioning = require('../../schema').versioning,
 
     // Private
-    getVersionTasks,
+    modelOptions = {context: {internal: true}},
 
     // Public
     update;
-
-/**
- * ### Get Version Tasks
- * Tries to require a directory matching the version number
- *
- * This was split from update to make testing easier
- *
- * @param {String} version
- * @param {Function} logInfo
- * @returns {Array}
- */
-getVersionTasks = function getVersionTasks(version, logInfo) {
-    var tasks = [];
-
-    try {
-        tasks = require('./' + version);
-    } catch (e) {
-        logInfo('No fixture updates found for version', version);
-    }
-
-    return tasks;
-};
 
 /**
  * ## Update
  * Handles doing subsequent updates for versions
  *
  * @param {Array} versions
- * @param {Object} modelOptions
- * @param {Function} logInfo
+ * @param {{info: logger.info, warn: logger.warn}} logger
  * @returns {Promise<*>}
  */
-update = function update(versions, modelOptions, logInfo) {
-    var ops = [];
+update = function update(versions, logger) {
+    logger.info('Running fixture updates');
 
-    logInfo('Updating fixtures');
-
-    versions.forEach(function (version) {
-        var tasks = getVersionTasks(version, logInfo);
+    var ops = versions.reduce(function updateToVersion(ops, version) {
+        var tasks = versioning.getUpdateFixturesTasks(version, logger);
 
         if (tasks && tasks.length > 0) {
-            ops.push(function () {
-                logInfo('Updating fixtures to', version);
-                return sequence(require('./' + version), modelOptions, logInfo);
+            ops.push(function runVersionTasks() {
+                logger.info('Updating fixtures to ' + version);
+                return sequence(tasks, modelOptions, logger);
             });
         }
-    });
 
-    return sequence(ops, modelOptions, logInfo);
+        return ops;
+    }, []);
+
+    return sequence(ops, modelOptions, logger);
 };
 
 module.exports = update;

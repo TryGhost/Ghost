@@ -37,7 +37,7 @@
     "ember-cli-selectize": "0.4.3",
     "ember-cli-sri": "2.1.0",
     "ember-cli-uglify": "1.2.0",
-    "ember-data": "2.4.0",
+    "ember-data": "2.4.2",
     "ember-data-filter": "1.13.0",
     "ember-disable-proxy-controllers": "1.0.1",
     "ember-export-application-global": "1.0.5",
@@ -53,7 +53,7 @@
     "fs-extra": "0.16.3",
     "glob": "^4.0.5",
     "liquid-fire": "0.23.0",
-    "liquid-tether": "0.1.11",
+    "liquid-tether": "1.0.0",
     "loader.js": "4.0.0",
     "walk-sync": "^0.1.3"
   },

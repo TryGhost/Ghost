@@ -31,14 +31,6 @@ pagination = function (options) {
 
     var data = _.merge({}, this.pagination);
 
-    if (this.tag !== undefined) {
-        data.tagSlug = this.tag.slug;
-    }
-
-    if (this.author !== undefined) {
-        data.authorSlug = this.author.slug;
-    }
-
     return template.execute('pagination', data, options);
 };
 
