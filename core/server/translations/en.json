@@ -72,11 +72,6 @@
                 "pleaseSignIn": "Please Sign In",
                 "attemptedToAccessAdmin": "You have attempted to access your Ghost admin panel from a url that does not appear in config.js."
             },
-            "ghostbusboy": {
-                "fileUploadingError": "Something went wrong uploading the file",
-                "somethingWentWrong": "Something went wrong parsing the form",
-                "couldNotParseUpload": "Could not parse upload completely."
-            },
             "oauth": {
                 "invalidClient": "Invalid client.",
                 "invalidRefreshToken": "Invalid refresh token.",
