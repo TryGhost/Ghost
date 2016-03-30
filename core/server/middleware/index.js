@@ -10,9 +10,9 @@ var bodyParser      = require('body-parser'),
     passport        = require('passport'),
     utils           = require('../utils'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
-
+    multer          = require('multer'),
+    tmpdir          = require('os').tmpdir,
     authStrategies   = require('./auth-strategies'),
-    busboy           = require('./ghost-busboy'),
     auth             = require('./auth'),
     cacheControl     = require('./cache-control'),
     checkSSL         = require('./check-ssl'),
@@ -33,7 +33,7 @@ var bodyParser      = require('body-parser'),
     setupMiddleware;
 
 middleware = {
-    busboy: busboy,
+    upload: multer({dest: tmpdir()}),
     cacheControl: cacheControl,
     spamPrevention: spamPrevention,
     privateBlogging: privateBlogging,
