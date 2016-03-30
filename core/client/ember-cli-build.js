@@ -69,7 +69,6 @@ module.exports = function (defaults) {
     app.import('bower_components/codemirror/mode/xml/xml.js');
     app.import('bower_components/codemirror/mode/css/css.js');
     app.import('bower_components/codemirror/mode/javascript/javascript.js');
-    app.import('bower_components/xregexp/xregexp-all.js');
     app.import('bower_components/password-generator/lib/password-generator.js');
     app.import('bower_components/blueimp-md5/js/md5.js');
 
