@@ -497,4 +497,37 @@ describe('Error handling', function () {
             errors.renderErrorPage(statusCode, error, req, res, next);
         });
     });
+    
+    describe('Plain text error handler', function () {
+        var sandbox, req, res, next;
+
+        beforeEach(function () {
+            sandbox = sinon.sandbox.create();
+            req = {};
+            res = {};
+            res.send = sandbox.spy();
+            res.status = sandbox.stub().returns(res);
+            next = sandbox.spy();
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('sends plain text error with the correct body & status code', function () {
+            var error = {
+                message: 'Foo bar baz',
+                statusCode: 404
+            };
+
+            errors.logError = sandbox.spy(errors, 'logError');
+           
+            errors.sendPlainTextError(error, req, res, next);
+            
+            next.called.should.be.false(); 
+            errors.logError.calledOnce.should.be.true();
+            res.status.calledWith(error.statusCode).should.be.true();
+            res.send.firstCall.args[0].should.eql(error.message);
+        });
+    });
 });

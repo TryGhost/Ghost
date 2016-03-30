@@ -157,7 +157,8 @@ function urlFor(context, data, absolute) {
         home: '/',
         rss: '/rss/',
         api: apiPath,
-        sitemap_xsl: '/sitemap.xsl'
+        sitemap_xsl: '/sitemap.xsl',
+        hub: '/hub/'
     };
 
     // Make data properly optional

@@ -25,6 +25,7 @@ var bodyParser      = require('body-parser'),
     staticTheme      = require('./static-theme'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
+    pushHub          = require('./push-hub'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -44,7 +45,8 @@ middleware = {
         requiresAuthorizedUser: auth.requiresAuthorizedUser,
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
         errorHandler: errors.handleAPIError
-    }
+    },
+    pushHub: pushHub
 };
 
 setupMiddleware = function setupMiddleware(blogApp, adminApp) {

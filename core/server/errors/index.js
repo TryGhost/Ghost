@@ -274,6 +274,13 @@ errors = {
         // Send a properly formatted HTTP response containing the errors
         res.status(httpErrors.statusCode).json({errors: httpErrors.errors});
     },
+    
+    sendPlainTextError: function sendPlainTextError(err, req, res, next) {
+        /*jshint unused:false */
+        this.logError(err);
+
+        res.status(err.statusCode).send(err.message);  
+    }, 
 
     renderErrorPage: function (statusCode, err, req, res, next) {
         /*jshint unused:false*/

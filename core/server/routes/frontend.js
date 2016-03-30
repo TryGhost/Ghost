@@ -1,5 +1,6 @@
 var frontend    = require('../controllers/frontend'),
     channels    = require('../controllers/frontend/channels'),
+    pushHub     = require('../controllers/frontend/push-hub'),
     config      = require('../config'),
     express     = require('express'),
     utils       = require('../utils'),
@@ -46,7 +47,10 @@ frontendRoutes = function frontendRoutes(middleware) {
 
     // Channels
     router.use(channels.router());
-
+    
+    // PuSH Hub
+    router.use(pushHub.router(middleware.pushHub));
+    
     // Default
     router.get('*', frontend.single);
 
