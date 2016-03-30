@@ -289,12 +289,12 @@ utils = {
 
         return Promise.resolve(object);
     },
-    checkFileExists: function (options, filename) {
-        return !!(options[filename] && options[filename].type && options[filename].path);
+    checkFileExists: function (fileData) {
+        return !!(fileData.mimetype && fileData.path);
     },
-    checkFileIsValid: function (file, types, extensions) {
-        var type = file.type,
-            ext = path.extname(file.name).toLowerCase();
+    checkFileIsValid: function (fileData, types, extensions) {
+        var type = fileData.mimetype,
+            ext = path.extname(fileData.name).toLowerCase();
 
         if (_.contains(types, type) && _.contains(extensions, ext)) {
             return true;

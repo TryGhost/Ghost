@@ -374,31 +374,31 @@ describe('API Utils', function () {
 
     describe('checkFileExists', function () {
         it('should return true if file exists in input', function () {
-            apiUtils.checkFileExists({test: {type: 'file', path: 'path'}}, 'test').should.be.true();
+            apiUtils.checkFileExists({mimetype: 'file', path: 'path'}).should.be.true();
         });
 
         it('should return false if file does not exist in input', function () {
-            apiUtils.checkFileExists({test: {type: 'file', path: 'path'}}, 'notthere').should.be.false();
+            apiUtils.checkFileExists({}).should.be.false();
         });
 
         it('should return false if file is incorrectly structured', function () {
-            apiUtils.checkFileExists({test: 'notafile'}, 'test').should.be.false();
+            apiUtils.checkFileExists({type: 'file'}).should.be.false();
         });
     });
 
     describe('checkFileIsValid', function () {
         it('returns true if file has valid extension and type', function () {
-            apiUtils.checkFileIsValid({name: 'test.txt', type: 'text'}, ['text'], ['.txt']).should.be.true();
-            apiUtils.checkFileIsValid({name: 'test.jpg', type: 'jpeg'}, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true();
+            apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.txt']).should.be.true();
+            apiUtils.checkFileIsValid({name: 'test.jpg', mimetype: 'jpeg'}, ['text', 'jpeg'], ['.txt', '.jpg']).should.be.true();
         });
 
         it('returns false if file has invalid extension', function () {
-            apiUtils.checkFileIsValid({name: 'test.txt', type: 'text'}, ['text'], ['.tar']).should.be.false();
-            apiUtils.checkFileIsValid({name: 'test', type: 'text'}, ['text'], ['.txt']).should.be.false();
+            apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['text'], ['.tar']).should.be.false();
+            apiUtils.checkFileIsValid({name: 'test', mimetype: 'text'}, ['text'], ['.txt']).should.be.false();
         });
 
         it('returns false if file has invalid type', function () {
-            apiUtils.checkFileIsValid({name: 'test.txt', type: 'text'}, ['archive'], ['.txt']).should.be.false();
+            apiUtils.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['archive'], ['.txt']).should.be.false();
         });
     });
 
