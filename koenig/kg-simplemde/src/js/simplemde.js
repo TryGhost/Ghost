@@ -1987,9 +1987,17 @@ SimpleMDE.prototype.toTextArea = function() {
 	var cm = this.codemirror;
 	var wrapper = cm.getWrapperElement();
 
-	wrapper.parentNode.removeChild(this.gui.toolbar);
-	wrapper.parentNode.removeChild(this.gui.statusbar);
-	wrapper.parentNode.removeChild(this.gui.sideBySide);
+	if(wrapper.parentNode) {
+		if(this.gui.toolbar) {
+			wrapper.parentNode.removeChild(this.gui.toolbar);
+		}
+		if(this.gui.statusbar) {
+			wrapper.parentNode.removeChild(this.gui.statusbar);
+		}
+		if(this.gui.sideBySide) {
+			wrapper.parentNode.removeChild(this.gui.sideBySide);
+		}
+	}
 
 	cm.toTextArea();
 
