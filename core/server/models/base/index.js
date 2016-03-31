@@ -13,7 +13,6 @@ var _          = require('lodash'),
     filters    = require('../../filters'),
     moment     = require('moment'),
     Promise    = require('bluebird'),
-    sanitizer  = require('validator').sanitize,
     schema     = require('../../data/schema'),
     utils      = require('../../utils'),
     uuid       = require('node-uuid'),
@@ -181,10 +180,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         // @TODO upgrade bookshelf & knex and use serialize & toJSON to do this in a neater way (see #6103)
         return proto.finalize.call(this, attrs);
-    },
-
-    sanitize: function sanitize(attr) {
-        return sanitizer(this.get(attr)).xss();
     },
 
     // Get attributes that have been updated (values before a .save() call)
