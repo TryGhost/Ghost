@@ -98,7 +98,7 @@ function ghost_head(options) {
                 escapeExpression(metaData.nextUrl) + '" />');
             }
 
-            if (context !== 'paged' && context !== 'page' && useStructuredData) {
+            if (context !== 'paged' && useStructuredData) {
                 head.push('');
                 head.push.apply(head, finaliseStructuredData(metaData));
                 head.push('');
