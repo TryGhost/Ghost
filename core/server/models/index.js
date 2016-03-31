@@ -22,6 +22,7 @@ models = [
     'client',
     'permission',
     'post',
+    'push-subscriber',
     'refreshtoken',
     'role',
     'settings',

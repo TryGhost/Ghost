@@ -193,5 +193,10 @@ module.exports = {
         user_id: {type: 'integer', nullable: false, unsigned: true, references: 'users.id'},
         client_id: {type: 'integer', nullable: false, unsigned: true, references: 'clients.id'},
         expires: {type: 'bigInteger', nullable: false}
+    },
+    push_subscribers: {
+        id: {type: 'increments', nullable: false, primary: true},
+        callback_url: {type: 'text', maxlength: 2000, nullable: true},
+        subscribed_at: {type: 'dateTime', nullable: false}
     }
 };
