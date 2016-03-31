@@ -7,10 +7,9 @@ var should          = require('should'),
     readDirectory   = require('../../server/utils/read-directory'),
     readThemes      = require('../../server/utils/read-themes'),
     gravatar        = require('../../server/utils/gravatar'),
-    tempfile        = require('../utils/tempfile'),
+    tmp             = require('tmp'),
     utils           = require('../../server/utils'),
     join            = require('path').join,
-    rm              = require('rimraf-then'),
     fs              = require('fs');
 
 // To stop jshint complaining
@@ -105,17 +104,17 @@ describe('Server Utilities', function () {
 
     describe('parse-package-json', function () {
         it('should parse valid package.json', function (done) {
-            var pkgJson, tmpPath;
+            var pkgJson, tmpFile;
 
-            tmpPath = tempfile();
+            tmpFile = tmp.fileSync();
             pkgJson = JSON.stringify({
                 name: 'test',
                 version: '0.0.0'
             });
 
-            fs.writeFileSync(tmpPath, pkgJson);
+            fs.writeSync(tmpFile.fd, pkgJson);
 
-            parsePackageJson(tmpPath)
+            parsePackageJson(tmpFile.name)
                 .then(function (pkg) {
                     pkg.should.eql({
                         name: 'test',
@@ -125,188 +124,175 @@ describe('Server Utilities', function () {
                     done();
                 })
                 .catch(done)
-                .finally(function () {
-                    return rm(tmpPath);
-                });
+                .finally(tmpFile.removeCallback);
         });
 
         it('should fail when name is missing', function (done) {
-            var pkgJson, tmpPath;
+            var pkgJson, tmpFile;
 
-            tmpPath = tempfile();
+            tmpFile = tmp.fileSync();
             pkgJson = JSON.stringify({
                 version: '0.0.0'
             });
 
-            fs.writeFileSync(tmpPath, pkgJson);
+            fs.writeSync(tmpFile.fd, pkgJson);
 
-            parsePackageJson(tmpPath)
+            parsePackageJson(tmpFile.name)
                 .then(function () {
                     done(new Error('parsePackageJson succeeded, but should\'ve failed'));
                 })
                 .catch(function (err) {
                     err.message.should.equal('"name" or "version" is missing from theme package.json file.');
-                    err.context.should.equal(tmpPath);
+                    err.context.should.equal(tmpFile.name);
                     err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
 
                     done();
                 })
-                .finally(function () {
-                    return rm(tmpPath);
-                });
+                .catch(done)
+                .finally(tmpFile.removeCallback);
         });
 
         it('should fail when version is missing', function (done) {
-            var pkgJson, tmpPath;
+            var pkgJson, tmpFile;
 
-            tmpPath = tempfile();
+            tmpFile = tmp.fileSync();
             pkgJson = JSON.stringify({
                 name: 'test'
             });
 
-            fs.writeFileSync(tmpPath, pkgJson);
+            fs.writeSync(tmpFile.fd, pkgJson);
 
-            parsePackageJson(tmpPath)
+            parsePackageJson(tmpFile.name)
                 .then(function () {
                     done(new Error('parsePackageJson succeeded, but should\'ve failed'));
                 })
                 .catch(function (err) {
                     err.message.should.equal('"name" or "version" is missing from theme package.json file.');
-                    err.context.should.equal(tmpPath);
+                    err.context.should.equal(tmpFile.name);
                     err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
 
                     done();
                 })
-                .finally(function () {
-                    return rm(tmpPath);
-                });
+                .catch(done)
+                .finally(tmpFile.removeCallback);
         });
 
         it('should fail when JSON is invalid', function (done) {
-            var pkgJson, tmpPath;
+            var pkgJson, tmpFile;
 
-            tmpPath = tempfile();
+            tmpFile = tmp.fileSync();
             pkgJson = '{name:"test"}';
 
-            fs.writeFileSync(tmpPath, pkgJson);
+            fs.writeSync(tmpFile.fd, pkgJson);
 
-            parsePackageJson(tmpPath)
+            parsePackageJson(tmpFile.name)
                 .then(function () {
                     done(new Error('parsePackageJson succeeded, but should\'ve failed'));
                 })
                 .catch(function (err) {
                     err.message.should.equal('Theme package.json file is malformed');
-                    err.context.should.equal(tmpPath);
+                    err.context.should.equal(tmpFile.name);
                     err.help.should.equal('This will be required in future. Please see http://docs.ghost.org/themes/');
 
                     done();
                 })
-                .finally(function () {
-                    return rm(tmpPath);
-                });
+                .catch(done)
+                .finally(tmpFile.removeCallback);
         });
 
         it('should fail when file is missing', function (done) {
-            var tmpPath = tempfile();
+            var tmpFile = tmp.fileSync();
 
-            parsePackageJson(tmpPath)
+            tmpFile.removeCallback();
+            parsePackageJson(tmpFile.name)
                 .then(function () {
                     done(new Error('parsePackageJson succeeded, but should\'ve failed'));
                 })
                 .catch(function (err) {
                     err.message.should.equal('Could not read package.json file');
-                    err.context.should.equal(tmpPath);
+                    err.context.should.equal(tmpFile.name);
 
                     done();
                 })
-                .finally(function () {
-                    return rm(tmpPath);
-                });
+                .catch(done);
         });
     });
 
     describe('read-directory', function () {
         it('should read directory recursively', function (done) {
-            var themePath = tempfile();
+            var themePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
-            fs.mkdirSync(themePath);
-            fs.mkdirSync(join(themePath, 'partials'));
-            fs.writeFileSync(join(themePath, 'index.hbs'));
-            fs.writeFileSync(join(themePath, 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(themePath.name, 'partials'));
+            fs.writeFileSync(join(themePath.name, 'index.hbs'));
+            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
 
-            readDirectory(themePath)
+            readDirectory(themePath.name)
                 .then(function (tree) {
                     tree.should.eql({
                         partials: {
-                            'navigation.hbs': join(themePath, 'partials', 'navigation.hbs')
+                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
                         },
-                        'index.hbs': join(themePath, 'index.hbs')
+                        'index.hbs': join(themePath.name, 'index.hbs')
                     });
 
                     done();
                 })
                 .catch(done)
-                .finally(function () {
-                    return rm(themePath);
-                });
+                .finally(themePath.removeCallback);
         });
 
         it('should read directory and ignore unneeded items', function (done) {
-            var themePath = tempfile();
+            var themePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
-            fs.mkdirSync(themePath);
-            fs.mkdirSync(join(themePath, 'partials'));
-            fs.writeFileSync(join(themePath, 'index.hbs'));
-            fs.writeFileSync(join(themePath, 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(themePath.name, 'partials'));
+            fs.writeFileSync(join(themePath.name, 'index.hbs'));
+            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
 
             // create some trash
-            fs.mkdirSync(join(themePath, 'node_modules'));
-            fs.mkdirSync(join(themePath, 'bower_components'));
-            fs.mkdirSync(join(themePath, '.git'));
-            fs.writeFileSync(join(themePath, '.DS_Store'));
+            fs.mkdirSync(join(themePath.name, 'node_modules'));
+            fs.mkdirSync(join(themePath.name, 'bower_components'));
+            fs.mkdirSync(join(themePath.name, '.git'));
+            fs.writeFileSync(join(themePath.name, '.DS_Store'));
 
-            readDirectory(themePath, {ignore: ['.git']})
+            readDirectory(themePath.name, {ignore: ['.git']})
                 .then(function (tree) {
                     tree.should.eql({
                         partials: {
-                            'navigation.hbs': join(themePath, 'partials', 'navigation.hbs')
+                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
                         },
-                        'index.hbs': join(themePath, 'index.hbs')
+                        'index.hbs': join(themePath.name, 'index.hbs')
                     });
 
                     done();
                 })
                 .catch(done)
-                .finally(function () {
-                    return rm(themePath);
-                });
+                .finally(themePath.removeCallback);
         });
 
         it('should read directory and parse package.json files', function (done) {
             var themePath, pkgJson;
 
-            themePath = tempfile();
+            themePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
                 name: 'test',
                 version: '0.0.0'
             });
 
             // create example theme
-            fs.mkdirSync(themePath);
-            fs.mkdirSync(join(themePath, 'partials'));
-            fs.writeFileSync(join(themePath, 'package.json'), pkgJson);
-            fs.writeFileSync(join(themePath, 'index.hbs'));
-            fs.writeFileSync(join(themePath, 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(themePath.name, 'partials'));
+            fs.writeFileSync(join(themePath.name, 'package.json'), pkgJson);
+            fs.writeFileSync(join(themePath.name, 'index.hbs'));
+            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
 
-            readDirectory(themePath)
+            readDirectory(themePath.name)
                 .then(function (tree) {
                     tree.should.eql({
                         partials: {
-                            'navigation.hbs': join(themePath, 'partials', 'navigation.hbs')
+                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
                         },
-                        'index.hbs': join(themePath, 'index.hbs'),
+                        'index.hbs': join(themePath.name, 'index.hbs'),
                         'package.json': {
                             name: 'test',
                             version: '0.0.0'
@@ -316,78 +302,69 @@ describe('Server Utilities', function () {
                     done();
                 })
                 .catch(done)
-                .finally(function () {
-                    return rm(themePath);
-                });
+                .finally(themePath.removeCallback);
         });
 
         it('should read directory and ignore invalid package.json files', function (done) {
             var themePath, pkgJson;
 
-            themePath = tempfile();
+            themePath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
                 name: 'test'
             });
 
             // create example theme
-            fs.mkdirSync(themePath);
-            fs.mkdirSync(join(themePath, 'partials'));
-            fs.writeFileSync(join(themePath, 'package.json'), pkgJson);
-            fs.writeFileSync(join(themePath, 'index.hbs'));
-            fs.writeFileSync(join(themePath, 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(themePath.name, 'partials'));
+            fs.writeFileSync(join(themePath.name, 'package.json'), pkgJson);
+            fs.writeFileSync(join(themePath.name, 'index.hbs'));
+            fs.writeFileSync(join(themePath.name, 'partials', 'navigation.hbs'));
 
-            readDirectory(themePath)
+            readDirectory(themePath.name)
                 .then(function (tree) {
                     tree.should.eql({
                         partials: {
-                            'navigation.hbs': join(themePath, 'partials', 'navigation.hbs')
+                            'navigation.hbs': join(themePath.name, 'partials', 'navigation.hbs')
                         },
-                        'index.hbs': join(themePath, 'index.hbs'),
+                        'index.hbs': join(themePath.name, 'index.hbs'),
                         'package.json': null
                     });
 
                     done();
                 })
                 .catch(done)
-                .finally(function () {
-                    return rm(themePath);
-                });
+                .finally(themePath.removeCallback);
         });
     });
 
     describe('read-themes', function () {
         it('should read directory and include only folders', function (done) {
-            var themesPath = tempfile();
-
-            fs.mkdirSync(themesPath);
+            var themesPath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
-            fs.writeFileSync(join(themesPath, 'casper.zip'));
-            fs.writeFileSync(join(themesPath, '.DS_Store'));
+            fs.writeFileSync(join(themesPath.name, 'casper.zip'));
+            fs.writeFileSync(join(themesPath.name, '.DS_Store'));
 
             // create actual theme
-            fs.mkdirSync(join(themesPath, 'casper'));
-            fs.mkdirSync(join(themesPath, 'casper', 'partials'));
-            fs.writeFileSync(join(themesPath, 'casper', 'index.hbs'));
-            fs.writeFileSync(join(themesPath, 'casper', 'partials', 'navigation.hbs'));
+            fs.mkdirSync(join(themesPath.name, 'casper'));
+            fs.mkdirSync(join(themesPath.name, 'casper', 'partials'));
+            fs.writeFileSync(join(themesPath.name, 'casper', 'index.hbs'));
+            fs.writeFileSync(join(themesPath.name, 'casper', 'partials', 'navigation.hbs'));
 
-            readThemes(themesPath)
+            readThemes(themesPath.name)
                 .then(function (tree) {
                     tree.should.eql({
                         casper: {
                             partials: {
-                                'navigation.hbs': join(themesPath, 'casper', 'partials', 'navigation.hbs')
+                                'navigation.hbs': join(themesPath.name, 'casper', 'partials', 'navigation.hbs')
                             },
-                            'index.hbs': join(themesPath, 'casper', 'index.hbs')
+                            'index.hbs': join(themesPath.name, 'casper', 'index.hbs')
                         }
                     });
 
                     done();
                 })
                 .catch(done)
-                .finally(function () {
-                    return rm(themesPath);
-                });
+                .finally(themesPath.removeCallback);
         });
     });
 
@@ -395,20 +372,18 @@ describe('Server Utilities', function () {
         it('should return warnings for themes without package.json', function (done) {
             var themesPath, pkgJson;
 
-            themesPath = tempfile();
+            themesPath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = JSON.stringify({
                 name: 'casper',
                 version: '1.0.0'
             });
 
-            fs.mkdirSync(themesPath);
+            fs.mkdirSync(join(themesPath.name, 'casper'));
+            fs.mkdirSync(join(themesPath.name, 'invalid-casper'));
 
-            fs.mkdirSync(join(themesPath, 'casper'));
-            fs.mkdirSync(join(themesPath, 'invalid-casper'));
+            fs.writeFileSync(join(themesPath.name, 'casper', 'package.json'), pkgJson);
 
-            fs.writeFileSync(join(themesPath, 'casper', 'package.json'), pkgJson);
-
-            validateThemes(themesPath)
+            validateThemes(themesPath.name)
                 .then(function () {
                     done(new Error('validateThemes succeeded, but should\'ve failed'));
                 })
@@ -422,23 +397,20 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .finally(function () {
-                    return rm(themesPath);
-                });
+                .catch(done)
+                .finally(themesPath.removeCallback);
         });
 
         it('should return warning for theme with invalid package.json', function (done) {
             var themesPath, pkgJson;
 
-            themesPath = tempfile();
+            themesPath = tmp.dirSync({unsafeCleanup: true});
             pkgJson = '{"name":casper}';
 
-            fs.mkdirSync(themesPath);
+            fs.mkdirSync(join(themesPath.name, 'casper'));
+            fs.writeFileSync(join(themesPath.name, 'casper', 'package.json'), pkgJson);
 
-            fs.mkdirSync(join(themesPath, 'casper'));
-            fs.writeFileSync(join(themesPath, 'casper', 'package.json'), pkgJson);
-
-            validateThemes(themesPath)
+            validateThemes(themesPath.name)
                 .then(function () {
                     done(new Error('validateThemes succeeded, but should\'ve failed'));
                 })
@@ -452,9 +424,8 @@ describe('Server Utilities', function () {
 
                     done();
                 })
-                .finally(function () {
-                    return rm(themesPath);
-                });
+                .catch(done)
+                .finally(themesPath.removeCallback);
         });
     });
 
