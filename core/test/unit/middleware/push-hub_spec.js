@@ -96,7 +96,7 @@ describe('Middleware: PuSH Hub', function () {
             req.body['hub.topic'] = 'foo';
 
             configStub.urlFor
-                .withArgs('rss', true)
+                .withArgs('rss', {secure: true}, true)
                 .returns('bar');
 
             pushHub.__set__('config', configStub);
@@ -113,6 +113,7 @@ describe('Middleware: PuSH Hub', function () {
     describe('hub.mode request parameter validation', function () {
         it('should send a plain text error when the value of the hub.mode request parameter is empty', function () {
             req.body = {};
+            req.secure = true;
 
             pushHub.validateHubMode(req, res, next);
 
@@ -125,6 +126,7 @@ describe('Middleware: PuSH Hub', function () {
         it('should send a plain text error when the value of the hub.mode request parameter is invalid', function () {
             req.body = {};
             req.body['hub.mode'] = 'foo';
+            req.secure = true;
 
             pushHub.validateHubMode(req, res, next);
 

@@ -39,7 +39,7 @@ pushHub = {
             return errors.sendPlainTextError(err, req, res, next);
         }
 
-        if (req.body['hub.topic'] !== config.urlFor('rss', true)) {
+        if (req.body['hub.topic'] !== config.urlFor('rss', {secure: req.secure}, true)) {
             err = new errors.ValidationError('hub.topic request parameter is invalid');
 
             return errors.sendPlainTextError(err, req, res, next);
