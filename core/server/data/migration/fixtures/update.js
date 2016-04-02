@@ -3,11 +3,9 @@
 // This is done manually, through a series of files stored in an adjacent folder
 // E.g. if we update to version 004, all the tasks in /004/ are executed
 
-var sequence = require('../../../utils/sequence'),
-    versioning = require('../../schema').versioning,
-
-    // Private
-    modelOptions = {context: {internal: true}},
+var sequence     = require('../../../utils/sequence'),
+    versioning   = require('../../schema').versioning,
+    fixtureUtils = require('./utils'),
 
     // Public
     update;
@@ -29,14 +27,14 @@ update = function update(versions, logger) {
         if (tasks && tasks.length > 0) {
             ops.push(function runVersionTasks() {
                 logger.info('Updating fixtures to ' + version);
-                return sequence(tasks, modelOptions, logger);
+                return sequence(tasks, fixtureUtils.modelOptions, logger);
             });
         }
 
         return ops;
     }, []);
 
-    return sequence(ops, modelOptions, logger);
+    return sequence(ops, fixtureUtils.modelOptions, logger);
 };
 
 module.exports = update;
