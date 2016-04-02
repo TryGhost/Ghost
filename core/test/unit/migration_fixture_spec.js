@@ -11,6 +11,7 @@ var should  = require('should'),
     versioning    = require('../../server/data/schema/versioning'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
+    fixtureUtils  = rewire('../../server/data/migration/fixtures/utils'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
     ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
 
@@ -819,7 +820,7 @@ describe('Fixtures', function () {
         });
 
         describe('Match Func', function () {
-            var matchFunc = populate.__get__('matchFunc'),
+            var matchFunc = fixtureUtils.__get__('matchFunc'),
                 getStub;
 
             beforeEach(function () {
@@ -901,6 +902,42 @@ describe('Fixtures', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('Utils', function () {
+        describe('findModelFixtureEntry', function () {
+            it('should fetch a single fixture entry', function () {
+                var foundFixture = fixtureUtils.findModelFixtureEntry('Client', {slug: 'ghost-admin'});
+                foundFixture.should.be.an.Object();
+                foundFixture.should.eql({
+                    name:             'Ghost Admin',
+                    slug:             'ghost-admin',
+                    status:           'enabled'
+                });
+            });
+        });
+
+        describe('findPermissionModelForObject', function () {
+            it('should fetch a fixture with multiple entries', function () {
+                var foundFixture = fixtureUtils.findPermissionModelForObject('Permission', {object_type: 'db'});
+                foundFixture.should.be.an.Object();
+                foundFixture.entries.should.be.an.Array().with.lengthOf(3);
+                foundFixture.entries[0].should.eql({
+                    name: 'Export database',
+                    action_type: 'exportContent',
+                    object_type: 'db'
+                });
+            });
+        });
+
+        describe('findPermissionRelationsForObject', function () {
+            it('should fetch a fixture with multiple entries', function () {
+                var foundFixture = fixtureUtils.findPermissionRelationsForObject('db');
+                foundFixture.should.be.an.Object();
+                foundFixture.entries.should.be.an.Object();
+                foundFixture.entries.should.have.property('Administrator', {db: 'all'});
+            });
         });
     });
 });
