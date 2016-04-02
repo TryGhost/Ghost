@@ -21,6 +21,7 @@ var express     = require('express'),
     xmlrpc      = require('./data/xml/xmlrpc'),
     GhostServer = require('./ghost-server'),
     validateThemes = require('./utils/validate-themes'),
+    pushPublisher = require('./push/publisher'),
 
     dbHash;
 
@@ -91,6 +92,9 @@ function init(options) {
             // Initialize xmrpc ping
             xmlrpc.init()
         );
+    }).then(function () {
+        // Initialize PuSH Publisher
+        pushPublisher.init();
     }).then(function () {
         var adminHbs = hbs.create();
 

@@ -24,6 +24,10 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2368'
+        },
+
+        PuSH: {
+            notificationRetryAttempts: 10
         }
     },
 
@@ -69,6 +73,10 @@ config = {
         // Specify where your content directory lives
         paths: {
             contentPath: path.join(__dirname, '/content/')
+        },
+
+        PuSH: {
+            notificationRetryAttempts: 10
         }
     },
 
@@ -97,7 +105,10 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        PuSH: {
+            notificationRetryAttempts: 10
+        }
     },
 
     // ### Testing MySQL
