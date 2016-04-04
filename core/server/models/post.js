@@ -124,7 +124,6 @@ Post = ghostBookshelf.Model.extend({
         this.set('html', converter.makeHtml(this.get('markdown')));
 
         // disabling sanitization until we can implement a better version
-        // this.set('title', this.sanitize('title').trim());
         title = this.get('title') || i18n.t('errors.models.post.untitled');
         this.set('title', title.trim());
 
