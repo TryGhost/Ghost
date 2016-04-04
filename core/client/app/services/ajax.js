@@ -24,9 +24,9 @@ export default AjaxService.extend({
 
     normalizeErrorResponse(status, headers, payload) {
         if (payload && typeof payload === 'object') {
-            return payload.error || payload.errors || payload.message || false;
-        } else {
-            return false;
+            payload.errors = payload.error || payload.errors || payload.message || undefined;
         }
+
+        return this._super(status, headers, payload);
     }
 });
