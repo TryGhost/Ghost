@@ -23,6 +23,7 @@ describe('PuSH Subscription Handler', function () {
         req.body = {};
         res = {};
         res.end = sandbox.spy();
+        res.send = sandbox.spy();
         res.status = sandbox.stub().returns(res);
         next = sandbox.spy();
 
@@ -41,7 +42,7 @@ describe('PuSH Subscription Handler', function () {
         req.body['hub.mode'] = 'subscribe';
         req.body['hub.callback'] = callbackUrl;
 
-        pushSubscriptionHandler(req, res, next).then(function () {
+        return pushSubscriptionHandler(req, res, next).then(function () {
             res.status.calledWith(202).should.be.true();
             res.end.called.should.be.true();
         });
@@ -61,9 +62,23 @@ describe('PuSH Subscription Handler', function () {
         req.body['hub.mode'] = 'unsubscribe';
         req.body['hub.callback'] = callbackUrl;
 
-        pushSubscriptionHandler(req, res, next).then(function () {
+        return pushSubscriptionHandler(req, res, next).then(function () {
             res.status.calledWith(202).should.be.true();
             res.end.called.should.be.true();
+        });
+    });
+
+    it('should send a 500 error if it fails find an existing subscriber to delete', function () {
+        dataProvider.PushSubscriber.findOne
+            .withArgs({ callback_url: callbackUrl })
+            .returns(Promise.resolve(null));
+
+        req.body['hub.mode'] = 'unsubscribe';
+        req.body['hub.callback'] = callbackUrl;
+
+        return pushSubscriptionHandler(req, res, next).then(function () {
+            res.status.calledWith(500).should.be.true();
+            res.send.calledWith('Subscription modification failed').should.be.true();
         });
     });
 });

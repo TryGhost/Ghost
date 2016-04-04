@@ -6,7 +6,7 @@ var should            = require('should'),
 
     notifySubscribers = rewire('../../../server/push/subscriber-notifier');
 
-describe.only('PuSH Subscriber Notifier', function () {
+describe('PuSH Subscriber Notifier', function () {
     var sandbox, axios, dataProvider, config,
         pushSubscribers, axiosReqParams, axiosSuccessRes, axiosFailureRes;
 

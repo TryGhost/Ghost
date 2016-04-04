@@ -8,14 +8,16 @@ function createSubscriber(callbackUrl) {
 function deleteSubscriber(callbackUrl) {
     var PushSubscriber = dataProvider.PushSubscriber;
 
-    return PushSubscriber.findOne({callback_url: callbackUrl})
-        .then(function (result) {
-            if (result) {
-                return PushSubscriber.destroy({id: result.attributes.id});
-            } else {
-                // @todo
-            }
-        });
+    return new Promise(function (resolve, reject) {
+        PushSubscriber.findOne({callback_url: callbackUrl})
+            .then(function (result) {
+                if (result) {
+                    PushSubscriber.destroy({id: result.attributes.id}).then(resolve);
+                } else {
+                    reject();
+                }
+            });
+    });
 }
 
 handleSubscription = function handleSubscription(req, res, next) {
@@ -31,6 +33,9 @@ handleSubscription = function handleSubscription(req, res, next) {
         return deleteSubscriber(callbackUrl)
             .then(function () {
                 res.status(202).end();
+            })
+            .catch(function () {
+                res.status(500).send('Subscription modification failed');
             });
     }
 };
