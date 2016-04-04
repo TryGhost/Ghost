@@ -88,18 +88,18 @@ describe('Middleware: PuSH Hub', function () {
         });
 
         it('should send a plain text error when the value of the hub.topic request parameter is invalid', function () {
-            var configStub = {
-                urlFor: sinon.stub()
+            var validatorStub = {
+                isRssFeed: sinon.stub()
             };
 
             req.body = {};
             req.body['hub.topic'] = 'foo';
 
-            configStub.urlFor
-                .withArgs('rss', {secure: true}, true)
-                .returns('bar');
+            validatorStub.isRssFeed
+                .withArgs(req.body['hub.topic'])
+                .returns(false);
 
-            pushHub.__set__('config', configStub);
+            pushHub.__set__('validator', validatorStub);
 
             pushHub.validateTopic(req, res, next);
 

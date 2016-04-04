@@ -3,7 +3,6 @@ var events            = require('../events'),
     init;
 
 init = function () {
-    // @todo: work out delta of changed data and pass this to notifySubscribers
     events.on('post.published', notifySubscribers);
 };
 

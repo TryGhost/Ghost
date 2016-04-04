@@ -1,14 +1,18 @@
-var Promise           = require('bluebird'),
-    axios             = require('axios'),
-    dataProvider      = require('../models'),
-    events            = require('../events'),
-    config            = require('../config'),
+var Promise              = require('bluebird'),
+    axios                = require('axios'),
+    dataProvider         = require('../models'),
+    events               = require('../events'),
+    config               = require('../config'),
+    resolveTopicsForPost = require('./topic-resolver'),
     notifySubscribers;
 
-notifySubscribers = function () {
+notifySubscribers = function (post) {
     var tasks = [];
 
-    return dataProvider.PushSubscriber.findAll()
+    return resolveTopicsForPost(post)
+        .then(function (topics) {
+            return dataProvider.PushSubscriber.findAllByTopicUrls(topics);
+        })
         .then(function (pushSubscribers) {
             var sendNotification = function (callbackUrl, triesCount) {
                 var maxAllowedRetries = config.PuSH.notificationRetryAttempts - 1;
@@ -30,7 +34,7 @@ notifySubscribers = function () {
             };
 
             pushSubscribers.forEach(function (pushSubscriber) {
-                var task = sendNotification(pushSubscriber.attributes.callback_url);
+                var task = sendNotification(pushSubscriber.get('callback_url'));
 
                 tasks.push(task);
             });

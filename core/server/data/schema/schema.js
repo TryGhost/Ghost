@@ -197,6 +197,7 @@ module.exports = {
     push_subscribers: {
         id: {type: 'increments', nullable: false, primary: true},
         callback_url: {type: 'text', maxlength: 2000, nullable: true},
+        topic_url: {type: 'text', maxlength: 2000, nullable: true},
         subscribed_at: {type: 'dateTime', nullable: false}
     }
 };

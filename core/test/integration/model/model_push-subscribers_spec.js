@@ -1,6 +1,7 @@
 /*globals describe, before, beforeEach, afterEach, it*/
 var testUtils           = require('../../utils'),
     should              = require('should'),
+    Promise             = require('bluebird'),
 
     PushSubscriberModel = require('../../../server/models/push-subscriber').PushSubscriber,
     context             = testUtils.context.internal;
@@ -8,7 +9,8 @@ var testUtils           = require('../../utils'),
 describe.only('Push Subscriber Model', function () {
     var createdPushSubscriberId,
         newPushSubscriberProps = {
-            callback_url: 'http://www.example.com'
+            callback_url: 'http://www.example.com',
+            topic_url: 'http://www.example.com/rss'
         };
 
     before(reset);
@@ -39,24 +41,27 @@ describe.only('Push Subscriber Model', function () {
 
             foundPushSubscriber.get('subscribed_at').should.be.an.instanceof(Date);
             foundPushSubscriber.get('callback_url').should.eql(newPushSubscriberProps.callback_url);
+            foundPushSubscriber.get('topic_url').should.eql(newPushSubscriberProps.topic_url);
 
             done();
         }).catch(done);
     });
 
     it('can update a push subscriber by its id', function (done) {
-        var updatedCallbackUrl = 'http://www.example.com/foo';
+        var updatedCallbackUrl = 'http://www.example.com/foo',
+            updatedTopicUrl = 'http://www.example.com/bar';
 
         PushSubscriberModel.findOne({id: createdPushSubscriberId}).then(function (foundPushSubscriber) {
             should.exist(foundPushSubscriber);
 
-            return foundPushSubscriber.set({callback_url: updatedCallbackUrl}).save(null, context);
+            return foundPushSubscriber.set({callback_url: updatedCallbackUrl, topic_url: updatedTopicUrl}).save(null, context);
         }).then(function () {
             return PushSubscriberModel.findOne({id: createdPushSubscriberId});
         }).then(function (updatedPushSubscriber) {
             should.exist(updatedPushSubscriber);
 
             updatedPushSubscriber.get('callback_url').should.equal(updatedCallbackUrl);
+            updatedPushSubscriber.get('topic_url').should.equal(updatedTopicUrl);
 
             done();
         }).catch(done);
@@ -78,6 +83,42 @@ describe.only('Push Subscriber Model', function () {
 
             done();
         }).catch(done);
+    });
+
+    it('can find all push subscribers by an array of topic urls', function (done) {
+        var alternativePushSubscriberProps = [
+            {
+                callback_url: 'http://www.example.com',
+                topic_url: 'http://www.example.com/rss2'
+            },
+            {
+                callback_url: 'http://www.example.com',
+                topic_url: 'http://www.example.com/rss3'
+            }
+        ],
+         tasks = [
+            PushSubscriberModel.add(newPushSubscriberProps, context),
+            PushSubscriberModel.add(alternativePushSubscriberProps[0], context),
+            PushSubscriberModel.add(alternativePushSubscriberProps[0], context),
+            PushSubscriberModel.add(alternativePushSubscriberProps[1], context),
+            PushSubscriberModel.add(alternativePushSubscriberProps[1], context),
+            PushSubscriberModel.add(alternativePushSubscriberProps[1], context)
+        ];
+
+        Promise.all(tasks)
+            .then(function () {
+                return PushSubscriberModel.findAllByTopicUrls([
+                    alternativePushSubscriberProps[0].topic_url,
+                    alternativePushSubscriberProps[1].topic_url
+                ])
+            })
+            .then(function (foundPushSubscribers) {
+                should.exist(foundPushSubscribers);
+
+                foundPushSubscribers.models.length.should.eql(5);
+
+                done();
+            }).catch(done);
     });
 
     function addPushSubscriber() {

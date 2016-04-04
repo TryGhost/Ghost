@@ -8,6 +8,7 @@ var should                  = require('should'),
 
 describe('PuSH Subscription Handler', function () {
     var callbackUrl = 'http://www.example.com',
+        topicUrl = 'http://www.example.com/rss',
         sandbox, dataProvider, req, res, next;
 
     beforeEach(function () {
@@ -36,11 +37,12 @@ describe('PuSH Subscription Handler', function () {
 
     it('should create a new subscriber', function () {
         dataProvider.PushSubscriber.add
-            .withArgs({ callback_url: callbackUrl })
+            .withArgs({ callback_url: callbackUrl, topic_url: topicUrl })
             .returns(Promise.resolve());
 
         req.body['hub.mode'] = 'subscribe';
         req.body['hub.callback'] = callbackUrl;
+        req.body['hub.topic'] = topicUrl;
 
         return pushSubscriptionHandler(req, res, next).then(function () {
             res.status.calledWith(202).should.be.true();
@@ -52,7 +54,7 @@ describe('PuSH Subscription Handler', function () {
         var subscriberId = 1;
 
         dataProvider.PushSubscriber.findOne
-            .withArgs({ callback_url: callbackUrl })
+            .withArgs({ callback_url: callbackUrl, topic_url: topicUrl })
             .returns(Promise.resolve({ attributes: { id: subscriberId }}));
 
         dataProvider.PushSubscriber.destroy
@@ -61,6 +63,7 @@ describe('PuSH Subscription Handler', function () {
 
         req.body['hub.mode'] = 'unsubscribe';
         req.body['hub.callback'] = callbackUrl;
+        req.body['hub.topic'] = topicUrl;
 
         return pushSubscriptionHandler(req, res, next).then(function () {
             res.status.calledWith(202).should.be.true();
@@ -70,11 +73,12 @@ describe('PuSH Subscription Handler', function () {
 
     it('should send a 500 error if it fails find an existing subscriber to delete', function () {
         dataProvider.PushSubscriber.findOne
-            .withArgs({ callback_url: callbackUrl })
+            .withArgs({ callback_url: callbackUrl, topic_url: topicUrl })
             .returns(Promise.resolve(null));
 
         req.body['hub.mode'] = 'unsubscribe';
         req.body['hub.callback'] = callbackUrl;
+        req.body['hub.topic'] = topicUrl;
 
         return pushSubscriptionHandler(req, res, next).then(function () {
             res.status.calledWith(500).should.be.true();
