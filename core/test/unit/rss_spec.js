@@ -27,7 +27,8 @@ describe('RSS', function () {
     var sandbox, req, res, posts;
 
     before(function () {
-        posts = _.filter(testUtils.DataGenerator.forKnex.posts, function filter(post) {
+        posts = _.cloneDeep(testUtils.DataGenerator.forKnex.posts);
+        posts = _.filter(posts, function filter(post) {
             return post.status === 'published' && post.page === false;
         });
 

@@ -1,11 +1,11 @@
-/*globals describe, beforeEach, afterEach, it*/
+/*globals describe, before, after, beforeEach, afterEach, it*/
 var fs              = require('fs-extra'),
+    moment          = require('moment'),
     path            = require('path'),
     should          = require('should'),
     sinon           = require('sinon'),
-    rewire          = require('rewire'),
     _               = require('lodash'),
-    LocalFileStore  = rewire('../../server/storage/local-file-store'),
+    LocalFileStore  = require('../../server/storage/local-file-store'),
     localFileStore,
 
     configUtils     = require('../utils/configUtils');
@@ -14,7 +14,24 @@ var fs              = require('fs-extra'),
 should.equal(true, true);
 
 describe('Local File System Storage', function () {
-    var image;
+    var image,
+        momentStub;
+
+    function fakeDate(mm, yyyy) {
+        var month = parseInt(mm, 10),
+            year = parseInt(yyyy, 10);
+
+        momentStub.withArgs('YYYY').returns(year.toString());
+        momentStub.withArgs('MM').returns(month < 10 ? '0' + month.toString() : month.toString());
+    }
+
+    before(function () {
+        momentStub = sinon.stub(moment.fn, 'format');
+    });
+
+    after(function () {
+        momentStub.restore();
+    });
 
     beforeEach(function () {
         sinon.stub(fs, 'mkdirs').yields();
@@ -28,10 +45,9 @@ describe('Local File System Storage', function () {
             type: 'image/jpeg'
         };
 
-        // Sat Sep 07 2013 21:24
-        this.clock = sinon.useFakeTimers(new Date(2013, 8, 7, 21, 24).getTime());
-
         localFileStore = new LocalFileStore();
+
+        fakeDate(9, 2013);
     });
 
     afterEach(function () {
@@ -39,15 +55,14 @@ describe('Local File System Storage', function () {
         fs.copy.restore();
         fs.stat.restore();
         fs.unlink.restore();
-        this.clock.restore();
-
         configUtils.restore();
     });
 
     it('should send correct path to image when date is in Sep 2013', function (done) {
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE.jpg');
-            return done();
+
+            done();
         }).catch(done);
     });
 
@@ -55,41 +70,41 @@ describe('Local File System Storage', function () {
         image.name = 'AN IMAGE.jpg';
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/AN-IMAGE.jpg');
-            return done();
+
+            done();
         }).catch(done);
     });
 
     it('should send correct path to image when date is in Jan 2014', function (done) {
-        // Jan 1 2014 12:00
-        this.clock = sinon.useFakeTimers(new Date(2014, 0, 1, 12).getTime());
+        fakeDate(1, 2014);
+
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2014/01/IMAGE.jpg');
-            return done();
+
+            done();
         }).catch(done);
     });
 
     it('should create month and year directory', function (done) {
-        localFileStore.save(image).then(function (url) {
-            /*jshint unused:false*/
+        localFileStore.save(image).then(function () {
             fs.mkdirs.calledOnce.should.be.true();
             fs.mkdirs.args[0][0].should.equal(path.resolve('./content/images/2013/09'));
+
             done();
         }).catch(done);
     });
 
     it('should copy temp file to new location', function (done) {
-        localFileStore.save(image).then(function (url) {
-            /*jshint unused:false*/
+        localFileStore.save(image).then(function () {
             fs.copy.calledOnce.should.be.true();
             fs.copy.args[0][0].should.equal('tmp/123456.jpg');
             fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
+
             done();
         }).catch(done);
     });
 
     it('can upload two different images with the same name without overwriting the first', function (done) {
-        // Sun Sep 08 2013 10:57
-        this.clock = sinon.useFakeTimers(new Date(2013, 8, 8, 10, 57).getTime());
         fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).yields(false);
         fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).yields(true);
 
@@ -100,13 +115,12 @@ describe('Local File System Storage', function () {
 
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE-1.jpg');
-            return done();
+
+            done();
         }).catch(done);
     });
 
     it('can upload five different images with the same name without overwriting the first', function (done) {
-        // Sun Sep 08 2013 10:57
-        this.clock = sinon.useFakeTimers(new Date(2013, 8, 8, 10, 57).getTime());
         fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).yields(false);
         fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).yields(false);
         fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).yields(false);
@@ -122,7 +136,8 @@ describe('Local File System Storage', function () {
 
         localFileStore.save(image).then(function (url) {
             url.should.equal('/content/images/2013/09/IMAGE-4.jpg');
-            return done();
+
+            done();
         }).catch(done);
     });
 
@@ -141,7 +156,8 @@ describe('Local File System Storage', function () {
         it('should send the correct path to image', function (done) {
             localFileStore.save(image).then(function (url) {
                 url.should.equal('/content/images/2013/09/IMAGE.jpg');
-                return done();
+
+                done();
             }).catch(done);
         });
     });
@@ -171,7 +187,8 @@ describe('Local File System Storage', function () {
                     // slashes and it returns a path that needs to be normalized
                     path.normalize(url).should.equal('/content/images/2013/09/IMAGE.jpg');
                 }
-                return done();
+
+                done();
             }).catch(done);
         });
     });
