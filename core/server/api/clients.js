@@ -32,7 +32,7 @@ clients = {
          * @param {Object} options
          * @returns {Object} options
          */
-        function doQuery(options) {
+        function modelQuery(options) {
             return dataProvider.Client.findPage(options);
         }
 
@@ -42,7 +42,7 @@ clients = {
             // TODO: add permissions
             // utils.handlePublicPermissions(docName, 'browse'),
             utils.convertOptions(allowedIncludes),
-            doQuery
+            modelQuery
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
@@ -64,7 +64,7 @@ clients = {
          * @param {Object} options
          * @returns {Object} options
          */
-        function doQuery(options) {
+        function modelQuery(options) {
             // only User Agent (type = `ua`) clients are available at the moment.
             options.data = _.extend(options.data, {type: 'ua'});
             return dataProvider.Client.findOne(options.data, _.omit(options, ['data']));
@@ -76,7 +76,7 @@ clients = {
             // TODO: add permissions
             // utils.handlePublicPermissions(docName, 'read'),
             utils.convertOptions(allowedIncludes),
-            doQuery
+            modelQuery
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
@@ -85,7 +85,7 @@ clients = {
                 return {clients: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('common.api.clients.clientNotFound')}));
+            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.clients.clientNotFound')}));
         });
     },
 
@@ -140,7 +140,7 @@ clients = {
          * @param {Object} options
          * @returns {Object} options
          */
-        function doQuery(options) {
+        function modelQuery(options) {
             return dataProvider.Client.edit(options.data.clients[0], _.omit(options, ['data']));
         }
 
@@ -150,7 +150,7 @@ clients = {
             // TODO: add permissions
             // utils.handlePermissions(docName, 'edit'),
             utils.convertOptions(allowedIncludes),
-            doQuery
+            modelQuery
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
@@ -161,7 +161,7 @@ clients = {
                 return {clients: [client]};
             }
 
-            return Promise.reject(new errors.NotFoundError('Client not found.'));
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.clients.clientNotFound')));
         });
     },
 
@@ -181,7 +181,7 @@ clients = {
          * @param {Object} options
          * @returns {Object} options
          */
-        function doQuery(options) {
+        function modelQuery(options) {
             return clients.read(options).then(function (result) {
                 return dataProvider.Client.destroy(options).then(function () {
                     return result;
@@ -195,7 +195,7 @@ clients = {
             // TODO: add permissions
             // utils.handlePermissions(docName, 'destroy'),
             utils.convertOptions(allowedIncludes),
-            doQuery
+            modelQuery
         ];
 
         // Pipeline calls each task passing the result of one to be the arguments for the next
