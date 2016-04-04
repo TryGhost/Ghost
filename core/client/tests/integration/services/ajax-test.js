@@ -4,7 +4,7 @@ import {
     it
 } from 'ember-mocha';
 import Pretender from 'pretender';
-import wait from 'ember-test-helpers/wait';
+import {AjaxError, UnauthorizedError} from 'ember-ajax/errors';
 
 function stubAjaxEndpoint(server, response) {
     server.get('/test/', function () {
@@ -75,7 +75,7 @@ describeModule(
             });
         });
 
-        it('correctly returns default error message if no error text provided', function (done) {
+        it('returns default error object for non built-in error', function (done) {
             stubAjaxEndpoint(server, {});
 
             let ajax = this.subject();
@@ -83,8 +83,26 @@ describeModule(
             ajax.request('/test/').then(() => {
                 expect(false).to.be.true;
             }).catch((error) => {
-                let [defaultError] = error.errors;
-                expect(defaultError.detail).to.equal('Ajax operation failed');
+                expect(error).to.be.instanceOf(AjaxError);
+                done();
+            });
+        });
+
+        it('returns known error object for built-in errors', function (done) {
+            server.get('/test/', function () {
+                return [
+                    401,
+                    {'Content-Type': 'application/json'},
+                    ''
+                ];
+            });
+
+            let ajax = this.subject();
+
+            ajax.request('/test/').then(() => {
+                expect(false).to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.instanceOf(UnauthorizedError);
                 done();
             });
         });
