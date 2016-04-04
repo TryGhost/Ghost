@@ -1,6 +1,7 @@
 var _              = require('lodash'),
     crypto         = require('crypto'),
     uuid           = require('uuid'),
+    i18n           = require('../i18n'),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     errors         = require('../errors'),
@@ -16,6 +17,10 @@ Client = ghostBookshelf.Model.extend({
 
     tableName: 'clients',
 
+    emitChange: function emitChange(event) {
+        events.emit('client' + '.' + event, this);
+    },
+
     defaults: function defaults() {
         // @TODO: we cannot delete this ugly check here, because ALL routing tests rely on a static client secret
         var env = config.get('env'),
@@ -27,10 +32,6 @@ Client = ghostBookshelf.Model.extend({
             status: 'development',
             type: 'ua'
         };
-    },
-
-    emitChange: function emitChange(event) {
-        events.emit('client' + '.' + event, this);
     },
 
     initialize: function initialize() {
@@ -45,9 +46,11 @@ Client = ghostBookshelf.Model.extend({
         this.on('created', function onCreated(model) {
             model.emitChange('added');
         });
+
         this.on('updated', function onUpdated(model) {
             model.emitChange('edited');
         });
+
         this.on('destroyed', function onDestroyed(model) {
             model.emitChange('deleted');
         });
@@ -178,11 +181,12 @@ Client = ghostBookshelf.Model.extend({
             }).catch(function failure(error) {
                 errors.logError(
                     error,
-                    'Unable to save trusted domains.',
-                    'Your client was saved, but your trusted domains were not updated.'
+                    i18n.t('errors.models.client.trustedDomainUpdates.error'),
+                    i18n.t('errors.models.client.trustedDomainUpdates.help')
                 );
                 return Promise.reject(new errors.InternalServerError(
-                    'Unable to save trusted domains. Your client was saved, but your trusted domains were not updated. ' + error
+                    i18n.t('errors.models.client.trustedDomainUpdates.error') + ' ' +
+                        i18n.t('errors.models.client.trustedDomainUpdates.help') + error
                 ));
             });
         }
@@ -254,18 +258,18 @@ Client = ghostBookshelf.Model.extend({
 
         return self.findOne({id: options.id}, options).then(function then(client) {
             if (!client) {
-                return Promise.reject(new errors.NotFoundError('Client not found.'));
+                return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.client.noClientFound')));
             }
 
             slug = client.get('slug');
 
             if (slug === 'ghost-admin') {
                 // can't edit "ghost-admin" Client
-                return Promise.reject(new errors.BadRequestError('Can not edit "Ghost Admin" client.'));
+                return Promise.reject(new errors.BadRequestError(i18n.t('errors.models.client.cantEditGhostAdmin')));
             } else if (slug === 'ghost-frontend') {
                 // only can change 'secret' and/or 'status'
                 if (_.difference(_.keys(data), frontendAllowedFields).length) {
-                    return Promise.reject(new errors.BadRequestError('Can not edit "Ghost Frontend" fields other than "secret" and "status".'));
+                    return Promise.reject(new errors.BadRequestError(i18n.t('errors.models.client.cantEditGhostFrontend')));
                 }
             }
 
@@ -299,6 +303,12 @@ Client = ghostBookshelf.Model.extend({
         options = this.filterOptions(options, 'destroy');
 
         return this.forge({id: id}).fetch({withRelated: ['trusted_domains']}).then(function destroyTrustedDomains(client) {
+            var slug = client.get('slug');
+
+            if (slug === 'ghost-admin' || slug === 'ghost-frontend') {
+                return Promise.reject(new errors.BadRequestError(i18n.t('errors.models.client.cantDeleteProtectedClients')));
+            }
+
             return client.related('trusted_domains').invokeThen('destroy').then(function destroyClients() {
                 return client.destroy(options);
             });
