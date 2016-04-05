@@ -2,13 +2,7 @@
 
 {{gh-edit-client
     isEditing=isEditing
-    trustedDomains=model.trusted_domains
-    name=model.name
-    status=model.status
-    description=model.description
-    secret=model.secret
-    logo=model.logo
-    redirection_uri=model.redirection_uri
+    client = model
     changeClientStatus=(action 'changeClientStatus')
     refreshSecret=(action 'refreshSecret')
     saveClient=(action 'saveClient')

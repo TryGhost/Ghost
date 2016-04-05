@@ -10,11 +10,7 @@ export default Ember.Component.extend(ValidationEngine, {
     validationType: 'client',
     slugGenerator: service(),
 
-    init() {
-        this._super(...arguments);
-    },
-
-    isEnabled: Ember.computed.equal('status', 'enabled'),
+    isEnabled: Ember.computed.equal('client.status', 'enabled'),
 
     actions: {
         addUrl(){
@@ -40,7 +36,7 @@ export default Ember.Component.extend(ValidationEngine, {
         },
 
         saveClient(){
-            let name = this.get('name');
+            let name = this.get('client.name');
             this.get('slugGenerator').generateSlug('client', name)
                 .then((slug) => {
                     this.set('slug', slug);
