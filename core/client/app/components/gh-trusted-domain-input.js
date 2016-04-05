@@ -10,7 +10,7 @@ export default Ember.Component.extend(ValidationEngine, {
 
     actions: {
         deleteUrl(value){
-            this.attrs.deleteUrl(value);
+            this.get('deleteUrl')(value);
         }
     }
 });
