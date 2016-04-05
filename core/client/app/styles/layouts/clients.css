@@ -2,6 +2,12 @@
     pointer-events: none;
 }
 
+.client-settings-panel {
+    position: relative;
+    display: block;
+    padding: 0 45px 0 0;
+}
+
 .client-list-item {
     display: flex;
     justify-content: start;
@@ -11,8 +17,10 @@
     border-top: 1px solid #dfe1e3;
 }
 
-a.client-list-item {
+.client-list-item-body a {
+    color: #242628;
     text-decoration: none;
+    transition: none;
 }
 
 @media (min-width: 601px) {
