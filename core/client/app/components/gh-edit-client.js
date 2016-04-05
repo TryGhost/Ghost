@@ -14,31 +14,27 @@ export default Ember.Component.extend(ValidationEngine, {
         this._super(...arguments);
     },
 
-    isEnabled: computed('status', {
-        get() {
-            return this.get('status') === 'enabled';
-        }
-    }),
+    isEnabled: Ember.computed.equal('status', 'enabled'),
 
     actions: {
         addUrl(){
             let domain = this.get('domain');
-            this.attrs.addUrl(domain);
+            this.get('addUrl')(domain);
             this.set('domain', '');
         },
 
         deleteUrl(value){
-            this.attrs.deleteUrl(value);
+            this.get('deleteUrl')(value);
         },
 
         changeClientStatus(newStatus){
-            return this.attrs.changeClientStatus(newStatus).catch(err => {
+            return this.get('changeClientStatus')(newStatus).catch(err => {
                 this.set('formError', err);
             });
         },
 
         refreshSecret(){
-            return this.attrs.refreshSecret().catch(err => {
+            return this.get('refreshSecret')().catch(err => {
                 this.set('formError', err);
             });
         },
@@ -52,7 +48,7 @@ export default Ember.Component.extend(ValidationEngine, {
                 })
                 .then(() => {
                     let client = this.getProperties(['name', 'description', 'redirection_uri', 'logo', 'slug']);
-                    this.attrs.saveClient(client);
+                    this.get('saveClient')(client);
                 })
                 .catch(err => {
                     this.set('formError', err);
