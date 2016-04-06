@@ -3,28 +3,28 @@
 {{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
     <label for="client-name">Name</label>
     <div data-test-selector="name">
-        {{gh-input value=client.name focusOut=(action "validate" "name")}}
+        {{gh-input value=name focusOut=(action "validate" "name")}}
     </div>
     {{gh-error-message errors=errors property="name"}}
 {{/gh-form-group}}
 <div class="form-group">
   <label for="client-logo">Logo</label>
   <div data-test-selector="logo">
-    {{gh-input value=client.logo}}
+    {{gh-input value=logo}}
   </div>
 </div>
 
 <div class="form-group">
   <label for="client-redirection_uri">Redirection URL</label>
   <div data-test-selector="redirectiona_uri">
-    {{gh-input value=client.redirection_uri}}
+    {{gh-input value=redirection_uri}}
   </div>
 </div>
 
 {{#gh-form-group errors=errors hasValidated=hasValidated property="description"}}
   <label for="client-description">Description</label>
   <div data-test-selector="description">
-    {{gh-textarea value=client.description focusOut=(action "validate" "client.description")}}
+    {{gh-textarea value=description focusOut=(action "validate" "description")}}
   </div>
   {{gh-error-message errors=errors property="description"}}
  {{/gh-form-group}}
@@ -32,12 +32,12 @@
 <div class="form-group">
   <label for="client-redirection_uri">Trusted Domains</label>
   <div class="gh-blognav-line">
-      {{input value=client.trusted_domains class="gh-input"}}
+      {{input value=trusted_domains class="gh-input"}}
       <button type="button" class="gh-blognav-delete" {{action "addUrl"}}>
           <i class="icon-add2"><span class="sr-only">Add</span></i>
       </button>
   </div>
-  {{#each client.trusted_domains as |url|}}
+  {{#each trusted_domains as |url|}}
   <div data-test-selector="redirectiona_uri">
     {{gh-trusted-domain-input
         url=url
@@ -51,7 +51,7 @@
 <div class="form-group">
   <div>
     <label for="client-status">Status:</label>
-    <span data-test-selector="status">{{client.status}}</span>
+    <span data-test-selector="status">{{status}}</span>
   </div>
   <div>
     <button type='button' class="btn btn-blue view-actions" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
@@ -62,7 +62,7 @@
 <div class="form-group">
   <div>
     <label for="client-secret">Secret:</label>
-    <span data-test-selector="secret">{{client.secret}}</span>
+    <span data-test-selector="secret">{{secret}}</span>
   </div>
   <div>
     <button type='button' class="btn btn-blue view-action" {{action "refreshSecret"}}>
