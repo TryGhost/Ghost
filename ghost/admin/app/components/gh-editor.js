@@ -52,8 +52,8 @@ export default Component.extend(ShortcutsMixin, {
     },
 
     willDestroyElement() {
-        if (this.attrs.onTeardown) {
-            this.attrs.onTeardown();
+        if (this.get('onTeardown')) {
+            this.get('onTeardown')();
         }
         this.removeShortcuts();
     },
