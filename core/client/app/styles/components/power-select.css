@@ -106,3 +106,47 @@
     background: color(var(--blue) alpha(-85%));
     color: var(--darkgrey);
 }
+
+.ember-power-select .ember-power-select-multiple-option {
+    position: relative;
+    margin: 0 3px 3px 0;
+    padding: 1px 20px 1px 4px;
+    border: 0;
+    background: var(--blue);
+    color: #fff;
+    line-height: 1.75;
+    cursor: pointer;
+}
+
+.ember-power-select .ember-power-select-multiple-trigger {
+    padding: 5px 5px 2px;
+    height: auto;
+}
+
+.ember-power-select .ember-power-select-multiple-option .ember-power-select-multiple-remove-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    width: 17px;
+    border-radius: 0 2px 2px 0;
+    color: inherit;
+    vertical-align: middle;
+    text-align: center;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.ember-power-select .ember-power-select-multiple-option .ember-power-select-multiple-remove-btn:not(:hover) {
+    opacity: 1;
+}
+
+.ember-power-select .ember-power-select-multiple-option .ember-power-select-multiple-remove-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
