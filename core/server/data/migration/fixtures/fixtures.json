@@ -224,6 +224,31 @@
                     "name": "Browse roles",
                     "action_type": "browse",
                     "object_type": "role"
+                },
+                {
+                    "name": "Browse clients",
+                    "action_type": "browse",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Read clients",
+                    "action_type": "read",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Edit clients",
+                    "action_type": "edit",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Add clients",
+                    "action_type": "add",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Delete clients",
+                    "action_type": "destroy",
+                    "object_type": "client"
                 }
             ]
         }
@@ -251,7 +276,8 @@
                     "tag": "all",
                     "theme": "all",
                     "user": "all",
-                    "role": "all"
+                    "role": "all",
+                    "client": "all"
                 },
                 "Editor": {
                     "post": "all",
@@ -259,7 +285,8 @@
                     "slug": "all",
                     "tag": "all",
                     "user": "all",
-                    "role": "all"
+                    "role": "all",
+                    "client": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -267,7 +294,8 @@
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
-                    "role": ["browse"]
+                    "role": ["browse"],
+                    "client": "all"
                 }
             }
         },
