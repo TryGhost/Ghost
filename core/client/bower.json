@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "dependencies": {
-    "blueimp-md5": "1.1.0",
+    "blueimp-md5": "2.3.0",
     "codemirror": "5.2.0",
     "devicejs": "0.2.7",
     "ember": "2.4.4",
