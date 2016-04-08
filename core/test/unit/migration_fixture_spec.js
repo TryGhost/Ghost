@@ -11,6 +11,7 @@ var should  = require('should'),
     versioning    = require('../../server/data/schema/versioning'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
+    fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
     fixtures005   = require('../../server/data/migration/fixtures/005'),
     ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
@@ -718,9 +719,10 @@ describe('Fixtures', function () {
                     sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
                     sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(2);
+                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(3);
                     sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
                     sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
+                    sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addClientPermissions');
 
                     // Reset
                     sequenceReset();
@@ -731,7 +733,7 @@ describe('Fixtures', function () {
             describe('Tasks:', function () {
                 it('should have tasks for 005', function () {
                     should.exist(fixtures005);
-                    fixtures005.should.be.an.Array().with.lengthOf(2);
+                    fixtures005.should.be.an.Array().with.lengthOf(3);
                 });
 
                 describe('01-update-ghost-client-secrets', function () {
@@ -813,6 +815,62 @@ describe('Fixtures', function () {
                         }).catch(done);
                     });
                 });
+
+                describe('03-add-client-permissions', function () {
+                    var modelResult, addModelStub, relationResult, addRelationStub;
+
+                    beforeEach(function () {
+                        modelResult = {expected: 1, done: 1};
+                        addModelStub = sandbox.stub(fixtureUtils, 'addFixturesForModel')
+                            .returns(Promise.resolve(modelResult));
+
+                        relationResult = {expected: 1, done: 1};
+                        addRelationStub = sandbox.stub(fixtureUtils, 'addFixturesForRelation')
+                            .returns(Promise.resolve(relationResult));
+                    });
+
+                    it('should find the correct model & relation to add', function (done) {
+                        // Execute
+                        fixtures005[2]({}, loggerStub).then(function () {
+                            addModelStub.calledOnce.should.be.true();
+                            addModelStub.calledWith(
+                                fixtureUtils.findModelFixtures('Permission', {object_type: 'client'})
+                            ).should.be.true();
+
+                            addRelationStub.calledOnce.should.be.true();
+                            addRelationStub.calledWith(
+                                fixtureUtils.findPermissionRelationsForObject('client')
+                            ).should.be.true();
+
+                            loggerStub.info.calledTwice.should.be.true();
+                            loggerStub.warn.called.should.be.false();
+
+                            done();
+                        });
+                    });
+
+                    it('should warn the result shows less work was done than expected', function (done) {
+                        // Setup
+                        modelResult.expected = 3;
+                        // Execute
+                        fixtures005[2]({}, loggerStub).then(function () {
+                            addModelStub.calledOnce.should.be.true();
+                            addModelStub.calledWith(
+                                fixtureUtils.findModelFixtures('Permission', {object_type: 'client'})
+                            ).should.be.true();
+
+                            addRelationStub.calledOnce.should.be.true();
+                            addRelationStub.calledWith(
+                                fixtureUtils.findPermissionRelationsForObject('client')
+                            ).should.be.true();
+
+                            loggerStub.info.calledOnce.should.be.true();
+                            loggerStub.warn.calledOnce.should.be.true();
+
+                            done();
+                        });
+                    });
+                });
             });
         });
     });
@@ -863,9 +921,9 @@ describe('Fixtures', function () {
                 clientOneStub.calledThrice.should.be.true();
                 clientAddStub.calledThrice.should.be.true();
 
-                permOneStub.callCount.should.eql(30);
+                permOneStub.callCount.should.eql(35);
                 permsAddStub.called.should.be.true();
-                permsAddStub.callCount.should.eql(30);
+                permsAddStub.callCount.should.eql(35);
 
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
@@ -874,8 +932,8 @@ describe('Fixtures', function () {
 
                 // Relations
                 modelMethodStub.filter.called.should.be.true();
-                // 22 permissions, 1 tag
-                modelMethodStub.filter.callCount.should.eql(22 + 1);
+                // 25 permissions, 1 tag
+                modelMethodStub.filter.callCount.should.eql(25 + 1);
                 modelMethodStub.find.called.should.be.true();
                 // 3 roles, 1 post
                 modelMethodStub.find.callCount.should.eql(3 + 1);
