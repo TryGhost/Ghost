@@ -59,7 +59,7 @@ export default Model.extend(ValidationEngine, {
         return ['invited', 'invited-pending'].indexOf(this.get('status')) > -1;
     }),
 
-    pending: equal('status', 'invited-pending').property('status'),
+    pending: equal('status', 'invited-pending'),
 
     passwordValidationErrors: computed('password', 'newPassword', 'ne2Password', function () {
         let validationErrors = [];
