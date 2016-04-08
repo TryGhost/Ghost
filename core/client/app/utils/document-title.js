@@ -26,7 +26,7 @@ export default function () {
                 }
 
                 if (isArray(titleToken)) {
-                    tokens.unshift.apply(this, titleToken);
+                    tokens.unshift(...titleToken);
                 } else if (titleToken) {
                     tokens.unshift(titleToken);
                 }

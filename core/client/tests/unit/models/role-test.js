@@ -8,7 +8,7 @@ const {run} = Ember;
 
 describeModel('role', 'Unit: Model: role', function () {
     it('provides a lowercase version of the name', function () {
-        const model = this.subject({
+        let model = this.subject({
             name: 'Author'
         });
 
