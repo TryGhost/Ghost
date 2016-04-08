@@ -1,9 +1,11 @@
 /*globals describe, it, beforeEach, afterEach */
 var fs              = require('fs'),
     sinon           = require('sinon'),
+    should          = require('should'),
     serveSharedFile = require('../../../server/middleware/serve-shared-file'),
-
     sandbox = sinon.sandbox.create();
+
+should.equal(true, true);
 
 describe('serveSharedFile', function () {
     var res, req, next;
