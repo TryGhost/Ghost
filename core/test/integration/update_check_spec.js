@@ -1,11 +1,11 @@
 /*globals describe, before, beforeEach, afterEach, after, it*/
-var testUtils       = require('../utils'),
-    should          = require('should'),
-    rewire          = require('rewire'),
+var testUtils   = require('../utils'),
+    should      = require('should'),
+    rewire      = require('rewire'),
 
     // Stuff we are testing
-    packageInfo     = require('../../../package'),
-    updateCheck     = rewire('../../server/update-check');
+    packageInfo = require('../../../package'),
+    updateCheck = rewire('../../server/update-check');
 
 describe('Update Check', function () {
     var environmentsOrig;
@@ -19,7 +19,7 @@ describe('Update Check', function () {
         updateCheck.__set__('allowedCheckEnvironments', environmentsOrig);
     });
 
-    beforeEach(testUtils.setup('owner', 'posts'));
+    beforeEach(testUtils.setup('owner', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
 
     afterEach(testUtils.teardown);
 
