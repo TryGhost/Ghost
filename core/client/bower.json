@@ -8,7 +8,7 @@
     "ember-cli-shims": "0.1.1",
     "ember-cli-test-loader": "0.2.2",
     "ember-mocha": "0.8.11",
-    "Faker": "3.0.1",
+    "Faker": "3.1.0",
     "fastclick": "1.0.6",
     "google-caja": "5669.0.0",
     "jquery": "2.1.4",
