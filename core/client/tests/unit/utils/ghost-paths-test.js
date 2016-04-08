@@ -2,7 +2,7 @@ import ghostPaths from 'ghost/utils/ghost-paths';
 
 describe('Unit: Util: ghost-paths', function () {
     describe('join', function () {
-        const {join} = ghostPaths().url;
+        let {join} = ghostPaths().url;
 
         it('should join two or more paths, normalizing slashes', function () {
             let path;
