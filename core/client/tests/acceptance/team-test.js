@@ -34,8 +34,8 @@ describe('Acceptance: Team', function () {
     });
 
     it('redirects correctly when authenticated as author', function () {
-        const role = server.create('role', {name: 'Author'});
-        const user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Author'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         server.create('user', {slug: 'no-access'});
 
@@ -48,8 +48,8 @@ describe('Acceptance: Team', function () {
     });
 
     it('redirects correctly when authenticated as editor', function () {
-        const role = server.create('role', {name: 'Editor'});
-        const user = server.create('user', {roles: [role], slug: 'test-user'});
+        let role = server.create('role', {name: 'Editor'});
+        let user = server.create('user', {roles: [role], slug: 'test-user'});
 
         server.create('user', {slug: 'no-access'});
 
@@ -63,8 +63,8 @@ describe('Acceptance: Team', function () {
 
     describe('when logged in', function () {
         beforeEach(function () {
-            const role = server.create('role', {name: 'Admininstrator'});
-            const user = server.create('user', {roles: [role]});
+            let role = server.create('role', {name: 'Admininstrator'});
+            let user = server.create('user', {roles: [role]});
 
             server.loadFixtures();
 
@@ -72,8 +72,8 @@ describe('Acceptance: Team', function () {
         });
 
         it('it renders and navigates correctly', function () {
-            const user1 = server.create('user');
-            const user2 = server.create('user');
+            let user1 = server.create('user');
+            let user2 = server.create('user');
 
             visit('/team');
 

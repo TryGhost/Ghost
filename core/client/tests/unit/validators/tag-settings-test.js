@@ -29,8 +29,8 @@ const Tag = Ember.Object.extend(ValidationEngine, {
 
 describe('Unit: Validator: tag-settings', function () {
     it('validates all fields by default', function () {
-        const tag = Tag.create({});
-        const properties = tag.get('validators.tag.properties');
+        let tag = Tag.create({});
+        let properties = tag.get('validators.tag.properties');
 
         // TODO: This is checking implementation details rather than expected
         // behaviour. Replace once we have consistent behaviour (see below)
@@ -56,7 +56,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with valid name', function () {
         // longest valid name
-        const tag = Tag.create({name: (new Array(151).join('x'))});
+        let tag = Tag.create({name: (new Array(151).join('x'))});
         let passed = false;
 
         expect(tag.get('name').length, 'name length').to.equal(150);
@@ -72,7 +72,7 @@ describe('Unit: Validator: tag-settings', function () {
     });
 
     it('validates name presence', function () {
-        const tag = Tag.create();
+        let tag = Tag.create();
         let passed = false;
         let nameErrors;
 
@@ -99,7 +99,7 @@ describe('Unit: Validator: tag-settings', function () {
     });
 
     it('validates names starting with a comma', function () {
-        const tag = Tag.create({name: ',test'});
+        let tag = Tag.create({name: ',test'});
         let passed = false;
         let nameErrors;
 
@@ -119,7 +119,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates name length', function () {
         // shortest invalid name
-        const tag = Tag.create({name: (new Array(152).join('x'))});
+        let tag = Tag.create({name: (new Array(152).join('x'))});
         let passed = false;
         let nameErrors;
 
@@ -141,7 +141,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with valid slug', function () {
         // longest valid slug
-        const tag = Tag.create({slug: (new Array(151).join('x'))});
+        let tag = Tag.create({slug: (new Array(151).join('x'))});
         let passed = false;
 
         expect(tag.get('slug').length, 'slug length').to.equal(150);
@@ -158,7 +158,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates slug length', function () {
         // shortest invalid slug
-        const tag = Tag.create({slug: (new Array(152).join('x'))});
+        let tag = Tag.create({slug: (new Array(152).join('x'))});
         let passed = false;
         let slugErrors;
 
@@ -180,7 +180,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('passes with a valid description', function () {
         // longest valid description
-        const tag = Tag.create({description: (new Array(201).join('x'))});
+        let tag = Tag.create({description: (new Array(201).join('x'))});
         let passed = false;
 
         expect(tag.get('description').length, 'description length').to.equal(200);
@@ -197,7 +197,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates description length', function () {
         // shortest invalid description
-        const tag = Tag.create({description: (new Array(202).join('x'))});
+        let tag = Tag.create({description: (new Array(202).join('x'))});
         let passed = false;
         let errors;
 
@@ -227,7 +227,7 @@ describe('Unit: Validator: tag-settings', function () {
     // model/validator respectively - this should be standardised
     it('passes with a valid metaTitle', function () {
         // longest valid metaTitle
-        const tag = Tag.create({metaTitle: (new Array(151).join('x'))});
+        let tag = Tag.create({metaTitle: (new Array(151).join('x'))});
         let passed = false;
 
         expect(tag.get('metaTitle').length, 'metaTitle length').to.equal(150);
@@ -244,7 +244,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates metaTitle length', function () {
         // shortest invalid metaTitle
-        const tag = Tag.create({metaTitle: (new Array(152).join('x'))});
+        let tag = Tag.create({metaTitle: (new Array(152).join('x'))});
         let passed = false;
         let errors;
 
@@ -268,7 +268,7 @@ describe('Unit: Validator: tag-settings', function () {
     // the model/validator respectively - this should be standardised
     it('passes with a valid metaDescription', function () {
         // longest valid description
-        const tag = Tag.create({metaDescription: (new Array(201).join('x'))});
+        let tag = Tag.create({metaDescription: (new Array(201).join('x'))});
         let passed = false;
 
         expect(tag.get('metaDescription').length, 'metaDescription length').to.equal(200);
@@ -285,7 +285,7 @@ describe('Unit: Validator: tag-settings', function () {
 
     it('validates metaDescription length', function () {
         // shortest invalid metaDescription
-        const tag = Tag.create({metaDescription: (new Array(202).join('x'))});
+        let tag = Tag.create({metaDescription: (new Array(202).join('x'))});
         let passed = false;
         let errors;
 

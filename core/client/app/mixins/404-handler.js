@@ -10,7 +10,7 @@ export default Ember.Mixin.create({
                 let router = this.get('router');
                 let params = [];
 
-                for (const key of Object.keys(routeInfo.params)) {
+                for (let key of Object.keys(routeInfo.params)) {
                     params.push(routeInfo.params[key]);
                 }
 
