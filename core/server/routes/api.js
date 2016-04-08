@@ -9,17 +9,22 @@ apiRoutes = function apiRoutes(middleware) {
         authenticatePublic = [
             middleware.api.authenticateClient,
             middleware.api.authenticateUser,
-            middleware.api.requiresAuthorizedUserPublicAPI
+            middleware.api.requiresAuthorizedUserPublicAPI,
+            middleware.api.cors
         ],
         // Require user for private endpoints
         authenticatePrivate = [
             middleware.api.authenticateClient,
             middleware.api.authenticateUser,
-            middleware.api.requiresAuthorizedUser
+            middleware.api.requiresAuthorizedUser,
+            middleware.api.cors
         ];
 
     // alias delete with del
     router.del = router.delete;
+
+    // ## CORS pre-flight check
+    router.options('*', middleware.api.cors);
 
     // ## Configuration
     router.get('/configuration', authenticatePrivate, api.http(api.configuration.read));
