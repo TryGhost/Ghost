@@ -15,7 +15,7 @@ describeModule(
 
     function () {
         it('isDatedPermalinks should be correct', function () {
-            const controller = this.subject({
+            let controller = this.subject({
                 model: Ember.Object.create({
                     permalinks: '/:year/:month/:day/:slug/'
                 })
@@ -31,7 +31,7 @@ describeModule(
         });
 
         it('setting isDatedPermalinks should switch between dated and slug', function () {
-            const controller = this.subject({
+            let controller = this.subject({
                 model: Ember.Object.create({
                     permalinks: '/:year/:month/:day/:slug/'
                 })

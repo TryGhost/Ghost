@@ -4,7 +4,7 @@ const {HistoryLocation} = Ember;
 
 let trailingHistory = HistoryLocation.extend({
     formatURL() {
-        return this._super.apply(this, arguments).replace(/\/?$/, '/');
+        return this._super(...arguments).replace(/\/?$/, '/');
     }
 });
 
