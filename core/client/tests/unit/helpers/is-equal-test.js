@@ -11,7 +11,7 @@ import {
 describe('Unit: Helper: is-equal', function () {
     // Replace this with your real tests.
     it('works', function () {
-        const result = isEqual([42, 42]);
+        let result = isEqual([42, 42]);
 
         expect(result).to.be.ok;
     });

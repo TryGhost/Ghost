@@ -17,7 +17,7 @@ describeModule(
     function () {
         // Replace this with your real tests.
         it('exists', function () {
-            const service = this.subject();
+            let service = this.subject();
             expect(service).to.be.ok;
         });
 
@@ -26,7 +26,7 @@ describeModule(
                 .attr('content', '23e435234423')
                 .appendTo('head');
 
-            const service = this.subject();
+            let service = this.subject();
 
             expect(service.get('clientSecret')).to.equal('23e435234423');
         });
