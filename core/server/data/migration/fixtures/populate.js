@@ -2,7 +2,6 @@
 // This module handles populating fixtures on a fresh install.
 // This is done automatically, by reading the fixtures.json file
 // All models, and relationships inside the file are then setup.
-
 var Promise      = require('bluebird'),
     models       = require('../../../models'),
     coreUtils    = require('../../../utils'),

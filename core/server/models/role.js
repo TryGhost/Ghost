@@ -30,7 +30,8 @@ Role = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['withRelated']
+                findOne: ['withRelated'],
+                findAll: ['withRelated']
             };
 
         if (validOptions[methodName]) {

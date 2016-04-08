@@ -316,7 +316,7 @@ fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        var permsToInsert = fixtureUtils.findPermissionModelForObject('Permission', {object_type: obj}).entries,
+        var permsToInsert = fixtureUtils.findModelFixtures('Permission', {object_type: obj}).entries,
             permsRolesToInsert = fixtureUtils.findPermissionRelationsForObject(obj).entries,
             actions = [],
             permissionsRoles = [],
