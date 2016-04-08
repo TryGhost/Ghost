@@ -32,6 +32,11 @@ validator.extend('isSlug', function isSlug(str) {
     return validator.matches(str, /^[a-z0-9\-_]+$/);
 });
 
+validator.extend('isRssFeed', function isRssUrl(url) {
+    var rssUrlPattern = new RegExp('(' + config.getBaseUrl() + '|' + config.getBaseUrl() + '\/((' + config.routeKeywords.tag + '|' + config.routeKeywords.author + ')\/[A-Za-z]+))\/rss\/([0-9]+)?$', 'g');
+    return validator.matches(url, rssUrlPattern);
+});
+
 // Validation against schema attributes
 // values are checked against the validation objects from schema.js
 validateSchema = function validateSchema(tableName, model) {

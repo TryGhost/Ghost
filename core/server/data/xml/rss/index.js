@@ -127,6 +127,7 @@ generateFeed = function generateFeed(data) {
         generator: 'Ghost ' + data.version,
         feed_url: data.feedUrl,
         site_url: data.siteUrl,
+        hub: data.hubUrl,
         ttl: '60',
         custom_namespaces: {
             content: 'http://purl.org/rss/1.0/modules/content/',
@@ -207,6 +208,7 @@ generate = function generate(req, res, next) {
         data.version = res.locals.safeVersion;
         data.siteUrl = config.urlFor('home', {secure: req.secure}, true);
         data.feedUrl = config.urlFor({relativeUrl: baseUrl, secure: req.secure}, true);
+        data.hubUrl = config.urlFor('hub', {secure: req.secure}, true);
         data.secure = req.secure;
 
         return getFeedXml(req.originalUrl, data).then(function then(feedXml) {
