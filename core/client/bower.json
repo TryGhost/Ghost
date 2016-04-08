@@ -22,7 +22,7 @@
     "moment": "2.12.0",
     "normalize.css": "3.0.3",
     "password-generator": "git://github.com/bermi/password-generator#49accd739f60dfd0770d4af231f38311f482e308",
-    "pretender": "0.10.1",
+    "pretender": "1.0.0",
     "rangyinputs": "1.2.0",
     "selectize": "~0.12.1",
     "showdown-ghost": "0.3.6",
