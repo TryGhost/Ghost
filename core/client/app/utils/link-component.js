@@ -6,8 +6,8 @@ LinkComponent.reopen({
     active: computed('attrs.params', '_routing.currentState', function () {
         let isActive = this._super(...arguments);
 
-        if (typeof this.attrs.alternateActive === 'function') {
-            this.attrs.alternateActive(isActive);
+        if (typeof this.get('alternateActive') === 'function') {
+            this.get('alternateActive')(isActive);
         }
 
         return isActive;
