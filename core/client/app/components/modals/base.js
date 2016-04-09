@@ -49,7 +49,7 @@ export default Component.extend({
         },
 
         closeModal() {
-            this.attrs.closeModal();
+            this.get('closeModal')();
         }
     }
 });

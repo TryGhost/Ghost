@@ -50,8 +50,8 @@ const FullScreenModalComponent = LiquidTether.extend({
 
     actions: {
         close() {
-            if (this.attrs.close) {
-                return this.attrs.close();
+            if (this.get('close')) {
+                return this.get('close')();
             }
 
             return new Promise((resolve) => {
@@ -60,8 +60,8 @@ const FullScreenModalComponent = LiquidTether.extend({
         },
 
         confirm() {
-            if (this.attrs.confirm) {
-                return this.attrs.confirm();
+            if (this.get('confirm')) {
+                return this.get('confirm')();
             }
 
             return new Promise((resolve) => {

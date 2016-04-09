@@ -17,7 +17,7 @@ export default Component.extend(TextInputMixin, {
     didReceiveAttrs() {
         let datetime = this.get('datetime') || moment();
 
-        if (!this.attrs.update) {
+        if (!this.get('update')) {
             throw new Error(`You must provide an \`update\` action to \`{{${this.templateName}}}\`.`);
         }
 
@@ -27,6 +27,6 @@ export default Component.extend(TextInputMixin, {
     focusOut() {
         let datetime = this.get('datetime');
 
-        this.attrs.update(datetime);
+        this.get('update')(datetime);
     }
 });

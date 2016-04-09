@@ -10,7 +10,7 @@ export default ModalComponent.extend({
         confirm() {
             this.set('submitting', true);
 
-            this.attrs.confirm().finally(() => {
+            this.get('confirm')().finally(() => {
                 this.send('closeModal');
             });
         }

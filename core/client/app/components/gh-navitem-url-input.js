@@ -67,7 +67,7 @@ export default TextField.extend({
     },
 
     keyPress(event) {
-        this.attrs.clearErrors();
+        this.get('clearErrors')();
 
         // enter key
         if (event.keyCode === 13) {
