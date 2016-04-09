@@ -108,15 +108,15 @@ export default Component.extend({
 
     actions: {
         setProperty(property, value) {
-            this.attrs.setProperty(property, value);
+            this.get('setProperty')(property, value);
         },
 
         setCoverImage(image) {
-            this.attrs.setProperty('image', image);
+            this.get('setProperty')('image', image);
         },
 
         clearCoverImage() {
-            this.attrs.setProperty('image', '');
+            this.get('setProperty')('image', '');
         },
 
         setUploaderReference() {
@@ -132,7 +132,7 @@ export default Component.extend({
         },
 
         deleteTag() {
-            this.attrs.showDeleteTagModal();
+            this.get('showDeleteTagModal')();
         }
     }
 

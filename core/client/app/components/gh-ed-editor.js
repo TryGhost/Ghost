@@ -32,7 +32,7 @@ export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
 
         this.setFocus();
 
-        this.attrs.setEditor(this);
+        this.get('setEditor')(this);
 
         run.scheduleOnce('afterRender', this, this.afterRenderEvent);
     },
@@ -45,7 +45,7 @@ export default TextArea.extend(EditorAPI, EditorShortcuts, EditorScroll, {
 
     actions: {
         toggleCopyHTMLModal(generatedHTML) {
-            this.attrs.toggleCopyHTMLModal(generatedHTML);
+            this.get('toggleCopyHTMLModal')(generatedHTML);
         }
     }
 });
