@@ -398,6 +398,25 @@ export default Mixin.create({
             return transition.retry();
         },
 
+        updateTitle() {
+            let currentTitle = this.model.get('title');
+            let newTitle = this.model.get('titleScratch').trim();
+
+            if (currentTitle === newTitle) {
+                return;
+            }
+
+            if (this.get('model.isDraft') && !this.get('model.isNew')) {
+                // this is preferrable to setting hasDirtyAttributes to false manually
+                this.model.set('title', newTitle);
+
+                this.send('save', {
+                    silent: true,
+                    backgroundSave: true
+                });
+            }
+        },
+
         toggleReAuthenticateModal() {
             this.toggleProperty('showReAuthenticateModal');
         }
