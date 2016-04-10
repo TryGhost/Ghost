@@ -718,8 +718,9 @@ describe('Fixtures', function () {
                     sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
                     sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(2);
                     sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
+                    sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
 
                     // Reset
                     sequenceReset();
@@ -730,7 +731,7 @@ describe('Fixtures', function () {
             describe('Tasks:', function () {
                 it('should have tasks for 005', function () {
                     should.exist(fixtures005);
-                    fixtures005.should.be.an.Array().with.lengthOf(1);
+                    fixtures005.should.be.an.Array().with.lengthOf(2);
                 });
 
                 describe('01-update-ghost-client-secrets', function () {
@@ -770,6 +771,44 @@ describe('Fixtures', function () {
                             clientEditStub.called.should.be.true();
                             loggerStub.info.calledOnce.should.be.true();
                             loggerStub.warn.called.should.be.false();
+                            done();
+                        }).catch(done);
+                    });
+                });
+
+                describe('02-add-ghost-scheduler-client', function () {
+                    var clientOneStub;
+
+                    beforeEach(function () {
+                        clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve({}));
+                    });
+
+                    it('tries to add client correctly', function (done) {
+                        var clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve());
+                        clientOneStub.returns(Promise.resolve());
+
+                        fixtures005[1]({}, loggerStub).then(function () {
+                            clientOneStub.calledOnce.should.be.true();
+                            clientOneStub.calledWith({slug: 'ghost-scheduler'}).should.be.true();
+                            clientAddStub.calledOnce.should.be.true();
+                            loggerStub.info.calledOnce.should.be.true();
+                            loggerStub.warn.called.should.be.false();
+                            sinon.assert.callOrder(clientOneStub, loggerStub.info, clientAddStub);
+
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('does not try to add client if it already exists', function (done) {
+                        var clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve());
+
+                        fixtures005[1]({}, loggerStub).then(function () {
+                            clientOneStub.calledOnce.should.be.true();
+                            clientOneStub.calledWith({slug: 'ghost-scheduler'}).should.be.true();
+                            clientAddStub.called.should.be.false();
+                            loggerStub.info.called.should.be.false();
+                            loggerStub.warn.calledOnce.should.be.true();
+
                             done();
                         }).catch(done);
                     });
@@ -821,8 +860,8 @@ describe('Fixtures', function () {
                 tagAddStub.calledOnce.should.be.true();
                 roleOneStub.callCount.should.be.aboveOrEqual(4);
                 roleAddStub.callCount.should.eql(4);
-                clientOneStub.calledTwice.should.be.true();
-                clientAddStub.calledTwice.should.be.true();
+                clientOneStub.calledThrice.should.be.true();
+                clientAddStub.calledThrice.should.be.true();
 
                 permOneStub.callCount.should.eql(30);
                 permsAddStub.called.should.be.true();

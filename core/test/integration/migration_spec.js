@@ -159,9 +159,10 @@ describe('Database Migration (special functions)', function () {
 
                         // Clients
                         should.exist(result.clients);
-                        result.clients.length.should.eql(2);
+                        result.clients.length.should.eql(3);
                         result.clients.at(0).get('name').should.eql('Ghost Admin');
                         result.clients.at(1).get('name').should.eql('Ghost Frontend');
+                        result.clients.at(2).get('name').should.eql('Ghost Scheduler');
 
                         // User (Owner)
                         should.exist(result.users);

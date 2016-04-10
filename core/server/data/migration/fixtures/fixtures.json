@@ -42,6 +42,12 @@
                     "name":             "Ghost Frontend",
                     "slug":             "ghost-frontend",
                     "status":           "enabled"
+                },
+                {
+                    "name":             "Ghost Scheduler",
+                    "slug":             "ghost-scheduler",
+                    "status":           "enabled",
+                    "type":             "web"
                 }
             ]
         },
