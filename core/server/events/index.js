@@ -3,7 +3,9 @@ var events  = require('events'),
     EventRegistry,
     EventRegistryInstance;
 
-EventRegistry = function () {};
+EventRegistry = function () {
+    events.EventEmitter.call(this);
+};
 util.inherits(EventRegistry, events.EventEmitter);
 
 EventRegistryInstance = new EventRegistry();
