@@ -63,7 +63,7 @@
         },
         "middleware": {
             "auth": {
-                "clientAuthenticaionFailed": "Client Authentication Failed",
+                "clientAuthenticationFailed": "Client Authentication Failed",
                 "clientCredentialsNotProvided": "Client credentials were not provided",
                 "clientCredentialsNotValid": "Client credentials were not valid",
                 "forInformationRead": "For information on how to fix this, please read {url}.",

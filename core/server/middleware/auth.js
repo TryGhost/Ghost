@@ -1,5 +1,6 @@
 var passport    = require('passport'),
     errors      = require('../errors'),
+    events      = require('../events'),
     labs        = require('../utils/labs'),
     i18n        = require('../i18n'),
 
@@ -47,7 +48,7 @@ auth = {
 
         if (!req.body.client_id || !req.body.client_secret) {
             errors.logError(
-                i18n.t('errors.middleware.auth.clientAuthenticaionFailed'),
+                i18n.t('errors.middleware.auth.clientAuthenticationFailed'),
                 i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
                 i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
             );
@@ -66,7 +67,7 @@ auth = {
 
                 if (!client || client.type !== 'ua') {
                     errors.logError(
-                        i18n.t('errors.middleware.auth.clientAuthenticaionFailed'),
+                        i18n.t('errors.middleware.auth.clientAuthenticationFailed'),
                         i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
                         i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
                     );
@@ -75,6 +76,7 @@ auth = {
 
                 req.client = client;
 
+                events.emit('client.authenticated', client);
                 return next(null, client);
             }
         )(req, res, next);
@@ -91,6 +93,8 @@ auth = {
                 if (user) {
                     req.authInfo = info;
                     req.user = user;
+
+                    events.emit('user.authenticated', user);
                     return next(null, user, info);
                 } else if (isBearerAutorizationHeader(req)) {
                     return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
