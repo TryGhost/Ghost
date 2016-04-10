@@ -103,10 +103,10 @@ simplemde.value("This text will appear in the editor");
 - **spellChecker**: If set to `false`, disable the spell checker. Defaults to `true`.
 - **status**: If set to `false`, hide the status bar. Defaults to the array of built-in status bar items.
   - Optionally, you can set an array of status bar items to include, and in what order. You can even define your own custom status bar items.
+- **styleSelectedText**: If set to `false`, remove `.CodeMirror-selectedtext` class from selected lines. Defaults to `true`.
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
-- **styleSelectedText**: If set to `false`, remove `.CodeMirror-selectedtext` class from selected lines. Defaults to `true`.
 
 ```JavaScript
 // Most options demonstrate the non-default behavior
@@ -171,6 +171,7 @@ var simplemde = new SimpleMDE({
 			el.innerHTML = ++this.keystrokes + " Keystrokes";
 		}
 	}], // Another optional usage, with a custom status bar item that counts keystrokes
+	styleSelectedText: false,
 	tabSize: 4,
 	toolbar: false,
 	toolbarTips: false,
