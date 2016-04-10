@@ -106,6 +106,7 @@ simplemde.value("This text will appear in the editor");
 - **tabSize**: If set, customize the tab size. Defaults to `2`.
 - **toolbar**: If set to `false`, hide the toolbar. Defaults to the [array of icons](#toolbar-icons).
 - **toolbarTips**: If set to `false`, disable toolbar button tips. Defaults to `true`.
+- **styleSelectedText**: If set to `false`, remove `.CodeMirror-selectedtext` class from selected lines. Defaults to `true`.
 
 ```JavaScript
 // Most options demonstrate the non-default behavior
