@@ -1,16 +1,16 @@
-var frontend    = require('../controllers/frontend'),
-    channels    = require('../controllers/frontend/channels'),
-    config      = require('../config'),
-    express     = require('express'),
-    utils       = require('../utils'),
+var frontend        = require('../controllers/frontend'),
+    channels        = require('../controllers/frontend/channels'),
+    config          = require('../config'),
+    express         = require('express'),
+    utils           = require('../utils'),
+    privateBlogging = require('../apps/private-blogging'),
 
     frontendRoutes;
 
-frontendRoutes = function frontendRoutes(middleware) {
+frontendRoutes = function frontendRoutes() {
     var router = express.Router(),
         subdir = config.paths.subdir,
-        routeKeywords = config.routeKeywords,
-        privateRouter = express.Router();
+        routeKeywords = config.routeKeywords;
 
     // ### Admin routes
     router.get(/^\/(logout|signout)\/$/, function redirectToSignout(req, res) {
@@ -25,30 +25,17 @@ frontendRoutes = function frontendRoutes(middleware) {
         utils.redirect301(res, subdir + '/ghost/');
     });
 
-    // password-protected frontend route
-    privateRouter.route('/')
-        .get(
-            middleware.privateBlogging.isPrivateSessionAuth,
-            frontend.private
-        )
-        .post(
-            middleware.privateBlogging.isPrivateSessionAuth,
-            middleware.spamPrevention.protected,
-            middleware.privateBlogging.authenticateProtection,
-            frontend.private
-        );
-
     // Post Live Preview
     router.get('/' + routeKeywords.preview + '/:uuid', frontend.preview);
-
-    // Private
-    router.use('/' + routeKeywords.private + '/', privateRouter);
 
     // Channels
     router.use(channels.router());
 
     // Default
     router.get('*', frontend.single);
+
+    // @TODO: this can be removed once the proper app route hooks have been set up.
+    privateBlogging.setupRoutes(router);
 
     return router;
 };

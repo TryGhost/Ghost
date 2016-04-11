@@ -32,6 +32,12 @@ AppSandbox.prototype.loadModule = function loadModuleSandboxed(modulePath) {
     // Instantiate a Node Module class
     currentModule = new Module(modulePath, parentModulePath);
 
+    if (this.opts.internal) {
+        currentModule.load(currentModule.id);
+
+        return currentModule.exports;
+    }
+
     // Grab the original modules require function
     nodeRequire = currentModule.require;
 
