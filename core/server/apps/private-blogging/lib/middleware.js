@@ -1,14 +1,16 @@
 var _           = require('lodash'),
     fs          = require('fs'),
-    config      = require('../config'),
+    config      = require('../../../config'),
     crypto      = require('crypto'),
     path        = require('path'),
-    api         = require('../api'),
+    api         = require('../../../api'),
     Promise     = require('bluebird'),
-    errors      = require('../errors'),
+    errors      = require('../../../errors'),
     session     = require('cookie-session'),
-    utils       = require('../utils'),
-    i18n        = require('../i18n'),
+    utils       = require('../../../utils'),
+    i18n        = require('../../../i18n'),
+    privateRoute = '/' + config.routeKeywords.private + '/',
+    protectedSecurity = [],
     privateBlogging;
 
 function verifySessionHash(salt, hash) {
@@ -45,7 +47,7 @@ privateBlogging = {
     },
 
     filterPrivateRoutes: function filterPrivateRoutes(req, res, next) {
-        if (res.isAdmin || !res.isPrivateBlog || req.url.lastIndexOf('/private/', 0) === 0) {
+        if (res.isAdmin || !res.isPrivateBlog || req.url.lastIndexOf(privateRoute, 0) === 0) {
             return next();
         }
 
@@ -55,7 +57,7 @@ privateBlogging = {
             (req.path.lastIndexOf('/sitemap', 0) === 0 && req.path.lastIndexOf('.xml') === req.path.length - 4)) {
             return errors.error404(req, res, next);
         } else if (req.url.lastIndexOf('/robots.txt', 0) === 0) {
-            fs.readFile(path.join(config.paths.corePath, 'shared', 'private-robots.txt'), function readFile(err, buf) {
+            fs.readFile(path.resolve(__dirname, '../', 'robots.txt'), function readFile(err, buf) {
                 if (err) {
                     return next(err);
                 }
@@ -80,7 +82,7 @@ privateBlogging = {
             if (isVerified) {
                 return next();
             } else {
-                url = config.urlFor({relativeUrl: '/private/'});
+                url = config.urlFor({relativeUrl: privateRoute});
                 url += req.url === '/' ? '' : '?r=' + encodeURIComponent(req.url);
                 return res.redirect(url);
             }
@@ -133,6 +135,46 @@ privateBlogging = {
                 return next();
             }
         });
+    },
+
+    spamPrevention: function spamPrevention(req, res, next) {
+        var currentTime = process.hrtime()[0],
+            remoteAddress = req.connection.remoteAddress,
+            rateProtectedPeriod = config.rateProtectedPeriod || 3600,
+            rateProtectedAttempts = config.rateProtectedAttempts || 10,
+            ipCount = '',
+            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
+            deniedRateLimit = '',
+            password = req.body.password;
+
+        if (password) {
+            protectedSecurity.push({ip: remoteAddress, time: currentTime});
+        } else {
+            res.error = {
+                message: i18n.t('errors.middleware.spamprevention.noPassword')
+            };
+            return next();
+        }
+
+        // filter entries that are older than rateProtectedPeriod
+        protectedSecurity = _.filter(protectedSecurity, function filter(logTime) {
+            return (logTime.time + rateProtectedPeriod > currentTime);
+        });
+
+        ipCount = _.chain(protectedSecurity).countBy('ip').value();
+        deniedRateLimit = (ipCount[remoteAddress] > rateProtectedAttempts);
+
+        if (deniedRateLimit) {
+            errors.logError(
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateProtectedAttempts, rfp: rateProtectedPeriod}),
+                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+            );
+            message += rateProtectedPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
+            res.error = {
+                message: message
+            };
+        }
+        return next();
     }
 };
 
