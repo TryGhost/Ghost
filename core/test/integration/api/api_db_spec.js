@@ -93,11 +93,11 @@ describe('DB API', function () {
     });
 
     it('import content is denied (editor, author & without authentication)', function (done) {
-        var file = {importfile: {
-            name: 'myFile.json',
+        var file = {
+            originalname: 'myFile.json',
             path: '/my/path/myFile.json',
-            type: 'application/json'
-        }};
+            mimetype: 'application/json'
+        };
 
         return dbAPI.importContent(_.extend(testUtils.context.editor, file)).then(function () {
             done(new Error('Import content is not denied for editor.'));
@@ -124,7 +124,7 @@ describe('DB API', function () {
             error.errorType.should.eql('ValidationError');
 
             var context = _.extend(testUtils.context.admin, {
-                importfile: {name: 'myFile.docx', path: '/my/path/myFile.docx', type: 'application/docx'}
+                originalname: 'myFile.docx', path: '/my/path/myFile.docx', mimetype: 'application/docx'
             });
 
             return dbAPI.importContent(context);

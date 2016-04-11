@@ -70,11 +70,6 @@
                 "accessDenied": "Access denied.",
                 "pleaseSignIn": "Please Sign In"
             },
-            "ghostbusboy": {
-                "fileUploadingError": "Something went wrong uploading the file",
-                "somethingWentWrong": "Something went wrong parsing the form",
-                "couldNotParseUpload": "Could not parse upload completely."
-            },
             "oauth": {
                 "invalidClient": "Invalid client.",
                 "invalidRefreshToken": "Invalid refresh token.",
