@@ -8,8 +8,8 @@ var tmp         = require('tmp'),
     // Stuff we are testing
     UploadAPI   = require('../../../server/api/upload'),
     uploadimage = {
-        name: '',
-        type: '',
+        originalname: '',
+        mimetype: '',
         path: ''
     };
 
@@ -22,8 +22,8 @@ function setupAndTestUpload(filename, mimeType) {
             }
 
             uploadimage.path = path;
-            uploadimage.name = filename;
-            uploadimage.type = mimeType;
+            uploadimage.originalname = filename;
+            uploadimage.mimetype = mimeType;
 
             // create a temp directory (the directory that the API saves the file to)
             tmp.dir({keep: true, unsafeCleanup: true}, function (err, path, cleanupDir) {
@@ -37,7 +37,7 @@ function setupAndTestUpload(filename, mimeType) {
                     }
                 });
 
-                UploadAPI.add({uploadimage: uploadimage})
+                UploadAPI.add(uploadimage)
                 .then(resolve)
                 .catch(reject)
                 .finally(function () {
@@ -65,8 +65,8 @@ function testResult(filename, result) {
 describe('Upload API', function () {
     afterEach(function () {
         uploadimage  = {
-            name: '',
-            type: 'application/octet-stream',
+            originalname: '',
+            mimetype: 'application/octet-stream',
             path: ''
         };
 
