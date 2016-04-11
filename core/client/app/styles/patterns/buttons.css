@@ -61,7 +61,6 @@ fieldset[disabled] .btn {
 }
 
 .btn i {
-    display: inline-block;
     vertical-align: middle;
 }
 
