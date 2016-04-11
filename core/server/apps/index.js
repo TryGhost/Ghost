@@ -5,6 +5,7 @@ var _           = require('lodash'),
     api         = require('../api'),
     loader      = require('./loader'),
     i18n        = require('../i18n'),
+    config      = require('../config'),
     // Holds the available apps
     availableApps = {};
 
@@ -20,13 +21,13 @@ function getInstalledApps() {
             return Promise.reject(e);
         }
 
-        return installed;
+        return installed.concat(config.internalApps);
     });
 }
 
 function saveInstalledApps(installedApps) {
     return getInstalledApps().then(function (currentInstalledApps) {
-        var updatedAppsInstalled = _.uniq(installedApps.concat(currentInstalledApps));
+        var updatedAppsInstalled = _.difference(_.uniq(installedApps.concat(currentInstalledApps)), config.internalApps);
 
         return api.settings.edit({settings: [{key: 'installedApps', value: updatedAppsInstalled}]}, {context: {internal: true}});
     });
@@ -42,6 +43,8 @@ module.exports = {
                 var aApps = response.settings[0];
 
                 appsToLoad = JSON.parse(aApps.value) || [];
+
+                appsToLoad = appsToLoad.concat(config.internalApps);
             });
         } catch (e) {
             errors.logError(
