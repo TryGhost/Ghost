@@ -6,7 +6,6 @@
 
 var _           = require('lodash'),
     api         = require('../../api'),
-    path        = require('path'),
     config      = require('../../config'),
     errors      = require('../../errors'),
     filters     = require('../../filters'),
@@ -143,22 +142,6 @@ frontendControllers = {
                 return next();
             }
         }).catch(handleError(next));
-    },
-    private: function private(req, res) {
-        var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs'),
-            paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
-            data = {};
-
-        if (res.error) {
-            data.error = res.error;
-        }
-
-        setResponseContext(req, res);
-        if (paths.hasOwnProperty('private.hbs')) {
-            return res.render('private', data);
-        } else {
-            return res.render(defaultPage, data);
-        }
     }
 };
 

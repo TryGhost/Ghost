@@ -145,6 +145,11 @@
                 "description": "Your site url in config.js cannot contain a subdirectory called ghost.",
                 "help": "Please rename the subdirectory before restarting"
             },
+            "urlCannotContainPrivateSubdir": {
+                "error": "private subdirectory not allowed",
+                "description": "Your site url in config.js cannot contain a subdirectory called private.",
+                "help": "Please rename the subdirectory before restarting"
+            },
             "dbConfigInvalid": {
                 "error": "invalid database configuration",
                 "description": "Your database configuration in config.js is invalid.",

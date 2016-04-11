@@ -183,7 +183,8 @@ var _              = require('lodash'),
                 // #### All Unit tests
                 unit: {
                     src: [
-                        'core/test/unit/**/*_spec.js'
+                        'core/test/unit/**/*_spec.js',
+                        'core/server/apps/**/tests/*_spec.js'
                     ]
                 },
 
