@@ -18,7 +18,6 @@ var bodyParser      = require('body-parser'),
     checkSSL         = require('./check-ssl'),
     decideIsAdmin    = require('./decide-is-admin'),
     oauth            = require('./oauth'),
-    privateBlogging  = require('./private-blogging'),
     redirectToSetup  = require('./redirect-to-setup'),
     serveSharedFile  = require('./serve-shared-file'),
     spamPrevention   = require('./spam-prevention'),
@@ -26,6 +25,7 @@ var bodyParser      = require('body-parser'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
     cors             = require('./cors'),
+    privateBlogging  = require('../apps/private-blogging'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -37,7 +37,6 @@ middleware = {
     upload: multer({dest: tmpdir()}),
     cacheControl: cacheControl,
     spamPrevention: spamPrevention,
-    privateBlogging: privateBlogging,
     oauth: oauth,
     api: {
         authenticateClient: auth.authenticateClient,
@@ -111,9 +110,8 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     // Theme only config
     blogApp.use(staticTheme());
 
-    // Check if password protected blog
-    blogApp.use(privateBlogging.checkIsPrivate); // check if the blog is protected
-    blogApp.use(privateBlogging.filterPrivateRoutes);
+    // setup middleware for private blogs
+    privateBlogging.setupMiddleware(blogApp);
 
     // Serve sitemap.xsl file
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));
@@ -158,8 +156,8 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     adminApp.use(routes.admin());
     blogApp.use('/ghost', adminApp);
 
-    // Set up Frontend routes
-    blogApp.use(routes.frontend(middleware));
+    // Set up Frontend routes (including private blogging routes)
+    blogApp.use(routes.frontend());
 
     // ### Error handling
     // 404 Handler
