@@ -85,7 +85,7 @@ apiRoutes = function apiRoutes(middleware) {
 
     // ## DB
     router.get('/db', authenticatePrivate, api.http(api.db.exportContent));
-    router.post('/db', authenticatePrivate, middleware.busboy, api.http(api.db.importContent));
+    router.post('/db', authenticatePrivate, middleware.upload.single('importfile'), api.http(api.db.importContent));
     router.del('/db', authenticatePrivate, api.http(api.db.deleteAllContent));
 
     // ## Mail
@@ -111,7 +111,7 @@ apiRoutes = function apiRoutes(middleware) {
     router.post('/authentication/revoke', authenticatePrivate, api.http(api.authentication.revoke));
 
     // ## Uploads
-    router.post('/uploads', authenticatePrivate, middleware.busboy, api.http(api.uploads.add));
+    router.post('/uploads', authenticatePrivate, middleware.upload.single('uploadimage'), api.http(api.uploads.add));
 
     // API Router middleware
     router.use(middleware.api.errorHandler);

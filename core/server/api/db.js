@@ -66,13 +66,16 @@ db = {
         options = options || {};
 
         function validate(options) {
+            options.name = options.originalname;
+            options.type = options.mimetype;
+
             // Check if a file was provided
-            if (!utils.checkFileExists(options, 'importfile')) {
+            if (!utils.checkFileExists(options)) {
                 return Promise.reject(new errors.ValidationError(i18n.t('errors.api.db.selectFileToImport')));
             }
 
             // Check if the file is valid
-            if (!utils.checkFileIsValid(options.importfile, importer.getTypes(), importer.getExtensions())) {
+            if (!utils.checkFileIsValid(options, importer.getTypes(), importer.getExtensions())) {
                 return Promise.reject(new errors.UnsupportedMediaTypeError(
                     i18n.t('errors.api.db.unsupportedFile') +
                         _.reduce(importer.getExtensions(), function (memo, ext) {
@@ -85,7 +88,7 @@ db = {
         }
 
         function importContent(options) {
-            return importer.importFromFile(options.importfile)
+            return importer.importFromFile(options)
                 .then(function () {
                     api.settings.updateSettingsCache();
                 })
