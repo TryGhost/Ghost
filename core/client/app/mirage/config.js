@@ -358,5 +358,9 @@ export function testConfig() {
         };
     });
 
-    this.passthrough('http://www.gravatar.com/avatar/**');
+    /* External sites ------------------------------------------------------- */
+
+    this.get('http://www.gravatar.com/avatar/:md5', function () {
+        return '';
+    }, 200);
 }

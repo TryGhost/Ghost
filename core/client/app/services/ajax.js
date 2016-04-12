@@ -12,6 +12,13 @@ export function UnsupportedMediaTypeError(errors) {
     AjaxError.call(this, errors, 'Request was rejected because it contains an unknown or unsupported file type.');
 }
 
+// TODO: remove once upgraded to ember-ajax 2.0
+export function NotFoundError(errors) {
+    AjaxError.call(this, errors, 'Resource was not found.');
+}
+
+NotFoundError.prototype = Object.create(AjaxError.prototype);
+
 export default AjaxService.extend({
     session: inject.service(),
 
@@ -36,6 +43,8 @@ export default AjaxService.extend({
             return new RequestEntityTooLargeError(payload.errors);
         } else if (this.isUnsupportedMediaType(status, headers, payload)) {
             return new UnsupportedMediaTypeError(payload.errors);
+        } else if (this.isNotFoundError(status, headers, payload)) {
+            return new NotFoundError(payload.errors);
         }
 
         return this._super(...arguments);
@@ -55,5 +64,9 @@ export default AjaxService.extend({
 
     isUnsupportedMediaType(status/*, headers, payload */) {
         return status === 415;
+    },
+
+    isNotFoundError(status) {
+        return status === 404;
     }
 });
