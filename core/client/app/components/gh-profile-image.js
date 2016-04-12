@@ -1,12 +1,15 @@
 import Ember from 'ember';
 import AjaxService from 'ember-ajax/services/ajax';
+import {NotFoundError} from 'ghost/services/ajax';
 
 const {
     Component,
     computed,
     inject: {service},
+    isBlank,
     run
 } = Ember;
+
 const {notEmpty} = computed;
 
 /**
@@ -66,19 +69,20 @@ export default Component.extend({
         let size = this.get('size');
         let style = '';
 
-        if (email) {
+        if (!isBlank(email)) {
             let gravatarUrl = `//www.gravatar.com/avatar/${window.md5(email)}?s=${size}&d=404`;
 
             this.get('ajax').request(gravatarUrl)
-                .catch((data) => {
+                .catch((error) => {
                     let defaultImageUrl = `url("${this.get('ghostPaths.subdir')}/ghost/img/user-image.png")`;
 
-                    if (data.errors !== undefined && Number(data.errors[0].status) === 404) {
+                    if (error instanceof NotFoundError) {
                         this.$('.placeholder-img')[0].style.backgroundImage = Ember.String.htmlSafe(defaultImageUrl);
                     } else {
                         this.$('.placeholder-img')[0].style.backgroundImage = 'url()';
                     }
                 });
+
             style = `background-image: url(${gravatarUrl})`;
         }
         return Ember.String.htmlSafe(style);
