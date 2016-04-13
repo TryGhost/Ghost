@@ -20,9 +20,7 @@ content = function (options) {
     });
     
     try {
-        if (typeof(options.hash.append) !== 'undefined') {
-            truncateOptions.append = options.hash.append;
-        }
+        truncateOptions.append = options.hash.append;
     } catch(e) {
         //do absolutely nothing, because nothing needs to be done.
     }
