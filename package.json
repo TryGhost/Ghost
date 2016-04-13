@@ -106,7 +106,6 @@
   "greenkeeper": {
     "ignore": [
       "bower",
-      "bluebird",
       "glob",
       "lodash",
       "mysql",
