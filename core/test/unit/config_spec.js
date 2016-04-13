@@ -17,6 +17,10 @@ var should         = require('should'),
 i18n.init();
 
 describe('Config', function () {
+    before(function () {
+        configUtils.restore();
+    });
+
     afterEach(function () {
         configUtils.restore();
     });
