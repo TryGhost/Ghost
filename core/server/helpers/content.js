@@ -18,8 +18,9 @@ content = function (options) {
     _.keys(truncateOptions).map(function (key) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
-
-    truncateOptions.append = options.hash.append;
+    if (typeof(options.hash.append) !== 'undefined') {
+        truncateOptions.append = options.hash.append;
+    }
     
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         // Legacy function: {{content words="0"}} should return leading tags.
