@@ -424,10 +424,9 @@ authentication = {
                         errors.logError(
                             error.message,
                             i18n.t(
-                                'errors.api.authentication.unableToSendWelcomeEmail',
-                                {url: 'http://support.ghost.org/mail/'}
+                                'errors.api.authentication.unableToSendWelcomeEmail'
                             ),
-                            i18n.t('errors.api.authentication.checkEmailConfigInstructions')
+                            i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'http://support.ghost.org/mail/'})
                         );
                     });
                 })
