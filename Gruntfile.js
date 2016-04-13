@@ -230,10 +230,10 @@ var _              = require('lodash'),
                 },
                 coverage_all: {
                     src: [
-                        'core/test/unit',
-                        'core/server/apps',
                         'core/test/integration',
-                        'core/test/functional'
+                        'core/server/apps',
+                        'core/test/functional',
+                        'core/test/unit'
                     ],
                     options: {
                         coverageFolder: 'core/test/coverage/all',
