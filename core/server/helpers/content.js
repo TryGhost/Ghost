@@ -18,8 +18,13 @@ content = function (options) {
     _.keys(truncateOptions).map(function (key) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
-    if (typeof(options.hash.append) !== 'undefined') {
-        truncateOptions.append = options.hash.append;
+    
+    try {
+        if (typeof(options.hash.append) !== 'undefined') {
+            truncateOptions.append = options.hash.append;
+        }
+    } catch(e) {
+        //do absolutely nothing, because nothing needs to be done.
     }
     
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
