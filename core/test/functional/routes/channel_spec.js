@@ -232,6 +232,8 @@ describe('Channel Routes', function () {
             }).catch(done);
         });
 
+        after(testUtils.teardown);
+
         it('should 404 for /tag/ route', function (done) {
             request.get('/tag/')
                 .expect('Cache-Control', testUtils.cacheRules.private)
