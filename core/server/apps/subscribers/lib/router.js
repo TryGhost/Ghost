@@ -2,6 +2,7 @@ var path                = require('path'),
     express             = require('express'),
     templates           = require('../../../controllers/frontend/templates'),
     setResponseContext  = require('../../../controllers/frontend/context'),
+    api                 = require('../../../api'),
     subscribeRouter     = express.Router();
 
 function controller(req, res) {
@@ -21,12 +22,20 @@ function controller(req, res) {
     }
 }
 
+
+function storeSubscriber(req, res, next) {
+    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}}).then(function (result) {
+        next();
+    });
+}
+
 // subscribe frontend route
 subscribeRouter.route('/')
     .get(
         controller
     )
     .post(
+        storeSubscriber,
         controller
     );
 
