@@ -1,10 +1,11 @@
+sudo: required
+dist: trusty
 language: node_js
-# When changing node version also update it on lines 26, 28 and 38.
+# When changing node version also update it on lines 34, 36 and 46.
 node_js:
   - "0.10"
   - "0.12"
   - "4"
-sudo: false
 cache:
   directories:
     - node_modules
@@ -17,6 +18,7 @@ addons:
     sources:
       - google-chrome
     packages:
+      - mysql-server
       - google-chrome-stable
 env:
   global:
@@ -34,7 +36,7 @@ matrix:
     - node_js: "0.10"
       env: TEST_SUITE=lint
 before_install:
-  - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
+  - if [ $DB == "mysql" ]; then mysql -u root -e 'create database ghost_testing'; fi
   - if [ $DB == "pg" ]; then psql -c 'create database ghost_testing;' -U postgres; fi
 before_script:
   - if [ $TEST_SUITE == "client" ]; then export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3; fi
