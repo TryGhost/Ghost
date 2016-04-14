@@ -11,7 +11,6 @@ var should  = require('should'),
     versioning    = require('../../server/data/schema/versioning'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
-    fixtureUtils  = rewire('../../server/data/migration/fixtures/utils'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
     ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
 
@@ -92,14 +91,13 @@ describe('Fixtures', function () {
                     loggerStub.warn.called.should.be.false();
 
                     sequenceStub.calledTwice.should.be.true();
+
                     sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
-
                     sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(8);
-
                     sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
+                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(8);
                     sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'moveJQuery');
                     sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'updatePrivateSetting');
                     sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'updatePasswordSetting');
@@ -699,26 +697,43 @@ describe('Fixtures', function () {
                 clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve()),
                 permsAddStub = sandbox.stub(models.Permission, 'add').returns(Promise.resolve()),
 
+            // Existence checks
+                postOneStub = sandbox.stub(models.Post, 'findOne').returns(Promise.resolve()),
+                tagOneStub = sandbox.stub(models.Tag, 'findOne').returns(Promise.resolve()),
+                roleOneStub = sandbox.stub(models.Role, 'findOne').returns(Promise.resolve()),
+                clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve()),
+                permOneStub = sandbox.stub(models.Permission, 'findOne').returns(Promise.resolve()),
+
             // Relations
-                modelMethodStub = {filter: sandbox.stub(), find: sandbox.stub()},
+                fromItem = {
+                    related: sandbox.stub().returnsThis(),
+                    findWhere: sandbox.stub().returns({})
+                },
+                toItem = [{get: sandbox.stub()}],
+                modelMethodStub = {filter: sandbox.stub().returns(toItem), find: sandbox.stub().returns(fromItem)},
                 permsAllStub = sandbox.stub(models.Permission, 'findAll').returns(Promise.resolve(modelMethodStub)),
                 rolesAllStub = sandbox.stub(models.Role, 'findAll').returns(Promise.resolve(modelMethodStub)),
                 postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(modelMethodStub)),
                 tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(modelMethodStub)),
 
             // Create Owner
-                roleOneStub = sandbox.stub(models.Role, 'findOne').returns(Promise.resolve({id: 1})),
                 userAddStub = sandbox.stub(models.User, 'add').returns(Promise.resolve({}));
+            roleOneStub.onCall(4).returns(Promise.resolve({id: 1}));
 
             populate(loggerStub).then(function () {
                 loggerStub.info.calledTwice.should.be.true();
                 loggerStub.warn.called.should.be.false();
 
+                postOneStub.calledOnce.should.be.true();
                 postAddStub.calledOnce.should.be.true();
+                tagOneStub.calledOnce.should.be.true();
                 tagAddStub.calledOnce.should.be.true();
+                roleOneStub.callCount.should.be.aboveOrEqual(4);
                 roleAddStub.callCount.should.eql(4);
+                clientOneStub.calledTwice.should.be.true();
                 clientAddStub.calledTwice.should.be.true();
 
+                permOneStub.callCount.should.eql(30);
                 permsAddStub.called.should.be.true();
                 permsAddStub.callCount.should.eql(30);
 
@@ -736,51 +751,11 @@ describe('Fixtures', function () {
                 modelMethodStub.find.callCount.should.eql(3 + 1);
 
                 // Create Owner
-                roleOneStub.calledOnce.should.be.true();
+                roleOneStub.callCount.should.eql(5);
                 userAddStub.calledOnce.should.be.true();
 
                 done();
             }).catch(done);
-        });
-
-        describe('Add All Relations', function () {
-            it('should call attach if relation models are found', function (done) {
-                var addAllRelations = populate.__get__('addAllRelations'),
-                    emptyMethodStub = {filter: sandbox.stub(), find: sandbox.stub()},
-                // Setup a chain of methods
-                    dataMethodStub = {
-                        filter: sandbox.stub().returnsThis(),
-                        find: sandbox.stub().returnsThis(),
-                        tags: sandbox.stub().returnsThis(),
-                        attach: sandbox.stub().returns(Promise.resolve())
-                    },
-                    permsAllStub = sandbox.stub(models.Permission, 'findAll').returns(Promise.resolve(emptyMethodStub)),
-                    rolesAllStub = sandbox.stub(models.Role, 'findAll').returns(Promise.resolve(emptyMethodStub)),
-                    postsAllStub = sandbox.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub)),
-                    tagsAllStub = sandbox.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
-
-                addAllRelations().then(function () {
-                    permsAllStub.calledOnce.should.be.true();
-                    rolesAllStub.calledOnce.should.be.true();
-                    postsAllStub.calledOnce.should.be.true();
-                    tagsAllStub.calledOnce.should.be.true();
-
-                    // Permissions & Roles
-                    emptyMethodStub.filter.called.should.be.true();
-                    emptyMethodStub.filter.callCount.should.eql(22);
-                    emptyMethodStub.find.called.should.be.true();
-                    emptyMethodStub.find.callCount.should.eql(3);
-
-                    // Posts & Tags
-                    dataMethodStub.filter.calledOnce.should.be.true();
-                    dataMethodStub.find.calledOnce.should.be.true();
-                    dataMethodStub.tags.calledOnce.should.be.true();
-                    dataMethodStub.attach.calledOnce.should.be.true();
-                    dataMethodStub.attach.calledWith(dataMethodStub).should.be.true();
-
-                    done();
-                }).catch(done);
-            });
         });
 
         describe('Create Owner', function () {
@@ -818,78 +793,6 @@ describe('Fixtures', function () {
                 }).catch(done);
             });
         });
-
-        describe('Match Func', function () {
-            var matchFunc = fixtureUtils.__get__('matchFunc'),
-                getStub;
-
-            beforeEach(function () {
-                getStub = sandbox.stub();
-                getStub.withArgs('foo').returns('bar');
-                getStub.withArgs('fun').returns('baz');
-            });
-
-            it('should match undefined with no args', function () {
-                matchFunc()({get: getStub}).should.be.true();
-                getStub.calledOnce.should.be.true();
-                getStub.calledWith(undefined).should.be.true();
-            });
-
-            it('should match key with match string', function () {
-                matchFunc('foo', 'bar')({get: getStub}).should.be.true();
-                getStub.calledOnce.should.be.true();
-                getStub.calledWith('foo').should.be.true();
-
-                matchFunc('foo', 'buz')({get: getStub}).should.be.false();
-                getStub.calledTwice.should.be.true();
-                getStub.secondCall.calledWith('foo').should.be.true();
-            });
-
-            it('should match value when key is 0', function () {
-                matchFunc('foo', 0, 'bar')({get: getStub}).should.be.true();
-                getStub.calledOnce.should.be.true();
-                getStub.calledWith('foo').should.be.true();
-
-                matchFunc('foo', 0, 'buz')({get: getStub}).should.be.false();
-                getStub.calledTwice.should.be.true();
-                getStub.secondCall.calledWith('foo').should.be.true();
-            });
-
-            it('should match key & value when match is array', function () {
-                matchFunc(['foo', 'fun'], 'bar', 'baz')({get: getStub}).should.be.true();
-                getStub.calledTwice.should.be.true();
-                getStub.getCall(0).calledWith('fun').should.be.true();
-                getStub.getCall(1).calledWith('foo').should.be.true();
-
-                matchFunc(['foo', 'fun'], 'baz', 'bar')({get: getStub}).should.be.false();
-                getStub.callCount.should.eql(4);
-                getStub.getCall(2).calledWith('fun').should.be.true();
-                getStub.getCall(3).calledWith('foo').should.be.true();
-            });
-
-            it('should match key only when match is array, but value is all', function () {
-                matchFunc(['foo', 'fun'], 'bar', 'all')({get: getStub}).should.be.true();
-                getStub.calledOnce.should.be.true();
-                getStub.calledWith('foo').should.be.true();
-
-                matchFunc(['foo', 'fun'], 'all', 'bar')({get: getStub}).should.be.false();
-                getStub.callCount.should.eql(3);
-                getStub.getCall(1).calledWith('fun').should.be.true();
-                getStub.getCall(2).calledWith('foo').should.be.true();
-            });
-
-            it('should match key & value when match and value are arrays', function () {
-                matchFunc(['foo', 'fun'], 'bar', ['baz', 'buz'])({get: getStub}).should.be.true();
-                getStub.calledTwice.should.be.true();
-                getStub.getCall(0).calledWith('fun').should.be.true();
-                getStub.getCall(1).calledWith('foo').should.be.true();
-
-                matchFunc(['foo', 'fun'], 'bar', ['biz', 'buz'])({get: getStub}).should.be.false();
-                getStub.callCount.should.eql(4);
-                getStub.getCall(2).calledWith('fun').should.be.true();
-                getStub.getCall(3).calledWith('foo').should.be.true();
-            });
-        });
     });
 
     describe('Ensure default settings', function () {
@@ -902,42 +805,6 @@ describe('Fixtures', function () {
 
                 done();
             }).catch(done);
-        });
-    });
-
-    describe('Utils', function () {
-        describe('findModelFixtureEntry', function () {
-            it('should fetch a single fixture entry', function () {
-                var foundFixture = fixtureUtils.findModelFixtureEntry('Client', {slug: 'ghost-admin'});
-                foundFixture.should.be.an.Object();
-                foundFixture.should.eql({
-                    name:             'Ghost Admin',
-                    slug:             'ghost-admin',
-                    status:           'enabled'
-                });
-            });
-        });
-
-        describe('findPermissionModelForObject', function () {
-            it('should fetch a fixture with multiple entries', function () {
-                var foundFixture = fixtureUtils.findPermissionModelForObject('Permission', {object_type: 'db'});
-                foundFixture.should.be.an.Object();
-                foundFixture.entries.should.be.an.Array().with.lengthOf(3);
-                foundFixture.entries[0].should.eql({
-                    name: 'Export database',
-                    action_type: 'exportContent',
-                    object_type: 'db'
-                });
-            });
-        });
-
-        describe('findPermissionRelationsForObject', function () {
-            it('should fetch a fixture with multiple entries', function () {
-                var foundFixture = fixtureUtils.findPermissionRelationsForObject('db');
-                foundFixture.should.be.an.Object();
-                foundFixture.entries.should.be.an.Object();
-                foundFixture.entries.should.have.property('Administrator', {db: 'all'});
-            });
         });
     });
 });
