@@ -233,14 +233,24 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     /**
      * ### Find All
-     * Naive find all fetches all the data for a particular model
+     * Fetches all the data for a particular model
      * @param {Object} options (optional)
      * @return {Promise(ghostBookshelf.Collection)} Collection of all Models
      */
     findAll: function findAll(options) {
         options = this.filterOptions(options, 'findAll');
         options.withRelated = _.union(options.withRelated, options.include);
-        return this.forge().fetchAll(options).then(function then(result) {
+
+        var itemCollection = this.forge(null, {context: options.context});
+
+        // transforms fictive keywords like 'all' (status:all) into correct allowed values
+        if (this.processOptions) {
+            this.processOptions(options);
+        }
+
+        itemCollection.applyDefaultAndCustomFilters(options);
+
+        return itemCollection.fetchAll(options).then(function then(result) {
             if (options.include) {
                 _.each(result.models, function each(item) {
                     item.include = options.include;
@@ -290,7 +300,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         this.processOptions(options);
 
         // Add Filter behaviour
-        itemCollection.applyFilters(options);
+        itemCollection.applyDefaultAndCustomFilters(options);
 
         // Handle related objects
         // TODO: this should just be done for all methods @ the API level
@@ -306,7 +316,6 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         } else {
             options.order = self.orderDefaultOptions();
         }
-
         return itemCollection.fetchPage(options).then(function formatResponse(response) {
             var data = {};
 

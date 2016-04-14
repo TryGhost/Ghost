@@ -65,7 +65,7 @@ auth = {
                 delete req.body.client_id;
                 delete req.body.client_secret;
 
-                if (!client || client.type !== 'ua') {
+                if (!client) {
                     errors.logError(
                         i18n.t('errors.middleware.auth.clientAuthenticationFailed'),
                         i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
