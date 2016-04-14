@@ -236,6 +236,15 @@ DataGenerator.Content = {
             key: 'setting',
             value: 'value'
         }
+    ],
+
+    subscribers: [
+        {
+            email: 'subscriber1@test.com'
+        },
+        {
+            email: 'subscriber2@test.com'
+        }
     ]
 };
 
@@ -440,6 +449,7 @@ DataGenerator.forKnex = (function () {
         createAppField: createAppField,
         createAppSetting: createAppSetting,
         createToken: createToken,
+        createSubscriber: createBasic,
 
         posts: posts,
         tags: tags,
