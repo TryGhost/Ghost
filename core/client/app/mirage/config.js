@@ -52,6 +52,9 @@ export default function () {
     this.namespace = 'ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
 
+    //this.passthrough('/clients/slug/:slug');
+    //this.passthrough('ghost/api/v0.1/clients/slug/ghost-frontend');
+
     /* Authentication ------------------------------------------------------- */
 
     this.post('/authentication/token', function () {
@@ -325,6 +328,55 @@ export default function () {
             users: [db.users.find(request.params.id)]
         };
     });
+
+    this.get('/clients', 'client');
+
+    this.del('/clients/:id', 'client');
+
+    this.post('/clients', function(db, request){
+        var [attrs] = JSON.parse(request.requestBody).clients;
+        var client = db.clients.insert(attrs);
+
+        return {
+            client: client
+        };
+    });
+
+    this.put('/clients/:id', function (db, request) {
+        let {id} = request.params;
+        let [attrs] = JSON.parse(request.requestBody).clients;
+        let client = db.clients.update(id, attrs);
+
+        return {
+            clients: client
+        };
+    });
+
+    this.get('/clients/slug/:slug/', function (db, request) {
+        return {
+            clients: db.clients.where({slug: request.params.slug})
+        };
+    });
+
+    this.get('/slugs/client/:slug/', function (db, request) {
+        return {
+            slugs: [
+                {slug: Ember.String.dasherize(decodeURIComponent(request.params.slug))}
+            ]
+        };
+    });
+
+    /**
+      very helpful for debugging
+    */
+    this.handledRequest = function(verb, path, request) {
+      console.log(`👊${verb} ${path}`);
+    };
+
+    this.unhandledRequest = function(verb, path, request) {
+      console.log(`🔥${verb} ${path}`);
+    };
+
 }
 
 /*

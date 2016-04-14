@@ -1,0 +1,64 @@
+.special-client {
+    pointer-events: none;
+}
+
+.client-settings-panel {
+    position: relative;
+    display: block;
+    padding: 0 45px 0 0;
+}
+
+.client-list-item {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 0 15px;
+    height: 68px;
+    border-top: 1px solid #dfe1e3;
+}
+
+.client-list-item-body a {
+    color: #242628;
+    text-decoration: none;
+    transition: none;
+}
+
+@media (min-width: 601px) {
+    a.client-list-item:hover {
+        background: color(#dfe1e3 lightness(+10%));
+    }
+    a.client-list-item:last-of-type:hover {
+        box-shadow: inset 0 -1px 0 #dfe1e3;
+    }
+}
+
+.client-list-item-figure {
+    position: relative;
+    display: block;
+    width: 35px;
+    height: 35px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 35px;
+}
+
+.client-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.client-list-item-body {
+    flex: 1 1 auto;
+    align-items: stretch;
+    padding-left: 15px;
+    line-height: 1;
+}
+
+.client-list-item-aside button {
+    float: left;
+    margin-top: -1px;
+}

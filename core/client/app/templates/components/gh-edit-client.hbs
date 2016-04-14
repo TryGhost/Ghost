@@ -1,0 +1,75 @@
+{{#if formError}}<div class="form-error">{{formError}}</div>{{/if}}
+
+{{#gh-form-group errors=errors hasValidated=hasValidated property="name"}}
+    <label for="client-name">Name</label>
+    <div data-test-selector="name">
+        {{gh-input value=name focusOut=(action "validate" "name")}}
+    </div>
+    {{gh-error-message errors=errors property="name"}}
+{{/gh-form-group}}
+<div class="form-group">
+  <label for="client-logo">Logo</label>
+  <div data-test-selector="logo">
+    {{gh-input value=logo}}
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="client-redirection_uri">Redirection URL</label>
+  <div data-test-selector="redirectiona_uri">
+    {{gh-input value=redirection_uri}}
+  </div>
+</div>
+
+{{#gh-form-group errors=errors hasValidated=hasValidated property="description"}}
+  <label for="client-description">Description</label>
+  <div data-test-selector="description">
+    {{gh-textarea value=description focusOut=(action "validate" "description")}}
+  </div>
+  {{gh-error-message errors=errors property="description"}}
+ {{/gh-form-group}}
+
+<div class="form-group">
+  <label for="client-redirection_uri">Trusted Domains</label>
+  <div class="gh-blognav-line">
+      {{input value=trusted_domains class="gh-input"}}
+      <button type="button" class="gh-blognav-delete" {{action "addUrl"}}>
+          <i class="icon-add2"><span class="sr-only">Add</span></i>
+      </button>
+  </div>
+  {{#each trusted_domains as |url|}}
+  <div data-test-selector="redirectiona_uri">
+    {{gh-trusted-domain-input
+        url=url
+        addUrl=(action 'addUrl' url)
+        deleteUrl=(action 'deleteUrl' url)}}
+  </div>
+    {{/each}}
+</div>
+
+ {{#if isEditing}}
+<div class="form-group">
+  <div>
+    <label for="client-status">Status:</label>
+    <span data-test-selector="status">{{status}}</span>
+  </div>
+  <div>
+    <button type='button' class="btn btn-blue view-actions" {{action "changeClientStatus" (if isEnabled 'disabled' 'enabled')}}>
+      {{if isEnabled 'Disable' 'Enable'}}
+    </button>
+  </div>
+</div>
+<div class="form-group">
+  <div>
+    <label for="client-secret">Secret:</label>
+    <span data-test-selector="secret">{{secret}}</span>
+  </div>
+  <div>
+    <button type='button' class="btn btn-blue view-action" {{action "refreshSecret"}}>
+      Refresh Secret
+    </button>
+  </div>
+</div>
+{{/if}}
+
+<button data-test-selector="save-btn" class="btn btn-blue" {{action "saveClient"}}>Save</button>

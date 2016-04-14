@@ -7,7 +7,7 @@ const {Service, Evented} = Ember;
 export default Service.extend(Evented, BodyEventListener, {
     bodyClick(event) {
         /*jshint unused:false */
-        this.closeDropdowns();
+        Ember.run(this, this.closeDropdowns);
     },
 
     closeDropdowns() {

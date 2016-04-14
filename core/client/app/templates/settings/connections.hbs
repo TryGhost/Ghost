@@ -1,0 +1,12 @@
+<section class="gh-view">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Connections</span>{{/gh-view-title}}
+        <section class="view-actions">
+            {{#link-to "settings.connections.new" class="btn btn-green" title="New Connection"}}New Connection{{/link-to}}
+            {{!-- <button type="button" class="btn btn-green" {{action "newTag"}}>New Connection</button> --}}
+        </section>
+    </header>
+
+    {{outlet}}
+
+</section>
