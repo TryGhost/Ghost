@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import ModalComponent from 'ghost/components/modals/base';
-import upload from 'ghost/assets/lib/uploader';
 import cajaSanitizers from 'ghost/utils/caja-sanitizers';
 
 const {
@@ -10,14 +9,16 @@ const {
 } = Ember;
 
 export default ModalComponent.extend({
-    acceptEncoding: 'image/*',
     model: null,
     submitting: false,
+
+    url: '',
+    newUrl: '',
 
     config: service(),
     notifications: service(),
 
-    imageUrl: computed('model.model', 'model.imageProperty', {
+    image: computed('model.model', 'model.imageProperty', {
         get() {
             let imageProperty = this.get('model.imageProperty');
 
@@ -32,51 +33,62 @@ export default ModalComponent.extend({
         }
     }),
 
-    didInsertElement() {
-        this._super(...arguments);
-        upload.call(this.$('.js-drop-zone'), {
-            fileStorage: this.get('config.fileStorage')
-        });
+    didReceiveAttrs() {
+        let image = this.get('image');
+        this.set('url', image);
+        this.set('newUrl', image);
     },
 
+    // TODO: should validation be handled in the gh-image-uploader component?
+    //  pro - consistency everywhere, simplification here
+    //  con - difficult if the "save" is happening externally as it does here
+    //
+    //  maybe it should be handled at the model level?
+    //      - automatically present everywhere
+    //      - file uploads should always result in valid urls so it should only
+    //        affect the url input form
     keyDown() {
         this._setErrorState(false);
     },
 
     _setErrorState(state) {
         if (state) {
-            this.$('.js-upload-url').addClass('error');
+            this.$('.url').addClass('error');
         } else {
-            this.$('.js-upload-url').removeClass('error');
+            this.$('.url').removeClass('error');
         }
     },
 
-    _setImageProperty() {
-        let value;
-
-        if (this.$('.js-upload-url').val()) {
-            value = this.$('.js-upload-url').val();
-
-            if (!isEmpty(value) && !cajaSanitizers.url(value)) {
-                this._setErrorState(true);
-                return {message: 'Image URI is not valid'};
-            }
-        } else {
-            value = this.$('.js-upload-target').attr('src');
+    _validateUrl(url) {
+        if (!isEmpty(url) && !cajaSanitizers.url(url)) {
+            this._setErrorState(true);
+            return {message: 'Image URI is not valid'};
         }
 
-        this.set('imageUrl', value);
         return true;
     },
+    // end validation
 
     actions: {
+        fileUploaded(url) {
+            this.set('url', url);
+            this.set('newUrl', url);
+        },
+
+        removeImage() {
+            this.set('url', '');
+            this.set('newUrl', '');
+        },
+
         confirm() {
             let model = this.get('model.model');
+            let newUrl = this.get('newUrl');
+            let result = this._validateUrl(newUrl);
             let notifications = this.get('notifications');
-            let result = this._setImageProperty();
 
-            if (!result.message) {
+            if (result === true) {
                 this.set('submitting', true);
+                this.set('image', newUrl);
 
                 model.save().catch((err) => {
                     notifications.showAPIError(err, {key: 'image.upload'});

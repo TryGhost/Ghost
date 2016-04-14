@@ -6,7 +6,11 @@
             <button class="close icon-x settings-menu-header-action" {{action "closeMenus"}}><span class="hidden">Close</span></button>
         </div>
         <div class="settings-menu-content">
-            {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add post image" image=model.image uploaderReference=uploaderReference tagName="section"}}
+            {{gh-image-uploader-with-preview
+                image=model.image
+                text="Add post image"
+                update=(action "setCoverImage")
+                remove=(action "clearCoverImage")}}
             <form>
             <div class="form-group">
                 <label for="url">Post URL</label>

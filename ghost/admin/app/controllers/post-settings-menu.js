@@ -24,7 +24,6 @@ export default Controller.extend(SettingsMenuMixin, {
     debounceId: null,
     lastPromise: null,
     selectedAuthor: null,
-    uploaderReference: null,
 
     application: controller(),
     config: service(),
@@ -406,14 +405,6 @@ export default Controller.extend(SettingsMenuMixin, {
                 this.showErrors(errors);
                 this.get('model').rollbackAttributes();
             });
-        },
-
-        resetUploader() {
-            let uploader = this.get('uploaderReference');
-
-            if (uploader && uploader[0]) {
-                uploader[0].uploaderUi.reset();
-            }
         },
 
         resetPubDate() {
