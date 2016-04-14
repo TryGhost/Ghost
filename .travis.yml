@@ -1,10 +1,10 @@
 language: node_js
-# When changing node version also update it on lines 26, 28 and 38.
+# When changing node version also update it on lines 27, 29 and 40.
 node_js:
   - "0.10"
   - "0.12"
   - "4"
-sudo: false
+sudo: true
 cache:
   directories:
     - node_modules
@@ -13,11 +13,6 @@ cache:
 addons:
   firefox: "latest"
   postgresql: "9.3"
-  apt:
-    sources:
-      - google-chrome
-    packages:
-      - google-chrome-stable
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
@@ -36,6 +31,7 @@ matrix:
 before_install:
   - if [ $DB == "mysql" ]; then mysql -e 'create database ghost_testing'; fi
   - if [ $DB == "pg" ]; then psql -c 'create database ghost_testing;' -U postgres; fi
+  - if [ $TEST_SUITE == "client" ]; then wget http://mirror.pcbeta.com/google/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_49.0.2623.112-1_amd64.deb; sudo dpkg -i google-chrome-stable_49.0.2623.112-1_amd64.deb; fi
 before_script:
   - if [ $TEST_SUITE == "client" ]; then export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3; fi
 after_success:
