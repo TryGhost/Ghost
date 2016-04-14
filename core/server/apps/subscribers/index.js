@@ -11,7 +11,7 @@ module.exports = {
         // Correct way to register a helper from an app
         ghost.helpers.register('form_subscribe', function formSubscribeHelper(options) {
             var data = _.merge({}, options.hash, {
-                action: path.join(config.paths.subdir, config.routeKeywords.subscribe) + '/'
+                action: path.join('/', config.paths.subdir, config.routeKeywords.subscribe, '/')
             });
             return template.execute('form_subscribe', data, options);
         });
