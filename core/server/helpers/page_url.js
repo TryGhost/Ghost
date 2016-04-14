@@ -15,6 +15,10 @@ var errors          = require('../errors'),
     pageUrl;
 
 page_url = function (page, options) {
+    if (!options) {
+        options = page;
+        page = 1;
+    }
     return getPaginatedUrl(page, options.data.root);
 };
 
