@@ -46,6 +46,7 @@ describe('Frontend Routing', function () {
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
+            done(e);
         });
     });
 
@@ -82,6 +83,14 @@ describe('Frontend Routing', function () {
             it('should 404 for encoded char not 301 from uncapitalise', function (done) {
                 request.get('/|/')
                     .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .end(doEnd(done));
+            });
+
+            it('should 404 for unknown file', function (done) {
+                request.get('/content/images/some/file/that/doesnt-exist.jpg')
+                    .expect('Cache-Control', testUtils.cacheRules['private'])
                     .expect(404)
                     .expect(/Page not found/)
                     .end(doEnd(done));

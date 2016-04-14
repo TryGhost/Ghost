@@ -7,7 +7,7 @@ var should         = require('should'),
     _              = require('lodash'),
 
     testUtils      = require('../utils'),
-	i18n            = require('../../server/i18n'),
+    i18n            = require('../../server/i18n'),
 
     // Thing we are testing
     configUtils    = require('../utils/configUtils'),
@@ -17,6 +17,10 @@ var should         = require('should'),
 i18n.init();
 
 describe('Config', function () {
+    before(function () {
+        configUtils.restore();
+    });
+
     afterEach(function () {
         configUtils.restore();
     });
@@ -72,8 +76,6 @@ describe('Config', function () {
                 'imagesRelPath',
                 'adminViews',
                 'helperTemplates',
-                'exportPath',
-                'lang',
                 'availableThemes',
                 'availableApps',
                 'clientAssets'
@@ -263,7 +265,7 @@ describe('Config', function () {
 
             it('should return url for a post from post object', function () {
                 var testContext = 'post',
-                    testData = {post: testUtils.DataGenerator.Content.posts[2]};
+                    testData = {post: _.cloneDeep(testUtils.DataGenerator.Content.posts[2])};
 
                 // url is now provided on the postmodel, permalinkSetting tests are in the model_post_spec.js test
                 testData.post.url = '/short-and-sweet/';

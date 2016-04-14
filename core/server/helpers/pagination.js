@@ -29,17 +29,9 @@ pagination = function (options) {
         return errors.logAndThrowError(i18n.t('warnings.helpers.pagination.valuesMustBeNumeric'));
     }
 
-    var context = _.merge({}, this.pagination);
+    var data = _.merge({}, this.pagination);
 
-    if (this.tag !== undefined) {
-        context.tagSlug = this.tag.slug;
-    }
-
-    if (this.author !== undefined) {
-        context.authorSlug = this.author.slug;
-    }
-
-    return template.execute('pagination', context, options);
+    return template.execute('pagination', data, options);
 };
 
 module.exports = pagination;

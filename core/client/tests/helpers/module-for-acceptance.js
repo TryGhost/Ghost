@@ -8,16 +8,16 @@ export default function (name, options = {}) {
             this.application = startApp();
 
             if (options.beforeEach) {
-                options.beforeEach.apply(this, arguments);
+                options.beforeEach(...arguments);
             }
         },
 
         afterEach() {
-            destroyApp(this.application);
-
             if (options.afterEach) {
-                options.afterEach.apply(this, arguments);
+                options.afterEach(...arguments);
             }
+
+            destroyApp(this.application);
         }
     });
 }

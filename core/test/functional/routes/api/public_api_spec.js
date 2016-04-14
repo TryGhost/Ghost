@@ -198,22 +198,20 @@ describe('Public API', function () {
             });
     });
 
-    it('denies access from invalid origin', function (done) {
+    it('does not send CORS headers on an invalid origin', function (done) {
         request.get(testUtils.API.getApiQuery('posts/?client_id=ghost-admin&client_secret=not_available'))
             .set('Origin', 'http://invalid-origin')
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(401)
+            .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
 
                 should.not.exist(res.headers['x-cache-invalidate']);
-                var jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.errors);
-                testUtils.API.checkResponseValue(jsonResponse.errors[0], ['message', 'errorType']);
+                should.not.exist(res.headers['access-control-allow-origin']);
+
                 done();
             });
     });

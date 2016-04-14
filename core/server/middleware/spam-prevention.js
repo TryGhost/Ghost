@@ -12,7 +12,6 @@ var _ = require('lodash'),
     i18n      = require('../i18n'),
     loginSecurity = [],
     forgottenSecurity = [],
-    protectedSecurity = [],
     spamPrevention;
 
 spamPrevention = {
@@ -114,46 +113,6 @@ spamPrevention = {
         }
 
         next();
-    },
-
-    protected: function protected(req, res, next) {
-        var currentTime = process.hrtime()[0],
-            remoteAddress = req.connection.remoteAddress,
-            rateProtectedPeriod = config.rateProtectedPeriod || 3600,
-            rateProtectedAttempts = config.rateProtectedAttempts || 10,
-            ipCount = '',
-            message = i18n.t('errors.middleware.spamprevention.tooManyAttempts'),
-            deniedRateLimit = '',
-            password = req.body.password;
-
-        if (password) {
-            protectedSecurity.push({ip: remoteAddress, time: currentTime});
-        } else {
-            res.error = {
-                message: i18n.t('errors.middleware.spamprevention.noPassword')
-            };
-            return next();
-        }
-
-        // filter entries that are older than rateProtectedPeriod
-        protectedSecurity = _.filter(protectedSecurity, function filter(logTime) {
-            return (logTime.time + rateProtectedPeriod > currentTime);
-        });
-
-        ipCount = _.chain(protectedSecurity).countBy('ip').value();
-        deniedRateLimit = (ipCount[remoteAddress] > rateProtectedAttempts);
-
-        if (deniedRateLimit) {
-            errors.logError(
-                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error', {rfa: rateProtectedAttempts, rfp: rateProtectedPeriod}),
-                i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
-            );
-            message += rateProtectedPeriod === 3600 ? i18n.t('errors.middleware.spamprevention.waitOneHour') : i18n.t('errors.middleware.spamprevention.tryAgainLater');
-            res.error = {
-                message: message
-            };
-        }
-        return next();
     },
 
     resetCounter: function resetCounter(email) {

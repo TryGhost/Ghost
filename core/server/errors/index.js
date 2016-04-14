@@ -17,6 +17,7 @@ var _                          = require('lodash'),
     EmailError                 = require('./email-error'),
     DataImportError            = require('./data-import-error'),
     TooManyRequestsError       = require('./too-many-requests-error'),
+    TokenRevocationError       = require('./token-revocation-error'),
     i18n                       = require('../i18n'),
     config,
     errors,
@@ -83,11 +84,19 @@ errors = {
         return Promise.reject(err);
     },
 
-    logInfo: function (component, info) {
+    logComponentInfo: function (component, info) {
         if ((process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
             console.info(chalk.cyan(component + ':', info));
+        }
+    },
+
+    logComponentWarn: function (component, warning) {
+        if ((process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'staging' ||
+            process.env.NODE_ENV === 'production')) {
+            console.info(chalk.yellow(component + ':', warning));
         }
     },
 
@@ -400,7 +409,8 @@ errors = {
 // using Function#bind for expressjs
 _.each([
     'logWarn',
-    'logInfo',
+    'logComponentInfo',
+    'logComponentWarn',
     'rejectError',
     'throwError',
     'logError',
@@ -431,3 +441,4 @@ module.exports.EmailError                 = EmailError;
 module.exports.DataImportError            = DataImportError;
 module.exports.MethodNotAllowedError      = MethodNotAllowedError;
 module.exports.TooManyRequestsError       = TooManyRequestsError;
+module.exports.TokenRevocationError       = TokenRevocationError;

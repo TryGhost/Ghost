@@ -82,11 +82,13 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
-        this.on('destroying', function onDestroying(model) {
-            if (model.previous('status') === 'published') {
-                model.emitChange('unpublished');
-            }
-            model.emitChange('deleted');
+        this.on('destroying', function (model/*, attr, options*/) {
+            return model.load('tags').call('related', 'tags').call('detach').then(function then() {
+                if (model.previous('status') === 'published') {
+                    model.emitChange('unpublished');
+                }
+                model.emitChange('deleted');
+            });
         });
     },
 
@@ -94,7 +96,13 @@ Post = ghostBookshelf.Model.extend({
         var self = this,
             tagsToCheck,
             title,
-            i;
+            i,
+            // Variables to make the slug checking more readable
+            newTitle    = this.get('title'),
+            prevTitle   = this._previousAttributes.title,
+            prevSlug    = this._previousAttributes.slug,
+            postStatus  = this.get('status'),
+            publishedAt = this.get('published_at');
 
         options = options || {};
         // keep tags for 'saved' event and deduplicate upper/lowercase tags
@@ -116,7 +124,6 @@ Post = ghostBookshelf.Model.extend({
         this.set('html', converter.makeHtml(this.get('markdown')));
 
         // disabling sanitization until we can implement a better version
-        // this.set('title', this.sanitize('title').trim());
         title = this.get('title') || i18n.t('errors.models.post.untitled');
         this.set('title', title.trim());
 
@@ -139,13 +146,31 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        if (this.hasChanged('slug') || !this.get('slug')) {
+        // If a title is set, not the same as the old title, a draft post, and has never been published
+        if (prevTitle !== undefined && newTitle !== prevTitle && postStatus === 'draft' && !publishedAt) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
-            return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+            return ghostBookshelf.Model.generateSlug(Post, this.get('title'),
                     {status: 'all', transacting: options.transacting, importing: options.importing})
                 .then(function then(slug) {
-                    self.set({slug: slug});
+                    // After the new slug is found, do another generate for the old title to compare it to the old slug
+                    return ghostBookshelf.Model.generateSlug(Post, prevTitle).then(function then(prevTitleSlug) {
+                        // If the old slug is the same as the slug that was generated from the old title
+                        // then set a new slug. If it is not the same, means was set by the user
+                        if (prevTitleSlug === prevSlug) {
+                            self.set({slug: slug});
+                        }
+                    });
                 });
+        } else {
+            // If any of the attributes above were false, set initial slug and check to see if slug was changed by the user
+            if (this.hasChanged('slug') || !this.get('slug')) {
+                // Pass the new slug through the generator to strip illegal characters, detect duplicates
+                return ghostBookshelf.Model.generateSlug(Post, this.get('slug') || this.get('title'),
+                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                    .then(function then(slug) {
+                        self.set({slug: slug});
+                    });
+            }
         }
     },
 
@@ -373,8 +398,9 @@ Post = ghostBookshelf.Model.extend({
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
             validOptions = {
-                findOne: ['importing', 'withRelated'],
+                findOne: ['columns', 'importing', 'withRelated', 'require'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
+                findAll: ['columns'],
                 add: ['importing']
             };
 
@@ -521,43 +547,26 @@ Post = ghostBookshelf.Model.extend({
     },
 
     /**
-     * ### Destroy
-     * @extends ghostBookshelf.Model.destroy to clean up tag relations
-     * **See:** [ghostBookshelf.Model.destroy](base.js.html#destroy)
-     */
-    destroy: function destroy(options) {
-        var id = options.id;
-        options = this.filterOptions(options, 'destroy');
-
-        return this.forge({id: id}).fetch({withRelated: ['tags']}).then(function destroyTags(post) {
-            return post.related('tags').detach().then(function destroyPosts() {
-                return post.destroy(options);
-            });
-        });
-    },
-
-    /**
      * ### destroyByAuthor
      * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
      */
-    destroyByAuthor: function destroyByAuthor(options) {
+    destroyByAuthor: Promise.method(function destroyByAuthor(options) {
         var postCollection = Posts.forge(),
             authorId = options.id;
 
         options = this.filterOptions(options, 'destroyByAuthor');
-        if (authorId) {
-            return postCollection.query('where', 'author_id', '=', authorId).fetch(options).then(function destroyTags(results) {
-                return Promise.map(results.models, function mapper(post) {
-                    return post.related('tags').detach(null, options).then(function destroyPosts() {
-                        return post.destroy(options);
-                    });
-                });
-            }, function (error) {
-                return Promise.reject(new errors.InternalServerError(error.message || error));
-            });
+
+        if (!authorId) {
+            throw new errors.NotFoundError(i18n.t('errors.models.post.noUserFound'));
         }
-        return Promise.reject(new errors.NotFoundError(i18n.t('errors.models.post.noUserFound')));
-    },
+
+        return postCollection.query('where', 'author_id', '=', authorId)
+            .fetch(options)
+            .call('invokeThen', 'destroy', options)
+            .catch(function (error) {
+                throw new errors.InternalServerError(error.message || error);
+            });
+    }),
 
     permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         var self = this,

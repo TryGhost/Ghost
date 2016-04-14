@@ -1,10 +1,9 @@
-var _               = require('lodash'),
+var path            = require('path'),
     db              = require('../db'),
     errors          = require('../../errors'),
     i18n            = require('../../i18n'),
     defaultSettings = require('./default-settings'),
 
-    initialVersion  = '000',
     defaultDatabaseVersion;
 
 // Default Database Version
@@ -29,25 +28,20 @@ function getDatabaseVersion() {
             // Temporary code to deal with old databases with currentVersion settings
             return db.knex('settings')
                 .where('key', 'databaseVersion')
-                .orWhere('key', 'currentVersion')
-                .select('value')
-                .then(function (versions) {
-                    var databaseVersion = _.reduce(versions, function (memo, version) {
-                        if (isNaN(version.value)) {
-                            errors.throwError(i18n.t('errors.data.versioning.index.dbVersionNotRecognized'));
-                        }
-                        return parseInt(version.value, 10) > parseInt(memo, 10) ? version.value : memo;
-                    }, initialVersion);
-
-                    if (!databaseVersion || databaseVersion.length === 0) {
-                        // we didn't get a response we understood, assume initialVersion
-                        databaseVersion = initialVersion;
+                .first('value')
+                .then(function (version) {
+                    if (!version || isNaN(version.value)) {
+                        return errors.rejectError(new Error(
+                            i18n.t('errors.data.versioning.index.dbVersionNotRecognized')
+                        ));
                     }
 
-                    return databaseVersion;
+                    return version.value;
                 });
         }
-        throw new Error(i18n.t('errors.data.versioning.index.settingsTableDoesNotExist'));
+        return errors.rejectError(new Error(
+            i18n.t('errors.data.versioning.index.settingsTableDoesNotExist')
+        ));
     });
 }
 
@@ -57,8 +51,66 @@ function setDatabaseVersion() {
         .update({value: defaultDatabaseVersion});
 }
 
+function pad(num, width) {
+    return Array(Math.max(width - String(num).length + 1, 0)).join(0) + num;
+}
+
+function getMigrationVersions(fromVersion, toVersion) {
+    var versions = [],
+        i;
+    for (i = parseInt(fromVersion, 10); i <= toVersion; i += 1) {
+        versions.push(pad(i, 3));
+    }
+
+    return versions;
+}
+
+function showCannotMigrateError() {
+    return errors.logAndRejectError(
+        i18n.t('errors.data.versioning.index.cannotMigrate.error'),
+        i18n.t('errors.data.versioning.index.cannotMigrate.context'),
+        i18n.t('common.seeLinkForInstructions', {link: 'http://support.ghost.org/how-to-upgrade/'})
+    );
+}
+
+/**
+ * ### Get Version Tasks
+ * Tries to require a directory matching the version number
+ *
+ * This was split from update to make testing easier
+ *
+ * @param {String} version
+ * @param {String} relPath
+ * @param {Function} logInfo
+ * @returns {Array}
+ */
+function getVersionTasks(version, relPath, logInfo) {
+    var tasks = [];
+
+    try {
+        tasks = require(path.join(relPath, version));
+    } catch (e) {
+        logInfo('No tasks found for version', version);
+    }
+
+    return tasks;
+}
+
+function getUpdateDatabaseTasks(version, logInfo) {
+    return getVersionTasks(version, '../migration/', logInfo);
+}
+
+function getUpdateFixturesTasks(version, logInfo) {
+    return getVersionTasks(version, '../migration/fixtures/', logInfo);
+}
+
 module.exports = {
+    canMigrateFromVersion: '003',
+    showCannotMigrateError: showCannotMigrateError,
     getDefaultDatabaseVersion: getDefaultDatabaseVersion,
     getDatabaseVersion: getDatabaseVersion,
-    setDatabaseVersion: setDatabaseVersion
+    setDatabaseVersion: setDatabaseVersion,
+    getMigrationVersions: getMigrationVersions,
+    getUpdateDatabaseTasks: getUpdateDatabaseTasks,
+    getUpdateFixturesTasks: getUpdateFixturesTasks
 };

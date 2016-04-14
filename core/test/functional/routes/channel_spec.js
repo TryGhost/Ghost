@@ -36,6 +36,7 @@ describe('Channel Routes', function () {
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
             console.log(e.stack);
+            done(e);
         });
     });
 
@@ -230,6 +231,8 @@ describe('Channel Routes', function () {
                 done();
             }).catch(done);
         });
+
+        after(testUtils.teardown);
 
         it('should 404 for /tag/ route', function (done) {
             request.get('/tag/')

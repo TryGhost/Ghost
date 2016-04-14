@@ -128,6 +128,11 @@ export default Mixin.create({
     hasDirtyAttributes: computed.apply(Ember, watchedProps.concat({
         get() {
             let model = this.get('model');
+
+            if (!model) {
+                return false;
+            }
+
             let markdown = model.get('markdown');
             let title = model.get('title');
             let titleScratch = model.get('titleScratch');
@@ -391,6 +396,25 @@ export default Mixin.create({
             window.onbeforeunload = null;
 
             return transition.retry();
+        },
+
+        updateTitle() {
+            let currentTitle = this.model.get('title');
+            let newTitle = this.model.get('titleScratch').trim();
+
+            if (currentTitle === newTitle) {
+                return;
+            }
+
+            if (this.get('model.isDraft') && !this.get('model.isNew')) {
+                // this is preferrable to setting hasDirtyAttributes to false manually
+                this.model.set('title', newTitle);
+
+                this.send('save', {
+                    silent: true,
+                    backgroundSave: true
+                });
+            }
         },
 
         toggleReAuthenticateModal() {

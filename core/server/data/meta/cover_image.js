@@ -1,9 +1,9 @@
-var config = require('../../config');
+var config           = require('../../config'),
+    getContextObject = require('./context_object.js');
 
 function getCoverImage(data) {
     var context = data.context ? data.context[0] : null,
-        blog = config.theme,
-        contextObject = data[context] || blog;
+        contextObject = getContextObject(data, context);
 
     if (context === 'home' || context === 'author') {
         if (contextObject.cover) {

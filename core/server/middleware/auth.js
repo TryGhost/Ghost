@@ -1,9 +1,6 @@
-var _           = require('lodash'),
-    passport    = require('passport'),
-    url         = require('url'),
-    os            = require('os'),
+var passport    = require('passport'),
     errors      = require('../errors'),
-    config      = require('../config'),
+    events      = require('../events'),
     labs        = require('../utils/labs'),
     i18n        = require('../i18n'),
 
@@ -32,40 +29,6 @@ function isBearerAutorizationHeader(req) {
     return false;
 }
 
-function getIPs() {
-    var ifaces = os.networkInterfaces(),
-        ips = [];
-
-    Object.keys(ifaces).forEach(function (ifname) {
-        ifaces[ifname].forEach(function (iface) {
-            // only support IPv4
-            if (iface.family !== 'IPv4') {
-                return;
-            }
-            ips.push(iface.address);
-        });
-    });
-    return ips;
-}
-
-function isValidOrigin(origin, client) {
-    var configHostname = url.parse(config.url).hostname;
-
-    if (origin && client && client.type === 'ua' && (
-        _.indexOf(getIPs(), origin) >= 0
-        || _.some(client.trustedDomains, {trusted_domain: origin})
-        || origin === configHostname
-        || configHostname === 'my-ghost-blog.com'
-        || origin === url.parse(config.urlSSL ? config.urlSSL : '').hostname
-        // @TODO do this in dev mode only, once we can auto-configure the url #2240
-        || (origin === 'localhost')
-    )) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 auth = {
 
     // ### Authenticate Client Middleware
@@ -85,7 +48,7 @@ auth = {
 
         if (!req.body.client_id || !req.body.client_secret) {
             errors.logError(
-                i18n.t('errors.middleware.auth.clientAuthenticaionFailed'),
+                i18n.t('errors.middleware.auth.clientAuthenticationFailed'),
                 i18n.t('errors.middleware.auth.clientCredentialsNotProvided'),
                 i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
             );
@@ -94,14 +57,8 @@ auth = {
 
         return passport.authenticate(['oauth2-client-password'], {session: false, failWithError: false},
             function authenticate(err, client) {
-                var origin = null,
-                    error;
                 if (err) {
                     return next(err); // will generate a 500 error
-                }
-
-                if (req.headers && req.headers.origin) {
-                    origin = url.parse(req.headers.origin).hostname;
                 }
 
                 // req.body needs to be null for GET requests to build options correctly
@@ -110,31 +67,17 @@ auth = {
 
                 if (!client || client.type !== 'ua') {
                     errors.logError(
-                        i18n.t('errors.middleware.auth.clientAuthenticaionFailed'),
+                        i18n.t('errors.middleware.auth.clientAuthenticationFailed'),
                         i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
                         i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://api.ghost.org/docs/client-authentication'})
                     );
                     return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
                 }
 
-                if (!origin && client && client.type === 'ua') {
-                    res.header('Access-Control-Allow-Origin', config.url);
-                    req.client = client;
-                    return next(null, client);
-                }
+                req.client = client;
 
-                if (isValidOrigin(origin, client)) {
-                    res.header('Access-Control-Allow-Origin', req.headers.origin);
-                    req.client = client;
-                    return next(null, client);
-                } else {
-                    error = new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDeniedFromUrl', {origin: origin}));
-                    errors.logError(error,
-                        i18n.t('errors.middleware.auth.attemptedToAccessAdmin'),
-                        i18n.t('errors.middleware.auth.forInformationRead', {url: 'http://support.ghost.org/config/#url'})
-                    );
-                    return errors.handleAPIError(error, req, res, next);
-                }
+                events.emit('client.authenticated', client);
+                return next(null, client);
             }
         )(req, res, next);
     },
@@ -150,6 +93,8 @@ auth = {
                 if (user) {
                     req.authInfo = info;
                     req.user = user;
+
+                    events.emit('user.authenticated', user);
                     return next(null, user, info);
                 } else if (isBearerAutorizationHeader(req)) {
                     return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);

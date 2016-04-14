@@ -13,16 +13,6 @@ describe('getPublishedDate', function () {
         should.equal(pubDate, '2016-01-01T12:56:45.232Z');
     });
 
-    it('should return created at date as ISO 8601 if no published at date', function () {
-        var pubDate = getPublishedDate({
-            context: ['author'],
-            author: {
-                created_at: new Date('2016-01-01 12:56:45.232Z')
-            }
-        });
-        should.equal(pubDate, '2016-01-01T12:56:45.232Z');
-    });
-
     it('should return published at over created at date as ISO 8601 if has both', function () {
         var pubDate = getPublishedDate({
             context: ['post'],

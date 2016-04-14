@@ -8,7 +8,7 @@ const {
     on
 } = Ember;
 
-let Router = Ember.Router.extend({
+const Router = Ember.Router.extend({
     location: config.locationType, // use HTML5 History API instead of hash-tag based URLs
     rootURL: ghostPaths().adminRoot, // admin interface lives under sub-directory /ghost
 

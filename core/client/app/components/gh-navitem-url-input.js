@@ -20,14 +20,9 @@ let isRelative = function (url) {
 
 export default TextField.extend({
     classNames: 'gh-input',
-    classNameBindings: ['fakePlaceholder'],
 
     isBaseUrl: computed('baseUrl', 'value', function () {
         return this.get('baseUrl') === this.get('value');
-    }),
-
-    fakePlaceholder: computed('isBaseUrl', 'hasFocus', 'isNew', function () {
-        return this.get('isBaseUrl') && this.get('isNew') && !this.get('hasFocus');
     }),
 
     didReceiveAttrs() {
@@ -72,7 +67,7 @@ export default TextField.extend({
     },
 
     keyPress(event) {
-        this.attrs.clearErrors();
+        this.get('clearErrors')();
 
         // enter key
         if (event.keyCode === 13) {

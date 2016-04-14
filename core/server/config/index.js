@@ -104,6 +104,12 @@ ConfigManager.prototype.set = function (config) {
     // local copy with properties that have been explicitly set.
     _.merge(this._config, config);
 
+    // Special case for the database config, which should be overridden not merged
+
+    if (config && config.database) {
+        this._config.database = config.database;
+    }
+
     // Special case for the them.navigation JSON object, which should be overridden not merged
     if (config && config.theme && config.theme.navigation) {
         this._config.theme.navigation = config.theme.navigation;
@@ -167,8 +173,6 @@ ConfigManager.prototype.set = function (config) {
 
             adminViews:       path.join(corePath, '/server/views/'),
             helperTemplates:  path.join(corePath, '/server/helpers/tpl/'),
-            exportPath:       path.join(corePath, '/server/data/export/'),
-            lang:             path.join(corePath, '/shared/lang/'),
 
             availableThemes:  this._config.paths.availableThemes || {},
             availableApps:    this._config.paths.availableApps || {},
@@ -188,6 +192,7 @@ ConfigManager.prototype.set = function (config) {
             preview: 'p',
             private: 'private'
         },
+        internalApps: ['private-blogging'],
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..
             // reserved slugs are reserved but can be extended/removed by apps

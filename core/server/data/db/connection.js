@@ -3,8 +3,9 @@ var knex     = require('knex'),
     dbConfig = config.database,
     knexInstance;
 
-function configureDriver(client) {
-    var pg;
+function configure(dbConfig) {
+    var client = dbConfig.client,
+        pg;
 
     if (client === 'pg' || client === 'postgres' || client === 'postgresql') {
         try {
@@ -20,11 +21,16 @@ function configureDriver(client) {
             return val === null ? null : parseInt(val, 10);
         });
     }
+
+    if (client === 'sqlite3') {
+        dbConfig.useNullAsDefault = dbConfig.useNullAsDefault || false;
+    }
+
+    return dbConfig;
 }
 
 if (!knexInstance && dbConfig && dbConfig.client) {
-    configureDriver(dbConfig.client);
-    knexInstance = knex(dbConfig);
+    knexInstance = knex(configure(dbConfig));
 }
 
 module.exports = knexInstance;

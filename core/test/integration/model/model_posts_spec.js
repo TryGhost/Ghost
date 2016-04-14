@@ -131,6 +131,37 @@ describe('Post Model', function () {
                     }).catch(done);
             });
 
+            it('returns computed fields when columns are asked for explicitly', function (done) {
+                PostModel.findPage({columns: ['id', 'slug', 'url', 'markdown']}).then(function (results) {
+                    should.exist(results);
+
+                    var post = extractFirstPost(results.posts);
+
+                    post.url.should.equal('/html-ipsum/');
+
+                    // If a computed property is inadvertently passed into a "fetch" operation,
+                    // there's a bug in bookshelf where the model will come back with it as
+                    // a column enclosed in quotes.
+                    should.not.exist(post['"url"']);
+
+                    done();
+                }).catch(done);
+            });
+
+            it('ignores columns that do not exist', function (done) {
+                PostModel.findPage({columns: ['id', 'slug', 'doesnotexist']}).then(function (results) {
+                    should.exist(results);
+
+                    var post = extractFirstPost(results.posts);
+
+                    post.id.should.equal(1);
+                    post.slug.should.equal('html-ipsum');
+                    should.not.exist(post.doesnotexist);
+
+                    done();
+                }).catch(done);
+            });
+
             it('can findPage, with various options', function (done) {
                 testUtils.fixtures.insertMorePosts().then(function () {
                     return testUtils.fixtures.insertMorePostsTags();
@@ -819,7 +850,7 @@ describe('Post Model', function () {
                     post.tags[0].id.should.equal(firstItemData.id);
 
                     // Destroy the post
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy();
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
@@ -857,7 +888,7 @@ describe('Post Model', function () {
                     post.tags[0].id.should.equal(firstItemData.id);
 
                     // Destroy the post
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy(firstItemData);
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
@@ -894,7 +925,7 @@ describe('Post Model', function () {
                     page.page.should.be.true();
 
                     // Destroy the page
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy(firstItemData);
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
@@ -930,7 +961,7 @@ describe('Post Model', function () {
                     page.id.should.equal(firstItemData.id);
 
                     // Destroy the page
-                    return PostModel.destroy(firstItemData);
+                    return results.destroy(firstItemData);
                 }).then(function (response) {
                     var deleted = response.toJSON();
 
