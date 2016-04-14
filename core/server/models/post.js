@@ -394,6 +394,10 @@ Post = ghostBookshelf.Model.extend({
         return this.isPublicContext() ? 'status:published' : null;
     },
     defaultFilters: function defaultFilters() {
+        if (this.isInternalContext()) {
+            return null;
+        }
+
         return this.isPublicContext() ? 'page:false' : 'page:false+status:published';
     }
 }, {
@@ -458,7 +462,7 @@ Post = ghostBookshelf.Model.extend({
             validOptions = {
                 findOne: ['columns', 'importing', 'withRelated', 'require'],
                 findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status', 'staticPages'],
-                findAll: ['columns'],
+                findAll: ['columns', 'filter'],
                 add: ['importing']
             };
 
@@ -636,6 +640,7 @@ Post = ghostBookshelf.Model.extend({
         if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
             // Grab the original args without the first one
             origArgs = _.toArray(arguments).slice(1);
+
             // Get the actual post model
             return this.findOne({id: postModelOrId, status: 'all'}).then(function then(foundPostModel) {
                 // Build up the original args but substitute with actual model
