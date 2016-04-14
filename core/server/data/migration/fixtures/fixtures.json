@@ -48,18 +48,18 @@
         {
             "name": "Role",
             "entries": [
-            {
-                "name":             "Administrator",
-                "description":      "Administrators"
-            },
-            {
-                "name":             "Editor",
-                "description":      "Editors"
-            },
-            {
-                "name":             "Author",
-                "description":      "Authors"
-            },
+                {
+                    "name":             "Administrator",
+                    "description":      "Administrators"
+                },
+                {
+                    "name":             "Editor",
+                    "description":      "Editors"
+                },
+                {
+                    "name":             "Author",
+                    "description":      "Authors"
+                },
                 {
                     "name":             "Owner",
                     "description":      "Blog Owner"
