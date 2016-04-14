@@ -1,5 +1,5 @@
 // # Content Helper
-// Usage: `{{content}}`, `{{content words="20"}}`, `{{content characters="256"}}`
+// Usage: `{{content}}`, `{{content words="20"}}`, `{{content characters="256"}}`, `{{content words="20" append="..."}}`
 //
 // Turns content html into a safestring so that the user doesn't have to
 // escape it or tell handlebars to leave it alone with a triple-brace.
@@ -19,6 +19,12 @@ content = function (options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    try {
+        truncateOptions.append = options.hash.append;
+    } catch (e) {
+        // do absolutely nothing, because nothing needs to be done.
+    }
+
     if (truncateOptions.hasOwnProperty('words') || truncateOptions.hasOwnProperty('characters')) {
         // Legacy function: {{content words="0"}} should return leading tags.
         if (truncateOptions.hasOwnProperty('words') && truncateOptions.words === 0) {
@@ -26,7 +32,6 @@ content = function (options) {
                 downzero(this.html)
             );
         }
-
         return new hbs.handlebars.SafeString(
             downsize(this.html, truncateOptions)
         );

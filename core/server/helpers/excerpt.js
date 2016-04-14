@@ -1,5 +1,5 @@
 // # Excerpt Helper
-// Usage: `{{excerpt}}`, `{{excerpt words="50"}}`, `{{excerpt characters="256"}}`
+// Usage: `{{excerpt}}`, `{{excerpt words="50"}}`, `{{excerpt characters="256"}}`, `{{excerpt characters="21" append="..."}}`
 //
 // Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
 //
@@ -17,6 +17,12 @@ function excerpt(options) {
         truncateOptions[key] = parseInt(truncateOptions[key], 10);
     });
 
+    try{
+        truncateOptions.append = options.hash.append;
+    } catch (e) {
+        //do nothing, because nothing is good.
+    }
+    
     return new hbs.handlebars.SafeString(
         getMetaDataExcerpt(String(this.html), truncateOptions)
     );
