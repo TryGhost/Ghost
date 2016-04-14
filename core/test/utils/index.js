@@ -386,6 +386,7 @@ toDoList = {
     role: function insertRole() { return fixtures.insertOne('roles', 'createRole'); },
     roles: function insertRoles() { return fixtures.insertRoles(); },
     tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
+    subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
 
     posts: function insertPosts() { return fixtures.insertPosts(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
@@ -581,6 +582,7 @@ module.exports = {
     // Helpers to make it easier to write tests which are easy to read
     context: {
         internal:   {context: {internal: true}},
+        external:   {context: {external: true}},
         owner:      {context: {user: 1}},
         admin:      {context: {user: 2}},
         editor:     {context: {user: 3}},
