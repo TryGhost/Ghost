@@ -2,8 +2,7 @@
 var testUtils     = require('../../utils'),
     should        = require('should'),
     _             = require('lodash'),
-
-    // Stuff we are testing
+    errors        = require('../../../server/errors'),
     PostAPI       = require('../../../server/api/posts');
 
 describe('Post API', function () {
@@ -183,10 +182,10 @@ describe('Post API', function () {
                 should.exist(results);
                 testUtils.API.checkResponse(results, 'posts');
                 should.exist(results.posts);
-                results.posts.length.should.eql(5);
-                results.posts[0].status.should.eql('draft');
-                testUtils.API.checkResponse(results.posts[0], 'post');
 
+                // DataGenerator creates 6 posts by default + 2 static pages
+                results.posts.length.should.eql(6);
+                testUtils.API.checkResponse(results.posts[0], 'post');
                 done();
             }).catch(done);
         });
@@ -245,7 +244,7 @@ describe('Post API', function () {
         it('can fetch all posts for an author', function (done) {
             PostAPI.browse({context: {user: 1}, status: 'all', filter: 'author:joe-bloggs', include: 'author'}).then(function (results) {
                 should.exist(results.posts);
-                results.posts.length.should.eql(5);
+                results.posts.length.should.eql(6);
 
                 _.each(results.posts, function (post) {
                     post.author.slug.should.eql('joe-bloggs');
@@ -342,7 +341,7 @@ describe('Post API', function () {
         it('can order posts using asc', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
             expectedTitles = _(posts).pluck('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title asc', fields: 'title'}).then(function (results) {
@@ -358,7 +357,7 @@ describe('Post API', function () {
         it('can order posts using desc', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
             expectedTitles = _(posts).pluck('title').sortBy().reverse().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title DESC', fields: 'title'}).then(function (results) {
@@ -374,7 +373,7 @@ describe('Post API', function () {
         it('can order posts and filter disallowed attributes', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
             expectedTitles = _(posts).pluck('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}).then(function (results) {
@@ -550,6 +549,26 @@ describe('Post API', function () {
 
                 done();
             });
+        });
+    });
+
+    describe('Edit', function () {
+        it('can edit own post', function (done) {
+            PostAPI.edit({posts:[{status: 'test'}]}, {context: {user: 1}, id: 1}).then(function (results) {
+                should.exist(results.posts);
+                done();
+            }).catch(done);
+        });
+
+        it('cannot edit others post', function (done) {
+            testUtils.fixtures.insertOne('users', 'createUser', 4)
+                .then(function (result) {
+                    PostAPI.edit({posts: [{status: 'test'}]}, {context: {user: result[0]}, id: 1}).catch(function (err) {
+                        should.exist(err);
+                        (err instanceof errors.NoPermissionError).should.eql(true);
+                        done();
+                    });
+                });
         });
     });
 

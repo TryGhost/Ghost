@@ -57,15 +57,17 @@ init = function init(tablesOnly) {
             );
         }
     }, function (err) {
+        // @TODO: do not check translation, check error class/type
         if (err && err.message === 'Settings table does not exist') {
             // 4. The database has not yet been created
             // Bring everything up from initial version.
             logger.info('Database initialisation required for version ' + versioning.getDefaultDatabaseVersion());
             return populate(logger, tablesOnly);
         }
-        // 3. The database exists but the currentVersion setting does not or cannot be understood
-        // In this case the setting was missing or there was some other problem
-        errors.logErrorAndExit('There is a problem with the database', err.message);
+
+        // CASE: the database exists but the currentVersion setting does not or cannot be understood
+        //       In this case the setting was missing or there was some other problem
+        errors.logErrorAndExit(err, 'Problem occurred during migration initialisation!');
     });
 };
 

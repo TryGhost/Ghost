@@ -230,7 +230,7 @@ describe('Post Model', function () {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal('all');
                     paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(107);
+                    paginationResult.posts.length.should.equal(108);
 
                     done();
                 }).catch(done);

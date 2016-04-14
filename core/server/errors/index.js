@@ -153,9 +153,10 @@ errors = {
             help = i18n.t('errors.errors.checkDatabase');
         }
 
-        // TODO: Logging framework hookup
-        // Eventually we'll have better logging which will know about envs
-        if ((process.env.NODE_ENV === 'development' ||
+        // @TODO: Logging framework hookup
+        // We'll have better logging which will know about envs
+        if ((process.env.NODE_LEVEL === 'DEBUG' ||
+            process.env.NODE_ENV === 'development' ||
             process.env.NODE_ENV === 'staging' ||
             process.env.NODE_ENV === 'production')) {
             msgs = [chalk.red(i18n.t('errors.errors.error'), err), '\n'];

@@ -101,7 +101,7 @@ Post = ghostBookshelf.Model.extend({
                     }
 
                     // CASE: from scheduled to something
-                    if (model.wasScheduled && !model.isScheduled) {
+                    if (model.wasScheduled && !model.isScheduled && !model.isPublished) {
                         model.emitChange('unscheduled');
                     }
                 } else {
@@ -179,7 +179,9 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
-        this.set('html', converter.makeHtml(toString(this.get('markdown'))));
+        if (this.get('markdown')) {
+            this.set('html', converter.makeHtml(toString(this.get('markdown'))));
+        }
 
         // disabling sanitization until we can implement a better version
         title = this.get('title') || i18n.t('errors.models.post.untitled');
@@ -438,11 +440,11 @@ Post = ghostBookshelf.Model.extend({
         // the status provided.
         if (options.status && options.status !== 'all') {
             // make sure that status is valid
-            options.status = _.contains(['published', 'draft'], options.status) ? options.status : 'published';
+            options.status = _.contains(['published', 'draft', 'scheduled'], options.status) ? options.status : 'published';
             options.where.statements.push({prop: 'status', op: '=', value: options.status});
             delete options.status;
         } else if (options.status === 'all') {
-            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft']});
+            options.where.statements.push({prop: 'status', op: 'IN', value: ['published', 'draft', 'scheduled']});
             delete options.status;
         }
 
