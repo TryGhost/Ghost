@@ -5,7 +5,7 @@ var _           = require('lodash'),
     i18n        = require('../i18n'),
     generateProxyFunctions;
 
-generateProxyFunctions = function (name, permissions) {
+generateProxyFunctions = function (name, permissions, isInternal) {
     var getPermission = function (perm) {
             return permissions[perm];
         },
@@ -21,6 +21,11 @@ generateProxyFunctions = function (name, permissions) {
             });
         },
         runIfPermissionToMethod = function (perm, method, wrappedFunc, context, args) {
+            // internal apps get all permissions
+            if (isInternal) {
+                return wrappedFunc.apply(context, args);
+            }
+
             var permValue = getPermissionToMethod(perm, method);
 
             if (!permValue) {
@@ -92,7 +97,7 @@ function AppProxy(options) {
         throw new Error(i18n.t('errors.apps.mustProvideAppPermissions.error'));
     }
 
-    _.extend(this, generateProxyFunctions(options.name, options.permissions));
+    _.extend(this, generateProxyFunctions(options.name, options.permissions, options.internal));
 }
 
 module.exports = AppProxy;

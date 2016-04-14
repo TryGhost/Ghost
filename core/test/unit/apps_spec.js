@@ -254,6 +254,24 @@ describe('Apps', function () {
 
             registerSpy.called.should.equal(false);
         });
+
+        it('does allow INTERNAL app to register helper without permission', function () {
+            var registerSpy = sandbox.spy(helpers, 'registerThemeHelper'),
+                appProxy = new AppProxy({
+                    name: 'TestApp',
+                    permissions: {},
+                    internal: true
+                });
+
+            function registerWithoutPermissions() {
+                appProxy.helpers.register('otherHelper', sandbox.stub().returns('test result'));
+            }
+
+            registerWithoutPermissions.should.not.throw('The App "TestApp" attempted to perform an action or access a ' +
+                'resource (helpers.otherHelper) without permission.');
+
+            registerSpy.called.should.equal(true);
+        });
     });
 
     describe('Sandbox', function () {
@@ -331,6 +349,21 @@ describe('Apps', function () {
                 };
 
             loadApp.should.throw(/^Unsafe App require[\w\W]*example$/);
+        });
+
+        it('does allow INTERNAL apps to require modules relatively outside their directory', function () {
+            var appBox = new AppSandbox({internal: true}),
+                badAppPath = path.join(__dirname, '..', 'utils', 'fixtures', 'app', 'badoutside.js'),
+                InternalApp,
+                loadApp = function () {
+                    InternalApp = appBox.loadApp(badAppPath);
+                };
+
+            InternalApp = appBox.loadApp(badAppPath);
+
+            loadApp.should.not.throw(/^Unsafe App require[\w\W]*example$/);
+
+            InternalApp.should.be.a.Function();
         });
     });
 

@@ -72,6 +72,7 @@ describe('Config', function () {
                 'corePath',
                 'themePath',
                 'appPath',
+                'internalAppPath',
                 'imagesPath',
                 'imagesRelPath',
                 'adminViews',
