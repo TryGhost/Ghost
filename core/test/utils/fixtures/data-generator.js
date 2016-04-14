@@ -53,6 +53,12 @@ DataGenerator.Content = {
             markdown: "<h1>Static page test is what this is for.</h1><p>Hopefully you don't find it a bore.</p>",
             page: 1,
             status: "draft"
+        },
+        {
+            title: "This is a scheduled post!!",
+            slug: "scheduled-post",
+            markdown: "<h1>Welcome to my invisible post!</h1>",
+            status: "scheduled"
         }
     ],
 
@@ -363,7 +369,8 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[3]),
         createPost(DataGenerator.Content.posts[4]),
         createPost(DataGenerator.Content.posts[5]),
-        createPost(DataGenerator.Content.posts[6])
+        createPost(DataGenerator.Content.posts[6]),
+        createPost(DataGenerator.Content.posts[7])
     ];
 
     tags = [
