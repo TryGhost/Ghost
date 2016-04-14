@@ -25,6 +25,7 @@ models = [
     'refreshtoken',
     'role',
     'settings',
+    'subscribers',
     'tag',
     'user'
 ];

@@ -65,6 +65,11 @@ apiRoutes = function apiRoutes(middleware) {
     router.put('/tags/:id', authenticatePrivate, api.http(api.tags.edit));
     router.del('/tags/:id', authenticatePrivate, api.http(api.tags.destroy));
 
+    // ## Subscribers
+    router.get('/subscribers', authenticatePrivate, api.http(api.subscribers.browse));
+    router.get('/subscribers/:id', authenticatePrivate, api.http(api.subscribers.read));
+    router.post('/subscribers', authenticatePublic, api.http(api.subscribers.add));
+
     // ## Roles
     router.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
 

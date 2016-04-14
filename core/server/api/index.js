@@ -19,6 +19,7 @@ var _              = require('lodash'),
     themes         = require('./themes'),
     users          = require('./users'),
     slugs          = require('./slugs'),
+    subscribers    = require('./subscribers'),
     authentication = require('./authentication'),
     uploads        = require('./upload'),
     exporter       = require('../data/export'),
@@ -194,7 +195,7 @@ http = function http(apiMethod) {
         var object = req.body,
             options = _.extend({}, req.file, req.query, req.params, {
                 context: {
-                    user: (req.user && req.user.id) ? req.user.id : null
+                    user: ((req.user && req.user.id) || req.user.id === 0) ? req.user.id : null
                 }
             });
 
@@ -242,6 +243,7 @@ module.exports = {
     themes: themes,
     users: users,
     slugs: slugs,
+    subscribers: subscribers,
     authentication: authentication,
     uploads: uploads
 };

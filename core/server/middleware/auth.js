@@ -99,6 +99,7 @@ auth = {
                 } else if (isBearerAutorizationHeader(req)) {
                     return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
                 } else if (req.client) {
+                    req.user = {id: 0};
                     return next();
                 }
 
