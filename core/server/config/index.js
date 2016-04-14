@@ -169,6 +169,7 @@ ConfigManager.prototype.set = function (config) {
             themePath:        path.resolve(contentPath, 'themes'),
             appPath:          path.resolve(contentPath, 'apps'),
             imagesPath:       path.resolve(contentPath, 'images'),
+            internalAppPath:  path.join(corePath, '/server/apps/'),
             imagesRelPath:    'content/images',
 
             adminViews:       path.join(corePath, '/server/views/'),
@@ -190,7 +191,8 @@ ConfigManager.prototype.set = function (config) {
             author: 'author',
             page: 'page',
             preview: 'p',
-            private: 'private'
+            private: 'private',
+            subscribe: 'subscribe'
         },
         internalApps: ['private-blogging'],
         slugs: {
