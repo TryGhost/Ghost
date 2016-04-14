@@ -9,7 +9,11 @@
         {{/if}}
     </div>
     <div class="settings-menu-content">
-        {{gh-uploader uploaded="setCoverImage" canceled="clearCoverImage" description="Add tag image" image=tag.image initUploader="setUploaderReference" tagName="section"}}
+        {{gh-image-uploader-with-preview
+            image=tag.image
+            text="Add tag image"
+            update=(action "setCoverImage")
+            remove=(action "clearCoverImage")}}
         <form>
             {{#gh-form-group errors=tag.errors hasValidated=tag.hasValidated property="name"}}
                 <label for="tag-name">Name</label>

@@ -1,0 +1,43 @@
+{{#if file}}
+    {{!-- Upload in progress! --}}
+    {{#if failureMessage}}
+        <div class="failed">{{failureMessage}}</div>
+    {{/if}}
+    <div class="progress-container">
+        <div class="progress">
+            <div class="bar {{if failureMessage "fail"}}" style={{progressStyle}}></div>
+        </div>
+    </div>
+    {{#if failureMessage}}
+        <button class="btn btn-green" {{action "reset"}}>Try Again</button>
+    {{/if}}
+{{else}}
+    {{#if showUploadForm}}
+        {{!-- file selection/drag-n-drop  --}}
+        <div class="upload-form">
+            {{#x-file-input multiple=false alt=text action=(action 'fileSelected') accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml"}}
+                <div class="description">{{text}}</div>
+            {{/x-file-input}}
+        </div>
+
+        <a class="image-url" {{action 'switchForm' 'url-input'}}>
+            <i class="icon-link"><span class="hidden">URL</span></i>
+        </a>
+    {{else}}
+        {{!-- URL input --}}
+        <form class="url-form">
+            {{one-way-input class="url gh-input" placeholder="http://" value=url update=(action "onInput") onenter=(action "saveUrl")}}
+            {{#if saveButton}}
+                <button class="btn btn-blue gh-input" {{action 'saveUrl'}}>Save</button>
+            {{else}}
+                <div class="description">{{text}}</div>
+            {{/if}}
+        </form>
+
+        {{#if canShowUploadForm}}
+            <a class="image-upload icon-photos" title="Add image" {{action 'switchForm' 'upload'}}>
+                <span class="hidden">Upload</span>
+            </a>
+        {{/if}}
+    {{/if}}
+{{/if}}
