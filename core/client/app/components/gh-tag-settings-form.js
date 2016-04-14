@@ -119,10 +119,6 @@ export default Component.extend({
             this.get('setProperty')('image', '');
         },
 
-        setUploaderReference() {
-            // noop
-        },
-
         openMeta() {
             this.set('isViewingSubview', true);
         },
