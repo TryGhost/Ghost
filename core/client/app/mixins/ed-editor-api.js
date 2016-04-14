@@ -131,6 +131,7 @@ export default Mixin.create({
 
         $textarea.focus();
         // Tell the editor it has changed, as programmatic replacements won't trigger this automatically
+        this._elementValueDidChange();
         this.sendAction('onChange');
     }
 });

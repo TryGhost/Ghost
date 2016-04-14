@@ -1,8 +1,17 @@
 <div class="modal-body">
-    <section class="js-drop-zone">
-        <img class="js-upload-target" src="{{imageUrl}}" alt="logo">
-        <input data-url="upload" class="js-fileupload main" type="file" name="uploadimage" accept="{{acceptEncoding}}">
-    </section>
+    {{#if url}}
+        <div class="gh-image-uploader --with-image">
+            <div><img src={{url}}></div>
+            <a class="image-cancel icon-trash" title="Delete" {{action 'removeImage'}}>
+                <span class="hidden">Delete</span>
+            </a>
+        </div>
+    {{else}}
+        {{gh-image-uploader image=newUrl
+                            saveButton=false
+                            update=(action 'fileUploaded')
+                            onInput=(action (mut newUrl))}}
+    {{/if}}
 </div>
 
 <div class="modal-footer">

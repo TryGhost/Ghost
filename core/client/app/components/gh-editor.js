@@ -100,18 +100,18 @@ export default Component.extend(ShortcutsMixin, {
 
         // Match the uploaded file to a line in the editor, and update that line with a path reference
         // ensuring that everything ends up in the correct place and format.
-        handleImgUpload(e, resultSrc) {
+        handleImgUpload(imageIndex, newSrc) {
             let editor = this.get('editor');
             let editorValue = editor.getValue();
-            let replacement = imageManager.getSrcRange(editorValue, e.target);
+            let replacement = imageManager.getSrcRange(editorValue, imageIndex);
             let cursorPosition;
 
             if (replacement) {
-                cursorPosition = replacement.start + resultSrc.length + 1;
+                cursorPosition = replacement.start + newSrc.length + 1;
                 if (replacement.needsParens) {
-                    resultSrc = `(${resultSrc})`;
+                    newSrc = `(${newSrc})`;
                 }
-                editor.replaceSelection(resultSrc, replacement.start, replacement.end, cursorPosition);
+                editor.replaceSelection(newSrc, replacement.start, replacement.end, cursorPosition);
             }
         },
 

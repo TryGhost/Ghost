@@ -32,8 +32,7 @@ export default AuthenticatedRoute.extend(base, {
         // from previous posts
         psm.removeObserver('titleScratch', psm, 'titleObserver');
 
-        // Ensure that the PSM Image Uploader and Publish Date selector resets
-        psm.send('resetUploader');
+        // Ensure that the PSM Publish Date selector resets
         psm.send('resetPubDate');
 
         this._super(...arguments);

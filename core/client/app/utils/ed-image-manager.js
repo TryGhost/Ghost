@@ -12,23 +12,9 @@ function parse(stringToParse) {
     return images;
 }
 
-// Loop through all dropzones in the preview and find which one was the target of the upload
-function getZoneIndex(element) {
-    let zones = document.querySelectorAll('.js-entry-preview .js-drop-zone');
-
-    for (let i = 0; i < zones.length; i += 1) {
-        if (zones.item(i) === element) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 // Figure out the start and end of the selection range for the src in the markdown, so we know what to replace
-function getSrcRange(content, element) {
+function getSrcRange(content, index) {
     let images = parse(content);
-    let index = getZoneIndex(element);
     let replacement = {};
 
     if (index > -1) {
