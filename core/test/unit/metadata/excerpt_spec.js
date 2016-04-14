@@ -29,7 +29,7 @@ describe('getExcerpt', function () {
             '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p>' +
             '<a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" ' +
             'title="return to article">↩</a></p></li></ol></div>',
-        expected = 'Testing a very short post with a single footnote.';
+            expected = 'Testing a very short post with a single footnote.';
 
         getExcerpt(html, {}).should.equal(expected);
     });
@@ -55,5 +55,40 @@ describe('getExcerpt', function () {
         expected = 'Hello Wo';
 
         getExcerpt(html, {characters: '8'}).should.equal(expected);
+    });
+
+    it('should return html excerpt with only the whitelisted tags',
+    function () {
+        var html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>, ' +
+                'my footnotes. And <content>stuff.</content> Footnote<sup id="fnref:2"><a href="#fn:2" ' +
+                'rel="footnote">2</a></sup><a href="http://google.com">with a link</a> ' +
+                'right after.',
+        expected = '<p>Testing<sup id="fnref:1"></sup>, my footnotes. And stuff. Footnote<sup id="fnref:2"></sup><a href="http://google.com">with a link</a> right after.</p>';
+
+        getExcerpt(html, {stripTags: true}).should.equal(expected);
+    });
+
+    it('should return excerpt truncated by sentence',
+    function () {
+        var html = 'Hello World. lorem ipsum is a thing. my favorite color is green. why.',
+        expected = 'Hello World. lorem ipsum is a thing.';
+
+        getExcerpt(html, {sentences: '2'}).should.equal(expected);
+    });
+
+    it('should return excerpt with append',
+    function () {
+        var html = 'Hello World. lorem ipsum is a thing. my favorite color is green. why.',
+        expected = 'Hello World. lorem ipsum is a thing. my fa...';
+
+        getExcerpt(html, {characters: '42', append: '...'}).should.equal(expected);
+    });
+
+    it('should round by sentence when asked to',
+    function () {
+        var html = 'Hello World. lorem ipsum is a thing. my favorite color is green. why.',
+        expected = 'Hello World. lorem ipsum is a thing.';
+
+        getExcerpt(html, {characters: '29', round: 'true'}).should.equal(expected);
     });
 });

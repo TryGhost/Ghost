@@ -1,5 +1,5 @@
 // # Excerpt Helper
-// Usage: `{{excerpt}}`, `{{excerpt words="50"}}`, `{{excerpt characters="256"}}`
+// Usage: `{{excerpt}}`, `{{excerpt words="50"}}`, `{{excerpt characters="256"}}`, `{{excerpt words="50" append="..."}}`, `{{excerpt characters="140" roundSentence="true"}}`
 //
 // Attempts to remove all HTML from the string, and then shortens the result according to the provided option.
 //
@@ -12,9 +12,11 @@ var hbs = require('express-hbs'),
 function excerpt(options) {
     var truncateOptions = (options || {}).hash || {};
 
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
+    truncateOptions = _.pick(truncateOptions, ['words', 'characters', 'sentences', 'round', 'append', 'stripTags']);
     _.keys(truncateOptions).map(function (key) {
-        truncateOptions[key] = parseInt(truncateOptions[key], 10);
+        if (isNaN(parseInt(truncateOptions[key], 10)) === false) {
+            truncateOptions[key] = parseInt(truncateOptions[key], 10);
+        }
     });
 
     return new hbs.handlebars.SafeString(
