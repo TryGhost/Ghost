@@ -45,6 +45,14 @@ describe('{{page_url}} helper', function () {
         helpers.page_url('next', options).should.eql('/tag/pumpkin/page/10/');
         helpers.page_url('prev', options).should.eql('/tag/pumpkin/page/2/');
     });
+
+    it('should assume 1 if page is undefined', function () {
+        options.data.root.relativeUrl = '/tag/pumpkin/';
+        options.data.root.pagination.next = 10;
+        options.data.root.pagination.prev = 2;
+
+        helpers.page_url(options).should.equal(helpers.page_url(1, options));
+    });
 });
 
 describe('{{pageUrl}} helper [DEPRECATED]', function () {
@@ -63,6 +71,7 @@ describe('{{pageUrl}} helper [DEPRECATED]', function () {
         options.data.root.pagination.next = 5;
         options.data.root.pagination.prev = 7;
 
+        helpers.pageUrl(options).should.eql(helpers.page_url(options));
         helpers.pageUrl(1, options).should.eql(helpers.page_url(1, options));
         helpers.pageUrl(20, options).should.eql(helpers.page_url(20, options));
         helpers.pageUrl('next', options).should.eql(helpers.page_url('next', options));
@@ -74,6 +83,7 @@ describe('{{pageUrl}} helper [DEPRECATED]', function () {
         options.data.root.pagination.next = 12;
         options.data.root.pagination.prev = 9;
 
+        helpers.pageUrl(options).should.eql(helpers.page_url(options));
         helpers.pageUrl(1, options).should.eql(helpers.page_url(1, options));
         helpers.pageUrl(20, options).should.eql(helpers.page_url(20, options));
         helpers.pageUrl('next', options).should.eql(helpers.page_url('next', options));
