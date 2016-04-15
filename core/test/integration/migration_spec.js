@@ -6,6 +6,7 @@ var testUtils   = require('../utils'),
     Promise     = require('bluebird'),
 
     fixtures    = require('../../server/data/migration/fixtures'),
+    fixtures005 = require('../../server/data/migration/fixtures/005'),
     Models      = require('../../server/models'),
 
     sandbox     = sinon.sandbox.create();
@@ -122,6 +123,18 @@ describe('Database Migration (special functions)', function () {
             permissions[28].should.be.AssignedToRoles(['Administrator', 'Editor']);
             permissions[29].name.should.eql('Browse roles');
             permissions[29].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+
+            // Clients
+            permissions[30].name.should.eql('Browse clients');
+            permissions[30].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[31].name.should.eql('Read clients');
+            permissions[31].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[32].name.should.eql('Edit clients');
+            permissions[32].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[33].name.should.eql('Add clients');
+            permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[34].name.should.eql('Delete clients');
+            permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
         });
 
         describe('Populate', function () {
@@ -159,9 +172,10 @@ describe('Database Migration (special functions)', function () {
 
                         // Clients
                         should.exist(result.clients);
-                        result.clients.length.should.eql(2);
+                        result.clients.length.should.eql(3);
                         result.clients.at(0).get('name').should.eql('Ghost Admin');
                         result.clients.at(1).get('name').should.eql('Ghost Frontend');
+                        result.clients.at(2).get('name').should.eql('Ghost Scheduler');
 
                         // User (Owner)
                         should.exist(result.users);
@@ -179,12 +193,66 @@ describe('Database Migration (special functions)', function () {
                         result.roles.at(3).get('name').should.eql('Owner');
 
                         // Permissions
-                        result.permissions.length.should.eql(30);
+                        result.permissions.length.should.eql(35);
                         result.permissions.toJSON().should.be.CompletePermissions();
 
                         done();
                     });
                 }).catch(done);
+            });
+        });
+
+        describe('Update', function () {
+            // We need the roles, and lets add some other perms to simulate the "Update" environment
+            beforeEach(testUtils.setup('users:roles', 'perms:db', 'perms:init'));
+
+            it('should update client permissions correctly', function (done) {
+                fixtures005[2]({}, loggerStub).then(function () {
+                    var props = {
+                        roles: Models.Role.findAll(),
+                        permissions: Models.Permission.findAll({include: ['roles']})
+                    }, permissions;
+
+                    loggerStub.info.called.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    return Promise.props(props).then(function (result) {
+                        should.exist(result);
+
+                        should.exist(result.roles);
+                        result.roles.length.should.eql(4);
+                        result.roles.at(0).get('name').should.eql('Administrator');
+                        result.roles.at(1).get('name').should.eql('Editor');
+                        result.roles.at(2).get('name').should.eql('Author');
+                        result.roles.at(3).get('name').should.eql('Owner');
+
+                        // Permissions
+                        result.permissions.length.should.eql(8);
+                        permissions = result.permissions.toJSON();
+
+                        // DB Perms
+                        permissions[0].name.should.eql('Export database');
+                        permissions[0].should.be.AssignedToRoles(['Administrator']);
+                        permissions[1].name.should.eql('Import database');
+                        permissions[1].should.be.AssignedToRoles(['Administrator']);
+                        permissions[2].name.should.eql('Delete all content');
+                        permissions[2].should.be.AssignedToRoles(['Administrator']);
+
+                        // Client Perms
+                        permissions[3].name.should.eql('Browse clients');
+                        permissions[3].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+                        permissions[4].name.should.eql('Read clients');
+                        permissions[4].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+                        permissions[5].name.should.eql('Edit clients');
+                        permissions[5].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+                        permissions[6].name.should.eql('Add clients');
+                        permissions[6].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+                        permissions[7].name.should.eql('Delete clients');
+                        permissions[7].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+
+                        done();
+                    }).catch(done);
+                });
             });
         });
     });

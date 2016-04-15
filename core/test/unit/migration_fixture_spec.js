@@ -11,7 +11,9 @@ var should  = require('should'),
     versioning    = require('../../server/data/schema/versioning'),
     update        = rewire('../../server/data/migration/fixtures/update'),
     populate      = rewire('../../server/data/migration/fixtures/populate'),
+    fixtureUtils  = require('../../server/data/migration/fixtures/utils'),
     fixtures004   = require('../../server/data/migration/fixtures/004'),
+    fixtures005   = require('../../server/data/migration/fixtures/005'),
     ensureDefaultSettings = require('../../server/data/migration/fixtures/settings'),
 
     sandbox       = sinon.sandbox.create();
@@ -122,6 +124,11 @@ describe('Fixtures', function () {
                     settingsEditStub = sandbox.stub(models.Settings, 'edit').returns(Promise.resolve());
                     clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve(getObjStub));
                     clientEditStub = sandbox.stub(models.Client, 'edit').returns(Promise.resolve());
+                });
+
+                it('should have tasks for 004', function () {
+                    should.exist(fixtures004);
+                    fixtures004.should.be.an.Array().with.lengthOf(8);
                 });
 
                 describe('01-move-jquery-with-alert', function () {
@@ -685,6 +692,187 @@ describe('Fixtures', function () {
                 });
             });
         });
+
+        describe('Update to 005', function () {
+            it('should call all the 005 fixture upgrades', function (done) {
+                // Setup
+                // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                var sequenceStub = sandbox.stub(),
+                    sequenceReset = update.__set__('sequence', sequenceStub);
+
+                // The first time we call sequence, it should be to execute a top level version, e.g 005
+                // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
+                // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
+                // again with the array of tasks to execute for 005, which is what we want to check
+                sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+
+                update(['005'], loggerStub).then(function (result) {
+                    should.exist(result);
+
+                    loggerStub.info.calledTwice.should.be.true();
+                    loggerStub.warn.called.should.be.false();
+
+                    sequenceStub.calledTwice.should.be.true();
+
+                    sequenceStub.firstCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                    sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
+
+                    sequenceStub.secondCall.calledWith(sinon.match.array, sinon.match.object, loggerStub).should.be.true();
+                    sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(3);
+                    sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'updateGhostClientsSecrets');
+                    sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addGhostFrontendClient');
+                    sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addClientPermissions');
+
+                    // Reset
+                    sequenceReset();
+                    done();
+                }).catch(done);
+            });
+
+            describe('Tasks:', function () {
+                it('should have tasks for 005', function () {
+                    should.exist(fixtures005);
+                    fixtures005.should.be.an.Array().with.lengthOf(3);
+                });
+
+                describe('01-update-ghost-client-secrets', function () {
+                    var queryStub, clientForgeStub, clientEditStub;
+
+                    beforeEach(function () {
+                        queryStub = {
+                            query: sandbox.stub().returnsThis(),
+                            fetch: sandbox.stub()
+                        };
+
+                        clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
+                        clientEditStub = sandbox.stub(models.Client, 'edit');
+                    });
+
+                    it('should do nothing if there are no incorrect secrets', function (done) {
+                        // Setup
+                        queryStub.fetch.returns(new Promise.resolve({models: []}));
+
+                        // Execute
+                        fixtures005[0]({}, loggerStub).then(function () {
+                            clientForgeStub.calledOnce.should.be.true();
+                            clientEditStub.called.should.be.false();
+                            loggerStub.info.called.should.be.false();
+                            loggerStub.warn.calledOnce.should.be.true();
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('should try to fix any incorrect secrets', function (done) {
+                        // Setup
+                        queryStub.fetch.returns(new Promise.resolve({models: [{id: 1}]}));
+
+                        // Execute
+                        fixtures005[0]({}, loggerStub).then(function () {
+                            clientForgeStub.calledOnce.should.be.true();
+                            clientEditStub.called.should.be.true();
+                            loggerStub.info.calledOnce.should.be.true();
+                            loggerStub.warn.called.should.be.false();
+                            done();
+                        }).catch(done);
+                    });
+                });
+
+                describe('02-add-ghost-scheduler-client', function () {
+                    var clientOneStub;
+
+                    beforeEach(function () {
+                        clientOneStub = sandbox.stub(models.Client, 'findOne').returns(Promise.resolve({}));
+                    });
+
+                    it('tries to add client correctly', function (done) {
+                        var clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve());
+                        clientOneStub.returns(Promise.resolve());
+
+                        fixtures005[1]({}, loggerStub).then(function () {
+                            clientOneStub.calledOnce.should.be.true();
+                            clientOneStub.calledWith({slug: 'ghost-scheduler'}).should.be.true();
+                            clientAddStub.calledOnce.should.be.true();
+                            loggerStub.info.calledOnce.should.be.true();
+                            loggerStub.warn.called.should.be.false();
+                            sinon.assert.callOrder(clientOneStub, loggerStub.info, clientAddStub);
+
+                            done();
+                        }).catch(done);
+                    });
+
+                    it('does not try to add client if it already exists', function (done) {
+                        var clientAddStub = sandbox.stub(models.Client, 'add').returns(Promise.resolve());
+
+                        fixtures005[1]({}, loggerStub).then(function () {
+                            clientOneStub.calledOnce.should.be.true();
+                            clientOneStub.calledWith({slug: 'ghost-scheduler'}).should.be.true();
+                            clientAddStub.called.should.be.false();
+                            loggerStub.info.called.should.be.false();
+                            loggerStub.warn.calledOnce.should.be.true();
+
+                            done();
+                        }).catch(done);
+                    });
+                });
+
+                describe('03-add-client-permissions', function () {
+                    var modelResult, addModelStub, relationResult, addRelationStub;
+
+                    beforeEach(function () {
+                        modelResult = {expected: 1, done: 1};
+                        addModelStub = sandbox.stub(fixtureUtils, 'addFixturesForModel')
+                            .returns(Promise.resolve(modelResult));
+
+                        relationResult = {expected: 1, done: 1};
+                        addRelationStub = sandbox.stub(fixtureUtils, 'addFixturesForRelation')
+                            .returns(Promise.resolve(relationResult));
+                    });
+
+                    it('should find the correct model & relation to add', function (done) {
+                        // Execute
+                        fixtures005[2]({}, loggerStub).then(function () {
+                            addModelStub.calledOnce.should.be.true();
+                            addModelStub.calledWith(
+                                fixtureUtils.findModelFixtures('Permission', {object_type: 'client'})
+                            ).should.be.true();
+
+                            addRelationStub.calledOnce.should.be.true();
+                            addRelationStub.calledWith(
+                                fixtureUtils.findPermissionRelationsForObject('client')
+                            ).should.be.true();
+
+                            loggerStub.info.calledTwice.should.be.true();
+                            loggerStub.warn.called.should.be.false();
+
+                            done();
+                        });
+                    });
+
+                    it('should warn the result shows less work was done than expected', function (done) {
+                        // Setup
+                        modelResult.expected = 3;
+                        // Execute
+                        fixtures005[2]({}, loggerStub).then(function () {
+                            addModelStub.calledOnce.should.be.true();
+                            addModelStub.calledWith(
+                                fixtureUtils.findModelFixtures('Permission', {object_type: 'client'})
+                            ).should.be.true();
+
+                            addRelationStub.calledOnce.should.be.true();
+                            addRelationStub.calledWith(
+                                fixtureUtils.findPermissionRelationsForObject('client')
+                            ).should.be.true();
+
+                            loggerStub.info.calledOnce.should.be.true();
+                            loggerStub.warn.calledOnce.should.be.true();
+
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 
     describe('Populate fixtures', function () {
@@ -730,12 +918,12 @@ describe('Fixtures', function () {
                 tagAddStub.calledOnce.should.be.true();
                 roleOneStub.callCount.should.be.aboveOrEqual(4);
                 roleAddStub.callCount.should.eql(4);
-                clientOneStub.calledTwice.should.be.true();
-                clientAddStub.calledTwice.should.be.true();
+                clientOneStub.calledThrice.should.be.true();
+                clientAddStub.calledThrice.should.be.true();
 
-                permOneStub.callCount.should.eql(30);
+                permOneStub.callCount.should.eql(35);
                 permsAddStub.called.should.be.true();
-                permsAddStub.callCount.should.eql(30);
+                permsAddStub.callCount.should.eql(35);
 
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
@@ -744,8 +932,8 @@ describe('Fixtures', function () {
 
                 // Relations
                 modelMethodStub.filter.called.should.be.true();
-                // 22 permissions, 1 tag
-                modelMethodStub.filter.callCount.should.eql(22 + 1);
+                // 25 permissions, 1 tag
+                modelMethodStub.filter.callCount.should.eql(25 + 1);
                 modelMethodStub.find.called.should.be.true();
                 // 3 roles, 1 post
                 modelMethodStub.find.callCount.should.eql(3 + 1);
