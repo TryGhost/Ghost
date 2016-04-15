@@ -1,0 +1,20 @@
+{{#if file}}
+    {{!-- Upload in progress! --}}
+    {{#if failureMessage}}
+        <div class="failed">{{failureMessage}}</div>
+    {{/if}}
+    <div class="progress-container">
+        <div class="progress">
+            <div class="bar {{if failureMessage "fail"}}" style={{progressStyle}}></div>
+        </div>
+    </div>
+    {{#if failureMessage}}
+        <button class="btn btn-green" {{action "reset"}}>Try Again</button>
+    {{/if}}
+{{else}}
+    <div class="upload-form">
+        {{#x-file-input multiple=false alt=labelText action=(action 'fileSelected') accept="text/csv"}}
+            <div class="description">{{labelText}}</div>
+        {{/x-file-input}}
+    </div>
+{{/if}}
