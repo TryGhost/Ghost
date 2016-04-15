@@ -56,6 +56,8 @@ Router.map(function () {
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.navigation', {path: '/settings/navigation'});
 
+    this.route('subscribers');
+
     this.route('error404', {path: '/*path'});
 });
 

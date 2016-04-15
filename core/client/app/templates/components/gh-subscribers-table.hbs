@@ -1,0 +1,17 @@
+{{#light-table table scrollContainer=".subscribers-table" scrollBuffer=50 onScrolledToBottom=(action 'onScrolledToBottom') as |t|}}
+    {{t.head}}
+
+    {{#t.body canSelect=false as |body|}}
+        {{#if isLoading}}
+            {{#body.loader}}
+                Loading...
+            {{/body.loader}}
+        {{/if}}
+
+        {{#if table.isEmpty}}
+            {{#body.no-data}}
+                No subscribers found.
+            {{/body.no-data}}
+        {{/if}}
+    {{/t.body}}
+{{/light-table}}
