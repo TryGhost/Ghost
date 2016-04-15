@@ -31,6 +31,7 @@ export default Service.extend({
     notifications: service(),
 
     publicAPI: feature('publicAPI'),
+    subscribers: feature('subscribers'),
 
     _settings: null,
 

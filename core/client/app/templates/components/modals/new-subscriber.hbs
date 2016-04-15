@@ -1,0 +1,29 @@
+<header class="modal-header">
+    <h1>Add a Subscriber</h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <fieldset>
+        {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="email"}}
+            <label for="new-subscriber-email">Email Address</label>
+            <input type="email"
+                value={{model.email}}
+                oninput={{action "updateEmail" value="target.value"}}
+                id="new-subscriber-email"
+                class="gh-input email"
+                placeholder="Email Address"
+                name="email"
+                autofocus="autofocus"
+                autocapitalize="off"
+                autocorrect="off">
+            {{gh-error-message errors=model.errors property="email"}}
+        {{/gh-form-group}}
+
+    </fieldset>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="btn btn-default btn-minor">Cancel</button>
+    {{#gh-spin-button action="confirm" class="btn btn-green" submitting=submitting}}Add{{/gh-spin-button}}
+</div>
