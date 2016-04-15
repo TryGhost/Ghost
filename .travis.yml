@@ -1,5 +1,3 @@
-sudo: required
-dist: trusty
 language: node_js
 # When changing node version also update it on lines 34, 36 and 46.
 node_js:
@@ -11,15 +9,6 @@ cache:
     - node_modules
     - core/client/node_modules
     - core/client/bower_components
-addons:
-  firefox: "latest"
-  postgresql: "9.3"
-  apt:
-    sources:
-      - google-chrome
-    packages:
-      - mysql-server
-      - google-chrome-stable
 env:
   global:
     - GITHUB_OAUTH_KEY=003a44d58f12089d0c0261338298af3813330949
@@ -38,8 +27,6 @@ matrix:
 before_install:
   - if [ $DB == "mysql" ]; then mysql -u root -e 'create database ghost_testing'; fi
   - if [ $DB == "pg" ]; then psql -c 'create database ghost_testing;' -U postgres; fi
-before_script:
-  - if [ $TEST_SUITE == "client" ]; then export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3; fi
 after_success:
   - |
       if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
