@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const {merge} = Ember;
+const {assign} = Ember;
 
 export default {
     name: 'jquery-ajax-oauth-prefilter',
@@ -14,7 +14,7 @@ export default {
                 let headerObject = {};
 
                 headerObject[headerName] = headerValue;
-                options.headers = merge(options.headers || {}, headerObject);
+                options.headers = assign(options.headers || {}, headerObject);
             });
         });
     }
