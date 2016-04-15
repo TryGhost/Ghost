@@ -34,7 +34,7 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = true;
         // Enable mirage here in order to mock API endpoints during development
         ENV['ember-cli-mirage'] = {
-            enabled: false
+            enabled: true
         };
     }
 
