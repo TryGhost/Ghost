@@ -125,7 +125,7 @@ export default [
         id: 12,
         uuid: 'd806f358-7996-4c74-b153-8876959c4b70',
         key: 'labs',
-        value: '{"codeInjectionUI":true}',
+        value: '{"codeInjectionUI":true,"subscribers":true}',
         type: 'blog',
         created_at: '2015-01-12T18:29:01.000Z',
         created_by: 1,

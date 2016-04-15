@@ -59,6 +59,11 @@ Router.map(function () {
         this.route('slack', {path: 'slack'});
     });
 
+    this.route('subscribers', function() {
+        this.route('new');
+        this.route('import');
+    });
+
     this.route('error404', {path: '/*path'});
 });
 

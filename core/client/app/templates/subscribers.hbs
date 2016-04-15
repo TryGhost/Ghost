@@ -1,0 +1,40 @@
+<section class="gh-view view-subscribers">
+    <header class="view-header">
+        {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Subscribers</span>{{/gh-view-title}}
+        <div class="view-actions">
+            {{#link-to "subscribers.new" class="btn btn-green"}}Add Subscriber{{/link-to}}
+        </div>
+    </header>
+
+    <section class="view-container">
+        {{gh-subscribers-table
+                table=table
+                isLoading=isLoading
+                loadNextPage=(action 'loadNextPage')
+                sortByColumn=(action 'sortByColumn')}}
+
+        <div class="subscribers-sidebar">
+            <div class="settings-menu-header">
+                <h4>Import Subscribers</h4>
+            </div>
+            <div class="settings-menu-content subscribers-import-buttons">
+                {{#link-to "subscribers.import" class="btn"}}Import CSV{{/link-to}}
+                <a {{action 'exportData'}} class="btn">Export CSV</a>
+            </div>
+
+            <div class="settings-menu-header">
+                <h4>Quick Stats</h4>
+            </div>
+            <div class="settings-menu-content">
+                <ul>
+                    <li>
+                        Total Subscribers:
+                        <span id="total-subscribers">{{total}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+</section>
+
+{{outlet}}
