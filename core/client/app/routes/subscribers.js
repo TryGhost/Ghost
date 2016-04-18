@@ -1,16 +1,7 @@
-import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
-import PaginationRoute from 'ghost/mixins/pagination-route';
 
-const {computed} = Ember;
-
-export default AuthenticatedRoute.extend(PaginationRoute, {
+export default AuthenticatedRoute.extend({
     titleToken: 'Subscribers',
-
-    paginationModel: 'subscriber',
-    paginationSettings: {
-        limit: 30
-    },
 
     // redirect any users who are not owners/admins
     beforeModel() {
@@ -22,19 +13,19 @@ export default AuthenticatedRoute.extend(PaginationRoute, {
         });
     },
 
-    model() {
-        return this.loadFirstPage();
+    setupController(controller) {
+        this._super(...arguments);
+        controller.send('loadFirstPage');
     },
 
-    // TODO: there should be a better way to pass route properties to the controller
-    isLoading: computed({
-        get() {
-            return this._isLoading;
-        },
-        set(key, value) {
-            this._isLoading = value;
-            this.set('controller.isLoading', value);
-            return value;
+    deactivate() {
+        this._super(...arguments);
+        this.get('store').unloadAll('subscriber');
+    },
+
+    actions: {
+        incrementTotal() {
+            this.get('controller').incrementProperty('total');
         }
-    })
+    }
 });

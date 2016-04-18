@@ -2,15 +2,15 @@
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Subscribers</span>{{/gh-view-title}}
         <div class="view-actions">
-            <a href="javascript:void(0)" title="Add Subscriber" class="btn btn-green">Add Subscriber</a>
+            {{#link-to "subscribers.new" title="Add Subscriber" class="btn btn-green"}}Add Subscriber{{/link-to}}
         </div>
     </header>
 
     <section class="view-container">
         {{gh-subscribers-table
-                subscribers=model
+                subscribers=sortedSubscribers
                 isLoading=isLoading
-                loadNextPage=(route-action 'loadNextPage')}}
+                loadNextPage=(action 'loadNextPage')}}
 
         <div class="subscribers-sidebar">
             <div class="settings-menu-header">
@@ -28,10 +28,12 @@
                 <ul>
                     <li>
                         Total Subscribers:
-                        <span id="total-subscribers">{{model.meta.pagination.total}}</span>
+                        <span id="total-subscribers">{{total}}</span>
                     </li>
                 </ul>
             </div>
         </div>
     </section>
 </section>
+
+{{outlet}}

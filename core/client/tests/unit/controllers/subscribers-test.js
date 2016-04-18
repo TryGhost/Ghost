@@ -6,15 +6,16 @@ import {
 } from 'ember-mocha';
 
 describeModule(
-    'route:subscribers',
-    'Unit: Route: subscribers',
+    'controller:subscribers',
+    'Unit: Controller: subscribers',
     {
         needs: ['service:notifications']
     },
     function() {
+        // Replace this with your real tests.
         it('exists', function() {
-            let route = this.subject();
-            expect(route).to.be.ok;
+            let controller = this.subject();
+            expect(controller).to.be.ok;
         });
     }
 );

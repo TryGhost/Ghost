@@ -77,7 +77,7 @@ describe('Acceptance: Subscribers', function() {
 
             andThen(function() {
                 // it navigates to the correct page
-                expect(currentPath()).to.equal('subscribers');
+                expect(currentPath()).to.equal('subscribers.index');
 
                 // it has correct page title
                 expect(document.title, 'page title')
@@ -102,6 +102,44 @@ describe('Acceptance: Subscribers', function() {
                 // it loads the next page
                 expect(find('.subscribers-table .lt-body .lt-row').length, 'number of subscriber rows after infinite-scroll')
                     .to.equal(40);
+            });
+
+            // click the add subscriber button
+            click('.btn:contains("Add Subscriber")');
+
+            andThen(function () {
+                // it displays the add subscriber modal
+                expect(find('.fullscreen-modal').length, 'fullscreen modal displayed')
+                    .to.equal(1);
+            });
+
+            // cancel the modal
+            click('.fullscreen-modal .btn:contains("Cancel")');
+
+            andThen(function () {
+                // it closes the add subscriber modal
+                expect(find('.fullscreen-modal').length, 'fullscreen modal displayed after cancel')
+                    .to.equal(0);
+            });
+
+            // save a new subscriber
+            click('.btn:contains("Add Subscriber")');
+            fillIn('.fullscreen-modal input[name="email"]', 'test@example.com');
+            click('.fullscreen-modal .btn:contains("Add")');
+
+            andThen(function () {
+                // the subscriber is added to the table
+                expect(find('.subscribers-table .lt-body .lt-row:first-of-type .lt-cell:first-of-type').text().trim(), 'first email in list after addition')
+                    .to.equal('test@example.com');
+
+                // the table is scrolled to the top
+                // TODO: implement scroll to new record after addition
+                // expect(find('.subscribers-table').scrollTop(), 'scroll position after addition')
+                //     .to.equal(0);
+
+                // the subscriber total is updated
+                expect(find('#total-subscribers').text().trim(), 'subscribers total after addition')
+                    .to.equal('41');
             });
         });
     });
