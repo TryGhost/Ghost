@@ -25,6 +25,10 @@ export default Controller.extend(PromiseProxyMixin, {
         return this.get('config.publicAPI') || this.get('labs.publicAPI');
     }),
 
+    subscribers: computed('config.subscribers', 'labs.subscribers', function () {
+        return this.get('config.subscribers') || this.get('labs.subscribers');
+    }),
+
     init() {
         this._super(...arguments);
 

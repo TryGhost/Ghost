@@ -39,6 +39,7 @@ export default Service.extend({
     notifications: service(),
 
     publicAPI: feature('publicAPI'),
+    subscribers: feature('subscribers'),
 
     labs: computed('_settings', function () {
         return this.get('_settings').then((settings) => {
