@@ -3,17 +3,19 @@ import DS from 'ember-data';
 import Model from 'ember-data/model';
 import getRequestErrorMessage from 'ghost/utils/ajax';
 
-import ValidatorExtensions from 'ghost/utils/validator-extensions';
-import PostValidator from 'ghost/validators/post';
-import SetupValidator from 'ghost/validators/setup';
-import SignupValidator from 'ghost/validators/signup';
-import SigninValidator from 'ghost/validators/signin';
-import SettingValidator from 'ghost/validators/setting';
-import ResetValidator from 'ghost/validators/reset';
-import UserValidator from 'ghost/validators/user';
-import TagSettingsValidator from 'ghost/validators/tag-settings';
-import NavItemValidator from 'ghost/validators/nav-item';
 import InviteUserValidator from 'ghost/validators/invite-user';
+import NavItemValidator from 'ghost/validators/nav-item';
+import PostValidator from 'ghost/validators/post';
+import ResetValidator from 'ghost/validators/reset';
+import SettingValidator from 'ghost/validators/setting';
+import SetupValidator from 'ghost/validators/setup';
+import SigninValidator from 'ghost/validators/signin';
+import SignupValidator from 'ghost/validators/signup';
+import SubscriberValidator from 'ghost/validators/subscriber';
+import TagSettingsValidator from 'ghost/validators/tag-settings';
+import UserValidator from 'ghost/validators/user';
+
+import ValidatorExtensions from 'ghost/utils/validator-extensions';
 
 const {Mixin, RSVP, isArray} = Ember;
 const {Errors} = DS;
@@ -35,16 +37,17 @@ export default Mixin.create({
     // in that case the model will be the class that the ValidationEngine
     // was mixed into, i.e. the controller or Ember Data model.
     validators: {
-        post: PostValidator,
-        setup: SetupValidator,
-        signup: SignupValidator,
-        signin: SigninValidator,
-        setting: SettingValidator,
-        reset: ResetValidator,
-        user: UserValidator,
-        tag: TagSettingsValidator,
+        inviteUser: InviteUserValidator,
         navItem: NavItemValidator,
-        inviteUser: InviteUserValidator
+        post: PostValidator,
+        reset: ResetValidator,
+        setting: SettingValidator,
+        setup: SetupValidator,
+        signin: SigninValidator,
+        signup: SignupValidator,
+        subscriber: SubscriberValidator,
+        tag: TagSettingsValidator,
+        user: UserValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect

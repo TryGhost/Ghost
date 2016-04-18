@@ -5,6 +5,7 @@ const {
     Mixin,
     computed,
     RSVP,
+    computed,
     inject: {service}
 } = Ember;
 
@@ -99,7 +100,6 @@ export default Mixin.create({
                 this.set('paginationSettings.page', nextPage);
 
                 return store.query(modelName, paginationSettings).then((results) => {
-                    this.set('isLoading', false);
                     this.set('paginationMeta', results.meta);
                     return results;
                 }).catch((response) => {

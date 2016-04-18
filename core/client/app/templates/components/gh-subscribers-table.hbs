@@ -1,4 +1,4 @@
-{{#light-table table scrollContainer=".subscribers-table" scrollBuffer=50 onScrolledToBottom=(action 'onScrolledToBottom') as |t|}}
+{{#light-table table scrollContainer=".subscribers-table" scrollBuffer=100 onScrolledToBottom=(action 'onScrolledToBottom') as |t|}}
     {{t.head}}
 
     {{#t.body canSelect=false as |body|}}
@@ -6,12 +6,12 @@
             {{#body.loader}}
                 Loading...
             {{/body.loader}}
-        {{/if}}
-
-        {{#if table.isEmpty}}
-            {{#body.no-data}}
-                No subscribers found.
-            {{/body.no-data}}
+        {{else}}
+            {{#if table.isEmpty}}
+                {{#body.no-data}}
+                    No subscribers found.
+                {{/body.no-data}}
+            {{/if}}
         {{/if}}
     {{/t.body}}
 {{/light-table}}

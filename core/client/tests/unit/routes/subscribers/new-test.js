@@ -6,8 +6,8 @@ import {
 } from 'ember-mocha';
 
 describeModule(
-    'route:subscribers',
-    'Unit: Route: subscribers',
+    'route:subscribers/new',
+    'Unit: Route: subscribers/new',
     {
         needs: ['service:notifications']
     },
