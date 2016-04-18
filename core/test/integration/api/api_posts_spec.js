@@ -342,7 +342,7 @@ describe('Post API', function () {
         it('can order posts using asc', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
             expectedTitles = _(posts).pluck('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title asc', fields: 'title'}).then(function (results) {
@@ -358,7 +358,7 @@ describe('Post API', function () {
         it('can order posts using desc', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
             expectedTitles = _(posts).pluck('title').sortBy().reverse().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'title DESC', fields: 'title'}).then(function (results) {
@@ -374,7 +374,7 @@ describe('Post API', function () {
         it('can order posts and filter disallowed attributes', function (done) {
             var posts, expectedTitles;
 
-            posts = _(testUtils.DataGenerator.Content.posts).reject('page').value();
+            posts = _(testUtils.DataGenerator.Content.posts).reject('page').reject({status: 'scheduled'}).value();
             expectedTitles = _(posts).pluck('title').sortBy().value();
 
             PostAPI.browse({context: {user: 1}, status: 'all', order: 'bunny DESC, title ASC', fields: 'title'}).then(function (results) {

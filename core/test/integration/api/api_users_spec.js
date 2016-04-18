@@ -205,7 +205,7 @@ describe('Users API', function () {
                 response.users[0].count.posts.should.eql(0);
                 response.users[1].count.posts.should.eql(0);
                 response.users[2].count.posts.should.eql(0);
-                response.users[3].count.posts.should.eql(7);
+                response.users[3].count.posts.should.eql(8);
                 response.users[4].count.posts.should.eql(0);
                 response.users[5].count.posts.should.eql(0);
                 response.users[6].count.posts.should.eql(0);
