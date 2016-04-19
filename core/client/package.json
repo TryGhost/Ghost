@@ -35,6 +35,7 @@
     "ember-cli-mocha": "0.10.1",
     "ember-cli-pretender": "0.6.0",
     "ember-cli-release": "0.2.8",
+    "ember-cli-sauce": "1.4.4",
     "ember-cli-selectize": "0.4.3",
     "ember-cli-sri": "2.1.0",
     "ember-cli-uglify": "1.2.0",

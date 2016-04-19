@@ -279,6 +279,12 @@ var _              = require('lodash'),
 
                             case 'test':
                                 return emberPath + ' test --silent';
+
+                            case 'sauce-start':
+                                return emberPath + ' sauce:connect';
+
+                            case 'sauce-stop':
+                                return emberPath + ' sauce:disconnect';
                         }
                     },
                     options: {
@@ -529,7 +535,7 @@ var _              = require('lodash'),
             if (process.env.TEST_SUITE === 'server') {
                 grunt.task.run(['init', 'test-server']);
             } else if (process.env.TEST_SUITE === 'client') {
-                grunt.task.run(['init', 'test-client']);
+                grunt.task.run(['init', 'shell:ember:sauce-start', 'test-client', 'shell:ember:sauce-stop']);
             } else if (process.env.TEST_SUITE === 'lint') {
                 grunt.task.run(['shell:ember:init', 'shell:bower', 'lint']);
             } else {
