@@ -1,7 +1,9 @@
 /*globals describe, it, beforeEach, afterEach */
 var sinon = require('sinon'),
     should = require('should'),
-    cors = require('../../../server/middleware/cors');
+    rewire = require('rewire'),
+    configUtils  = require('../../utils/configUtils'),
+    cors = rewire('../../../server/middleware/cors');
 
 describe('cors', function () {
     var res, req, next, sandbox;
@@ -31,6 +33,8 @@ describe('cors', function () {
 
     afterEach(function () {
         sandbox.restore();
+        configUtils.restore();
+        cors = rewire('../../../server/middleware/cors');
     });
 
     it('should not be enabled without a request origin header', function (done) {
@@ -134,6 +138,43 @@ describe('cors', function () {
 
         next.called.should.be.true();
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
+
+        done();
+    });
+
+    it('should be enabled if the origin matches config.url', function (done) {
+        var origin = 'http://my.blog';
+        configUtils.set({
+            url: origin
+        });
+
+        req.get = sinon.stub().withArgs('origin').returns(origin);
+        res.get = sinon.stub().withArgs('origin').returns(origin);
+        req.headers.origin = origin;
+
+        cors(req, res, next);
+
+        next.called.should.be.true();
+        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
+
+        done();
+    });
+
+    it('should be enabled if the origin matches config.urlSSL', function (done) {
+        var origin = 'https://secure.blog';
+        configUtils.set({
+            url: 'http://my.blog',
+            urlSSL:  origin
+        });
+
+        req.get = sinon.stub().withArgs('origin').returns(origin);
+        res.get = sinon.stub().withArgs('origin').returns(origin);
+        req.headers.origin = origin;
+
+        cors(req, res, next);
+
+        next.called.should.be.true();
+        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
     });
