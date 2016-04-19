@@ -1,9 +1,9 @@
 import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import PaginationRouteMixin from 'ghost/mixins/pagination-route';
+import PaginationMixin from 'ghost/mixins/pagination';
 
-export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationRouteMixin, {
+export default AuthenticatedRoute.extend(ShortcutsRoute, PaginationMixin, {
     titleToken: 'Content',
 
     paginationModel: 'post',
