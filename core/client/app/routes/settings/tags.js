@@ -3,9 +3,9 @@ import Ember from 'ember';
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
-import PaginationRoute from 'ghost/mixins/pagination-route';
+import PaginationMixin from 'ghost/mixins/pagination';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationRoute, ShortcutsRoute, {
+export default AuthenticatedRoute.extend(CurrentUserSettings, PaginationMixin, ShortcutsRoute, {
     titleToken: 'Settings - Tags',
 
     paginationModel: 'tag',
