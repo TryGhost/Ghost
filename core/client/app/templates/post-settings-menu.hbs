@@ -42,18 +42,19 @@
 
             <div class="form-group">
                 <label for="tag-input">Tags</label>
-                {{#power-select-sortable
+                {{#power-select-multiple
                     id="tag-input"
                     options=availableTags
                     selected=model.tags
                     searchField="name"
+                    triggerComponent="gh-tags-input/trigger"
                     onchange=(action (mut model.tags))
                     onkeydown=(action 'createOnEnter')
                     renderInPlace=true
                     as |tag|
                 }}
                     {{tag.name}}
-                {{/power-select-sortable}}
+                {{/power-select-multiple}}
                 {{!-- {{gh-selectize
                     id="tag-input"
                     multiple=true
