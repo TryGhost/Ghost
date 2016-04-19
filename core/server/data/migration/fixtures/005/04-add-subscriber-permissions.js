@@ -1,6 +1,6 @@
-// Update the permissions & permissions_roles tables to add entries for clients
+// Update the permissions & permissions_roles tables to add entries for subscribers
 var utils = require('../utils'),
-    resource = 'client';
+    resource = 'subscriber';
 
 function getPermissions() {
     return utils.findModelFixtures('Permission', {object_type: resource});
@@ -18,7 +18,7 @@ function printResult(logger, result, message) {
     }
 }
 
-module.exports = function addClientPermissions(options, logger) {
+module.exports = function addSubscriberPermissions(options, logger) {
     var modelToAdd = getPermissions(),
         relationToAdd = getRelations();
 
