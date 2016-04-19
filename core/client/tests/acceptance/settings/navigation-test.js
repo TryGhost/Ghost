@@ -117,7 +117,7 @@ describe('Acceptance: Settings - Navigation', function () {
                 ).to.equal(3);
 
                 expect(
-                    find('.gh-blognav-item:last .response:visible').length,
+                    find('.gh-blognav-item:last .error').length,
                     'number of invalid fields in new item'
                 ).to.equal(1);
             });
