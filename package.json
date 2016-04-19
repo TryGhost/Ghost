@@ -101,7 +101,7 @@
     "sinon": "1.17.3",
     "supertest": "1.1.0",
     "tmp": "0.0.28",
-    "top-gh-contribs": "2.0.2"
+    "top-gh-contribs": "2.0.3"
   },
   "greenkeeper": {
     "ignore": [
