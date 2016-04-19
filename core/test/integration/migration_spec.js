@@ -135,6 +135,20 @@ describe('Database Migration (special functions)', function () {
             permissions[33].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
             permissions[34].name.should.eql('Delete clients');
             permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+
+            console.log(permissions[38]);
+
+            // Subscribers
+            permissions[35].name.should.eql('Browse subscribers');
+            permissions[35].should.be.AssignedToRoles(['Administrator']);
+            permissions[36].name.should.eql('Read subscribers');
+            permissions[36].should.be.AssignedToRoles(['Administrator']);
+            permissions[37].name.should.eql('Edit subscribers');
+            permissions[37].should.be.AssignedToRoles(['Administrator']);
+            permissions[38].name.should.eql('Add subscribers');
+            permissions[38].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
+            permissions[39].name.should.eql('Delete subscribers');
+            permissions[39].should.be.AssignedToRoles(['Administrator']);
         });
 
         describe('Populate', function () {
@@ -193,7 +207,7 @@ describe('Database Migration (special functions)', function () {
                         result.roles.at(3).get('name').should.eql('Owner');
 
                         // Permissions
-                        result.permissions.length.should.eql(35);
+                        result.permissions.length.should.eql(40);
                         result.permissions.toJSON().should.be.CompletePermissions();
 
                         done();

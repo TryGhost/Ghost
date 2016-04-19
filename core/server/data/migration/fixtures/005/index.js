@@ -4,5 +4,7 @@ module.exports = [
     // add ghost-scheduler client
     require('./02-add-ghost-scheduler-client'),
     // add client permissions and permission_role relations
-    require('./03-add-client-permissions')
+    require('./03-add-client-permissions'),
+    // add subscriber permissions and permission_role relations
+    require('./04-add-subscriber-permissions')
 ];
