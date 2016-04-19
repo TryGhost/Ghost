@@ -32,8 +32,8 @@ var should          = require('should'),
 describe('DB version integrity', function () {
     // Only these variables should need updating
     var currentDbVersion = '005',
-        currentSchemaHash = 'be706cdbeb06103d90703ee733efc556',
-        currentFixturesHash = 'ba195b645386b019a69c4b79e6854138';
+        currentSchemaHash = '09f6183cc59b6911e28a272680419b16',
+        currentFixturesHash = 'c398db4b3346175197498f97ea7144d0';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
@@ -405,12 +405,14 @@ describe('Migrations', function () {
                     });
 
                     describe('01-add-tour-column-to-users', function () {
+                        var addTourColumn = updates004[0];
+
                         it('does not try to add a new column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('users').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[0](loggerStub).then(function () {
+                            addTourColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -431,7 +433,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[0](loggerStub).then(function () {
+                            addTourColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -453,7 +455,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[0](loggerStub).then(function () {
+                            addTourColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -472,12 +474,14 @@ describe('Migrations', function () {
                     });
 
                     describe('02-add-sortorder-column-to-poststags', function () {
+                        var addSortOrderColumn = updates004[1];
+
                         it('does not try to add a new column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('posts_tags').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[1](loggerStub).then(function () {
+                            addSortOrderColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -498,7 +502,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[1](loggerStub).then(function () {
+                            addSortOrderColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -520,7 +524,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[1](loggerStub).then(function () {
+                            addSortOrderColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -539,12 +543,14 @@ describe('Migrations', function () {
                     });
 
                     describe('03-add-many-columns-to-clients', function () {
+                        var addClientColumns = updates004[2];
+
                         it('does not try to add new columns if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -569,7 +575,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -599,7 +605,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -634,7 +640,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -658,12 +664,14 @@ describe('Migrations', function () {
                     });
 
                     describe('04-add-clienttrusteddomains-table', function () {
+                        var addTrustedDomains = updates004[3];
+
                         it('does not try to add a new table if the table already exists', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[3](loggerStub).then(function () {
+                            addTrustedDomains(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
@@ -681,7 +689,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[3](loggerStub).then(function () {
+                            addTrustedDomains(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
@@ -697,6 +705,8 @@ describe('Migrations', function () {
                     });
 
                     describe('05-drop-unique-on-clients-secret', function () {
+                        var dropUnique = updates004[4];
+
                         it('does not try to drop unique if the table does not exist', function (done) {
                             // Setup
                             getIndexesStub.withArgs('clients').returns(new Promise.resolve(
@@ -705,7 +715,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[4](loggerStub).then(function () {
+                            dropUnique(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -729,7 +739,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            updates004[4](loggerStub).then(function () {
+                            dropUnique(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -754,7 +764,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            updates004[4](loggerStub).then(function () {
+                            dropUnique(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -798,7 +808,7 @@ describe('Migrations', function () {
 
                         tasksSpy.calledOnce.should.be.true();
                         tasksSpy.calledWith('005', loggerStub).should.be.true();
-                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(4);
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(5);
 
                         sequenceStub.calledTwice.should.be.true();
 
@@ -807,11 +817,12 @@ describe('Migrations', function () {
                         sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
                         sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(4);
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
                         sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
                         sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addVisibilityColumnToKeyTables');
                         sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addMobiledocColumnToPosts');
                         sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'addSocialMediaColumnsToUsers');
+                        sequenceStub.secondCall.args[0][4].should.be.a.Function().with.property('name', 'addSubscribersTable');
 
                         // Reset sequence
                         sequenceReset();
@@ -820,7 +831,7 @@ describe('Migrations', function () {
                 });
 
                 describe('Tasks:', function () {
-                    var dropColumnStub, addColumnStub,
+                    var dropColumnStub, addColumnStub, createTableStub,
                         knexStub, knexMock;
 
                     beforeEach(function () {
@@ -834,6 +845,7 @@ describe('Migrations', function () {
 
                         dropColumnStub = sandbox.stub(schema.commands, 'dropColumn');
                         addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                        createTableStub = sandbox.stub(schema.commands, 'createTable');
                     });
 
                     afterEach(function () {
@@ -842,16 +854,18 @@ describe('Migrations', function () {
 
                     it('should have tasks for 005', function () {
                         should.exist(updates005);
-                        updates005.should.be.an.Array().with.lengthOf(4);
+                        updates005.should.be.an.Array().with.lengthOf(5);
                     });
 
                     describe('01-drop-hidden-column-from-tags', function () {
+                        var dropHiddenColumn = updates005[0];
+
                         it('does not try to drop column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[0](loggerStub).then(function () {
+                            dropHiddenColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
 
@@ -872,7 +886,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[0](loggerStub).then(function () {
+                            dropHiddenColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
 
@@ -894,7 +908,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(true));
 
                             // Execute
-                            updates005[0](loggerStub).then(function () {
+                            dropHiddenColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
 
@@ -913,6 +927,8 @@ describe('Migrations', function () {
                     });
 
                     describe('02-add-visibility-column-to-key-tables', function () {
+                        var addVisibilityColumn = updates005[1];
+
                         it('does not try to add new column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
@@ -920,7 +936,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[1](loggerStub).then(function () {
+                            addVisibilityColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -948,7 +964,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(true));
 
                             // Execute
-                            updates005[1](loggerStub).then(function () {
+                            addVisibilityColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -979,7 +995,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[1](loggerStub).then(function () {
+                            addVisibilityColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -1012,7 +1028,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(true));
                             knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
                             // Execute
-                            updates005[1](loggerStub).then(function () {
+                            addVisibilityColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledThrice.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
                                 knexMock.schema.hasTable.calledWith('tags').should.be.true();
@@ -1037,12 +1053,14 @@ describe('Migrations', function () {
                     });
 
                     describe('03-add-mobiledoc-column-to-posts', function () {
+                        var addMobiledocColumn = updates005[2];
+
                         it('does not try to add a new column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[2](loggerStub).then(function () {
+                            addMobiledocColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
 
@@ -1063,7 +1081,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(true));
 
                             // Execute
-                            updates005[2](loggerStub).then(function () {
+                            addMobiledocColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
 
@@ -1085,7 +1103,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[2](loggerStub).then(function () {
+                            addMobiledocColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts').should.be.true();
 
@@ -1104,12 +1122,14 @@ describe('Migrations', function () {
                     });
 
                     describe('04-add-social-media-columns-to-users', function () {
+                        var addSocialMediaColumns = updates005[3];
+
                         it('does not try to add new columns if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[3](loggerStub).then(function () {
+                            addSocialMediaColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1131,7 +1151,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(true));
 
                             // Execute
-                            updates005[3](loggerStub).then(function () {
+                            addSocialMediaColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1155,7 +1175,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(false));
 
                             // Execute
-                            updates005[3](loggerStub).then(function () {
+                            addSocialMediaColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1181,7 +1201,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(true));
 
                             // Execute
-                            updates005[3](loggerStub).then(function () {
+                            addSocialMediaColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -1195,6 +1215,47 @@ describe('Migrations', function () {
 
                                 loggerStub.info.calledOnce.should.be.true();
                                 loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('05-add-subscribers-table', function () {
+                        var addSubscribers = updates005[4];
+
+                        it('does not try to add a new table if the table already exists', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('subscribers').returns(new Promise.resolve(true));
+
+                            // Execute
+                            addSubscribers(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('subscribers').should.be.true();
+
+                                createTableStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add a new table if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('subscribers').returns(new Promise.resolve(false));
+
+                            // Execute
+                            addSubscribers(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('subscribers').should.be.true();
+
+                                createTableStub.calledOnce.should.be.true();
+                                createTableStub.calledWith('subscribers').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
 
                                 done();
                             }).catch(done);
