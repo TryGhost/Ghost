@@ -67,7 +67,6 @@ function publishedAtCompare(item1, item2) {
 }
 
 export default Controller.extend({
-
     showDeletePostModal: false,
 
     // See PostsRoute's shortcuts

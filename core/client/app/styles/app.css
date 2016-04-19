@@ -13,6 +13,7 @@
 @import "patterns/labels.css";
 @import "patterns/tables.css";
 @import "patterns/navlist.css";
+@import "patterns/throbber.css";
 
 
 /* Components: Groups of Patterns
@@ -27,6 +28,7 @@
 @import "components/popovers.css";
 @import "components/settings-menu.css";
 @import "components/selectize.css";
+@import "components/tour.css";
 
 
 /* Layouts: Groups of Components

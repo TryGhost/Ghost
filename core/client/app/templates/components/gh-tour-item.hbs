@@ -1,0 +1,18 @@
+<div class="liquid-tether-overlay {{overlayClass}}"></div>
+<div class="liquid-tether {{tetherClass}}">
+    {{gh-dropdown-button tagName="span" class="throbber" dropdownName="tour-popover"}}
+    {{#gh-tour-popover name="tour-popover" isOpen=false}}
+        <div class="popover-item popover-triangle-{{model.placement}}">
+            <h3 class="popover-title">{{model.title}}</h3>
+            <div class="popover-body">
+                {{{model.content}}}
+            </div>
+            <footer class="popover-foot">
+                <small class="tour-optout">
+                    Not your first time? <a href="#" {{action 'optOut'}}>Opt out of these tips</a>
+                </small>
+                <a class="tour-dismiss btn btn-blue" href="#" {{action 'closeItem'}}>Ok, Got It</a>
+            </footer>
+        </div>
+    {{/gh-tour-popover}}
+</div>
