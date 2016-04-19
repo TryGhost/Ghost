@@ -152,21 +152,21 @@ describe('Utils', function () {
             fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
-                result.should.have.property('expected',  25);
-                result.should.have.property('done',  25);
+                result.should.have.property('expected',  28);
+                result.should.have.property('done',  28);
 
                 // Permissions & Roles
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
-                dataMethodStub.filter.callCount.should.eql(25);
+                dataMethodStub.filter.callCount.should.eql(28);
                 dataMethodStub.find.callCount.should.eql(3);
 
-                fromItem.related.callCount.should.eql(25);
-                fromItem.findWhere.callCount.should.eql(25);
-                toItem[0].get.callCount.should.eql(50);
+                fromItem.related.callCount.should.eql(28);
+                fromItem.findWhere.callCount.should.eql(28);
+                toItem[0].get.callCount.should.eql(56);
 
-                fromItem.permissions.callCount.should.eql(25);
-                fromItem.attach.callCount.should.eql(25);
+                fromItem.permissions.callCount.should.eql(28);
+                fromItem.attach.callCount.should.eql(28);
                 fromItem.attach.calledWith(toItem).should.be.true();
 
                 done();

@@ -249,6 +249,31 @@
                     "name": "Delete clients",
                     "action_type": "destroy",
                     "object_type": "client"
+                },
+                {
+                    "name": "Browse subscribers",
+                    "action_type": "browse",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Read subscribers",
+                    "action_type": "read",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Edit subscribers",
+                    "action_type": "edit",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Add subscribers",
+                    "action_type": "add",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Delete subscribers",
+                    "action_type": "destroy",
+                    "object_type": "subscriber"
                 }
             ]
         }
@@ -277,7 +302,8 @@
                     "theme": "all",
                     "user": "all",
                     "role": "all",
-                    "client": "all"
+                    "client": "all",
+                    "subscriber": "all"
                 },
                 "Editor": {
                     "post": "all",
@@ -286,7 +312,8 @@
                     "tag": "all",
                     "user": "all",
                     "role": "all",
-                    "client": "all"
+                    "client": "all",
+                    "subscriber": ["add"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -295,7 +322,8 @@
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
                     "role": ["browse"],
-                    "client": "all"
+                    "client": "all",
+                    "subscriber": ["add"]
                 }
             }
         },
