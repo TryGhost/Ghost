@@ -28,7 +28,6 @@ export default Component.extend({
 
     ajax: service(),
     config: service(),
-    session: service(),
 
     // TODO: this wouldn't be necessary if the server could accept direct
     // file uploads

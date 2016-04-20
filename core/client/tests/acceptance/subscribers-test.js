@@ -109,7 +109,7 @@ describe('Acceptance: Subscribers', function() {
 
             andThen(function () {
                 // it displays the add subscriber modal
-                expect(find('.fullscreen-modal').length, 'fullscreen modal displayed')
+                expect(find('.fullscreen-modal').length, 'add subscriber modal displayed')
                     .to.equal(1);
             });
 
@@ -118,7 +118,7 @@ describe('Acceptance: Subscribers', function() {
 
             andThen(function () {
                 // it closes the add subscriber modal
-                expect(find('.fullscreen-modal').length, 'fullscreen modal displayed after cancel')
+                expect(find('.fullscreen-modal').length, 'add subscriber modal displayed after cancel')
                     .to.equal(0);
             });
 
@@ -128,6 +128,10 @@ describe('Acceptance: Subscribers', function() {
             click('.fullscreen-modal .btn:contains("Add")');
 
             andThen(function () {
+                // the add subscriber modal is closed
+                expect(find('.fullscreen-modal').length, 'add subscriber modal displayed after save')
+                    .to.equal(0);
+
                 // the subscriber is added to the table
                 expect(find('.subscribers-table .lt-body .lt-row:first-of-type .lt-cell:first-of-type').text().trim(), 'first email in list after addition')
                     .to.equal('test@example.com');
@@ -141,6 +145,33 @@ describe('Acceptance: Subscribers', function() {
                 expect(find('#total-subscribers').text().trim(), 'subscribers total after addition')
                     .to.equal('41');
             });
+
+            // click the import subscribers button
+            click('.btn:contains("Import CSV")');
+
+            andThen(function () {
+                // it displays the import subscribers modal
+                expect(find('.fullscreen-modal').length, 'import subscribers modal displayed')
+                    .to.equal(1);
+            });
+
+            // cancel the modal
+            click('.fullscreen-modal .btn:contains("Cancel")');
+
+            andThen(function () {
+                // it closes the import subscribers modal
+                expect(find('.fullscreen-modal').length, 'import subscribers modal displayed after cancel')
+                    .to.equal(0);
+            });
+
+            // TODO: how to simulate file upload?
+
+            // re-open import modal
+            // upload a file
+            // modal title changes
+            // modal button changes
+            // table is reset
+            // close modal
         });
     });
 });

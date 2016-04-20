@@ -41,6 +41,11 @@ export default AuthenticatedRoute.extend({
     actions: {
         incrementTotal() {
             this.get('controller').incrementProperty('total');
+        },
+
+        reset() {
+            this.get('store').unloadAll('subscriber');
+            this.get('controller').loadFirstPage();
         }
     }
 });
