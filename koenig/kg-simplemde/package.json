@@ -48,8 +48,8 @@
 	]
   },
   "browser": {
-	"spell-checker": "./node_modules/codemirror-spell-checker/src/js/spell-checker.js",
-	"typo": "./node_modules/codemirror-spell-checker/src/js/typo.js"
+	"spell-checker": "codemirror-spell-checker/src/js/spell-checker.js",
+	"typo": "codemirror-spell-checker/src/js/typo.js"
   },
   "browserify-shim": {
 	"spell-checker": {
