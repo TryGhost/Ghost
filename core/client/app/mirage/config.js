@@ -82,6 +82,20 @@ function mockSubscribers(server) {
 
         return new Mirage.Response(204, {}, {});
     });
+
+    server.post('/subscribers/csv/', function (/*db, request*/) {
+        // NB: we get a raw FormData object with no way to inspect it in Chrome
+        // until version 50 adds the additional read methods
+        // https://developer.mozilla.org/en-US/docs/Web/API/FormData#Browser_compatibility
+
+        server.createList('subscriber', 50);
+
+        return {
+            imported: 50,
+            duplicates: 3,
+            invalid: 2
+        };
+    });
 }
 
 export default function () {

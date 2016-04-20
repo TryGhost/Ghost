@@ -2,7 +2,7 @@
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Subscribers</span>{{/gh-view-title}}
         <div class="view-actions">
-            {{#link-to "subscribers.new" title="Add Subscriber" class="btn btn-green"}}Add Subscriber{{/link-to}}
+            {{#link-to "subscribers.new" class="btn btn-green"}}Add Subscriber{{/link-to}}
         </div>
     </header>
 
@@ -17,7 +17,7 @@
                 <h4>Import Subscribers</h4>
             </div>
             <div class="settings-menu-content subscribers-import-buttons">
-                <a href="javascript:void(0)" class="btn">Import CSV</a>
+                {{#link-to "subscribers.import" class="btn"}}Import CSV{{/link-to}}
                 <a href="javascript:void(0)" class="btn">Export CSV</a>
             </div>
 

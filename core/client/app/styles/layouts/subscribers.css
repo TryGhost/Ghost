@@ -44,3 +44,12 @@
 .subscribers-import-buttons .btn:last-of-type {
     margin-right: 0;
 }
+
+
+/* Import modal
+/* ---------------------------------------------------------- */
+
+.subscribers-import-results {
+    margin: 0;
+    width: auto;
+}
