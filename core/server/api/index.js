@@ -138,10 +138,16 @@ locationHeader = function locationHeader(req, result) {
  * @see http://tools.ietf.org/html/rfc598
  * @return {string}
  */
-contentDispositionHeader = function contentDispositionHeader() {
+
+contentDispositionHeaderExport = function contentDispositionHeader() {
     return exporter.fileName().then(function then(filename) {
         return 'Attachment; filename="' + filename + '"';
     });
+};
+
+contentDispositionHeaderSubscribers = function contentDispositionHeader() {
+    var datetime = (new Date()).toJSON().substring(0, 10)
+    return Promise.resolve('Attachment; filename="subscribers.' + datetime + '.csv"');
 };
 
 addHeaders = function addHeaders(apiMethod, req, res, result) {
@@ -164,15 +170,24 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
         }
     }
 
+    // Add Export Content-Disposition Header
     if (apiMethod === db.exportContent) {
-        contentDisposition = contentDispositionHeader()
-            .then(function addContentDispositionHeader(header) {
-                // Add Content-Disposition Header
-                if (apiMethod === db.exportContent) {
-                    res.set({
-                        'Content-Disposition': header
-                    });
-                }
+        contentDisposition = contentDispositionHeaderExport()
+            .then(function addContentDispositionHeaderExport(header) {
+                res.set({
+                    'Content-Disposition': header
+                });
+            });
+    }
+
+    // Add Subscribers Content-Disposition Header
+    if (apiMethod === subscribers.exportCSV) {
+        contentDisposition = contentDispositionHeaderSubscribers()
+            .then(function addContentDispositionHeaderSubscribers(header) {
+                res.set({
+                    // 'Content-Disposition': header,
+                    'Content-Type': 'text/csv'
+                });
             });
     }
 
@@ -195,7 +210,7 @@ http = function http(apiMethod) {
         var object = req.body,
             options = _.extend({}, req.file, req.query, req.params, {
                 context: {
-                    user: ((req.user && req.user.id) || req.user.id === 0) ? req.user.id : null
+                    user: ((req.user && req.user.id) || (req.user && req.user.id === 0)) ? req.user.id : null
                 }
             });
 
@@ -213,7 +228,10 @@ http = function http(apiMethod) {
             if (req.method === 'DELETE') {
                 return res.status(204).end();
             }
-
+            // Keep CSV header and formatting
+            if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
+                return res.status(200).send(response);    
+            }
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});
         }).catch(function onAPIError(error) {
