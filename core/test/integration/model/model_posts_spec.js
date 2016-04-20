@@ -383,6 +383,36 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('can change title to number', function (done) {
+                var postId = 1;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    var post = results.toJSON();
+                    post.title.should.not.equal('123');
+                    return PostModel.edit({title: 123}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.title.should.equal('123');
+                    done();
+                }).catch(done);
+            });
+
+            it('can change markdown to number', function (done) {
+                var postId = 1;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    var post = results.toJSON();
+                    post.title.should.not.equal('123');
+                    return PostModel.edit({markdown: 123}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.markdown.should.equal('123');
+                    done();
+                }).catch(done);
+            });
+
             it('can publish draft post', function (done) {
                 var postId = 4;
 
@@ -815,6 +845,28 @@ describe('Post Model', function () {
                     eventSpy.secondCall.calledWith('post.published').should.be.true();
                     eventSpy.thirdCall.calledWith('post.edited').should.be.true();
 
+                    done();
+                }).catch(done);
+            });
+
+            it('can add, with title being a number', function (done) {
+                var newPost = testUtils.DataGenerator.forModel.posts[2];
+
+                newPost.title = 123;
+
+                PostModel.add(newPost, context).then(function (createdPost) {
+                    should.exist(createdPost);
+                    done();
+                }).catch(done);
+            });
+
+            it('can add, with markdown being a number', function (done) {
+                var newPost = testUtils.DataGenerator.forModel.posts[2];
+
+                newPost.markdown = 123;
+
+                PostModel.add(newPost, context).then(function (createdPost) {
+                    should.exist(createdPost);
                     done();
                 }).catch(done);
             });
