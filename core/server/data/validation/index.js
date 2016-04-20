@@ -1,11 +1,13 @@
 var schema    = require('../schema').tables,
     _         = require('lodash'),
     validator = require('validator'),
+    assert    = require('assert'),
     Promise   = require('bluebird'),
     errors    = require('../../errors'),
     config    = require('../../config'),
     readThemes = require('../../utils/read-themes'),
     i18n        = require('../../i18n'),
+    toString    = require('lodash.tostring'),
 
     validateSchema,
     validateSettings,
@@ -14,8 +16,20 @@ var schema    = require('../schema').tables,
 
     availableThemes;
 
+function assertString(input) {
+    assert(typeof input === 'string', 'Validator js validates strings only');
+}
+
+// extends has been removed in validator >= 5.0.0, need to monkey-patch it back in
+validator.extend = function (name, fn) {
+    validator[name] = function () {
+        var args = Array.prototype.slice.call(arguments);
+        assertString(args[0]);
+        return fn.apply(validator, args);
+    };
+};
+
 // Provide a few custom validators
-//
 validator.extend('empty', function empty(str) {
     return _.isEmpty(str);
 });
@@ -39,13 +53,23 @@ validateSchema = function validateSchema(tableName, model) {
         validationErrors = [];
 
     _.each(columns, function each(columnKey) {
-        var message = '';
+        var message = '',
+            strVal = toString(model[columnKey]);
 
         // check nullable
         if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('nullable')
                 && schema[tableName][columnKey].nullable !== true) {
-            if (validator.isNull(model[columnKey]) || validator.empty(model[columnKey])) {
+            if (validator.empty(strVal)) {
                 message = i18n.t('notices.data.validation.index.valueCannotBeBlank', {tableName: tableName, columnKey: columnKey});
+                validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
+            }
+        }
+
+        // validate boolean columns
+        if (model.hasOwnProperty(columnKey) && schema[tableName][columnKey].hasOwnProperty('type')
+                && schema[tableName][columnKey].type === 'bool') {
+            if (!(validator.isBoolean(strVal) || validator.empty(strVal))) {
+                message = i18n.t('notices.data.validation.index.valueMustBeBoolean', {tableName: tableName, columnKey: columnKey});
                 validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
             }
         }
@@ -54,7 +78,7 @@ validateSchema = function validateSchema(tableName, model) {
         if (model[columnKey] !== null && model[columnKey] !== undefined) {
             // check length
             if (schema[tableName][columnKey].hasOwnProperty('maxlength')) {
-                if (!validator.isLength(model[columnKey], 0, schema[tableName][columnKey].maxlength)) {
+                if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
                     message = i18n.t('notices.data.validation.index.valueExceedsMaxLength',
                                      {tableName: tableName, columnKey: columnKey, maxlength: schema[tableName][columnKey].maxlength});
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
@@ -63,12 +87,12 @@ validateSchema = function validateSchema(tableName, model) {
 
             // check validations objects
             if (schema[tableName][columnKey].hasOwnProperty('validations')) {
-                validationErrors = validationErrors.concat(validate(model[columnKey], columnKey, schema[tableName][columnKey].validations));
+                validationErrors = validationErrors.concat(validate(strVal, columnKey, schema[tableName][columnKey].validations));
             }
 
             // check type
             if (schema[tableName][columnKey].hasOwnProperty('type')) {
-                if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(model[columnKey])) {
+                if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
                     message = i18n.t('notices.data.validation.index.valueIsNotInteger', {tableName: tableName, columnKey: columnKey});
                     validationErrors.push(new errors.ValidationError(message, tableName + '.' + columnKey));
                 }
@@ -142,6 +166,7 @@ validateActiveTheme = function validateActiveTheme(themeName) {
 // available validators: https://github.com/chriso/validator.js#validators
 validate = function validate(value, key, validations) {
     var validationErrors = [];
+    value = toString(value);
 
     _.each(validations, function each(validationOptions, validationName) {
         var goodResult = true;

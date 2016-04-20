@@ -10,6 +10,7 @@ var _              = require('lodash'),
     validation     = require('../data/validation'),
     events         = require('../events'),
     i18n           = require('../i18n'),
+    toString       = require('lodash.tostring'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -360,6 +361,8 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             userData = this.filterData(data),
             roles;
+
+        userData.password = toString(userData.password);
 
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union(options.withRelated, options.include);
