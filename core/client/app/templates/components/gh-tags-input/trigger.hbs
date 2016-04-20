@@ -1,0 +1,18 @@
+{{#sortable-group tagName="" onChange="reorderItems" direction="x" as |group|}}
+    {{#each selected as |opt|}}
+        {{#sortable-item tagName="span" class="ember-power-select-multiple-option" model=opt group=group}}
+            {{#unless disabled}}
+                <span aria-label="remove element" class="ember-power-select-multiple-remove-btn" onmousedown={{action select.actions.select (ember-power-select-build-selection opt selected multiple=true)}}>&times;</span>
+            {{/unless}}
+            {{#if selectedItemComponent}}
+                {{component selectedItemComponent selected=opt searchText=searchText}}
+            {{else}}
+                {{yield opt searchText}}
+            {{/if}}
+        {{/sortable-item}}
+    {{/each}}
+{{/sortable-group}}
+<input type="search" class="ember-power-select-trigger-multiple-input" tabindex="0" autocomplete="off"
+  autocorrect="off" autocapitalize="off" spellcheck="false" role="combobox" style={{triggerMultipleInputStyle}}
+  placeholder={{maybePlaceholder}} value={{searchText}} disabled={{disabled}}
+  oninput={{action "search" value="target.value"}} onkeydown={{action "handleKeydown"}}>
