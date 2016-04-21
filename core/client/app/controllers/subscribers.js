@@ -1,8 +1,13 @@
 import Ember from 'ember';
 import Table from 'ember-light-table';
 import PaginationMixin from 'ghost/mixins/pagination';
+import ghostPaths from 'ghost/utils/ghost-paths';
 
-const {computed} = Ember;
+const {
+    $,
+    computed,
+    inject: {service}
+} = Ember;
 
 export default Ember.Controller.extend(PaginationMixin, {
 
@@ -13,6 +18,8 @@ export default Ember.Controller.extend(PaginationMixin, {
 
     total: 0,
     table: null,
+
+    session: service(),
 
     columns: computed(function () {
         return [{
@@ -68,6 +75,19 @@ export default Ember.Controller.extend(PaginationMixin, {
         reset() {
             this.get('table').setRows([]);
             this.send('loadFirstPage');
+        },
+
+        exportData() {
+            let exportUrl = ghostPaths().url.api('subscribers/csv');
+            let accessToken = this.get('session.data.authenticated.access_token');
+            let downloadURL = `${exportUrl}?access_token=${accessToken}`;
+            let iframe = $('#iframeDownload');
+
+            if (iframe.length === 0) {
+                iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
+            }
+
+            iframe.attr('src', downloadURL);
         }
     }
 });
