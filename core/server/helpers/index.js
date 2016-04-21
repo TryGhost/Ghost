@@ -38,6 +38,7 @@ coreHelpers.url = require('./url');
 
 // Specialist helpers for certain templates
 coreHelpers.input_password = require('./input_password');
+coreHelpers.input_email = require('./input_email');
 coreHelpers.page_url = require('./page_url');
 coreHelpers.pageUrl = require('./page_url').deprecated;
 
@@ -97,6 +98,7 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('has', coreHelpers.has);
     registerThemeHelper('is', coreHelpers.is);
     registerThemeHelper('image', coreHelpers.image);
+    registerThemeHelper('input_email', coreHelpers.input_email);
     registerThemeHelper('input_password', coreHelpers.input_password);
     registerThemeHelper('meta_description', coreHelpers.meta_description);
     registerThemeHelper('meta_title', coreHelpers.meta_title);

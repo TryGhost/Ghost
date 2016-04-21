@@ -297,15 +297,22 @@ subscribers = {
                     var dataToImport = line.split(',');
 
                     if (firstLine) {
-                        emailIdx = _.findIndex(dataToImport, function (columnName) {
-                            if (columnName.match(/email/g)) {
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        });
+                        if (dataToImport.length === 1) {
+                            emailIdx = 0;
+                        } else {
+                            emailIdx = _.findIndex(dataToImport, function (columnName) {
+                                if (columnName.match(/email/g)) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            });
+                        }
+
                         if (emailIdx === -1) {
-                            return reject(new errors.ValidationError('Email column not found'));
+                            return reject(new errors.ValidationError(
+                                'Couldn\'t find your email addresses! Please use a column header which contains the word "email".'
+                            ));
                         }
                         firstLine = false;
                     } else if (emailIdx > -1) {
