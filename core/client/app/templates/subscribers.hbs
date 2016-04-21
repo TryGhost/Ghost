@@ -18,7 +18,7 @@
             </div>
             <div class="settings-menu-content subscribers-import-buttons">
                 {{#link-to "subscribers.import" class="btn"}}Import CSV{{/link-to}}
-                <a href="javascript:void(0)" class="btn">Export CSV</a>
+                <a {{action 'exportData'}} class="btn">Export CSV</a>
             </div>
 
             <div class="settings-menu-header">
