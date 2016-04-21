@@ -1,10 +1,10 @@
 import Ember from 'ember';
-import PaginationRoute from 'ghost/mixins/pagination-route';
+import PaginationMixin from 'ghost/mixins/pagination';
 
 const {computed} = Ember;
 const {sort} = computed;
 
-export default Ember.Controller.extend(PaginationRoute, {
+export default Ember.Controller.extend(PaginationMixin, {
 
     paginationModel: 'subscriber',
     paginationSettings: {
