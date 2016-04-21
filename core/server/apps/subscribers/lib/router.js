@@ -1,18 +1,16 @@
 var path                = require('path'),
     express             = require('express'),
-    templates           = require('../../../controllers/frontend/templates'),
-    setResponseContext  = require('../../../controllers/frontend/context'),
+    subscribeRouter     = express.Router(),
+
+    // Dirty requires
     api                 = require('../../../api'),
-    subscribeRouter     = express.Router();
+    templates           = require('../../../controllers/frontend/templates'),
+    setResponseContext  = require('../../../controllers/frontend/context');
 
 function controller(req, res) {
     var defaultView = path.resolve(__dirname, 'views', 'subscribe.hbs'),
         paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
-        data = {};
-
-    if (res.error) {
-        data.error = res.error;
-    }
+        data = req.body;
 
     setResponseContext(req, res);
     if (paths.hasOwnProperty('subscribe.hbs')) {
@@ -22,11 +20,46 @@ function controller(req, res) {
     }
 }
 
+function errorHandler(error, req, res, next) {
+    /*jshint unused:false */
+
+    if (error.statusCode !== 404) {
+        res.locals.error = error;
+        return controller(req, res);
+    }
+
+    next(error);
+}
+
+function honeyPot(req, res, next) {
+    if (!req.body.hasOwnProperty('confirm') || req.body.confirm !== '') {
+        return next(new Error('Oops, something went wrong!'));
+    }
+
+    // we don't need this anymore
+    delete req.body.confirm;
+    next();
+}
+
+function handleSource(req, res, next) {
+    req.body.subscribed_url = req.body.location;
+    req.body.subscribed_referrer = req.body.referrer;
+    delete req.body.location;
+    delete req.body.referrer;
+    // do something here to get post_id
+    next();
+}
 
 function storeSubscriber(req, res, next) {
-    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}}).then(function (result) {
-        next();
-    });
+    req.body.status = 'subscribed';
+    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
+        .then(function () {
+            res.locals.success = true;
+            next();
+        })
+        .catch(function (error) {
+            next(error);
+        });
 }
 
 // subscribe frontend route
@@ -35,9 +68,14 @@ subscribeRouter.route('/')
         controller
     )
     .post(
+        honeyPot,
+        handleSource,
         storeSubscriber,
         controller
     );
+
+// configure an error handler just for subscribe problems
+subscribeRouter.use(errorHandler);
 
 module.exports = subscribeRouter;
 module.exports.controller = controller;
