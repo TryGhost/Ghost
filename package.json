@@ -65,7 +65,7 @@
     "showdown-ghost": "0.3.6",
     "sqlite3": "3.1.1",
     "unidecode": "0.1.8",
-    "validator": "5.1.0",
+    "validator": "5.2.0",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
@@ -112,8 +112,7 @@
       "mysql",
       "nodemailer",
       "pg",
-      "showdown-ghost",
-      "validator"
+      "showdown-ghost"
     ]
   }
 }
