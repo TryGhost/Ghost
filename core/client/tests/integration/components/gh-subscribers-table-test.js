@@ -5,6 +5,7 @@ import {
     it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
+import Table from 'ember-light-table';
 
 describeComponent(
     'gh-subscribers-table',
@@ -14,9 +15,9 @@ describeComponent(
     },
     function() {
         it('renders', function() {
-            this.set('subscribers', []);
+            this.set('table', new Table([], []));
 
-            this.render(hbs`{{gh-subscribers-table subscribers=subscribers}}`);
+            this.render(hbs`{{gh-subscribers-table table=table}}`);
             expect(this.$()).to.have.length(1);
         });
     }
