@@ -450,6 +450,9 @@
             "unableToSendEmail": "Ghost is currently unable to send email."
         },
         "helpers": {
+            "helperNotAvailable": "The \\{\\{{helperName}\\}\\} helper is not available.",
+            "apiMustBeEnabled": "The {flagName} labs flag must be enabled if you wish to use the \\{\\{{helperName}\\}\\} helper.",
+            "seeLink": "See {url}",
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
