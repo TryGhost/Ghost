@@ -1,0 +1,17 @@
+<form method="post" action="{{action}}" class="{{form_class}}">
+    {{! This is required for the form to work correctly }}
+    {{hidden}}
+
+    <div class="form-group">
+        <span class="input-icon icon-mail">
+            {{input_email class=input_class placeholder=placeholder}}
+        </span>
+    </div>
+    <button class="btn btn-blue btn-block" type="submit">Subscribe</button>
+    {{! This is used to get extra info about where this subscriber came from }}
+    {{script}}
+</form>
+
+
+
+
