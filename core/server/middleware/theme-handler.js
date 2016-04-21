@@ -27,6 +27,7 @@ themeHandler = {
     // Setup handlebars for the current context (admin or theme)
     configHbsForContext: function configHbsForContext(req, res, next) {
         var themeData = _.cloneDeep(config.theme),
+            labsData = _.cloneDeep(config.labs),
             blogApp = req.app;
 
         if (req.secure && config.urlSSL) {
@@ -38,7 +39,7 @@ themeHandler = {
         themeData.posts_per_page = themeData.postsPerPage;
         delete themeData.postsPerPage;
 
-        hbs.updateTemplateOptions({data: {blog: themeData}});
+        hbs.updateTemplateOptions({data: {blog: themeData, labs: labsData}});
 
         if (config.paths.themePath && blogApp.get('activeTheme')) {
             blogApp.set('views', path.join(config.paths.themePath, blogApp.get('activeTheme')));
