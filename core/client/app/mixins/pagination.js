@@ -5,7 +5,6 @@ const {
     Mixin,
     computed,
     RSVP,
-    computed,
     inject: {service}
 } = Ember;
 
