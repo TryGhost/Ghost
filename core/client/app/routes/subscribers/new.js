@@ -24,7 +24,7 @@ export default Ember.Route.extend({
         save() {
             let subscriber = this.controller.get('model');
             return subscriber.save().then((saved) => {
-                this.send('incrementTotal');
+                this.send('addSubscriber', saved);
                 return saved;
             });
         },

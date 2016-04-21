@@ -1,8 +1,8 @@
 import Ember from 'ember';
+import Table from 'ember-light-table';
 import PaginationMixin from 'ghost/mixins/pagination';
 
 const {computed} = Ember;
-const {sort} = computed;
 
 export default Ember.Controller.extend(PaginationMixin, {
 
@@ -12,35 +12,62 @@ export default Ember.Controller.extend(PaginationMixin, {
     },
 
     total: 0,
+    table: null,
 
-    subscribers: computed(function () {
-        return this.store.peekAll('subscriber');
+    columns: computed(function () {
+        return [{
+            label: 'Subscriber',
+            valuePath: 'email'
+        }, {
+            label: 'Subscription Date',
+            valuePath: 'createdAt',
+            format(value) {
+                return value.format('MMMM DD, YYYY');
+            }
+        }, {
+            label: 'Status',
+            valuePath: 'status'
+        }];
     }),
 
-    filteredSubscribers: computed('subscribers.@each.isNew', function () {
-        return this.get('subscribers').filter((subscriber) => {
-            return !subscriber.get('isNew');
-        });
-    }),
-
-    sortedSubscribers: sort('filteredSubscribers', function (a, b) {
-        let dateA = a.get('createdAt');
-        let dateB = b.get('createdAt');
-
-        // descending order
-        if (dateA > dateB) {
-            return -1;
-        } else if (dateA < dateB) {
-            return 1;
-        }
-
-        return 0;
-    }),
+    initializeTable() {
+        this.set('table', new Table(this.get('columns'), this.get('subscribers')));
+    },
 
     // capture the total from the server any time we fetch a new page
     didReceivePaginationMeta(meta) {
         if (meta && meta.pagination) {
             this.set('total', meta.pagination.total);
+        }
+    },
+
+    actions: {
+        loadFirstPage() {
+            let table = this.get('table');
+
+            return this._super(...arguments).then((results) => {
+                table.addRows(results);
+                return results;
+            });
+        },
+
+        loadNextPage() {
+            let table = this.get('table');
+
+            return this._super(...arguments).then((results) => {
+                table.addRows(results);
+                return results;
+            });
+        },
+
+        addSubscriber(subscriber) {
+            this.get('table').insertRowAt(0, subscriber);
+            this.incrementProperty('total');
+        },
+
+        reset() {
+            this.get('table').setRows([]);
+            this.send('loadFirstPage');
         }
     }
 });

@@ -30,22 +30,17 @@ export default AuthenticatedRoute.extend({
 
     setupController(controller) {
         this._super(...arguments);
+        controller.initializeTable();
         controller.send('loadFirstPage');
     },
 
-    deactivate() {
-        this._super(...arguments);
-        this.get('store').unloadAll('subscriber');
-    },
-
     actions: {
-        incrementTotal() {
-            this.get('controller').incrementProperty('total');
+        addSubscriber(subscriber) {
+            this.get('controller').send('addSubscriber', subscriber);
         },
 
         reset() {
-            this.get('store').unloadAll('subscriber');
-            this.get('controller').loadFirstPage();
+            this.get('controller').send('reset');
         }
     }
 });
