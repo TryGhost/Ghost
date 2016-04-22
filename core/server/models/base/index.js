@@ -134,7 +134,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Get the user from the options object
     contextUser: function contextUser(options) {
         // Default to context user
-        if ((options.context && options.context.user) || options.context.user === 0) {
+        if ((options.context && options.context.user) || (options.context && options.context.user === 0)) {
             return options.context.user;
         // Other wise use the internal override
         } else if (options.context && options.context.internal) {

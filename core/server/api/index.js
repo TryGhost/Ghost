@@ -5,6 +5,7 @@
 // from a theme, an app, or from an external app, you'll use the Ghost JSON API to do so.
 
 var _              = require('lodash'),
+    Promise        = require('bluebird'),
     config         = require('../config'),
     // Include Endpoints
     configuration  = require('./configuration'),
@@ -28,7 +29,8 @@ var _              = require('lodash'),
     addHeaders,
     cacheInvalidationHeader,
     locationHeader,
-    contentDispositionHeader,
+    contentDispositionHeaderExport,
+    contentDispositionHeaderSubscribers,
     init;
 
 /**
@@ -139,14 +141,14 @@ locationHeader = function locationHeader(req, result) {
  * @return {string}
  */
 
-contentDispositionHeaderExport = function contentDispositionHeader() {
+contentDispositionHeaderExport = function contentDispositionHeaderExport() {
     return exporter.fileName().then(function then(filename) {
         return 'Attachment; filename="' + filename + '"';
     });
 };
 
-contentDispositionHeaderSubscribers = function contentDispositionHeader() {
-    var datetime = (new Date()).toJSON().substring(0, 10)
+contentDispositionHeaderSubscribers = function contentDispositionHeaderSubscribers() {
+    var datetime = (new Date()).toJSON().substring(0, 10);
     return Promise.resolve('Attachment; filename="subscribers.' + datetime + '.csv"');
 };
 
@@ -185,7 +187,7 @@ addHeaders = function addHeaders(apiMethod, req, res, result) {
         contentDisposition = contentDispositionHeaderSubscribers()
             .then(function addContentDispositionHeaderSubscribers(header) {
                 res.set({
-                    // 'Content-Disposition': header,
+                    'Content-Disposition': header,
                     'Content-Type': 'text/csv'
                 });
             });
@@ -230,7 +232,7 @@ http = function http(apiMethod) {
             }
             // Keep CSV header and formatting
             if (res.get('Content-Type') && res.get('Content-Type').indexOf('text/csv') === 0) {
-                return res.status(200).send(response);    
+                return res.status(200).send(response);
             }
             // Send a properly formatting HTTP response containing the data with correct headers
             res.json(response || {});

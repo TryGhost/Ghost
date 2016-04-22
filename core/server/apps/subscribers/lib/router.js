@@ -22,9 +22,8 @@ function controller(req, res) {
     }
 }
 
-
 function storeSubscriber(req, res, next) {
-    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}}).then(function (result) {
+    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}}).then(function () {
         next();
     });
 }

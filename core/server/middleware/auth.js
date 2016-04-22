@@ -123,7 +123,7 @@ auth = {
         if (labs.isSet('publicAPI') === true) {
             return next();
         } else {
-            if (req.user) {
+            if (req.user && req.user.id) {
                 return next();
             } else {
                 return errors.handleAPIError(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')), req, res, next);
