@@ -11,7 +11,6 @@ var Promise      = require('bluebird'),
     i18n         = require('../i18n'),
 
     docName      = 'subscribers',
-    allowedIncludes = ['count.posts'],
     subscribers;
 
 /**
@@ -81,7 +80,7 @@ subscribers = {
                 return {subscribers: [result.toJSON(options)]};
             }
 
-            return Promise.reject(new errors.NotFoundError('TODO'/*i18n.t('errors.api.tags.tagNotFound')*/));
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.subscriber.subscriberNotFound')));
         });
     },
 
@@ -153,7 +152,7 @@ subscribers = {
                 return {subscribers: [subscriber]};
             }
 
-            return Promise.reject(new errors.NotFoundError(i18n.t('TODO'/*errors.api.tags.tagNotFound'*/)));
+            return Promise.reject(new errors.NotFoundError(i18n.t('errors.api.subscriber.subscriberNotFound')));
         });
     },
 
@@ -200,21 +199,26 @@ subscribers = {
 
         options = options || {};
 
-        function formatCSV (data) {
-            var fields = ["id", "email", "created_at", "deleted_at"],
-                csv = '';
+        function formatCSV(data) {
+            var fields = ['id', 'email', 'created_at', 'deleted_at'],
+                csv = '',
+                subscriber,
+                field,
+                j,
+                i;
 
-            for (var j = 0; j < data.length; j++) {
-                var subscriber = data[j];
-                for(var i = 0; i < fields.length; i++) {
-                    var field = fields[i];
+            for (j = 0; j < data.length; j = j + 1) {
+                subscriber = data[j];
+
+                for (i = 0; i < fields.length; i = i + 1) {
+                    field = fields[i];
                     csv += subscriber[field] !== null ? subscriber[field] : '';
                     if (i !== fields.length - 1) {
-                        csv += ','
+                        csv += ',';
                     }
                 }
                 csv += '\r\n';
-            };
+            }
             return csv;
         }
 
@@ -262,14 +266,14 @@ subscribers = {
             return options;
         }
 
-        function importCSV (options) {
+        function importCSV(options) {
             return new Promise(function (resolve, reject) {
                 var filePath = options.path,
                     importTasks = [];
                 readline.createInterface({
                     input: fs.createReadStream(filePath),
                     terminal: false
-                }).on('line', function(line) {
+                }).on('line', function (line) {
                     var dataToImport = line.split(',');
                     // TODO: investigate if directly writing to DB & use transaction is better?
                     importTasks.push(subscribers.add({
@@ -281,7 +285,7 @@ subscribers = {
                     Promise.all(importTasks).then(function () {
                         // TODO: delete uploaded file
                         return resolve({imported: importTasks.length});
-                    }).catch(function(error) {
+                    }).catch(function (error) {
                         return reject(new errors.InternalServerError(error.message || error));
                     });
                 });
@@ -295,7 +299,7 @@ subscribers = {
         ];
 
         return pipeline(tasks, options);
-    },
+    }
 };
 
 module.exports = subscribers;

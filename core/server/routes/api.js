@@ -66,16 +66,17 @@ apiRoutes = function apiRoutes(middleware) {
     router.del('/tags/:id', authenticatePrivate, api.http(api.tags.destroy));
 
     // ## Subscribers
-    router.get('/subscribers', authenticatePrivate, api.http(api.subscribers.browse));
-    router.get('/subscribers/csv', authenticatePrivate, api.http(api.subscribers.exportCSV));
+    router.get('/subscribers', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.browse));
+    router.get('/subscribers/csv', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.exportCSV));
     router.post('/subscribers/csv',
+        middleware.api.labs.subscribers,
         authenticatePrivate,
         middleware.upload.single('subscribersfile'),
         api.http(api.subscribers.importCSV)
     );
-    router.get('/subscribers/:id', authenticatePrivate, api.http(api.subscribers.read));
-    router.post('/subscribers', authenticatePublic, api.http(api.subscribers.add));
-    router.put('/subscribers/:id', authenticatePrivate, api.http(api.subscribers.edit));
+    router.get('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.read));
+    router.post('/subscribers', middleware.api.labs.subscribers, authenticatePublic, api.http(api.subscribers.add));
+    router.put('/subscribers/:id', middleware.api.labs.subscribers, authenticatePrivate, api.http(api.subscribers.edit));
 
     // ## Roles
     router.get('/roles/', authenticatePrivate, api.http(api.roles.browse));
