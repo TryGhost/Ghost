@@ -1,10 +1,10 @@
 /*globals describe, it, beforeEach, afterEach */
 var sinon = require('sinon'),
     should = require('should'),
-    cors = require('../../../server/middleware/cors');
+    setupCORS = require('../../../server/middleware/cors');
 
 describe('cors', function () {
-    var res, req, next, sandbox;
+    var res, req, next, sandbox, cors;
 
     beforeEach(function () {
         sandbox = sinon.sandbox.create();
@@ -27,6 +27,8 @@ describe('cors', function () {
         };
 
         next = sandbox.spy();
+
+        cors = setupCORS();
     });
 
     afterEach(function () {
@@ -134,6 +136,26 @@ describe('cors', function () {
 
         next.called.should.be.true();
         should.not.exist(res.headers['Access-Control-Allow-Origin']);
+
+        done();
+    });
+
+    it('should allow whitelist origins to be added at runtime', function (done) {
+        var origin = 'https://other.example.com',
+            options = {
+                whitelist: [origin]
+            };
+
+        req.get = sinon.stub().withArgs('origin').returns(origin);
+        res.get = sinon.stub().withArgs('origin').returns(origin);
+        req.headers.origin = origin;
+
+        cors = setupCORS(options);
+
+        cors(req, res, next);
+
+        next.called.should.be.true();
+        res.headers['Access-Control-Allow-Origin'].should.equal(origin);
 
         done();
     });

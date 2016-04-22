@@ -12,6 +12,7 @@ var bodyParser      = require('body-parser'),
     sitemapHandler  = require('../data/xml/sitemap/handler'),
     multer          = require('multer'),
     tmpdir          = require('os').tmpdir,
+    url             = require('url'),
     authStrategies   = require('./auth-strategies'),
     auth             = require('./auth'),
     cacheControl     = require('./cache-control'),
@@ -29,6 +30,9 @@ var bodyParser      = require('body-parser'),
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
 
+    corsOpts = {
+        whitelist: [].concat(config.urlSSL && url.parse(config.url).hostname)
+    },
     middleware,
     setupMiddleware;
 
@@ -43,7 +47,7 @@ middleware = {
         requiresAuthorizedUser: auth.requiresAuthorizedUser,
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
         errorHandler: errors.handleAPIError,
-        cors: cors
+        cors: cors(corsOpts)
     }
 };
 
