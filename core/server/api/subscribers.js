@@ -3,6 +3,7 @@
 var Promise      = require('bluebird'),
     _            = require('lodash'),
     fs           = require('fs'),
+    pUnlink      = Promise.promisify(fs.unlink),
     readline     = require('readline'),
     dataProvider = require('../models'),
     errors       = require('../errors'),
@@ -336,18 +337,18 @@ subscribers = {
                             }
                         }
                     }).then(function () {
-                        // delete uploaded file
-                        return Promise.resolve();
-                    }).then(function () {
                         return resolve({
-                            stats: {
+                            stats: [{
                                 imported: fulfilled,
                                 duplicates: duplicates,
                                 invalid: invalid
-                            }
+                            }]
                         });
                     }).catch(function (err) {
                         return reject(err);
+                    }).finally(function () {
+                        // Remove uploaded file from tmp location
+                        return pUnlink(filePath);
                     });
                 });
             });
