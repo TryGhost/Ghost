@@ -227,7 +227,7 @@ var simplemde = new SimpleMDE({
 		},
 		{
 			name: "custom",
-			action: customFunction(editor){
+			action: function customFunction(editor){
 				// Add your own code
 			},
 			className: "fa fa-star",
