@@ -92,6 +92,13 @@ subscribers = {
     add: function add(object, options) {
         var tasks;
 
+        function cleanError(error) {
+            if (error.message.toLowerCase().indexOf('unique') !== -1) {
+                return new errors.DataImportError('Email already exists.');
+            }
+            return error;
+        }
+
         /**
          * ### Model Query
          * Make the call to the Model layer
@@ -99,7 +106,13 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data']));
+            return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
+                if (error.errno) {
+                    // DB error
+                    return Promise.reject(cleanError(error));
+                }
+                return Promise.reject(error[0]);
+            });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order
@@ -201,7 +214,7 @@ subscribers = {
 
         function formatCSV(data) {
             var fields = ['id', 'email', 'created_at', 'deleted_at'],
-                csv = '',
+                csv = fields.join(',') + '\r\n',
                 subscriber,
                 field,
                 j,
@@ -269,24 +282,72 @@ subscribers = {
         function importCSV(options) {
             return new Promise(function (resolve, reject) {
                 var filePath = options.path,
-                    importTasks = [];
-                readline.createInterface({
+                    importTasks = [],
+                    emailIdx = -1,
+                    firstLine = true,
+                    rl;
+
+                rl = readline.createInterface({
                     input: fs.createReadStream(filePath),
                     terminal: false
-                }).on('line', function (line) {
+                });
+
+                rl.on('line', function (line) {
                     var dataToImport = line.split(',');
-                    // TODO: investigate if directly writing to DB & use transaction is better?
-                    importTasks.push(subscribers.add({
-                        subscribers: [{
-                            email: dataToImport[1]
+
+                    if (firstLine) {
+                        emailIdx = _.findIndex(dataToImport, function (columnName) {
+                            if (columnName.match(/email/g)) {
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        });
+                        if (emailIdx === -1) {
+                            return reject(new errors.ValidationError('Email column not found'));
                         }
-                    ]}, {context: options.context}));
-                }).on('close', function () {
-                    Promise.all(importTasks).then(function () {
-                        // TODO: delete uploaded file
-                        return resolve({imported: importTasks.length});
-                    }).catch(function (error) {
-                        return reject(new errors.InternalServerError(error.message || error));
+                        firstLine = false;
+                    } else if (emailIdx > -1) {
+                        importTasks.push(function () {
+                            return subscribers.add({
+                                subscribers: [{
+                                    email: dataToImport[emailIdx]
+                                }
+                            ]}, {context: options.context});
+                        });
+                    }
+                });
+
+                rl.on('close', function () {
+                    var fulfilled = 0,
+                        duplicates = 0,
+                        invalid = 0;
+
+                    Promise.all(importTasks.map(function (promise) {
+                        return promise().reflect();
+                    })).each(function (inspection) {
+                        if (inspection.isFulfilled()) {
+                            fulfilled = fulfilled + 1;
+                        } else {
+                            if (inspection.reason().errorType === 'ValidationError') {
+                                invalid = invalid + 1;
+                            } else if (inspection.reason().errorType === 'DataImportError') {
+                                duplicates = duplicates + 1;
+                            }
+                        }
+                    }).then(function () {
+                        // delete uploaded file
+                        return Promise.resolve();
+                    }).then(function () {
+                        return resolve({
+                            stats: {
+                                imported: fulfilled,
+                                duplicates: duplicates,
+                                invalid: invalid
+                            }
+                        });
+                    }).catch(function (err) {
+                        return reject(err);
                     });
                 });
             });
