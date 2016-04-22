@@ -1,6 +1,5 @@
 var path                = require('path'),
     express             = require('express'),
-    _                   = require('lodash'),
     templates           = require('../../../controllers/frontend/templates'),
     setResponseContext  = require('../../../controllers/frontend/context'),
     api                 = require('../../../api'),
@@ -19,6 +18,22 @@ function controller(req, res) {
     }
 }
 
+function errorHandler(err, req, res, next) {
+    /*jshint unused:false */
+    res.locals.error = err;
+    return controller(req, res);
+}
+
+function honeyPot(req, res, next) {
+    if (!req.body.hasOwnProperty('confirm') || req.body.confirm !== '') {
+        return next(new Error('Oops, something went wrong!'));
+    }
+
+    // we don't need this anymore
+    delete req.body.confirm;
+    next();
+}
+
 function storeSubscriber(req, res, next) {
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
         .then(function () {
@@ -26,10 +41,9 @@ function storeSubscriber(req, res, next) {
             next();
         })
         .catch(function (error) {
-            res.locals.error = error;
-            next();
+            next(error);
         });
-    }
+}
 
 // subscribe frontend route
 subscribeRouter.route('/')
@@ -37,9 +51,13 @@ subscribeRouter.route('/')
         controller
     )
     .post(
+        honeyPot,
         storeSubscriber,
         controller
     );
+
+// configure an error handler just for subscribe problems
+subscribeRouter.use(errorHandler);
 
 module.exports = subscribeRouter;
 module.exports.controller = controller;
