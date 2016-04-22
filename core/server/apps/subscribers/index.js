@@ -1,12 +1,16 @@
 var _          = require('lodash'),
     path       = require('path'),
-    config     = require('../../config'),
+    hbs        = require('express-hbs'),
     router     = require('./lib/router'),
 
-    // Dirty require
-    hbs        = require('express-hbs'),
+    // Dirty requires
+    config     = require('../../config'),
+    errors     = require('../../errors'),
+    i18n       = require('../../i18n'),
+    labs       = require('../../utils/labs'),
     template   = require('../../helpers/template'),
     utils      = require('../../helpers/utils'),
+
     params = ['error', 'success', 'email', 'referrer', 'location'],
 
     /**
@@ -40,11 +44,30 @@ function subscribeFormHelper(options) {
 
 module.exports = {
     activate: function activate(ghost) {
+        var errorMessages = [
+            i18n.t('warnings.helpers.helperNotAvailable', {helperName: 'subscribe_form'}),
+            i18n.t('warnings.helpers.apiMustBeEnabled', {helperName: 'subscribe_form', flagName: 'subscribers'}),
+            i18n.t('warnings.helpers.seeLink', {url: 'http://support.ghost.org/subscribers-beta/'})
+        ];
+
         // Correct way to register a helper from an app
-        ghost.helpers.register('subscribe_form', subscribeFormHelper);
+        ghost.helpers.register('subscribe_form', function labsEnabledHelper() {
+            if (labs.isSet('subscribers') === true) {
+                return subscribeFormHelper.apply(this, arguments);
+            }
+
+            errors.logError.apply(this, errorMessages);
+            return new hbs.handlebars.SafeString('<script>console.error("' + errorMessages.join(' ') + '");</script>');
+        });
     },
 
     setupRoutes: function setupRoutes(blogRouter) {
-        blogRouter.use('/' + config.routeKeywords.subscribe + '/', router);
+        blogRouter.use('/' + config.routeKeywords.subscribe + '/', function labsEnabledRouter(req, res, next) {
+            if (labs.isSet('subscribers') === true) {
+                return router.apply(this, arguments);
+            }
+
+            next();
+        });
     }
 };

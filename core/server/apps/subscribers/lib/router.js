@@ -1,9 +1,12 @@
 var path                = require('path'),
     express             = require('express'),
-    templates           = require('../../../controllers/frontend/templates'),
-    setResponseContext  = require('../../../controllers/frontend/context'),
+    subscribeRouter     = express.Router(),
+
+    // Dirty requires
     api                 = require('../../../api'),
-    subscribeRouter     = express.Router();
+    errors              = require('../../../errors'),
+    templates           = require('../../../controllers/frontend/templates'),
+    setResponseContext  = require('../../../controllers/frontend/context');
 
 function controller(req, res) {
     var defaultView = path.resolve(__dirname, 'views', 'subscribe.hbs'),
@@ -18,10 +21,15 @@ function controller(req, res) {
     }
 }
 
-function errorHandler(err, req, res, next) {
+function errorHandler(error, req, res, next) {
     /*jshint unused:false */
-    res.locals.error = err;
-    return controller(req, res);
+
+    if (error.statusCode !== 404) {
+        res.locals.error = error;
+        return controller(req, res);
+    }
+
+    next(error);
 }
 
 function honeyPot(req, res, next) {
