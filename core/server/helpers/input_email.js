@@ -22,6 +22,10 @@ input_email = function (options) {
         extras += ' placeholder="' + options.hash.placeholder + '"';
     }
 
+    if (options.hash.value) {
+        extras += ' value="' + options.hash.value + '"';
+    }
+
     output = utils.inputTemplate({
         type: 'email',
         name: 'email',

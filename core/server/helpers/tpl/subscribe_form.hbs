@@ -2,9 +2,9 @@
     {{! This is required for the form to work correctly }}
     {{hidden}}
 
-    <div class="form-group">
+    <div class="form-group{{#if error}} error{{/if}}">
         <span class="input-icon icon-mail">
-            {{input_email class=input_class placeholder=placeholder}}
+            {{input_email class=input_class placeholder=placeholder value=email}}
         </span>
     </div>
     <button class="btn btn-blue btn-block" type="submit">Subscribe</button>
@@ -12,6 +12,6 @@
     {{script}}
 </form>
 
-
-
-
+{{#if error}}
+    <p class="main-error">{{{error.message}}}</p>
+{{/if}}

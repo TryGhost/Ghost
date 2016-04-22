@@ -23,23 +23,34 @@
     <div class="gh-viewport">
         <main class="gh-main" role="main">
             <div class="gh-flow">
+                <header class="gh-flow-head">
+                    <nav class="gh-flow-nav">
+                        <a href="{{@blog.url}}" class="gh-flow-back"><i class="icon-arrow-left"></i> Back</a>
+                    </nav>
+                </header>
+
                 <div class="gh-flow-content-wrap">
                     <section class="gh-flow-content">
-                        <header>
-                            <h1>Subscribe to {{@blog.title}}</h1>
-                        </header>
-                        {{subscribe_form form_class="gh-signin" input_class="gh-input" placeholder="Your email address"}}
+                        {{^if success}}
+                            <header>
+                                <h1>Subscribe to {{@blog.title}}</h1>
+                            </header>
+
+                            {{subscribe_form form_class="gh-signin" input_class="gh-input" placeholder="Your email address"}}
+                        {{else}}
+                            <header>
+                                <h1>Subscribed!</h1>
+                            </header>
+
+                            <p>
+                                You've successfully subscribed to <em>{{@blog.title}}</em>
+                                with the email address <em>{{email}}</em>.
+                            </p>
+                        {{/if}}
                     </section>
                 </div>
             </div>
         </main>
-        {{#if error}}
-            <aside class="gh-notifications">
-                <article class="gh-notification gh-notification-red">
-                    <div id="gh-notification-content">{{error.message}}</div>
-                </article>
-            </aside>
-        {{/if}}
     </div>
 </div>
 </body>

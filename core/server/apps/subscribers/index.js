@@ -7,6 +7,7 @@ var _          = require('lodash'),
     hbs        = require('express-hbs'),
     template   = require('../../helpers/template'),
     utils      = require('../../helpers/utils'),
+    params = ['error', 'success', 'email', 'referrer', 'location'],
 
     /**
      * Dirrrrrty script
@@ -29,7 +30,7 @@ function makeHidden(name) {
 }
 
 function subscribeFormHelper(options) {
-    var data = _.merge({}, options.hash, {
+    var data = _.merge({}, options.hash, _.pick(options.data.root, params), {
         action: path.join('/', config.paths.subdir, config.routeKeywords.subscribe, '/'),
         script: new hbs.handlebars.SafeString(subscribeScript),
         hidden: new hbs.handlebars.SafeString(makeHidden('confirm') + makeHidden('location') + makeHidden('referrer'))

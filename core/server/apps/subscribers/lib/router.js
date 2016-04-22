@@ -1,5 +1,6 @@
 var path                = require('path'),
     express             = require('express'),
+    _                   = require('lodash'),
     templates           = require('../../../controllers/frontend/templates'),
     setResponseContext  = require('../../../controllers/frontend/context'),
     api                 = require('../../../api'),
@@ -8,11 +9,7 @@ var path                = require('path'),
 function controller(req, res) {
     var defaultView = path.resolve(__dirname, 'views', 'subscribe.hbs'),
         paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
-        data = {};
-
-    if (res.error) {
-        data.error = res.error;
-    }
+        data = req.body;
 
     setResponseContext(req, res);
     if (paths.hasOwnProperty('subscribe.hbs')) {
@@ -23,10 +20,16 @@ function controller(req, res) {
 }
 
 function storeSubscriber(req, res, next) {
-    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}}).then(function () {
-        next();
-    });
-}
+    return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
+        .then(function () {
+            res.locals.success = true;
+            next();
+        })
+        .catch(function (error) {
+            res.locals.error = error;
+            next();
+        });
+    }
 
 // subscribe frontend route
 subscribeRouter.route('/')
