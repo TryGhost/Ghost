@@ -2,69 +2,98 @@ import Ember from 'ember';
 import SettingsSaveMixin from 'ghost/mixins/settings-save';
 
 const {
-    Controller,
     computed,
-    inject: {controller}
+    Controller,
+    get,
+    inject: {controller},
+    set
 } = Ember;
+
 const {alias} = computed;
+const emberA = Ember.A;
 
 export default Controller.extend(SettingsSaveMixin, {
     appsController: controller('settings.apps'),
-    slack: alias('appsController.model.slack'),
+    slack: alias('appsController.slack'),
 
-    newSlackObject: computed('slack', 'model', function() {
-        let slack = this.get('slack');
-        let newSlack = this.get('model');
-        let slackItem;
+    _scratchValues: null,
 
-        try {
-            [ slackItem ] = JSON.parse(slack) || {};
-        } catch (e) {
-            slackItem = {};
-        }
+    init() {
+        this._super(...arguments);
+        this._scratchValues = emberA();
+    },
 
-        newSlack.set('url', slackItem.url);
-        newSlack.set('channel', slackItem.channel);
-        newSlack.set('name', slackItem.name);
-        newSlack.set('isActive', slackItem.isActive);
-
-        return newSlack;
-    }),
+    save() {
+        return this.get('appsController').save();
+    },
 
     actions: {
         updateProperty(propKey, newValue) {
-            let newSlackObject = this.get('newSlackObject');
-            let currentValue = newSlackObject.get(propKey);
-            newValue = newValue.trim();
-
-            if (!newValue) {
-                return;
-            }
-
-            if (newValue === currentValue) {
-                return;
-            }
-            if (!this.get('validateProperty', propKey, newValue)) {
-                return;
-            } else {
-                newSlackObject.set(propKey, newValue);
-            }
+            this._scratchValues[propKey] = newValue;
         },
 
-        validateProperty(propKey, val) {
-            if (!propKey && !val) {
+        saveProperty(propKey) {
+            let slack = this.get('slack');
+            let slackValue = get(slack, propKey);
+            let scratchValue = this._scratchValues[propKey];
+
+            if (!scratchValue || scratchValue === slackValue) {
                 return;
             }
+
+            // we're dealing with a POJO here so there's no "set", instead
+            // we want to replace the whole object then save
+            // TODO: it may be possible to use a custom transform that puts a
+            // full ember "Slack/App" object on the settings model to remove
+            // the reliance on reaching up into the parent controller
+            set(slack, propKey, scratchValue);
+            this.set('slack', [slack]);
+            this.send('save');
         },
 
         toggleActiveProperty() {
-            if (this.get('newSlackObject.isActive')) {
-                this.set('newSlackObject.isActive', false);
-                this.get('appsController').send('save');
-            } else {
-                this.set('newSlackObject.isActive', true);
-                this.get('appsController').send('save');
-            }
+            this.toggleProperty('slack.isActive');
+            this.send('save');
+        },
+
+        sendTestNotification() {
+            // let slack = this.get('slack');
+            // let slackData = {};
+            // let options;
+            //
+            // slackData = {
+            //     channel: slack.channel,
+            //     username: slack.user,
+            //     'icon_emoji': ':ghost:',
+            //     text: 'https://myblog.com/post12345',
+            //     'unfurl_links': true
+            // };
+            // console.log(slackData);
+            // // fill the options for https request
+            // options = slack.url;
+            // // options.method = 'POST';
+            // // options.headers = {'Content-type': 'application/json'};
+            // console.log(options);
+            // return this.get('ajax').post(options, slackData).then((response) => {
+            //     if (response) {
+            //         console.log(response);
+            //     }
+            //
+            //     this.get('notifications').showAlert(response);
+            // }).catch((error) => {
+            //     this.get('notifications').showAPIError(error, {key: 'owner.transfer'});
+            // });
+            //
+            // slackData = JSON.stringify(slackData);
+            //
+            // req.write(slackData);
+            // req.on('error', function (error) {
+            //     errors.logError(
+            //         error
+            //     );
+            // });
+            // req.end();
+            alert('TODO: Implement test notifications');
         }
     }
 });
