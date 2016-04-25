@@ -92,10 +92,6 @@ export default Controller.extend(SettingsSaveMixin, {
     },
 
     actions: {
-        validate(property) {
-            this.get('model').validate({property});
-        },
-
         checkPostsPerPage() {
             let postsPerPage = this.get('model.postsPerPage');
 

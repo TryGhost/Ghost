@@ -1,7 +1,6 @@
 import Ember from 'ember';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
-import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {
     Controller,
@@ -12,9 +11,7 @@ const {
 } = Ember;
 const {alias, and, not, or, readOnly} = computed;
 
-export default Controller.extend(ValidationEngine, {
-    // ValidationEngine settings
-    validationType: 'user',
+export default Controller.extend({
     submitting: false,
     lastPromise: null,
     showDeleteUserModal: false,
