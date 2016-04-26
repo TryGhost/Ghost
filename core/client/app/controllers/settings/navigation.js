@@ -63,7 +63,6 @@ export default Controller.extend(SettingsSaveMixin, {
         navItems = navItems.map((item) => {
             return NavItem.create(item);
         });
-
         return navItems;
     }),
 
