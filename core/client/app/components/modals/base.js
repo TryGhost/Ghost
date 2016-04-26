@@ -1,5 +1,6 @@
 /* global key */
 import Ember from 'ember';
+import {invokeAction} from 'ember-invoke-action';
 
 const {Component, run} = Ember;
 
@@ -49,7 +50,7 @@ export default Component.extend({
         },
 
         closeModal() {
-            this.get('closeModal')();
+            invokeAction(this, 'closeModal');
         }
     }
 });

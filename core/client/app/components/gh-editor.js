@@ -2,6 +2,7 @@ import Ember from 'ember';
 import ShortcutsMixin from 'ghost/mixins/shortcuts';
 import imageManager from 'ghost/utils/ed-image-manager';
 import editorShortcuts from 'ghost/utils/editor-shortcuts';
+import {invokeAction} from 'ember-invoke-action';
 
 const {Component, computed, run} = Ember;
 const {equal} = computed;
@@ -52,9 +53,8 @@ export default Component.extend(ShortcutsMixin, {
     },
 
     willDestroyElement() {
-        if (this.get('onTeardown')) {
-            this.get('onTeardown')();
-        }
+        invokeAction(this, 'onTeardown');
+
         this.removeShortcuts();
     },
 

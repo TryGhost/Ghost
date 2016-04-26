@@ -1,6 +1,7 @@
 /* global key */
 import Ember from 'ember';
 import boundOneWay from 'ghost/utils/bound-one-way';
+import {invokeAction} from 'ember-invoke-action';
 
 const {
     Component,
@@ -128,7 +129,7 @@ export default Component.extend({
         },
 
         deleteTag() {
-            this.get('showDeleteTagModal')();
+            invokeAction(this, 'showDeleteTagModal');
         }
     }
 
