@@ -79,7 +79,7 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="name" class="first-form-group"}}
                     <label for="user-name">Full Name</label>
-                    {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name")}}
+                    {{input value=user.name id="user-name" class="gh-input user-name" placeholder="Full Name" autocorrect="off" focusOut=(action "validate" "name" target=user)}}
                     {{#if user.errors.name}}
                         {{gh-error-message errors=user.errors property="name"}}
                     {{else}}
@@ -102,7 +102,7 @@
                     <label for="user-email">Email</label>
                     {{!-- Administrators only see text of Owner's email address but not input --}}
                     {{#unless isAdminUserOnOwnerProfile}}
-                        {{input type="email" value=user.email id="user-email" name="email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email")}}
+                        {{input type="email" value=user.email id="user-email" name="email" class="gh-input" placeholder="Email Address" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "email" target=user)}}
                         {{gh-error-message errors=user.errors property="email"}}
                     {{else}}
                         <span>{{user.email}}</span>
@@ -128,21 +128,21 @@
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="location"}}
                     <label for="user-location">Location</label>
-                    {{input type="text" value=user.location id="user-location" class="gh-input" focusOut=(action "validate" "location")}}
+                    {{input type="text" value=user.location id="user-location" class="gh-input" focusOut=(action "validate" "location" target=user)}}
                     {{gh-error-message errors=user.errors property="location"}}
                     <p>Where in the world do you live?</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="website"}}
                     <label for="user-website">Website</label>
-                    {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website")}}
+                    {{input type="url" value=user.website id="user-website" class="gh-input" autocapitalize="off" autocorrect="off" autocomplete="off" focusOut=(action "validate" "website" target=user)}}
                     {{gh-error-message errors=user.errors property="website"}}
                     <p>Have a website or blog other than this one? Link it!</p>
                 {{/gh-form-group}}
 
                 {{#gh-form-group errors=user.errors hasValidated=user.hasValidated property="bio" class="bio-container"}}
                     <label for="user-bio">Bio</label>
-                    {{textarea id="user-bio" class="gh-input" value=user.bio focusOut=(action "validate" "bio")}}
+                    {{textarea id="user-bio" class="gh-input" value=user.bio focusOut=(action "validate" "bio" target=user)}}
                     {{gh-error-message errors=user.errors property="bio"}}
                     <p>
                         Write about you, in 200 characters or less.

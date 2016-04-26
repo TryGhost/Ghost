@@ -256,7 +256,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('.user-details-top .first-form-group input.user-name', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'input is in error state').to.be.true;
+                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
                 });
 
                 // test too long user name
@@ -264,7 +264,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('.user-details-top .first-form-group input.user-name', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'input is in error state').to.be.true;
+                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;
                 });
 
                 // reset name field
@@ -292,7 +292,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('.user-details-bottom input[name="email"]', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(2)').hasClass('error'), 'email input should be in error state').to.be.true;
+                    expect(find('.user-details-bottom .form-group:nth-of-type(2)').hasClass('error'), 'email input should be in error state with invalid email').to.be.true;
                 });
 
                 fillIn('.user-details-bottom input[name="email"]', 'test@example.com');
