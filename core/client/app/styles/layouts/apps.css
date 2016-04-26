@@ -233,4 +233,7 @@
         flex-direction: column;
         align-items: flex-start;
     }
+    .apps-card-content > .apps-configured {
+        right: 15px;
+    }
 }

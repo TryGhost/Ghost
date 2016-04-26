@@ -5,7 +5,7 @@ var https           = require('https'),
     config          = require('../../config'),
     errors          = require('../../errors'),
     events          = require('../../events'),
-    api             = require('../../api'),
+    api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
     options,
     req,
@@ -13,7 +13,7 @@ var https           = require('https'),
     slackData = {};
 
 function getSlackSettings() {
-    return api.settings.read({context: {internal: true}, key: 'slack'}).then(function (response) {
+    return api.read({context: {internal: true}, key: 'slack'}).then(function (response) {
         var slackSetting = response.settings[0];
 
         try {
@@ -53,7 +53,7 @@ function ping(post) {
     return getSlackSettings().then(function (slackSettings) {
         // Quit here if slack integration is not activated
         if (slackSettings.isActive === 'true') {
-            var channel, username;
+            var icon;
             // Stop right here, if there is no url or the default url provided
             if (!slackSettings.url || slackSettings.url === '/') {
                 return;
@@ -72,14 +72,14 @@ function ping(post) {
             if (post.slug === 'welcome-to-ghost') {
                 return;
             }
-            channel = slackSettings.channel ? slackSettings.channel : '';
-            username = slackSettings.username ? slackSettings.username : '';
+
+            icon = slackSettings.icon ? slackSettings.icon : ':ghost:';
 
             slackData = {
-                channel: channel,
-                username: username,
+                channel: slackSettings.channel,
+                username: slackSettings.username,
                 text: textUrl,
-                icon_emoji: slackSettings.icon_emoji,
+                icon_emoji: icon,
                 unfurl_links: true
             };
 
