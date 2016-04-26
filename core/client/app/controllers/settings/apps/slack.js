@@ -44,11 +44,6 @@ export default Controller.extend(SettingsSaveMixin, {
                 return;
             }
 
-            // we're dealing with a POJO here so there's no "set", instead
-            // we want to replace the whole object then save
-            // TODO: it may be possible to use a custom transform that puts a
-            // full ember "Slack/App" object on the settings model to remove
-            // the reliance on reaching up into the parent controller
             set(slack, propKey, scratchValue);
             this.set('slack', [slack]);
             this.send('save');

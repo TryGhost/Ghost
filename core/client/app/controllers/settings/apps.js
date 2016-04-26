@@ -11,28 +11,14 @@ export default Controller.extend(SettingsSaveMixin, {
 
     settings: alias('model'),
 
-    slack: computed('settings.slack', {
-        get() {
-            let slackItem;
-
-            try {
-                [ slackItem ] = JSON.parse(this.get('settings.slack')) || [{}];
-            } catch (e) {
-                slackItem = {};
-            }
-
-            return slackItem;
-        },
-        set(key, value) {
-            this.set('settings.slack', JSON.stringify(value));
-            return value;
-        }
-    }),
+    slack: alias('settings.slack'),
 
     save() {
         let notifications = this.get('notifications');
 
-        return this.get('settings').save().catch((err) => {
+        return this.get('settings').save().then(() => {
+            this.notifyPropertyChange('settings.slack');
+        }).catch((err) => {
             notifications.showErrors(err);
         });
     }
