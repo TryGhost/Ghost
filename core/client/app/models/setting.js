@@ -22,7 +22,5 @@ export default Model.extend(ValidationEngine, {
     navigation: attr('navigation-settings'),
     isPrivate: attr('boolean'),
     password: attr('string'),
-    // TODO: this might be more suited to a custom transform so that JSON
-    // transformation is automatic
-    slack: attr('string')
+    slack: attr('slack-settings')
 });

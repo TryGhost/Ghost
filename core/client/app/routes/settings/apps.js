@@ -15,9 +15,6 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     model() {
-        // TODO: 'theme' and 'private' settings also need to be queried here
-        // otherwise we attempt to save a partial set of settings which fails
-        // because "null" is not a valid theme
         return this.store.queryRecord('setting', {type: 'blog,theme,private'});
     }
 });

@@ -93,7 +93,7 @@ apiRoutes = function apiRoutes(middleware) {
     router.post('/mail/test', authenticatePrivate, api.http(api.mail.sendTest));
 
     // ## Slack
-    // router.post('/slack/test', authenticatePrivate, api.http(api.slack.sendTest));
+    router.post('/slack/test', authenticatePrivate, api.http(api.slack.sendTest));
 
     // ## Authentication
     router.post('/authentication/passwordreset',

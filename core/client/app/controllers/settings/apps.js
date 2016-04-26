@@ -11,22 +11,8 @@ export default Controller.extend(SettingsSaveMixin, {
 
     settings: alias('model'),
 
-    slack: computed('settings.slack', {
-        get() {
-            let slackItem;
-
-            try {
-                [ slackItem ] = JSON.parse(this.get('settings.slack')) || [{}];
-            } catch (e) {
-                slackItem = {};
-            }
-
-            return slackItem;
-        },
-        set(key, value) {
-            this.set('settings.slack', JSON.stringify(value));
-            return value;
-        }
+    slack: computed('settings.slack', function () {
+        return this.get('settings.slack.firstObject');
     }),
 
     save() {

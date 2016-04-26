@@ -1,5 +1,5 @@
 <header class="view-header">
-    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>Apps</span>{{/gh-view-title}}
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">Apps</span>{{/gh-view-title}}
 </header>
 
 <section class="view-container">
@@ -14,10 +14,10 @@
                             <h3 class="apps-card-app-title">Slack</h3>
                             <p class="apps-card-app-desc">A team communication tool</p>
                         </div>
-                        {{#if isActive}}
-                            {{#link-to "settings.apps.slack" class="btn btn-green" title="Activate"}}Activate{{/link-to}}
-                        {{else}}
+                        {{#if slack.isActive}}
                             {{#link-to "settings.apps.slack" class="apps-configured"}}<span>1 configured</span><i class="icon-arrow-right"></i>{{/link-to}}
+                        {{else}}
+                            {{#link-to "settings.apps.slack" class="btn btn-green" title="Activate"}}Activate{{/link-to}}
                         {{/if}}
                     </div>
                 </article>
