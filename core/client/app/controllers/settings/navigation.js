@@ -1,43 +1,13 @@
 import Ember from 'ember';
-import DS from 'ember-data';
 import SettingsSaveMixin from 'ghost/mixins/settings-save';
-import ValidationEngine from 'ghost/mixins/validation-engine';
+import NavigationItem from 'ghost/models/navigation-item';
 
 const {
     Controller,
     RSVP,
     computed,
-    inject: {service},
-    isBlank
+    inject: {service}
 } = Ember;
-const {Errors} = DS;
-const emberA = Ember.A;
-
-export const NavItem = Ember.Object.extend(ValidationEngine, {
-    label: '',
-    url: '',
-    isNew: false,
-
-    validationType: 'navItem',
-
-    isComplete: computed('label', 'url', function () {
-        let {label, url} = this.getProperties('label', 'url');
-
-        return !isBlank(label) && !isBlank(url);
-    }),
-
-    isBlank: computed('label', 'url', function () {
-        let {label, url} = this.getProperties('label', 'url');
-
-        return isBlank(label) && isBlank(url);
-    }),
-
-    init() {
-        this._super(...arguments);
-        this.set('errors', Errors.create());
-        this.set('hasValidated', emberA());
-    }
-});
 
 export default Controller.extend(SettingsSaveMixin, {
     config: service(),
@@ -51,33 +21,16 @@ export default Controller.extend(SettingsSaveMixin, {
         return url.slice(-1) !== '/' ? `${url}/` : url;
     }),
 
-    navigationItems: computed('model.navigation', function () {
-        let navItems;
-
-        try {
-            navItems = JSON.parse(this.get('model.navigation') || [{}]);
-        } catch (e) {
-            navItems = [{}];
-        }
-
-        navItems = navItems.map((item) => {
-            return NavItem.create(item);
-        });
-
-        return navItems;
-    }),
-
     init() {
         this._super(...arguments);
-        this.set('newNavItem', NavItem.create({isNew: true}));
+        this.set('newNavItem', NavigationItem.create({isNew: true}));
     },
 
     save() {
-        let navItems = this.get('navigationItems');
+        let navItems = this.get('model.navigation');
         let newNavItem = this.get('newNavItem');
         let notifications = this.get('notifications');
         let validationPromises = [];
-        let navSetting;
 
         if (!newNavItem.get('isBlank')) {
             validationPromises.pushObject(this.send('addItem'));
@@ -88,19 +41,6 @@ export default Controller.extend(SettingsSaveMixin, {
         });
 
         return RSVP.all(validationPromises).then(() => {
-            navSetting = navItems.map((item) => {
-                let label = item.get('label').trim();
-                let url = item.get('url').trim();
-
-                return {label, url};
-            }).compact();
-
-            this.set('model.navigation', JSON.stringify(navSetting));
-
-            // trigger change event because even if the final JSON is unchanged
-            // we need to have navigationItems recomputed.
-            this.get('model').notifyPropertyChange('navigation');
-
             return this.get('model').save().catch((err) => {
                 notifications.showErrors(err);
             });
@@ -110,12 +50,12 @@ export default Controller.extend(SettingsSaveMixin, {
     },
 
     addNewNavItem() {
-        let navItems = this.get('navigationItems');
+        let navItems = this.get('model.navigation');
         let newNavItem = this.get('newNavItem');
 
         newNavItem.set('isNew', false);
         navItems.pushObject(newNavItem);
-        this.set('newNavItem', NavItem.create({isNew: true}));
+        this.set('newNavItem', NavigationItem.create({isNew: true}));
     },
 
     actions: {
@@ -137,13 +77,13 @@ export default Controller.extend(SettingsSaveMixin, {
                 return;
             }
 
-            let navItems = this.get('navigationItems');
+            let navItems = this.get('model.navigation');
 
             navItems.removeObject(item);
         },
 
         reorderItems(navItems) {
-            this.set('navigationItems', navItems);
+            this.set('model.navigation', navItems);
         },
 
         updateUrl(url, navItem) {
@@ -155,7 +95,7 @@ export default Controller.extend(SettingsSaveMixin, {
         },
 
         reset() {
-            this.set('newNavItem', NavItem.create({isNew: true}));
+            this.set('newNavItem', NavigationItem.create({isNew: true}));
         }
     }
 });
