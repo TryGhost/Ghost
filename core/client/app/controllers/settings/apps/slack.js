@@ -5,7 +5,7 @@ const {
     computed,
     Controller,
     get,
-    inject: {controller},
+    inject: {controller, service},
     set
 } = Ember;
 
@@ -15,6 +15,9 @@ const emberA = Ember.A;
 export default Controller.extend(SettingsSaveMixin, {
     appsController: controller('settings.apps'),
     slack: alias('appsController.slack'),
+    ghostPaths: service(),
+    ajax: service(),
+    notifications: service(),
 
     _scratchValues: null,
 
@@ -57,43 +60,18 @@ export default Controller.extend(SettingsSaveMixin, {
         },
 
         sendTestNotification() {
-            // let slack = this.get('slack');
-            // let slackData = {};
-            // let options;
-            //
-            // slackData = {
-            //     channel: slack.channel,
-            //     username: slack.user,
-            //     'icon_emoji': ':ghost:',
-            //     text: 'https://myblog.com/post12345',
-            //     'unfurl_links': true
-            // };
-            // console.log(slackData);
-            // // fill the options for https request
-            // options = slack.url;
-            // // options.method = 'POST';
-            // // options.headers = {'Content-type': 'application/json'};
-            // console.log(options);
-            // return this.get('ajax').post(options, slackData).then((response) => {
-            //     if (response) {
-            //         console.log(response);
-            //     }
-            //
-            //     this.get('notifications').showAlert(response);
-            // }).catch((error) => {
-            //     this.get('notifications').showAPIError(error, {key: 'owner.transfer'});
-            // });
-            //
-            // slackData = JSON.stringify(slackData);
-            //
-            // req.write(slackData);
-            // req.on('error', function (error) {
-            //     errors.logError(
-            //         error
-            //     );
-            // });
-            // req.end();
-            alert('TODO: Implement test notifications');
+            let notifications = this.get('notifications');
+            let slackApi = this.get('ghostPaths.url').api('slack', 'test');
+
+            this.toggleProperty('submitting');
+
+            this.get('ajax').post(slackApi).then(() => {
+                notifications.showAlert('Check your slack channel test message.', {type: 'info', key: 'slack-test.send.success'});
+                this.toggleProperty('submitting');
+            }).catch((error) => {
+                notifications.showAPIError(error, {key: 'slack-test:send'});
+                this.toggleProperty('submitting');
+            });
         }
     }
 });

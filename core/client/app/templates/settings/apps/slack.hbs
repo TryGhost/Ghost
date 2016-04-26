@@ -46,7 +46,7 @@
                 <p>What name should messages be posted under</p>
             {{/gh-form-group}}
 
-            <a {{action "sendTestNotification"}} class="btn btn-grey" title="Send Test Notification">Send Test Notification</a>
+            {{#gh-spin-button id="sendTestNotification" class="btn btn-grey" action="sendTestNotification" submitting=submitting}}Send Test Notification{{/gh-spin-button}}
         </form>
     </section>
 </section>
