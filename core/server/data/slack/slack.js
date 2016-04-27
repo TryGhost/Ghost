@@ -5,7 +5,7 @@ var https           = require('https'),
     config          = require('../../config'),
     errors          = require('../../errors'),
     events          = require('../../events'),
-    api             = require('../../api'),
+    api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
     options,
     req,
@@ -13,7 +13,7 @@ var https           = require('https'),
     slackData = {};
 
 function getSlackSettings() {
-    return api.settings.read({context: {internal: true}, key: 'slack'}).then(function (response) {
+    return api.read({context: {internal: true}, key: 'slack'}).then(function (response) {
         var slackSetting = response.settings[0];
 
         try {

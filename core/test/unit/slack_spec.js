@@ -9,7 +9,7 @@ var nock            = require('nock'),
 // Stuff we test
     slack          = require('../../server/data/slack/slack'),
     events         = require('../../server/events'),
-    api            = require('../../server/api'),
+    api            = require('../../server/api/settings'),
     config         = require('../../server/config'),
     sandbox        = sinon.sandbox.create(),
 // Test data
@@ -159,7 +159,7 @@ describe('Slack', function () {
         beforeEach(function () {
             urlForStub = sandbox.stub(config, 'urlFor').returns('http://myblog.com/post');
             settingsObj = {settings: [], meta: {}};
-            settingsAPIStub = sandbox.stub(api.settings, 'read').returns(Promise.resolve(settingsObj));
+            settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve(settingsObj));
             makeRequestStub = sandbox.stub(slack, '_makeRequest', function () {
                 makeRequestAssertions.apply(this, arguments);
             });

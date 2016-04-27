@@ -16,6 +16,7 @@ export default Transform.extend({
         }
 
         slackObj = settingsArray.map((itemDetails) => {
+            console.log(itemDetails);
             return SlackObject.create(itemDetails);
         });
         console.log(slackObj);
