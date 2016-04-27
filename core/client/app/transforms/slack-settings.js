@@ -8,14 +8,13 @@ const emberA = Ember.A;
 export default Transform.extend({
     deserialize(serialized) {
         let slackObj, settingsArray;
-        console.log('slackObj');
-        console.log(slackObj);
-        console.log('settingsArray');
-        console.log(settingsArray);
+        console.log('serialized');
+        console.log(serialized);
+
         try {
-            settingsArray = JSON.parse(serialized) || [{}];
+            settingsArray = JSON.parse(serialized) || [];
         } catch (e) {
-            settingsArray = [{}];
+            settingsArray = [];
         }
 
         slackObj = settingsArray.map((itemDetails) => {
@@ -28,10 +27,15 @@ export default Transform.extend({
 
     serialize(deserialized) {
         let settingsArray;
-        console.log('settingsArray');
-        console.log(settingsArray);
+
         if (isArray(deserialized)) {
+
+            // [ deserialized ] = deserialized;
+            console.log('deserialized');
+            console.log(deserialized);
             settingsArray = deserialized.map((item) => {
+                console.log('item');
+                console.log(item);
                 let channel = item.get('channel').trim();
                 let url = item.get('url').trim();
                 let username = item.get('username').trim();

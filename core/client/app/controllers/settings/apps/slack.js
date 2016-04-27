@@ -20,6 +20,7 @@ export default Controller.extend(SettingsSaveMixin, {
     notifications: service(),
 
     _scratchValues: null,
+    isActive: alias('appsController.isActive'),
 
     init() {
         this._super(...arguments);
@@ -45,7 +46,7 @@ export default Controller.extend(SettingsSaveMixin, {
             }
 
             set(slack, propKey, scratchValue);
-            this.set('slack', [slack]);
+            this.set('slack', slack);
             this.send('save');
         },
 

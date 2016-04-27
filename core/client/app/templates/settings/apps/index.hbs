@@ -14,6 +14,7 @@
                             <h3 class="apps-card-app-title">Slack</h3>
                             <p class="apps-card-app-desc">A team communication tool</p>
                         </div>
+                        {{isActive}}
                         {{#if isActive}}
                             {{#link-to "settings.apps.slack" class="btn btn-green" title="Activate"}}Activate{{/link-to}}
                         {{else}}

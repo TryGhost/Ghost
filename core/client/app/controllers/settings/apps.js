@@ -12,6 +12,11 @@ export default Controller.extend(SettingsSaveMixin, {
     settings: alias('model'),
 
     slack: alias('settings.slack'),
+    isActive: computed('slack', function () {
+        let slack = this.get('slack');
+        console.log(slack);
+        return slack.get('isActive');
+    }),
 
     save() {
         let notifications = this.get('notifications');
