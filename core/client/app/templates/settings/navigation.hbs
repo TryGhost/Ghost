@@ -9,7 +9,7 @@
     <section class="view-container">
         <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
             {{#sortable-group onChange=(action 'reorderItems') as |group|}}
-                {{#each navigationItems as |navItem|}}
+                {{#each model.navigation as |navItem|}}
                     {{gh-navitem navItem=navItem baseUrl=blogUrl addItem="addItem" deleteItem="deleteItem" updateUrl="updateUrl" group=group}}
                 {{/each}}
             {{/sortable-group}}
