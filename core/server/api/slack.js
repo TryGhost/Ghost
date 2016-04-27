@@ -19,7 +19,7 @@ slack = {
      */
     sendTest: function () {
         console.log('sendTest called');
-        slackPing._ping({});
+        return slackPing._ping({});
     }
 };
 

@@ -47,7 +47,6 @@ function makeRequest(reqOptions, reqPayload) {
 }
 
 function ping(post) {
-    console.log('there we go!');
     // we want to send the link of the post
     var textUrl = config.urlFor('post', {post: post}, true);
 
