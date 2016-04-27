@@ -20,7 +20,6 @@ export default Controller.extend(SettingsSaveMixin, {
     notifications: service(),
 
     _scratchValues: null,
-    isActive: alias('appsController.isActive'),
 
     init() {
         this._super(...arguments);

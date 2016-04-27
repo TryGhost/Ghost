@@ -1,29 +1,10 @@
 import Ember from 'ember';
 
-const {
-    computed,
-    isBlank
-} = Ember;
-
 export default Ember.Object.extend({
-    url: '',
+    // values entered here will act as defaults
     isActive: false,
-
-    isComplete: computed('url', function () {
-        let {url} = this.getProperties('url');
-
-        return !isBlank(url);
-    }),
-
-    isBlank: computed('url', function () {
-        let {url} = this.getProperties('url');
-
-        return isBlank(url);
-    }),
-
-    isActivated: computed('isActive', function () {
-        let {isActive} = this.getProperties('isActive');
-
-        return isActive;
-    })
+    url: '',
+    channel: '',
+    icon: ':ghost:',
+    username: ''
 });

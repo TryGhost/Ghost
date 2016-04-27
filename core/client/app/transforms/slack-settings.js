@@ -1,3 +1,4 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 import Transform from 'ember-data/transform';
 import SlackObject from 'ghost/models/slack-integration';
@@ -17,6 +18,9 @@ export default Transform.extend({
 
         slackObj = settingsArray.map((itemDetails) => {
             console.log(itemDetails);
+            // sync naming between the stored object and the ember model
+            itemDetails.icon = itemDetails.icon_emoji;
+            delete itemDetails.icon_emoji;
             return SlackObject.create(itemDetails);
         });
         console.log(slackObj);
@@ -27,15 +31,15 @@ export default Transform.extend({
         let settingsArray;
 
         if (isArray(deserialized)) {
-
             settingsArray = deserialized.map((item) => {
-                let channel = item.get('channel').trim();
-                let url = item.get('url').trim();
-                let username = item.get('username').trim();
-                let icon = item.get('icon').trim();
-                let isActive = item.get('isActive').trim();
+                let channel = (item.get('channel') || '').trim();
+                let url = (item.get('url') || '').trim();
+                let username = (item.get('username') || '').trim();
+                // icon is stored as icon_emoji on the server
+                let icon_emoji = (item.get('icon') || '').trim();
+                let isActive = item.get('isActive');
 
-                return {url, channel, username, icon, isActive};
+                return {url, channel, username, isActive, icon_emoji};
             }).compact();
         } else {
             settingsArray = [];
