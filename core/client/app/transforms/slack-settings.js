@@ -39,10 +39,10 @@ export default Transform.extend({
                 let channel = item.get('channel').trim();
                 let url = item.get('url').trim();
                 let username = item.get('username').trim();
-                let iconEmoji = item.get('icon_emoji').trim();
+                let icon = item.get('icon').trim();
                 let isActive = item.get('isActive').trim();
 
-                return {url, channel, username, iconEmoji, isActive};
+                return {url, channel, username, icon, isActive};
             }).compact();
         } else {
             settingsArray = [];

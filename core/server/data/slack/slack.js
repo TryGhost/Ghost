@@ -47,6 +47,7 @@ function makeRequest(reqOptions, reqPayload) {
 }
 
 function ping(post) {
+    console.log('there we go!');
     // we want to send the link of the post
     var textUrl = config.urlFor('post', {post: post}, true);
 
@@ -79,7 +80,7 @@ function ping(post) {
                 channel: channel,
                 username: username,
                 text: textUrl,
-                icon_emoji: slackSettings.icon_emoji,
+                icon_emoji: slackSettings.icon,
                 unfurl_links: true
             };
 

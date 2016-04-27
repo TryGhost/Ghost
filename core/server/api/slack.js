@@ -18,6 +18,7 @@ slack = {
      * @public
      */
     sendTest: function () {
+        console.log('sendTest called');
         slackPing._ping({});
     }
 };

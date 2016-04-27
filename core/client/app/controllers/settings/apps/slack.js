@@ -40,7 +40,9 @@ export default Controller.extend(SettingsSaveMixin, {
             let slack = this.get('slack');
             let slackValue = get(slack, propKey);
             let scratchValue = this._scratchValues[propKey];
-
+            console.log(slack);
+            console.log(slackValue);
+            console.log(scratchValue);
             if (!scratchValue || scratchValue === slackValue) {
                 return;
             }
