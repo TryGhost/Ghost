@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import {invokeAction} from 'ember-invoke-action';
 
 const {Mixin, run} = Ember;
 
@@ -61,7 +62,7 @@ export default Mixin.create({
      */
     scrollHandler() {
         this.set('scrollThrottle', run.throttle(this, () => {
-            this.get('updateScrollInfo')(this.getScrollInfo());
+            invokeAction(this, 'updateScrollInfo', this.getScrollInfo());
         }, 10));
     },
 
