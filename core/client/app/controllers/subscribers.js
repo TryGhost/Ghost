@@ -5,35 +5,67 @@ import ghostPaths from 'ghost/utils/ghost-paths';
 
 const {
     $,
+    assign,
     computed,
     inject: {service}
 } = Ember;
 
 export default Ember.Controller.extend(PaginationMixin, {
 
+    queryParams: ['order', 'direction'],
+    order: 'created_at',
+    direction: 'desc',
+
     paginationModel: 'subscriber',
-    paginationSettings: {
-        limit: 30
-    },
 
     total: 0,
     table: null,
 
     session: service(),
 
-    columns: computed(function () {
+    // paginationSettings is replaced by the pagination mixin so we need a
+    // getter/setter CP here so that we don't lose the dynamic order param
+    paginationSettings: computed('order', 'direction', {
+        get() {
+            let order = this.get('order');
+            let direction = this.get('direction');
+
+            let currentSettings = this._paginationSettings || {
+                limit: 30
+            };
+
+            return assign({}, currentSettings, {
+                order: `${order} ${direction}`
+            });
+        },
+        set(key, value) {
+            this._paginationSettings = value;
+            return value;
+        }
+    }),
+
+    columns: computed('order', 'direction', function () {
+        let order = this.get('order');
+        let direction = this.get('direction');
+
         return [{
             label: 'Subscriber',
-            valuePath: 'email'
+            valuePath: 'email',
+            sorted: order === 'email',
+            ascending: direction === 'asc'
         }, {
             label: 'Subscription Date',
             valuePath: 'createdAt',
             format(value) {
                 return value.format('MMMM DD, YYYY');
-            }
+            },
+            sorted: order === 'created_at',
+            ascending: direction === 'asc'
         }, {
             label: 'Status',
-            valuePath: 'status'
+            valuePath: 'status',
+            sorted: order === 'status',
+            ascending: direction === 'asc'
         }];
     }),
 
@@ -52,6 +84,8 @@ export default Ember.Controller.extend(PaginationMixin, {
         loadFirstPage() {
             let table = this.get('table');
 
+            console.log('loadFirstPage', this.get('paginationSettings'));
+
             return this._super(...arguments).then((results) => {
                 table.addRows(results);
                 return results;
@@ -65,6 +99,19 @@ export default Ember.Controller.extend(PaginationMixin, {
                 table.addRows(results);
                 return results;
             });
+        },
+
+        sortByColumn(column) {
+            let table = this.get('table');
+
+            if (column.sorted) {
+                this.setProperties({
+                    order: column.get('valuePath').trim().underscore(),
+                    direction: column.ascending ? 'asc' : 'desc'
+                });
+                table.setRows([]);
+                this.send('loadFirstPage');
+            }
         },
 
         addSubscriber(subscriber) {
