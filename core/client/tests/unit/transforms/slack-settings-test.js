@@ -16,7 +16,7 @@ describeModule(
     function() {
         it('deserializes settings json', function () {
             let transform = this.subject();
-            let serialized = '[{"url":"http://myblog.com/blogpost1","channel":"#general","username":"ghost_bot","icon":":ghost:","isActive":"true"}]';
+            let serialized = '[{"url":"http://myblog.com/blogpost1","channel":"#general","username":"ghost_bot","icon_emoji":":ghost:","isActive":"true"}]';
             let result = transform.deserialize(serialized);
 
             expect(result.length).to.equal(1);
@@ -35,7 +35,7 @@ describeModule(
             ]);
             let result = transform.serialize(deserialized);
 
-            expect(result).to.equal('[{"url":"http://myblog.com/blogpost1","channel":"#general","username":"ghost_bot","icon":":ghost:","isActive":"true"}]');
+            expect(result).to.equal('[{"url":"http://myblog.com/blogpost1","channel":"#general","username":"ghost_bot","icon_emoji":":ghost:","isActive":"true"}]');
         });
     }
 );

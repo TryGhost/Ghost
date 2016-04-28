@@ -38,7 +38,7 @@ export default Transform.extend({
                 let icon_emoji = (item.get('icon') || '').trim();
                 let isActive = item.get('isActive');
 
-                return {url, channel, username, isActive, icon_emoji};
+                return {url, channel, username, icon_emoji, isActive};
             }).compact();
         } else {
             settingsArray = [];
