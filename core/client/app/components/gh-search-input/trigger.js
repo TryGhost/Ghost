@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import {invokeAction} from 'ember-invoke-action';
 
 const {run, isBlank, Component} = Ember;
 
@@ -21,7 +22,7 @@ export default Component.extend({
                 run.scheduleOnce('afterRender', this, isBlank(term) ? this.close : this.open);
             }
 
-            this.get('select.actions.search')(term);
+            invokeAction(this, 'select.actions.search', term);
         },
 
         focusInput() {
