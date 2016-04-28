@@ -3,7 +3,6 @@ var https           = require('https'),
     url             = require('url'),
     Promise         = require('bluebird'),
     config          = require('../../config'),
-    errors          = require('../../errors'),
     events          = require('../../events'),
     api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
@@ -14,18 +13,15 @@ var https           = require('https'),
 
 function getSlackSettings() {
     return api.read({context: {internal: true}, key: 'slack'}).then(function (response) {
-        var slackSetting = response.settings[0];
+        var slackSetting = response.settings[0].value;
 
         try {
             slackSetting = JSON.parse(slackSetting) || slackSetting;
         } catch (e) {
             return Promise.reject(e);
         }
-
-        slackSetting = JSON.parse(slackSetting.value) || '[{}]';
-        slackSetting = slackSetting[0];
-
-        return slackSetting;
+        console.log(slackSetting[0]);
+        return slackSetting[0];
     });
 }
 
@@ -59,11 +55,6 @@ function ping(post) {
                 return;
             }
 
-            // Only ping when in production and not a page
-            if (process.env.NODE_ENV !== 'production' || post.page || config.isPrivacyDisabled('useSlackPing')) {
-                return;
-            }
-
             // Don't ping for the welcome to ghost post.
             // This also handles the case where during ghost's first run
             // models.init() inserts this post but permissions.init() hasn't
@@ -82,7 +73,7 @@ function ping(post) {
                 icon_emoji: icon,
                 unfurl_links: true
             };
-
+            console.log(slackData);
             // fill the options for https request
             options = url.parse(slackSettings.url);
             options.method = 'POST';
@@ -100,9 +91,8 @@ function init() {
     events.on('post.published', function (model) {
         slack._ping(model.toJSON());
     });
-    events.on('slack.testMail', function () {
-        console.log('ping is called');
-        slack._ping({url: 'This is a testmail'});
+    events.on('slack.test', function () {
+        slack._ping({url: 'This is a test notification'});
     });
 }
 slack.init = init;

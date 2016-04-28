@@ -19,8 +19,8 @@ slack = {
      * @public
      */
     sendTest: function () {
-        var testMail = 'This is a testpost';
-        events.emit('slack.testMail', testMail);
+        var test = 'This is a testpost';
+        events.emit('slack.test', test);
         return Promise.resolve();
     }
 };
