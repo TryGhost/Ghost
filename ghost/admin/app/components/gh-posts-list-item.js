@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import ActiveLinkWrapper from 'ghost/mixins/active-link-wrapper';
+import {invokeAction} from 'ember-invoke-action';
 
 const {
     $,
@@ -51,7 +52,7 @@ export default Component.extend(ActiveLinkWrapper, {
         this._super(...arguments);
         this.removeObserver('active', this, this.scrollIntoView);
         if (this.get('post.isDeleted') && this.get('onDelete')) {
-            this.get('onDelete')();
+            invokeAction(this, 'onDelete');
         }
     },
 
