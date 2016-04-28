@@ -109,15 +109,15 @@ export default Component.extend({
 
     actions: {
         setProperty(property, value) {
-            this.get('setProperty')(property, value);
+            invokeAction(this, 'setProperty', property, value);
         },
 
         setCoverImage(image) {
-            this.get('setProperty')('image', image);
+            invokeAction(this, 'setProperty', 'image', image);
         },
 
         clearCoverImage() {
-            this.get('setProperty')('image', '');
+            invokeAction(this, 'setProperty', 'image', '');
         },
 
         openMeta() {
