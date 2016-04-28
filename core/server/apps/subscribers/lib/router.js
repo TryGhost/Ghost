@@ -42,7 +42,17 @@ function honeyPot(req, res, next) {
     next();
 }
 
+function handleSource(req, res, next) {
+    req.body.subscribed_url = req.body.location;
+    req.body.subscribed_referrer = req.body.referrer;
+    delete req.body.location;
+    delete req.body.referrer;
+    // do something here to get post_id
+    next();
+}
+
 function storeSubscriber(req, res, next) {
+    req.body.status = 'subscribed';
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
         .then(function () {
             res.locals.success = true;
@@ -60,6 +70,7 @@ subscribeRouter.route('/')
     )
     .post(
         honeyPot,
+        handleSource,
         storeSubscriber,
         controller
     );
