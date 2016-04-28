@@ -212,7 +212,8 @@ ConfigManager.prototype.set = function (config) {
         },
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
         // create a hash for cache busting assets
-        assetHash: assetHash
+        assetHash: assetHash,
+        preloadHeaders: this._config.preloadHeaders || false
     });
 
     // Also pass config object to
