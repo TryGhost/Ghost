@@ -34,6 +34,14 @@ export default AuthenticatedRoute.extend({
         controller.send('loadFirstPage');
     },
 
+    resetController(controller, isExiting) {
+        this._super(...arguments);
+        if (isExiting) {
+            controller.set('order', 'created_at');
+            controller.set('direction', 'desc');
+        }
+    },
+
     actions: {
         addSubscriber(subscriber) {
             this.get('controller').send('addSubscriber', subscriber);

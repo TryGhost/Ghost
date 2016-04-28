@@ -68,7 +68,7 @@ describe('Acceptance: Subscribers', function() {
             return authenticateSession(application);
         });
 
-        it('can manage subscribers', function() {
+        it('can manage subscribers', function () {
             server.createList('subscriber', 40);
 
             authenticateSession(application);
@@ -90,6 +90,29 @@ describe('Acceptance: Subscribers', function() {
                 // it shows the total number of subscribers
                 expect(find('#total-subscribers').text().trim(), 'displayed subscribers total')
                     .to.equal('40');
+
+                // it defaults to sorting by created_at desc
+                let [lastRequest] = server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.order).to.equal('created_at desc');
+
+                let createdAtHeader = find('.subscribers-table th:contains("Subscription Date")');
+                expect(createdAtHeader.hasClass('is-sorted'), 'createdAt column is sorted')
+                    .to.be.true;
+                expect(createdAtHeader.find('.icon-descending').length, 'createdAt column has descending icon')
+                    .to.equal(1);
+            });
+
+            // click the column to re-order
+            click('th:contains("Subscription Date")');
+
+            andThen(function () {
+                // it flips the directions and re-fetches
+                let [lastRequest] = server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.order).to.equal('created_at asc');
+
+                let createdAtHeader = find('.subscribers-table th:contains("Subscription Date")');
+                expect(createdAtHeader.find('.icon-ascending').length, 'createdAt column has ascending icon')
+                    .to.equal(1);
 
                 // scroll to the bottom of the table to simulate infinite scroll
                 find('.subscribers-table').scrollTop(find('.subscribers-table .ember-light-table').height());

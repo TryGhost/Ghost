@@ -64,7 +64,7 @@ export default Mixin.create({
         let paginationSettings = this.get('paginationSettings');
         let modelName = this.get('paginationModel');
 
-        paginationSettings.page = 1;
+        this.set('paginationSettings.page', 1);
 
         this.set('isLoading', true);
 
