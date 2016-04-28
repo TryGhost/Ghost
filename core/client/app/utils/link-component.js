@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import {invokeAction} from 'ember-invoke-action';
 
 const {LinkComponent, computed} = Ember;
 
@@ -7,7 +8,7 @@ LinkComponent.reopen({
         let isActive = this._super(...arguments);
 
         if (typeof this.get('alternateActive') === 'function') {
-            this.get('alternateActive')(isActive);
+            invokeAction(this, 'alternateActive', isActive);
         }
 
         return isActive;

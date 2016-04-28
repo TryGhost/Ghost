@@ -2,6 +2,7 @@ import Ember from 'ember';
 import TextInputMixin from 'ghost/mixins/text-input';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import {formatDate} from 'ghost/utils/date-formatting';
+import {invokeAction} from 'ember-invoke-action';
 
 const {Component} = Ember;
 
@@ -27,6 +28,6 @@ export default Component.extend(TextInputMixin, {
     focusOut() {
         let datetime = this.get('datetime');
 
-        this.get('update')(datetime);
+        invokeAction(this, 'update', datetime);
     }
 });
