@@ -25,6 +25,7 @@ var bodyParser      = require('body-parser'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
     cors             = require('./cors'),
+    netjet           = require('netjet'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -70,6 +71,14 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
         }
     }
 
+    // Preload link headers
+    if (config.preloadHeaders) {
+        blogApp.use(netjet({
+            cache: {
+                max: config.preloadHeaders
+            }
+        }));
+    }
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
