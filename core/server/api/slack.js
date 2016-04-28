@@ -1,6 +1,7 @@
 // # Slack API
 // API for sending Test Notifications to Slack
 var slackPing     = require('../data/slack/slack'),
+    events        = require('../events'),
     slack;
 
 /**
@@ -19,7 +20,9 @@ slack = {
      */
     sendTest: function () {
         console.log('sendTest called');
-        return slackPing._ping({});
+        var testMail = 'This is a testpost';
+        events.emit('slack.testMail', testMail);
+        // events.emit('post.published');
     }
 };
 

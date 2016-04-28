@@ -100,6 +100,10 @@ function init() {
     events.on('post.published', function (model) {
         slack._ping(model.toJSON());
     });
+    events.on('slack.testMail', function () {
+        console.log('ping is called');
+        slack._ping({url: 'This is a testmail'});
+    });
 }
 slack.init = init;
 slack._ping = ping;
