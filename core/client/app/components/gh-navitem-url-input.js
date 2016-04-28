@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import {invokeAction} from 'ember-invoke-action';
 
 const {TextField, computed, run} = Ember;
 
@@ -67,7 +68,7 @@ export default TextField.extend({
     },
 
     keyPress(event) {
-        this.get('clearErrors')();
+        invokeAction(this, 'clearErrors');
 
         // enter key
         if (event.keyCode === 13) {

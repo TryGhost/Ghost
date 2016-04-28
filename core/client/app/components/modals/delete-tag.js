@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import ModalComponent from 'ghost/components/modals/base';
+import {invokeAction} from 'ember-invoke-action';
 
 const {computed} = Ember;
 const {alias} = computed;
@@ -18,7 +19,7 @@ export default ModalComponent.extend({
         confirm() {
             this.set('submitting', true);
 
-            this.get('confirm')().finally(() => {
+            invokeAction(this, 'confirm').finally(() => {
                 this.send('closeModal');
             });
         }

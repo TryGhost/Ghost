@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import LiquidTether from 'liquid-tether/components/liquid-tether';
+import {invokeAction} from 'ember-invoke-action';
 
 const {
     RSVP: {Promise},
@@ -50,8 +51,10 @@ const FullScreenModalComponent = LiquidTether.extend({
 
     actions: {
         close() {
+            // Because we return the promise from invokeAction, we have
+            // to check if "close" exists first
             if (this.get('close')) {
-                return this.get('close')();
+                return invokeAction(this, 'close');
             }
 
             return new Promise((resolve) => {
@@ -61,7 +64,7 @@ const FullScreenModalComponent = LiquidTether.extend({
 
         confirm() {
             if (this.get('confirm')) {
-                return this.get('confirm')();
+                return invokeAction(this, 'confirm');
             }
 
             return new Promise((resolve) => {
