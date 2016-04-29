@@ -48,10 +48,16 @@ function ping(post) {
 
     return getSlackSettings().then(function (slackSettings) {
         // Quit here if slack integration is not activated
-        if (slackSettings.isActive === 'true') {
+        if (slackSettings.isActive === true) {
             var icon;
+
             // Stop right here, if there is no url or the default url provided
             if (!slackSettings.url || slackSettings.url === '/') {
+                return;
+            }
+
+            // Only ping when in production and not a page
+            if (post.page) {
                 return;
             }
 

@@ -51,8 +51,18 @@ export default Controller.extend(SettingsSaveMixin, {
                 this.get('model.errors').add('url', errMessage);
                 return;
             }
+            console.log('property');
+            console.log(propKey);
+            console.log('scratchValue');
+            console.log(scratchValue);
+            console.log('slack before');
+            console.log(slack);
             set(slack, propKey, scratchValue);
+            console.log('slack after first set');
+            console.log(slack);
             this.set('slack', slack);
+            console.log('slack after "set"');
+            console.log(slack);
             this.send('save');
         },
 
@@ -67,7 +77,9 @@ export default Controller.extend(SettingsSaveMixin, {
                 return;
             } else {
                 this.toggleProperty('slack.isActive');
-                this.set('slack', slack);
+                console.log('slack');
+                console.log(slack);
+                // this.set('slack', slack);
                 this.send('save');
             }
         },

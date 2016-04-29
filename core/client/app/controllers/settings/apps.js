@@ -17,7 +17,13 @@ export default Controller.extend(SettingsSaveMixin, {
 
     save() {
         let notifications = this.get('notifications');
+        let slack = this.get('slack');
+        console.log('slack in save action');
+        console.log(slack);
 
+        // This is where I loose the values:
+        console.log('settings');
+        console.log(this.get('settings.slack'));
         return this.get('settings').save().catch((err) => {
             notifications.showErrors(err);
         });
