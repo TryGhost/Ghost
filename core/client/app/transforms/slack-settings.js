@@ -9,8 +9,6 @@ const emberA = Ember.A;
 export default Transform.extend({
     deserialize(serialized) {
         let slackObj, settingsArray;
-        console.log('serialized value in deserialize');
-        console.log(serialized);
         try {
             settingsArray = JSON.parse(serialized) || [];
         } catch (e) {
@@ -23,15 +21,11 @@ export default Transform.extend({
             delete itemDetails.icon_emoji;
             return SlackObject.create(itemDetails);
         });
-        console.log('deserialized slackObj');
-        console.log(slackObj);
         return emberA(slackObj);
     },
 
     serialize(deserialized) {
         let settingsArray;
-        console.log('deserialized value in serialize');
-        console.log(deserialized);
         if (isArray(deserialized)) {
             settingsArray = deserialized.map((item) => {
                 let channel = (item.get('channel') || '').trim();
@@ -46,8 +40,6 @@ export default Transform.extend({
         } else {
             settingsArray = [];
         }
-        console.log('serialized settingsArray');
-        console.log(settingsArray);
         return JSON.stringify(settingsArray);
     }
 });

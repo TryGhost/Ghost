@@ -1,85 +1,39 @@
 import Ember from 'ember';
-import SettingsSaveMixin from 'ghost/mixins/settings-save';
 
 const {
-    computed,
     Controller,
-    get,
-    inject: {controller, service},
-    set
+    inject: {service}
 } = Ember;
 
-const {alias} = computed;
-const emberA = Ember.A;
-
-export default Controller.extend(SettingsSaveMixin, {
-    appsController: controller('settings.apps'),
-    slack: alias('appsController.slack'),
+export default Controller.extend({
     ghostPaths: service(),
     ajax: service(),
     notifications: service(),
 
-    _scratchValues: null,
-
-    init() {
-        this._super(...arguments);
-        this._scratchValues = emberA();
-    },
+    // will be set by route
+    settings: null,
 
     save() {
-        return this.get('appsController').save();
+        let slack = this.get('model');
+        let settings = this.get('settings');
+
+        settings.get('slack').clear().pushObject(slack);
+        return settings.save().catch((err) => {
+            this.get('notifications').showErrors(err);
+        });
     },
 
     actions: {
-        updateProperty(propKey, newValue) {
-            this.get('model.errors').remove('url');
-            this._scratchValues[propKey] = newValue;
-        },
-
-        saveProperty(propKey) {
-            let slack = this.get('slack');
-            let slackValue = get(slack, propKey);
-            let scratchValue = this._scratchValues[propKey];
-            let errMessage;
-
-            if (!scratchValue || scratchValue === slackValue) {
-                return;
-            }
-            if (propKey === 'url' && !scratchValue.match(/(^https:\/\/hooks\.slack\.com\/)(\S+)/g)) {
-                errMessage = 'The URL must be in a format like ' +
-                 'https://hooks.slack.com/services/<your personal key>';
-                this.get('model.errors').add('url', errMessage);
-                return;
-            }
-            console.log('property');
-            console.log(propKey);
-            console.log('scratchValue');
-            console.log(scratchValue);
-            console.log('slack before');
-            console.log(slack);
-            set(slack, propKey, scratchValue);
-            console.log('slack after first set');
-            console.log(slack);
-            this.set('slack', slack);
-            console.log('slack after "set"');
-            console.log(slack);
-            this.send('save');
-        },
-
         toggleActiveProperty() {
             let notifications = this.get('notifications');
-            let slack = this.get('slack');
-            let isActive = this.get('slack.isActive');
-            let url = this.get('slack.url');
+            let isActive = this.get('model.isActive');
+            let url = this.get('model.url');
 
             if (!isActive && (url === '' || url === '/')) {
                 notifications.showAlert('Please submit a valid webhook url in "Authentification" to activate your Slack integration.', {type: 'error', key: 'slack-test.invalidUrl'});
                 return;
             } else {
-                this.toggleProperty('slack.isActive');
-                console.log('slack');
-                console.log(slack);
-                // this.set('slack', slack);
+                this.toggleProperty('model.isActive');
                 this.send('save');
             }
         },
@@ -97,6 +51,16 @@ export default Controller.extend(SettingsSaveMixin, {
                 notifications.showAPIError(error, {key: 'slack-test:send'});
                 this.toggleProperty('submitting');
             });
+        },
+
+        save(validate = false) {
+            let model = this.get('model');
+
+            if (validate || model.get('isActive')) {
+                model.validate({model}).then(() => {
+                    this.save();
+                });
+            }
         }
     }
 });

@@ -14,6 +14,7 @@ import UserValidator from 'ghost/validators/user';
 import TagSettingsValidator from 'ghost/validators/tag-settings';
 import NavItemValidator from 'ghost/validators/nav-item';
 import InviteUserValidator from 'ghost/validators/invite-user';
+import SlackIntegrationValidator from 'ghost/validators/slack-integration';
 
 const {Mixin, RSVP, isArray} = Ember;
 const {Errors} = DS;
@@ -44,7 +45,8 @@ export default Mixin.create({
         user: UserValidator,
         tag: TagSettingsValidator,
         navItem: NavItemValidator,
-        inviteUser: InviteUserValidator
+        inviteUser: InviteUserValidator,
+        slackIntegration: SlackIntegrationValidator
     },
 
     // This adds the Errors object to the validation engine, and shouldn't affect
