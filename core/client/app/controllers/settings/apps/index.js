@@ -9,5 +9,6 @@ const {alias} = computed;
 
 export default Ember.Controller.extend({
     appsController: controller('settings.apps'),
-    slack: alias('appsController.slack')
+
+    slack: alias('appsController.model.slack.firstObject')
 });

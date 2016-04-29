@@ -1,12 +1,9 @@
 <header class="view-header">
     {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} <i class="icon-arrow-right" style="display:inline"></i> Slack</span>{{/gh-view-title}}
     <section class="view-actions">
-        {{slack.isActive}}
-        {{#if slack.isActive}}
-            {{#link-to "settings.apps.slack" class="btn btn-red" title="Disable" click=(action "toggleActiveProperty")}}Disable{{/link-to}}
-        {{else}}
-            {{#link-to "settings.apps.slack" class="btn btn-green" title="Activate" click=(action "toggleActiveProperty")}}Activate{{/link-to}}
-        {{/if}}
+        <button type="button" class="btn {{if model.isActive 'btn-red' 'btn-green'}}" {{action "toggleActiveProperty"}}>
+            {{if model.isActive 'Deactivate' 'Activate'}}
+        </button>
     </section>
 
 </header>
@@ -28,33 +25,25 @@
         <form class="slack-config-form" novalidate="novalidate">
             {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
                 <label for="url">Authentification</label>
-                {{one-way-input slack.url class="gh-input" update=(action "updateProperty" "url") focusOut=(action "saveProperty" "url")}}
-                {{slack.url}}
+                {{one-way-input model.url class="gh-input" update=(action (mut model.url)) focusOut=(action "save" true)}}
                 {{#unless model.errors.url}}
                     <p>Your slack webhook URL or whatever</p>
+                {{else}}
+                    {{gh-error-message errors=model.errors property="url"}}
                 {{/unless}}
-                {{gh-error-message errors=model.errors property="url"}}
             {{/gh-form-group}}
 
-            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="channel"}}
+            <div class="form-group">
                 <label for="channel">Channel</label>
-                {{one-way-input slack.channel class="gh-input" update=(action "updateProperty" "channel") focusOut=(action "saveProperty" "channel")}}
-                {{slack.channel}}
-                {{#unless model.errors.channel}}
-                    <p>Specify the channel name to send message to. Example: #general. Can be a public channel, private group or DM channel. Use your own @username to send to yourself via the slackbot channel, or someone else's @username to send to the DM between the slackbot and that user.</p>
-                {{/unless}}
-                {{gh-error-message errors=model.errors property="channel"}}
-            {{/gh-form-group}}
+                {{one-way-input model.channel class="gh-input" update=(action (mut model.channel)) focusOut=(action "save")}}
+                <p>Specify the channel name to send message to. Example: #general. Can be a public channel, private group or DM channel. Use your own @username to send to yourself via the slackbot channel, or someone else's @username to send to the DM between the slackbot and that user.</p>
+            </div>
 
-            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="username"}}
+            <div class="form-group">
                 <label for="username">Username</label>
-                {{one-way-input slack.username class="gh-input" update=(action "updateProperty" "username") focusOut=(action "saveProperty" "username")}}
-                {{slack.username}}
-                {{#unless model.errors.username}}
-                    <p>What name should messages be posted under</p>
-                {{/unless}}
-                {{gh-error-message errors=model.errors property="username"}}
-            {{/gh-form-group}}
+                {{one-way-input model.username class="gh-input" update=(action (mut model.username)) focusOut=(action "save")}}
+                <p>What name should messages be posted under</p>
+            </div>
 
             {{#gh-spin-button id="sendTestNotification" class="btn btn-grey" action="sendTestNotification"}}Send Test Notification{{/gh-spin-button}}
         </form>

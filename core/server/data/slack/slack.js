@@ -99,7 +99,7 @@ function init() {
         slack._ping(model.toJSON());
     });
     events.on('slack.test', function () {
-        slack._ping({url: 'This is a test notification'});
+        slack._ping({url: ' Heya! This is a test notification from your Ghost blog :simple_smile:. Seems to work fine!'});
     });
 }
 slack.init = init;
