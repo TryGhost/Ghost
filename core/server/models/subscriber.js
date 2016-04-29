@@ -1,10 +1,36 @@
-var ghostBookshelf  = require('./base'),
-
+var ghostBookshelf = require('./base'),
+    errors = require('../errors'),
+    events = require('../events'),
+    i18n = require('../i18n'),
+    Promise = require('bluebird'),
+    uuid = require('node-uuid'),
     Subscriber,
     Subscribers;
 
 Subscriber = ghostBookshelf.Model.extend({
-    tableName: 'subscribers'
+    tableName: 'subscribers',
+
+    emitChange: function emitChange(event) {
+        events.emit('subscriber' + '.' + event, this);
+    },
+    defaults: function defaults() {
+        return {
+            uuid: uuid.v4(),
+            status: 'subscribed'
+        };
+    },
+    initialize: function initialize() {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+        this.on('created', function onCreated(model) {
+            model.emitChange('added');
+        });
+        this.on('updated', function onUpdated(model) {
+            model.emitChange('edited');
+        });
+        this.on('destroyed', function onDestroyed(model) {
+            model.emitChange('deleted');
+        });
+    }
 }, {
 
     orderDefaultOptions: function orderDefaultOptions() {
@@ -32,8 +58,22 @@ Subscriber = ghostBookshelf.Model.extend({
         }
 
         return options;
-    }
+    },
 
+    permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+        // CASE: external is only allowed to add and edit subscribers
+        if (context.external) {
+            if (['add', 'edit'].indexOf(action) !== -1) {
+                return Promise.resolve();
+            }
+        }
+
+        if (hasUserPermission && hasAppPermission) {
+            return Promise.resolve();
+        }
+
+        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.subscriber.notEnoughPermission')));
+    }
 });
 
 Subscribers = ghostBookshelf.Collection.extend({

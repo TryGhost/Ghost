@@ -41,7 +41,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.browseDefaultOptions}),
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'browse'),
             doQuery
         ];
 
@@ -71,7 +71,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {attrs: attrs}),
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'read'),
             doQuery
         ];
 
@@ -119,7 +119,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName),
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'add'),
             doQuery
         ];
 
@@ -154,7 +154,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'edit'),
             doQuery
         ];
 
@@ -192,7 +192,7 @@ subscribers = {
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
             utils.validate(docName, {opts: utils.idDefaultOptions}),
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'destroy'),
             doQuery
         ];
 
@@ -246,7 +246,7 @@ subscribers = {
         }
 
         tasks = [
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'browse'),
             exportSubscribers
         ];
 
@@ -363,7 +363,7 @@ subscribers = {
 
         tasks = [
             validate,
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'add'),
             importCSV
         ];
 

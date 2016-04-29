@@ -25,11 +25,17 @@ function hasActionsMap() {
 function parseContext(context) {
     // Parse what's passed to canThis.beginCheck for standard user and app scopes
     var parsed = {
-            internal: false,
-            user: null,
-            app: null,
-            public: true
-        };
+        internal: false,
+        external: false,
+        user: null,
+        app: null,
+        public: true
+    };
+
+    if (context && (context === 'external' || context.external)) {
+        parsed.external = true;
+        parsed.public = false;
+    }
 
     if (context && (context === 'internal' || context.internal)) {
         parsed.internal = true;
@@ -117,8 +123,10 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         role:       Models.Role,
         user:       Models.User,
         permission: Models.Permission,
-        setting:    Models.Settings
+        setting:    Models.Settings,
+        subscriber: Models.Subscriber
     };
+
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
     return _.reduce(objTypes, function (objTypeHandlers, objType) {
         // Grab the TargetModel through the objectTypeModelMap

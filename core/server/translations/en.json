@@ -197,6 +197,9 @@
             }
         },
         "models": {
+            "subscriber": {
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
             "post": {
                 "untitled": "(Untitled)",
                 "valueCannotBeBlank": "Value in {key} cannot be blank.",
