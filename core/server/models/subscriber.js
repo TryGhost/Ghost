@@ -1,5 +1,7 @@
-var ghostBookshelf  = require('./base'),
-
+var ghostBookshelf = require('./base'),
+    errors = require('../errors'),
+    i18n = require('../i18n'),
+    Promise = require('bluebird'),
     Subscriber,
     Subscribers;
 
@@ -32,8 +34,22 @@ Subscriber = ghostBookshelf.Model.extend({
         }
 
         return options;
-    }
+    },
 
+    permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
+        // CASE: external is only allowed to add and edit subscribers
+        if (context.external) {
+            if (['add', 'edit'].indexOf(action) !== -1) {
+                return Promise.resolve();
+            }
+        }
+
+        if (hasUserPermission && hasAppPermission) {
+            return Promise.resolve();
+        }
+
+        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.subscriber.notEnoughPermission')));
+    }
 });
 
 Subscribers = ghostBookshelf.Collection.extend({
