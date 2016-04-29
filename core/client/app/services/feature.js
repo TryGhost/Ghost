@@ -5,32 +5,54 @@ const {
     Service,
     computed,
     inject: {service},
-    set
+    set,
+    defineProperty
 } = Ember;
 
 const {Promise} = RSVP;
 
 const EmberError = Ember.Error;
 
-export function feature(name) {
-    return computed(`config.${name}`, `labs.${name}`, {
+export function feature(featureService, name) {
+    let internalName = `_${name}`;
+    let syncName = `${name}Sync`;
+
+    // define the computed property that always returns a promise
+    defineProperty(featureService, name, computed(`config.${name}`, `labs.${name}`, {
         get() {
             return new Promise((resolve) => {
                 if (this.get(`config.${name}`)) {
-                    return resolve(this.get(`config.${name}`));
+                    let result = this.get(`config.${name}`);
+
+                    this.set(internalName, result);
+                    return resolve(result);
                 }
 
                 this.get('labs').then((labs) => {
-                    resolve(labs[name] || false);
+                    let result = labs[name] || false;
+
+                    this.set(internalName, result);
+                    resolve(result);
                 });
             });
         },
         set(key, value) {
             return this.update(key, value).then((savedValue) => {
+                this.set(internalName, savedValue);
                 return savedValue;
             });
         }
-    });
+    }));
+
+    // define the raw internal property
+    defineProperty(featureService, internalName, undefined, false);
+
+    // define a flagSync property so that it can be used in things that need
+    // a syncronous value
+    defineProperty(featureService, syncName, computed(internalName, function () {
+        this.get(name); // force computed property to compute
+        return this.get(internalName);
+    }));
 }
 
 export default Service.extend({
@@ -38,7 +60,11 @@ export default Service.extend({
     config: service(),
     notifications: service(),
 
-    publicAPI: feature('publicAPI'),
+    init() {
+        this._super(...arguments);
+
+        feature(this, 'publicAPI');
+    },
 
     labs: computed('_settings', function () {
         return this.get('_settings').then((settings) => {

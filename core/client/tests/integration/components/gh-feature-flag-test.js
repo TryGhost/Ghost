@@ -4,7 +4,7 @@ import {
   it
 } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
-import FeatureService, {feature} from 'ghost/services/feature';
+import {feature} from 'ghost/services/feature';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
 
@@ -32,10 +32,8 @@ function stubSettings(server, labs) {
     });
 }
 
-function addTestFlag() {
-    FeatureService.reopen({
-        testFlag: feature('testFlag')
-    });
+function addTestFlag(test) {
+    feature(test.container.lookup('service:feature'), 'testFlag');
 }
 
 describeComponent(
@@ -57,7 +55,7 @@ describeComponent(
 
         it('renders properties correctly', function () {
             stubSettings(server, {testFlag: true});
-            addTestFlag();
+            addTestFlag(this);
 
             this.render(hbs`{{gh-feature-flag "testFlag"}}`);
             expect(this.$()).to.have.length(1);
@@ -66,7 +64,7 @@ describeComponent(
 
         it('renders correctly when flag is set to true', function () {
             stubSettings(server, {testFlag: true});
-            addTestFlag();
+            addTestFlag(this);
 
             this.render(hbs`{{gh-feature-flag "testFlag"}}`);
             expect(this.$()).to.have.length(1);
@@ -78,7 +76,7 @@ describeComponent(
 
         it('renders correctly when flag is set to false', function () {
             stubSettings(server, {testFlag: false});
-            addTestFlag();
+            addTestFlag(this);
 
             this.render(hbs`{{gh-feature-flag "testFlag"}}`);
             expect(this.$()).to.have.length(1);
@@ -90,7 +88,7 @@ describeComponent(
 
         it('updates to reflect changes in flag property', function () {
             stubSettings(server, {testFlag: true});
-            addTestFlag();
+            addTestFlag(this);
 
             this.render(hbs`{{gh-feature-flag "testFlag"}}`);
             expect(this.$()).to.have.length(1);
