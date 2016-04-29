@@ -313,7 +313,7 @@
                     "user": "all",
                     "role": "all",
                     "client": "all",
-                    "subscriber": "add"
+                    "subscriber": ["add", "edit"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -323,7 +323,7 @@
                     "user": ["browse", "read"],
                     "role": ["browse"],
                     "client": "all",
-                    "subscriber": "add"
+                    "subscriber": ["add"]
                 }
             }
         },
