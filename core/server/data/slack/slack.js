@@ -14,13 +14,13 @@ var https           = require('https'),
 function getSlackSettings() {
     return api.read({context: {internal: true}, key: 'slack'}).then(function (response) {
         var slackSetting = response.settings[0].value;
-
+        console.log(slackSetting);
         try {
             slackSetting = JSON.parse(slackSetting) || slackSetting;
         } catch (e) {
             return Promise.reject(e);
         }
-        console.log(slackSetting[0]);
+
         return slackSetting[0];
     });
 }

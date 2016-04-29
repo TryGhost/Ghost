@@ -159,13 +159,13 @@ describe('Slack', function () {
         beforeEach(function () {
             urlForStub = sandbox.stub(config, 'urlFor').returns('http://myblog.com/post');
             settingsObj = {settings: [], meta: {}};
-            settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve(settingsObj));
+            settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve('[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"", "icon":":ghost:", "isActive":"true"}]'));
             makeRequestStub = sandbox.stub(slack, '_makeRequest', function () {
                 makeRequestAssertions.apply(this, arguments);
             });
         });
 
-        it('makes a request if url is provided', function (done) {
+        it.only('makes a request if url is provided', function (done) {
             // set up
             settingsObj.settings[0] = slackObjWithUrl;
 
