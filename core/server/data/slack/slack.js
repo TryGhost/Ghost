@@ -34,8 +34,8 @@ function makeRequest(reqOptions, reqPayload) {
     req.on('error', function (error) {
         errors.logError(
             error,
-            i18n.t('errors.data.slack.slack.pingUpdateFailed.error'),
-            i18n.t('errors.data.slack.slack.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
+            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
+            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
         );
     });
 
