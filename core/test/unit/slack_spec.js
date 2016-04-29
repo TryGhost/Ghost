@@ -13,68 +13,66 @@ var nock            = require('nock'),
     config         = require('../../server/config'),
     sandbox        = sinon.sandbox.create(),
 // Test data
-    slackObjNoUrl = JSON.stringify(
+    slackObjNoUrl =
         {
             id: 17,
             uuid: '50f50671-6e7c-4636-85e0-2962967764fa',
             key: 'slack',
-            value: '[{"url":"/", "channel":"", "username":"", "icon":":ghost:", "isActive":"true"}]',
+            value: '[{"url":"/", "channel":"", "username":"", "icon":":ghost:", "isActive":true}]',
             type: 'blog',
             created_at: '2016-04-06T15:19:19.492Z',
             created_by: 1,
             updated_at: '2016-04-06T15:19:19.492Z',
             updated_by: 1
-        }),
-    slackObjWithUrl = JSON.stringify(
+        },
+    slackObjWithUrl =
         {
             id: 17,
             uuid: '50f50671-6e7c-4636-85e0-2962967764fa',
             key: 'slack',
-            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"", "icon":":ghost:", "isActive":"true"}]',
+            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"", "icon":":ghost:", "isActive":true}]',
             type: 'blog',
             created_at: '2016-04-06T15:19:19.492Z',
             created_by: 1,
             updated_at: '2016-04-06T15:19:19.492Z',
             updated_by: 1
-        }),
-    slackObjNotActive = JSON.stringify(
+        },
+    slackObjNotActive =
         {
             id: 17,
             uuid: '50f50671-6e7c-4636-85e0-2962967764fa',
             key: 'slack',
-            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"", "icon":":ghost:", "isActive":"false"}]',
+            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"", "icon":":ghost:", "isActive":false}]',
             type: 'blog',
             created_at: '2016-04-06T15:19:19.492Z',
             created_by: 1,
             updated_at: '2016-04-06T15:19:19.492Z',
             updated_by: 1
-        }),
-    slackObjWithChannel = JSON.stringify(
+        },
+    slackObjWithChannel =
         {
             id: 17,
             uuid: '50f50671-6e7c-4636-85e0-2962967764fa',
             key: 'slack',
-            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"test-slack_", "username":"", "icon":":ghost:", "isActive":"true"}]',
+            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"test-slack_", "username":"", "icon":":ghost:", "isActive":true}]',
             type: 'blog',
             created_at: '2016-04-06T15:19:19.492Z',
             created_by: 1,
             updated_at: '2016-04-06T15:19:19.492Z',
             updated_by: 1
-        }),
-    slackObjWithUser = JSON.stringify(
+        },
+    slackObjWithUser =
         {
             id: 17,
             uuid: '50f50671-6e7c-4636-85e0-2962967764fa',
             key: 'slack',
-            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"webhookbot", "icon":":ghost:", "isActive":"true"}]',
+            value: '[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"webhookbot", "icon":":ghost:", "isActive":true}]',
             type: 'blog',
             created_at: '2016-04-06T15:19:19.492Z',
             created_by: 1,
             updated_at: '2016-04-06T15:19:19.492Z',
             updated_by: 1
-        }),
-    // storing current environment
-    currentEnv      = process.env.NODE_ENV;
+        };
 
 // To stop jshint complaining
 should.equal(true, true);
@@ -82,15 +80,8 @@ should.equal(true, true);
 describe('Slack', function () {
     var testPost;
 
-    beforeEach(function () {
-        // give environment a value that will ping
-        process.env.NODE_ENV = 'production';
-    });
-
     afterEach(function () {
         sandbox.restore();
-        // reset the environment
-        process.env.NODE_ENV = currentEnv;
     });
 
     it('should call ping if post is published', function () {
@@ -159,13 +150,13 @@ describe('Slack', function () {
         beforeEach(function () {
             urlForStub = sandbox.stub(config, 'urlFor').returns('http://myblog.com/post');
             settingsObj = {settings: [], meta: {}};
-            settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve('[{"url":"https://hooks.slack.com/services/a-b-c-d", "channel":"", "username":"", "icon":":ghost:", "isActive":"true"}]'));
+            settingsAPIStub = sandbox.stub(api, 'read').returns(Promise.resolve(settingsObj));
             makeRequestStub = sandbox.stub(slack, '_makeRequest', function () {
                 makeRequestAssertions.apply(this, arguments);
             });
         });
 
-        it.only('makes a request if url is provided', function (done) {
+        it('makes a request if url is provided', function (done) {
             // set up
             settingsObj.settings[0] = slackObjWithUrl;
 
@@ -255,21 +246,6 @@ describe('Slack', function () {
             makeRequestAssertions = function () {};
             // execute code
             slack._ping({slug: 'welcome-to-ghost'}).then(function (result) {
-                // assertions
-                urlForStub.calledOnce.should.be.true();
-                settingsAPIStub.calledOnce.should.be.true();
-                makeRequestStub.called.should.be.false();
-                should.not.exist(result);
-                done();
-            }).catch(done);
-        });
-        it('only pings when in production environment', function (done) {
-            // set up
-            settingsObj.settings[0] = slackObjWithUrl;
-            process.env.NODE_ENV = currentEnv;
-
-            // execute code
-            slack._ping({}).then(function (result) {
                 // assertions
                 urlForStub.calledOnce.should.be.true();
                 settingsAPIStub.calledOnce.should.be.true();

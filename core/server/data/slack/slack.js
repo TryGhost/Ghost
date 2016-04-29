@@ -14,7 +14,7 @@ var https           = require('https'),
 function getSlackSettings() {
     return api.read({context: {internal: true}, key: 'slack'}).then(function (response) {
         var slackSetting = response.settings[0].value;
-        console.log(slackSetting);
+
         try {
             slackSetting = JSON.parse(slackSetting) || slackSetting;
         } catch (e) {
@@ -34,8 +34,8 @@ function makeRequest(reqOptions, reqPayload) {
     req.on('error', function (error) {
         errors.logError(
             error,
-            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.error'),
-            i18n.t('errors.data.xml.xmlrpc.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
+            i18n.t('errors.data.slack.slack.pingUpdateFailed.error'),
+            i18n.t('errors.data.slack.slack.pingUpdateFailed.help', {url: 'http://support.ghost.org'})
         );
     });
 
@@ -48,6 +48,7 @@ function ping(post) {
 
     return getSlackSettings().then(function (slackSettings) {
         // Quit here if slack integration is not activated
+
         if (slackSettings.isActive === true) {
             var icon;
 
@@ -79,7 +80,7 @@ function ping(post) {
                 icon_emoji: icon,
                 unfurl_links: true
             };
-            console.log(slackData);
+
             // fill the options for https request
             options = url.parse(slackSettings.url);
             options.method = 'POST';
