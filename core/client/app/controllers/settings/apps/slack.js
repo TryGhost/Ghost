@@ -60,6 +60,8 @@ export default Controller.extend({
                 model.validate({model}).then(() => {
                     this.save();
                 });
+            } else {
+                this.save();
             }
         }
     }
