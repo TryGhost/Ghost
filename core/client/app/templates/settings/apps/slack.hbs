@@ -1,0 +1,53 @@
+<header class="view-header">
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} <i class="icon-arrow-right" style="display:inline"></i> Slack</span>{{/gh-view-title}}
+    <section class="view-actions">
+        <button type="button" class="btn {{if model.isActive 'btn-red' 'btn-green'}}" {{action "toggleActiveProperty"}}>
+            {{if model.isActive 'Deactivate' 'Activate'}}
+        </button>
+    </section>
+
+</header>
+<section class="view-container">
+    <section class="view-content">
+        <section class="slack-grid">
+            <div class="slack-cell">
+                <img class="slack-icon" style="background-image:url({{gh-path 'admin' '/img/slackicon.png'}})"/>
+            </div>
+            <div class="slack-cell">
+                <h3>Slack</h3>
+                <p>A team communication tool</p>
+            </div>
+        </section>
+        <section class="slack-subtitle">
+            <p>The Slack app for Ghost allows you to automatically send newly published posts to a channel in your Slack team.</p>
+        </section>
+
+        <form class="slack-config-form" novalidate="novalidate">
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
+                <label for="url">Authentification</label>
+                {{one-way-input model.url class="gh-input" update=(action (mut model.url)) focusOut=(action "save" true)}}
+                {{#unless model.errors.url}}
+                    <p>Your slack webhook URL or whatever</p>
+                {{else}}
+                    {{gh-error-message errors=model.errors property="url"}}
+                {{/unless}}
+            {{/gh-form-group}}
+
+            <div class="form-group">
+                <label for="channel">Channel</label>
+                {{one-way-input model.channel class="gh-input" update=(action (mut model.channel)) focusOut=(action "save")}}
+                <p>Specify the channel name to send message to. Example: #general. Can be a public channel, private group or DM channel. Use your own @username to send to yourself via the slackbot channel, or someone else's @username to send to the DM between the slackbot and that user.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                {{one-way-input model.username class="gh-input" update=(action (mut model.username)) focusOut=(action "save")}}
+                <p>What name should messages be posted under</p>
+            </div>
+
+            {{#gh-spin-button id="sendTestNotification" class="btn btn-grey" action="sendTestNotification" submitting=submitting}}
+                Send Test Notification
+            {{/gh-spin-button}}
+        </form>
+    </section>
+</section>
