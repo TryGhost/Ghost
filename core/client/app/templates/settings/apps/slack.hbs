@@ -45,7 +45,9 @@
                 <p>What name should messages be posted under</p>
             </div>
 
-            {{#gh-spin-button id="sendTestNotification" class="btn btn-grey" action="sendTestNotification"}}Send Test Notification{{/gh-spin-button}}
+            {{#gh-spin-button id="sendTestNotification" class="btn btn-grey" action="sendTestNotification" submitting=submitting}}
+                Send Test Notification
+            {{/gh-spin-button}}
         </form>
     </section>
 </section>
