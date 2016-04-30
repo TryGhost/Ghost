@@ -6,6 +6,7 @@ var https           = require('https'),
     events          = require('../../events'),
     api             = require('../../api/settings'),
     i18n            = require('../../i18n'),
+    schema          = require('../schema').checks,
     options,
     req,
     slack = {},
@@ -42,14 +43,26 @@ function makeRequest(reqOptions, reqPayload) {
     req.end();
 }
 
-function ping(post) {
-    // we want to send the link of the post
-    var textUrl = config.urlFor('post', {post: post}, true);
+function ping(post, sendTest) {
+    var message;
+    // If this is a post, we want to send the link of the post
+    // if (schema.isPost(post)) {
+    //
+    // } else {
+    //     // Assume a message
+    // }
+
+    // @TODO use schema.isPost as shown above (will need test updates)
+    if (post.slug) {
+        message = config.urlFor('post', {post: post}, true);
+    } else {
+        message = post.message;
+    }
 
     return getSlackSettings().then(function (slackSettings) {
         // Quit here if slack integration is not activated
 
-        if (slackSettings.isActive === true) {
+        if (slackSettings.isActive === true || sendTest === true) {
             var icon;
 
             // Stop right here, if there is no url or the default url provided
@@ -57,7 +70,7 @@ function ping(post) {
                 return;
             }
 
-            // Only ping when in production and not a page
+            // Only ping when not a page
             if (post.page) {
                 return;
             }
@@ -66,7 +79,6 @@ function ping(post) {
             // This also handles the case where during ghost's first run
             // models.init() inserts this post but permissions.init() hasn't
             // (can't) run yet.
-
             if (post.slug === 'welcome-to-ghost') {
                 return;
             }
@@ -76,7 +88,7 @@ function ping(post) {
             slackData = {
                 channel: slackSettings.channel,
                 username: slackSettings.username,
-                text: textUrl,
+                text: message,
                 icon_emoji: icon,
                 unfurl_links: true
             };
@@ -99,7 +111,9 @@ function init() {
         slack._ping(model.toJSON());
     });
     events.on('slack.test', function () {
-        slack._ping({url: ' Heya! This is a test notification from your Ghost blog :simple_smile:. Seems to work fine!'});
+        slack._ping({
+            message: 'Heya! This is a test notification from your Ghost blog :simple_smile:. Seems to work fine!'
+        }, true);
     });
 }
 slack.init = init;
