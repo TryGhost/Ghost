@@ -5,9 +5,8 @@ export default Ember.Object.extend(ValidationEngine, {
     // values entered here will act as defaults
     isActive: false,
     url: '/',
-    channel: '#general',
     icon: ':ghost:',
-    username: 'ghost_bot',
+    username: 'Ghost',
 
     validationType: 'slackIntegration'
 });

@@ -16,14 +16,13 @@ describeModule(
     function() {
         it('deserializes settings json', function () {
             let transform = this.subject();
-            let serialized = '[{"url":"http://myblog.com/blogpost1","channel":"#general","username":"ghost_bot","icon_emoji":":ghost:","isActive":"true"}]';
+            let serialized = '[{"url":"http://myblog.com/blogpost1","username":"Ghost","icon_emoji":":ghost:","isActive":"true"}]';
             let result = transform.deserialize(serialized);
 
             expect(result.length).to.equal(1);
             expect(result[0]).to.be.instanceof(SlackIntegration);
             expect(result[0].get('url')).to.equal('http://myblog.com/blogpost1');
-            expect(result[0].get('channel')).to.equal('#general');
-            expect(result[0].get('username')).to.equal('ghost_bot');
+            expect(result[0].get('username')).to.equal('Ghost');
             expect(result[0].get('icon')).to.equal(':ghost:');
             expect(result[0].get('isActive')).to.equal('true');
         });
@@ -31,11 +30,11 @@ describeModule(
         it('serializes array of Slack settings', function () {
             let transform = this.subject();
             let deserialized = emberA([
-                SlackIntegration.create({url: 'http://myblog.com/blogpost1', channel: '#general', username: 'ghost_bot', 'icon': ':ghost:', isActive: 'true'})
+                SlackIntegration.create({url: 'http://myblog.com/blogpost1', username: 'Ghost', 'icon': ':ghost:', isActive: 'true'})
             ]);
             let result = transform.serialize(deserialized);
 
-            expect(result).to.equal('[{"url":"http://myblog.com/blogpost1","channel":"#general","username":"ghost_bot","icon_emoji":":ghost:","isActive":"true"}]');
+            expect(result).to.equal('[{"url":"http://myblog.com/blogpost1","username":"Ghost","icon_emoji":":ghost:","isActive":"true"}]');
         });
     }
 );

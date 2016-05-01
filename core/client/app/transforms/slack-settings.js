@@ -28,14 +28,12 @@ export default Transform.extend({
         let settingsArray;
         if (isArray(deserialized)) {
             settingsArray = deserialized.map((item) => {
-                let channel = (item.get('channel') || '').trim();
                 let url = (item.get('url') || '').trim();
-                let username = (item.get('username') || '').trim();
                 // icon is stored as icon_emoji on the server
                 let icon_emoji = (item.get('icon') || ':ghost:').trim();
                 let isActive = item.get('isActive');
 
-                return {url, channel, username, icon_emoji, isActive};
+                return {url, icon_emoji, isActive};
             }).compact();
         } else {
             settingsArray = [];

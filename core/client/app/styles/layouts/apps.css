@@ -135,7 +135,7 @@
 /* Slack
 /* ---------------------------------------------------------- */
 
-.slack-grid {
+.app-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
@@ -143,7 +143,8 @@
     align-content: flex-start;
     margin-bottom: 30px;
 }
-.slack-icon {
+.app-icon {
+    position: relative;
     flex: 0 0 60px;
     margin: 0 15px 0 0;
     width: 60px;
@@ -153,31 +154,34 @@
     border-radius: 10%;
 }
 
-.slack-cell > h3 {
+.app-cell h3 {
+    margin: 0;
     color: #393939;
     font-size: 2.4rem;
 }
 
-.slack-cell > p {
+.app-cell p {
     margin: 0;
+    margin-bottom: 5px;
     color: #a3a3a3;
     font-size: 1.6rem;
+    line-height: 1.4em;
 }
 
-.slack-subtitle {
+.app-subtitle {
     max-width: 550px;
     color: #666363;
     font-size: 1.6rem;
 }
-.slack-config-form .btn-grey {
+.app-config-form .btn-grey {
     margin-top: 1.6em;
     background-color: #e8e8e8;
     box-shadow: none;
     font-size: 1.1rem;
 }
 
-.slack-config-form > .btn-grey:hover,
-.slack-config-form > .btn-grey:focus {
+.app-config-form > .btn-grey:hover,
+.app-config-form > .btn-grey:focus {
     border-color: rgb(223, 225, 227);
 }
 /* Media Queries
