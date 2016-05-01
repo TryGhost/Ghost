@@ -4,7 +4,7 @@
 
 <section class="view-container">
     <section class="view-content">
-        <p>Available integrations</p>
+        <span class="apps-grid-title">Available integrations</span>
         <div class="apps-grid">
             <div class="apps-grid-cell">
                 {{#link-to "settings.apps.slack"}}
@@ -17,7 +17,11 @@
                         </div>
                         <div class="apps-configured">
                             {{log slack}}
-                            {{#if slack.isActive}}<span>1 configured</span>{{/if}}
+                            {{#if slack.isActive}}
+                                <span class="green">Active</span>
+                            {{else}}
+                                <span>Configure</span>
+                            {{/if}}
                             <i class="icon-arrow-right"></i>
                         </div>
                     </div>
@@ -25,5 +29,6 @@
                 {{/link-to}}
             </div>
         </div>
+        <p class="apps-grid-note">(More coming soon!)</p>
     </section>
 </section>

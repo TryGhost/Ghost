@@ -13,6 +13,12 @@
 /* Main Layout
 /* ---------------------------------------------------------- */
 
+.apps-grid-title {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--midgrey);
+}
+
 .apps-grid {
     display: flex;
     flex-flow: row wrap;
@@ -22,12 +28,24 @@
     border-radius: 5px;
 }
 
+.apps-grid-note {
+    display: block;
+    margin-top: 5px;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
 /* Apps Card
 /* ---------------------------------------------------------- */
 
 .apps-grid-cell {
     flex: 1 1 100%;
 }
+.apps-grid-cell:hover {
+    background: #f5f7f8;
+}
+
 .apps-card-app {
     overflow: hidden;
     padding: 14px;
@@ -88,11 +106,12 @@
 
 .apps-card-app-title {
     overflow: hidden;
-    margin: 0 0 4px 0;
+    margin: 4px 0 0 0;
     padding: 0 70px 0 0;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1.7rem;
+    line-height: 1.15em;
     font-weight: bold;
 }
 
@@ -216,16 +235,6 @@
     .apps-card-theme .apps-card-footer {
         margin: 0;
         padding: 15px;
-    }
-}
-
-@media (max-width: 600px) {
-    .apps-grid {
-        margin: -10px -10px 4vw -10px;
-        border: none;
-    }
-    .apps-grid-apps {
-        margin: -10px -20px 4vw -20px;
     }
 }
 
