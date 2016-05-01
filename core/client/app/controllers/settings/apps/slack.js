@@ -3,6 +3,7 @@ import Ember from 'ember';
 const {
     Controller,
     RSVP,
+    isBlank,
     inject: {service}
 } = Ember;
 
@@ -40,20 +41,6 @@ export default Controller.extend({
     },
 
     actions: {
-        toggleActiveProperty() {
-            let notifications = this.get('notifications');
-            let isActive = this.get('model.isActive');
-            let url = this.get('model.url');
-
-            if (!isActive && (url === '' || url === '/')) {
-                notifications.showAlert('Please submit a valid webhook url in "Authentification" to activate your Slack integration.', {type: 'error', key: 'slack-test.invalidUrl'});
-                return;
-            } else {
-                this.toggleProperty('model.isActive');
-                this.send('save');
-            }
-        },
-
         sendTestNotification() {
             let notifications = this.get('notifications');
             let slackApi = this.get('ghostPaths.url').api('slack', 'test');
@@ -79,7 +66,7 @@ export default Controller.extend({
         save(validate = false) {
             let model = this.get('model');
 
-            if (validate || model.get('isActive')) {
+            if (validate && !isBlank(model.get('url'))) {
                 model.validate({model}).then(() => {
                     this.save();
                 });

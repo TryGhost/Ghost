@@ -7,6 +7,7 @@
         <p>Available integrations</p>
         <div class="apps-grid">
             <div class="apps-grid-cell">
+                {{#link-to "settings.apps.slack"}}
                 <article class="apps-card-app">
                     <div class="apps-card-content">
                         <figure class="apps-card-app-icon" style="background-image:url({{gh-path 'admin' '/img/slackicon.png'}})"></figure>
@@ -14,13 +15,14 @@
                             <h3 class="apps-card-app-title">Slack</h3>
                             <p class="apps-card-app-desc">A team communication tool</p>
                         </div>
-                        {{#if slack.isActive}}
-                            {{#link-to "settings.apps.slack" class="apps-configured"}}<span>1 configured</span><i class="icon-arrow-right"></i>{{/link-to}}
-                        {{else}}
-                            {{#link-to "settings.apps.slack" class="btn btn-green" title="Activate"}}Activate{{/link-to}}
-                        {{/if}}
+                        <div class="apps-configured">
+                            {{log slack}}
+                            {{#if slack.isActive}}<span>1 configured</span>{{/if}}
+                            <i class="icon-arrow-right"></i>
+                        </div>
                     </div>
                 </article>
+                {{/link-to}}
             </div>
         </div>
     </section>

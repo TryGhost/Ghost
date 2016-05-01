@@ -7,7 +7,7 @@ var nock            = require('nock'),
     url             = require('url'),
 
 // Stuff we test
-    slack          = require('../../server/data/slack/slack'),
+    slack          = require('../../server/data/slack'),
     events         = require('../../server/events'),
     api            = require('../../server/api/settings'),
     config         = require('../../server/config'),

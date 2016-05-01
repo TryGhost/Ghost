@@ -68,7 +68,7 @@
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
         },
         "slack": {
-            "defaultValue": "[{\"url\":\"/\", \"username\":\"Ghost\", \"icon\":\":ghost:\", \"isActive\": false}]"
+            "defaultValue": "[{\"url\":\"\", \"username\":\"Ghost\", \"icon\":\":ghost:\"}]"
         }
     },
     "theme": {

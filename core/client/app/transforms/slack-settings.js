@@ -31,9 +31,9 @@ export default Transform.extend({
                 let url = (item.get('url') || '').trim();
                 // icon is stored as icon_emoji on the server
                 let icon_emoji = (item.get('icon') || ':ghost:').trim();
-                let isActive = item.get('isActive');
+                let username = (item.get('username') || 'Ghost').trim();
 
-                return {url, icon_emoji, isActive};
+                return {url, icon_emoji, username};
             }).compact();
         } else {
             settingsArray = [];

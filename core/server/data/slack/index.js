@@ -43,17 +43,10 @@ function makeRequest(reqOptions, reqPayload) {
     req.end();
 }
 
-function ping(post, sendTest) {
+function ping(post) {
     var message;
     // If this is a post, we want to send the link of the post
-    // if (schema.isPost(post)) {
-    //
-    // } else {
-    //     // Assume a message
-    // }
-
-    // @TODO use schema.isPost as shown above (will need test updates)
-    if (post.slug) {
+    if (schema.isPost(post)) {
         message = config.urlFor('post', {post: post}, true);
     } else {
         message = post.message;
@@ -62,13 +55,8 @@ function ping(post, sendTest) {
     return getSlackSettings().then(function (slackSettings) {
         // Quit here if slack integration is not activated
 
-        if (slackSettings.isActive === true || sendTest === true) {
-            var icon;
-
-            // Stop right here, if there is no url or the default url provided
-            if (!slackSettings.url || slackSettings.url === '/') {
-                return;
-            }
+        if (slackSettings.url && slackSettings.url !== '') {
+            var icon, username;
 
             // Only ping when not a page
             if (post.page) {
@@ -84,12 +72,12 @@ function ping(post, sendTest) {
             }
 
             icon = slackSettings.icon ? slackSettings.icon : ':ghost:';
+            username = slackSettings.username ? slackSettings.username : 'Ghost';
 
             slackData = {
-                channel: slackSettings.channel,
-                username: slackSettings.username,
-                text: message,
+                username: username,
                 icon_emoji: icon,
+                text: message,
                 unfurl_links: true
             };
 
@@ -113,7 +101,7 @@ function init() {
     events.on('slack.test', function () {
         slack._ping({
             message: 'Heya! This is a test notification from your Ghost blog :simple_smile:. Seems to work fine!'
-        }, true);
+        });
     });
 }
 slack.init = init;

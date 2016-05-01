@@ -19,7 +19,7 @@ var express     = require('express'),
     apps        = require('./apps'),
     sitemap     = require('./data/xml/sitemap'),
     xmlrpc      = require('./data/xml/xmlrpc'),
-    slack       = require('./data/slack/slack'),
+    slack       = require('./data/slack'),
     GhostServer = require('./ghost-server'),
     validateThemes = require('./utils/validate-themes'),
 
