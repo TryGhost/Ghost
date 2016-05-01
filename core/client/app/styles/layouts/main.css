@@ -75,10 +75,6 @@ body > .ember-view:not(.liquid-target-container) {
     transition: margin-top 0.2s ease;
 }
 
-.gh-nav-menu:hover i {
-    margin-top: 5px;
-}
-
 .gh-nav-menu-icon {
     flex-shrink: 0;
     margin-right: 10px;
@@ -221,6 +217,7 @@ body > .ember-view:not(.liquid-target-container) {
     color: rgba(0,0,0,0.6);
     text-align: center;
     font-size: 15px;
+    line-height: 1;
 }
 
 .gh-nav-list .active i {

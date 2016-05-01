@@ -4,6 +4,10 @@
     color: #666;
 }
 
+.ember-power-select-search {
+    padding: 2px 0 3px 0 !important;
+}
+
 .ember-basic-dropdown--opened > .ember-power-select-trigger,
 .ember-power-select-trigger[aria-expanded="true"],
 .ember-power-select-search input {

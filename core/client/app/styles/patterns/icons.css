@@ -1,5 +1,7 @@
 /* Icons
 /* ---------------------------------------------------------- */
+/* CUSTOM GENERATED FILE */
+/* DO NOT UPDATE WITHOUT TALKING TO @JOHNONOLAN FIRST */
 
 @font-face {
     font-family: "ghosticons";
@@ -202,9 +204,6 @@
 .icon-error:before {
     content: "\e035";
 }
-.icon-power:before {
-    content: "\e036";
-}
 .icon-markdown:before {
     content: "\e037";
 }
@@ -258,7 +257,4 @@
 }
 .icon-play:before {
     content: "\e047";
-}
-.icon-apps:before {
-    content: "\e900";
 }
