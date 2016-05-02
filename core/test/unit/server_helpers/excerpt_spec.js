@@ -16,7 +16,7 @@ describe('{{excerpt}} Helper', function () {
         should.exist(handlebars.helpers.excerpt);
     });
 
-    it('can render excerpt', function () {
+    it('can render excerpt (without rounding)', function () {
         var html = 'Hello World',
             rendered = helpers.excerpt.call({html: html});
 
