@@ -9,10 +9,7 @@ export default BaseValidator.create({
 
         let urlRegex = new RegExp(/(^https:\/\/hooks\.slack\.com\/)(\S+)/);
 
-        if (validator.empty(url)) {
-            model.get('errors').add('url', 'You must specify a webook URL.');
-            this.invalidate();
-        } else if (!url.match(urlRegex)) {
+        if (!validator.empty(url) && !url.match(urlRegex)) {
             model.get('errors').add(
                 'url',
                 'The URL must be in a format like ' +

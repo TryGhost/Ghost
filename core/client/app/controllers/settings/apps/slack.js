@@ -3,7 +3,7 @@ import Ember from 'ember';
 const {
     Controller,
     RSVP,
-    isBlank,
+    computed: {empty},
     inject: {service}
 } = Ember;
 
@@ -15,8 +15,11 @@ export default Controller.extend({
     // will be set by route
     settings: null,
 
-    submitting: false,
+    isSaving: false,
     savePromise: null,
+    isSendingTest: false,
+
+    testNotificationDisabled: empty('model.url'),
 
     save() {
         let slack = this.get('model');
@@ -29,10 +32,14 @@ export default Controller.extend({
 
         settings.get('slack').clear().pushObject(slack);
 
+        this.set('isSaving', true);
+
         promise = settings.save().catch((err) => {
             this.get('notifications').showErrors(err);
         }).then(() => {
             this.set('savePromise', null);
+        }).finally(() => {
+            this.set('isSaving', false);
         });
 
         this.set('savePromise', promise);
@@ -46,11 +53,11 @@ export default Controller.extend({
             let slackApi = this.get('ghostPaths.url').api('slack', 'test');
             let savePromise = this.get('savePromise') || RSVP.resolve(true);
 
-            if (this.get('submitting')) {
+            if (this.get('isSendingTest')) {
                 return;
             }
 
-            this.set('submitting', true);
+            this.set('isSendingTest', true);
 
             savePromise.then(() => {
                 this.get('ajax').post(slackApi).then(() => {
@@ -58,21 +65,22 @@ export default Controller.extend({
                 }).catch((error) => {
                     notifications.showAPIError(error, {key: 'slack-test:send'});
                 }).finally(() => {
-                    this.set('submitting', false);
+                    this.set('isSendingTest', false);
                 });
             });
         },
 
-        save(validate = false) {
+        updateURL(value) {
+            this.set('model.url', value);
+            this.get('model.errors').clear();
+        },
+
+        save() {
             let model = this.get('model');
 
-            if (validate && !isBlank(model.get('url'))) {
-                model.validate({model}).then(() => {
-                    this.save();
-                });
-            } else {
+            model.validate().then(() => {
                 this.save();
-            }
+            });
         }
     }
 });
