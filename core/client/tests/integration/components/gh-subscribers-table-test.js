@@ -16,8 +16,9 @@ describeComponent(
     function() {
         it('renders', function() {
             this.set('table', new Table([], []));
+            this.set('sortByColumn', function () {});
 
-            this.render(hbs`{{gh-subscribers-table table=table}}`);
+            this.render(hbs`{{gh-subscribers-table table=table sortByColumn=(action sortByColumn)}}`);
             expect(this.$()).to.have.length(1);
         });
     }
