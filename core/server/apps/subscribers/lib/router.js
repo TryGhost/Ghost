@@ -1,4 +1,5 @@
 var path                = require('path'),
+    lodash              = require('lodash'),
     express             = require('express'),
     subscribeRouter     = express.Router(),
 
@@ -47,7 +48,16 @@ function handleSource(req, res, next) {
     req.body.subscribed_referrer = req.body.referrer;
     delete req.body.location;
     delete req.body.referrer;
-    // do something here to get post_id
+
+    if (req.body.post_id) {
+        if (lodash.isString(req.body.post_id)) {
+            req.body.post_id = Number(req.body.post_id);
+        }
+        if (isNaN(req.body.post_id)) {
+            delete req.body.post_id;
+        }
+    }
+
     next();
 }
 
