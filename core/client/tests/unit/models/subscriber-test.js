@@ -7,7 +7,7 @@ describeModel(
     'Unit: Model: subscriber',
     {
         // Specify the other units that are required for this test.
-        needs: []
+        needs: ['model:post']
     },
     function() {
         // Replace this with your real tests.
