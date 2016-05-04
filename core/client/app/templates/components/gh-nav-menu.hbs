@@ -27,7 +27,7 @@
         {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
         {{#if subscribersEnabled}}
             {{#if (gh-user-can-admin session.user)}}
-                <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}<i class="icon-team"></i>Subscribers{{/link-to}}</li>
+                <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}<i class="icon-mail"></i>Subscribers{{/link-to}}</li>
             {{/if}}
         {{/if}}
     </ul>
