@@ -38,7 +38,7 @@
     "cors": "2.7.1",
     "downsize": "0.0.8",
     "express": "4.13.4",
-    "express-hbs": "1.0.0",
+    "express-hbs": "1.0.1",
     "extract-zip": "1.5.0",
     "fs-extra": "0.30.0",
     "ghost-gql": "0.0.4",
