@@ -14,14 +14,10 @@ const FeatureFlagComponent = Component.extend({
 
     feature: service(),
 
-    isVisible: computed.notEmpty('_flagValue'),
-
     init() {
         this._super(...arguments);
 
-        this.get(`feature.${this.get('flag')}`).then((flagValue) => {
-            this.set('_flagValue', flagValue);
-        });
+        this.set('_flagValue', this.get(`feature.${this.get('flag')}`));
     },
 
     value: computed('_flagValue', {
@@ -36,6 +32,7 @@ const FeatureFlagComponent = Component.extend({
     for: computed('flag', function () {
         return `labs-${this.get('flag')}`;
     }),
+
     name: computed('flag', function () {
         return `labs[${this.get('flag')}]`;
     })
