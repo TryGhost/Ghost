@@ -154,7 +154,7 @@ ConfigManager.prototype.set = function (config) {
         storagePath = path.join(contentPath, 'storage');
     }
 
-    _.merge(this._config, {
+    _.defaultsDeep(this._config, {
         ghostVersion: packageInfo.version,
         paths: {
             appRoot:          appRoot,
