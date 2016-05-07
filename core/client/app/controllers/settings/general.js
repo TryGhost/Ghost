@@ -76,6 +76,14 @@ export default Controller.extend(SettingsSaveMixin, {
         }
     }),
 
+    facebookUrl: computed('model.facebook', function () {
+        return this.get('model.facebook');
+    }),
+
+    twitterUrl: computed('model.twitter', function () {
+        return this.get('model.twitter');
+    }),
+
     save() {
         let notifications = this.get('notifications');
         let config = this.get('config');
@@ -110,6 +118,69 @@ export default Controller.extend(SettingsSaveMixin, {
 
         toggleUploadLogoModal() {
             this.toggleProperty('showUploadLogoModal');
+        },
+
+        validateFacebookUrl(userInput) {
+            let newUrl = userInput.trim();
+            let oldUrl = this.get('model.facebook');
+            let errMessage = '';
+
+            if (!newUrl) {
+                // Clear out the Facebook url
+                this.set('model.facebook', '');
+                return;
+            }
+
+            if (!newUrl.match(/(^https:\/\/www\.facebook\.com\/)(\S+)/g)) {
+                errMessage = 'The URL must be in a format like ' +
+                    'https://www.facebook.com/yourUsername';
+                this.get('model.errors').add('facebook', errMessage);
+                return;
+            }
+
+            // If new url didn't change, exit
+            if (newUrl === oldUrl) {
+                return;
+            }
+
+            // Validation complete
+            this.set('model.facebook', newUrl);
+
+            this.get('model').save().catch((errors) => {
+                this.showErrors(errors);
+                this.get('model').rollbackAttributes();
+            });
+        },
+
+        validateTwitterUrl(userInput) {
+            let newUrl = userInput.trim();
+            let oldUrl = this.get('model.twitter');
+            let errMessage = '';
+
+            if (!newUrl) {
+                // Clear out the Twitter url
+                this.set('model.twitter', '');
+                return;
+            }
+
+            if (!newUrl.match(/(^https:\/\/twitter\.com\/)(\S+)/g)) {
+                errMessage = 'The URL must be in a format like ' +
+                    'https://twitter.com/yourUsername';
+                this.get('model.errors').add('twitter', errMessage);
+                return;
+            }
+
+            // If new url didn't change, exit
+            if (newUrl === oldUrl) {
+                return;
+            }
+
+            this.set('model.twitter', newUrl);
+
+            this.get('model').save().catch((errors) => {
+                this.showErrors(errors);
+                this.get('model').rollbackAttributes();
+            });
         }
     }
 });

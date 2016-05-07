@@ -89,5 +89,17 @@ describeModule(
             expect(themes.objectAt(1).active).to.not.be.ok;
             expect(themes.objectAt(1).label).to.equal('Rasper - 1.0.0');
         });
+
+        it('renders twitter username with the matching url', function () {
+            let controller = this.subject({
+                model: Ember.Object.create({
+                    twitter: 'https://twitter.com/testuser'
+                })
+            });
+
+            run(function () {
+                expect(controller.get('twitterUrl')).to.equal('https://twitter.com/testuser');
+            });
+        });
     }
 );
