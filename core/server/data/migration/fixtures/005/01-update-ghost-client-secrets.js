@@ -18,8 +18,8 @@ module.exports = function updateGhostClientsSecrets(options, logger) {
             client.secret = crypto.randomBytes(6).toString('hex');
 
             return models.Client.edit(
-                _.extend({}, client, {secret: crypto.randomBytes(6).toString('hex')},
-                _.extend({}, options, {id: client.id}))
+                _.extend({}, client, {secret: crypto.randomBytes(6).toString('hex')}),
+                _.extend({}, options, {id: client.id})
             );
         });
     });
