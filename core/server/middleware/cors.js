@@ -2,9 +2,8 @@ var cors = require('cors'),
     _ = require('lodash'),
     url = require('url'),
     os = require('os'),
-    whitelist = [
-        'localhost'
-    ],
+    config = require('../config'),
+    whitelist = [],
     ENABLE_CORS = {origin: true, maxAge: 86400},
     DISABLE_CORS = {origin: false};
 
@@ -14,7 +13,9 @@ var cors = require('cors'),
  */
 function getIPs() {
     var ifaces = os.networkInterfaces(),
-        ips = [];
+        ips = [
+            'localhost'
+        ];
 
     Object.keys(ifaces).forEach(function (ifname) {
         ifaces[ifname].forEach(function (iface) {
@@ -30,8 +31,27 @@ function getIPs() {
     return ips;
 }
 
-// origins that always match: localhost, local IPs, etc.
-whitelist = whitelist.concat(getIPs());
+function getUrls() {
+    var urls = [url.parse(config.url).hostname];
+
+    if (config.urlSSL) {
+        urls.push(url.parse(config.urlSSL).hostname);
+    }
+
+    return urls;
+}
+
+function getWhitelist() {
+    // This needs doing just one time after init
+    if (_.isEmpty(whitelist)) {
+        // origins that always match: localhost, local IPs, etc.
+        whitelist = whitelist.concat(getIPs());
+        // Trusted urls from config.js
+        whitelist = whitelist.concat(getUrls());
+    }
+
+    return whitelist;
+}
 
 /**
  * Checks the origin and enables/disables CORS headers in the response.
@@ -54,7 +74,7 @@ function handleCORS(req, cb) {
     }
 
     // Origin matches whitelist
-    if (whitelist.indexOf(url.parse(origin).hostname) > -1) {
+    if (getWhitelist().indexOf(url.parse(origin).hostname) > -1) {
         return cb(null, ENABLE_CORS);
     }
 
