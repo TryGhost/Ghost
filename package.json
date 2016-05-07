@@ -28,7 +28,7 @@
   "dependencies": {
     "bcryptjs": "2.3.0",
     "bluebird": "3.3.5",
-    "body-parser": "1.15.0",
+    "body-parser": "1.15.1",
     "bookshelf": "0.9.4",
     "chalk": "1.1.3",
     "cheerio": "0.20.0",
