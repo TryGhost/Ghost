@@ -53,9 +53,9 @@ function postLookup(postUrl) {
     return api.posts.read(params).then(function then(result) {
         var post = result.posts[0];
 
-        // If there is no post, or the post has no URL, or it isn't a match for our original lookup, return empty
+        // If there is no URL, or it isn't a match for our original lookup, return empty
         // This also catches the case where we use the pagePermalink but the post is not a page
-        if (!post || !post.url || post.url !== postPath) {
+        if (!post.url || post.url !== postPath) {
             return Promise.resolve();
         }
 
