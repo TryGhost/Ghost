@@ -35,21 +35,15 @@ function makeHidden(name, extras) {
     });
 }
 
-/**
- * post id is in the post model (root.post) in case he is on /name-of-post
- * post id is in root (root.post_id) in case of validation error (he is already on /subscribe)
- */
 function subscribeFormHelper(options) {
     var root = options.data.root,
-        postId = root.post ? root.post.id : (root.post_id ? root.post_id : null),
         data = _.merge({}, options.hash, _.pick(root, params), {
             action: path.join('/', config.paths.subdir, config.routeKeywords.subscribe, '/'),
             script: new hbs.handlebars.SafeString(subscribeScript),
             hidden: new hbs.handlebars.SafeString(
                 makeHidden('confirm') +
                 makeHidden('location', root.subscribed_url ? 'value=' + root.subscribed_url : '') +
-                makeHidden('referrer', root.subscribed_referrer ? 'value=' + root.subscribed_referrer : ''),
-                makeHidden('post_id', 'value=' + postId)
+                makeHidden('referrer', root.subscribed_referrer ? 'value=' + root.subscribed_referrer : '')
             )
         });
 

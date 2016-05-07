@@ -49,16 +49,14 @@ function handleSource(req, res, next) {
     delete req.body.location;
     delete req.body.referrer;
 
-    if (req.body.post_id) {
-        if (lodash.isString(req.body.post_id)) {
-            req.body.post_id = Number(req.body.post_id);
-        }
-        if (isNaN(req.body.post_id)) {
-            delete req.body.post_id;
-        }
-    }
-
-    next();
+    postLookup(req.path)
+        .then(function (result) {
+            req.body.post_id = result.post.id;
+            next();
+        })
+        .catch(function (err) {
+            next(err);
+        });
 }
 
 function storeSubscriber(req, res, next) {
