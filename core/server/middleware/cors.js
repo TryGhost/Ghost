@@ -1,37 +1,15 @@
 var cors = require('cors'),
     _ = require('lodash'),
     url = require('url'),
-    os = require('os'),
+    runtime = require('../utils/runtime'),
     whitelist = [
         'localhost'
     ],
     ENABLE_CORS = {origin: true, maxAge: 86400},
     DISABLE_CORS = {origin: false};
 
-/**
- * Gather a list of local ipv4 addresses
- * @return {Array<String>}
- */
-function getIPs() {
-    var ifaces = os.networkInterfaces(),
-        ips = [];
-
-    Object.keys(ifaces).forEach(function (ifname) {
-        ifaces[ifname].forEach(function (iface) {
-            // only support IPv4
-            if (iface.family !== 'IPv4') {
-                return;
-            }
-
-            ips.push(iface.address);
-        });
-    });
-
-    return ips;
-}
-
 // origins that always match: localhost, local IPs, etc.
-whitelist = whitelist.concat(getIPs());
+whitelist = whitelist.concat(runtime.getIPs());
 
 /**
  * Checks the origin and enables/disables CORS headers in the response.
@@ -54,11 +32,17 @@ function handleCORS(req, cb) {
     }
 
     // Origin matches whitelist
-    if (whitelist.indexOf(url.parse(origin).hostname) > -1) {
+    if ((whitelist.indexOf(url.parse(origin).hostname) > -1) || (whitelist.indexOf(origin) > -1)) {
         return cb(null, ENABLE_CORS);
     }
 
     return cb(null, DISABLE_CORS);
 }
 
-module.exports = cors(handleCORS);
+module.exports = function setupCORS(options) {
+    if (options && options.whitelist) {
+        whitelist = whitelist.concat(options.whitelist);
+    }
+
+    return cors(handleCORS);
+};
