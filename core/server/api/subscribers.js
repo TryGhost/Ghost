@@ -118,7 +118,7 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName) ,
+            utils.validate(docName),
             utils.handlePermissions(docName, 'add'),
             doQuery
         ];
