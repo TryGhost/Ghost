@@ -6,6 +6,7 @@ var path                = require('path'),
     api                 = require('../../../api'),
     errors              = require('../../../errors'),
     templates           = require('../../../controllers/frontend/templates'),
+    postlookup          = require('../../../controllers/frontend/post-lookup'),
     setResponseContext  = require('../../../controllers/frontend/context');
 
 function controller(req, res) {
@@ -47,8 +48,22 @@ function handleSource(req, res, next) {
     req.body.subscribed_referrer = req.body.referrer;
     delete req.body.location;
     delete req.body.referrer;
-    // do something here to get post_id
-    next();
+
+    postlookup(req.body.subscribed_url)
+        .then(function (result) {
+            if (result && result.post) {
+                req.body.post_id = result.post.id;
+            }
+
+            next();
+        })
+        .catch(function (err) {
+            if (err instanceof errors.NotFoundError) {
+                return next();
+            }
+
+            next(err);
+        });
 }
 
 function storeSubscriber(req, res, next) {
