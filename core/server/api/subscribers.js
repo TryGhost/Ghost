@@ -118,7 +118,7 @@ subscribers = {
 
         // Push all of our tasks into a `tasks` array in the correct order
         tasks = [
-            utils.validate(docName),
+            utils.validate(docName) ,
             utils.handlePermissions(docName, 'add'),
             doQuery
         ];
@@ -246,7 +246,7 @@ subscribers = {
         }
 
         tasks = [
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'browse'),
             exportSubscribers
         ];
 
@@ -363,7 +363,7 @@ subscribers = {
 
         tasks = [
             validate,
-            // TODO: handlePermissions
+            utils.handlePermissions(docName, 'add'),
             importCSV
         ];
 
