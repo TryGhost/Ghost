@@ -4,7 +4,7 @@ import {
 } from 'ember-mocha';
 import Pretender from 'pretender';
 import wait from 'ember-test-helpers/wait';
-import FeatureService, {feature} from 'ghost/services/feature';
+import {feature} from 'ghost/services/feature';
 import Ember from 'ember';
 import { errorOverride, errorReset } from 'ghost/tests/helpers/adapter-error';
 
@@ -46,10 +46,8 @@ function stubSettings(server, labs, validSave = true, validSettings = true) {
     });
 }
 
-function addTestFlag() {
-    FeatureService.reopen({
-        testFlag: feature('testFlag')
-    });
+function addTestFlag(featureService) {
+    feature(featureService, 'testFlag');
 }
 
 describeModule(
@@ -100,9 +98,10 @@ describeModule(
 
         it('returns false for set flag with config false and labs false', function (done) {
             stubSettings(server, {testFlag: false});
-            addTestFlag();
 
             let service = this.subject();
+            addTestFlag(service);
+
             service.get('config').set('testFlag', false);
 
             let testFlag, labsTestFlag;
@@ -124,9 +123,10 @@ describeModule(
 
         it('returns true for set flag with config true and labs false', function (done) {
             stubSettings(server, {testFlag: false});
-            addTestFlag();
 
             let service = this.subject();
+            addTestFlag(service);
+
             service.get('config').set('testFlag', true);
 
             let testFlag, labsTestFlag;
@@ -148,9 +148,10 @@ describeModule(
 
         it('returns true for set flag with config false and labs true', function (done) {
             stubSettings(server, {testFlag: true});
-            addTestFlag();
 
             let service = this.subject();
+            addTestFlag(service);
+
             service.get('config').set('testFlag', false);
 
             let testFlag, labsTestFlag;
@@ -172,9 +173,10 @@ describeModule(
 
         it('returns true for set flag with config true and labs true', function (done) {
             stubSettings(server, {testFlag: true});
-            addTestFlag();
 
             let service = this.subject();
+            addTestFlag(service);
+
             service.get('config').set('testFlag', true);
 
             let testFlag, labsTestFlag;
@@ -196,9 +198,9 @@ describeModule(
 
         it('saves correctly', function (done) {
             stubSettings(server, {testFlag: false});
-            addTestFlag();
 
             let service = this.subject();
+            addTestFlag(service);
 
             run(() => {
                 service.get('testFlag').then((testFlag) => {
@@ -220,11 +222,29 @@ describeModule(
             });
         });
 
-        it('notifies for server errors', function (done) {
-            stubSettings(server, {testFlag: false}, false);
-            addTestFlag();
+        it('provides correct flagSync property', function (done) {
+            stubSettings(server, {testFlag: true});
 
             let service = this.subject();
+            addTestFlag(service);
+
+            run(() => {
+                // force property to compute
+                service.get('testFlagSync');
+            });
+
+            return wait().then(() => {
+                expect(service.get('testFlagSync')).to.be.true;
+
+                done();
+            });
+        });
+
+        it('notifies for server errors', function (done) {
+            stubSettings(server, {testFlag: false}, false);
+
+            let service = this.subject();
+            addTestFlag(service);
 
             run(() => {
                 service.get('testFlag').then((testFlag) => {
@@ -250,9 +270,9 @@ describeModule(
 
         it('notifies for validation errors', function (done) {
             stubSettings(server, {testFlag: false}, true, false);
-            addTestFlag();
 
             let service = this.subject();
+            addTestFlag(service);
 
             run(() => {
                 service.get('testFlag').then((testFlag) => {
