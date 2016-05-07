@@ -25,7 +25,7 @@ export default ModalComponent.extend({
         },
 
         uploadSuccess(response) {
-            this.set('response', response);
+            this.set('response', response.stats[0]);
             // invoke the passed in confirm action
             invokeAction(this, 'confirm');
         },

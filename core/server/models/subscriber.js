@@ -1,12 +1,40 @@
 var ghostBookshelf = require('./base'),
-    errors = require('../errors'),
     i18n = require('../i18n'),
+    errors = require('../errors'),
+    events = require('../events'),
     Promise = require('bluebird'),
+    uuid = require('node-uuid'),
+
     Subscriber,
     Subscribers;
 
 Subscriber = ghostBookshelf.Model.extend({
-    tableName: 'subscribers'
+    tableName: 'subscribers',
+
+    emitChange: function emitChange(event) {
+        events.emit('subscriber' + '.' + event, this);
+    },
+
+    defaults: function defaults() {
+        return {
+            uuid: uuid.v4(),
+            status: 'subscribed'
+        };
+    },
+
+    initialize: function initialize() {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
+        this.on('created', function onCreated(model) {
+            model.emitChange('added');
+        });
+        this.on('updated', function onUpdated(model) {
+            model.emitChange('edited');
+        });
+        this.on('destroyed', function onDestroyed(model) {
+            model.emitChange('deleted');
+        });
+    }
 }, {
 
     orderDefaultOptions: function orderDefaultOptions() {
