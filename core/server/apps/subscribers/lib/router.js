@@ -68,6 +68,7 @@ function handleSource(req, res, next) {
 
 function storeSubscriber(req, res, next) {
     req.body.status = 'subscribed';
+
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
         .then(function () {
             res.locals.success = true;
