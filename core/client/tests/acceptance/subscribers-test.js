@@ -169,6 +169,25 @@ describe('Acceptance: Subscribers', function() {
                     .to.equal('41');
             });
 
+            // saving a duplicate subscriber
+            click('.btn:contains("Add Subscriber")');
+            fillIn('.fullscreen-modal input[name="email"]', 'test@example.com');
+            click('.fullscreen-modal .btn:contains("Add")');
+
+            andThen(function () {
+                // the validation error is displayed
+                expect(find('.fullscreen-modal .error .response').text().trim(), 'duplicate email validation')
+                    .to.match(/duplicate/);
+
+                // the subscriber is not added to the table
+                expect(find('.lt-cell:contains(test@example.com)').length, 'number of "test@example.com rows"')
+                    .to.equal(1);
+
+                // the subscriber total is unchanged
+                expect(find('#total-subscribers').text().trim(), 'subscribers total after failed add')
+                    .to.equal('41');
+            });
+
             // click the import subscribers button
             click('.btn:contains("Import CSV")');
 

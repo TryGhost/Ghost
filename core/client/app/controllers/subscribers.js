@@ -84,8 +84,6 @@ export default Ember.Controller.extend(PaginationMixin, {
         loadFirstPage() {
             let table = this.get('table');
 
-            console.log('loadFirstPage', this.get('paginationSettings'));
-
             return this._super(...arguments).then((results) => {
                 table.addRows(results);
                 return results;
