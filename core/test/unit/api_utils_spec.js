@@ -370,6 +370,25 @@ describe('API Utils', function () {
                 done();
             }).catch(done);
         });
+
+        it('will delete null values from object', function (done) {
+            var object = {test: [{id: 1, key: null}]};
+
+            apiUtils.checkObject(_.cloneDeep(object), 'test').then(function (data) {
+                should.not.exist(data.test[0].key);
+                should.exist(data.test[0].id);
+                done();
+            }).catch(done);
+        });
+
+        it('will not break if the expected object is a string', function (done) {
+            var object = {test: ['something']};
+
+            apiUtils.checkObject(_.cloneDeep(object), 'test').then(function (data) {
+                data.test[0].should.eql('something');
+                done();
+            }).catch(done);
+        });
     });
 
     describe('checkFileExists', function () {
