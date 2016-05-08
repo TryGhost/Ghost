@@ -119,25 +119,15 @@ describe('Acceptance: Settings - General', function () {
             andThen(() => {
                 expect(find('.fullscreen-modal').length).to.equal(0);
             });
-        });
 
-        it('renders theme selector correctly', function () {
-            visit('/settings/general');
-
+            // renders theme selector correctly
             andThen(() => {
-                expect(currentURL(), 'currentURL').to.equal('/settings/general');
-
                 expect(find('#activeTheme select option').length, 'available themes').to.equal(1);
                 expect(find('#activeTheme select option').text().trim()).to.equal('Blog - 1.0');
             });
-        });
 
-        it('handles private blog settings correctly', function () {
-            visit('/settings/general');
-
+            // handles private blog settings correctly
             andThen(() => {
-                expect(currentURL(), 'currentURL').to.equal('/settings/general');
-
                 expect(find('input#isPrivate').prop('checked'), 'isPrivate checkbox').to.be.false;
             });
 
@@ -150,12 +140,91 @@ describe('Acceptance: Settings - General', function () {
             });
 
             fillIn('#settings-general input[name="general[password]"]', '');
-            click('.view-header .view-actions .btn-blue');
+            triggerEvent('#settings-general input[name="general[password]"]', 'blur');
 
             andThen(() => {
                 expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
                     .to.equal('Password must be supplied');
             });
+
+            fillIn('#settings-general input[name="general[password]"]', 'asdfg');
+            triggerEvent('#settings-general input[name="general[password]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('');
+            });
+
+            // validates a facebook url correctly
+            fillIn('#settings-general input[name="general[facebook]"]', 'facebook.com/username');
+            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/username');
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('');
+            });
+
+            fillIn('#settings-general input[name="general[facebook]"]', '*(&*(%%))');
+            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('The URL must be in a format like https://www.facebook.com/yourPage');
+            });
+
+            fillIn('#settings-general input[name="general[facebook]"]', 'http://github.com/username');
+            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('The URL must be in a format like https://www.facebook.com/yourPage');
+            });
+
+            fillIn('#settings-general input[name="general[facebook]"]', 'testuser');
+            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general input[name="general[facebook]"]').val()).to.be.equal('https://www.facebook.com/testuser');
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('');
+            });
+
+            // validates a twitter url correctly
+            fillIn('#settings-general input[name="general[twitter]"]', 'twitter.com/username');
+            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general input[name="general[twitter]"]').val()).to.be.equal('https://twitter.com/username');
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('');
+            });
+
+            fillIn('#settings-general input[name="general[twitter]"]', '*(&*(%%))');
+            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('The URL must be in a format like https://twitter.com/yourUsername');
+            });
+
+            fillIn('#settings-general input[name="general[twitter]"]', 'http://github.com/username');
+            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('The URL must be in a format like https://twitter.com/yourUsername');
+            });
+
+            fillIn('#settings-general input[name="general[twitter]"]', 'testuser');
+            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+
+            andThen(() => {
+                expect(find('#settings-general input[name="general[twitter]"]').val()).to.be.equal('https://twitter.com/testuser');
+                expect(find('#settings-general .error .response').text().trim(), 'inline validation response')
+                    .to.equal('');
+            });
         });
+
     });
 });
