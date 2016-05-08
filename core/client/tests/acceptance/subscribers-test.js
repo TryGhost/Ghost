@@ -169,6 +169,62 @@ describe('Acceptance: Subscribers', function() {
                     .to.equal('41');
             });
 
+            // saving a duplicate subscriber
+            click('.btn:contains("Add Subscriber")');
+            fillIn('.fullscreen-modal input[name="email"]', 'test@example.com');
+            click('.fullscreen-modal .btn:contains("Add")');
+
+            andThen(function () {
+                // the validation error is displayed
+                expect(find('.fullscreen-modal .error .response').text().trim(), 'duplicate email validation')
+                    .to.match(/duplicate/);
+
+                // the subscriber is not added to the table
+                expect(find('.lt-cell:contains(test@example.com)').length, 'number of "test@example.com rows"')
+                    .to.equal(1);
+
+                // the subscriber total is unchanged
+                expect(find('#total-subscribers').text().trim(), 'subscribers total after failed add')
+                    .to.equal('41');
+            });
+
+            // deleting a subscriber
+            click('.fullscreen-modal .btn:contains("Cancel")');
+            click('.subscribers-table tbody tr:first-of-type button:last-of-type');
+
+            andThen(function () {
+                // it displays the delete subscriber modal
+                expect(find('.fullscreen-modal').length, 'delete subscriber modal displayed')
+                    .to.equal(1);
+            });
+
+            // cancel the modal
+            click('.fullscreen-modal .btn:contains("Cancel")');
+
+            andThen(function () {
+                // return pauseTest();
+                // it closes the add subscriber modal
+                expect(find('.fullscreen-modal').length, 'delete subscriber modal displayed after cancel')
+                    .to.equal(0);
+            });
+
+            click('.subscribers-table tbody tr:first-of-type button:last-of-type');
+            click('.fullscreen-modal .btn:contains("Delete")');
+
+            andThen(function () {
+                // the add subscriber modal is closed
+                expect(find('.fullscreen-modal').length, 'delete subscriber modal displayed after confirm')
+                    .to.equal(0);
+
+                // the subscriber is removed from the table
+                expect(find('.subscribers-table .lt-body .lt-row:first-of-type .lt-cell:first-of-type').text().trim(), 'first email in list after addition')
+                    .to.not.equal('test@example.com');
+
+                // the subscriber total is updated
+                expect(find('#total-subscribers').text().trim(), 'subscribers total after addition')
+                    .to.equal('40');
+            });
+
             // click the import subscribers button
             click('.btn:contains("Import CSV")');
 

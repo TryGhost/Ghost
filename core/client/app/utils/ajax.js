@@ -2,6 +2,9 @@ import Ember from 'ember';
 
 const {isArray} = Ember;
 
+// TODO: this should be removed and instead have our app serializer properly
+// process the response so that errors can be tied to the model
+
 // Used in API request fail handlers to parse a standard api error
 // response json for the message to display
 export default function getRequestErrorMessage(request, performConcat) {
@@ -20,12 +23,12 @@ export default function getRequestErrorMessage(request, performConcat) {
     if (request.status !== 200) {
         try {
             // Try to parse out the error, or default to 'Unknown'
-            if (request.responseJSON.errors && isArray(request.responseJSON.errors)) {
-                message = request.responseJSON.errors.map((errorItem) => {
+            if (request.errors && isArray(request.errors)) {
+                message = request.errors.map((errorItem) => {
                     return errorItem.message;
                 });
             } else {
-                message =  request.responseJSON.error || 'Unknown Error';
+                message =  request.error || 'Unknown Error';
             }
         } catch (e) {
             msgDetail = request.status ? `${request.status} - ${request.statusText}` : 'Server was not available';

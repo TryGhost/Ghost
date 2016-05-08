@@ -55,16 +55,26 @@ function mockSubscribers(server) {
 
     server.post('/subscribers/', function (db, request) {
         let [attrs] = JSON.parse(request.requestBody).subscribers;
-        let subscriber;
+        let [subscriber] = db.subscribers.where({email: attrs.email});
 
-        attrs.created_at = new Date();
-        attrs.created_by = 0;
+        if (subscriber) {
+            return new Mirage.Response(422, {}, {
+                errors: [{
+                    errorType: 'DataImportError',
+                    message: 'duplicate email',
+                    property: 'email'
+                }]
+            });
+        } else {
+            attrs.created_at = new Date();
+            attrs.created_by = 0;
 
-        subscriber = db.subscribers.insert(attrs);
+            subscriber = db.subscribers.insert(attrs);
 
-        return {
-            subscriber
-        };
+            return {
+                subscriber
+            };
+        }
     });
 
     server.put('/subscribers/:id/', function (db, request) {
