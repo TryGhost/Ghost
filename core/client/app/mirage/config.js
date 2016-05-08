@@ -101,9 +101,13 @@ function mockSubscribers(server) {
         server.createList('subscriber', 50);
 
         return {
-            imported: 50,
-            duplicates: 3,
-            invalid: 2
+            meta: {
+                stats: {
+                    imported: 50,
+                    duplicates: 3,
+                    invalid: 2
+                }
+            }
         };
     });
 }
