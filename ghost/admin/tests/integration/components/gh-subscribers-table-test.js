@@ -17,8 +17,9 @@ describeComponent(
         it('renders', function() {
             this.set('table', new Table([], []));
             this.set('sortByColumn', function () {});
+            this.set('delete', function () {});
 
-            this.render(hbs`{{gh-subscribers-table table=table sortByColumn=(action sortByColumn)}}`);
+            this.render(hbs`{{gh-subscribers-table table=table sortByColumn=(action sortByColumn) delete=(action delete)}}`);
             expect(this.$()).to.have.length(1);
         });
     }
