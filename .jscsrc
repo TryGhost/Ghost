@@ -1,7 +1,4 @@
 {
-    "plugins": [
-        "jscs-jsdoc"
-    ],
     "additionalRules": [ "core/test/utils/jscs-rules/*.js" ],
     "requireCurlyBraces": [
         "if",
