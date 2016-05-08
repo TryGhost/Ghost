@@ -169,6 +169,17 @@ export default [
         value: ''
     },
     {
+        created_at: '2016-05-05T15:04:03.115Z',
+        created_by: 1,
+        id: 17,
+        key: 'slack',
+        type: 'blog',
+        updated_at: '2016-05-05T18:33:09.168Z',
+        updated_by: 1,
+        uuid: 'dd4ebaa8-dedb-40ff-a663-ec64a92d4111',
+        value: '[{"url":""}]'
+    },
+    {
         key: 'availableThemes',
         value: [
             {

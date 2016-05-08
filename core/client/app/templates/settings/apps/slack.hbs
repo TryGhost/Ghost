@@ -1,0 +1,42 @@
+<header class="view-header">
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">{{#link-to "settings.apps.index"}}Apps{{/link-to}} <i class="icon-arrow-right" style="display:inline"></i> Slack</span>{{/gh-view-title}}
+    <section class="view-actions">
+        {{#gh-spin-button id="saveSlackIntegration" class="btn btn-green" action=(action "save") submitting=isSaving}}
+            Save
+        {{/gh-spin-button}}
+    </section>
+</header>
+<section class="view-container">
+    <section class="view-content">
+        <section class="app-grid">
+            <div class="app-cell">
+                <img class="app-icon" src="{{gh-path 'admin' '/img/slackicon.png'}}" />
+            </div>
+            <div class="app-cell">
+                <h3>Slack</h3>
+                <p>A messaging app for teams</p>
+            </div>
+        </section>
+        <section class="app-subtitle">
+            <p>Automatically send newly published posts to a channel in Slack.</p>
+        </section>
+
+        <form class="app-config-form" id="slack-settings" novalidate="novalidate" {{action "save" on="submit"}}>
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="url"}}
+                <label for="url">Webhook URL</label>
+                {{one-way-input model.url class="gh-input" name="slack[url]" update=(action "updateURL") onenter=(action "save") placeholder="https://hooks.slack.com/services/..."}}
+                {{#unless model.errors.url}}
+                    <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
+                {{else}}
+                    {{gh-error-message errors=model.errors property="url"}}
+                {{/unless}}
+            {{/gh-form-group}}
+        </form>
+
+        <form class="app-config-form">
+            {{#gh-spin-button id="sendTestNotification" class="btn btn-grey" disabled=testNotificationDisabled action=(action "sendTestNotification") submitting=isSendingTest}}
+                Send Test Notification
+            {{/gh-spin-button}}
+        </form>
+    </section>
+</section>
