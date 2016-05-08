@@ -336,8 +336,9 @@
             "tags": {
                 "tagNotFound": "Tag not found."
             },
-            "subscriber": {
-                "subscriberNotFound": "Subscriber not found."
+            "subscribers": {
+                "subscriberNotFound": "Subscriber not found.",
+                "subscriberAlreadyExist": "Email already exist."
             },
             "themes": {
                 "noPermissionToBrowseThemes": "You do not have permission to browse themes.",

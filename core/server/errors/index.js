@@ -152,6 +152,7 @@ errors = {
             context = i18n.t('errors.errors.databaseIsReadOnly');
             help = i18n.t('errors.errors.checkDatabase');
         }
+
         // TODO: Logging framework hookup
         // Eventually we'll have better logging which will know about envs
         if ((process.env.NODE_ENV === 'development' ||
