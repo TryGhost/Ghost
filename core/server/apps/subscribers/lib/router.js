@@ -1,5 +1,6 @@
 var path                = require('path'),
     express             = require('express'),
+    _                   = require('lodash'),
     subscribeRouter     = express.Router(),
 
     // Dirty requires
@@ -69,13 +70,19 @@ function handleSource(req, res, next) {
 function storeSubscriber(req, res, next) {
     req.body.status = 'subscribed';
 
+    if (_.isEmpty(req.body.email)) {
+        return next(new errors.ValidationError('Email cannot be blank.'));
+    }
+
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
         .then(function () {
             res.locals.success = true;
             next();
         })
-        .catch(function (error) {
-            next(error);
+        .catch(function () {
+            // we do not expose any information
+            res.locals.success = true;
+            next();
         });
 }
 
