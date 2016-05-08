@@ -18,7 +18,7 @@ function getSrcRange(content, index) {
     let replacement = {};
 
     if (index > -1) {
-        // [1] matches the alt test, and 2 matches the url between the ()
+        // [1] matches the alt text, and 2 matches the url between the ()
         // if the () are missing entirely, which is valid, [2] will be undefined and we'll need to treat this case
         // a little differently
         if (images[index][2] === undefined) {
