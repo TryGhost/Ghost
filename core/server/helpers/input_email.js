@@ -15,8 +15,12 @@ input_email = function (options) {
     options.hash = options.hash || {};
 
     var className = (options.hash.class) ? options.hash.class : 'subscribe-email',
-        extras = 'autofocus="autofocus"',
+        extras = '',
         output;
+
+    if (options.hash.autofocus) {
+        extras += 'autofocus="autofocus"';
+    }
 
     if (options.hash.placeholder) {
         extras += ' placeholder="' + options.hash.placeholder + '"';
