@@ -3,11 +3,10 @@
 var Promise      = require('bluebird'),
     _            = require('lodash'),
     fs           = require('fs'),
-    pUnlink      = Promise.promisify(fs.unlink),
-    readline     = require('readline'),
     dataProvider = require('../models'),
     errors       = require('../errors'),
     utils        = require('./utils'),
+    serverUtils  = require('../utils'),
     pipeline     = require('../utils/pipeline'),
     i18n         = require('../i18n'),
 
@@ -108,7 +107,7 @@ subscribers = {
          */
         function doQuery(options) {
             return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
-                if (error.errno) {
+                if (error.code) {
                     // DB error
                     return Promise.reject(cleanError(error));
                 }
@@ -263,7 +262,6 @@ subscribers = {
      */
     importCSV: function (options) {
         var tasks = [];
-
         options = options || {};
 
         function validate(options) {
@@ -281,83 +279,44 @@ subscribers = {
         }
 
         function importCSV(options) {
-            return new Promise(function (resolve, reject) {
-                var filePath = options.path,
-                    importTasks = [],
-                    emailIdx = -1,
-                    firstLine = true,
-                    rl;
+            var filePath = options.path,
+                fulfilled = 0,
+                invalid = 0,
+                duplicates = 0;
 
-                rl = readline.createInterface({
-                    input: fs.createReadStream(filePath),
-                    terminal: false
-                });
-
-                rl.on('line', function (line) {
-                    var dataToImport = line.split(',');
-
-                    if (firstLine) {
-                        if (dataToImport.length === 1) {
-                            emailIdx = 0;
+            return serverUtils.readCSV({
+                path: filePath,
+                columnsToExtract: ['email']
+            }).then(function (result) {
+                return Promise.all(result.map(function (entry) {
+                    return subscribers.add(
+                        {subscribers: [{email: entry.email}]},
+                        {context: options.context}
+                    ).reflect();
+                })).each(function (inspection) {
+                    if (inspection.isFulfilled()) {
+                        fulfilled = fulfilled + 1;
+                    } else {
+                        if (inspection.reason() instanceof errors.DataImportError) {
+                            duplicates = duplicates + 1;
                         } else {
-                            emailIdx = _.findIndex(dataToImport, function (columnName) {
-                                if (columnName.match(/email/g)) {
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-                            });
+                            invalid = invalid + 1;
                         }
-
-                        if (emailIdx === -1) {
-                            return reject(new errors.ValidationError(
-                                'Couldn\'t find your email addresses! Please use a column header which contains the word "email".'
-                            ));
-                        }
-                        firstLine = false;
-                    } else if (emailIdx > -1) {
-                        importTasks.push(function () {
-                            return subscribers.add({
-                                subscribers: [{
-                                    email: dataToImport[emailIdx]
-                                }
-                            ]}, {context: options.context});
-                        });
                     }
                 });
-
-                rl.on('close', function () {
-                    var fulfilled = 0,
-                        duplicates = 0,
-                        invalid = 0;
-
-                    Promise.all(importTasks.map(function (promise) {
-                        return promise().reflect();
-                    })).each(function (inspection) {
-                        if (inspection.isFulfilled()) {
-                            fulfilled = fulfilled + 1;
-                        } else {
-                            if (inspection.reason().errorType === 'ValidationError') {
-                                invalid = invalid + 1;
-                            } else if (inspection.reason().errorType === 'DataImportError') {
-                                duplicates = duplicates + 1;
-                            }
+            }).then(function () {
+                return {
+                    meta: {
+                        stats: {
+                            imported: fulfilled,
+                            duplicates: duplicates,
+                            invalid: invalid
                         }
-                    }).then(function () {
-                        return resolve({
-                            stats: [{
-                                imported: fulfilled,
-                                duplicates: duplicates,
-                                invalid: invalid
-                            }]
-                        });
-                    }).catch(function (err) {
-                        return reject(err);
-                    }).finally(function () {
-                        // Remove uploaded file from tmp location
-                        return pUnlink(filePath);
-                    });
-                });
+                    }
+                };
+            }).finally(function () {
+                // Remove uploaded file from tmp location
+                return Promise.promisify(fs.unlink)(filePath);
             });
         }
 

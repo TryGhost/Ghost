@@ -1,10 +1,14 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils   = require('../../utils'),
     should      = require('should'),
+    sinon       = require('sinon'),
     Promise     = require('bluebird'),
+    fs          = require('fs'),
     _           = require('lodash'),
     context     = testUtils.context,
     errors      = require('../../../server/errors'),
+    serverUtils = require('../../../server/utils'),
+    apiUtils    = require('../../../server/api/utils'),
     SubscribersAPI      = require('../../../server/api/subscribers');
 
 describe('Subscribers API', function () {
@@ -219,6 +223,69 @@ describe('Subscribers API', function () {
                 (err instanceof errors.NotFoundError).should.eql(true);
                 done();
             });
+        });
+    });
+
+    describe('Read CSV', function () {
+        var scope = {};
+
+        beforeEach(function () {
+            sinon.stub(fs, 'unlink', function (path, cb) {
+                cb();
+            });
+            sinon.stub(apiUtils, 'checkFileExists').returns(true);
+            sinon.stub(serverUtils, 'readCSV', function () {
+                if (scope.csvError) {
+                    return Promise.reject(new Error('csv'));
+                }
+
+                return Promise.resolve(scope.values);
+            });
+        });
+
+        afterEach(function () {
+            fs.unlink.restore();
+            apiUtils.checkFileExists.restore();
+            serverUtils.readCSV.restore();
+        });
+
+        it('check that fn works in general', function (done) {
+            scope.values = [{email: 'lol@hallo.de'}, {email: 'test'}, {email:'lol@hallo.de'}];
+
+            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+                .then(function (result) {
+                    result.meta.stats.imported.should.eql(1);
+                    result.meta.stats.duplicates.should.eql(1);
+                    result.meta.stats.invalid.should.eql(1);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('check that fn works in general', function (done) {
+            scope.values = [{email: 'lol@hallo.de'}, {email: '1@kate.de'}];
+
+            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+                .then(function (result) {
+                    result.meta.stats.imported.should.eql(2);
+                    result.meta.stats.duplicates.should.eql(0);
+                    result.meta.stats.invalid.should.eql(0);
+                    done();
+                })
+                .catch(done);
+        });
+
+        it('read csv throws an error', function (done) {
+            scope.csvError = true;
+
+            SubscribersAPI.importCSV(_.merge(testUtils.context.internal, {path: '/somewhere'}))
+                .then(function () {
+                    done(new Error('we expected an error here!'));
+                })
+                .catch(function (err) {
+                    err.message.should.eql('csv');
+                    done();
+                });
         });
     });
 });
