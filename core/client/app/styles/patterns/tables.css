@@ -68,12 +68,7 @@ table td,
     margin-left: 0.5em;
 }
 
-.lt-sort-icon.icon-ascending:before {
-    content: "▲";
-    font-size: 0.7em;
-}
-
+.lt-sort-icon.icon-ascending:before,
 .lt-sort-icon.icon-descending:before {
-    content: "▼";
-    font-size: 0.5em;
+    font-size: 0.6em;
 }
