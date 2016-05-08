@@ -1,0 +1,33 @@
+<header class="view-header">
+    {{#gh-view-title openMobileMenu="openMobileMenu"}}<span style="padding-left:1px">Apps</span>{{/gh-view-title}}
+</header>
+
+<section class="view-container">
+    <section class="view-content">
+        <span class="apps-grid-title">Available integrations</span>
+        <div class="apps-grid">
+            <div class="apps-grid-cell">
+                {{#link-to "settings.apps.slack" id="slack-link"}}
+                <article class="apps-card-app">
+                    <div class="apps-card-content">
+                        <figure class="apps-card-app-icon" style="background-image:url({{gh-path 'admin' '/img/slackicon.png'}})"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Slack</h3>
+                            <p class="apps-card-app-desc">A team communication tool</p>
+                        </div>
+                        <div class="apps-configured">
+                            {{#if slack.isActive}}
+                                <span class="green">Active</span>
+                            {{else}}
+                                <span>Configure</span>
+                            {{/if}}
+                            <i class="icon-arrow-right"></i>
+                        </div>
+                    </div>
+                </article>
+                {{/link-to}}
+            </div>
+        </div>
+        <p class="apps-grid-note">(More coming soon!)</p>
+    </section>
+</section>

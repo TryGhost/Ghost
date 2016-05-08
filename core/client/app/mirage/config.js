@@ -192,6 +192,12 @@ export function testConfig() {
         };
     });
 
+    /* Apps - Slack Test Notification --------------------------------------------------------- */
+
+    this.post('/slack/test', function () {
+        return {};
+    });
+
     /* Slugs ---------------------------------------------------------------- */
 
     this.get('/slugs/post/:slug/', function (db, request) {
