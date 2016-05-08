@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
-const {Mixin} = Ember;
+const {
+    Mixin,
+    run
+} = Ember;
 
 export default Mixin.create({
     /**
@@ -11,7 +14,7 @@ export default Mixin.create({
      * @returns {String}
      */
     getValue() {
-        return this.$().val();
+        return this.readDOMAttr('value');
     },
 
     /**
@@ -111,27 +114,29 @@ export default Mixin.create({
      * by providing selectionEnd.
      */
     replaceSelection(replacement, replacementStart, replacementEnd, cursorPosition) {
-        let $textarea = this.$();
+        run.schedule('afterRender', this, function () {
+            let $textarea = this.$();
 
-        cursorPosition = cursorPosition || 'collapseToEnd';
-        replacementEnd = replacementEnd || replacementStart;
+            cursorPosition = cursorPosition || 'collapseToEnd';
+            replacementEnd = replacementEnd || replacementStart;
 
-        $textarea.setSelection(replacementStart, replacementEnd);
+            $textarea.setSelection(replacementStart, replacementEnd);
 
-        if (['select', 'collapseToStart', 'collapseToEnd'].indexOf(cursorPosition) !== -1) {
-            $textarea.replaceSelectedText(replacement, cursorPosition);
-        } else {
-            $textarea.replaceSelectedText(replacement);
-            if (cursorPosition.hasOwnProperty('start')) {
-                $textarea.setSelection(cursorPosition.start, cursorPosition.end);
+            if (['select', 'collapseToStart', 'collapseToEnd'].indexOf(cursorPosition) !== -1) {
+                $textarea.replaceSelectedText(replacement, cursorPosition);
             } else {
-                $textarea.setSelection(cursorPosition, cursorPosition);
+                $textarea.replaceSelectedText(replacement);
+                if (cursorPosition.hasOwnProperty('start')) {
+                    $textarea.setSelection(cursorPosition.start, cursorPosition.end);
+                } else {
+                    $textarea.setSelection(cursorPosition, cursorPosition);
+                }
             }
-        }
 
-        $textarea.focus();
-        // Tell the editor it has changed, as programmatic replacements won't trigger this automatically
-        this._elementValueDidChange();
-        this.sendAction('onChange');
+            $textarea.focus();
+            // Tell the editor it has changed, as programmatic replacements won't trigger this automatically
+            this._elementValueDidChange();
+            this.sendAction('onChange');
+        });
     }
 });

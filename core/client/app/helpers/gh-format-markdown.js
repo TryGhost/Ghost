@@ -6,7 +6,7 @@ const {Helper} = Ember;
 
 let showdown = new Showdown.converter({extensions: ['ghostimagepreview', 'ghostgfm', 'footnotes', 'highlight']});
 
-export default Helper.helper(function (params) {
+export function formatMarkdown(params) {
     if (!params || !params.length) {
         return;
     }
@@ -29,4 +29,6 @@ export default Helper.helper(function (params) {
     // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 
     return Ember.String.htmlSafe(escapedhtml);
-});
+}
+
+export default Helper.helper(formatMarkdown);
