@@ -65,6 +65,13 @@ fieldset[disabled] .btn {
     vertical-align: middle;
 }
 
+.btn-hover-green:hover,
+.btn-hover-green:active,
+.btn-hover-green:focus {
+    border-color: var(--green);
+    color: color(var(--green) lightness(-10%));
+}
+
 
 /* Blue button
 /* ---------------------------------------------------------- */

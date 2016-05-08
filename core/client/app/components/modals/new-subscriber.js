@@ -16,6 +16,12 @@ export default ModalComponent.extend({
 
             confirmAction().then(() => {
                 this.send('closeModal');
+            }).catch((errors) => {
+                let [error] = errors;
+                if (error && error.match(/email/)) {
+                    this.get('model.errors').add('email', error);
+                    this.get('model.hasValidated').pushObject('email');
+                }
             }).finally(() => {
                 if (!this.get('isDestroying') && !this.get('isDestroyed')) {
                     this.set('submitting', false);

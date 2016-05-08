@@ -49,6 +49,7 @@ describeComponent(
         needs: [
             'service:ajax',
             'service:session', // used by ajax service
+            'service:feature',
             'component:x-file-input'
         ],
         unit: true
