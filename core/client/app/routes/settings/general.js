@@ -15,9 +15,7 @@ export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
     },
 
     model() {
-        return this.store.query('setting', {type: 'blog,theme,private'}).then((records) => {
-            return records.get('firstObject');
-        });
+        return this.store.queryRecord('setting', {type: 'blog,theme,private'});
     },
 
     actions: {

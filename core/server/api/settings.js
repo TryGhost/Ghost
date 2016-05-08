@@ -58,7 +58,9 @@ updateConfigCache = function () {
             cover: (settingsCache.cover && settingsCache.cover.value) || '',
             navigation: (settingsCache.navigation && JSON.parse(settingsCache.navigation.value)) || [],
             postsPerPage: (settingsCache.postsPerPage && settingsCache.postsPerPage.value) || 5,
-            permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/'
+            permalinks: (settingsCache.permalinks && settingsCache.permalinks.value) || '/:slug/',
+            twitter: (settingsCache.twitter && settingsCache.twitter.value) || '',
+            facebook: (settingsCache.facebook && settingsCache.facebook.value) || ''
         },
         labs: labsValue
     });

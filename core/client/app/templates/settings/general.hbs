@@ -35,7 +35,7 @@
                 {{else}}
                     <button type="button" class="btn btn-green js-modal-logo" {{action "toggleUploadLogoModal"}}>Upload Image</button>
                 {{/if}}
-                <p>Display a sexy logo for your publication</p>
+                <p>Display a logo for your publication</p>
 
                 {{#if showUploadLogoModal}}
                     {{gh-fullscreen-modal "upload-image"
@@ -96,6 +96,23 @@
                     <p>Select a theme for your blog</p>
                 </div>
 
+                <div class="form-group">
+                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="facebook"}}
+                        <label for="facebook">Facebook Page</label>
+                        <input value={{model.facebook}} oninput={{action (mut _scratchFacebook) value="target.value"}} {{action "validateFacebookUrl" on="focusOut"}} type="url" class="gh-input" id="facebook" name="general[facebook]"  placeholder="https://www.facebook.com/ghost" autocorrect="off" />
+                        {{gh-error-message errors=model.errors property="facebook"}}
+                        <p>URL of your blog's Facebook Page</p>
+                    {{/gh-form-group}}
+                </div>
+                <div class="form-group">
+                    {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="twitter"}}
+                        <label for="twitter">Twitter Profile</label>
+                        <input value={{model.twitter}} oninput={{action (mut _scratchTwitter) value="target.value"}} {{action "validateTwitterUrl" on="focusOut"}} type="url" class="gh-input" id="facebook" name="general[twitter]"  placeholder="https://twitter.com/tryghost" autocorrect="off" />
+                        {{gh-error-message errors=model.errors property="twitter"}}
+                        <p>URL of your blog's Twitter profile</p>
+                    {{/gh-form-group}}
+                </div>
+
                 <div class="form-group for-checkbox">
                     <label for="isPrivate">Make this blog private</label>
                     <label class="checkbox" for="isPrivate">
@@ -114,6 +131,7 @@
                     {{/gh-form-group}}
                 {{/if}}
             </fieldset>
+
         </form>
     </section>
 </section>
