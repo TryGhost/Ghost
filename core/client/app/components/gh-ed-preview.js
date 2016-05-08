@@ -1,7 +1,7 @@
 import Ember from 'ember';
+import {formatMarkdown} from 'ghost/helpers/gh-format-markdown';
 
 const {
-    $,
     Component,
     run,
     uuid
@@ -10,16 +10,18 @@ const {
 export default Component.extend({
     _scrollWrapper: null,
 
+    previewHTML: '',
+
     init() {
         this._super(...arguments);
         this.set('imageUploadComponents', Ember.A([]));
+        this.buildPreviewHTML();
     },
 
     didInsertElement() {
         this._super(...arguments);
         this._scrollWrapper = this.$().closest('.entry-preview-content');
         this.adjustScrollPosition(this.get('scrollPosition'));
-        run.scheduleOnce('afterRender', this, this.registerImageUploadComponents);
     },
 
     didReceiveAttrs(attrs) {
@@ -34,14 +36,7 @@ export default Component.extend({
         }
 
         if (attrs.newAttrs.markdown.value !== attrs.oldAttrs.markdown.value) {
-            // we need to clear the rendered components as we are unable to
-            // retain a reliable reference for the component's position in the
-            // document
-            // TODO: it may be possible to extract the dropzones and use the
-            // image src as a key, re-connecting any that match and
-            // dropping/re-rendering any unknown/no-source instances
-            this.set('imageUploadComponents', Ember.A([]));
-            run.scheduleOnce('afterRender', this, this.registerImageUploadComponents);
+            run.throttle(this, this.buildPreviewHTML, 30, false);
         }
     },
 
@@ -53,29 +48,54 @@ export default Component.extend({
         }
     },
 
-    registerImageUploadComponents() {
-        let dropzones = $('.js-drop-zone');
+    buildPreviewHTML() {
+        let markdown = this.get('markdown');
+        let html = formatMarkdown([markdown]).string;
+        let template = document.createElement('template');
+        template.innerHTML = html;
+        let fragment = template.content;
+        let dropzones = fragment.querySelectorAll('.js-drop-zone');
+        let components = this.get('imageUploadComponents');
 
-        dropzones.each((i, el) => {
+        if (dropzones.length !== components.length) {
+            components = Ember.A([]);
+            this.set('imageUploadComponents', components);
+        }
+
+        [...dropzones].forEach((oldEl, i) => {
+            let el = oldEl.cloneNode(true);
+            let component = components[i];
+            let uploadTarget = el.querySelector('.js-upload-target');
             let id = uuid();
             let destinationElementId = `image-uploader-${id}`;
-            let src = $(el).find('.js-upload-target').attr('src');
+            let src;
 
-            let imageUpload = Ember.Object.create({
-                destinationElementId,
-                id,
-                src,
-                index: i
-            });
+            if (uploadTarget) {
+                src = uploadTarget.getAttribute('src');
+            }
+
+            if (component) {
+                component.set('destinationElementId', destinationElementId);
+                component.set('src', src);
+            } else {
+                let imageUpload = Ember.Object.create({
+                    destinationElementId,
+                    id,
+                    src,
+                    index: i
+                });
+
+                this.get('imageUploadComponents').pushObject(imageUpload);
+            }
 
             el.id = destinationElementId;
-            $(el).empty();
-            $(el).removeClass('image-uploader');
+            el.innerHTML = '';
+            el.classList.remove('image-uploader');
 
-            run.schedule('afterRender', () => {
-                this.get('imageUploadComponents').pushObject(imageUpload);
-            });
+            fragment.replaceChild(el, oldEl);
         });
+
+        this.set('previewHTML', fragment);
     },
 
     actions: {
