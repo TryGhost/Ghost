@@ -93,7 +93,6 @@
     "grunt-shell": "1.3.0",
     "grunt-update-submodules": "0.4.1",
     "istanbul": "0.4.3",
-    "jscs-jsdoc": "1.3.2",
     "matchdep": "1.0.1",
     "mocha": "2.4.5",
     "nock": "8.0.0",
@@ -113,8 +112,7 @@
       "mysql",
       "nodemailer",
       "pg",
-      "showdown-ghost",
-      "jscs-jsdoc"
+      "showdown-ghost"
     ]
   }
 }
