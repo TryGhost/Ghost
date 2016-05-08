@@ -11,14 +11,15 @@
                 table=table
                 isLoading=isLoading
                 loadNextPage=(action 'loadNextPage')
-                sortByColumn=(action 'sortByColumn')}}
+                sortByColumn=(action 'sortByColumn')
+                delete=(action 'deleteSubscriber')}}
 
         <div class="subscribers-sidebar">
             <div class="settings-menu-header">
                 <h4>Import Subscribers</h4>
             </div>
             <div class="settings-menu-content subscribers-import-buttons">
-                {{#link-to "subscribers.import" class="btn"}}Import CSV{{/link-to}}
+                {{#link-to "subscribers.import" class="btn btn-hover-green"}}Import CSV{{/link-to}}
                 <a {{action 'exportData'}} class="btn">Export CSV</a>
             </div>
 
@@ -36,5 +37,13 @@
         </div>
     </section>
 </section>
+
+{{#if subscriberToDelete}}
+    {{gh-fullscreen-modal "delete-subscriber"
+        model=subscriberToDelete
+        confirm=(action "confirmDeleteSubscriber")
+        close=(action "cancelDeleteSubscriber")
+        modifier="action wide"}}
+{{/if}}
 
 {{outlet}}

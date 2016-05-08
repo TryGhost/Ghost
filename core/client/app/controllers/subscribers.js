@@ -20,6 +20,7 @@ export default Ember.Controller.extend(PaginationMixin, {
 
     total: 0,
     table: null,
+    subscriberToDelete: null,
 
     session: service(),
 
@@ -66,6 +67,11 @@ export default Ember.Controller.extend(PaginationMixin, {
             valuePath: 'status',
             sorted: order === 'status',
             ascending: direction === 'asc'
+        }, {
+            label: '',
+            sortable: false,
+            cellComponent: 'gh-subscribers-table-delete-cell',
+            align: 'right'
         }];
     }),
 
@@ -83,8 +89,6 @@ export default Ember.Controller.extend(PaginationMixin, {
     actions: {
         loadFirstPage() {
             let table = this.get('table');
-
-            console.log('loadFirstPage', this.get('paginationSettings'));
 
             return this._super(...arguments).then((results) => {
                 table.addRows(results);
@@ -117,6 +121,24 @@ export default Ember.Controller.extend(PaginationMixin, {
         addSubscriber(subscriber) {
             this.get('table').insertRowAt(0, subscriber);
             this.incrementProperty('total');
+        },
+
+        deleteSubscriber(subscriber) {
+            this.set('subscriberToDelete', subscriber);
+        },
+
+        confirmDeleteSubscriber() {
+            let subscriber = this.get('subscriberToDelete');
+
+            return subscriber.destroyRecord().then(() => {
+                this.set('subscriberToDelete', null);
+                this.get('table').removeRow(subscriber);
+                this.decrementProperty('total');
+            });
+        },
+
+        cancelDeleteSubscriber() {
+            this.set('subscriberToDelete', null);
         },
 
         reset() {
