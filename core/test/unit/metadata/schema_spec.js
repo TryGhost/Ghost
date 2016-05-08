@@ -9,6 +9,8 @@ describe('getSchema', function () {
                 title: 'Blog Title'
             },
             authorImage: 'http://mysite.com/author/image/url/me.jpg',
+            authorFacebook: 'https://facebook.com/testuser',
+            creatorTwitter: '@testuser',
             authorUrl: 'http://mysite.com/author/me/',
             metaTitle: 'Post Title',
             url: 'http://mysite.com/post/my-post-slug/',
@@ -23,7 +25,9 @@ describe('getSchema', function () {
                 author: {
                     name: 'Post Author',
                     website: 'http://myblogsite.com/',
-                    bio: 'My author bio.'
+                    bio: 'My author bio.',
+                    facebook: 'https://www.facebook.com/testuser',
+                    twitter: 'https://twitter.com/testuser'
                 }
             }
         }, schema = getSchema(metadata, data);
@@ -36,7 +40,11 @@ describe('getSchema', function () {
                 description: 'My author bio.',
                 image: 'http://mysite.com/author/image/url/me.jpg',
                 name: 'Post Author',
-                sameAs: 'http://myblogsite.com/',
+                sameAs: [
+                    'http://myblogsite.com/',
+                    'https://www.facebook.com/testuser',
+                    'https://twitter.com/testuser'
+                ],
                 url: 'http://mysite.com/author/me/'
             },
             dateModified: '2016-01-21T22:13:05.412Z',
@@ -56,6 +64,8 @@ describe('getSchema', function () {
                 title: 'Blog Title'
             },
             authorImage: null,
+            authorFacebook: undefined,
+            creatorTwitter: undefined,
             authorUrl: 'http://mysite.com/author/me/',
             metaTitle: 'Post Title',
             url: 'http://mysite.com/post/my-post-slug/',
@@ -70,7 +80,9 @@ describe('getSchema', function () {
                 author: {
                     name: 'Post Author',
                     website: undefined,
-                    bio: null
+                    bio: null,
+                    facebook: null,
+                    twitter: null
                 }
             }
         }, schema = getSchema(metadata, data);
@@ -81,6 +93,11 @@ describe('getSchema', function () {
             author: {
                 '@type': 'Person',
                 name: 'Post Author',
+                sameAs: [
+                    null,
+                    null,
+                    null
+                ],
                 url: 'http://mysite.com/author/me/'
             },
             dateModified: '2016-01-21T22:13:05.412Z',
@@ -152,7 +169,9 @@ describe('getSchema', function () {
             context: ['author'],
             author: {
                 name: 'Author Name',
-                website: 'http://myblogsite.com/'
+                website: 'http://myblogsite.com/',
+                facebook: 'https://www.facebook.com/testuser',
+                twitter: 'https://twitter.com/testuser'
             }
         }, schema = getSchema(metadata, data);
 
@@ -162,7 +181,11 @@ describe('getSchema', function () {
             description: 'This is the author description!',
             name: 'Author Name',
             publisher: 'Blog Title',
-            sameAs: 'http://myblogsite.com/',
+            sameAs: [
+                'http://myblogsite.com/',
+                'https://www.facebook.com/testuser',
+                'https://twitter.com/testuser'
+            ],
             url: 'http://mysite.com/author/me/'
         });
     });

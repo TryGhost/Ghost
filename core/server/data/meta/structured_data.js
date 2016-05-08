@@ -1,9 +1,14 @@
 function getStructuredData(metaData) {
     var structuredData,
-        card = 'summary';
+        card = 'summary',
+        twitterUser;
 
     if (metaData.coverImage) {
         card = 'summary_large_image';
+    }
+
+    if (metaData.creatorTwitter) {
+        twitterUser = '@' + metaData.creatorTwitter.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^\/]*)/)[1];
     }
 
     structuredData = {
@@ -16,6 +21,8 @@ function getStructuredData(metaData) {
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
         'article:tag': metaData.keywords,
+        'article:publisher': metaData.blog.facebook || undefined,
+        'article:author': metaData.authorFacebook || undefined,
         'twitter:card': card,
         'twitter:title': metaData.metaTitle,
         'twitter:description': metaData.metaDescription || metaData.excerpt,
@@ -24,7 +31,9 @@ function getStructuredData(metaData) {
         'twitter:label1': metaData.authorName ? 'Written by' : undefined,
         'twitter:data1': metaData.authorName,
         'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
-        'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined
+        'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined,
+        'twitter:site': metaData.blog.twitter || undefined,
+        'twitter:creator': twitterUser || undefined
     };
 
     // return structured data removing null or undefined keys
