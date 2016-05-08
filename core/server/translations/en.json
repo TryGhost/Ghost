@@ -294,6 +294,9 @@
                 "invalidTokenProvided": "Invalid token provided",
                 "tokenRevocationFailed": "Token revocation failed"
             },
+            "subscribers": {
+                "subscriberAlreadyExist": "Email already exist."
+            },
             "clients": {
                 "clientNotFound": "Client not found."
             },
