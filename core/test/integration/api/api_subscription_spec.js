@@ -67,6 +67,18 @@ describe('Subscribers API', function () {
                 }).catch(done);
         });
 
+        it('duplicate subscriber', function (done) {
+            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
+                .then(function () {
+                    SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
+                        .then(function () {
+                            return done();
+                        })
+                        .catch(done);
+                })
+                .catch(done);
+        });
+
         it('CANNOT add subscriber without context', function (done) {
             SubscribersAPI.add({subscribers: [newSubscriber]})
                 .then(function () {
