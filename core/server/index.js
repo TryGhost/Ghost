@@ -2,26 +2,27 @@
 // This file needs serious love & refactoring
 
 // Module dependencies
-var express     = require('express'),
-    hbs         = require('express-hbs'),
-    compress    = require('compression'),
-    uuid        = require('node-uuid'),
-    Promise     = require('bluebird'),
-    i18n        = require('./i18n'),
-    api         = require('./api'),
-    config      = require('./config'),
-    errors      = require('./errors'),
-    helpers     = require('./helpers'),
-    middleware  = require('./middleware'),
-    migrations  = require('./data/migration'),
-    models      = require('./models'),
+var express = require('express'),
+    hbs = require('express-hbs'),
+    compress = require('compression'),
+    uuid = require('node-uuid'),
+    Promise = require('bluebird'),
+    lodash = require('lodash'),
+    i18n = require('./i18n'),
+    api = require('./api'),
+    config = require('./config'),
+    errors = require('./errors'),
+    helpers = require('./helpers'),
+    middleware = require('./middleware'),
+    migrations = require('./data/migration'),
+    models = require('./models'),
     permissions = require('./permissions'),
-    apps        = require('./apps'),
-    sitemap     = require('./data/xml/sitemap'),
-    xmlrpc      = require('./data/xml/xmlrpc'),
+    apps = require('./apps'),
+    sitemap = require('./data/xml/sitemap'),
+    xmlrpc = require('./data/xml/xmlrpc'),
     GhostServer = require('./ghost-server'),
     validateThemes = require('./utils/validate-themes'),
-
+    scheduling = require('./scheduling'),
     dbHash;
 
 function initDbHashAndFirstRun() {
@@ -51,7 +52,8 @@ function initDbHashAndFirstRun() {
 function init(options) {
     // Get reference to an express app instance.
     var blogApp = express(),
-        adminApp = express();
+        adminApp = express(),
+        ghostServer = null;
 
     // ### Initialisation
     // The server and its dependencies require a populated config
@@ -132,6 +134,13 @@ function init(options) {
             });
 
         return new GhostServer(blogApp);
+    }).then(function (_ghostServer) {
+        ghostServer = _ghostServer;
+
+        // scheduling module can create x schedulers with different adapters
+        return scheduling.init(lodash.extend(config.scheduling, {apiUrl: config.url + config.urlFor('api')}));
+    }).then(function () {
+        return ghostServer;
     });
 }
 

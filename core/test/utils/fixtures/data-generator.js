@@ -311,6 +311,19 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createClient(overrides) {
+        overrides = overrides || {};
+
+        var newObj = _.cloneDeep(overrides),
+            basics = createBasic(newObj);
+
+        return _.defaults(newObj, {
+            secret: 'not_available',
+            type: 'ua',
+            status: 'enabled'
+        }, basics);
+    }
+
     function createGenericUser(uniqueInteger) {
         return createUser({
             name: 'Joe Bloggs',
@@ -396,7 +409,7 @@ DataGenerator.forKnex = (function () {
     ];
 
     clients = [
-        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available', type: 'ua', status: 'enabled'})
+        createClient({name: 'Ghost Admin', slug: 'ghost-admin'})
     ];
 
     roles_users = [
@@ -431,6 +444,7 @@ DataGenerator.forKnex = (function () {
         createGenericPost: createGenericPost,
         createTag: createBasic,
         createUser: createUser,
+        createClient: createClient,
         createGenericUser: createGenericUser,
         createBasic: createBasic,
         createRole: createBasic,
