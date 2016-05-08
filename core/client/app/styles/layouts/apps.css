@@ -1,0 +1,252 @@
+/* Apps
+/* ---------------------------------------------------------- */
+
+.apps-filter {
+    border-radius: 5px;
+}
+@media (max-width: 1460px) {
+    .apps-filter {
+        max-width: 700px;
+    }
+}
+
+/* Main Layout
+/* ---------------------------------------------------------- */
+
+.apps-grid-title {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--midgrey);
+}
+
+.apps-grid {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    max-width: 1200px;
+    border: rgba(0,0,0,0.1) 1px solid;
+    border-radius: 5px;
+}
+
+.apps-grid-note {
+    display: block;
+    margin-top: 5px;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+/* Apps Card
+/* ---------------------------------------------------------- */
+
+.apps-grid-cell {
+    flex: 1 1 100%;
+}
+.apps-grid-cell:hover {
+    background: #f5f7f8;
+}
+
+.apps-card-app {
+    overflow: hidden;
+    padding: 14px;
+    height: 75px;
+    border-top: rgba(0,0,0,0.1) 1px solid;
+    transition: background 0.3s ease;
+}
+
+.apps-card-app:first-of-type {
+    border-top: none;
+}
+
+.apps-card-content {
+    position: relative;
+    display: flex;
+}
+
+.apps-card-content > .btn {
+    position: absolute;
+    top: 5px;
+    right: 20px;
+}
+.apps-card-content > .apps-configured {
+    position: absolute;
+    top: 13px;
+    right: 29px;
+    display: flex;
+    color: var(--midgrey);
+    white-space: nowrap;
+}
+
+.apps-configured > span {
+    padding-right: 14px;
+    font-size: 1.3rem;
+}
+
+.apps-configured > i {
+    position: absolute;
+    top: 2px;
+    font-size: 1.1rem;
+}
+
+.apps-card-app-icon {
+    flex: 0 0 47px;
+    margin: 0 15px 0 0;
+    width: 47px;
+    height: 47px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 15%;
+}
+
+.apps-card-meta {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.apps-card-app-title {
+    overflow: hidden;
+    margin: 4px 0 0 0;
+    padding: 0 70px 0 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.7rem;
+    line-height: 1.15em;
+    font-weight: bold;
+}
+
+
+/* Apps Card Meta
+/* ---------------------------------------------------------- */
+
+.apps-card-app-desc {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    max-height: 4.2rem;
+    color: var(--midgrey);
+    text-overflow: ellipsis;
+    font-size: 1.4rem;
+    line-height: 1.3em;
+    font-weight: 200;
+
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+@media (min-width: 600px) and (max-width: 1460px) {
+    .apps-card-app-desc {
+        padding-right: 80px;
+    }
+}
+
+
+/* Apps Card Footer
+/* ---------------------------------------------------------- */
+
+.apps-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    width: 100%;
+}
+/* Slack
+/* ---------------------------------------------------------- */
+
+.app-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: flex-start;
+    margin-bottom: 30px;
+}
+.app-icon {
+    position: relative;
+    flex: 0 0 60px;
+    margin: 0 15px 0 0;
+    width: 60px;
+    height: 60px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 10%;
+}
+
+.app-cell h3 {
+    margin: 0;
+    color: #393939;
+    font-size: 2.4rem;
+}
+
+.app-cell p {
+    margin: 0;
+    margin-bottom: 5px;
+    color: #a3a3a3;
+    font-size: 1.6rem;
+    line-height: 1.4em;
+}
+
+.app-subtitle {
+    max-width: 550px;
+    color: #666363;
+    font-size: 1.6rem;
+}
+.app-config-form .btn-grey {
+    margin-top: 1.6em;
+    background-color: #e8e8e8;
+    box-shadow: none;
+    font-size: 1.1rem;
+}
+
+.app-config-form > .btn-grey:hover,
+.app-config-form > .btn-grey:focus {
+    border-color: rgb(223, 225, 227);
+}
+/* Media Queries
+/* ---------------------------------------------------------- */
+
+@media (max-width: 800px) {
+    .apps-grid-apps {
+        overflow: hidden;
+        margin: 0 0 4vw 0;
+        border: #dfe1e3 1px solid;
+        border-radius: 5px;
+    }
+
+    .apps-card-app {
+        margin: 0;
+        border: none;
+        border-top: #dfe1e3 1px solid;
+        border-radius: 0;
+    }
+    .apps-grid-cell:first-of-type .apps-card-app {
+        border-top: none;
+    }
+}
+
+@media (max-width: 760px) {
+    .apps-card-app {
+        padding: 15px;
+    }
+    .apps-card-app .apps-card-footer {
+        justify-content: flex-end;
+    }
+    .apps-card-theme .apps-card-footer {
+        margin: 0;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 540px) {
+    .apps-card-footer {
+        justify-content: flex-end;
+    }
+    .apps-card-app .apps-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .apps-card-content > .apps-configured {
+        right: 15px;
+    }
+}
