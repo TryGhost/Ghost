@@ -63,6 +63,21 @@ describe('Subscribers API', function () {
                 }).catch(done);
         });
 
+        it('duplicate subscriber', function (done) {
+            SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
+                .then(function () {
+                    SubscribersAPI.add({subscribers: [newSubscriber]}, testUtils.context.external)
+                        .then(function () {
+                            return done(new Error('we expected an error instead of success!'));
+                        })
+                        .catch(function (err) {
+                            (err instanceof errors.ValidationError).should.eql(true);
+                            done();
+                        });
+                })
+                .catch(done);
+        });
+
         it('CANNOT add subscriber without context', function (done) {
             SubscribersAPI.add({subscribers: [newSubscriber]})
                 .then(function () {

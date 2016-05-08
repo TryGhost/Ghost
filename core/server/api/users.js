@@ -295,17 +295,13 @@ users = {
             var newUser = options.data.users[0],
                 user;
 
-            if (newUser.email) {
-                newUser.name = newUser.email.substring(0, newUser.email.indexOf('@'));
-                newUser.password = globalUtils.uid(50);
-                newUser.status = 'invited';
-            } else {
-                return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.users.noEmailProvided')));
-            }
-
             return dataProvider.User.getByEmail(
                 newUser.email
             ).then(function (foundUser) {
+                newUser.name = newUser.email.substring(0, newUser.email.indexOf('@'));
+                newUser.password = globalUtils.uid(50);
+                newUser.status = 'invited';
+
                 if (!foundUser) {
                     return dataProvider.User.add(newUser, options);
                 } else {
@@ -313,7 +309,7 @@ users = {
                     if (foundUser.get('status') === 'invited' || foundUser.get('status') === 'invited-pending') {
                         return foundUser;
                     } else {
-                        return Promise.reject(new errors.BadRequestError(i18n.t('errors.api.users.userAlreadyRegistered')));
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.users.userAlreadyRegistered')));
                     }
                 }
             }).then(function (invitedUser) {
