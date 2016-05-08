@@ -50,6 +50,7 @@ describeComponent(
             'service:config',
             'service:session',
             'service:ajax',
+            'service:feature',
             'component:x-file-input',
             'component:one-way-input'
         ],

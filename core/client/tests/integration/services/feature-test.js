@@ -71,29 +71,12 @@ describeModule(
 
         it('loads labs settings correctly', function (done) {
             stubSettings(server, {testFlag: true});
+            addTestFlag();
 
             let service = this.subject();
 
-            service.get('labs').then((labs) => {
-                expect(labs.testFlag).to.be.true;
-                done();
-            });
-        });
-
-        it('caches the labs promise', function (done) {
-            stubSettings(server, {testFlag: true});
-
-            let service = this.subject();
-            let calls = [
-                service.get('labs'),
-                service.get('labs'),
-                service.get('labs')
-            ];
-
-            RSVP.all(calls).then(() => {
-                expect(server.handledRequests.length, 'requests after 3 calls')
-                    .to.equal(1);
-
+            service.fetch().then(() => {
+                expect(service.get('testFlag')).to.be.true;
                 done();
             });
         });
@@ -105,19 +88,9 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', false);
 
-            let testFlag, labsTestFlag;
-
-            service.get('testFlag').then((result) => {
-                testFlag = result;
-            });
-
-            service.get('labs').then((labs) => {
-                labsTestFlag = labs.testFlag;
-            });
-
-            return wait().then(() => {
-                expect(labsTestFlag).to.be.false;
-                expect(testFlag).to.be.false;
+            service.fetch().then(() => {
+                expect(service.get('labs.testFlag')).to.be.false;
+                expect(service.get('testFlag')).to.be.false;
                 done();
             });
         });
@@ -129,19 +102,9 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', true);
 
-            let testFlag, labsTestFlag;
-
-            service.get('testFlag').then((result) => {
-                testFlag = result;
-            });
-
-            service.get('labs').then((labs) => {
-                labsTestFlag = labs.testFlag;
-            });
-
-            return wait().then(() => {
-                expect(labsTestFlag).to.be.false;
-                expect(testFlag).to.be.true;
+            service.fetch().then(() => {
+                expect(service.get('labs.testFlag')).to.be.false;
+                expect(service.get('testFlag')).to.be.true;
                 done();
             });
         });
@@ -153,19 +116,9 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', false);
 
-            let testFlag, labsTestFlag;
-
-            service.get('testFlag').then((result) => {
-                testFlag = result;
-            });
-
-            service.get('labs').then((labs) => {
-                labsTestFlag = labs.testFlag;
-            });
-
-            return wait().then(() => {
-                expect(labsTestFlag).to.be.true;
-                expect(testFlag).to.be.true;
+            service.fetch().then(() => {
+                expect(service.get('labs.testFlag')).to.be.true;
+                expect(service.get('testFlag')).to.be.true;
                 done();
             });
         });
@@ -177,19 +130,9 @@ describeModule(
             let service = this.subject();
             service.get('config').set('testFlag', true);
 
-            let testFlag, labsTestFlag;
-
-            service.get('testFlag').then((result) => {
-                testFlag = result;
-            });
-
-            service.get('labs').then((labs) => {
-                labsTestFlag = labs.testFlag;
-            });
-
-            return wait().then(() => {
-                expect(labsTestFlag).to.be.true;
-                expect(testFlag).to.be.true;
+            service.fetch().then(() => {
+                expect(service.get('labs.testFlag')).to.be.true;
+                expect(service.get('testFlag')).to.be.true;
                 done();
             });
         });
@@ -200,21 +143,16 @@ describeModule(
 
             let service = this.subject();
 
-            run(() => {
-                service.get('testFlag').then((testFlag) => {
-                    expect(testFlag).to.be.false;
+            service.fetch().then(() => {
+                expect(service.get('testFlag')).to.be.false;
+
+                run(() => {
+                    service.set('testFlag', true);
                 });
-            });
 
-            run(() => {
-                service.set('testFlag', true);
-            });
-
-            return wait().then(() => {
-                expect(server.handlers[1].numberOfCalls).to.equal(1);
-
-                service.get('testFlag').then((testFlag) => {
-                    expect(testFlag).to.be.true;
+                return wait().then(() => {
+                    expect(server.handlers[1].numberOfCalls).to.equal(1);
+                    expect(service.get('testFlag')).to.be.true;
                     done();
                 });
             });
@@ -226,23 +164,17 @@ describeModule(
 
             let service = this.subject();
 
-            run(() => {
-                service.get('testFlag').then((testFlag) => {
-                    expect(testFlag).to.be.false;
+            service.fetch().then(() => {
+                expect(service.get('testFlag')).to.be.false;
+
+                run(() => {
+                    service.set('testFlag', true);
                 });
-            });
 
-            run(() => {
-                service.set('testFlag', true);
-            });
-
-            return wait().then(() => {
-                expect(server.handlers[1].numberOfCalls).to.equal(1);
-
-                expect(service.get('notifications.notifications').length).to.equal(1);
-
-                service.get('testFlag').then((testFlag) => {
-                    expect(testFlag).to.be.false;
+                return wait().then(() => {
+                    expect(server.handlers[1].numberOfCalls).to.equal(1);
+                    expect(service.get('notifications.notifications').length).to.equal(1);
+                    expect(service.get('testFlag')).to.be.false;
                     done();
                 });
             });
@@ -254,21 +186,21 @@ describeModule(
 
             let service = this.subject();
 
-            run(() => {
-                service.get('testFlag').then((testFlag) => {
-                    expect(testFlag).to.be.false;
+            service.fetch().then(() => {
+                expect(service.get('testFlag')).to.be.false;
+
+                run(() => {
+                    expect(() => {
+                        service.set('testFlag', true);
+                    }, EmberError, 'threw validation error');
                 });
-            });
 
-            run(() => {
-                expect(() => {
-                    service.set('testFlag', true);
-                }, EmberError, 'Threw validation error');
-            });
-
-            service.get('testFlag').then((testFlag) => {
-                expect(testFlag).to.be.false;
-                done();
+                return wait().then(() => {
+                    // ensure validation is happening before the API is hit
+                    expect(server.handlers[1].numberOfCalls).to.equal(0);
+                    expect(service.get('testFlag')).to.be.false;
+                    done();
+                });
             });
         });
     }
