@@ -63,9 +63,13 @@ table td,
 /* Ember Light Table
 /* ---------------------------------------------------------- */
 
+.ember-light-table th {
+    white-space: nowrap;
+}
+
 .ember-light-table .lt-column .lt-sort-icon {
     float: none;
-    margin-left: 0.5em;
+    margin-left: 0.3rem;
 }
 
 .lt-sort-icon.icon-ascending:before,

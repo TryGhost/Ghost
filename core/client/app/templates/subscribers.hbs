@@ -11,7 +11,8 @@
                 table=table
                 isLoading=isLoading
                 loadNextPage=(action 'loadNextPage')
-                sortByColumn=(action 'sortByColumn')}}
+                sortByColumn=(action 'sortByColumn')
+                delete=(action 'deleteSubscriber')}}
 
         <div class="subscribers-sidebar">
             <div class="settings-menu-header">
@@ -36,5 +37,13 @@
         </div>
     </section>
 </section>
+
+{{#if subscriberToDelete}}
+    {{gh-fullscreen-modal "delete-subscriber"
+        model=subscriberToDelete
+        confirm=(action "confirmDeleteSubscriber")
+        close=(action "cancelDeleteSubscriber")
+        modifier="action wide"}}
+{{/if}}
 
 {{outlet}}

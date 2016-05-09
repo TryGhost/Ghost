@@ -22,6 +22,14 @@
     margin: 0;
 }
 
+.subscribers-table table .btn {
+    visibility: hidden;
+}
+
+.subscribers-table table tr:hover .btn {
+    visibility: visible;
+}
+
 
 /* Sidebar (right pane)
 /* ---------------------------------------------------------- */
