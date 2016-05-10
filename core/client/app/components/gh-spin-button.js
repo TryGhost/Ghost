@@ -1,7 +1,7 @@
 import Ember from 'ember';
+import {invokeAction} from 'ember-invoke-action';
 
 const {Component, computed, observer, run} = Ember;
-const {equal} = computed;
 
 export default Component.extend({
     tagName: 'button',
@@ -10,19 +10,18 @@ export default Component.extend({
     showSpinner: false,
     showSpinnerTimeout: null,
     autoWidth: true,
+    fixWidth: false,
+    timeout: 1000,
 
     // Disable Button when isLoading equals true
     attributeBindings: ['disabled', 'type', 'tabindex'],
 
-    // Must be set on the controller
-    disabled: equal('showSpinner', true),
+    disabled: computed('disableWhen', 'showSpinner', function () {
+        return this.get('disableWhen') || (this.get('showSpinner') === true);
+    }),
 
     click() {
-        if (this.get('action')) {
-            this.sendAction('action');
-            return false;
-        }
-        return true;
+        invokeAction(this, 'action');
     },
 
     toggleSpinner: observer('submitting', function () {
@@ -31,19 +30,22 @@ export default Component.extend({
 
         if (submitting) {
             this.set('showSpinner', true);
-            this.set('showSpinnerTimeout', run.later(this, function () {
-                if (!this.get('submitting')) {
-                    this.set('showSpinner', false);
-                }
-                this.set('showSpinnerTimeout', null);
-            }, 1000));
+
+            if (this.get('timeout')) {
+                this.set('showSpinnerTimeout', run.later(this, function () {
+                    if (!this.get('submitting')) {
+                        this.set('showSpinner', false);
+                    }
+                    this.set('showSpinnerTimeout', null);
+                }, this.get('timeout')));
+            }
         } else if (!submitting && timeout === null) {
             this.set('showSpinner', false);
         }
     }),
 
     setSize: observer('showSpinner', function () {
-        if (this.get('showSpinner') && this.get('autoWidth')) {
+        if ((this.get('showSpinner') || this.get('fixWidth')) && this.get('autoWidth')) {
             this.$().width(this.$().width());
             this.$().height(this.$().height());
         } else {

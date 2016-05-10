@@ -7,11 +7,7 @@ export default Mixin.create({
 
     actions: {
         save() {
-            this.set('submitting', true);
-
-            this.save().then(() => {
-                this.set('submitting', false);
-            });
+            return this.save();
         }
     }
 });
