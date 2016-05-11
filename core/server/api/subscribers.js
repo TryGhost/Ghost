@@ -93,13 +93,6 @@ subscribers = {
     add: function add(object, options) {
         var tasks;
 
-        function cleanError(error) {
-            if (error.message.toLowerCase().indexOf('unique') !== -1) {
-                return new errors.DataImportError('Email already exists.');
-            }
-            return error;
-        }
-
         /**
          * ### Model Query
          * Make the call to the Model layer
@@ -107,13 +100,14 @@ subscribers = {
          * @returns {Object} options
          */
         function doQuery(options) {
-            return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
-                if (error.errno) {
-                    // DB error
-                    return Promise.reject(cleanError(error));
-                }
-                return Promise.reject(error[0]);
-            });
+            return dataProvider.Subscriber.getByEmail(options.data.subscribers[0].email)
+                .then(function (subscriber) {
+                    if (subscriber) {
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.subscriberAlreadyExist')));
+                    }
+
+                    return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data']));
+                });
         }
 
         // Push all of our tasks into a `tasks` array in the correct order

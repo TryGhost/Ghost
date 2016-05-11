@@ -77,6 +77,22 @@ Subscriber = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.subscriber.notEnoughPermission')));
+    },
+
+    // TODO: This is a copy paste of models/user.js!
+    getByEmail: function getByEmail(email, options) {
+        options = options || {};
+        options.require = true;
+
+        return Subscribers.forge(options).fetch(options).then(function then(subscribers) {
+            var subscriberWithEmail = subscribers.find(function findSubscriber(subscriber) {
+                return subscriber.get('email').toLowerCase() === email.toLowerCase();
+            });
+
+            if (subscriberWithEmail) {
+                return subscriberWithEmail;
+            }
+        });
     }
 });
 
