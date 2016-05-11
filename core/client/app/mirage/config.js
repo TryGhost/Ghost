@@ -357,4 +357,10 @@ export function testConfig() {
             user: record
         };
     });
+
+    /* External sites ------------------------------------------------------- */
+
+    this.get('http://www.gravatar.com/avatar/:md5', function () {
+        return '';
+    }, 200);
 }
