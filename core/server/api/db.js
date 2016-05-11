@@ -113,7 +113,7 @@ db = {
      */
     deleteAllContent: function (options) {
         var tasks,
-            queryOpts = {columns: 'id'};
+            queryOpts = {columns: 'id', context: {internal: true}};
 
         options = options || {};
 
