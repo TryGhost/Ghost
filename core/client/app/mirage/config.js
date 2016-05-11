@@ -60,8 +60,8 @@ function mockSubscribers(server) {
         if (subscriber) {
             return new Mirage.Response(422, {}, {
                 errors: [{
-                    errorType: 'DataImportError',
-                    message: 'duplicate email',
+                    errorType: 'ValidationError',
+                    message: 'Email already exists.',
                     property: 'email'
                 }]
             });
