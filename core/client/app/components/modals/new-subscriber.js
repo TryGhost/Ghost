@@ -18,7 +18,7 @@ export default ModalComponent.extend({
                 this.send('closeModal');
             }).catch((errors) => {
                 let [error] = errors;
-                if (error && error.match(/email/)) {
+                if (error && error.match(/email/i)) {
                     this.get('model.errors').add('email', error);
                     this.get('model.hasValidated').pushObject('email');
                 }
