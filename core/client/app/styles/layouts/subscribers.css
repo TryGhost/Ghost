@@ -1,0 +1,69 @@
+/* Subscribers Management /ghost/subscribers/
+/* ---------------------------------------------------------- */
+
+.view-subscribers .view-container {
+    display: flex;
+    flex-direction: row;
+    min-height: 100%;
+}
+
+
+/* Table (left pane)
+/* ---------------------------------------------------------- */
+
+.subscribers-table {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0 12px; /* ember-light-table has 8px padding on cells */
+    max-height: 100%;
+}
+
+.subscribers-table table {
+    margin: 0;
+}
+
+.subscribers-table table .btn {
+    visibility: hidden;
+}
+
+.subscribers-table table tr:hover .btn {
+    visibility: visible;
+}
+
+.subscribers-table tbody td:last-of-type {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
+
+/* Sidebar (right pane)
+/* ---------------------------------------------------------- */
+
+.subscribers-sidebar {
+    width: 350px;
+    border-left: 1px solid #dfe1e3;
+}
+
+.subscribers-import-buttons {
+    display: flex;
+    flex-direction: row;
+}
+
+.subscribers-import-buttons .btn {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.subscribers-import-buttons .btn:last-of-type {
+    margin-right: 0;
+}
+
+
+/* Import modal
+/* ---------------------------------------------------------- */
+
+.subscribers-import-results {
+    margin: 0;
+    width: auto;
+}

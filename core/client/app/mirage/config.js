@@ -47,12 +47,78 @@ function paginatedResponse(modelName, allModels, request) {
     };
 }
 
+function mockSubscribers(server) {
+    server.get('/subscribers/', function (db, request) {
+        let response = paginatedResponse('subscribers', db.subscribers, request);
+        return response;
+    });
+
+    server.post('/subscribers/', function (db, request) {
+        let [attrs] = JSON.parse(request.requestBody).subscribers;
+        let [subscriber] = db.subscribers.where({email: attrs.email});
+
+        if (subscriber) {
+            return new Mirage.Response(422, {}, {
+                errors: [{
+                    errorType: 'DataImportError',
+                    message: 'duplicate email',
+                    property: 'email'
+                }]
+            });
+        } else {
+            attrs.created_at = new Date();
+            attrs.created_by = 0;
+
+            subscriber = db.subscribers.insert(attrs);
+
+            return {
+                subscriber
+            };
+        }
+    });
+
+    server.put('/subscribers/:id/', function (db, request) {
+        let {id} = request.params;
+        let [attrs] = JSON.parse(request.requestBody).subscribers;
+        let subscriber = db.subscribers.update(id, attrs);
+
+        return {
+            subscriber
+        };
+    });
+
+    server.del('/subscribers/:id/', function (db, request) {
+        db.subscribers.remove(request.params.id);
+
+        return new Mirage.Response(204, {}, {});
+    });
+
+    server.post('/subscribers/csv/', function (/*db, request*/) {
+        // NB: we get a raw FormData object with no way to inspect it in Chrome
+        // until version 50 adds the additional read methods
+        // https://developer.mozilla.org/en-US/docs/Web/API/FormData#Browser_compatibility
+
+        server.createList('subscriber', 50);
+
+        return {
+            meta: {
+                stats: {
+                    imported: 50,
+                    duplicates: 3,
+                    invalid: 2
+                }
+            }
+        };
+    });
+}
+
 export default function () {
     // this.urlPrefix = '';    // make this `http://localhost:8080`, for example, if your API is on a different server
     this.namespace = 'ghost/api/v0.1';    // make this `api`, for example, if your API is namespaced
-    // this.timing = 400;      // delay for each request, automatically set to 0 during testing
+    this.timing = 400;      // delay for each request, automatically set to 0 during testing
 
     // Mock endpoints here to override real API requests during development
+    mockSubscribers(this);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();
@@ -250,6 +316,10 @@ export function testConfig() {
             ]
         };
     });
+
+    /* Subscribers ---------------------------------------------------------- */
+
+    mockSubscribers(this);
 
     /* Tags ----------------------------------------------------------------- */
 

@@ -25,6 +25,11 @@
         {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
         <li>{{#link-to "team" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
+        {{#if feature.subscribers}}
+            {{#if (gh-user-can-admin session.user)}}
+                <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}<i class="icon-mail"></i>Subscribers{{/link-to}}</li>
+            {{/if}}
+        {{/if}}
     </ul>
     {{#if (gh-user-can-admin session.user)}}
         <ul class="gh-nav-list gh-nav-settings">

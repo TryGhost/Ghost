@@ -87,8 +87,14 @@
 .icon-idea:before {
     content: "\e00e";
 }
-.icon-arrow:before {
+.icon-arrow:before,
+.icon-ascending:before,
+.icon-descending:before {
     content: "\e00f";
+}
+.icon-ascending:before {
+    display: inline-block;
+    transform: rotate(180deg);
 }
 .icon-pen:before {
     content: "\e010";

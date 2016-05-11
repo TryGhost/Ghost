@@ -4,6 +4,7 @@ import getRequestErrorMessage from 'ghost/utils/ajax';
 const {
     Mixin,
     computed,
+    RSVP,
     inject: {service}
 } = Ember;
 
@@ -34,7 +35,7 @@ export default Mixin.create({
 
     init() {
         let paginationSettings = this.get('paginationSettings');
-        let settings = Ember.$.extend({}, defaultPaginationSettings, paginationSettings);
+        let settings = Ember.assign({}, defaultPaginationSettings, paginationSettings);
 
         this._super(...arguments);
         this.set('paginationSettings', settings);
@@ -63,7 +64,7 @@ export default Mixin.create({
         let paginationSettings = this.get('paginationSettings');
         let modelName = this.get('paginationModel');
 
-        paginationSettings.page = 1;
+        this.set('paginationSettings.page', 1);
 
         this.set('isLoading', true);
 
@@ -93,7 +94,7 @@ export default Mixin.create({
             let nextPage = metadata.pagination && metadata.pagination.next;
             let paginationSettings = this.get('paginationSettings');
 
-            if (nextPage) {
+            if (nextPage && !this.get('isLoading')) {
                 this.set('isLoading', true);
                 this.set('paginationSettings.page', nextPage);
 
@@ -105,6 +106,8 @@ export default Mixin.create({
                 }).finally(() => {
                     this.set('isLoading', false);
                 });
+            } else {
+                return RSVP.resolve([]);
             }
         },
 
