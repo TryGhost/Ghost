@@ -11,6 +11,7 @@ module.exports = function (Bookshelf) {
          * Cached copy of the context setup for this model instance
          */
         _context: null,
+
         /**
          * ## Is Public Context?
          * A helper to determine if this is a public request or not
@@ -18,6 +19,10 @@ module.exports = function (Bookshelf) {
          */
         isPublicContext: function isPublicContext() {
             return !!(this._context && this._context.public);
+        },
+
+        isInternalContext: function isInternalContext() {
+            return !!(this._context && this._context.internal);
         }
     },
     {

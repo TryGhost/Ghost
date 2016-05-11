@@ -1324,14 +1324,14 @@ describe('Post Model', function () {
             // We're going to delete all posts by user 1
             var authorData = {id: 1};
 
-            PostModel.findAll().then(function (found) {
+            PostModel.findAll({context:{internal:true}}).then(function (found) {
                 // There are 50 posts to begin with
                 found.length.should.equal(50);
                 return PostModel.destroyByAuthor(authorData);
             }).then(function (results) {
                 // User 1 has 13 posts in the database
                 results.length.should.equal(13);
-                return PostModel.findAll();
+                return PostModel.findAll({context:{internal:true}});
             }).then(function (found) {
                 // Only 37 should remain
                 found.length.should.equal(37);
