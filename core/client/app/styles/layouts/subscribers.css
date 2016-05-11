@@ -30,6 +30,12 @@
     visibility: visible;
 }
 
+.subscribers-table tbody td:last-of-type {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
 
 /* Sidebar (right pane)
 /* ---------------------------------------------------------- */
