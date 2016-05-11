@@ -1,0 +1,47 @@
+<header class="modal-header">
+    <h1>
+        {{#if response}}
+            Import Successful
+        {{else}}
+            Import Subscribers
+        {{/if}}
+    </h1>
+</header>
+<a class="close icon-x" href="" title="Close" {{action "closeModal"}}><span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    {{#liquid-if response class="fade-transition"}}
+        <table class="subscribers-import-results">
+            <tr>
+                <td>Imported:</td>
+                <td align="left">{{response.imported}}</td>
+            </tr>
+            {{#if response.duplicates}}
+                <tr>
+                    <td>Duplicates:</td>
+                    <td align="left">{{response.duplicates}}</td>
+                </tr>
+            {{/if}}
+            {{#if response.invalid}}
+                <tr>
+                    <td>Invalid:</td>
+                    <td align="left">{{response.invalid}}</td>
+                </tr>
+            {{/if}}
+        </table>
+    {{else}}
+        {{gh-file-uploader
+            url=uploadUrl
+            paramName="subscribersfile"
+            labelText="Select or drag-and-drop a CSV file."
+            uploadStarted=(action 'uploadStarted')
+            uploadFinished=(action 'uploadFinished')
+            uploadSuccess=(action 'uploadSuccess')}}
+    {{/liquid-if}}
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} disabled={{closeDisabled}} class="btn btn-default btn-minor">
+        {{#if response}}Close{{else}}Cancel{{/if}}
+    </button>
+</div>
