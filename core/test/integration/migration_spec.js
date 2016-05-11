@@ -136,8 +136,6 @@ describe('Database Migration (special functions)', function () {
             permissions[34].name.should.eql('Delete clients');
             permissions[34].should.be.AssignedToRoles(['Administrator', 'Editor', 'Author']);
 
-            console.log(permissions[38]);
-
             // Subscribers
             permissions[35].name.should.eql('Browse subscribers');
             permissions[35].should.be.AssignedToRoles(['Administrator']);
