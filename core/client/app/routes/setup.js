@@ -31,10 +31,23 @@ export default Route.extend(styleBody, {
         // If user is not logged in, check the state of the setup process via the API
         return this.get('ajax').request(authUrl)
             .then((result) => {
-                let setup = result.setup[0].status;
+                let [setup] = result.setup;
 
-                if (setup) {
+                if (setup.status) {
                     return this.transitionTo('signin');
+                } else {
+                    let controller = this.controllerFor('setup/two');
+                    if (setup.title) {
+                        controller.set('blogTitle', setup.title.replace(/&apos;/gim, '\''));
+                    }
+
+                    if (setup.name) {
+                        controller.set('name', setup.name.replace(/&apos;/gim, '\''));
+                    }
+
+                    if (setup.email) {
+                        controller.set('email', setup.email);
+                    }
                 }
             });
     },
