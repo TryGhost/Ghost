@@ -139,12 +139,13 @@ describe('Database Migration (special functions)', function () {
 
         describe('Populate', function () {
             beforeEach(testUtils.setup());
+
             it('should populate all fixtures correctly', function (done) {
                 fixtures.populate(loggerStub).then(function () {
                     var props = {
                         posts: Models.Post.findAll({include: ['tags']}),
                         tags: Models.Tag.findAll(),
-                        users: Models.User.findAll({include: ['roles']}),
+                        users: Models.User.findAll({filter: 'status:inactive', context: {internal:true}, include: ['roles']}),
                         clients: Models.Client.findAll(),
                         roles: Models.Role.findAll(),
                         permissions: Models.Permission.findAll({include: ['roles']})
@@ -181,6 +182,7 @@ describe('Database Migration (special functions)', function () {
                         should.exist(result.users);
                         result.users.length.should.eql(1);
                         result.users.at(0).get('name').should.eql('Ghost Owner');
+                        result.users.at(0).get('status').should.eql('inactive');
                         result.users.at(0).related('roles').length.should.eql(1);
                         result.users.at(0).related('roles').at(0).get('name').should.eql('Owner');
 
