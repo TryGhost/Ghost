@@ -88,6 +88,12 @@ Subscriber = ghostBookshelf.Model.extend({
             if (subscriberWithEmail) {
                 return subscriberWithEmail;
             }
+        }).catch(function (error) {
+            if (error.message === 'NotFound' || error.message === 'EmptyResponse') {
+                return Promise.resolve();
+            }
+
+            return Promise.reject(error);
         });
     }
 });
