@@ -177,7 +177,7 @@ describe('Acceptance: Subscribers', function() {
             andThen(function () {
                 // the validation error is displayed
                 expect(find('.fullscreen-modal .error .response').text().trim(), 'duplicate email validation')
-                    .to.match(/duplicate/);
+                    .to.equal('Email already exists.');
 
                 // the subscriber is not added to the table
                 expect(find('.lt-cell:contains(test@example.com)').length, 'number of "test@example.com rows"')
