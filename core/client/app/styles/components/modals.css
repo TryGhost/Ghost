@@ -61,10 +61,6 @@
 /* The modal
 /* ---------------------------------------------------------- */
 
-.fullscreen-modal .gh-image-uploader {
-    margin: 0;
-}
-
 
 /* Modal content
 /* ---------------------------------------------------------- */
@@ -141,6 +137,10 @@
 
 .modal-footer button:first-of-type {
     margin-left: 0;
+}
+
+.modal-body .gh-image-uploader {
+    margin: 0;
 }
 
 

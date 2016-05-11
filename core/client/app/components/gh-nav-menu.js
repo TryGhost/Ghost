@@ -22,6 +22,7 @@ export default Component.extend({
     config: service(),
     session: service(),
     ghostPaths: service(),
+    feature: service(),
 
     mouseEnter() {
         this.sendAction('onMouseEnter');
