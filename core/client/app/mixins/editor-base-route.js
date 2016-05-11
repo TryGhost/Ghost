@@ -3,7 +3,7 @@ import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import styleBody from 'ghost/mixins/style-body';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-const {Mixin, RSVP, run} = Ember;
+const {$, Mixin, RSVP, run} = Ember;
 
 let generalShortcuts = {};
 generalShortcuts[`${ctrlOrCmd}+alt+p`] = 'publish';
@@ -16,7 +16,15 @@ export default Mixin.create(styleBody, ShortcutsRoute, {
 
     actions: {
         save() {
-            this.get('controller').send('save');
+            let selectedElement = $(document.activeElement);
+
+            if (selectedElement.is('input[type="text"]')) {
+                selectedElement.trigger('focusout');
+            }
+
+            run.scheduleOnce('actions', this, function () {
+                this.get('controller').send('save');
+            });
         },
 
         publish() {
