@@ -44,7 +44,7 @@
     "ghost-gql": "0.0.4",
     "glob": "5.0.15",
     "html-to-text": "2.1.0",
-    "intl": "1.1.0",
+    "intl": "1.2.0",
     "intl-messageformat": "1.3.0",
     "jsonpath": "0.2.2",
     "knex": "0.10.0",
