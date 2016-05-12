@@ -105,12 +105,12 @@ subscribers = {
                         // we don't expose this information
                         return Promise.resolve(subscriber);
                     } else if (subscriber) {
-                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.subscriberAlreadyExist')));
+                        return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.subscriberAlreadyExists')));
                     }
 
                     return dataProvider.Subscriber.add(options.data.subscribers[0], _.omit(options, ['data'])).catch(function (error) {
                         if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                            return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.subscriberAlreadyExist')));
+                            return Promise.reject(new errors.ValidationError(i18n.t('errors.api.subscribers.subscriberAlreadyExists')));
                         }
 
                         return Promise.reject(error);
