@@ -391,9 +391,7 @@ var _              = require('lodash'),
                         sourceMap: false
                     },
                     files: {
-                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js',
-                        'core/built/assets/ghost.min.js': 'core/built/assets/ghost.min.js',
-                        'core/built/assets/vendor.min.js': 'core/built/assets/vendor.min.js'
+                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
                     }
                 }
             }
