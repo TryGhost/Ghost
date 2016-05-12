@@ -351,6 +351,21 @@ describe('Contexts', function () {
         });
     });
 
+    describe('Subscribe', function () {
+        it('should correctly identify /subscribe/ as the subscribe route', function () {
+            // Setup test
+            setupContext('/subscribe/');
+
+            // Execute test
+            setResponseContext(req, res, data);
+
+            // Check context
+            should.exist(res.locals.context);
+            res.locals.context.should.be.an.Array().with.lengthOf(1);
+            res.locals.context[0].should.eql('subscribe');
+        });
+    });
+
     describe('RSS', function () {
         // NOTE: this works, but is never used in reality, as setResponseContext isn't called
         // for RSS feeds at the moment.
