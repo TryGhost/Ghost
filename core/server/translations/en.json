@@ -333,12 +333,12 @@
                 "couldNotGenerateSlug": "Could not generate slug.",
                 "unknownSlugType": "Unknown slug type '{type}'."
             },
-            "tags": {
-                "tagNotFound": "Tag not found."
-            },
             "subscribers": {
                 "subscriberNotFound": "Subscriber not found.",
-                "subscriberAlreadyExist": "Email already exist."
+                "subscriberAlreadyExists": "Email address is already subscribed."
+            },
+            "tags": {
+                "tagNotFound": "Tag not found."
             },
             "themes": {
                 "noPermissionToBrowseThemes": "You do not have permission to browse themes.",
