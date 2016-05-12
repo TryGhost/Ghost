@@ -18,6 +18,7 @@ table td,
     vertical-align: middle;
     text-align: left;
     line-height: 20px;
+    user-select: text;
 }
 
 
