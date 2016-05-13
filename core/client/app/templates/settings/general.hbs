@@ -2,7 +2,7 @@
     <header class="view-header">
         {{#gh-view-title openMobileMenu="openMobileMenu"}}<span>General</span>{{/gh-view-title}}
         <section class="view-actions">
-            {{#gh-spin-button class="btn btn-blue" action="save" submitting=submitting}}Save{{/gh-spin-button}}
+            {{#gh-promise-button class="btn" color="blue" promise=(action 'save') onsuccess=(action "updateBlogTitle") onerror=(action "showSaveError")}}Save{{/gh-promise-button}}
         </section>
     </header>
 

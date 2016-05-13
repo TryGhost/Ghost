@@ -1,0 +1,23 @@
+{{#gh-spin-button
+    autoWidth=(readonly autoWidth)
+    disableWhen=(readonly disableWhen)
+    submitting=(readonly submitting)
+    type=(readonly type)
+    tabindex=(readonly tabindex)
+    fixWidth=(readonly state)
+    class=(readonly concatenatedClasses)
+    timeout=false
+    action="click"
+}}
+    {{#if state.rejected}}
+        <i class="icon-x"></i>
+    {{else if state.resolved}}
+        <i class="icon-check"></i>
+    {{else}}
+        {{#if hasBlock}}
+            {{{yield}}}
+        {{else}}
+            {{buttonText}}
+        {{/if}}
+    {{/if}}
+{{/gh-spin-button}}

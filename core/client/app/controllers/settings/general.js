@@ -10,7 +10,7 @@ const {
     run
 } = Ember;
 
-export default Controller.extend(SettingsSaveMixin, {
+export default Controller.extend({
 
     showUploadLogoModal: false,
     showUploadCoverModal: false,
@@ -79,23 +79,11 @@ export default Controller.extend(SettingsSaveMixin, {
         }
     }),
 
-    save() {
-        let notifications = this.get('notifications');
-        let config = this.get('config');
-
-        return this.get('model').save().then((model) => {
-            config.set('blogTitle', model.get('title'));
-
-            return model;
-        }).catch((error) => {
-            if (error) {
-                notifications.showAPIError(error, {key: 'settings.save'});
-            }
-            throw error;
-        });
-    },
-
     actions: {
+        save() {
+            return this.get('model').save();
+        },
+
         checkPostsPerPage() {
             let postsPerPage = this.get('model.postsPerPage');
 
@@ -213,6 +201,16 @@ export default Controller.extend(SettingsSaveMixin, {
                     this.get('model.hasValidated').pushObject('twitter');
                     return;
                 }
+            }
+        },
+
+        updateBlogTitle(model) {
+            this.get('config').set('blogTitle', model.get('title'));
+        },
+
+        showSaveError(error) {
+            if (error) {
+                this.get('notifications').showAPIError(error, {key: 'settings.save'});
             }
         }
     }
