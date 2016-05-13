@@ -93,11 +93,7 @@ describe('getSchema', function () {
             author: {
                 '@type': 'Person',
                 name: 'Post Author',
-                sameAs: [
-                    null,
-                    null,
-                    null
-                ],
+                sameAs: [],
                 url: 'http://mysite.com/author/me/'
             },
             dateModified: '2016-01-21T22:13:05.412Z',
@@ -170,7 +166,6 @@ describe('getSchema', function () {
             author: {
                 name: 'Author Name',
                 website: 'http://myblogsite.com/',
-                facebook: 'https://www.facebook.com/testuser',
                 twitter: 'https://twitter.com/testuser'
             }
         }, schema = getSchema(metadata, data);
@@ -183,7 +178,6 @@ describe('getSchema', function () {
             publisher: 'Blog Title',
             sameAs: [
                 'http://myblogsite.com/',
-                'https://www.facebook.com/testuser',
                 'https://twitter.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
