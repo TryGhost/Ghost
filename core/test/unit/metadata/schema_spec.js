@@ -6,7 +6,8 @@ describe('getSchema', function () {
     it('should return post schema if context starts with post', function () {
         var metadata = {
             blog: {
-                title: 'Blog Title'
+                title: 'Blog Title',
+                logo: 'http://mysite.com/author/image/url/logo.jpg'
             },
             authorImage: 'http://mysite.com/author/image/url/me.jpg',
             authorFacebook: 'https://facebook.com/testuser',
@@ -53,7 +54,11 @@ describe('getSchema', function () {
             headline: 'Post Title',
             image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
             keywords: 'one, two, tag',
-            publisher: 'Blog Title',
+            publisher: {
+                '@type': 'Organization',
+                name: 'Blog Title',
+                logo: 'http://mysite.com/author/image/url/logo.jpg'
+            },
             url: 'http://mysite.com/post/my-post-slug/'
         });
     });
@@ -100,7 +105,11 @@ describe('getSchema', function () {
             datePublished: '2015-12-25T05:35:01.234Z',
             description: 'Post meta description',
             headline: 'Post Title',
-            publisher: 'Blog Title',
+            publisher: {
+                '@type': 'Organization',
+                name: 'Blog Title',
+                logo: null
+            },
             url: 'http://mysite.com/post/my-post-slug/'
         });
     });
@@ -175,7 +184,6 @@ describe('getSchema', function () {
             '@type': 'Person',
             description: 'This is the author description!',
             name: 'Author Name',
-            publisher: 'Blog Title',
             sameAs: [
                 'http://myblogsite.com/',
                 'https://twitter.com/testuser'
