@@ -15,6 +15,34 @@ function trimSchema(schema) {
     return schemaObject;
 }
 
+function trimSameAs(data, context) {
+    var sameAs = [];
+
+    if (context === 'post') {
+        if (data.post.author.website) {
+            sameAs.push(data.post.author.website);
+        }
+        if (data.post.author.facebook) {
+            sameAs.push(data.post.author.facebook);
+        }
+        if (data.post.author.twitter) {
+            sameAs.push(data.post.author.twitter);
+        }
+    } else if (context === 'author') {
+        if (data.author.website) {
+            sameAs.push(data.author.website);
+        }
+        if (data.author.facebook) {
+            sameAs.push(data.author.facebook);
+        }
+        if (data.author.twitter) {
+            sameAs.push(data.author.twitter);
+        }
+    }
+
+    return sameAs;
+}
+
 function getPostSchema(metaData, data) {
     var description = metaData.metaDescription ? escapeExpression(metaData.metaDescription) :
         (metaData.excerpt ? escapeExpression(metaData.excerpt) : null),
@@ -23,17 +51,17 @@ function getPostSchema(metaData, data) {
     schema = {
         '@context': 'http://schema.org',
         '@type': 'Article',
-        publisher: metaData.blog.title,
+        publisher: {
+            '@type': 'Organization',
+            name: escapeExpression(metaData.blog.title),
+            logo: metaData.blog.logo || null
+        },
         author: {
             '@type': 'Person',
             name: escapeExpression(data.post.author.name),
             image: metaData.authorImage,
             url: metaData.authorUrl,
-            sameAs: [
-                data.post.author.website || null,
-                data.post.author.facebook || null,
-                data.post.author.twitter || null
-            ],
+            sameAs: trimSameAs(data, 'post'),
             description: data.post.author.bio ?
             escapeExpression(data.post.author.bio) :
             null
@@ -85,12 +113,7 @@ function getAuthorSchema(metaData, data) {
     var schema = {
         '@context': 'http://schema.org',
         '@type': 'Person',
-        sameAs: [
-            data.author.website || null,
-            data.author.facebook || null,
-            data.author.twitter || null
-        ],
-        publisher: escapeExpression(metaData.blog.title),
+        sameAs: trimSameAs(data, 'author'),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
         image: metaData.coverImage,

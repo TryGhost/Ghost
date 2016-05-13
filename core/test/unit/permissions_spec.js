@@ -50,12 +50,14 @@ describe('Permissions', function () {
         it('should return public for no context', function () {
             permissions.parseContext().should.eql({
                 internal: false,
+                external: false,
                 user: null,
                 app: null,
                 public: true
             });
             permissions.parseContext({}).should.eql({
                 internal: false,
+                external: false,
                 user: null,
                 app: null,
                 public: true
@@ -65,12 +67,14 @@ describe('Permissions', function () {
         it('should return public for random context', function () {
             permissions.parseContext('public').should.eql({
                 internal: false,
+                external: false,
                 user: null,
                 app: null,
                 public: true
             });
             permissions.parseContext({client: 'thing'}).should.eql({
                 internal: false,
+                external: false,
                 user: null,
                 app: null,
                 public: true
@@ -80,6 +84,7 @@ describe('Permissions', function () {
         it('should return user if user populated', function () {
             permissions.parseContext({user: 1}).should.eql({
                 internal: false,
+                external: false,
                 user: 1,
                 app: null,
                 public: false
@@ -89,6 +94,7 @@ describe('Permissions', function () {
         it('should return app if app populated', function () {
             permissions.parseContext({app: 5}).should.eql({
                 internal: false,
+                external: false,
                 user: null,
                 app: 5,
                 public: false
@@ -98,6 +104,7 @@ describe('Permissions', function () {
         it('should return internal if internal provided', function () {
             permissions.parseContext({internal: true}).should.eql({
                 internal: true,
+                external: false,
                 user: null,
                 app: null,
                 public: false
@@ -105,6 +112,7 @@ describe('Permissions', function () {
 
             permissions.parseContext('internal').should.eql({
                 internal: true,
+                external: false,
                 user: null,
                 app: null,
                 public: false

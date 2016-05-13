@@ -1,0 +1,17 @@
+{{#gh-light-table table scrollContainer=".subscribers-table" scrollBuffer=100 onScrolledToBottom=(action 'onScrolledToBottom') as |t|}}
+    {{t.head onColumnClick=(action sortByColumn) iconAscending="icon-ascending" iconDescending="icon-descending"}}
+
+    {{#t.body canSelect=false tableActions=(hash delete=(action delete)) as |body|}}
+        {{#if isLoading}}
+            {{#body.loader}}
+                Loading...
+            {{/body.loader}}
+        {{else}}
+            {{#if table.isEmpty}}
+                {{#body.no-data}}
+                    No subscribers found.
+                {{/body.no-data}}
+            {{/if}}
+        {{/if}}
+    {{/t.body}}
+{{/gh-light-table}}

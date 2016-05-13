@@ -1,12 +1,13 @@
-// Update the permissions & permissions_roles tables to get the new entries
-var utils    = require('../utils');
+// Update the permissions & permissions_roles tables to add entries for clients
+var utils = require('../utils'),
+    resource = 'client';
 
-function getClientPermissions() {
-    return utils.findModelFixtures('Permission', {object_type: 'client'});
+function getPermissions() {
+    return utils.findModelFixtures('Permission', {object_type: resource});
 }
 
-function getClientRelations() {
-    return utils.findPermissionRelationsForObject('client');
+function getRelations() {
+    return utils.findPermissionRelationsForObject(resource);
 }
 
 function printResult(logger, result, message) {
@@ -18,13 +19,13 @@ function printResult(logger, result, message) {
 }
 
 module.exports = function addClientPermissions(options, logger) {
-    var modelToAdd = getClientPermissions(),
-        relationToAdd = getClientRelations();
+    var modelToAdd = getPermissions(),
+        relationToAdd = getRelations();
 
     return utils.addFixturesForModel(modelToAdd).then(function (result) {
-        printResult(logger, result, 'Adding permissions fixtures for clients');
+        printResult(logger, result, 'Adding permissions fixtures for ' + resource + 's');
         return utils.addFixturesForRelation(relationToAdd);
     }).then(function (result) {
-        printResult(logger, result, 'Adding permissions_roles fixtures for clients');
+        printResult(logger, result, 'Adding permissions_roles fixtures for ' + resource + 's');
     });
 };

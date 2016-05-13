@@ -31,6 +31,7 @@ export default Service.extend({
     notifications: service(),
 
     publicAPI: feature('publicAPI'),
+    subscribers: feature('subscribers'),
 
     _settings: null,
 
@@ -45,7 +46,7 @@ export default Service.extend({
     }),
 
     fetch() {
-        return this.get('store').queryRecord('setting', {type: 'blog'}).then((settings) => {
+        return this.get('store').queryRecord('setting', {type: 'blog,theme,private'}).then((settings) => {
             this.set('_settings', settings);
             return true;
         });

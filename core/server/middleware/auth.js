@@ -65,7 +65,7 @@ auth = {
                 delete req.body.client_id;
                 delete req.body.client_secret;
 
-                if (!client || client.type !== 'ua') {
+                if (!client) {
                     errors.logError(
                         i18n.t('errors.middleware.auth.clientAuthenticationFailed'),
                         i18n.t('errors.middleware.auth.clientCredentialsNotValid'),
@@ -99,6 +99,7 @@ auth = {
                 } else if (isBearerAutorizationHeader(req)) {
                     return errors.handleAPIError(new errors.UnauthorizedError(i18n.t('errors.middleware.auth.accessDenied')), req, res, next);
                 } else if (req.client) {
+                    req.user = {id: 0};
                     return next();
                 }
 
@@ -110,7 +111,7 @@ auth = {
     // Workaround for missing permissions
     // TODO: rework when https://github.com/TryGhost/Ghost/issues/3911 is  done
     requiresAuthorizedUser: function requiresAuthorizedUser(req, res, next) {
-        if (req.user) {
+        if (req.user && req.user.id) {
             return next();
         } else {
             return errors.handleAPIError(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')), req, res, next);
@@ -122,7 +123,7 @@ auth = {
         if (labs.isSet('publicAPI') === true) {
             return next();
         } else {
-            if (req.user) {
+            if (req.user && req.user.id) {
                 return next();
             } else {
                 return errors.handleAPIError(new errors.NoPermissionError(i18n.t('errors.middleware.auth.pleaseSignIn')), req, res, next);
