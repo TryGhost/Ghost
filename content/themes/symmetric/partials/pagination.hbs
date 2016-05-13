@@ -1,0 +1,11 @@
+<nav class="pagination" role="navigation">
+	<div class="nav">
+		{{#if prev}}
+			<a class="prev button" href="{{page_url prev}}"><i class="fa fa-chevron-left"></i> PREVIOUS</a>
+		{{/if}}
+		<span class="page-number hide-on-mobile">Page {{page}} of {{pages}}</span>
+		{{#if next}}
+			<a class="next button" href="{{page_url next}}">NEXT <i class="fa fa-chevron-right"></i></a>
+		{{/if}}
+	</div>
+</nav>

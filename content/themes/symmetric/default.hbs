@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!--[if lte IE 7]><html class="ie7"><![endif]-->  
+<!--[if IE 8]><html class="ie8"><![endif]-->  
+<!--[if IE 9]><html class="ie9"><![endif]-->  
+<!--[if !IE]><!--><html><!--<![endif]-->  
+<head>
+{{! Document Settings }}
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+{{! Page Meta }}
+<title>{{meta_title}}</title>
+<meta name="description" content="{{meta_description}}" />
+
+{{! Mobile Support }}
+<meta name="HandheldFriendly" content="True" />
+<meta name="MobileOptimized" content="320" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+{{! Styles'n'Scripts }}
+<link rel="shortcut icon" href="{{asset "favicon.ico"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/animate.min.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/grids.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/font-awesome.min.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/common-elements.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/style.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/responsive.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/prettify-bootstrap.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/jquery.magnific-popup.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "js/tooltipster/css/tooltipster.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "js/tooltipster/css/themes/tooltipster-small.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "js/slick/slick.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "js/slick/slick-theme.css"}}">
+<link rel="stylesheet" type="text/css" href="{{asset "css/main-color.css"}}">
+<!--[if lt IE 9]>
+<link rel="stylesheet" type="text/css" href="{{asset "css/grids-ie.css"}}">
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+{{ghost_head}}
+<script type="text/javascript" src="{{@blog.url}}/config.js"></script>
+</head>
+<body class="enable_animations {{#if @blog.cover}}cover{{/if}} {{body_class}}" {{#if @blog.cover}}style="background: url({{@blog.cover}}) no-repeat center center fixed;"{{/if}}>
+	
+	<!-- start: #wrapper -->
+	<div id="wrapper">
+	
+		{{> header}}
+		
+		<div id="search-results" class="center grid-container grid-parent"></div>
+		
+        {{{body}}}
+		
+		{{> footer}}		
+		
+    </div>
+    <!-- end: #wrapper -->
+	
+    {{ghost_foot}}
+	<script type="text/javascript">  
+	if (typeof jQuery == 'undefined') {
+		document.write('<script type="text/javascript" src="{{asset "js/jquery-1.11.3.min.js"}}"></'+'script>');		
+	}
+	</script>
+	<script type="text/javascript" src="{{asset "js/jquery-migrate-1.2.1.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/pace.min.js"}}"></script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="{{asset "js/jquery.fitvids.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jquery.sticky.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/google-code-prettify/prettify.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jquery.placeholder.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jquery.magnific-popup.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jquery.sticky.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jflickrfeed.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/tooltipster/jquery.tooltipster.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jquery.ghostHunter.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/tweecool.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/slick/slick.min.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/jquery.debounce.js"}}"></script>
+	<script type="text/javascript" src="{{asset "js/twitterFetcher_min.js"}}"></script>
+    <script type="text/javascript" src="{{asset "js/global.js"}}"></script>
+	<!--[if !IE]><!--> 
+	<script type="text/javascript" src="{{asset "js/wow.min.js"}}"></script>
+	<script type="text/javascript">
+		if($('body').hasClass('enable_animations')){
+			wow = new WOW({ offset: 150 });
+			wow.init();
+		}else{
+			$('.wow').removeClass('wow opacity0');	
+		}
+	</script> 
+	<!--<![endif]-->
+	<script type="text/javascript">
+		/* * * CONFIGURATION VARIABLES * * */
+		var disqus_shortname = theme_config.disqus_shortname;
+		
+		/* * * DON'T EDIT BELOW THIS LINE * * */
+		(function () {
+			var s = document.createElement('script'); s.async = true;
+			s.type = 'text/javascript';
+			s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+			(document.getElementsByTagName('BODY')[0]).appendChild(s);
+		}());
+	</script>
+</body>
+</html>

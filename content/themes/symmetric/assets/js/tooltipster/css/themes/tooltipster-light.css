@@ -1,0 +1,11 @@
+.tooltipster-light {
+	background: #fff;
+	border-radius: 3px;
+	box-shadow: 2px 2px 15px 0px rgba(0,0,0,.25);
+}
+.tooltipster-light .tooltipster-content {
+	font: 13px 'Open Sans';
+	color: #1f1f1f;
+	padding: 10px;
+	text-align: center;
+}

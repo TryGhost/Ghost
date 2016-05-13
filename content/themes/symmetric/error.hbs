@@ -1,0 +1,41 @@
+{{!< default}}
+
+{{! This is a page template. A page outputs content just like any other post, and has all the same
+    attributes by default, but you can also customise it to behave differently if you prefer. }}
+
+<!-- start: #page-404 -->
+<main id="page-404" class="main" role="main">
+
+	<!-- start: .center -->
+	<div class="center grid-container">
+	
+		<!-- start: .left-content -->
+		<div class="left-content section grid-parent grid-50">
+			<article>
+				<h3 id="page-title" class="title bordered">ERROR 404</h3>
+				<div class="not-found">
+					<h2 class="title">PAGE NOT FOUND</h2>
+					<i class="fa fa-chain-broken"></i>
+				</div>
+				<div class="text">
+					<h3 class="title">Something’s wrong here...</h3>
+					<p>We can`t find the page you’re looking.</p>
+					<p>Redefine your search, contact Us or head back to home. </p>
+				</div>
+				<a href="{{@blog.url}}" class="button dark"><i class="fa fa-share fa-flip-horizontal"></i> RETURN TO HOME</a>
+				<a href="{{@blog.url}}/contact" class="button dark"><i class="fa fa-paper-plane"></i> CONTACT</a>
+			</article>
+		</div>
+		<!-- end: .content -->
+		
+		<div class="section">
+			
+			{{> sidebar-featured}}
+			{{> sidebar-default}}
+		
+		</div>
+
+	</div>
+	<!-- end: .center -->
+</main>
+<!-- end: #page-404 -->

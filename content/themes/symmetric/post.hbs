@@ -1,0 +1,204 @@
+{{!< default}}
+
+{{! The comment above "< default" means - insert everything in this file into
+    the {body} of the default.hbs template, which contains our header/footer. }}
+
+<!-- start: #single -->
+<main id="single" class="main" role="main">
+	
+	{{#post}}
+		{{#if image}}
+			{{^has tag="no cover"}}
+				<div class="wow fadeIn">
+					<div class="main-image cover" style="background: url({{image}});">
+						<div class="overlay"></div>
+						<div class="center grid-container">
+							<div class="boxed cover" style="background: url({{image}});"></div>
+							<div class="boxed overlay"></div>
+							<div class="info">
+								<!-- start: .meta -->
+								<div class="meta">
+									<h1 class="title">{{title}}</h1>
+									{{#if tags}}
+										<div class="tags">
+											{{tags separator=""}}
+										</div>
+									{{/if}}
+									<time datetime="{{date format="YYYY-MM-DD"}}"><i class="fa fa-clock-o"></i> {{date}}</time>
+									<a href="#comments" class="comments"><i class="fa fa-comment"></i> <span class="disqus-comment-count" data-disqus-url="{{@blog.url}}{{url}}">0</span></a>
+								</div>
+								<!-- end: .meta -->
+							</div>
+						</div>
+					</div>
+				</div>
+			{{/has}}
+		{{/if}}
+	
+		<!-- start: .center -->
+		<div class="center content section grid-container {{#has tag="no cover"}}no-cover{{/has}}">
+	
+				<!-- start: .content -->
+				<div class="left-content grid-parent grid-50">
+				
+					<article class="{{post_class}}">
+					
+						<h3 class="title bordered">FULL ARTICLE</h3>
+						{{#has tag="no cover"}}
+							<header>
+								<!-- start: .meta -->
+								<div class="meta">
+									{{#if tags}}
+										<div class="tags">
+											{{tags separator=""}}
+										</div>
+									{{/if}}
+									<time datetime="{{date format="YYYY-MM-DD"}}"><i class="fa fa-clock-o"></i> {{date}}</time>
+									<a href="#comments" class="comments alignright"><i class="fa fa-comment"></i> <span class="disqus-comment-count" data-disqus-url="{{@blog.url}}{{url}}">0</span></a>
+								</div>
+								<!-- end: .meta -->
+								<div class="clear"></div>
+								<h2 class="title">{{title}}</h2>
+								<div class="post-format">
+									{{#if image}}
+										<div class="main-image"><img src="{{image}}"></div>
+									{{/if}}
+								</div>
+							</header>
+						{{/has}}
+						<section class="post-content">
+							<div class="text">{{content}}</div>
+						</section>
+						
+						<div class="share">
+							<h3 class="title">SHARE THIS!</h3>
+							<a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u={{url absolute="true"}}"
+						onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;"><i class="fa fa-facebook"></i> FACEBOOK</a>
+							<a class="twitter" href="http://twitter.com/share?text={{encode title}}&url={{url absolute="true"}}"
+						onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="fa fa-twitter"></i> TWITTER</a>
+							<a class="googleplus" href="https://plus.google.com/share?url={{url absolute="true"}}"
+					   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;"><i class="fa fa-google-plus"></i> GOOGLE</a>
+						</div>
+						
+					</article>
+					
+					{{#author}}
+						<!-- start: .author -->
+						<section class="author {{#if image}} with-avatar{{else}} no-avatar{{/if}} grid-container">
+							<h3 class="title bordered">AUTHOR</h3>
+							<div class="avatar grid-35 tablet-grid-30">
+								{{#if image}}
+									<a href="{{url}}" class="hover-effect"><img src="{{image}}"></a>
+								{{/if}}
+							</div>
+							<div class="right grid-65 tablet-grid-70">
+								<h4 class="title"><a href="{{url}}">{{name}}</a></h4>
+								<p>{{bio}}</p>
+								<div class="social">
+								
+									{{#if location}}
+										<a href="javascript:void(0)" class="button location tooltip" title="Location: {{location}}"><i class="fa fa-map-marker"></i> Location</a>
+									{{/if}}
+									
+									{{#if website}}
+										<a href="{{website}}" class="button website tooltip" target="_blank" title="Website: {{website}}"><i class="fa fa-external-link"></i> Website</a>
+									{{/if}}
+									
+								</div>
+							</div>
+							<div class="clear"></div>
+						</section>
+						<!-- end: .author -->
+					{{/author}}
+					
+					<section class="related grid-container grid-parent">
+						<h3 class="title bordered">RELATED POSTS</h3>
+						{{#prev_post}}
+							<article class="previous grid-50 tablet-grid-50">
+								{{#if image}}
+									<a href="{{url}}" class="thumb cover opacity-effect" style="background: url({{image}});"><span><i class="fa fa-chevron-left"></i> PREVIOUS</span></a>
+								{{/if}}
+								<div class="meta">
+									{{#if tags}}
+										<div class="tags">
+											{{tags separator=""}}
+										</div>
+									{{/if}}
+									<time datetime="{{date format="YYYY-MM-DD"}}"><i class="fa fa-clock-o"></i> {{date}}</time>
+								</div>
+								<h4 class="title"><a href="{{url}}">{{title}}</a></h4>
+							</article>
+						{{/prev_post}}
+						
+						{{#next_post}}
+							<article class="next grid-50 tablet-grid-50">
+								{{#if image}}
+									<a href="{{url}}" class="thumb cover opacity-effect" style="background: url({{image}});"><span>NEXT <i class="fa fa-chevron-right"></i></span></a>
+								{{/if}}
+								<div class="meta">
+									{{#if tags}}
+										<div class="tags">
+											{{tags separator=""}}
+										</div>
+									{{/if}}
+									<time datetime="{{date format="YYYY-MM-DD"}}"><i class="fa fa-clock-o"></i> {{date}}</time>
+								</div>
+								<h4 class="title"><a href="{{url}}">{{title}}</a></h4>
+							</article>
+						{{/next_post}}
+					</section>
+		
+		
+		
+					<!-- start: disqus integration -->
+					<div id="comments">
+						<h3 class="title bordered">COMMENTS</h3>
+						<div id="disqus_thread"></div>
+					</div>
+	
+					<script>
+						/**
+						 *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+						 *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+						 */			
+						var disqus_shortname = theme_config.disqus_shortname; // required: replace example with your forum shortname
+						var disqus_config = function () {
+							this.page.url = '{{@blog.url}}{{url}}';  // Replace PAGE_URL with your page's canonical URL variable
+							this.page.identifier = '{{id}}'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+						};
+						
+						(function() {  // DON'T EDIT BELOW THIS LINE
+							var d = document, s = d.createElement('script');
+							
+							s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+							
+							s.setAttribute('data-timestamp', +new Date());
+							(d.head || d.body).appendChild(s);
+						})();
+					</script>
+					<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+					<!-- end: disqus integration -->
+					
+					<!-- start: .pagination -->
+					<div class="pagination">
+		
+						<div class="clear"></div>
+					</div>
+					<!-- end: .pagination-->
+					
+					<div class="clear"></div>
+				</div>
+				<!-- end: .content -->
+			
+			
+			{{>sidebar-featured}}
+			{{>sidebar-default}}
+		
+		</div>
+		<!-- end: .center -->
+		
+	{{/post}}
+	
+</main>
+<!-- end: #single -->

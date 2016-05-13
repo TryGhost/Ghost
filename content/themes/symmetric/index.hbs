@@ -1,0 +1,97 @@
+{{!< default}}
+
+{{! The comment above "< default" means - insert everything in this file into
+    the {body} of the default.hbs template, which contains our header/footer. }}
+
+<main id="home" class="main" role="main">
+	
+	<!-- start: .center -->
+	<div class="center content grid-container">
+	
+		<!-- start: .carousel -->
+		<section class="carousel section">
+			<h3 class="title bordered">HEADLINES</h3>
+			<div id="featured-posts" class="owl-carousel owl-theme"></div>
+		</section>
+		<!-- end: .carousel -->
+		
+		<!-- start: .ads -->
+		<div class="ads textcenter">
+			<a href="http://themeforest.net/user/estudiopatagon/portfolio?ref=EstudioPatagon" target="_blank"><img src="{{asset "images/ad-970x90.jpg"}}" class="img-ad"></a>
+		</div>
+		<!-- end: .ads -->
+		
+		{{> tweets}}
+		
+		<!-- start: .left-content -->
+		<div class="left-content section articles grid-parent grid-50">
+			<h3 class="title bordered">RECENT NEWS</h3>
+			
+			{{#foreach posts}}
+				{{#if @first}}
+					<article class="first {{post_class}}">
+						<header>
+							{{#if image}}
+								<a href="{{url}}" class="thumb hover-effect">
+									<img src="{{image}}">
+								</a>
+							{{else}}
+								{{content words="0"}}
+							{{/if}}
+							<div class="clear"></div>
+							
+							<div class="meta">
+								<div class="alignleft">
+									{{#if tags}}
+										<div class="tags">
+											{{tags separator=""}}
+										</div>
+									{{/if}}
+									<time datetime="{{date format="YYYY-MM-DD"}}"><i class="fa fa-clock-o"></i>{{date}}</time>
+								</div>
+								<a href="{{url}}#comments" class="comments alignright"><i class="fa fa-comment"></i> <span class="disqus-comment-count" data-disqus-url="{{@blog.url}}{{url}}">0</span></a>
+								<div class="clear"></div>
+							</div>
+							<h4 class="title"><a href="{{url}}">{{{title}}}</a></h4>
+						</header>
+						<div class="post-excerpt">
+							{{excerpt}}
+							<div class="clear"></div>
+						</div> 
+						<a href="{{url}}" class="button dark">Continue Reading</a>
+						<a href="javascript:void(0)" class="button dark share-button"><i class="fa fa-share-alt"></i> SHARE</a>
+						<div class="tip-content">
+							<div class="share">
+								<a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u={{url absolute="true"}}"
+							onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;"><i class="fa fa-facebook"></i></a>
+								<a class="twitter" href="http://twitter.com/share?text={{encode title}}&url={{url absolute="true"}}"
+							onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"><i class="fa fa-twitter"></i></a>
+								<a class="googleplus" href="https://plus.google.com/share?url={{url absolute="true"}}"
+						   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;"><i class="fa fa-google-plus"></i></a>
+							</div>
+						</div>
+					</article>
+				{{else}}
+				
+					{{> default-article}}
+					
+				{{/if}}
+			{{/foreach}}
+			
+			{{pagination}}
+			
+		</div>
+		<!-- end: .left-content -->
+		
+		<div class="section">
+			
+			{{> sidebar-featured}}
+			
+			{{> sidebar-default}}
+		
+		</div>
+	
+	</div>
+	<!-- end: .center -->
+
+</main>

@@ -1,0 +1,17 @@
+<!-- start: #footer -->
+<footer id="footer">
+	<div class="grid-container grid-parent">
+		{{#if @blog.logo}}
+			<h2 class="logo"><a href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}" /></a></h2>
+		{{else}}
+			<h2 class="logo">
+				<a href="{{@blog.url}}">{{@blog.title}}</a>
+			</h2>
+		{{/if}}
+		<div class="copyright">
+			<p>GHOST THEME, COPYRIGHT &copy2015</p>
+		</div>
+		<a href="javascript:void(0)" id="back-to-top">JUMP TO TOP<i class="fa fa-chevron-up"></i></a>
+	</div>
+</footer>
+<!-- end: #footer -->

@@ -1,0 +1,59 @@
+<!-- start: #header -->
+<header id="header">
+
+	<div class="menu-mobile">
+		<i class="fa fa-bars"></i>
+	</div>
+
+	<!-- start: .top -->
+	<div class="top grid-container grid-parent">
+	
+		<div class="social hide-on-mobile hide-on-tablet">
+			<i class="open fa fa-share-alt"></i>
+			{{> social-profiles}}
+		</div>
+				
+		{{#if @blog.logo}}
+			<h1 class="logo" ><a href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}" /></a></h1>
+		{{else}}
+			<h1 class="logo">
+				<a href="{{@blog.url}}">{{@blog.title}}</a>
+			</h1>
+		{{/if}}
+		
+		<form action="" method="get" class="hide-on-mobile">
+			<input type="text" name="s" value="" class="search-field" required>
+			<button type="submit"><i class="fa fa-search"></i></button>
+		</form>
+	
+	</div>
+	<!-- end: .top -->
+
+	<!--<h2 class="blog-description">{{@blog.description}}</h2>-->
+
+	<!-- start: .menu-wrapper -->
+	<div class="menu-wrapper">
+		<!-- start: .main-nav -->
+		<nav class="main-nav grid-container grid-parent" role="navigation">
+					
+			<div class="social hide-on-tablet hide-on-mobile">
+				<i class="open fa fa-share-alt"></i>
+				{{> social-profiles}}
+			</div>
+			
+			{{navigation}}
+			
+			<form action="" method="get" class="hide-on-tablet hide-on-mobile">
+				<input type="text" name="s" value="" class="search-field" required>
+				<button type="submit"><i class="fa fa-search"></i></button>
+			</form>
+			
+		</nav>
+		<!-- end: .main-nav -->
+	</div>
+	<!-- end: .menu-wrapper -->
+	
+	<div class="clear"></div>
+
+</header>
+<!-- end: #header -->

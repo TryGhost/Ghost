@@ -1,0 +1,22 @@
+{{#foreach posts}}
+	<div class="slick-item">
+		<article class="item">
+			
+			<a href="{{url}}" class="hover-effect">
+				<span class="overlay"></span>		
+				<span class="cover" style="background: url({{image}});"></span>
+				<div class="meta grid-container grid-parent">
+					<h6 class="title">{{title}}</h6>
+					{{#if tags}}
+						<div class="tags grid-60 grid-parent">
+							{{#foreach tags}}<span class="{{slug}}">{{name}}</span>{{/foreach}}
+						</div>
+					{{/if}}
+					<time class="grid-40 grid-parent" datetime="{{date format='YYYY-MM-DD'}}"><i class="fa fa-clock-o"></i> {{date format='MMM, Do'}}</time>
+					<div class="clear"></div>
+				</div>
+			</a>
+			
+		</article>
+	</div>
+{{/foreach}}
