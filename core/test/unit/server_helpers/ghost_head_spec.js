@@ -155,7 +155,9 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {/);
+                rendered.string.should.match(/"@type": "Organization"/);
+                rendered.string.should.match(/"name": "Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/about\/"/);
                 rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/test-image-about.png"/);
@@ -327,7 +329,6 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"sameAs": \[\n        "http:\/\/authorwebsite.com",\n        "https:\/\/www.facebook.com\/testuser",\n        "https:\/\/twitter.com\/testuser"\n    \]/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
                 rendered.string.should.match(/"url": "http:\/\/testurl.com\/author\/AuthorName\/"/);
                 rendered.string.should.match(/"image": "http:\/\/testurl.com\/content\/images\/author-cover-image.png"/);
                 rendered.string.should.match(/"name": "Author name"/);
@@ -427,7 +428,9 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {/);
+                rendered.string.should.match(/"@type": "Organization"/);
+                rendered.string.should.match(/"name": "Ghost"/);
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
@@ -504,7 +507,9 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {/);
+                rendered.string.should.match(/"@type": "Organization"/);
+                rendered.string.should.match(/"name": "Ghost"/);
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
@@ -575,7 +580,8 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {/);
+                rendered.string.should.match(/"@type": "Organization"/);
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);
@@ -649,7 +655,9 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
                 rendered.string.should.match(/"@context": "http:\/\/schema.org"/);
                 rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": "Ghost"/);
+                rendered.string.should.match(/"publisher": {/);
+                rendered.string.should.match(/"@type": "Organization"/);
+                rendered.string.should.match(/"name": "Ghost"/);
                 rendered.string.should.match(/"author": {/);
                 rendered.string.should.match(/"@type": "Person"/);
                 rendered.string.should.match(/"name": "Author name"/);

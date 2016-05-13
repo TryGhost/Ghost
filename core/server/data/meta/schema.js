@@ -51,7 +51,11 @@ function getPostSchema(metaData, data) {
     schema = {
         '@context': 'http://schema.org',
         '@type': 'Article',
-        publisher: metaData.blog.title,
+        publisher: {
+            '@type': 'Organization',
+            name: escapeExpression(metaData.blog.title),
+            logo: metaData.blog.logo || null
+        },
         author: {
             '@type': 'Person',
             name: escapeExpression(data.post.author.name),
@@ -110,7 +114,6 @@ function getAuthorSchema(metaData, data) {
         '@context': 'http://schema.org',
         '@type': 'Person',
         sameAs: trimSameAs(data, 'author'),
-        publisher: escapeExpression(metaData.blog.title),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
         image: metaData.coverImage,
