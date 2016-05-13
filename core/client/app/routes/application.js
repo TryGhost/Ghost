@@ -32,6 +32,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         this._super(...arguments);
 
         if (this.get('session.isAuthenticated')) {
+            this.set('appLoadTransition', transition);
             transition.send('loadServerNotifications');
 
             // return the feature loading promise so that we block until settings
@@ -59,9 +60,15 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     sessionInvalidated() {
-        run.scheduleOnce('routerTransitions', this, function () {
-            this.send('authorizationFailed');
-        });
+        let transition = this.get('appLoadTransition');
+
+        if (transition) {
+            transition.send('authorizationFailed');
+        } else {
+            run.scheduleOnce('routerTransitions', this, function () {
+                this.send('authorizationFailed');
+            });
+        }
     },
 
     actions: {
@@ -82,6 +89,7 @@ export default Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         didTransition() {
+            this.set('appLoadTransition', null);
             this.send('closeMenus');
         },
 
