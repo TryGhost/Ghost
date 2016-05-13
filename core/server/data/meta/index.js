@@ -41,6 +41,9 @@ function getMetaData(data, root) {
         blog: blog
     };
 
+    metaData.blog.logo = metaData.blog.logo ?
+        config.urlFor('image', {image: metaData.blog.logo}, true) : config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
+
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {
         metaData.excerpt = getExcerpt(data.post.html, {words: 50});
