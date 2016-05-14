@@ -45,7 +45,7 @@ describe('Acceptance: Authentication', function () {
         });
 
         it('invalidates session on 401 API response', function () {
-            // return a 401 when attempting to retrieve tags
+            // return a 401 when attempting to retrieve users
             server.get('/users/', (db, request) => {
                 return new Mirage.Response(401, {}, {
                     errors: [
@@ -59,6 +59,36 @@ describe('Acceptance: Authentication', function () {
 
             andThen(() => {
                 expect(currentURL(), 'url after 401').to.equal('/signin');
+            });
+        });
+
+        it('doesn\'t show navigation menu on invalid url when not authenticated', function () {
+            invalidateSession(application);
+
+            visit('/');
+
+            andThen(() => {
+                expect(currentURL(), 'current url').to.equal('/signin');
+                expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
+            });
+
+            visit('/signin/invalidurl/');
+
+            andThen(() => {
+                expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
+                expect(currentPath(), 'path after invalid url').to.equal('error404');
+                expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(0);
+            });
+        });
+
+        it('shows nav menu on invalid url when authenticated', function () {
+            authenticateSession(application);
+            visit('/signin/invalidurl/');
+
+            andThen(() => {
+                expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
+                expect(currentPath(), 'path after invalid url').to.equal('error404');
+                expect(find('nav.gh-nav').length, 'nav menu presence').to.equal(1);
             });
         });
     });
