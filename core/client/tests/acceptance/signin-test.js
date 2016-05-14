@@ -34,7 +34,7 @@ describe('Acceptance: Signin', function() {
         });
     });
 
-    describe('when attempting to sigin', function () {
+    describe('when attempting to signin', function () {
         beforeEach(function () {
             let role = server.create('role', {name: 'Administrator'});
             let user = server.create('user', {roles: [role], slug: 'test-user'});
