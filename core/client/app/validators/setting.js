@@ -34,9 +34,9 @@ export default buildValidations({
             message(type) {
                 if (type === 'notAnInteger') {
                     return 'Posts per page must be a number';
-                } else if (type === 'greaterThan') {
-                    return 'The maximum number allowed of posts per page is 1000';
                 } else if (type === 'lessThan') {
+                    return 'The maximum number allowed of posts per page is 1000';
+                } else if (type === 'greaterThan') {
                     return 'The minimum number of posts per page is 1';
                 }
             }

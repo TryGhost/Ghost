@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import {InvokeActionMixin} from 'ember-invoke-action';
 import ValidatedInputMixin from 'ghost/mixins/validated-input';
 
 const {
@@ -6,7 +7,7 @@ const {
     run
 } = Ember;
 
-export default Component.extend(ValidatedInputMixin, {
+export default Component.extend(InvokeActionMixin, ValidatedInputMixin, {
     classNames: 'form-group',
     classNameBindings: 'state',
 

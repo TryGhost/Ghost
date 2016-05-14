@@ -7,8 +7,6 @@ const {
 } = Ember;
 
 export default Mixin.create({
-    didValidate: false,
-
     valuePath: '',
     validation: null,
     value: null,
@@ -21,7 +19,16 @@ export default Mixin.create({
 
         defineProperty(this, 'validation', computed.reads(`model.validations.attrs.${valuePath}`));
         defineProperty(this, 'value', computed.alias(`model.${valuePath}`));
+        defineProperty(this, 'didValidate', computed('model.hasValidated.[]', function () {
+            return this.get('model.hasValidated').contains(valuePath);
+        }));
     },
+
+    concatenatedClasses: computed('classes', function () {
+        let classes = [this.get('classes')];
+        classes.push('gh-input');
+        return classes.join(' ');
+    }),
 
     notValidating: computed.not('validation.isValidating'),
     isValid: computed.and('validation.isValid', 'notValidating', 'didValidate'),
@@ -46,10 +53,17 @@ export default Mixin.create({
     }),
 
     actions: {
+        update(value) {
+            let valuePath = this.get('valuePath');
+
+            this.get('model.hasValidated').removeObject(valuePath);
+            this.invokeAction('update', value);
+        },
+
         focusOut() {
             let valuePath = this.get('valuePath');
             this.get('model.validations').validate({on: [valuePath]}).then(() => {
-                this.set('didValidate', true);
+                this.get('model.hasValidated').pushObject(valuePath);
             });
         }
     }

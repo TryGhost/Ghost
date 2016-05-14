@@ -1,8 +1,9 @@
 {{#if label}}
     <label for="{{inputId}}">{{label}}</label>
 {{/if}}
-{{gh-input
-    value=value
+{{one-way-input
+    value
+    class=concatenatedClasses
     type=type
     placeholder=placeholder
     name=name
@@ -16,7 +17,8 @@
     min=min
     max=max
     pattern=pattern
-    focus-out="focusOut"}}
+    onblur=(action 'focusOut')
+    update=(action 'update')}}
 {{#if showErrorMessage}}
     <p class="response">{{v-get model valuePath 'message'}}</p>
 {{else if hasBlock}}

@@ -15,9 +15,10 @@
                     name="general[title]"
                     label="Blog Title"
                     helpText="The name of your blog"
+                    update=(action (mut model.title))
                 }}
 
-                {{#gh-validated-textarea valuePath="description" model=model name="general[description]"}}
+                {{#gh-validated-textarea valuePath="description" model=model name="general[description]" update=(action (mut model.description))}}
                     <p>
                         Describe what your blog is about
                         {{gh-count-characters model.description}}
@@ -71,6 +72,7 @@
                     min="1"
                     max="1000"
                     pattern="[0-9]*"
+                    update=(action (mut model.postsPerPage))
                 }}
 
                 <div class="form-group for-checkbox">
@@ -131,6 +133,7 @@
                         valuePath="password"
                         name="general[password]"
                         helpText="This password will be needed to access your blog. All search engine optimization and social features are now disabled. This password is stored in plaintext."
+                        update=(action (mut model.password))
                     }}
                 {{/if}}
             </fieldset>

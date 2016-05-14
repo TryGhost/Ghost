@@ -1,7 +1,15 @@
 {{#if label}}
     <label for="{{inputId}}">{{label}}</label>
 {{/if}}
-{{gh-textarea value=value placeholder=placeholder name=name disabled=disabled focus-out="focusOut"}}
+{{one-way-textarea
+    value
+    class=concatenatedClasses
+    placeholder=placeholder
+    name=name
+    disabled=disabled
+    onblur=(action 'focusOut')
+    update=(action 'update')
+}}
 {{#if showErrorMessage}}
     <p class="response">{{v-get model valuePath 'message'}}</p>
 {{else if hasBlock}}
