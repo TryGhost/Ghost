@@ -134,39 +134,51 @@ export default Controller.extend(SettingsSaveMixin, {
 
             // If new url didn't change, exit
             if (newUrl === oldUrl) {
+                this.get('model.errors').remove('facebook');
                 return;
             }
 
-            if (!newUrl.match(/(^https:\/\/www\.facebook\.com\/)(\S+)/g)) {
-                if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || (!validator.isURL(newUrl) && newUrl.match(/([a-zA-Z0-9\.]+)/))) {
-                    let [ , username] = newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-zA-Z0-9\.]+)/);
-                    newUrl = `https://www.facebook.com/${username}`;
+            if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-z\d\.]+)/i)) {
+                let username = [];
 
-                    this.set('model.facebook', newUrl);
-
-                    this.get('model.errors').remove('facebook');
-                    this.get('model.hasValidated').pushObject('facebook');
-
-                    // User input is validated
-                    return this.save().then(() => {
-                        this.set('model.facebook', '');
-                        run.schedule('afterRender', this, function () {
-                            this.set('model.facebook', newUrl);
-                        });
-                    });
-                } else if (validator.isURL(newUrl)) {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://www.facebook.com/yourPage';
-                    this.get('model.errors').add('facebook', errMessage);
-                    this.get('model.hasValidated').pushObject('facebook');
-                    return;
+                if (newUrl.match(/(?:facebook\.com\/)(\S+)/)) {
+                    [ , username ] = newUrl.match(/(?:facebook\.com\/)(\S+)/);
                 } else {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://www.facebook.com/yourPage';
+                    [ , username ] = newUrl.match(/(?:https\:\/\/|http\:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
+                }
+
+                // check if we have a /page/username or without
+                if (username.match(/^(?:\/)?(pages?\/\S+)/mi)) {
+                    // we got a page url, now save the username without the / in the beginning
+
+                    [ , username ] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
+                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d\.]{5,50})$/mi)) {
+                    errMessage = !username.match(/^([a-z\d\.]{5,50})$/mi) ? 'Your Page name is not a valid Facebook Page name' : 'The URL must be in a format like https://www.facebook.com/yourPage';
+
                     this.get('model.errors').add('facebook', errMessage);
                     this.get('model.hasValidated').pushObject('facebook');
                     return;
                 }
+
+                newUrl = `https://www.facebook.com/${username}`;
+                this.set('model.facebook', newUrl);
+
+                this.get('model.errors').remove('facebook');
+                this.get('model.hasValidated').pushObject('facebook');
+
+                // User input is validated
+                return this.save().then(() => {
+                    this.set('model.facebook', '');
+                    run.schedule('afterRender', this, function () {
+                        this.set('model.facebook', newUrl);
+                    });
+                });
+            } else {
+                errMessage = 'The URL must be in a format like ' +
+                    'https://www.facebook.com/yourPage';
+                this.get('model.errors').add('facebook', errMessage);
+                this.get('model.hasValidated').pushObject('facebook');
+                return;
             }
         },
 
@@ -184,39 +196,47 @@ export default Controller.extend(SettingsSaveMixin, {
 
             // If new url didn't change, exit
             if (newUrl === oldUrl) {
+                this.get('model.errors').remove('twitter');
                 return;
             }
 
-            if (!newUrl.match(/(^https:\/\/twitter\.com\/)(\S+)/g)) {
-                if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || (!validator.isURL(newUrl) && newUrl.match(/([a-zA-Z0-9\.]+)/))) {
-                    let [ , username] = newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-zA-Z0-9\.]+)/);
-                    newUrl = `https://twitter.com/${username}`;
+            if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d\.]+)/i)) {
+                let username = [];
 
-                    this.set('model.twitter', newUrl);
-
-                    this.get('model.errors').remove('twitter');
-                    this.get('model.hasValidated').pushObject('twitter');
-
-                    // User input is validated
-                    return this.save().then(() => {
-                        this.set('model.twitter', '');
-                        run.schedule('afterRender', this, function () {
-                            this.set('model.twitter', newUrl);
-                        });
-                    });
-                } else if (validator.isURL(newUrl)) {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://twitter.com/yourUsername';
-                    this.get('model.errors').add('twitter', errMessage);
-                    this.get('model.hasValidated').pushObject('twitter');
-                    return;
+                if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
+                    [ , username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
                 } else {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://twitter.com/yourUsername';
+                    [username] = newUrl.match(/([^/]+)\/?$/mi);
+                }
+
+                // check if username starts with http or www and show error if so
+                if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d\.\_]{1,15}$/mi)) {
+                    errMessage = !username.match(/^[a-z\d\.\_]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
+
                     this.get('model.errors').add('twitter', errMessage);
                     this.get('model.hasValidated').pushObject('twitter');
                     return;
                 }
+
+                newUrl = `https://twitter.com/${username}`;
+                this.set('model.twitter', newUrl);
+
+                this.get('model.errors').remove('twitter');
+                this.get('model.hasValidated').pushObject('twitter');
+
+                // User input is validated
+                return this.save().then(() => {
+                    this.set('model.twitter', '');
+                    run.schedule('afterRender', this, function () {
+                        this.set('model.twitter', newUrl);
+                    });
+                });
+            } else {
+                errMessage = 'The URL must be in a format like ' +
+                    'https://twitter.com/yourUsername';
+                this.get('model.errors').add('twitter', errMessage);
+                this.get('model.hasValidated').pushObject('twitter');
+                return;
             }
         }
     }
