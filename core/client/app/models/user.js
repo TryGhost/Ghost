@@ -38,8 +38,8 @@ export default Model.extend(ValidationEngine, {
         async: false
     }),
     count: attr('raw'),
-    facebook: attr('string'),
-    twitter: attr('string'),
+    facebook: attr('facebook-url-user'),
+    twitter: attr('twitter-url-user'),
 
     ghostPaths: service(),
     ajax: service(),
