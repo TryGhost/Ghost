@@ -89,6 +89,13 @@ describe('Acceptance: Settings - General', function () {
                 expect(find('input#permalinks').prop('checked'), 'date permalinks checkbox').to.be.false;
             });
 
+            fillIn('#settings-general input[name="general[title]"]', 'New Blog Title');
+            click('.view-header .btn.btn-blue');
+
+            andThen(() => {
+                expect(document.title, 'page title').to.equal('Settings - General - New Blog Title');
+            });
+
             click('.blog-logo');
 
             andThen(() => {
