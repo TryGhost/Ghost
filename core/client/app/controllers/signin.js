@@ -74,9 +74,9 @@ export default Controller.extend({
             let notifications = this.get('notifications');
 
             this.set('flowErrors', '');
-            // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
-            this.get('hasValidated').addObject('identification');
-            this.validate({property: 'forgotPassword'}).then(() => {
+            this.set('model.invalidProperty', null);
+
+            this.get('model').validate({on: ['identification']}).then(() => {
                 let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
                 this.toggleProperty('submitting');
 
@@ -96,7 +96,7 @@ export default Controller.extend({
                         this.set('flowErrors', message);
 
                         if (message.match(/no user with that email/)) {
-                            this.get('model.errors').add('identification', '');
+                            this.set('model.invalidProperty', 'identification');
                         }
                     } else {
                         notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});
