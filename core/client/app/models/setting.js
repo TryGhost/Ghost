@@ -18,7 +18,7 @@ export default Model.extend(ValidationEngine, {
     availableThemes: attr(),
     ghost_head: attr('string'),
     ghost_foot: attr('string'),
-    facebook: attr('string'),
+    facebook: attr('facebook-url-user'),
     twitter: attr('twitter-url-user'),
     labs: attr('string'),
     navigation: attr('navigation-settings'),
