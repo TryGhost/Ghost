@@ -1,5 +1,4 @@
 import Ember from 'ember';
-// import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {
     $,
