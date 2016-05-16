@@ -86,6 +86,10 @@ export default Controller.extend(SettingsSaveMixin, {
         return this.get('model').save().then((model) => {
             config.set('blogTitle', model.get('title'));
 
+            // this forces the document title to recompute after
+            // a blog title change
+            this.send('collectTitleTokens', []);
+
             return model;
         }).catch((error) => {
             if (error) {
