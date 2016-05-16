@@ -41,5 +41,7 @@ export default buildValidations({
                 }
             }
         })
-    ]
+    ],
+    facebook: validator('facebook-url'),
+    twitter: validator('twitter-url')
 });

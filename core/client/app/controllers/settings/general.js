@@ -6,8 +6,7 @@ const {
     Controller,
     computed,
     inject: {service},
-    observer,
-    run
+    observer
 } = Ember;
 
 export default Controller.extend(SettingsSaveMixin, {
@@ -17,8 +16,6 @@ export default Controller.extend(SettingsSaveMixin, {
 
     notifications: service(),
     config: service(),
-    _scratchFacebook: null,
-    _scratchTwitter: null,
 
     selectedTheme: computed('model.activeTheme', 'themes', function () {
         let activeTheme = this.get('model.activeTheme');
@@ -114,106 +111,6 @@ export default Controller.extend(SettingsSaveMixin, {
 
         toggleUploadLogoModal() {
             this.toggleProperty('showUploadLogoModal');
-        },
-
-        validateFacebookUrl() {
-            let newUrl = this.get('_scratchFacebook');
-            let oldUrl = this.get('model.facebook');
-            let errMessage = '';
-
-            if (!newUrl) {
-                // Clear out the Facebook url
-                this.set('model.facebook', '');
-                this.get('model.errors').remove('facebook');
-                return;
-            }
-
-            // If new url didn't change, exit
-            if (newUrl === oldUrl) {
-                return;
-            }
-
-            if (!newUrl.match(/(^https:\/\/www\.facebook\.com\/)(\S+)/g)) {
-                if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || (!validator.isURL(newUrl) && newUrl.match(/([a-zA-Z0-9\.]+)/))) {
-                    let [ , username] = newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-zA-Z0-9\.]+)/);
-                    newUrl = `https://www.facebook.com/${username}`;
-
-                    this.set('model.facebook', newUrl);
-
-                    this.get('model.errors').remove('facebook');
-                    this.get('model.hasValidated').pushObject('facebook');
-
-                    // User input is validated
-                    return this.save().then(() => {
-                        this.set('model.facebook', '');
-                        run.schedule('afterRender', this, function () {
-                            this.set('model.facebook', newUrl);
-                        });
-                    });
-                } else if (validator.isURL(newUrl)) {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://www.facebook.com/yourPage';
-                    this.get('model.errors').add('facebook', errMessage);
-                    this.get('model.hasValidated').pushObject('facebook');
-                    return;
-                } else {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://www.facebook.com/yourPage';
-                    this.get('model.errors').add('facebook', errMessage);
-                    this.get('model.hasValidated').pushObject('facebook');
-                    return;
-                }
-            }
-        },
-
-        validateTwitterUrl() {
-            let newUrl = this.get('_scratchTwitter');
-            let oldUrl = this.get('model.twitter');
-            let errMessage = '';
-
-            if (!newUrl) {
-                // Clear out the twitter url
-                this.set('model.twitter', '');
-                this.get('model.errors').remove('twitter');
-                return;
-            }
-
-            // If new url didn't change, exit
-            if (newUrl === oldUrl) {
-                return;
-            }
-
-            if (!newUrl.match(/(^https:\/\/twitter\.com\/)(\S+)/g)) {
-                if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || (!validator.isURL(newUrl) && newUrl.match(/([a-zA-Z0-9\.]+)/))) {
-                    let [ , username] = newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-zA-Z0-9\.]+)/);
-                    newUrl = `https://twitter.com/${username}`;
-
-                    this.set('model.twitter', newUrl);
-
-                    this.get('model.errors').remove('twitter');
-                    this.get('model.hasValidated').pushObject('twitter');
-
-                    // User input is validated
-                    return this.save().then(() => {
-                        this.set('model.twitter', '');
-                        run.schedule('afterRender', this, function () {
-                            this.set('model.twitter', newUrl);
-                        });
-                    });
-                } else if (validator.isURL(newUrl)) {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://twitter.com/yourUsername';
-                    this.get('model.errors').add('twitter', errMessage);
-                    this.get('model.hasValidated').pushObject('twitter');
-                    return;
-                } else {
-                    errMessage = 'The URL must be in a format like ' +
-                        'https://twitter.com/yourUsername';
-                    this.get('model.errors').add('twitter', errMessage);
-                    this.get('model.hasValidated').pushObject('twitter');
-                    return;
-                }
-            }
         }
     }
 });
