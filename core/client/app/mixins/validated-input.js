@@ -62,7 +62,7 @@ export default Mixin.create({
 
         focusOut() {
             let valuePath = this.get('valuePath');
-            this.get('model').validate({on: [valuePath]}).then(() => {
+            this.get('model').validate({on: [valuePath]}).finally(() => {
                 this.get('model.hasValidated').pushObject(valuePath);
             });
         }

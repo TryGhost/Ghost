@@ -2,10 +2,10 @@
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 // import ValidationEngine from 'ghost/mixins/validation-engine';
-import SettingValidator from 'ghost/validators/setting';
+import SettingsValidator from 'ghost/mixins/validations/setting';
 import ValidationMixin from 'ghost/mixins/validation';
 
-export default Model.extend(SettingValidator, ValidationMixin, {
+export default Model.extend(SettingsValidator, ValidationMixin, {
     title: attr('string'),
     description: attr('string'),
     logo: attr('string'),
