@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import ValidationEngine from 'ghost/mixins/validation-engine';
 
 const {
     $,
@@ -8,10 +7,9 @@ const {
     isArray
 } = Ember;
 
-export default Controller.extend(ValidationEngine, {
+export default Controller.extend({
     submitting: false,
     loggingIn: false,
-    authProperties: ['identification', 'password'],
 
     ghostPaths: service(),
     notifications: service(),
@@ -19,9 +17,6 @@ export default Controller.extend(ValidationEngine, {
     application: controller(),
     ajax: service(),
     flowErrors: '',
-
-    // ValidationEngine settings
-    validationType: 'signin',
 
     actions: {
         authenticate() {
@@ -40,11 +35,11 @@ export default Controller.extend(ValidationEngine, {
                     this.set('flowErrors', error.errors[0].message.string);
 
                     if (error.errors[0].message.string.match(/user with that email/)) {
-                        this.get('model.errors').add('identification', '');
+                        this.set('model.invalidProperty', 'identification');
                     }
 
                     if (error.errors[0].message.string.match(/password is incorrect/)) {
-                        this.get('model.errors').add('password', '');
+                        this.set('model.invalidProperty', 'password');
                     }
                 } else {
                     // Connection errors don't return proper status message, only req.body
@@ -59,9 +54,9 @@ export default Controller.extend(ValidationEngine, {
             // browsers and password managers that don't send proper events on autofill
             $('#login').find('input').trigger('change');
 
-            // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'signin'
-            this.get('hasValidated').addObjects(this.authProperties);
-            this.validate({property: 'signin'}).then(() => {
+            this.set('model.invalidProperty', null);
+
+            this.get('model').validate().then(() => {
                 this.toggleProperty('loggingIn');
                 this.send('authenticate');
             }).catch((error) => {
@@ -78,9 +73,9 @@ export default Controller.extend(ValidationEngine, {
             let notifications = this.get('notifications');
 
             this.set('flowErrors', '');
-            // This is a bit dirty, but there's no other way to ensure the properties are set as well as 'forgotPassword'
-            this.get('hasValidated').addObject('identification');
-            this.validate({property: 'forgotPassword'}).then(() => {
+            this.set('model.invalidProperty', null);
+
+            this.get('model').validate({on: ['identification']}).then(() => {
                 let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
                 this.toggleProperty('submitting');
 
@@ -100,7 +95,7 @@ export default Controller.extend(ValidationEngine, {
                         this.set('flowErrors', message);
 
                         if (message.match(/no user with that email/)) {
-                            this.get('model.errors').add('identification', '');
+                            this.set('model.invalidProperty', 'identification');
                         }
                     } else {
                         notifications.showAPIError(resp, {defaultErrorText: 'There was a problem with the reset, please try again.', key: 'forgot-password.send'});

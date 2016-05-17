@@ -1,0 +1,28 @@
+{{#if label}}
+    <label for="{{inputId}}">{{label}}</label>
+{{/if}}
+{{one-way-input
+    value
+    class=concatenatedClasses
+    type=type
+    placeholder=placeholder
+    name=name
+    disabled=disabled
+    readonly=readonly
+    size=size
+    maxlength=maxlength
+    autocomplete=autocomplete
+    autofocus=autofocus
+    novalidate=novalidate
+    min=min
+    max=max
+    pattern=pattern
+    onblur=(action 'focusOut')
+    update=(action 'update')}}
+{{#if showErrorMessage}}
+    <p class="response">{{v-get model valuePath 'message'}}</p>
+{{else if hasBlock}}
+    {{yield}}
+{{else if helpText}}
+    <p>{{helpText}}</p>
+{{/if}}

@@ -1,45 +1,45 @@
 import Ember from 'ember';
 import styleBody from 'ghost/mixins/style-body';
-import Configuration from 'ember-simple-auth/configuration';
-import DS from 'ember-data';
+import UnauthenticatedRouteMixin from 'ember-simple-auth/mixins/unauthenticated-route-mixin';
+import SigninValidator from 'ghost/mixins/validations/signin';
+import ValidationMixin from 'ghost/mixins/validation';
 
 const {
     Route,
-    inject: {service}
+    getOwner,
+    Object: EmberObject
 } = Ember;
-const {Errors} = DS;
 
-export default Route.extend(styleBody, {
+// TODO: potentially move to `ghost/models/signin`?
+const SigninModel = EmberObject.extend(SigninValidator, ValidationMixin, {
+    identification: '',
+    password: '',
+
+    invalidProperty: null,
+
+    clear() {
+        this.setProperties({
+            identification: '',
+            password: '',
+            invalidProperty: null
+        });
+    }
+});
+
+export default Route.extend(styleBody, UnauthenticatedRouteMixin, {
     titleToken: 'Sign In',
 
     classNames: ['ghost-login'],
 
-    session: service(),
-
-    beforeModel() {
-        this._super(...arguments);
-
-        if (this.get('session.isAuthenticated')) {
-            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
-        }
-    },
-
     model() {
-        return Ember.Object.create({
-            identification: '',
-            password: '',
-            errors: Errors.create()
-        });
+        return SigninModel.create(getOwner(this).ownerInjection());
     },
 
     // the deactivate hook is called after a route has been exited.
     deactivate() {
-        let controller = this.controllerFor('signin');
-
+        let currentModel = this.modelFor(this.routeName);
         this._super(...arguments);
 
-        // clear the properties that hold the credentials when we're no longer on the signin screen
-        controller.set('model.identification', '');
-        controller.set('model.password', '');
+        currentModel.clear();
     }
 });
