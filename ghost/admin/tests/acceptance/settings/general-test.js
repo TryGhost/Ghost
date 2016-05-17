@@ -163,6 +163,23 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // validates a facebook url correctly
+
+            andThen(() => {
+                // loads fixtures and performs transform
+                expect(find('input[name="general[facebook]"]').val(), 'initial facebook value')
+                    .to.equal('https://www.facebook.com/test');
+            });
+
+            triggerEvent('#settings-general input[name="general[facebook]"]', 'focus');
+            triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
+
+            andThen(() => {
+                // regression test: we still have a value after the input is
+                // focused and then blurred without any changes
+                expect(find('input[name="general[facebook]"]').val(), 'facebook value after blur with no change')
+                    .to.equal('https://www.facebook.com/test');
+            });
+
             fillIn('#settings-general input[name="general[facebook]"]', 'facebook.com/username');
             triggerEvent('#settings-general input[name="general[facebook]"]', 'blur');
 
@@ -243,6 +260,23 @@ describe('Acceptance: Settings - General', function () {
             });
 
             // validates a twitter url correctly
+
+            andThen(() => {
+                // loads fixtures and performs transform
+                expect(find('input[name="general[twitter]"]').val(), 'initial twitter value')
+                    .to.equal('https://twitter.com/test');
+            });
+
+            triggerEvent('#settings-general input[name="general[twitter]"]', 'focus');
+            triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
+
+            andThen(() => {
+                // regression test: we still have a value after the input is
+                // focused and then blurred without any changes
+                expect(find('input[name="general[twitter]"]').val(), 'twitter value after blur with no change')
+                    .to.equal('https://twitter.com/test');
+            });
+
             fillIn('#settings-general input[name="general[twitter]"]', 'twitter.com/username');
             triggerEvent('#settings-general input[name="general[twitter]"]', 'blur');
 
