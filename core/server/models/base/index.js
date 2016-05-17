@@ -101,16 +101,41 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         this.set('updated_by', this.contextUser(options));
     },
 
-    // Base prototype properties will go here
-    // Fix problems with dates
-    fixDates: function fixDates(attrs) {
+    /**
+     * before we insert dates into the database, we have to normalize
+     * date format is now in each db the same
+     */
+    fixDatesWhenSave: function fixDates(attrs) {
         var self = this;
 
         _.each(attrs, function each(value, key) {
             if (value !== null
                     && schema.tables[self.tableName].hasOwnProperty(key)
                     && schema.tables[self.tableName][key].type === 'dateTime') {
-                // convert dateTime value into a native javascript Date object
+                attrs[key] = moment(value).format('YYYY-MM-DD HH:mm:ss');
+            }
+        });
+
+        return attrs;
+    },
+
+    /**
+     * all supported databases (pg, sqlite, mysql) return different values
+     *
+     * sqlite:
+     *   - knex returns a UTC String
+     * pg:
+     *   - has an active UTC session through knex and returns UTC Date
+     * mysql:
+     *   - knex wraps the UTC value into a local JS Date
+     */
+    fixDatesWhenFetch: function fixDates(attrs) {
+        var self = this;
+
+        _.each(attrs, function each(value, key) {
+            if (value !== null
+                && schema.tables[self.tableName].hasOwnProperty(key)
+                && schema.tables[self.tableName][key].type === 'dateTime') {
                 attrs[key] = moment(value).toDate();
             }
         });
@@ -148,12 +173,12 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
     // format date before writing to DB, bools work
     format: function format(attrs) {
-        return this.fixDates(attrs);
+        return this.fixDatesWhenSave(attrs);
     },
 
     // format data and bool when fetching from DB
     parse: function parse(attrs) {
-        return this.fixBools(this.fixDates(attrs));
+        return this.fixBools(this.fixDatesWhenFetch(attrs));
     },
 
     toJSON: function toJSON(options) {
@@ -199,11 +224,14 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     /**
      * Returns an array of keys permitted in every method's `options` hash.
      * Can be overridden and added to by a model's `permittedOptions` method.
+     *
+     * importing: is used when import a JSON file or when migrating the database
+     *
      * @return {Object} Keys allowed in the `options` hash of every model's method.
      */
     permittedOptions: function permittedOptions() {
         // terms to whitelist for all methods.
-        return ['context', 'include', 'transacting'];
+        return ['context', 'include', 'transacting', 'importing'];
     },
 
     /**
@@ -352,11 +380,18 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * @return {Promise(ghostBookshelf.Model)} Edited Model
      */
     edit: function edit(data, options) {
-        var id = options.id;
+        var id = options.id,
+            model = this.forge({id: id});
+
         data = this.filterData(data);
         options = this.filterOptions(options, 'edit');
 
-        return this.forge({id: id}).fetch(options).then(function then(object) {
+        // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same
+        if (options.importing) {
+            model.hasTimestamps = false;
+        }
+
+        return model.fetch(options).then(function then(object) {
             if (object) {
                 return object.save(data, options);
             }
@@ -374,6 +409,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         data = this.filterData(data);
         options = this.filterOptions(options, 'add');
         var model = this.forge(data);
+
         // We allow you to disable timestamps when importing posts so that the new posts `updated_at` value is the same
         // as the import json blob. More details refer to https://github.com/TryGhost/Ghost/issues/1696
         if (options.importing) {
