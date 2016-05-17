@@ -124,8 +124,8 @@ describe('{{ghost_head}} helper', function () {
                     slug: 'Author',
                     image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser',
+                    facebook: 'testuser',
+                    twitter: '@testuser',
                     bio: 'Author bio'
                 }
             };
@@ -301,8 +301,8 @@ describe('{{ghost_head}} helper', function () {
                 image: '/content/images/test-author-image.png',
                 cover: '/content/images/author-cover-image.png',
                 website: 'http://authorwebsite.com',
-                facebook: 'https://www.facebook.com/testuser',
-                twitter: 'https://twitter.com/testuser'
+                facebook: 'testuser',
+                twitter: '@testuser'
             }, authorBk = _.cloneDeep(author);
 
             helpers.ghost_head.call(
@@ -393,8 +393,8 @@ describe('{{ghost_head}} helper', function () {
                     image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
                     bio: 'Author bio',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser'
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             }, postBk = _.cloneDeep(post);
 
@@ -470,8 +470,8 @@ describe('{{ghost_head}} helper', function () {
                     slug: 'Author',
                     image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser'
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             };
 
@@ -546,8 +546,8 @@ describe('{{ghost_head}} helper', function () {
                     slug: 'Author',
                     image: '/content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser'
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             };
 
@@ -618,8 +618,8 @@ describe('{{ghost_head}} helper', function () {
                     slug: 'Author',
                     image: null,
                     website: 'http://authorwebsite.com',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser'
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             };
 
@@ -833,8 +833,8 @@ describe('{{ghost_head}} helper', function () {
                     slug: 'Author',
                     image: 'content/images/test-author-image.png',
                     website: 'http://authorwebsite.com',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser'
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             };
 

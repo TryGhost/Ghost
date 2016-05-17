@@ -1,14 +1,11 @@
+var socialUrls = require('../../utils/social-urls');
+
 function getStructuredData(metaData) {
     var structuredData,
-        card = 'summary',
-        twitterUser;
+        card = 'summary';
 
     if (metaData.coverImage) {
         card = 'summary_large_image';
-    }
-
-    if (metaData.creatorTwitter) {
-        twitterUser = '@' + metaData.creatorTwitter.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^\/]*)/)[1];
     }
 
     structuredData = {
@@ -21,8 +18,8 @@ function getStructuredData(metaData) {
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
         'article:tag': metaData.keywords,
-        'article:publisher': metaData.blog.facebook || undefined,
-        'article:author': metaData.authorFacebook || undefined,
+        'article:publisher': metaData.blog.facebook ? socialUrls.facebookUrl(metaData.blog.facebook) : undefined,
+        'article:author': metaData.authorFacebook ? socialUrls.facebookUrl(metaData.authorFacebook) : undefined,
         'twitter:card': card,
         'twitter:title': metaData.metaTitle,
         'twitter:description': metaData.metaDescription || metaData.excerpt,
@@ -33,7 +30,7 @@ function getStructuredData(metaData) {
         'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
         'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined,
         'twitter:site': metaData.blog.twitter || undefined,
-        'twitter:creator': twitterUser || undefined
+        'twitter:creator': metaData.creatorTwitter || undefined
     };
 
     // return structured data removing null or undefined keys
