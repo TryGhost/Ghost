@@ -7,7 +7,7 @@ describe('getStructuredData', function () {
         var metadata = {
             blog: {
                 title: 'Blog Title',
-                facebook: 'https://www.facebook.com/testuser',
+                facebook: 'testuser',
                 twitter: '@testuser'
             },
             authorName: 'Test User',
@@ -17,8 +17,8 @@ describe('getStructuredData', function () {
             publishedDate: '2015-12-25T05:35:01.234Z',
             modifiedDate: '2016-01-21T22:13:05.412Z',
             coverImage: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-            authorFacebook: 'https://www.facebook.com/testpage',
-            creatorTwitter: 'https://twitter.com/twitterpage',
+            authorFacebook: 'testpage',
+            creatorTwitter: '@twitterpage',
             keywords: ['one', 'two', 'tag'],
             metaDescription: 'Post meta description'
         },  structuredData = getStructuredData(metadata);
