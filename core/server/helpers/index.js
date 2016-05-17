@@ -17,6 +17,7 @@ coreHelpers.content  = require('./content');
 coreHelpers.date  = require('./date');
 coreHelpers.encode  = require('./encode');
 coreHelpers.excerpt  = require('./excerpt');
+coreHelpers.facebook_url = require('./facebook_url');
 coreHelpers.foreach = require('./foreach');
 coreHelpers.get = require('./get');
 coreHelpers.ghost_foot = require('./ghost_foot');
@@ -34,6 +35,7 @@ coreHelpers.prev_post = require('./prev_next');
 coreHelpers.next_post = require('./prev_next');
 coreHelpers.tags = require('./tags');
 coreHelpers.title = require('./title');
+coreHelpers.twitter_url = require('./twitter_url');
 coreHelpers.url = require('./url');
 
 // Specialist helpers for certain templates
@@ -110,6 +112,8 @@ registerHelpers = function (adminHbs) {
     registerThemeHelper('post_class', coreHelpers.post_class);
     registerThemeHelper('tags', coreHelpers.tags);
     registerThemeHelper('title', coreHelpers.title);
+    registerThemeHelper('twitter_url', coreHelpers.twitter_url);
+    registerThemeHelper('facebook_url', coreHelpers.facebook_url);
     registerThemeHelper('url', coreHelpers.url);
 
     // Async theme helpers
