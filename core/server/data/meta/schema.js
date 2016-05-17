@@ -1,5 +1,6 @@
 var config = require('../../config'),
     hbs = require('express-hbs'),
+    socialUrls = require('../../utils/social-urls'),
     escapeExpression = hbs.handlebars.Utils.escapeExpression,
     _ = require('lodash');
 
@@ -23,20 +24,20 @@ function trimSameAs(data, context) {
             sameAs.push(data.post.author.website);
         }
         if (data.post.author.facebook) {
-            sameAs.push(data.post.author.facebook);
+            sameAs.push(socialUrls.facebookUrl(data.post.author.facebook));
         }
         if (data.post.author.twitter) {
-            sameAs.push(data.post.author.twitter);
+            sameAs.push(socialUrls.twitterUrl(data.post.author.twitter));
         }
     } else if (context === 'author') {
         if (data.author.website) {
             sameAs.push(data.author.website);
         }
         if (data.author.facebook) {
-            sameAs.push(data.author.facebook);
+            sameAs.push(socialUrls.facebookUrl(data.author.facebook));
         }
         if (data.author.twitter) {
-            sameAs.push(data.author.twitter);
+            sameAs.push(socialUrls.twitterUrl(data.author.twitter));
         }
     }
 

@@ -10,7 +10,7 @@ describe('getSchema', function () {
                 logo: 'http://mysite.com/author/image/url/logo.jpg'
             },
             authorImage: 'http://mysite.com/author/image/url/me.jpg',
-            authorFacebook: 'https://facebook.com/testuser',
+            authorFacebook: 'testuser',
             creatorTwitter: '@testuser',
             authorUrl: 'http://mysite.com/author/me/',
             metaTitle: 'Post Title',
@@ -27,8 +27,8 @@ describe('getSchema', function () {
                     name: 'Post Author',
                     website: 'http://myblogsite.com/',
                     bio: 'My author bio.',
-                    facebook: 'https://www.facebook.com/testuser',
-                    twitter: 'https://twitter.com/testuser'
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             }
         }, schema = getSchema(metadata, data);
@@ -175,7 +175,7 @@ describe('getSchema', function () {
             author: {
                 name: 'Author Name',
                 website: 'http://myblogsite.com/',
-                twitter: 'https://twitter.com/testuser'
+                twitter: '@testuser'
             }
         }, schema = getSchema(metadata, data);
 
