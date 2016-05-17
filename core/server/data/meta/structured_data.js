@@ -1,14 +1,19 @@
 function getStructuredData(metaData) {
     var structuredData,
         card = 'summary',
-        twitterUser;
+        twitterCreator,
+        twitterSite;
 
     if (metaData.coverImage) {
         card = 'summary_large_image';
     }
 
     if (metaData.creatorTwitter) {
-        twitterUser = '@' + metaData.creatorTwitter.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^\/]*)/)[1];
+        twitterCreator = '@' + metaData.creatorTwitter.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^\/]*)/)[1];
+    }
+
+    if (metaData.blog.twitter) {
+        twitterSite = '@' + metaData.blog.twitter.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^\/]*)/)[1];
     }
 
     structuredData = {
@@ -32,8 +37,8 @@ function getStructuredData(metaData) {
         'twitter:data1': metaData.authorName,
         'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
         'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined,
-        'twitter:site': metaData.blog.twitter || undefined,
-        'twitter:creator': twitterUser || undefined
+        'twitter:site': twitterSite || undefined,
+        'twitter:creator': twitterCreator || undefined
     };
 
     // return structured data removing null or undefined keys
