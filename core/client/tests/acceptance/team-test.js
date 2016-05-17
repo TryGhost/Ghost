@@ -239,7 +239,12 @@ describe('Acceptance: Team', function () {
             let user;
 
             beforeEach(function () {
-                server.create('user', {slug: 'test-1', name: 'Test User'});
+                server.create('user', {
+                    slug: 'test-1',
+                    name: 'Test User',
+                    facebook: 'test',
+                    twitter: '@test'
+                });
 
                 server.loadFixtures();
             });
@@ -314,6 +319,23 @@ describe('Acceptance: Team', function () {
                 });
 
                 // Testing Facebook input
+
+                andThen(() => {
+                    // displays initial value
+                    expect(find('#user-facebook').val(), 'initial facebook value')
+                        .to.equal('https://www.facebook.com/test');
+                });
+
+                triggerEvent('#user-facebook', 'focus');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    // regression test: we still have a value after the input is
+                    // focused and then blurred without any changes
+                    expect(find('#user-facebook').val(), 'facebook value after blur with no change')
+                        .to.equal('https://www.facebook.com/test');
+                });
+
                 fillIn('#user-facebook', '');
                 fillIn('#user-facebook', ')(*&%^%)');
                 triggerEvent('#user-facebook', 'blur');
@@ -376,6 +398,23 @@ describe('Acceptance: Team', function () {
                 });
 
                 // Testing Twitter input
+
+                andThen(() => {
+                    // loads fixtures and performs transform
+                    expect(find('#user-twitter').val(), 'initial twitter value')
+                        .to.equal('https://twitter.com/test');
+                });
+
+                triggerEvent('#user-twitter', 'focus');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    // regression test: we still have a value after the input is
+                    // focused and then blurred without any changes
+                    expect(find('#user-twitter').val(), 'twitter value after blur with no change')
+                        .to.equal('https://twitter.com/test');
+                });
+
                 fillIn('#user-twitter', '');
                 fillIn('#user-twitter', ')(*&%^%)');
                 triggerEvent('#user-twitter', 'blur');

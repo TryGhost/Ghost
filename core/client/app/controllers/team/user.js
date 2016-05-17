@@ -249,11 +249,16 @@ export default Controller.extend({
             let oldUrl = this.get('user.facebook');
             let errMessage = '';
 
-            if (!newUrl) {
+            if (newUrl === '') {
                 // Clear out the Facebook url
                 this.set('user.facebook', '');
                 this.get('user.errors').remove('facebook');
                 return;
+            }
+
+            // _scratchFacebook will be null unless the user has input something
+            if (!newUrl) {
+                newUrl = oldUrl;
             }
 
             // If new url didn't change, exit
@@ -313,11 +318,16 @@ export default Controller.extend({
             let oldUrl = this.get('user.twitter');
             let errMessage = '';
 
-            if (!newUrl) {
+            if (newUrl === '') {
                 // Clear out the Twitter url
                 this.set('user.twitter', '');
                 this.get('user.errors').remove('twitter');
                 return;
+            }
+
+            // _scratchTwitter will be null unless the user has input something
+            if (!newUrl) {
+                newUrl = oldUrl;
             }
 
             // If new url didn't change, exit
