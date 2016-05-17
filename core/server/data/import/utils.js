@@ -77,6 +77,9 @@ utils = {
                 // if we don't have user data and the id is 1, we assume this means the owner
                 existingUsers[owner.email].importId = userToMap;
                 userMap[userToMap] = existingUsers[owner.email].realId;
+            } else if (userToMap === 0) {
+                // CASE: external context
+                userMap[userToMap] = '0';
             } else {
                 throw new errors.DataImportError(
                     i18n.t('errors.data.import.utils.dataLinkedToUnknownUser', {userToMap: userToMap}), 'user.id', userToMap
