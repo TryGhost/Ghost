@@ -78,7 +78,12 @@ describeComponent(
             this.render(hbs`{{gh-file-uploader}}`);
 
             run(() => {
-                this.$('.gh-image-uploader').trigger('dragover');
+                let dragover = Ember.$.Event('dragover', {
+                    dataTransfer: {
+                        files: []
+                    }
+                });
+                this.$('.gh-image-uploader').trigger(dragover);
             });
 
             expect(this.$('.gh-image-uploader').hasClass('--drag-over'), 'has drag-over class').to.be.true;
