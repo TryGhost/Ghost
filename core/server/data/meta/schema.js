@@ -50,7 +50,7 @@ function getPostSchema(metaData, data) {
         schema;
 
     schema = {
-        '@context': 'http://schema.org',
+        '@context': 'https://schema.org',
         '@type': 'Article',
         publisher: {
             '@type': 'Organization',
@@ -82,7 +82,7 @@ function getPostSchema(metaData, data) {
 
 function getHomeSchema(metaData) {
     var schema = {
-        '@context': 'http://schema.org',
+        '@context': 'https://schema.org',
         '@type': 'Website',
         publisher: escapeExpression(metaData.blog.title),
         url: metaData.url,
@@ -96,7 +96,7 @@ function getHomeSchema(metaData) {
 
 function getTagSchema(metaData, data) {
     var schema = {
-        '@context': 'http://schema.org',
+        '@context': 'https://schema.org',
         '@type': 'Series',
         publisher: escapeExpression(metaData.blog.title),
         url: metaData.url,
@@ -112,7 +112,7 @@ function getTagSchema(metaData, data) {
 
 function getAuthorSchema(metaData, data) {
     var schema = {
-        '@context': 'http://schema.org',
+        '@context': 'https://schema.org',
         '@type': 'Person',
         sameAs: trimSameAs(data, 'author'),
         name: escapeExpression(data.author.name),
