@@ -342,6 +342,47 @@ body > .ember-view:not(.liquid-target-container) {
     }
 }
 
+/* Preview Toggle - Opens and closes the markdown preview
+/* ---------------------------------------------------------- */
+@media (min-width: 500px) {
+    .fullsize-on-desktop {
+        width: 100% !important;
+    }
+}
+@media (min-width: 1001px) {
+    .gh-preview-toggle {
+        display: flex !important;
+    }
+}
+
+.gh-preview-toggle {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    width: 45px;
+    height: 27px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gh-preview-toggle:hover {
+    cursor: pointer;
+}
+
+.gh-preview-toggle i {
+    transition: all 0.2s ease;
+    transform: rotate(180deg);
+
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+}
+
+.gh-preview-toggle:hover i {
+    color: var(--blue);
+}
 
 /* Auto Nav - Opens and closes like OSX dock
 /* ---------------------------------------------------------- */

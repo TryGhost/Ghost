@@ -14,6 +14,7 @@ export default Component.extend(ShortcutsMixin, {
     activeTab: 'markdown',
     editor: null,
     editorDisabled: undefined,
+    previewIsHidden: false,
     editorScrollInfo: null, // updated when gh-ed-editor component scrolls
     height: null, // updated when markdown is rendered
     shouldFocusEditor: false,
@@ -89,6 +90,15 @@ export default Component.extend(ShortcutsMixin, {
 
         enableEditor() {
             this.set('editorDisabled', undefined);
+        },
+
+        togglePreview() {
+            this.set('previewIsHidden', !this.previewIsHidden);
+            if (this.previewIsHidden) {
+                this.$('.entry-markdown').addClass('fullsize-on-desktop');
+            } else {
+                this.$('.entry-markdown').removeClass('fullsize-on-desktop');
+            }
         },
 
         // The actual functionality is implemented in utils/ed-editor-shortcuts
