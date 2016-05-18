@@ -34,7 +34,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
                 '@type': 'Person',
@@ -93,7 +93,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
                 '@type': 'Person',
@@ -127,7 +127,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Website',
             description: 'This is the theme description',
             image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
@@ -152,7 +152,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Series',
             description: 'This is the tag description!',
             image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
@@ -180,7 +180,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
             name: 'Author Name',
