@@ -120,7 +120,7 @@ describeComponent(
             expect(formChanged.secondCall.args[0]).to.equal('upload');
         });
 
-        describe('file uploads', function () {
+        describe('file upload form', function () {
             it('renders form with supplied text', function () {
                 this.render(hbs`{{gh-image-uploader image=image text="text test"}}`);
                 expect(this.$('.description').text().trim()).to.equal('text test');
@@ -161,7 +161,12 @@ describeComponent(
                 this.render(hbs`{{gh-image-uploader image=image update=(action update)}}`);
 
                 run(() => {
-                    this.$('.gh-image-uploader').trigger('dragover');
+                    let dragover = Ember.$.Event('dragover', {
+                        dataTransfer: {
+                            files: []
+                        }
+                    });
+                    this.$('.gh-image-uploader').trigger(dragover);
                 });
 
                 expect(this.$('.gh-image-uploader').hasClass('--drag-over'), 'has drag-over class').to.be.true;
@@ -174,7 +179,7 @@ describeComponent(
             });
         });
 
-        describe('URL input', function () {
+        describe('URL input form', function () {
             beforeEach(function () {
                 this.set('configService.fileStorage', false);
             });
