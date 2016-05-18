@@ -1,7 +1,7 @@
 // Contains all path information to be used throughout
 // the codebase.
 
-var moment            = require('moment'),
+var moment            = require('moment-timezone'),
     _                 = require('lodash'),
     ghostConfig = '',
     // @TODO: unify this with routes.apiBaseUrl
@@ -95,18 +95,20 @@ function createUrl(urlPath, absolute, secure) {
     return urlJoin(base, urlPath);
 }
 
-// ## urlPathForPost
-// Always sync
-// Creates the url path for a post, given a post and a permalink
-// Parameters:
-// - post - a json object representing a post
+/**
+ * creates the url path for a post based on blog timezone and permalink pattern
+ *
+ * @param {JSON} post
+ * @returns {string}
+ */
 function urlPathForPost(post) {
     var output = '',
         permalinks = ghostConfig.theme.permalinks,
+        publishedAtMoment = moment.tz(post.published_at, ghostConfig.theme.timezone),
         tags = {
-            year:   function () { return moment(post.published_at).format('YYYY'); },
-            month:  function () { return moment(post.published_at).format('MM'); },
-            day:    function () { return moment(post.published_at).format('DD'); },
+            year:   function () { return publishedAtMoment.format('YYYY'); },
+            month:  function () { return publishedAtMoment.format('MM'); },
+            day:    function () { return publishedAtMoment.format('DD'); },
             author: function () { return post.author.slug; },
             slug:   function () { return post.slug; },
             id:     function () { return post.id; }
