@@ -5,18 +5,21 @@ var Promise            = require('bluebird'),
     config             = require('../config'),
     errors             = require('../errors'),
     settings           = require('./settings'),
+    importer           = require('../data/importer'),
     pipeline           = require('../utils/pipeline'),
     utils              = require('./utils'),
     i18n               = require('../i18n'),
 
+    api              = {},
     docName = 'themes',
     themes;
+
+api.settings         = require('./settings');
 
 /**
  * ### Fetch Active Theme
  * @returns {Theme} theme
  */
-
 function fetchActiveTheme() {
     return settings.read({
         key: 'activeTheme',
@@ -186,7 +189,54 @@ themes = {
         ];
 
         return pipeline(tasks, options || {});
+    },
+    /**
+     * ### Imports a theme
+     * @param {{context}} options
+     * @returns {Promise} Success
+     */
+    import: function (options) {
+        var tasks = [];
+
+        options = options || {};
+
+        function validate(options) {
+            // Check if a file was provided
+            if (!utils.checkFileExists(options, 'importfile')) {
+                return Promise.reject(new errors.ValidationError(i18n.t('errors.api.themes.selectFileToImport')));
+            }
+
+            // Check if the file is valid
+            if (!utils.checkFileIsValid(options.importfile, importer.getTypes(), importer.getExtensions())) {
+                return Promise.reject(new errors.UnsupportedMediaTypeError(
+                    i18n.t('errors.api.themes.unsupportedFile') +
+                        _.reduce(importer.getExtensions(), function (memo, ext) {
+                            return memo ? memo + ', ' + ext : ext;
+                        })
+                ));
+            }
+
+            return options;
+        }
+
+        function importTheme(options) {
+            return importer.importThemeFromFile(options.importfile)
+                .then(function () {
+                    api.settings.updateSettingsCache();
+                })
+                .return({db: []});
+        }
+
+        tasks = [
+            validate,
+            // TODO: Need to create a seperate permission model for importTheme
+            utils.handlePermissions(docName, 'edit'),
+            importTheme
+        ];
+
+        return pipeline(tasks, options);
     }
+
 };
 
 module.exports = themes;
