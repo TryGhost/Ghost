@@ -1,4 +1,4 @@
-const imageMarkdownRegex = /^!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?$/gim;
+const imageMarkdownRegex = /^!(?:\[([^\n\]]*)\])(?:\(([^\n\]]*)\))?\s*$/gim;
 
 // Process the markdown content and find all of the locations where there is an image markdown block
 function parse(stringToParse) {
