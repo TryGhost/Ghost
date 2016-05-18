@@ -92,7 +92,7 @@ export default Component.extend({
             el.innerHTML = '';
             el.classList.remove('image-uploader');
 
-            fragment.replaceChild(el, oldEl);
+            oldEl.parentNode.replaceChild(el, oldEl);
         });
 
         this.set('previewHTML', fragment);
