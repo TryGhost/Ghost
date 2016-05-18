@@ -1,4 +1,5 @@
-var config = require('../../config'),
+var _ = require('lodash'),
+    config = require('../../config'),
     getUrl = require('./url'),
     getCanonicalUrl = require('./canonical_url'),
     getPaginatedUrl = require('./paginated_url'),
@@ -19,9 +20,7 @@ var config = require('../../config'),
     getExcerpt = require('./excerpt');
 
 function getMetaData(data, root) {
-    var blog = config.theme, metaData;
-
-    metaData = {
+    var metaData = {
         url: getUrl(data, true),
         canonicalUrl: getCanonicalUrl(data),
         previousUrl: getPaginatedUrl('prev', data, true),
@@ -38,7 +37,7 @@ function getMetaData(data, root) {
         publishedDate: getPublishedDate(data),
         modifiedDate: getModifiedDate(data),
         ogType: getOgType(data),
-        blog: blog
+        blog: _.cloneDeep(config.theme)
     };
 
     metaData.blog.logo = metaData.blog.logo ?
