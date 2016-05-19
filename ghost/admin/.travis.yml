@@ -1,0 +1,33 @@
+sudo: required
+dist: trusty
+
+language: node_js
+node_js:
+  - "0.10"
+
+cache:
+  directories:
+    - node_modules
+
+addons:
+  firefox: "latest"
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+
+before_install:
+  - npm config --global set spin false
+  - npm install -g npm@^2
+
+install:
+  - npm install -g bower
+  - npm install
+  - bower install
+
+before_script:
+  - export DISPLAY=:99; sh -e /etc/init.d/xvfb start; sleep 3;
+
+script:
+  - npm test
