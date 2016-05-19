@@ -14,6 +14,7 @@ describeComponent(
         needs: [
             'component:gh-ed-editor',
             'component:gh-ed-preview',
+            'component:gh-preview-toggle',
             'helper:gh-count-words',
             'helper:route-action',
             'service:notifications'
