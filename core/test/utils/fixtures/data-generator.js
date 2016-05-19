@@ -1,7 +1,9 @@
 var _             = require('lodash'),
     uuid          = require('node-uuid'),
+    moment        = require('moment'),
     globalUtils   = require('../../../server/utils'),
     DataGenerator = {};
+
 /*jshint quotmark:false*/
 // jscs:disable validateQuoteMarks, requireCamelCaseOrUpperCaseIdentifiers
 DataGenerator.Content = {
@@ -58,7 +60,8 @@ DataGenerator.Content = {
             title: "This is a scheduled post!!",
             slug: "scheduled-post",
             markdown: "<h1>Welcome to my invisible post!</h1>",
-            status: "scheduled"
+            status: "scheduled",
+            published_at: moment().add(2, 'days').toDate()
         }
     ],
 
@@ -276,6 +279,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             uuid: uuid.v4(),
+            title: 'title',
             status: 'published',
             html: overrides.markdown,
             language: 'en_US',
@@ -318,6 +322,19 @@ DataGenerator.forKnex = (function () {
             created_by: 1,
             created_at: new Date()
         });
+    }
+
+    function createClient(overrides) {
+        overrides = overrides || {};
+
+        var newObj = _.cloneDeep(overrides),
+            basics = createBasic(newObj);
+
+        return _.defaults(newObj, {
+            secret: 'not_available',
+            type: 'ua',
+            status: 'enabled'
+        }, basics);
     }
 
     function createGenericUser(uniqueInteger) {
@@ -405,7 +422,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     clients = [
-        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available', type: 'ua', status: 'enabled'})
+        createClient({name: 'Ghost Admin', slug: 'ghost-admin', type: 'ua'}),
+        createClient({name: 'Ghost Scheduler', slug: 'ghost-scheduler', type: 'web'})
     ];
 
     roles_users = [
@@ -440,6 +458,7 @@ DataGenerator.forKnex = (function () {
         createGenericPost: createGenericPost,
         createTag: createBasic,
         createUser: createUser,
+        createClient: createClient,
         createGenericUser: createGenericUser,
         createBasic: createBasic,
         createRole: createBasic,

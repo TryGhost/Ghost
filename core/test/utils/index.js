@@ -2,6 +2,7 @@ var Promise       = require('bluebird'),
     _             = require('lodash'),
     fs            = require('fs-extra'),
     path          = require('path'),
+    Module        = require('module'),
     uuid          = require('node-uuid'),
     db            = require('../../server/data/db'),
     migration     = require('../../server/data/migration/'),
@@ -20,8 +21,11 @@ var Promise       = require('bluebird'),
     fixtures,
     getFixtureOps,
     toDoList,
+    originalRequireFn,
     postsInserted = 0,
 
+    mockNotExistingModule,
+    unmockNotExistingModule,
     teardown,
     setup,
     doAuth,
@@ -38,7 +42,7 @@ fixtures = {
         return Promise.resolve(db.knex('posts').insert(posts));
     },
 
-    insertPostsAndTags: function insertPosts() {
+    insertPostsAndTags: function insertPostsAndTags() {
         return Promise.resolve(db.knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
             return db.knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
@@ -403,8 +407,7 @@ toDoList = {
     roles: function insertRoles() { return fixtures.insertRoles(); },
     tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
     subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
-
-    posts: function insertPosts() { return fixtures.insertPostsAndTags(); },
+    posts: function insertPostsAndTags() { return fixtures.insertPostsAndTags(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
@@ -447,6 +450,7 @@ getFixtureOps = function getFixtureOps(toDos) {
         fixtureOps.push(function initDB() {
             return migration.init(tablesOnly);
         });
+
         delete toDos.default;
         delete toDos.init;
     }
@@ -495,7 +499,7 @@ setup = function setup() {
         Models.init();
 
         if (done) {
-            return initFixtures.apply(self, args).then(function () {
+            initFixtures.apply(self, args).then(function () {
                 done();
             }).catch(done);
         } else {
@@ -590,12 +594,34 @@ teardown = function teardown(done) {
     }
 };
 
+/**
+ * offer helper functions for mocking
+ * we start with a small function set to mock non existent modules
+ */
+originalRequireFn = Module.prototype.require;
+mockNotExistingModule = function mockNotExistingModule(modulePath, module) {
+    Module.prototype.require = function (path) {
+        if (path.match(modulePath)) {
+            return module;
+        }
+
+        return originalRequireFn.apply(this, arguments);
+    };
+};
+
+unmockNotExistingModule = function unmockNotExistingModule() {
+    Module.prototype.require = originalRequireFn;
+};
+
 module.exports = {
     teardown: teardown,
     setup: setup,
     doAuth: doAuth,
     login: login,
     togglePermalinks: togglePermalinks,
+
+    mockNotExistingModule: mockNotExistingModule,
+    unmockNotExistingModule: unmockNotExistingModule,
 
     initFixtures: initFixtures,
     initData: initData,
