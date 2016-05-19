@@ -18,7 +18,7 @@ var _              = require('lodash'),
     cwd            = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1'),
     buildDirectory = path.resolve(cwd, '.build'),
     distDirectory  = path.resolve(cwd, '.dist'),
-    mochaPath      = path.resolve(cwd + '/node_modules/grunt-mocha-cli/node_modules/mocha/bin/mocha'),
+    mochaPath      = path.resolve(cwd + '/node_modules/.bin/mocha'),
     emberPath      = path.resolve(cwd + '/core/client/node_modules/.bin/ember'),
 
     // ## Grunt configuration
@@ -391,9 +391,7 @@ var _              = require('lodash'),
                         sourceMap: false
                     },
                     files: {
-                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js',
-                        'core/built/assets/ghost.min.js': 'core/built/assets/ghost.min.js',
-                        'core/built/assets/vendor.min.js': 'core/built/assets/vendor.min.js'
+                        'core/shared/ghost-url.min.js': 'core/shared/ghost-url.js'
                     }
                 }
             }

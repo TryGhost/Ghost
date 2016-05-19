@@ -6,9 +6,12 @@ describe('getSchema', function () {
     it('should return post schema if context starts with post', function () {
         var metadata = {
             blog: {
-                title: 'Blog Title'
+                title: 'Blog Title',
+                logo: 'http://mysite.com/author/image/url/logo.jpg'
             },
             authorImage: 'http://mysite.com/author/image/url/me.jpg',
+            authorFacebook: 'testuser',
+            creatorTwitter: '@testuser',
             authorUrl: 'http://mysite.com/author/me/',
             metaTitle: 'Post Title',
             url: 'http://mysite.com/post/my-post-slug/',
@@ -23,20 +26,26 @@ describe('getSchema', function () {
                 author: {
                     name: 'Post Author',
                     website: 'http://myblogsite.com/',
-                    bio: 'My author bio.'
+                    bio: 'My author bio.',
+                    facebook: 'testuser',
+                    twitter: '@testuser'
                 }
             }
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
                 '@type': 'Person',
                 description: 'My author bio.',
                 image: 'http://mysite.com/author/image/url/me.jpg',
                 name: 'Post Author',
-                sameAs: 'http://myblogsite.com/',
+                sameAs: [
+                    'http://myblogsite.com/',
+                    'https://www.facebook.com/testuser',
+                    'https://twitter.com/testuser'
+                ],
                 url: 'http://mysite.com/author/me/'
             },
             dateModified: '2016-01-21T22:13:05.412Z',
@@ -45,7 +54,11 @@ describe('getSchema', function () {
             headline: 'Post Title',
             image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
             keywords: 'one, two, tag',
-            publisher: 'Blog Title',
+            publisher: {
+                '@type': 'Organization',
+                name: 'Blog Title',
+                logo: 'http://mysite.com/author/image/url/logo.jpg'
+            },
             url: 'http://mysite.com/post/my-post-slug/'
         });
     });
@@ -56,6 +69,8 @@ describe('getSchema', function () {
                 title: 'Blog Title'
             },
             authorImage: null,
+            authorFacebook: undefined,
+            creatorTwitter: undefined,
             authorUrl: 'http://mysite.com/author/me/',
             metaTitle: 'Post Title',
             url: 'http://mysite.com/post/my-post-slug/',
@@ -70,24 +85,31 @@ describe('getSchema', function () {
                 author: {
                     name: 'Post Author',
                     website: undefined,
-                    bio: null
+                    bio: null,
+                    facebook: null,
+                    twitter: null
                 }
             }
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
                 '@type': 'Person',
                 name: 'Post Author',
+                sameAs: [],
                 url: 'http://mysite.com/author/me/'
             },
             dateModified: '2016-01-21T22:13:05.412Z',
             datePublished: '2015-12-25T05:35:01.234Z',
             description: 'Post meta description',
             headline: 'Post Title',
-            publisher: 'Blog Title',
+            publisher: {
+                '@type': 'Organization',
+                name: 'Blog Title',
+                logo: null
+            },
             url: 'http://mysite.com/post/my-post-slug/'
         });
     });
@@ -105,7 +127,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Website',
             description: 'This is the theme description',
             image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
@@ -130,7 +152,7 @@ describe('getSchema', function () {
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Series',
             description: 'This is the tag description!',
             image: 'http://mysite.com/content/image/mypostcoverimage.jpg',
@@ -152,17 +174,20 @@ describe('getSchema', function () {
             context: ['author'],
             author: {
                 name: 'Author Name',
-                website: 'http://myblogsite.com/'
+                website: 'http://myblogsite.com/',
+                twitter: '@testuser'
             }
         }, schema = getSchema(metadata, data);
 
         should.deepEqual(schema, {
-            '@context': 'http://schema.org',
+            '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
             name: 'Author Name',
-            publisher: 'Blog Title',
-            sameAs: 'http://myblogsite.com/',
+            sameAs: [
+                'http://myblogsite.com/',
+                'https://twitter.com/testuser'
+            ],
             url: 'http://mysite.com/author/me/'
         });
     });

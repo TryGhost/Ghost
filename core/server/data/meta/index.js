@@ -1,4 +1,5 @@
-var config = require('../../config'),
+var _ = require('lodash'),
+    config = require('../../config'),
     getUrl = require('./url'),
     getCanonicalUrl = require('./canonical_url'),
     getPaginatedUrl = require('./paginated_url'),
@@ -8,6 +9,8 @@ var config = require('../../config'),
     getDescription = require('./description'),
     getCoverImage = require('./cover_image'),
     getAuthorImage = require('./author_image'),
+    getAuthorFacebook = require('./author_fb_url'),
+    getCreatorTwitter = require('./creator_url'),
     getKeywords = require('./keywords'),
     getPublishedDate = require('./published_date'),
     getModifiedDate = require('./modified_date'),
@@ -17,9 +20,7 @@ var config = require('../../config'),
     getExcerpt = require('./excerpt');
 
 function getMetaData(data, root) {
-    var blog = config.theme, metaData;
-
-    metaData = {
+    var metaData = {
         url: getUrl(data, true),
         canonicalUrl: getCanonicalUrl(data),
         previousUrl: getPaginatedUrl('prev', data, true),
@@ -30,12 +31,17 @@ function getMetaData(data, root) {
         metaDescription: getDescription(data, root),
         coverImage: getCoverImage(data, true),
         authorImage: getAuthorImage(data, true),
+        authorFacebook: getAuthorFacebook(data),
+        creatorTwitter: getCreatorTwitter(data),
         keywords: getKeywords(data),
         publishedDate: getPublishedDate(data),
         modifiedDate: getModifiedDate(data),
         ogType: getOgType(data),
-        blog: blog
+        blog: _.cloneDeep(config.theme)
     };
+
+    metaData.blog.logo = metaData.blog.logo ?
+        config.urlFor('image', {image: metaData.blog.logo}, true) : config.urlFor({relativeUrl: '/ghost/img/ghosticon.jpg'}, {}, true);
 
     // TODO: cleanup these if statements
     if (data.post && data.post.html) {

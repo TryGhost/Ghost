@@ -1,0 +1,12 @@
+<div class="ember-power-select-search" onmousedown={{action "captureMouseDown"}}>
+    <input type="search" autocomplete="off"
+        autocorrect="off" autocapitalize="off"
+        value={{if extra.labelPath (get selected extra.labelPath) selected}}
+        spellcheck="false" role="combobox"
+        placeholder={{placeholder}}
+        oninput={{action 'search' value="target.value"}}
+        onmousedown={{action "captureMouseDown"}}
+        onkeydown={{action "handleKeydown"}}
+        onblur={{action "resetInput"}}>
+    <button class="gh-nav-search-button" {{action "focusInput"}}><i class="icon-search"></i><span class="sr-only">Search</span></button>
+</div>

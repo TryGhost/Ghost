@@ -1,4 +1,3 @@
-
 var fs = require('fs'),
     Promise = require('bluebird'),
     path = require('path'),

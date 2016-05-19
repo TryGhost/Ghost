@@ -169,6 +169,7 @@ ConfigManager.prototype.set = function (config) {
             themePath:        path.resolve(contentPath, 'themes'),
             appPath:          path.resolve(contentPath, 'apps'),
             imagesPath:       path.resolve(contentPath, 'images'),
+            internalAppPath:  path.join(corePath, '/server/apps/'),
             imagesRelPath:    'content/images',
 
             adminViews:       path.join(corePath, '/server/views/'),
@@ -190,9 +191,10 @@ ConfigManager.prototype.set = function (config) {
             author: 'author',
             page: 'page',
             preview: 'p',
-            private: 'private'
+            private: 'private',
+            subscribe: 'subscribe'
         },
-        internalApps: ['private-blogging'],
+        internalApps: ['private-blogging', 'subscribers'],
         slugs: {
             // Used by generateSlug to generate slugs for posts, tags, users, ..
             // reserved slugs are reserved but can be extended/removed by apps
@@ -210,7 +212,8 @@ ConfigManager.prototype.set = function (config) {
         },
         deprecatedItems: ['updateCheck', 'mail.fromaddress'],
         // create a hash for cache busting assets
-        assetHash: assetHash
+        assetHash: assetHash,
+        preloadHeaders: this._config.preloadHeaders || false
     });
 
     // Also pass config object to

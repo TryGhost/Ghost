@@ -13,14 +13,12 @@ var should          = require('should'),
     exporter        = require('../../server/data/export'),
     schema          = require('../../server/data/schema'),
 
-    // TODO: can go when fixClientSecret is moved
-    models          = require('../../server/models'),
-
     migration       = rewire('../../server/data/migration'),
     fixtures        = require('../../server/data/migration/fixtures'),
     populate        = require('../../server/data/migration/populate'),
     update          = rewire('../../server/data/migration/update'),
     updates004      = require('../../server/data/migration/004'),
+    updates005      = require('../../server/data/migration/005'),
 
     defaultSettings = schema.defaultSettings,
     schemaTables    = Object.keys(schema.tables),
@@ -33,9 +31,9 @@ var should          = require('should'),
 // both of which are required for migrations to work properly.
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    var currentDbVersion = '004',
-        currentSchemaHash = 'a195562bf4915e3f3f610f6d178aba01',
-        currentFixturesHash = '77ebb081539f9e0c49f487faf7fd929e';
+    var currentDbVersion = '005',
+        currentSchemaHash = 'f63f41ac97b5665a30c899409bbf9a83',
+        currentFixturesHash = '56f781fa3bba0fdbf98da5f232ec9b11';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
@@ -343,7 +341,7 @@ describe('Migrations', function () {
                     // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
                     // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
                     // again with the array of tasks to execute for 004, which is what we want to check
-                    sequenceStub.onFirstCall().yieldsTo('0');
+                    sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
 
                     // Execute
                     update('003', '004', loggerStub).then(function () {
@@ -359,14 +357,13 @@ describe('Migrations', function () {
                         tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(5);
 
                         sequenceStub.calledTwice.should.be.true();
+
                         sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
-
                         sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
-                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
-
                         sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
 
+                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
                         sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'addTourColumnToUsers');
                         sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addSortOrderColumnToPostsTags');
                         sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addManyColumnsToClients');
@@ -402,13 +399,20 @@ describe('Migrations', function () {
                         knexStub.restore();
                     });
 
+                    it('should have tasks for 004', function () {
+                        should.exist(updates004);
+                        updates004.should.be.an.Array().with.lengthOf(5);
+                    });
+
                     describe('01-add-tour-column-to-users', function () {
+                        var addTourColumn = updates004[0];
+
                         it('does not try to add a new column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('users').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[0](loggerStub).then(function () {
+                            addTourColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -429,7 +433,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[0](loggerStub).then(function () {
+                            addTourColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -451,7 +455,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('users', 'tour').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[0](loggerStub).then(function () {
+                            addTourColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('users').should.be.true();
 
@@ -470,12 +474,14 @@ describe('Migrations', function () {
                     });
 
                     describe('02-add-sortorder-column-to-poststags', function () {
+                        var addSortOrderColumn = updates004[1];
+
                         it('does not try to add a new column if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('posts_tags').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[1](loggerStub).then(function () {
+                            addSortOrderColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -496,7 +502,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[1](loggerStub).then(function () {
+                            addSortOrderColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -518,7 +524,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('posts_tags', 'sort_order').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[1](loggerStub).then(function () {
+                            addSortOrderColumn(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('posts_tags').should.be.true();
 
@@ -537,12 +543,14 @@ describe('Migrations', function () {
                     });
 
                     describe('03-add-many-columns-to-clients', function () {
+                        var addClientColumns = updates004[2];
+
                         it('does not try to add new columns if the table does not exist', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -567,7 +575,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -597,7 +605,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -632,7 +640,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasColumn.withArgs('clients', 'description').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[2](loggerStub).then(function () {
+                            addClientColumns(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -656,12 +664,14 @@ describe('Migrations', function () {
                     });
 
                     describe('04-add-clienttrusteddomains-table', function () {
+                        var addTrustedDomains = updates004[3];
+
                         it('does not try to add a new table if the table already exists', function (done) {
                             // Setup
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(true));
 
                             // Execute
-                            updates004[3](loggerStub).then(function () {
+                            addTrustedDomains(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
@@ -679,7 +689,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('client_trusted_domains').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[3](loggerStub).then(function () {
+                            addTrustedDomains(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('client_trusted_domains').should.be.true();
 
@@ -695,6 +705,8 @@ describe('Migrations', function () {
                     });
 
                     describe('05-drop-unique-on-clients-secret', function () {
+                        var dropUnique = updates004[4];
+
                         it('does not try to drop unique if the table does not exist', function (done) {
                             // Setup
                             getIndexesStub.withArgs('clients').returns(new Promise.resolve(
@@ -703,7 +715,7 @@ describe('Migrations', function () {
                             knexMock.schema.hasTable.withArgs('clients').returns(new Promise.resolve(false));
 
                             // Execute
-                            updates004[4](loggerStub).then(function () {
+                            dropUnique(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -727,7 +739,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            updates004[4](loggerStub).then(function () {
+                            dropUnique(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -752,7 +764,7 @@ describe('Migrations', function () {
                             );
 
                             // Execute
-                            updates004[4](loggerStub).then(function () {
+                            dropUnique(loggerStub).then(function () {
                                 knexMock.schema.hasTable.calledOnce.should.be.true();
                                 knexMock.schema.hasTable.calledWith('clients').should.be.true();
 
@@ -761,6 +773,486 @@ describe('Migrations', function () {
 
                                 dropUniqueStub.calledOnce.should.be.true();
                                 dropUniqueStub.calledWith('clients', 'secret').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+                });
+            });
+
+            describe('Update to 005', function () {
+                it('should call all the 005 database upgrade tasks', function (done) {
+                    // Setup
+                    // Create a new stub, this will replace sequence, so that db calls don't actually get run
+                    var sequenceStub = sandbox.stub(),
+                        sequenceReset = update.__set__('sequence', sequenceStub);
+
+                    // The first time we call sequence, it should be to execute a top level version, e.g 005
+                    // yieldsTo('0') means this stub will execute the function at index 0 of the array passed as the
+                    // first argument. In short the `runVersionTasks` function gets executed, and sequence gets called
+                    // again with the array of tasks to execute for 005, which is what we want to check
+                    sequenceStub.onFirstCall().yieldsTo('0').returns(Promise.resolve([]));
+
+                    // Execute
+                    update('004', '005', loggerStub).then(function () {
+                        errorStub.called.should.be.false();
+                        loggerStub.info.calledTwice.should.be.true();
+
+                        versionsSpy.calledOnce.should.be.true();
+                        versionsSpy.calledWith('004', '005').should.be.true();
+                        versionsSpy.returned(['004', '005']).should.be.true();
+
+                        tasksSpy.calledOnce.should.be.true();
+                        tasksSpy.calledWith('005', loggerStub).should.be.true();
+                        tasksSpy.firstCall.returnValue.should.be.an.Array().with.lengthOf(5);
+
+                        sequenceStub.calledTwice.should.be.true();
+
+                        sequenceStub.firstCall.calledWith(sinon.match.array, loggerStub).should.be.true();
+                        sequenceStub.firstCall.args[0].should.be.an.Array().with.lengthOf(1);
+                        sequenceStub.firstCall.args[0][0].should.be.a.Function().with.property('name', 'runVersionTasks');
+
+                        sequenceStub.secondCall.calledWith(sinon.match.array, loggerStub).should.be.true();
+                        sequenceStub.secondCall.args[0].should.be.an.Array().with.lengthOf(5);
+                        sequenceStub.secondCall.args[0][0].should.be.a.Function().with.property('name', 'dropHiddenColumnFromTags');
+                        sequenceStub.secondCall.args[0][1].should.be.a.Function().with.property('name', 'addVisibilityColumnToKeyTables');
+                        sequenceStub.secondCall.args[0][2].should.be.a.Function().with.property('name', 'addMobiledocColumnToPosts');
+                        sequenceStub.secondCall.args[0][3].should.be.a.Function().with.property('name', 'addSocialMediaColumnsToUsers');
+                        sequenceStub.secondCall.args[0][4].should.be.a.Function().with.property('name', 'addSubscribersTable');
+
+                        // Reset sequence
+                        sequenceReset();
+                        done();
+                    }).catch(done);
+                });
+
+                describe('Tasks:', function () {
+                    var dropColumnStub, addColumnStub, createTableStub,
+                        knexStub, knexMock;
+
+                    beforeEach(function () {
+                        knexMock = sandbox.stub().returns({});
+                        knexMock.schema = {
+                            hasTable: sandbox.stub(),
+                            hasColumn: sandbox.stub()
+                        };
+                        // this MUST use sinon, not sandbox, see sinonjs/sinon#781
+                        knexStub = sinon.stub(db, 'knex', {get: function () { return knexMock; }});
+
+                        dropColumnStub = sandbox.stub(schema.commands, 'dropColumn');
+                        addColumnStub = sandbox.stub(schema.commands, 'addColumn');
+                        createTableStub = sandbox.stub(schema.commands, 'createTable');
+                    });
+
+                    afterEach(function () {
+                        knexStub.restore();
+                    });
+
+                    it('should have tasks for 005', function () {
+                        should.exist(updates005);
+                        updates005.should.be.an.Array().with.lengthOf(5);
+                    });
+
+                    describe('01-drop-hidden-column-from-tags', function () {
+                        var dropHiddenColumn = updates005[0];
+
+                        it('does not try to drop column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(false));
+
+                            // Execute
+                            dropHiddenColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                dropColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to drop column if the column does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(false));
+
+                            // Execute
+                            dropHiddenColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'hidden').should.be.true();
+
+                                dropColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add drop column if table and column are both present', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('tags', 'hidden').returns(Promise.resolve(true));
+
+                            // Execute
+                            dropHiddenColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'hidden').should.be.true();
+
+                                dropColumnStub.calledOnce.should.be.true();
+                                dropColumnStub.calledWith('tags', 'hidden').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('02-add-visibility-column-to-key-tables', function () {
+                        var addVisibilityColumn = updates005[1];
+
+                        it('does not try to add new column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(false));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
+
+                            // Execute
+                            addVisibilityColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledThrice.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to add new columns if the columns already exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+
+                            knexMock.schema.hasColumn.withArgs('posts', 'visibility').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(true));
+
+                            // Execute
+                            addVisibilityColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledThrice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'visibility').should.be.true();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledThrice.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add new columns if table is present but columns are not', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+
+                            knexMock.schema.hasColumn.withArgs('posts', 'visibility').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
+
+                            // Execute
+                            addVisibilityColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledThrice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'visibility').should.be.true();
+
+                                addColumnStub.calledThrice.should.be.true();
+                                addColumnStub.calledWith('posts', 'visibility').should.be.true();
+                                addColumnStub.calledWith('tags', 'visibility').should.be.true();
+                                addColumnStub.calledWith('users', 'visibility').should.be.true();
+
+                                loggerStub.info.calledThrice.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('will only try to add columns that do not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('tags').returns(Promise.resolve(true));
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+
+                            knexMock.schema.hasColumn.withArgs('posts', 'visibility').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('tags', 'visibility').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'visibility').returns(Promise.resolve(false));
+                            // Execute
+                            addVisibilityColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledThrice.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+                                knexMock.schema.hasTable.calledWith('tags').should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledThrice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('tags', 'visibility').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'visibility').should.be.true();
+
+                                addColumnStub.calledTwice.should.be.true();
+                                addColumnStub.calledWith('posts', 'visibility').should.be.true();
+                                addColumnStub.calledWith('tags', 'visibility').should.be.false();
+                                addColumnStub.calledWith('users', 'visibility').should.be.true();
+
+                                loggerStub.info.calledTwice.should.be.true();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('03-add-mobiledoc-column-to-posts', function () {
+                        var addMobiledocColumn = updates005[2];
+
+                        it('does not try to add a new column if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(false));
+
+                            // Execute
+                            addMobiledocColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to add a new column if the column already exists', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(new Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(true));
+
+                            // Execute
+                            addMobiledocColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'mobiledoc').should.be.true();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add a new column if table is present but column is not', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('posts').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('posts', 'mobiledoc').returns(Promise.resolve(false));
+
+                            // Execute
+                            addMobiledocColumn(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('posts').should.be.true();
+
+                                knexMock.schema.hasColumn.calledOnce.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('posts', 'mobiledoc').should.be.true();
+
+                                addColumnStub.calledOnce.should.be.true();
+                                addColumnStub.calledWith('posts', 'mobiledoc').should.be.true();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('04-add-social-media-columns-to-users', function () {
+                        var addSocialMediaColumns = updates005[3];
+
+                        it('does not try to add new columns if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(false));
+
+                            // Execute
+                            addSocialMediaColumns(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.called.should.be.false();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('does not try to add new columns if the columns already exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'facebook').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(true));
+
+                            // Execute
+                            addSocialMediaColumns(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledTwice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'facebook').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'twitter').should.be.true();
+
+                                addColumnStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledTwice.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add new columns if table is present but columns are not', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'facebook').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(false));
+
+                            // Execute
+                            addSocialMediaColumns(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledTwice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'facebook').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'twitter').should.be.true();
+
+                                addColumnStub.calledTwice.should.be.true();
+                                addColumnStub.calledWith('users', 'facebook').should.be.true();
+                                addColumnStub.calledWith('users', 'twitter').should.be.true();
+
+                                loggerStub.info.calledTwice.should.be.true();
+                                loggerStub.warn.called.should.be.false();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('will only try to add columns that do not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('users').returns(Promise.resolve(true));
+                            knexMock.schema.hasColumn.withArgs('users', 'facebook').returns(Promise.resolve(false));
+                            knexMock.schema.hasColumn.withArgs('users', 'twitter').returns(Promise.resolve(true));
+
+                            // Execute
+                            addSocialMediaColumns(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('users').should.be.true();
+
+                                knexMock.schema.hasColumn.calledTwice.should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'facebook').should.be.true();
+                                knexMock.schema.hasColumn.calledWith('users', 'twitter').should.be.true();
+
+                                addColumnStub.callCount.should.eql(1);
+                                addColumnStub.calledWith('users', 'facebook').should.be.true();
+                                addColumnStub.calledWith('users', 'twitter').should.be.false();
+
+                                loggerStub.info.calledOnce.should.be.true();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+                    });
+
+                    describe('05-add-subscribers-table', function () {
+                        var addSubscribers = updates005[4];
+
+                        it('does not try to add a new table if the table already exists', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('subscribers').returns(new Promise.resolve(true));
+
+                            // Execute
+                            addSubscribers(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('subscribers').should.be.true();
+
+                                createTableStub.called.should.be.false();
+
+                                loggerStub.info.called.should.be.false();
+                                loggerStub.warn.calledOnce.should.be.true();
+
+                                done();
+                            }).catch(done);
+                        });
+
+                        it('tries to add a new table if the table does not exist', function (done) {
+                            // Setup
+                            knexMock.schema.hasTable.withArgs('subscribers').returns(new Promise.resolve(false));
+
+                            // Execute
+                            addSubscribers(loggerStub).then(function () {
+                                knexMock.schema.hasTable.calledOnce.should.be.true();
+                                knexMock.schema.hasTable.calledWith('subscribers').should.be.true();
+
+                                createTableStub.calledOnce.should.be.true();
+                                createTableStub.calledWith('subscribers').should.be.true();
 
                                 loggerStub.info.calledOnce.should.be.true();
                                 loggerStub.warn.called.should.be.false();
@@ -813,8 +1305,8 @@ describe('Migrations', function () {
     });
 
     describe('Init', function () {
-        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub, fixSecretStub,
-            resetLog, resetUpdate, resetPopulate, resetFixSecret;
+        var defaultVersionStub, databaseVersionStub, errorStub, updateStub, populateStub,
+            resetLog, resetUpdate, resetPopulate;
 
         beforeEach(function () {
             defaultVersionStub = sandbox.stub(schema.versioning, 'getDefaultDatabaseVersion');
@@ -822,19 +1314,16 @@ describe('Migrations', function () {
             errorStub = sandbox.stub(errors, 'logErrorAndExit');
             updateStub = sandbox.stub();
             populateStub = sandbox.stub();
-            fixSecretStub = sandbox.stub();
 
             resetLog = migration.__set__('logger', loggerStub);
             resetUpdate = migration.__set__('update', updateStub);
             resetPopulate = migration.__set__('populate', populateStub);
-            resetFixSecret = migration.__set__('fixClientSecret', fixSecretStub);
         });
 
         afterEach(function () {
             resetLog();
             resetUpdate();
             resetPopulate();
-            resetFixSecret();
         });
 
         it('should do an UPDATE if default version is higher', function (done) {
@@ -854,7 +1343,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -877,13 +1365,12 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
         });
 
-        it('should do FIX SECRET if versions are the same', function (done) {
+        it('should just return if versions are the same', function (done) {
             // Setup
             defaultVersionStub.returns('004');
             databaseVersionStub.returns(new Promise.resolve('004'));
@@ -894,8 +1381,6 @@ describe('Migrations', function () {
                 databaseVersionStub.calledOnce.should.be.true();
                 loggerStub.info.calledOnce.should.be.true();
                 loggerStub.warn.called.should.be.false();
-
-                fixSecretStub.called.should.be.true();
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
@@ -923,7 +1408,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 populateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 delete process.env.FORCE_MIGRATION;
                 done();
@@ -947,7 +1431,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -970,7 +1453,6 @@ describe('Migrations', function () {
 
                 errorStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -991,7 +1473,6 @@ describe('Migrations', function () {
 
                 populateStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -1012,7 +1493,6 @@ describe('Migrations', function () {
                 defaultVersionStub.calledOnce.should.be.false();
                 populateStub.called.should.be.false();
                 updateStub.called.should.be.false();
-                fixSecretStub.called.should.be.false();
 
                 done();
             }).catch(done);
@@ -1042,72 +1522,6 @@ describe('Migrations', function () {
             errorsWarnStub.calledOnce.should.be.true();
             errorsWarnStub.calledWith('Skipping Migrations', 'Stuff').should.be.true();
             errorsInfoStub.called.should.be.false();
-        });
-    });
-
-    // TODO: move this to 005!!
-    describe('FixClientSecret', function () {
-        var fixClientSecret, queryStub, clientForgeStub, clientEditStub, toStringStub, cryptoStub;
-
-        beforeEach(function () {
-            fixClientSecret = migration.__get__('fixClientSecret');
-            queryStub = {
-                query: sandbox.stub().returnsThis(),
-                fetch: sandbox.stub()
-            };
-
-            models.init();
-            toStringStub = {toString: sandbox.stub().returns('TEST')};
-            cryptoStub = sandbox.stub(crypto, 'randomBytes').returns(toStringStub);
-            clientForgeStub = sandbox.stub(models.Clients, 'forge').returns(queryStub);
-            clientEditStub = sandbox.stub(models.Client, 'edit');
-        });
-
-        it('should do nothing if there are no incorrect secrets', function (done) {
-            // Setup
-            queryStub.fetch.returns(new Promise.resolve({models: []}));
-
-            // Execute
-            fixClientSecret().then(function () {
-                clientForgeStub.calledOnce.should.be.true();
-                clientEditStub.called.should.be.false();
-                toStringStub.toString.called.should.be.false();
-                cryptoStub.called.should.be.false();
-                done();
-            }).catch(done);
-        });
-
-        it('should try to fix any incorrect secrets', function (done) {
-            // Setup
-            queryStub.fetch.returns(new Promise.resolve({models: [{id: 1}]}));
-
-            // Execute
-            fixClientSecret().then(function () {
-                clientForgeStub.calledOnce.should.be.true();
-                clientEditStub.called.should.be.true();
-                toStringStub.toString.called.should.be.false();
-                cryptoStub.called.should.be.false();
-                done();
-            }).catch(done);
-        });
-
-        it('should try to create a new secret, if the mode is not testing', function (done) {
-            // Setup
-            var envTemp = process.env.NODE_ENV;
-            process.env.NODE_ENV = 'development';
-            queryStub.fetch.returns(new Promise.resolve({models: [{id: 1}]}));
-
-            // Execute
-            fixClientSecret().then(function () {
-                clientForgeStub.calledOnce.should.be.true();
-                clientEditStub.called.should.be.true();
-                toStringStub.toString.called.should.be.true();
-                cryptoStub.calledOnce.should.be.true();
-
-                // reset
-                process.env.NODE_ENV = envTemp;
-                done();
-            }).catch(done);
         });
     });
 });

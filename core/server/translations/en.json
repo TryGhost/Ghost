@@ -197,8 +197,13 @@
             }
         },
         "models": {
+            "subscriber": {
+                "notEnoughPermission": "You do not have permission to perform this action"
+            },
             "post": {
                 "untitled": "(Untitled)",
+                "valueCannotBeBlank": "Value in {key} cannot be blank.",
+                "expectedPublishedAtInFuture": "Expected published_at to be in the future.",
                 "noUserFound": "No user found",
                 "notEnoughPermission": "You do not have permission to perform this action",
                 "tagUpdates": {
@@ -328,6 +333,10 @@
                 "couldNotGenerateSlug": "Could not generate slug.",
                 "unknownSlugType": "Unknown slug type '{type}'."
             },
+            "subscribers": {
+                "subscriberNotFound": "Subscriber not found.",
+                "subscriberAlreadyExists": "Email address is already subscribed."
+            },
             "tags": {
                 "tagNotFound": "Tag not found."
             },
@@ -445,6 +454,9 @@
             "unableToSendEmail": "Ghost is currently unable to send email."
         },
         "helpers": {
+            "helperNotAvailable": "The \\{\\{{helperName}\\}\\} helper is not available.",
+            "apiMustBeEnabled": "The {flagName} labs flag must be enabled if you wish to use the \\{\\{{helperName}\\}\\} helper.",
+            "seeLink": "See {url}",
             "foreach": {
                 "iteratorNeeded": "Need to pass an iterator to #foreach"
             },
@@ -530,6 +542,7 @@
             "validation": {
                 "index": {
                     "valueCannotBeBlank": "Value in [{tableName}.{columnKey}] cannot be blank.",
+                    "valueMustBeBoolean": "Value in [settings.key] must be one of true, false, 0 or 1.",
                     "valueExceedsMaxLength": "Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.",
                     "valueIsNotInteger": "Value in [{tableName}.{columnKey}] is not an integer.",
                     "themeCannotBeActivated": "{themeName} cannot be activated because it is not currently installed.",

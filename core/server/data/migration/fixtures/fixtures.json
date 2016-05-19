@@ -42,24 +42,30 @@
                     "name":             "Ghost Frontend",
                     "slug":             "ghost-frontend",
                     "status":           "enabled"
+                },
+                {
+                    "name":             "Ghost Scheduler",
+                    "slug":             "ghost-scheduler",
+                    "status":           "enabled",
+                    "type":             "web"
                 }
             ]
         },
         {
             "name": "Role",
             "entries": [
-            {
-                "name":             "Administrator",
-                "description":      "Administrators"
-            },
-            {
-                "name":             "Editor",
-                "description":      "Editors"
-            },
-            {
-                "name":             "Author",
-                "description":      "Authors"
-            },
+                {
+                    "name":             "Administrator",
+                    "description":      "Administrators"
+                },
+                {
+                    "name":             "Editor",
+                    "description":      "Editors"
+                },
+                {
+                    "name":             "Author",
+                    "description":      "Authors"
+                },
                 {
                     "name":             "Owner",
                     "description":      "Blog Owner"
@@ -218,6 +224,56 @@
                     "name": "Browse roles",
                     "action_type": "browse",
                     "object_type": "role"
+                },
+                {
+                    "name": "Browse clients",
+                    "action_type": "browse",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Read clients",
+                    "action_type": "read",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Edit clients",
+                    "action_type": "edit",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Add clients",
+                    "action_type": "add",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Delete clients",
+                    "action_type": "destroy",
+                    "object_type": "client"
+                },
+                {
+                    "name": "Browse subscribers",
+                    "action_type": "browse",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Read subscribers",
+                    "action_type": "read",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Edit subscribers",
+                    "action_type": "edit",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Add subscribers",
+                    "action_type": "add",
+                    "object_type": "subscriber"
+                },
+                {
+                    "name": "Delete subscribers",
+                    "action_type": "destroy",
+                    "object_type": "subscriber"
                 }
             ]
         }
@@ -245,7 +301,9 @@
                     "tag": "all",
                     "theme": "all",
                     "user": "all",
-                    "role": "all"
+                    "role": "all",
+                    "client": "all",
+                    "subscriber": "all"
                 },
                 "Editor": {
                     "post": "all",
@@ -253,7 +311,9 @@
                     "slug": "all",
                     "tag": "all",
                     "user": "all",
-                    "role": "all"
+                    "role": "all",
+                    "client": "all",
+                    "subscriber": ["add"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -261,7 +321,9 @@
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
                     "user": ["browse", "read"],
-                    "role": ["browse"]
+                    "role": ["browse"],
+                    "client": "all",
+                    "subscriber": ["add"]
                 }
             }
         },

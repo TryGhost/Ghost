@@ -239,7 +239,14 @@ describe('Acceptance: Team', function () {
             let user;
 
             beforeEach(function () {
-                server.create('user', {slug: 'test-1', name: 'Test User'});
+                server.create('user', {
+                    slug: 'test-1',
+                    name: 'Test User',
+                    facebook: 'test',
+                    twitter: '@test'
+                });
+
+                server.loadFixtures();
             });
 
             it('input fields reset and validate correctly', function () {
@@ -256,7 +263,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('.user-details-top .first-form-group input.user-name', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'input is in error state').to.be.true;
+                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'username input is in error state with blank input').to.be.true;
                 });
 
                 // test too long user name
@@ -264,7 +271,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('.user-details-top .first-form-group input.user-name', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'input is in error state').to.be.true;
+                    expect(find('.user-details-top .first-form-group').hasClass('error'), 'username input is in error state with too long input').to.be.true;
                 });
 
                 // reset name field
@@ -292,7 +299,7 @@ describe('Acceptance: Team', function () {
                 triggerEvent('.user-details-bottom input[name="email"]', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(2)').hasClass('error'), 'email input should be in error state').to.be.true;
+                    expect(find('.user-details-bottom .form-group:nth-of-type(2)').hasClass('error'), 'email input should be in error state with invalid email').to.be.true;
                 });
 
                 fillIn('.user-details-bottom input[name="email"]', 'test@example.com');
@@ -311,12 +318,144 @@ describe('Acceptance: Team', function () {
                     expect(find('.user-details-bottom .form-group:nth-of-type(4)').hasClass('error'), 'website input should be in error state').to.be.true;
                 });
 
+                // Testing Facebook input
+
+                andThen(() => {
+                    // displays initial value
+                    expect(find('#user-facebook').val(), 'initial facebook value')
+                        .to.equal('https://www.facebook.com/test');
+                });
+
+                triggerEvent('#user-facebook', 'focus');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    // regression test: we still have a value after the input is
+                    // focused and then blurred without any changes
+                    expect(find('#user-facebook').val(), 'facebook value after blur with no change')
+                        .to.equal('https://www.facebook.com/test');
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', ')(*&%^%)');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'pages/)(*&%^%)');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/pages/)(*&%^%)');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'testing');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testing');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'somewebsite.com/pages/some-facebook-page/857469375913?ref=ts');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'test');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'http://twitter.com/testuser');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testuser');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-facebook', '');
+                fillIn('#user-facebook', 'facebook.com/testing');
+                triggerEvent('#user-facebook', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-facebook').val()).to.be.equal('https://www.facebook.com/testing');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'facebook input should be in error state').to.be.false;
+                });
+
+                // Testing Twitter input
+
+                andThen(() => {
+                    // loads fixtures and performs transform
+                    expect(find('#user-twitter').val(), 'initial twitter value')
+                        .to.equal('https://twitter.com/test');
+                });
+
+                triggerEvent('#user-twitter', 'focus');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    // regression test: we still have a value after the input is
+                    // focused and then blurred without any changes
+                    expect(find('#user-twitter').val(), 'twitter value after blur with no change')
+                        .to.equal('https://twitter.com/test');
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', ')(*&%^%)');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.true;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', 'name');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/name');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', 'http://github.com/user');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                });
+
+                fillIn('#user-twitter', '');
+                fillIn('#user-twitter', 'twitter.com/user');
+                triggerEvent('#user-twitter', 'blur');
+
+                andThen(() => {
+                    expect(find('#user-twitter').val()).to.be.equal('https://twitter.com/user');
+                    expect(find('.user-details-bottom .form-group:nth-of-type(6)').hasClass('error'), 'twitter input should be in error state').to.be.false;
+                });
+
                 fillIn('#user-website', '');
                 fillIn('#user-bio', new Array(210).join('a'));
                 triggerEvent('#user-bio', 'blur');
 
                 andThen(() => {
-                    expect(find('.user-details-bottom .form-group:nth-of-type(5)').hasClass('error'), 'bio input should be in error state').to.be.true;
+                    expect(find('.user-details-bottom .form-group:nth-of-type(7)').hasClass('error'), 'bio input should be in error state').to.be.true;
                 });
             });
         });

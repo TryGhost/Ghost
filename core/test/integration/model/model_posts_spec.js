@@ -1,14 +1,16 @@
 /*globals describe, before, beforeEach, afterEach, it */
 var testUtils       = require('../../utils'),
     should          = require('should'),
-    sequence        = require('../../../server/utils/sequence'),
+    moment          = require('moment'),
     _               = require('lodash'),
     sinon           = require('sinon'),
 
     // Stuff we are testing
+    sequence        = require('../../../server/utils/sequence'),
     ghostBookshelf  = require('../../../server/models/base'),
     PostModel       = require('../../../server/models/post').Post,
     events          = require('../../../server/events'),
+    errors          = require('../../../server/errors'),
     DataGenerator   = testUtils.DataGenerator,
     context         = testUtils.context.owner,
     sandbox         = sinon.sandbox.create(),
@@ -381,6 +383,36 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('can change title to number', function (done) {
+                var postId = 1;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    var post = results.toJSON();
+                    post.title.should.not.equal('123');
+                    return PostModel.edit({title: 123}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.title.should.equal('123');
+                    done();
+                }).catch(done);
+            });
+
+            it('can change markdown to number', function (done) {
+                var postId = 1;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    should.exist(results);
+                    var post = results.toJSON();
+                    post.title.should.not.equal('123');
+                    return PostModel.edit({markdown: 123}, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.markdown.should.equal('123');
+                    done();
+                }).catch(done);
+            });
+
             it('can publish draft post', function (done) {
                 var postId = 4;
 
@@ -425,6 +457,142 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('draft -> scheduled without published_at update', function (done) {
+                PostModel.findOne({status: 'draft'}).then(function (results) {
+                    var post;
+
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('draft');
+
+                    return PostModel.edit({
+                        status: 'scheduled'
+                    }, _.extend({}, context, {id: post.id}));
+                }).catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('draft -> scheduled: invalid published_at update', function (done) {
+                PostModel.findOne({status: 'draft'}).then(function (results) {
+                    var post;
+
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('draft');
+
+                    return PostModel.edit({
+                        status: 'scheduled',
+                        published_at: '328432423'
+                    }, _.extend({}, context, {id: post.id}));
+                }).catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    done();
+                });
+            });
+
+            it('draft -> scheduled: expect update of published_at', function (done) {
+                var newPublishedAt = moment().add(1, 'day').toDate();
+
+                PostModel.findOne({status: 'draft'}).then(function (results) {
+                    var post;
+
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('draft');
+
+                    return PostModel.edit({
+                        status: 'scheduled',
+                        published_at: newPublishedAt
+                    }, _.extend({}, context, {id: post.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+
+                    // mysql does not store ms
+                    moment(edited.attributes.published_at).startOf('seconds').diff(moment(newPublishedAt).startOf('seconds')).should.eql(0);
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.scheduled').should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
+
+                    done();
+                }).catch(done);
+            });
+
+            it('scheduled -> draft: expect unschedule', function (done) {
+                PostModel.findOne({status: 'scheduled'}).then(function (results) {
+                    var post;
+
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('scheduled');
+
+                    return PostModel.edit({
+                        status: 'draft'
+                    }, _.extend({}, context, {id: post.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('draft');
+                    eventSpy.callCount.should.eql(2);
+                    eventSpy.firstCall.calledWith('post.unscheduled').should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
+
+                    done();
+                }).catch(done);
+            });
+
+            it('scheduled -> scheduled with updated published_at', function (done) {
+                PostModel.findOne({status: 'scheduled'}).then(function (results) {
+                    var post;
+
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('scheduled');
+
+                    return PostModel.edit({
+                        status: 'scheduled',
+                        published_at: moment().add(20, 'days')
+                    }, _.extend({}, context, {id: post.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+                    eventSpy.callCount.should.eql(2);
+                    eventSpy.firstCall.calledWith('post.rescheduled').should.be.true();
+                    eventSpy.secondCall.calledWith('post.edited').should.be.true();
+
+                    done();
+                }).catch(done);
+            });
+
+            it('published -> scheduled and expect update of published_at', function (done) {
+                var postId = 1;
+
+                PostModel.findOne({id: postId}).then(function (results) {
+                    var post;
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.id.should.equal(postId);
+                    post.status.should.equal('published');
+
+                    return PostModel.edit({
+                        status: 'scheduled',
+                        published_at: moment().add(1, 'day').toDate()
+                    }, _.extend({}, context, {id: postId}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+                    eventSpy.callCount.should.eql(3);
+                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true();
+                    eventSpy.secondCall.calledWith('post.scheduled').should.be.true();
+                    eventSpy.thirdCall.calledWith('post.edited').should.be.true();
+
+                    done();
+                }).catch(done);
+            });
+
             it('can convert draft post to page and back', function (done) {
                 var postId = 4;
 
@@ -452,6 +620,41 @@ describe('Post Model', function () {
                     eventSpy.callCount.should.equal(4);
                     eventSpy.thirdCall.calledWith('page.deleted').should.be.true();
                     eventSpy.lastCall.calledWith('post.added').should.be.true();
+                    done();
+                }).catch(done);
+            });
+
+            it('can convert draft to schedule AND post to page and back', function (done) {
+                PostModel.findOne({status: 'draft'}).then(function (results) {
+                    var post;
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('draft');
+
+                    return PostModel.edit({
+                        page: 1,
+                        status: 'scheduled',
+                        published_at: moment().add(10, 'days')
+                    }, _.extend({}, context, {id: post.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+                    edited.attributes.page.should.equal(true);
+                    eventSpy.callCount.should.be.eql(3);
+                    eventSpy.firstCall.calledWith('post.deleted').should.be.true();
+                    eventSpy.secondCall.calledWith('page.added').should.be.true();
+                    eventSpy.thirdCall.calledWith('page.scheduled').should.be.true();
+
+                    return PostModel.edit({page: 0}, _.extend({}, context, {id: edited.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+                    edited.attributes.page.should.equal(false);
+                    eventSpy.callCount.should.equal(7);
+                    eventSpy.getCall(3).calledWith('page.unscheduled').should.be.true();
+                    eventSpy.getCall(4).calledWith('page.deleted').should.be.true();
+                    eventSpy.getCall(5).calledWith('post.added').should.be.true();
+                    eventSpy.getCall(6).calledWith('post.scheduled').should.be.true();
                     done();
                 }).catch(done);
             });
@@ -646,6 +849,28 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('can add, with title being a number', function (done) {
+                var newPost = testUtils.DataGenerator.forModel.posts[2];
+
+                newPost.title = 123;
+
+                PostModel.add(newPost, context).then(function (createdPost) {
+                    should.exist(createdPost);
+                    done();
+                }).catch(done);
+            });
+
+            it('can add, with markdown being a number', function (done) {
+                var newPost = testUtils.DataGenerator.forModel.posts[2];
+
+                newPost.markdown = 123;
+
+                PostModel.add(newPost, context).then(function (createdPost) {
+                    should.exist(createdPost);
+                    done();
+                }).catch(done);
+            });
+
             it('can add, with previous published_at date', function (done) {
                 var previousPublishedAtDate = new Date(2013, 8, 21, 12);
 
@@ -662,6 +887,106 @@ describe('Post Model', function () {
                     eventSpy.firstCall.calledWith('post.added').should.be.true();
                     eventSpy.secondCall.calledWith('post.published').should.be.true();
 
+                    done();
+                }).catch(done);
+            });
+
+            it('add draft post without published_at -> we expect no auto insert of published_at', function (done) {
+                PostModel.add({
+                    status: 'draft',
+                    title: 'draft 1',
+                    markdown: 'This is some content'
+                }, context).then(function (newPost) {
+                    should.exist(newPost);
+                    should.not.exist(newPost.get('published_at'));
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
+                    done();
+                }).catch(done);
+            });
+
+            it('add draft post with published_at -> we expect published_at to exist', function (done) {
+                PostModel.add({
+                    status: 'draft',
+                    published_at: moment().toDate(),
+                    title: 'draft 1',
+                    markdown: 'This is some content'
+                }, context).then(function (newPost) {
+                    should.exist(newPost);
+                    should.exist(newPost.get('published_at'));
+                    eventSpy.calledOnce.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
+                    done();
+                }).catch(done);
+            });
+
+            it('add scheduled post without published_at -> we expect an error', function (done) {
+                PostModel.add({
+                    status: 'scheduled',
+                    title: 'scheduled 1',
+                    markdown: 'This is some content'
+                }, context).catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    eventSpy.called.should.be.false();
+                    done();
+                });
+            });
+
+            it('add scheduled post with published_at not in future-> we expect an error', function (done) {
+                PostModel.add({
+                    status: 'scheduled',
+                    published_at: moment().subtract(1, 'minute'),
+                    title: 'scheduled 1',
+                    markdown: 'This is some content'
+                }, context).catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    eventSpy.called.should.be.false();
+                    done();
+                });
+            });
+
+            it('add scheduled post with published_at 1 minutes in future -> we expect an error', function (done) {
+                PostModel.add({
+                    status: 'scheduled',
+                    published_at: moment().add(1, 'minute'),
+                    title: 'scheduled 1',
+                    markdown: 'This is some content'
+                }, context).catch(function (err) {
+                    (err instanceof errors.ValidationError).should.eql(true);
+                    eventSpy.called.should.be.false();
+                    done();
+                });
+            });
+
+            it('add scheduled post with published_at 10 minutes in future -> we expect success', function (done) {
+                PostModel.add({
+                    status: 'scheduled',
+                    published_at: moment().add(10, 'minute'),
+                    title: 'scheduled 1',
+                    markdown: 'This is some content'
+                }, context).then(function (post) {
+                    should.exist(post);
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('post.added').should.be.true();
+                    eventSpy.secondCall.calledWith('post.scheduled').should.be.true();
+                    done();
+                }).catch(done);
+            });
+
+            it('add scheduled page with published_at 10 minutes in future -> we expect success', function (done) {
+                PostModel.add({
+                    status: 'scheduled',
+                    page: 1,
+                    published_at: moment().add(10, 'minute'),
+                    title: 'scheduled 1',
+                    markdown: 'This is some content'
+                }, context).then(function (post) {
+                    should.exist(post);
+                    eventSpy.calledTwice.should.be.true();
+                    eventSpy.firstCall.calledWith('page.added').should.be.true();
+                    eventSpy.secondCall.calledWith('page.scheduled').should.be.true();
                     done();
                 }).catch(done);
             });
@@ -999,14 +1324,14 @@ describe('Post Model', function () {
             // We're going to delete all posts by user 1
             var authorData = {id: 1};
 
-            PostModel.findAll().then(function (found) {
+            PostModel.findAll({context:{internal:true}}).then(function (found) {
                 // There are 50 posts to begin with
                 found.length.should.equal(50);
                 return PostModel.destroyByAuthor(authorData);
             }).then(function (results) {
                 // User 1 has 13 posts in the database
                 results.length.should.equal(13);
-                return PostModel.findAll();
+                return PostModel.findAll({context:{internal:true}});
             }).then(function (found) {
                 // Only 37 should remain
                 found.length.should.equal(37);

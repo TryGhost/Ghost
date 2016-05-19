@@ -1,3 +1,5 @@
+var socialUrls = require('../../utils/social-urls');
+
 function getStructuredData(metaData) {
     var structuredData,
         card = 'summary';
@@ -16,6 +18,8 @@ function getStructuredData(metaData) {
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
         'article:tag': metaData.keywords,
+        'article:publisher': metaData.blog.facebook ? socialUrls.facebookUrl(metaData.blog.facebook) : undefined,
+        'article:author': metaData.authorFacebook ? socialUrls.facebookUrl(metaData.authorFacebook) : undefined,
         'twitter:card': card,
         'twitter:title': metaData.metaTitle,
         'twitter:description': metaData.metaDescription || metaData.excerpt,
@@ -24,7 +28,9 @@ function getStructuredData(metaData) {
         'twitter:label1': metaData.authorName ? 'Written by' : undefined,
         'twitter:data1': metaData.authorName,
         'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
-        'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined
+        'twitter:data2': metaData.keywords ? metaData.keywords.join(', ') : undefined,
+        'twitter:site': metaData.blog.twitter || undefined,
+        'twitter:creator': metaData.creatorTwitter || undefined
     };
 
     // return structured data removing null or undefined keys

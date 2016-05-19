@@ -1,23 +1,27 @@
 import Ember from 'ember';
-import uploader from 'ghost/assets/lib/uploader';
+import {formatMarkdown} from 'ghost/helpers/gh-format-markdown';
 
 const {
-    $,
     Component,
-    inject: {service},
-    run
+    run,
+    uuid
 } = Ember;
 
 export default Component.extend({
-    config: service(),
-
     _scrollWrapper: null,
+
+    previewHTML: '',
+
+    init() {
+        this._super(...arguments);
+        this.set('imageUploadComponents', Ember.A([]));
+        this.buildPreviewHTML();
+    },
 
     didInsertElement() {
         this._super(...arguments);
         this._scrollWrapper = this.$().closest('.entry-preview-content');
         this.adjustScrollPosition(this.get('scrollPosition'));
-        run.scheduleOnce('afterRender', this, this.dropzoneHandler);
     },
 
     didReceiveAttrs(attrs) {
@@ -32,7 +36,7 @@ export default Component.extend({
         }
 
         if (attrs.newAttrs.markdown.value !== attrs.oldAttrs.markdown.value) {
-            run.scheduleOnce('afterRender', this, this.dropzoneHandler);
+            run.throttle(this, this.buildPreviewHTML, 30, false);
         }
     },
 
@@ -44,22 +48,63 @@ export default Component.extend({
         }
     },
 
-    dropzoneHandler() {
-        let dropzones = $('.js-drop-zone[data-uploaderui!="true"]');
+    buildPreviewHTML() {
+        let markdown = this.get('markdown');
+        let html = formatMarkdown([markdown]).string;
+        let template = document.createElement('template');
+        template.innerHTML = html;
+        let fragment = template.content;
+        let dropzones = fragment.querySelectorAll('.js-drop-zone');
+        let components = this.get('imageUploadComponents');
 
-        if (dropzones.length) {
-            uploader.call(dropzones, {
-                editor: true,
-                fileStorage: this.get('config.fileStorage')
-            });
+        if (dropzones.length !== components.length) {
+            components = Ember.A([]);
+            this.set('imageUploadComponents', components);
+        }
 
-            dropzones.on('uploadstart', run.bind(this, 'sendAction', 'uploadStarted'));
-            dropzones.on('uploadfailure', run.bind(this, 'sendAction', 'uploadFinished'));
-            dropzones.on('uploadsuccess', run.bind(this, 'sendAction', 'uploadFinished'));
-            dropzones.on('uploadsuccess', run.bind(this, 'sendAction', 'uploadSuccess'));
+        [...dropzones].forEach((oldEl, i) => {
+            let el = oldEl.cloneNode(true);
+            let component = components[i];
+            let uploadTarget = el.querySelector('.js-upload-target');
+            let id = uuid();
+            let destinationElementId = `image-uploader-${id}`;
+            let src;
 
-            // Set the current height so we can listen
-            this.sendAction('updateHeight', this.$().height());
+            if (uploadTarget) {
+                src = uploadTarget.getAttribute('src');
+            }
+
+            if (component) {
+                component.set('destinationElementId', destinationElementId);
+                component.set('src', src);
+            } else {
+                let imageUpload = Ember.Object.create({
+                    destinationElementId,
+                    id,
+                    src,
+                    index: i
+                });
+
+                this.get('imageUploadComponents').pushObject(imageUpload);
+            }
+
+            el.id = destinationElementId;
+            el.innerHTML = '';
+            el.classList.remove('image-uploader');
+
+            oldEl.parentNode.replaceChild(el, oldEl);
+        });
+
+        this.set('previewHTML', fragment);
+    },
+
+    actions: {
+        updateImageSrc(index, url) {
+            this.attrs.updateImageSrc(index, url);
+        },
+
+        updateHeight() {
+            this.attrs.updateHeight(this.$().height());
         }
     }
 });

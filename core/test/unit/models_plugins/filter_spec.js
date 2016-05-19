@@ -153,7 +153,7 @@ describe('Filter', function () {
             });
         });
 
-        describe('Apply Filters', function () {
+        describe('Apply Default and Custom Filters', function () {
             var fetchSpy,
                 restoreGQL,
                 filterGQL;
@@ -174,7 +174,7 @@ describe('Filter', function () {
             });
 
             it('should call fetchAndCombineFilters if _filters not set', function () {
-                var result = ghostBookshelf.Model.prototype.applyFilters();
+                var result = ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters();
 
                 fetchSpy.calledOnce.should.be.true();
                 should(result._filters).be.null();
@@ -183,7 +183,7 @@ describe('Filter', function () {
             it('should NOT call fetchAndCombineFilters if _filters IS set', function () {
                 ghostBookshelf.Model.prototype._filters = 'test';
 
-                var result = ghostBookshelf.Model.prototype.applyFilters();
+                var result = ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters();
 
                 fetchSpy.called.should.be.false();
                 result._filters.should.eql('test');
@@ -193,7 +193,7 @@ describe('Filter', function () {
                 ghostBookshelf.Model.prototype._filters = {statements: [
                     {prop: 'title', op: '=', value: 'Hello Word'}
                 ]};
-                ghostBookshelf.Model.prototype.applyFilters();
+                ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters();
 
                 fetchSpy.called.should.be.false();
                 filterGQL.knexify.called.should.be.true();
@@ -208,7 +208,7 @@ describe('Filter', function () {
                     {prop: 'tags', op: 'IN', value: ['photo', 'video']}
                 ]};
 
-                ghostBookshelf.Model.prototype.applyFilters();
+                ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters();
                 filterGQL.json.printStatements.calledOnce.should.be.true();
                 filterGQL.json.printStatements.firstCall.args[0].should.eql([
                     {prop: 'tags', op: 'IN', value: ['photo', 'video']}

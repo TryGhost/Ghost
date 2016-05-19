@@ -27,6 +27,7 @@
 @import "components/popovers.css";
 @import "components/settings-menu.css";
 @import "components/selectize.css";
+@import "components/power-select.css";
 
 
 /* Layouts: Groups of Components
@@ -42,4 +43,6 @@
 @import "layouts/about.css";
 @import "layouts/tags.css";
 @import "layouts/error.css";
+@import "layouts/apps.css";
 @import "layouts/packages.css";
+@import "layouts/subscribers.css";

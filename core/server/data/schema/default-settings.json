@@ -1,7 +1,7 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "004"
+            "defaultValue": "005"
         },
         "dbHash": {
             "defaultValue": null
@@ -61,11 +61,20 @@
         "ghost_foot": {
             "defaultValue" : ""
         },
+        "facebook": {
+            "defaultValue" : ""
+        },
+        "twitter": {
+            "defaultValue" : ""
+        },
         "labs": {
             "defaultValue": "{}"
         },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
+        },
+        "slack": {
+            "defaultValue": "[{\"url\":\"\"}]"
         }
     },
     "theme": {

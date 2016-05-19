@@ -1,26 +1,27 @@
 import Ember from 'ember';
 import isNumber from 'ghost/utils/isNumber';
 import boundOneWay from 'ghost/utils/bound-one-way';
-import ValidationEngine from 'ghost/mixins/validation-engine';
+import { invoke } from 'ember-invoke-action';
 
 const {
     Controller,
     RSVP,
     computed,
     inject: {service},
+    run,
     isArray
 } = Ember;
 const {alias, and, not, or, readOnly} = computed;
 
-export default Controller.extend(ValidationEngine, {
-    // ValidationEngine settings
-    validationType: 'user',
+export default Controller.extend({
     submitting: false,
     lastPromise: null,
     showDeleteUserModal: false,
     showTransferOwnerModal: false,
     showUploadCoverModal: false,
     showUplaodImageModal: false,
+    _scratchFacebook: null,
+    _scratchTwitter: null,
 
     ajax: service(),
     dropdown: service(),
@@ -151,6 +152,7 @@ export default Controller.extend(ValidationEngine, {
             });
 
             this.set('lastPromise', promise);
+            return promise;
         },
 
         deleteUser() {
@@ -240,6 +242,140 @@ export default Controller.extend(ValidationEngine, {
             });
 
             this.set('lastPromise', promise);
+        },
+
+        validateFacebookUrl() {
+            let newUrl = this.get('_scratchFacebook');
+            let oldUrl = this.get('user.facebook');
+            let errMessage = '';
+
+            if (newUrl === '') {
+                // Clear out the Facebook url
+                this.set('user.facebook', '');
+                this.get('user.errors').remove('facebook');
+                return;
+            }
+
+            // _scratchFacebook will be null unless the user has input something
+            if (!newUrl) {
+                newUrl = oldUrl;
+            }
+
+            // If new url didn't change, exit
+            if (newUrl === oldUrl) {
+                this.get('user.errors').remove('facebook');
+                return;
+            }
+
+            // TODO: put the validation here into a validator
+            if (newUrl.match(/(?:facebook\.com\/)(\S+)/) || newUrl.match(/([a-z\d\.]+)/i)) {
+                let username = [];
+
+                if (newUrl.match(/(?:facebook\.com\/)(\S+)/)) {
+                    [ , username ] = newUrl.match(/(?:facebook\.com\/)(\S+)/);
+                } else {
+                    [ , username ] = newUrl.match(/(?:https\:\/\/|http\:\/\/)?(?:www\.)?(?:\w+\.\w+\/+)?(\S+)/mi);
+                }
+
+                // check if we have a /page/username or without
+                if (username.match(/^(?:\/)?(pages?\/\S+)/mi)) {
+                    // we got a page url, now save the username without the / in the beginning
+
+                    [ , username ] = username.match(/^(?:\/)?(pages?\/\S+)/mi);
+                } else if (username.match(/^(http|www)|(\/)/) || !username.match(/^([a-z\d\.]{5,50})$/mi)) {
+                    errMessage = !username.match(/^([a-z\d\.]{5,50})$/mi) ? 'Your Username is not a valid Facebook Username' : 'The URL must be in a format like https://www.facebook.com/yourUsername';
+
+                    this.get('user.errors').add('facebook', errMessage);
+                    this.get('user.hasValidated').pushObject('facebook');
+                    return;
+                }
+
+                newUrl = `https://www.facebook.com/${username}`;
+                this.set('user.facebook', newUrl);
+
+                this.get('user.errors').remove('facebook');
+                this.get('user.hasValidated').pushObject('facebook');
+
+                // User input is validated
+                invoke(this, 'save').then(() => {
+                    // necessary to update the value in the input field
+                    this.set('user.facebook', '');
+                    run.schedule('afterRender', this, function () {
+                        this.set('user.facebook', newUrl);
+                    });
+                });
+            } else {
+                errMessage = 'The URL must be in a format like ' +
+                    'https://www.facebook.com/yourUsername';
+                this.get('user.errors').add('facebook', errMessage);
+                this.get('user.hasValidated').pushObject('facebook');
+                return;
+            }
+        },
+
+        validateTwitterUrl() {
+            let newUrl = this.get('_scratchTwitter');
+            let oldUrl = this.get('user.twitter');
+            let errMessage = '';
+
+            if (newUrl === '') {
+                // Clear out the Twitter url
+                this.set('user.twitter', '');
+                this.get('user.errors').remove('twitter');
+                return;
+            }
+
+            // _scratchTwitter will be null unless the user has input something
+            if (!newUrl) {
+                newUrl = oldUrl;
+            }
+
+            // If new url didn't change, exit
+            if (newUrl === oldUrl) {
+                this.get('user.errors').remove('twitter');
+                return;
+            }
+
+            // TODO: put the validation here into a validator
+            if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d\.]+)/i)) {
+                let username = [];
+
+                if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
+                    [ , username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
+                } else {
+                    [username] = newUrl.match(/([^/]+)\/?$/mi);
+                }
+
+                // check if username starts with http or www and show error if so
+                if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d\.\_]{1,15}$/mi)) {
+                    errMessage = !username.match(/^[a-z\d\.\_]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
+
+                    this.get('user.errors').add('twitter', errMessage);
+                    this.get('user.hasValidated').pushObject('twitter');
+                    return;
+                }
+
+                newUrl = `https://twitter.com/${username}`;
+                this.set('user.twitter', newUrl);
+
+                this.get('user.errors').remove('twitter');
+                this.get('user.hasValidated').pushObject('twitter');
+
+                // User input is validated
+                invoke(this, 'save').then(() => {
+                    // necessary to update the value in the input field
+                    this.set('user.twitter', '');
+                    run.schedule('afterRender', this, function () {
+                        this.set('user.twitter', newUrl);
+                    });
+                });
+            } else {
+                errMessage = 'The URL must be in a format like ' +
+                    'https://twitter.com/yourUsername';
+                this.get('user.errors').add('twitter', errMessage);
+                this.get('user.hasValidated').pushObject('twitter');
+                return;
+            }
         },
 
         transferOwnership() {

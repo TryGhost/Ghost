@@ -25,7 +25,8 @@ var bodyParser      = require('body-parser'),
     themeHandler     = require('./theme-handler'),
     uncapitalise     = require('./uncapitalise'),
     cors             = require('./cors'),
-    privateBlogging  = require('../apps/private-blogging'),
+    netjet           = require('netjet'),
+    labs             = require('./labs'),
 
     ClientPasswordStrategy  = require('passport-oauth2-client-password').Strategy,
     BearerStrategy          = require('passport-http-bearer').Strategy,
@@ -44,7 +45,8 @@ middleware = {
         requiresAuthorizedUser: auth.requiresAuthorizedUser,
         requiresAuthorizedUserPublicAPI: auth.requiresAuthorizedUserPublicAPI,
         errorHandler: errors.handleAPIError,
-        cors: cors
+        cors: cors,
+        labs: labs
     }
 };
 
@@ -71,6 +73,14 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
         }
     }
 
+    // Preload link headers
+    if (config.preloadHeaders) {
+        blogApp.use(netjet({
+            cache: {
+                max: config.preloadHeaders
+            }
+        }));
+    }
     // Favicon
     blogApp.use(serveSharedFile('favicon.ico', 'image/x-icon', utils.ONE_DAY_S));
 
@@ -110,8 +120,14 @@ setupMiddleware = function setupMiddleware(blogApp, adminApp) {
     // Theme only config
     blogApp.use(staticTheme());
 
-    // setup middleware for private blogs
-    privateBlogging.setupMiddleware(blogApp);
+    // setup middleware for internal apps
+    // @TODO: refactor this to be a proper app middleware hook for internal & external apps
+    config.internalApps.forEach(function (appName) {
+        var app = require(path.join(config.paths.internalAppPath, appName));
+        if (app.hasOwnProperty('setupMiddleware')) {
+            app.setupMiddleware(blogApp);
+        }
+    });
 
     // Serve sitemap.xsl file
     blogApp.use(serveSharedFile('sitemap.xsl', 'text/xsl', utils.ONE_DAY_S));

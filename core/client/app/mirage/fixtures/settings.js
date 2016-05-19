@@ -125,7 +125,7 @@ export default [
         id: 12,
         uuid: 'd806f358-7996-4c74-b153-8876959c4b70',
         key: 'labs',
-        value: '{"codeInjectionUI":true}',
+        value: '{"codeInjectionUI":true,"subscribers":true}',
         type: 'blog',
         created_at: '2015-01-12T18:29:01.000Z',
         created_by: 1,
@@ -167,6 +167,39 @@ export default [
         updated_by: 1,
         uuid: 'f8e8cbda-d079-11e5-ab30-625662870761',
         value: ''
+    },
+    {
+        created_at: '2016-05-05T15:04:03.115Z',
+        created_by: 1,
+        id: 17,
+        key: 'slack',
+        type: 'blog',
+        updated_at: '2016-05-05T18:33:09.168Z',
+        updated_by: 1,
+        uuid: 'dd4ebaa8-dedb-40ff-a663-ec64a92d4111',
+        value: '[{"url":""}]'
+    },
+    {
+        created_at: '2016-05-05T15:40:12.133Z',
+        created_by: 1,
+        id: 23,
+        key: 'facebook',
+        type: 'blog',
+        updated_at: '2016-05-08T15:20:25.953Z',
+        updated_by: 1,
+        uuid: 'd4387e5c-3230-46dd-a89b-0d8a40365c35',
+        value: 'test'
+    },
+    {
+        created_at: '2016-05-05T15:40:12.134Z',
+        created_by: 1,
+        id: 24,
+        key: 'twitter',
+        type: 'blog',
+        updated_at: '2016-05-08T15:20:25.954Z',
+        updated_by: 1,
+        uuid: '5130441f-e4c7-4750-9692-a22d841ab049',
+        value: '@test'
     },
     {
         key: 'availableThemes',

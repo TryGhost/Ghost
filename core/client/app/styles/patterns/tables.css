@@ -18,6 +18,7 @@ table td,
     vertical-align: middle;
     text-align: left;
     line-height: 20px;
+    user-select: text;
 }
 
 
@@ -58,4 +59,21 @@ table td,
 .table.plain tbody > tr:nth-child(odd) > td,
 .table.plain tbody > tr:nth-child(odd) > th {
     background: transparent;
+}
+
+/* Ember Light Table
+/* ---------------------------------------------------------- */
+
+.ember-light-table th {
+    white-space: nowrap;
+}
+
+.ember-light-table .lt-column .lt-sort-icon {
+    float: none;
+    margin-left: 0.3rem;
+}
+
+.lt-sort-icon.icon-ascending:before,
+.lt-sort-icon.icon-descending:before {
+    font-size: 0.6em;
 }

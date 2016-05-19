@@ -1,0 +1,123 @@
+.ember-power-select-trigger {
+    border: 1px solid #dfe1e3;
+    border-radius: var(--border-radius);
+    color: #666;
+}
+
+.ember-power-select-search {
+    padding: 2px 0 3px 0 !important;
+}
+
+.ember-basic-dropdown--opened > .ember-power-select-trigger,
+.ember-power-select-trigger[aria-expanded="true"],
+.ember-power-select-search input {
+    outline: 0;
+    border-color: #b1b1b1;
+}
+
+.ember-power-select-dropdown {
+    position: absolute;
+    z-index: 1000;
+    box-sizing: border-box;
+    margin: -1px 0 0 0;
+    border: 1px solid #b1b1b1;
+    border-top: 0 none;
+    background: #fff;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ember-power-select-options:not([role="group"]) {
+    max-height: 200px;
+}
+
+.ember-power-select-search input {
+    display: inline-block !important;
+    margin: 0 1px !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    border: 0 none !important;
+    background: none !important;
+    box-shadow: none !important;
+    text-indent: 0 !important;
+    font-size: 1.3rem;
+    line-height: inherit !important;
+}
+
+.ember-power-select-group {
+    float: left;
+    box-sizing: border-box;
+    width: 100%;
+    border-top: 0 none;
+    border-right: 1px solid #f2f2f2;
+}
+
+.ember-power-select-group .ember-power-select-group-name {
+    position: relative;
+    display: inline-block;
+    padding: 7px 8px;
+    background: #fff;
+    color: var(--midgrey);
+    font-size: 0.85em;
+    font-weight: normal;
+    cursor: default;
+}
+
+.ember-power-select-group .ember-power-select-group-name:after {
+    content: "";
+    position: absolute;
+    top: 52%;
+    left: calc(100% + 3px);
+    display: block;
+    width: calc(189px - 100%);
+    height: 1px;
+    border-bottom: #dfe1e3 1px solid;
+}
+
+@media (max-width: 800px) {
+    .ember-power-select-group .ember-power-select-group-name:after {
+        width: calc(224px - 100%);
+    }
+}
+
+@media (max-width: 500px) {
+    .ember-power-select-group .ember-power-select-group-name:after {
+        width: calc(80vw - 45px - 100%);
+    }
+}
+
+.ember-power-select-group:first-of-type .ember-power-select-group-name {
+    margin-bottom: 7px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.ember-power-select-group .ember-power-select-option {
+    overflow: hidden;
+    padding: 7px 8px;
+    line-height: 1.35em;
+    cursor: pointer;
+}
+
+.ember-power-select-group .ember-power-select-option .highlight {
+    background: #fff3b8;
+    border-radius: 1px;
+}
+
+.ember-power-select-group .ember-power-select-option[aria-current="true"] {
+    background: color(var(--blue) alpha(-85%));
+    color: var(--darkgrey);
+}
+
+/*
+    HACK: ember-power-select has no separate class for the loading message
+    Issue: https://github.com/cibernox/ember-power-select/issues/479
+ */
+.ember-power-select-dropdown > .ember-power-select-options > .ember-power-select-option:first-of-type,
+.ember-power-select-option--no-matches-message {
+    padding: 7px 8px;
+    color: var(--midgrey);
+    font-size: 0.9em;
+}

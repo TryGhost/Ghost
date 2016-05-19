@@ -1,6 +1,7 @@
 /* global key */
 import Ember from 'ember';
 import boundOneWay from 'ghost/utils/bound-one-way';
+import {invokeAction} from 'ember-invoke-action';
 
 const {
     Component,
@@ -108,19 +109,15 @@ export default Component.extend({
 
     actions: {
         setProperty(property, value) {
-            this.get('setProperty')(property, value);
+            invokeAction(this, 'setProperty', property, value);
         },
 
         setCoverImage(image) {
-            this.get('setProperty')('image', image);
+            invokeAction(this, 'setProperty', 'image', image);
         },
 
         clearCoverImage() {
-            this.get('setProperty')('image', '');
-        },
-
-        setUploaderReference() {
-            // noop
+            invokeAction(this, 'setProperty', 'image', '');
         },
 
         openMeta() {
@@ -132,7 +129,7 @@ export default Component.extend({
         },
 
         deleteTag() {
-            this.get('showDeleteTagModal')();
+            invokeAction(this, 'showDeleteTagModal');
         }
     }
 

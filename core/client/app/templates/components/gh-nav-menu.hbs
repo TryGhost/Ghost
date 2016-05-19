@@ -25,6 +25,11 @@
         {{!<li><a href="#"><i class="icon-user"></i>My Posts</a></li>}}
         <li>{{#link-to "team" classNames="gh-nav-main-users"}}<i class="icon-team"></i>Team{{/link-to}}</li>
         {{!<li><a href="#"><i class="icon-idea"></i>Ideas</a></li>}}
+        {{#if feature.subscribers}}
+            {{#if (gh-user-can-admin session.user)}}
+                <li>{{#link-to "subscribers" classNames="gh-nav-main-subscribers"}}<i class="icon-mail"></i>Subscribers{{/link-to}}</li>
+            {{/if}}
+        {{/if}}
     </ul>
     {{#if (gh-user-can-admin session.user)}}
         <ul class="gh-nav-list gh-nav-settings">
@@ -34,7 +39,8 @@
             <li>{{#link-to "settings.navigation" classNames="gh-nav-settings-navigation"}}<i class="icon-compass"></i>Navigation{{/link-to}}</li>
             <li>{{#link-to "settings.tags" classNames="gh-nav-settings-tags"}}<i class="icon-tag"></i>Tags{{/link-to}}</li>
             <li>{{#link-to "settings.code-injection" classNames="gh-nav-settings-code-injection"}}<i class="icon-code"></i>Code Injection{{/link-to}}</li>
-            <li>{{#link-to "settings.labs" classNames="gh-nav-settings-labs"}}<i class="icon-apps"></i>Labs{{/link-to}}</li>
+            <li>{{#link-to "settings.apps" classNames="gh-nav-settings-apps"}}<i class="icon-box"></i>Apps{{/link-to}}</li>
+            <li>{{#link-to "settings.labs" classNames="gh-nav-settings-labs"}}<i class="icon-labs"></i>Labs{{/link-to}}</li>
         </ul>
     {{/if}}
 </section>

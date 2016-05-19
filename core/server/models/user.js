@@ -10,6 +10,7 @@ var _              = require('lodash'),
     validation     = require('../data/validation'),
     events         = require('../events'),
     i18n           = require('../i18n'),
+    toString       = require('lodash.tostring'),
 
     bcryptGenSalt  = Promise.promisify(bcrypt.genSalt),
     bcryptHash     = Promise.promisify(bcrypt.hash),
@@ -169,9 +170,15 @@ User = ghostBookshelf.Model.extend({
             return role.get('name') === roleName;
         });
     },
+
     enforcedFilters: function enforcedFilters() {
+        if (this.isInternalContext()) {
+            return null;
+        }
+
         return this.isPublicContext() ? 'status:[' + activeStates.join(',') + ']' : null;
     },
+
     defaultFilters: function defaultFilters() {
         return this.isPublicContext() ? null : 'status:[' + activeStates.join(',') + ']';
     }
@@ -234,7 +241,8 @@ User = ghostBookshelf.Model.extend({
                 findOne: ['withRelated', 'status'],
                 setup: ['id'],
                 edit: ['withRelated', 'id'],
-                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status']
+                findPage: ['page', 'limit', 'columns', 'filter', 'order', 'status'],
+                findAll: ['filter']
             };
 
         if (validOptions[methodName]) {
@@ -360,6 +368,8 @@ User = ghostBookshelf.Model.extend({
         var self = this,
             userData = this.filterData(data),
             roles;
+
+        userData.password = toString(userData.password);
 
         options = this.filterOptions(options, 'add');
         options.withRelated = _.union(options.withRelated, options.include);
