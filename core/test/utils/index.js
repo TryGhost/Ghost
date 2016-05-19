@@ -33,7 +33,11 @@ var Promise       = require('bluebird'),
 
 /** TEST FIXTURES **/
 fixtures = {
-    insertPosts: function insertPosts() {
+    insertPosts: function insertPosts(posts) {
+        return Promise.resolve(db.knex('posts').insert(posts));
+    },
+
+    insertPostsAndTags: function insertPostsAndTags() {
         return Promise.resolve(db.knex('posts').insert(DataGenerator.forKnex.posts)).then(function () {
             return db.knex('tags').insert(DataGenerator.forKnex.tags);
         }).then(function () {
@@ -278,9 +282,9 @@ fixtures = {
         });
     },
 
-    insertOne: function insertOne(obj, fn) {
+    insertOne: function insertOne(obj, fn, index) {
         return db.knex(obj)
-           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][0]));
+           .insert(DataGenerator.forKnex[fn](DataGenerator.Content[obj][index || 0]));
     },
 
     insertApps: function insertApps() {
@@ -327,6 +331,11 @@ fixtures = {
                 Owner: 4
             };
 
+        // if empty db will throw SQLITE_MISUSE, hard to debug
+        if (_.isEmpty(permsToInsert)) {
+            return Promise.reject(new Error('no permission found:' + obj));
+        }
+
         permsToInsert = _.map(permsToInsert, function (perms) {
             actions.push(perms.action_type);
             return DataGenerator.forKnex.createBasic(perms);
@@ -347,12 +356,18 @@ fixtures = {
         });
 
         return db.knex('permissions').insert(permsToInsert).then(function () {
+            if (_.isEmpty(permissionsRoles)) {
+                return Promise.resolve();
+            }
+
             return db.knex('permissions_roles').insert(permissionsRoles);
         });
     },
+
     insertClients: function insertClients() {
         return db.knex('clients').insert(DataGenerator.forKnex.clients);
     },
+
     insertAccessToken: function insertAccessToken(override) {
         return db.knex('accesstokens').insert(DataGenerator.forKnex.createToken(override));
     }
@@ -388,7 +403,7 @@ toDoList = {
     tag: function insertTag() { return fixtures.insertOne('tags', 'createTag'); },
     subscriber: function insertSubscriber() { return fixtures.insertOne('subscribers', 'createSubscriber'); },
 
-    posts: function insertPosts() { return fixtures.insertPosts(); },
+    posts: function insertPostsAndTags() { return fixtures.insertPostsAndTags(); },
     'posts:mu': function insertMultiAuthorPosts() { return fixtures.insertMultiAuthorPosts(); },
     tags: function insertMoreTags() { return fixtures.insertMoreTags(); },
     apps: function insertApps() { return fixtures.insertApps(); },
@@ -431,6 +446,7 @@ getFixtureOps = function getFixtureOps(toDos) {
         fixtureOps.push(function initDB() {
             return migration.init(tablesOnly);
         });
+
         delete toDos.default;
         delete toDos.init;
     }
@@ -438,10 +454,15 @@ getFixtureOps = function getFixtureOps(toDos) {
     // Go through our list of things to do, and add them to an array
     _.each(toDos, function (value, toDo) {
         var tmp;
+
         if (toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) {
             tmp = toDo.split(':');
             fixtureOps.push(toDoList[tmp[0]](tmp[1]));
         } else {
+            if (!toDoList[toDo]) {
+                throw new Error('setup todo does not exist - spell mistake?');
+            }
+
             fixtureOps.push(toDoList[toDo]);
         }
     });
@@ -470,12 +491,16 @@ setup = function setup() {
     var self = this,
         args = arguments;
 
-    return function (done) {
+    return function setup(done) {
         Models.init();
 
-        return initFixtures.apply(self, args).then(function () {
-            done();
-        }).catch(done);
+        if (done) {
+            initFixtures.apply(self, args).then(function () {
+                done();
+            }).catch(done);
+        } else {
+            return initFixtures.apply(self, args);
+        }
     };
 };
 
@@ -556,9 +581,13 @@ togglePermalinks = function togglePermalinks(request, toggle) {
 };
 
 teardown = function teardown(done) {
-    migration.reset().then(function () {
-        done();
-    }).catch(done);
+    if (done) {
+        migration.reset().then(function () {
+            done();
+        }).catch(done);
+    } else {
+        return migration.reset();
+    }
 };
 
 module.exports = {

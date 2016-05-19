@@ -263,7 +263,7 @@
         },
         "permissions": {
             "noActionsMapFound": {
-                "error": "No actions map found, please call permissions.init() before use."
+                "error": "No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use."
             },
             "applyStatusRules": {
                 "error": "You do not have permission to retrieve {docName} with that status"

@@ -1,4 +1,5 @@
 var _ = require('lodash'),
+    Promise = require('bluebird'),
     Models = require('../models'),
     errors = require('../errors'),
     effective;
@@ -7,6 +8,10 @@ effective = {
     user: function (id) {
         return Models.User.findOne({id: id, status: 'all'}, {include: ['permissions', 'roles', 'roles.permissions']})
             .then(function (foundUser) {
+                if (!foundUser) {
+                    return Promise.reject(new errors.NotFoundError(id));
+                }
+
                 var seenPerms = {},
                     rolePerms = _.map(foundUser.related('roles').models, function (role) {
                         return role.related('permissions').models;

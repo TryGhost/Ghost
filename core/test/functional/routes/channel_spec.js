@@ -134,7 +134,7 @@ describe('Channel Routes', function () {
             // we then insert with max 11 which ensures we have 16 published posts
             before(function (done) {
                 testUtils.initData().then(function () {
-                    return testUtils.fixtures.insertPosts();
+                    return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
                     return testUtils.fixtures.insertMorePosts(11);
                 }).then(function () {
@@ -280,7 +280,7 @@ describe('Channel Routes', function () {
             // Add enough posts to trigger pages
             before(function (done) {
                 testUtils.initData().then(function () {
-                    return testUtils.fixtures.insertPosts();
+                    return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
                     return testUtils.fixtures.insertMorePosts(22);
                 }).then(function () {
@@ -451,7 +451,7 @@ describe('Channel Routes', function () {
                 }).then(function () {
                     return testUtils.fixtures.overrideOwnerUser('ghost-owner');
                 }).then(function () {
-                    return testUtils.fixtures.insertPosts();
+                    return testUtils.fixtures.insertPostsAndTags();
                 }).then(function () {
                     return testUtils.fixtures.insertMorePosts(9);
                 }).then(function () {

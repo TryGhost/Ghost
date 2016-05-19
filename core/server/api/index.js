@@ -7,12 +7,12 @@
 var _              = require('lodash'),
     Promise        = require('bluebird'),
     config         = require('../config'),
-    // Include Endpoints
     configuration  = require('./configuration'),
     db             = require('./db'),
     mail           = require('./mail'),
     notifications  = require('./notifications'),
     posts          = require('./posts'),
+    schedules      = require('./schedules'),
     roles          = require('./roles'),
     settings       = require('./settings'),
     tags           = require('./tags'),
@@ -213,7 +213,8 @@ http = function http(apiMethod) {
         var object = req.body,
             options = _.extend({}, req.file, req.query, req.params, {
                 context: {
-                    user: ((req.user && req.user.id) || (req.user && req.user.id === 0)) ? req.user.id : null
+                    user: ((req.user && req.user.id) || (req.user && req.user.id === 0)) ? req.user.id : null,
+                    client: (req.client && req.client.slug) ? req.client.slug : null
                 }
             });
 
@@ -257,6 +258,7 @@ module.exports = {
     mail: mail,
     notifications: notifications,
     posts: posts,
+    schedules: schedules,
     roles: roles,
     settings: settings,
     tags: tags,

@@ -276,6 +276,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             uuid: uuid.v4(),
+            title: 'title',
             status: 'published',
             html: overrides.markdown,
             language: 'en_US',
@@ -405,7 +406,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     clients = [
-        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available', type: 'ua', status: 'enabled'})
+        createBasic({name: 'Ghost Admin', slug: 'ghost-admin', secret: 'not_available', type: 'ua', status: 'enabled'}),
+        createBasic({name: 'Ghost Scheduler', slug: 'ghost-scheduler', secret: 'not_available', type: 'ua', status: 'enabled'})
     ];
 
     roles_users = [
