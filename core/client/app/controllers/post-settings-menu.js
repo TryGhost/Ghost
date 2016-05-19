@@ -31,6 +31,7 @@ export default Controller.extend(SettingsMenuMixin, {
     notifications: service(),
     session: service(),
     slugGenerator: service(),
+    timeZone: service(),
 
     initializeSelectedAuthor: observer('model', function () {
         return this.get('model.author').then((author) => {
@@ -292,50 +293,57 @@ export default Controller.extend(SettingsMenuMixin, {
             if (!userInput) {
                 // Clear out the publishedAt field for a draft
                 if (this.get('model.isDraft')) {
-                    this.set('model.publishedAt', null);
+                    this.set('model.publishedAtOffset', null);
+                }
+                return;
+            }
+
+            this.get('timeZone.offset').then((offset) => {
+
+                let newPublishedAt = parseDateString(userInput, offset);
+                let publishedAt = moment.utc(this.get('model.publishedAt'));
+                let errMessage = '';
+
+                // Clear previous errors
+                this.get('model.errors').remove('post-setting-date');
+
+                // Validate new Published date
+                if (!newPublishedAt.isValid()) {
+                    errMessage = 'Published Date must be a valid date with format: ' +
+                        'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
                 }
 
-                return;
-            }
+                // Date is a valid date, so now make it UTC
+                newPublishedAt = moment.utc(newPublishedAt);
 
-            let newPublishedAt = parseDateString(userInput);
-            let publishedAt = moment(this.get('model.publishedAt'));
-            let errMessage = '';
+                if (newPublishedAt.diff(moment.utc(new Date()), 'hours', true) > 0) {
+                    errMessage = 'Published Date cannot currently be in the future.';
+                }
 
-            // Clear previous errors
-            this.get('model.errors').remove('post-setting-date');
+                // If errors, notify and exit.
+                if (errMessage) {
+                    this.get('model.errors').add('post-setting-date', errMessage);
+                    return;
+                }
 
-            // Validate new Published date
-            if (!newPublishedAt.isValid()) {
-                errMessage = 'Published Date must be a valid date with format: ' +
-                    'DD MMM YY @ HH:mm (e.g. 6 Dec 14 @ 15:00)';
-            } else if (newPublishedAt.diff(new Date(), 'h') > 0) {
-                errMessage = 'Published Date cannot currently be in the future.';
-            }
+                // Do nothing if the user didn't actually change the date
+                if (publishedAt && publishedAt.isSame(newPublishedAt)) {
+                    return;
+                }
 
-            // If errors, notify and exit.
-            if (errMessage) {
-                this.get('model.errors').add('post-setting-date', errMessage);
-                return;
-            }
+                // Validation complete
+                this.set('model.publishedAt', newPublishedAt);
 
-            // Validation complete, update the view
-            this.set('model.publishedAt', newPublishedAt);
+                // If this is a new post.  Don't save the model.  Defer the save
+                // to the user pressing the save button
+                if (this.get('model.isNew')) {
+                    return;
+                }
 
-            // Don't save the date if the user didn't actually changed the date
-            if (publishedAt && publishedAt.isSame(newPublishedAt)) {
-                return;
-            }
-
-            // If this is a new post.  Don't save the model.  Defer the save
-            // to the user pressing the save button
-            if (this.get('model.isNew')) {
-                return;
-            }
-
-            this.get('model').save().catch((errors) => {
-                this.showErrors(errors);
-                this.get('model').rollbackAttributes();
+                this.get('model').save().catch((errors) => {
+                    this.showErrors(errors);
+                    this.get('model').rollbackAttributes();
+                });
             });
         },
 

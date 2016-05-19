@@ -19,6 +19,7 @@
     "keymaster": "1.6.3",
     "lodash": "3.7.0",
     "moment": "2.12.0",
+    "moment-timezone": "0.5.1",
     "normalize.css": "3.0.3",
     "password-generator": "2.0.2",
     "pretender": "1.0.0",

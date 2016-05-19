@@ -264,6 +264,16 @@ export function testConfig() {
         return {};
     });
 
+    /* Configuration -------------------------------------------------------- */
+
+    this.get('/configuration/timezones/', function (db) {
+        return {
+            configuration: [{
+                timezones: db.timezones
+            }]
+        };
+    });
+
     /* Slugs ---------------------------------------------------------------- */
 
     this.get('/slugs/post/:slug/', function (db, request) {

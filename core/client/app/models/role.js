@@ -9,8 +9,8 @@ export default Model.extend({
     uuid: attr('string'),
     name: attr('string'),
     description: attr('string'),
-    createdAt: attr('moment-date'),
-    updatedAt: attr('moment-date'),
+    createdAt: attr('moment-utc'),
+    updatedAt: attr('moment-utc'),
     createdBy: attr(),
     updatedBy: attr(),
 

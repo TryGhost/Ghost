@@ -32,7 +32,7 @@
 
             {{#gh-form-group errors=model.errors property="post-setting-date"}}
                 <label for="post-setting-date">Publish Date</label>
-                {{gh-datetime-input value=model.publishedAt
+                {{gh-datetime-input value=model.publishedAtOffset
                                     update=(action "setPublishedAt")
                                     inputClass="post-setting-date"
                                     inputId="post-setting-date"

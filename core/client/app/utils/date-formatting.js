@@ -24,7 +24,11 @@ function verifyTimeStamp(dateString) {
 }
 
 // Parses a string to a Moment
-function parseDateString(value) {
+function parseDateString(value, offset) {
+    // We need the offset here, otherwise the date will be parsed
+    // in UTC timezone
+    moment.tz.setDefault(offset);
+
     return value ? moment(verifyTimeStamp(value), parseDateFormats, true) : undefined;
 }
 

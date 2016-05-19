@@ -15,10 +15,14 @@ export default Controller.extend(SettingsSaveMixin, {
     showUploadLogoModal: false,
     showUploadCoverModal: false,
 
+    availableTimezones: null,
+
     notifications: service(),
     config: service(),
     _scratchFacebook: null,
     _scratchTwitter: null,
+    timeZone: service(),
+    clock: service(),
 
     selectedTheme: computed('model.activeTheme', 'themes', function () {
         let activeTheme = this.get('model.activeTheme');
@@ -34,12 +38,27 @@ export default Controller.extend(SettingsSaveMixin, {
         return selectedTheme;
     }),
 
+    selectedTimezone: computed('model.activeTimezone', 'availableTimezones', function () {
+        let activeTimezone = this.get('model.activeTimezone');
+        let availableTimezones = this.get('availableTimezones');
+
+        return availableTimezones
+            .filterBy('name', activeTimezone)
+            .get('firstObject');
+    }),
+
     logoImageSource: computed('model.logo', function () {
         return this.get('model.logo') || '';
     }),
 
     coverImageSource: computed('model.cover', function () {
         return this.get('model.cover') || '';
+    }),
+
+    localTime: computed('selectedTimezone', 'clock.second', function () {
+        let timezone = this.get('selectedTimezone.name');
+        this.get('clock.second');
+        return timezone ? moment.tz(timezone).format('HH:mm:ss') : moment.utc().format('HH:mm:ss');
     }),
 
     isDatedPermalinks: computed('model.permalinks', {
@@ -82,7 +101,6 @@ export default Controller.extend(SettingsSaveMixin, {
     save() {
         let notifications = this.get('notifications');
         let config = this.get('config');
-
         return this.get('model').save().then((model) => {
             config.set('blogTitle', model.get('title'));
 
@@ -111,7 +129,9 @@ export default Controller.extend(SettingsSaveMixin, {
         setTheme(theme) {
             this.set('model.activeTheme', theme.name);
         },
-
+        setTimezone(timezone) {
+            this.set('model.activeTimezone', timezone.name);
+        },
         toggleUploadCoverModal() {
             this.toggleProperty('showUploadCoverModal');
         },
