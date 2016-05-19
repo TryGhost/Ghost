@@ -6,7 +6,10 @@ var _              = require('lodash'),
     sequence       = require('../utils/sequence'),
     errors         = require('../errors'),
     Showdown       = require('showdown-ghost'),
-    converter      = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    markdownConverter     = new Showdown.converter({extensions: ['ghostgfm', 'footnotes', 'highlight']}),
+    simpleMDECard         = require('../cards/simplemde-card'),
+    MobiledocHTMLRenderer = require('mobiledoc-html-renderer').default,
+    mobiledocRenderer     = new MobiledocHTMLRenderer({cards: [simpleMDECard]}),
     ghostBookshelf = require('./base'),
     events         = require('../events'),
     config         = require('../config'),
@@ -179,7 +182,11 @@ Post = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.saving.call(this, model, attr, options);
 
-        this.set('html', converter.makeHtml(toString(this.get('markdown'))));
+        if (this.get('mobiledoc')) {
+            this.set('html', mobiledocRenderer.render(JSON.parse(this.get('mobiledoc'))).result);
+        } else {
+            this.set('html', markdownConverter.makeHtml(this.get('markdown')));
+        }
 
         // disabling sanitization until we can implement a better version
         title = this.get('title') || i18n.t('errors.models.post.untitled');
