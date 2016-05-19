@@ -206,7 +206,8 @@
             "post": {
                 "untitled": "(Untitled)",
                 "valueCannotBeBlank": "Value in {key} cannot be blank.",
-                "expectedPublishedAtInFuture": "Expected published_at to be in the future.",
+                "isAlreadyPublished": "Your post is already published, please reload your page.",
+                "expectedPublishedAtInFuture": "Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.",
                 "noUserFound": "No user found",
                 "notEnoughPermission": "You do not have permission to perform this action",
                 "tagUpdates": {
@@ -266,7 +267,7 @@
         },
         "permissions": {
             "noActionsMapFound": {
-                "error": "No actions map found, please call permissions.init() before use."
+                "error": "No actions map found, ensure you have loaded permissions into database and then call permissions.init() before use."
             },
             "applyStatusRules": {
                 "error": "You do not have permission to retrieve {docName} with that status"
@@ -322,6 +323,10 @@
             },
             "posts": {
                 "postNotFound": "Post not found."
+            },
+            "job": {
+                "notFound": "Job not found.",
+                "publishInThePast": "Use the force flag to publish a post in the past."
             },
             "settings": {
                 "problemFindingSetting": "Problem finding setting: {key}",

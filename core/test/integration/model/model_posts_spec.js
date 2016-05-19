@@ -238,7 +238,7 @@ describe('Post Model', function () {
                     paginationResult.meta.pagination.page.should.equal(1);
                     paginationResult.meta.pagination.limit.should.equal('all');
                     paginationResult.meta.pagination.pages.should.equal(1);
-                    paginationResult.posts.length.should.equal(107);
+                    paginationResult.posts.length.should.equal(108);
 
                     done();
                 }).catch(done);
@@ -573,6 +573,27 @@ describe('Post Model', function () {
                 }).catch(done);
             });
 
+            it('scheduled -> scheduled with unchanged published_at', function (done) {
+                PostModel.findOne({status: 'scheduled'}).then(function (results) {
+                    var post;
+
+                    should.exist(results);
+                    post = results.toJSON();
+                    post.status.should.equal('scheduled');
+
+                    return PostModel.edit({
+                        status: 'scheduled'
+                    }, _.extend({}, context, {id: post.id}));
+                }).then(function (edited) {
+                    should.exist(edited);
+                    edited.attributes.status.should.equal('scheduled');
+                    eventSpy.callCount.should.eql(1);
+                    eventSpy.firstCall.calledWith('post.edited').should.be.true();
+
+                    done();
+                }).catch(done);
+            });
+
             it('published -> scheduled and expect update of published_at', function (done) {
                 var postId = 1;
 
@@ -587,16 +608,13 @@ describe('Post Model', function () {
                         status: 'scheduled',
                         published_at: moment().add(1, 'day').toDate()
                     }, _.extend({}, context, {id: postId}));
-                }).then(function (edited) {
-                    should.exist(edited);
-                    edited.attributes.status.should.equal('scheduled');
-                    eventSpy.callCount.should.eql(3);
-                    eventSpy.firstCall.calledWith('post.unpublished').should.be.true();
-                    eventSpy.secondCall.calledWith('post.scheduled').should.be.true();
-                    eventSpy.thirdCall.calledWith('post.edited').should.be.true();
-
+                }).then(function () {
+                    done(new Error('change status from published to scheduled is not allowed right now!'));
+                }).catch(function (err) {
+                    should.exist(err);
+                    (err instanceof errors.ValidationError).should.eql(true);
                     done();
-                }).catch(done);
+                });
             });
 
             it('can convert draft post to page and back', function (done) {
